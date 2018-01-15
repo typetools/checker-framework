@@ -446,6 +446,28 @@ public class RangeTest {
     }
 
     @Test
+    public void testUnsignedShiftRight() {
+        for (RangeAndElement re1 : rangeAndElements()) {
+            for (RangeAndElement re2 : rangeAndElements()) {
+                Range result = re1.range.unsignedShiftRight(re2.range);
+                if (re1.range.from >= 0) {
+                    assert result.contains(re1.element >>> re2.element)
+                            : String.format(
+                                    "Range.unsignedShiftRight failure: %s %s => %s; witnesses %s >> %s => %s",
+                                    re1.range,
+                                    re2.range,
+                                    result,
+                                    re1.element,
+                                    re2.element,
+                                    re1.element >> re2.element);
+                } else {
+                    assert result == Range.EVERYTHING;
+                }
+            }
+        }
+    }
+
+    @Test
     public void testUnaryPlus() {
         for (RangeAndElement re : rangeAndElements()) {
             Range result = re.range.unaryPlus();

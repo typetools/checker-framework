@@ -3,12 +3,12 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for method invocation
@@ -35,7 +35,7 @@ public class MethodInvocationNode extends Node {
             MethodAccessNode target,
             List<Node> arguments,
             TreePath treePath) {
-        super(tree != null ? InternalUtils.typeOf(tree) : target.getMethod().getReturnType());
+        super(tree != null ? TreeUtils.typeOf(tree) : target.getMethod().getReturnType());
         this.tree = tree;
         this.target = target;
         this.arguments = arguments;
@@ -81,7 +81,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(target);
         sb.append("(");
         boolean needComma = false;
@@ -118,7 +118,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        List<Node> list = new LinkedList<Node>();
+        List<Node> list = new ArrayList<Node>(1 + arguments.size());
         list.add(target);
         list.addAll(arguments);
         return list;

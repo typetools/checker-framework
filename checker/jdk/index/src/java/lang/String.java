@@ -190,7 +190,7 @@ public final class String
      *          If the {@code offset} and {@code count} arguments index
      *          characters outside the bounds of the {@code value} array
      */
-    public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
+    public String(char value[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
         }
@@ -238,7 +238,7 @@ public final class String
      *
      * @since  1.5
      */
-    public String(int[] codePoints, @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
+    public String(int[] codePoints, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
         }
@@ -323,7 +323,7 @@ public final class String
      * @see  #String(byte[])
      */
     @Deprecated
-    public String(byte ascii[], int hibyte, @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
+    public String(byte ascii[], int hibyte, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
         checkBounds(ascii, offset, count);
         char value[] = new char[count];
 
@@ -421,7 +421,7 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int length, String charsetName)
+    public String(byte bytes[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length, String charsetName)
         throws UnsupportedEncodingException
     {
         if (charsetName == null)
@@ -460,7 +460,7 @@ public final class String
      *
      * @since  1.6
      */
-    public String(byte bytes[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int length, Charset charset) {
+    public String(byte bytes[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length, Charset charset) {
         if (charset == null)
             throw new NullPointerException("charset");
         checkBounds(bytes, offset, length);
@@ -545,7 +545,7 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int length) {
+    public String(byte bytes[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) {
         checkBounds(bytes, offset, length);
         this.value = StringCoding.decode(bytes, offset, length);
     }
@@ -744,7 +744,7 @@ public final class String
      * {@code beginIndex} is larger than {@code endIndex}.
      * @since  1.5
      */
-    public int codePointCount(@IndexOrHigh("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
+    public @NonNegative int codePointCount(@IndexOrHigh("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         if (beginIndex < 0 || endIndex > value.length || beginIndex > endIndex) {
             throw new IndexOutOfBoundsException();
         }
@@ -817,7 +817,7 @@ public final class String
      *            <li>{@code dstBegin+(srcEnd-srcBegin)} is larger than
      *                {@code dst.length}</ul>
      */
-    public void getChars(@IndexOrHigh("this") int srcBegin, @IndexOrHigh("this") int srcEnd, char dst[], @IndexFor("#3") int dstBegin) {
+    public void getChars(@IndexOrHigh("this") int srcBegin, @IndexOrHigh("this") int srcEnd, char dst[], @IndexOrHigh("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -874,7 +874,7 @@ public final class String
      *          </ul>
      */
     @Deprecated
-    public void getBytes(@IndexOrHigh("this") int srcBegin, @IndexOrHigh("this") int srcEnd, byte dst[], @IndexFor("#3") int dstBegin) {
+    public void getBytes(@IndexOrHigh("this") int srcBegin, @IndexOrHigh("this") int srcEnd, byte dst[], @IndexOrHigh("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -1735,7 +1735,7 @@ public final class String
      * @param   target       the characters being searched for.
      * @param   fromIndex    the index to begin searching from.
      */
-    static @LTEqLengthOf("this") @SubstringIndexFor(value="this",offset="#1.length()-1") int indexOf(char[] source, int sourceOffset, int sourceCount,
+    static int indexOf(char[] source, int sourceOffset, int sourceCount,
             String target, int fromIndex) {
         return indexOf(source, sourceOffset, sourceCount,
                        target.value, 0, target.value.length,
@@ -1844,7 +1844,7 @@ public final class String
      * @param   target       the characters being searched for.
      * @param   fromIndex    the index to begin searching from.
      */
-    static @LTEqLengthOf("this") @SubstringIndexFor(value="this",offset="#1.length()-1") int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
+    static int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
             String target, int fromIndex) {
         return lastIndexOf(source, sourceOffset, sourceCount,
                        target.value, 0, target.value.length,
@@ -1864,7 +1864,7 @@ public final class String
      * @param   targetCount  count of the target string.
      * @param   fromIndex    the index to begin searching from.
      */
-    static @LTEqLengthOf("this") @SubstringIndexFor(value="this",offset="#1.length()-1") int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
+    static int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
                            char[] target, int targetOffset, int targetCount,
                            int fromIndex) {
         /*
@@ -2888,7 +2888,7 @@ public final class String
      *
      * @return  the string itself.
      */
-    public String toString() {
+    public @SameLen("this") String toString() {
         return this;
     }
 
@@ -2899,7 +2899,7 @@ public final class String
      *          of this string and whose contents are initialized to contain
      *          the character sequence represented by this string.
      */
-    public char[] toCharArray() {
+    public char @SameLen("this")[] toCharArray() {
         // Cannot use Arrays.copyOf because of class initialization order issues
         char result[] = new char[value.length];
         System.arraycopy(value, 0, result, 0, value.length);
@@ -3009,7 +3009,7 @@ public final class String
      * @return  a {@code String} that contains the characters of the
      *          character array.
      */
-    public static String valueOf(char data[]) {
+    public static @SameLen("#1") String valueOf(char data[]) {
         return new String(data);
     }
 
@@ -3033,7 +3033,7 @@ public final class String
      *          {@code offset+count} is larger than
      *          {@code data.length}.
      */
-    public static String valueOf(char data[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
+    public static String valueOf(char data[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
         return new String(data, offset, count);
     }
 
@@ -3050,7 +3050,7 @@ public final class String
      *          {@code offset+count} is larger than
      *          {@code data.length}.
      */
-    public static String copyValueOf(char data[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
+    public static String copyValueOf(char data[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
         // All public String constructors now copy the data.
         return new String(data, offset, count);
     }
@@ -3062,7 +3062,7 @@ public final class String
      * @return  a {@code String} that contains the characters of the
      *          character array.
      */
-    public static String copyValueOf(char data[]) {
+    public static @SameLen("#1") String copyValueOf(char data[]) {
         return new String(data);
     }
 
@@ -3170,5 +3170,5 @@ public final class String
      * @return  a string that has the same contents as this string, but is
      *          guaranteed to be from a pool of unique strings.
      */
-    public native @PolyLength String intern(@PolyLength String this);
+    public native @SameLen("this") String intern();
 }

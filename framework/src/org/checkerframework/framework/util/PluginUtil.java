@@ -155,7 +155,7 @@ public class PluginUtil {
     public static <T> String join(final String delimiter, final T[] objs) {
 
         boolean notFirst = false;
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
 
         for (final Object obj : objs) {
             if (notFirst) {
@@ -171,13 +171,13 @@ public class PluginUtil {
     public static String join(String delimiter, Iterable<?> values) {
         StringBuilder sb = new StringBuilder();
 
-        boolean isntFirst = false;
+        boolean notFirst = false;
         for (Object value : values) {
-            if (isntFirst) {
+            if (notFirst) {
                 sb.append(delimiter);
             }
             sb.append(value);
-            isntFirst = true;
+            notFirst = true;
         }
 
         return sb.toString();

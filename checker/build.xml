@@ -292,8 +292,8 @@
                 <include name="**/*.java"/>
             </fileset>
 
-            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
-            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
+            <link href="https://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
@@ -776,7 +776,7 @@
             <isset property="debugger.on"/>
         </condition>
 
-        <ant dir="${framework.loc}">
+        <ant dir="${framework.loc}" inheritAll="false">
             <target name="all-tests-nojtreg-nobuild"/>
         </ant>
 
@@ -1397,60 +1397,6 @@
       </ant>
     </target>
 
-
-    <!-- Checks whether errorprone is available, but does not run errorprone.
-         To run errorprone, use the "check-errorprone" target. -->
-    <target name="errorprone.check">
-      <condition property="errorprone.exists">
-        <available file="${errorprone.lib}" type="file"/>
-      </condition>
-    </target>
-
-    <target name="-errorprone.download" depends="errorprone.check" unless="errorprone.exists">
-      <get
-        src="https://github.com/google/error-prone/archive/v${errorprone.version}.tar.gz"
-        dest="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz" />
-      <untar src="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz"
-        dest="${errorprone.home}/../"
-        compression="gzip" />
-
-      <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
-        <arg value="package"/>
-        <arg value="-Dmaven.test.skip=true"/>
-      </exec>
-    </target>
-
-    <!-- Depend on dist-nobuildjdk to make sure everything compiles. -->
-    <target name="check-errorprone" depends="dist-nobuildjdk, clean-nojar, -errorprone.download"
-            description="Run the error-prone compiler on the Checker Framework">
-        <mkdir dir="${build}"/>
-
-        <javac failonerror="true"
-                includeantruntime="false"
-                debug="true"
-                classpath="${checker.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}"
-                srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${src}"
-                includes="**/*.java"
-                excludes="**/javacutil/dist/**"
-                compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
-                destdir="${build}"
-                encoding="UTF-8">
-            <compilerclasspath>
-              <pathelement location="${errorprone.lib}"/>
-            </compilerclasspath>
-            <compilerarg value="-Xmaxwarns"/>
-            <compilerarg value="1000"/>
-            <!-- Many compiler classes are interned. -->
-            <compilerarg value="-Xep:ReferenceEquality:OFF"/>
-            <!-- These might be worth fixing. -->
-            <compilerarg value="-Xep:DefaultCharset:OFF"/>
-            <!-- Disable until https://github.com/google/error-prone/issues/725 is fixed. -->
-            <compilerarg value="-Xep:NamedParameters:OFF"/>
-            <compilerarg value="-Werror"/>
-        </javac>
-    </target>
-
-
     <!-- This throws off dependency tracking and causes rebuilding.
          When is it truly necessary? -->
     <!-- Why all JDK files?  Why not just source files? -->
@@ -1479,7 +1425,8 @@
     </target>
 
     <target name="download-jdk" description="Downloads jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
-        <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"
+        <!-- See instructions for updating the jdk.jar at https://github.com/typetools/annotated-libraries/blob/master/README.jdk -->
+        <get src="https://github.com/typetools/annotated-libraries/raw/36f721f6529be400ef64c309d7658ed62564af7d/jdk8.jar" dest="jdk/jdk8.jar"
              usetimestamp="true"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->

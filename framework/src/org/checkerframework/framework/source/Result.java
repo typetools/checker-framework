@@ -5,10 +5,10 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -76,7 +76,7 @@ public final class Result {
 
     private Result(Type type, Collection<DiagMessage> messagePairs) {
         this.type = type;
-        this.messages = new LinkedList<DiagMessage>();
+        this.messages = new ArrayList<DiagMessage>();
         if (messagePairs != null) {
             for (DiagMessage msg : messagePairs) {
                 String message = msg.getMessageKey();
@@ -106,7 +106,8 @@ public final class Result {
             return SUCCESS;
         }
 
-        List<DiagMessage> messages = new LinkedList<DiagMessage>();
+        List<DiagMessage> messages =
+                new ArrayList<DiagMessage>(this.messages.size() + r.messages.size());
         messages.addAll(this.messages);
         messages.addAll(r.messages);
         return new Result(Type.merge(r.type, this.type), messages);
@@ -129,7 +130,7 @@ public final class Result {
 
     /** @return the message keys associated with the result */
     public List<String> getMessageKeys() {
-        List<String> msgKeys = new LinkedList<String>();
+        List<String> msgKeys = new ArrayList<String>(getDiagMessages().size());
         for (DiagMessage msg : getDiagMessages()) {
             msgKeys.add(msg.getMessageKey());
         }

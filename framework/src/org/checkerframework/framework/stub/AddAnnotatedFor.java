@@ -1,25 +1,5 @@
 package org.checkerframework.framework.stub;
 
-import annotations.Annotation;
-import annotations.Annotations;
-import annotations.el.ABlock;
-import annotations.el.AClass;
-import annotations.el.ADeclaration;
-import annotations.el.AElement;
-import annotations.el.AExpression;
-import annotations.el.AField;
-import annotations.el.AMethod;
-import annotations.el.AScene;
-import annotations.el.ATypeElement;
-import annotations.el.ATypeElementWithType;
-import annotations.el.AnnotationDef;
-import annotations.el.DefException;
-import annotations.el.ElementVisitor;
-import annotations.field.ArrayAFT;
-import annotations.field.BasicAFT;
-import annotations.io.IndexFileParser;
-import annotations.io.IndexFileWriter;
-import annotations.io.ParseException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,6 +12,26 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import scenelib.annotations.Annotation;
+import scenelib.annotations.Annotations;
+import scenelib.annotations.el.ABlock;
+import scenelib.annotations.el.AClass;
+import scenelib.annotations.el.ADeclaration;
+import scenelib.annotations.el.AElement;
+import scenelib.annotations.el.AExpression;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.AScene;
+import scenelib.annotations.el.ATypeElement;
+import scenelib.annotations.el.ATypeElementWithType;
+import scenelib.annotations.el.AnnotationDef;
+import scenelib.annotations.el.DefException;
+import scenelib.annotations.el.ElementVisitor;
+import scenelib.annotations.field.ArrayAFT;
+import scenelib.annotations.field.BasicAFT;
+import scenelib.annotations.io.IndexFileParser;
+import scenelib.annotations.io.IndexFileWriter;
+import scenelib.annotations.io.ParseException;
 
 /**
  * Utility that generates {@code @AnnotatedFor} class annotations. The {@link #main} method acts as

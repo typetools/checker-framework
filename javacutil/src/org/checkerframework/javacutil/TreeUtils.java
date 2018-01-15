@@ -1,7 +1,9 @@
 package org.checkerframework.javacutil;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -14,6 +16,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -22,18 +25,35 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -294,6 +314,18 @@ public final class TreeUtils {
         return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
     }
 
+    /**
+     * Gets the enclosing method or lambda expression of the tree node defined by the given {@link
+     * TreePath}. It returns a {@link Tree}, from which an {@code
+     * checkers.types.AnnotatedTypeMirror} or {@link Element} can be obtained.
+     *
+     * @param path the path defining the tree node
+     * @return the enclosing method or lambda as given by the path, or null if one does not exist
+     */
+    public static /*@Nullable*/ Tree enclosingMethodOrLambda(final /*@Nullable*/ TreePath path) {
+        return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
+    }
+
     public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
         TreePath parpath = path.getParentPath();
         while (parpath != null && !classTreeKinds.contains(parpath.getLeaf().getKind())) {
@@ -387,12 +419,71 @@ public final class TreeUtils {
     }
 
     /**
+     * Gets the {@link Element} for the given Tree API node. For an object instantiation returns the
+     * value of the {@link JCNewClass#constructor} field. Note that this result might differ from
+     * the result of {@link TreeUtils#constructor(NewClassTree)}.
+     *
+     * @param tree the {@link Tree} node to get the symbol for
+     * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal
+     *     tree (JCTree)
+     * @return the {@link Symbol} for the given tree, or null if one could not be found
+     */
+    public static /*@Nullable*/ Element elementFromTree(Tree tree) {
+        if (tree == null) {
+            ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
+            return null; // dead code
+        }
+
+        if (!(tree instanceof JCTree)) {
+            ErrorReporter.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
+            return null; // dead code
+        }
+
+        if (isExpressionTree(tree)) {
+            tree = skipParens((ExpressionTree) tree);
+        }
+
+        switch (tree.getKind()) {
+            case VARIABLE:
+            case METHOD:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE:
+            case TYPE_PARAMETER:
+                return TreeInfo.symbolFor((JCTree) tree);
+
+                // symbol() only works on MethodSelects, so we need to get it manually
+                // for method invocations.
+            case METHOD_INVOCATION:
+                return TreeInfo.symbol(((JCMethodInvocation) tree).getMethodSelect());
+
+            case ASSIGNMENT:
+                return TreeInfo.symbol((JCTree) ((AssignmentTree) tree).getVariable());
+
+            case ARRAY_ACCESS:
+                return elementFromTree(((ArrayAccessTree) tree).getExpression());
+
+            case NEW_CLASS:
+                return ((JCNewClass) tree).constructor;
+
+            case MEMBER_REFERENCE:
+                // TreeInfo.symbol, which is used in the default case, didn't handle
+                // member references until JDK8u20. So handle it here.
+                return ((JCMemberReference) tree).sym;
+
+            default:
+                return TreeInfo.symbol((JCTree) tree);
+        }
+    }
+
+    /**
      * Gets the element for a class corresponding to a declaration.
      *
      * @return the element for the given class
      */
     public static final TypeElement elementFromDeclaration(ClassTree node) {
-        TypeElement elt = (TypeElement) InternalUtils.symbol(node);
+        TypeElement elt = (TypeElement) TreeUtils.elementFromTree(node);
         return elt;
     }
 
@@ -402,7 +493,7 @@ public final class TreeUtils {
      * @return the element for the given method
      */
     public static final ExecutableElement elementFromDeclaration(MethodTree node) {
-        ExecutableElement elt = (ExecutableElement) InternalUtils.symbol(node);
+        ExecutableElement elt = (ExecutableElement) TreeUtils.elementFromTree(node);
         return elt;
     }
 
@@ -412,27 +503,30 @@ public final class TreeUtils {
      * @return the element for the given variable
      */
     public static final VariableElement elementFromDeclaration(VariableTree node) {
-        VariableElement elt = (VariableElement) InternalUtils.symbol(node);
+        VariableElement elt = (VariableElement) TreeUtils.elementFromTree(node);
         return elt;
     }
 
     /**
      * Gets the element for the declaration corresponding to this use of an element. To get the
-     * element for a declaration, use {@link Trees#getElement(TreePath)} instead.
+     * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
+     * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)}
+     * instead.
      *
-     * <p>TODO: remove this method, as it really doesn't do anything.
+     * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this
+     * class might be the first place someone looks for this functionality.
      *
      * @param node the tree corresponding to a use of an element
      * @return the element for the corresponding declaration
      */
     public static final Element elementFromUse(ExpressionTree node) {
-        return InternalUtils.symbol(node);
+        return TreeUtils.elementFromTree(node);
     }
 
     // Specialization for return type.
     // Might return null if element wasn't found.
     public static final ExecutableElement elementFromUse(MethodInvocationTree node) {
-        Element el = elementFromUse((ExpressionTree) node);
+        Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
             return (ExecutableElement) el;
         } else {
@@ -440,9 +534,61 @@ public final class TreeUtils {
         }
     }
 
-    // Specialization for return type.
+    /**
+     * Specialization for return type. Might return null if element wasn't found.
+     *
+     * @see #constructor(NewClassTree)
+     */
     public static final ExecutableElement elementFromUse(NewClassTree node) {
-        return (ExecutableElement) elementFromUse((ExpressionTree) node);
+        Element el = TreeUtils.elementFromTree(node);
+        if (el instanceof ExecutableElement) {
+            return (ExecutableElement) el;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Determines the symbol for a constructor given an invocation via {@code new}.
+     *
+     * <p>If the tree is a declaration of an anonymous class, then method returns constructor that
+     * gets invoked in the extended class, rather than the anonymous constructor implicitly added by
+     * the constructor (JLS 15.9.5.1)
+     *
+     * @see #elementFromUse(NewClassTree)
+     * @param tree the constructor invocation
+     * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
+     */
+    public static ExecutableElement constructor(NewClassTree tree) {
+
+        if (!(tree instanceof JCTree.JCNewClass)) {
+            ErrorReporter.errorAbort("InternalUtils.constructor: not a javac internal tree");
+            return null; // dead code
+        }
+
+        JCNewClass newClassTree = (JCNewClass) tree;
+
+        if (tree.getClassBody() != null) {
+            // anonymous constructor bodies should contain exactly one statement
+            // in the form:
+            //    super(arg1, ...)
+            // or
+            //    o.super(arg1, ...)
+            //
+            // which is a method invocation (!) to the actual constructor
+
+            // the method call is guaranteed to return nonnull
+            JCMethodDecl anonConstructor =
+                    (JCMethodDecl) TreeInfo.declarationFor(newClassTree.constructor, newClassTree);
+            assert anonConstructor != null;
+            assert anonConstructor.body.stats.size() == 1;
+            JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
+            JCTree.JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
+            return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+        } else {
+            Element e = newClassTree.constructor;
+            return (ExecutableElement) e;
+        }
     }
 
     /**
@@ -553,14 +699,13 @@ public final class TreeUtils {
 
     /** Returns true if the tree represents a {@code String} concatenation operation */
     public static final boolean isStringConcatenation(Tree tree) {
-        return (tree.getKind() == Tree.Kind.PLUS
-                && TypesUtils.isString(InternalUtils.typeOf(tree)));
+        return (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree)));
     }
 
     /** Returns true if the compound assignment tree is a string concatenation */
     public static final boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
         return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
-                && TypesUtils.isString(InternalUtils.typeOf(tree)));
+                && TypesUtils.isString(TreeUtils.typeOf(tree)));
     }
 
     /**
@@ -1004,7 +1149,7 @@ public final class TreeUtils {
                 ElementUtils.getQualifiedClassName(declarationElement.getEnclosingElement())
                         .toString();
         return ownerName.equals("java.lang.Object")
-                && declarationElement.getSimpleName().toString().equals("getClass");
+                && declarationElement.getSimpleName().contentEquals("getClass");
     }
 
     /**
@@ -1048,10 +1193,90 @@ public final class TreeUtils {
                 && isFieldAccess(tree)
                 && getFieldName(tree).equals("length")) {
             ExpressionTree expressionTree = ((MemberSelectTree) tree).getExpression();
-            if (InternalUtils.typeOf(expressionTree).getKind() == TypeKind.ARRAY) {
+            if (TreeUtils.typeOf(expressionTree).getKind() == TypeKind.ARRAY) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Determines whether or not the node referred to by the given {@link TreePath} is an anonymous
+     * constructor (the constructor for an anonymous class.
+     *
+     * @param method the {@link TreePath} for a node that may be an anonymous constructor
+     * @return true if the given path points to an anonymous constructor, false if it does not
+     */
+    public static boolean isAnonymousConstructor(final MethodTree method) {
+        /*@Nullable*/ Element e = elementFromTree(method);
+        if (e == null || !(e instanceof Symbol)) {
+            return false;
+        }
+
+        if ((((/*@NonNull*/ Symbol) e).flags() & Flags.ANONCONSTR) != 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static final List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
+            List<? extends AnnotationTree> annos) {
+        List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>(annos.size());
+        for (AnnotationTree anno : annos) {
+            annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
+        }
+        return annotations;
+    }
+
+    public static AnnotationMirror annotationFromAnnotationTree(AnnotationTree tree) {
+        return ((JCAnnotation) tree).attribute;
+    }
+
+    public static final List<? extends AnnotationMirror> annotationsFromTree(
+            AnnotatedTypeTree node) {
+        return annotationsFromTypeAnnotationTrees(((JCAnnotatedType) node).annotations);
+    }
+
+    public static final List<? extends AnnotationMirror> annotationsFromTree(
+            TypeParameterTree node) {
+        return annotationsFromTypeAnnotationTrees(((JCTypeParameter) node).annotations);
+    }
+
+    public static final List<? extends AnnotationMirror> annotationsFromArrayCreation(
+            NewArrayTree node, int level) {
+
+        assert node instanceof JCNewArray;
+        final JCNewArray newArray = ((JCNewArray) node);
+
+        if (level == -1) {
+            return annotationsFromTypeAnnotationTrees(newArray.annotations);
+        }
+
+        if (newArray.dimAnnotations.length() > 0
+                && (level >= 0)
+                && (level < newArray.dimAnnotations.size()))
+            return annotationsFromTypeAnnotationTrees(newArray.dimAnnotations.get(level));
+
+        return Collections.emptyList();
+    }
+
+    public static TypeMirror typeOf(Tree tree) {
+        return ((JCTree) tree).type;
+    }
+
+    /**
+     * The type of the lambda or method reference tree is a functional interface type. This method
+     * returns the single abstract method declared by that functional interface. (The type of this
+     * method is referred to as the function type.)
+     *
+     * @param tree lambda or member reference tree
+     * @param env ProcessingEnvironment
+     * @return the single abstract method declared by the type of the tree
+     */
+    public static Symbol findFunction(Tree tree, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        Types javacTypes = Types.instance(ctx);
+        return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
     }
 }

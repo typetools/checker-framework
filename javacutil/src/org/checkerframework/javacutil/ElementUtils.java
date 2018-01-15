@@ -84,7 +84,7 @@ public class ElementUtils {
      * @param elem the package to start from
      * @return the parent package element
      */
-    public static PackageElement parentPackage(final Elements e, final PackageElement elem) {
+    public static PackageElement parentPackage(final PackageElement elem, final Elements e) {
         // The following might do the same thing:
         //   ((Symbol) elt).owner;
         // TODO: verify and see whether the change is worth it.
@@ -240,7 +240,7 @@ public class ElementUtils {
     /** Returns the field of the class */
     public static VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
-            if (field.getSimpleName().toString().equals(name)) {
+            if (field.getSimpleName().contentEquals(name)) {
                 return field;
             }
         }
@@ -301,7 +301,7 @@ public class ElementUtils {
         if (TypesUtils.isObject(type)) {
             return;
         }
-        TypeElement elt = InternalUtils.getTypeElement(type);
+        TypeElement elt = TypesUtils.getTypeElement(type);
 
         Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
         for (VariableElement field : new HashSet<>(fieldElts)) {
@@ -345,7 +345,7 @@ public class ElementUtils {
      * <p>TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
      */
-    public static List<TypeElement> getSuperTypes(Elements elements, TypeElement type) {
+    public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
         List<TypeElement> superelems = new ArrayList<TypeElement>();
         if (type == null) {
@@ -404,10 +404,10 @@ public class ElementUtils {
      * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
      * getSuperTypes?
      */
-    public static List<VariableElement> getAllFieldsIn(Elements elements, TypeElement type) {
+    public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
         List<VariableElement> fields = new ArrayList<VariableElement>();
         fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
-        List<TypeElement> alltypes = getSuperTypes(elements, type);
+        List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
             fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
         }
@@ -419,11 +419,11 @@ public class ElementUtils {
      * constructors will be returned. TODO: should this use
      * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
      */
-    public static List<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
+    public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
         List<ExecutableElement> meths = new ArrayList<ExecutableElement>();
         meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
 
-        List<TypeElement> alltypes = getSuperTypes(elements, type);
+        List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
             meths.addAll(ElementFilter.methodsIn(atype.getEnclosedElements()));
         }
@@ -467,7 +467,7 @@ public class ElementUtils {
     public static boolean matchesElement(
             ExecutableElement method, String methodName, Class<?>... parameters) {
 
-        if (!method.getSimpleName().toString().equals(methodName)) {
+        if (!method.getSimpleName().contentEquals(methodName)) {
             return false;
         }
 

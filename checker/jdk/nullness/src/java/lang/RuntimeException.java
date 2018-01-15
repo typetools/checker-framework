@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -49,6 +50,7 @@ public class RuntimeException extends Exception {
      * detail message.  The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.
      */
+    @SideEffectFree
     public RuntimeException() {
         super();
     }
@@ -60,6 +62,7 @@ public class RuntimeException extends Exception {
      * @param   message   the detail message. The detail message is saved for
      *          later retrieval by the {@link #getMessage()} method.
      */
+    @SideEffectFree
     public RuntimeException(@Nullable String message) {
         super(message);
     }
@@ -78,6 +81,7 @@ public class RuntimeException extends Exception {
      *         unknown.)
      * @since  1.4
      */
+    @SideEffectFree
     public RuntimeException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
@@ -94,6 +98,7 @@ public class RuntimeException extends Exception {
      *         unknown.)
      * @since  1.4
      */
+    @SideEffectFree
     public RuntimeException(@Nullable Throwable cause) {
         super(cause);
     }

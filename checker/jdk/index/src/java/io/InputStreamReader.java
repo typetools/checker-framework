@@ -181,7 +181,7 @@ public class InputStreamReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public @IndexOrLow("#1") int read(char cbuf[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int length) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) throws IOException {
         return sd.read(cbuf, offset, length);
     }
 

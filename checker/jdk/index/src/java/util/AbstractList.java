@@ -115,7 +115,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    abstract public E get(int index);
+    abstract public E get(@IndexFor("this") int index);
 
     /**
      * {@inheritDoc}
@@ -129,7 +129,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException      {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
-    public E set(int index, E element) {
+    public E set(@IndexFor("this") int index, E element) {
         throw new UnsupportedOperationException();
     }
 
@@ -145,7 +145,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException      {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
-    public void add(int index, E element) {
+    public void add(@IndexOrHigh("this") int index, E element) {
         throw new UnsupportedOperationException();
     }
 
@@ -158,7 +158,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws UnsupportedOperationException {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
-    public E remove(int index) {
+    public E remove(@IndexFor("this") int index) {
         throw new UnsupportedOperationException();
     }
 
@@ -254,7 +254,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException      {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
-    public boolean addAll(int index, Collection<? extends E> c) {
+    public boolean addAll(@IndexOrHigh("this") int index, Collection<? extends E> c) {
         rangeCheckForAdd(index);
         boolean modified = false;
         for (E e : c) {
@@ -322,7 +322,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public ListIterator<E> listIterator(final int index) {
+    public ListIterator<E> listIterator(@IndexOrHigh("this") final int index) {
         rangeCheckForAdd(index);
 
         return new ListItr(index);
@@ -481,7 +481,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException if the endpoint indices are out of order
      *         {@code (fromIndex > toIndex)}
      */
-    public List<E> subList(int fromIndex, int toIndex) {
+    public List<E> subList(@IndexOrHigh("this") int fromIndex, @IndexOrHigh("this") int toIndex) {
         return (this instanceof RandomAccess ?
                 new RandomAccessSubList<>(this, fromIndex, toIndex) :
                 new SubList<>(this, fromIndex, toIndex));
@@ -565,7 +565,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @param fromIndex index of first element to be removed
      * @param toIndex index after last element to be removed
      */
-    protected void removeRange(int fromIndex, int toIndex) {
+    protected void removeRange(@IndexOrHigh("this") int fromIndex, @IndexOrHigh("this") int toIndex) {
         ListIterator<E> it = listIterator(fromIndex);
         for (int i=0, n=toIndex-fromIndex; i<n; i++) {
             it.next();

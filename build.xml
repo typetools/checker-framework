@@ -27,13 +27,13 @@
 
   <target name="dist-nobuildjdk"
           description="Rebuild the framework.  Rebuild checker on top of framework without rebuilding the JDK">
-      <ant dir="framework">
-          <target name="clean"/>
-          <target name="dist"/>
-      </ant>
-      <ant dir="checker">
-          <target name="dist-nobuildjdk"/>
-      </ant>
+    <ant dir="framework">
+      <target name="clean"/>
+      <target name="dist"/>
+    </ant>
+    <ant dir="checker">
+      <target name="dist-nobuildjdk"/>
+    </ant>
   </target>
 
   <target name="build"
@@ -140,7 +140,7 @@
   </target>
 
   <target name="html-validate"
-          description="Validate that HTML files are well-formed; only works with JDK 8">
+          description="Validate that HTML files are well-formed; requires JDK 8">
     <exec executable="html5validator" failonerror="true">
       <arg value="--ignore"/>
       <arg value="/api/"/>
@@ -156,6 +156,23 @@
            excludes="checker/jdk/,checker/tests/nullness-javac-errors/,framework/tests/whole-program-inference/annotated/"/>
 
   <import file="./build-styleguide.xml"/>
+
+
+  <!-- I tried using a fileset like this: <fileset
+       id="errorprone.java.files" dir="."  includes="**/*.java"
+       excludes="**/javacutil/dist/**"/> but didn't find a way to get
+       the javac target to use it. Instead, I now use separate
+       properties. -->
+
+  <property name="errorprone.project.includes" value="**/*.java"/>
+  <property name="errorprone.project.excludes" value="**/javacutil/dist/**"/>
+  <property name="errorprone.project.classpath" value="${javac.lib}:${annotation-file-utilities.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}"/>
+  <!-- Instead of direct references to `src` this should use `${src}`.
+       This seems stupid and we should remove the `${src}` property or
+       introduce e.g. a `${framework.src.loc} property. -->
+  <property name="errorprone.project.srcdir" value="${framework.loc}/src:${dataflow.loc}/src:${javacutil.loc}/src:${checker.loc}/src"/>
+
+  <import file="./build-errorprone.xml"/>
 
 
   <target name="tags"

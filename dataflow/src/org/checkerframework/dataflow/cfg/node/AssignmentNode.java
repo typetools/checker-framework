@@ -5,11 +5,11 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.AssignmentLhsContext;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for an assignment:
@@ -31,7 +31,7 @@ public class AssignmentNode extends Node {
     protected final Node rhs;
 
     public AssignmentNode(Tree tree, Node target, Node expression) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert tree instanceof AssignmentTree
                 || tree instanceof VariableTree
                 || tree instanceof CompoundAssignmentTree
@@ -85,7 +85,7 @@ public class AssignmentNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(2);
         list.add(getTarget());
         list.add(getExpression());
         return list;

@@ -331,7 +331,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
-    boolean addAll(int index, Collection<? extends E> c);
+    boolean addAll(@IndexOrHigh("this") int index, Collection<? extends E> c);
 
     /**
      * Removes from this list all of its elements that are contained in the
@@ -433,7 +433,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E get(int index);
+    E get(@IndexFor("this") int index);
 
     /**
      * Replaces the element at the specified position in this list with the
@@ -453,7 +453,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E set(int index, E element);
+    E set(@IndexFor("this") int index, E element);
 
     /**
      * Inserts the specified element at the specified position in this list
@@ -474,7 +474,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
-    void add(int index, E element);
+    void add(@IndexOrHigh("this") int index, E element);
 
     /**
      * Removes the element at the specified position in this list (optional
@@ -489,7 +489,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E remove(int index);
+    E remove(@IndexFor("this") int index);
 
 
     // Search Operations
@@ -559,7 +559,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         ({@code index < 0 || index > size()})
      */
-    ListIterator<E> listIterator(int index);
+    ListIterator<E> listIterator(@IndexOrHigh("this") int index);
 
     // View
 
@@ -597,5 +597,5 @@ public interface List<E> extends Collection<E> {
      *         (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
      *         fromIndex &gt; toIndex</tt>)
      */
-    List<E> subList(int fromIndex, int toIndex);
+    List<E> subList(@IndexOrHigh("this") int fromIndex, @IndexOrHigh("this") int toIndex);
 }

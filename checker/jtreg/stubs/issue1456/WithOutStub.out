@@ -1,0 +1,8 @@
+Main.java:16:34: compiler.err.proc.messager: (assignment.type.incompatible)
+Main.java:17:46: compiler.err.proc.messager: (assignment.type.incompatible)
+Main.java:18:35: compiler.err.proc.messager: (assignment.type.incompatible)
+Main.java:19:35: compiler.err.proc.messager: (assignment.type.incompatible)
+Main.java:20:33: compiler.err.proc.messager: (assignment.type.incompatible)
+Main.java:21:47: compiler.err.proc.messager: (assignment.type.incompatible)
+Main.java:22:50: compiler.err.proc.messager: (assignment.type.incompatible)
+7 errors

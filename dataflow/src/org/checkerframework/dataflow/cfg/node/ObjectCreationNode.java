@@ -1,11 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.NewClassTree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for new object creation
@@ -24,7 +24,7 @@ public class ObjectCreationNode extends Node {
     protected final List<Node> arguments;
 
     public ObjectCreationNode(NewClassTree tree, Node constructor, List<Node> arguments) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.constructor = constructor;
         this.arguments = arguments;
@@ -54,7 +54,7 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("new " + constructor + "(");
         boolean needComma = false;
         for (Node arg : arguments) {
@@ -93,7 +93,7 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(1 + arguments.size());
         list.add(constructor);
         list.addAll(arguments);
         return list;

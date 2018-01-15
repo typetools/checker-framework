@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 class UnannoPrimitives {
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.annotations.on.use)
     @Nullable int f;
 
     // TODO:: error: (type.invalid)
@@ -15,7 +15,7 @@ class UnannoPrimitives {
         int i = new Integer(99) + 1900;
         int j = 7 + 1900;
 
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.annotations.on.use)
         @Nullable int f;
 
         // TODO:: error: (type.invalid)
@@ -28,14 +28,14 @@ class UnannoPrimitives {
         String strDate = "/" + year;
     }
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.annotations.on.use)
     @Nullable byte[] d1 = {4};
     byte @Nullable [] d1b = {4};
 
     @SuppressWarnings("ha!")
     byte[] d2 = {4};
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.annotations.on.use)
     Object ar = new @Nullable byte[] {4};
 
     // TODO:: error: (type.invalid)

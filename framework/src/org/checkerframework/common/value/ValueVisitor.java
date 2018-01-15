@@ -30,7 +30,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * @author plvines
@@ -145,7 +145,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return super.visitAnnotation(node, p);
         }
 
-        AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
+        AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
 
         if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             // If there are 2 arguments, issue an error if from.greater.than.to.
@@ -259,5 +259,35 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             }
         }
         return super.visitTypeCast(node, p);
+    }
+
+    /**
+     * Overridden to issue errors at the appropriate place if an {@code IntRange} or {@code
+     * ArrayLenRange} annotation has {@code from > to}. {@code from > to} either indicates a user
+     * error when writing an annotation or an error in the checker's implementation, as {@code from}
+     * should always be {@code <= to}.
+     */
+    @Override
+    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
+        boolean result = super.validateType(tree, type);
+        if (!result) {
+            AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+            if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                long to = atypeFactory.getToValueFromIntRange(type);
+                long from = atypeFactory.getFromValueFromIntRange(type);
+                if (from > to) {
+                    checker.report(Result.failure("from.greater.than.to"), tree);
+                    return false;
+                }
+            } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+                int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
+                int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+                if (from > to) {
+                    checker.report(Result.failure("from.greater.than.to"), tree);
+                    return false;
+                }
+            }
+        }
+        return result;
     }
 }

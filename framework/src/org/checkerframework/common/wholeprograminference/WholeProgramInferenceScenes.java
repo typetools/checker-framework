@@ -1,9 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import annotations.el.AClass;
-import annotations.el.AField;
-import annotations.el.AMethod;
-import annotations.util.JVMNames;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -35,7 +31,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import scenelib.annotations.el.AClass;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
+import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
@@ -47,8 +47,8 @@ import org.checkerframework.javacutil.InternalUtils;
  * #updateInferredMethodParameterTypes updateInferredMethodParameterTypes}, {@link
  * #updateInferredParameterType updateInferredParameterType}, or {@link
  * #updateInferredMethodReturnType updateInferredMethodReturnType}) replaces the currently-stored
- * type for an element in a {@link annotations.el.AScene}, if any, by the LUB of it and the update
- * method's argument.
+ * type for an element in a {@link scenelib.annotations.el.AScene}, if any, by the LUB of it and the
+ * update method's argument.
  *
  * <p>This class does not perform inference for an element if the element has explicit annotations:
  * an update* method ignores an explicitly annotated field, method return, or method parameter when
@@ -323,7 +323,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // Look-up parameter by name:
         for (int i = 0; i < params.size(); i++) {
             VariableTree vt = params.get(i);
-            if (vt.getName().toString().equals(lhs.getName())) {
+            if (vt.getName().contentEquals(lhs.getName())) {
                 Tree treeNode = rhs.getTree();
                 if (treeNode == null) {
                     // TODO: Handle variable-length list as parameter.
@@ -427,7 +427,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
         for (AnnotationMirror declAnno :
-                atf.getDeclAnnotations(InternalUtils.symbol(lhs.getTree()))) {
+                atf.getDeclAnnotations(TreeUtils.elementFromTree(lhs.getTree()))) {
             if (AnnotationUtils.areSameByClass(declAnno, IgnoreInWholeProgramInference.class)) {
                 return;
             }
@@ -513,7 +513,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
         if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
                 && classTree != null) {
-            return (ClassSymbol) InternalUtils.symbol(classTree);
+            return (ClassSymbol) TreeUtils.elementFromTree(classTree);
         }
         TypeMirror type = receiverNode.getType();
         if (type instanceof ClassType) {
@@ -525,7 +525,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /** Returns the ClassSymbol of the class encapsulating tree passed as parameter. */
     private ClassSymbol getEnclosingClassSymbol(Tree tree) {
-        Element symbol = InternalUtils.symbol(tree);
+        Element symbol = TreeUtils.elementFromTree(tree);
         if (symbol instanceof ClassSymbol) {
             return (ClassSymbol) symbol;
         } else if (symbol instanceof VarSymbol) {

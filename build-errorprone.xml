@@ -1,0 +1,59 @@
+<!--
+  This is a configuration file for use by Ant when building the
+  Checker Framework.
+  This file is shared between all subprojects and external projects.
+  It contains targets to run Google error-prone on a project.
+  See build.xml for usage.
+-->
+<project name="errorprone"
+         xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+  <property file="./build-errorprone.properties"/>
+
+  <!-- Checks whether errorprone is available, but does not run
+       errorprone.  To run errorprone, use the "check-errorprone"
+       target. -->
+  <target name="errorprone.check">
+    <condition property="errorprone.exists">
+      <available file="${errorprone.lib}" type="file"/>
+    </condition>
+  </target>
+
+  <target name="-errorprone.download" depends="errorprone.check" unless="errorprone.exists">
+    <get
+        src="https://repo1.maven.org/maven2/com/google/errorprone/error_prone_ant/${errorprone.version}/error_prone_ant-${errorprone.version}.jar"
+        dest="${errorprone.lib}"/>
+  </target>
+
+  <target name="check-errorprone" depends="-errorprone.download"
+          description="Run the error-prone compiler on the Checker Framework">
+    <mkdir dir=".tmp.errorprone.build"/>
+
+    <javac failonerror="true"
+           includeantruntime="false"
+           debug="true"
+           classpath="${errorprone.project.classpath}"
+           srcdir="${errorprone.project.srcdir}"
+	   includes="${errorprone.project.includes}"
+	   excludes="${errorprone.project.excludes}"
+           compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
+           destdir=".tmp.errorprone.build"
+           encoding="UTF-8">
+      <compilerclasspath>
+        <pathelement location="${errorprone.lib}"/>
+      </compilerclasspath>
+      <compilerarg value="-Xmaxwarns"/>
+      <compilerarg value="1000"/>
+      <!-- Many compiler classes are interned. -->
+      <compilerarg value="-Xep:ReferenceEquality:OFF"/>
+      <!-- These might be worth fixing. -->
+      <compilerarg value="-Xep:DefaultCharset:OFF"/>
+      <!-- Not useful to suggest Splitter; maybe clean up. -->
+      <compilerarg value="-Xep:StringSplitter:OFF"/>
+      <compilerarg value="-Werror"/>
+    </javac>
+
+    <delete dir=".tmp.errorprone.build"/>
+  </target>
+
+</project>

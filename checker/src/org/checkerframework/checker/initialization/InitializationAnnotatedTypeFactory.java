@@ -55,7 +55,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -818,7 +817,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return a;
             }
 
-            return InternalUtils.leastUpperBound(processingEnv, a, b);
+            return TypesUtils.leastUpperBound(a, b, processingEnv);
         }
 
         @Override

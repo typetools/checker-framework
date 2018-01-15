@@ -43,11 +43,11 @@ import java.lang.annotation.Target;
  *   <li>Assignment to any expression, except for local variables (and method parameters).
  *   <li>A method invocation of a method that is not {@link Deterministic}.
  *   <li>Construction of a new object.
- *   <li>Catching any exceptions. This is to prevent a method to get a hold of newly created objects
- *       and using these objects (or some property thereof) to change their return value. For
- *       instance, the following method must be forbidden.
- *       <pre>
- * {@code @Deterministic
+ *   <li>Catching any exceptions. This restriction prevents a method from obtaining a reference to a
+ *       newly-created exception object and using these objects (or some property thereof) to change
+ *       the method's return value. For instance, the following method must be forbidden.
+ *       <!-- "<code>" instead of "{@code ...}" because of at-sign at beginning of line -->
+ *       <pre><code>@Deterministic
  * int f() {
  *   try {
  *     int b = 0;
@@ -57,7 +57,7 @@ import java.lang.annotation.Target;
  *   }
  *   return 0;
  * }
- * }</pre>
+ * </code></pre>
  * </ol>
  *
  * A constructor can be {@code @Pure}, but a constructor <em>invocation</em> is not deterministic

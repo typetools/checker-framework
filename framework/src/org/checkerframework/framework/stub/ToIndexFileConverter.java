@@ -1,20 +1,5 @@
 package org.checkerframework.framework.stub;
 
-import annotations.Annotation;
-import annotations.el.AClass;
-import annotations.el.ADeclaration;
-import annotations.el.AElement;
-import annotations.el.AField;
-import annotations.el.AMethod;
-import annotations.el.AScene;
-import annotations.el.ATypeElement;
-import annotations.el.AnnotationDef;
-import annotations.el.BoundLocation;
-import annotations.el.DefException;
-import annotations.el.InnerTypeLocation;
-import annotations.el.LocalLocation;
-import annotations.io.IndexFileParser;
-import annotations.io.IndexFileWriter;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
@@ -56,6 +41,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
+import scenelib.annotations.Annotation;
+import scenelib.annotations.el.AClass;
+import scenelib.annotations.el.ADeclaration;
+import scenelib.annotations.el.AElement;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.AScene;
+import scenelib.annotations.el.ATypeElement;
+import scenelib.annotations.el.AnnotationDef;
+import scenelib.annotations.el.BoundLocation;
+import scenelib.annotations.el.DefException;
+import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.LocalLocation;
+import scenelib.annotations.io.IndexFileParser;
+import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index

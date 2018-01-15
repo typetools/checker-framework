@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -43,6 +44,7 @@ class ArithmeticException extends RuntimeException {
      * Constructs an <code>ArithmeticException</code> with no detail
      * message.
      */
+    @SideEffectFree
     public ArithmeticException() {
         super();
     }
@@ -53,6 +55,7 @@ class ArithmeticException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public ArithmeticException(@Nullable String s) {
         super(s);
     }

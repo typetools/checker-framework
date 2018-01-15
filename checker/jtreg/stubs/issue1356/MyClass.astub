@@ -7,4 +7,8 @@ package mypackage;
 
 class MyClass {
    static @ArrayLen(1) @Regex(1) String toString(char c);
+   void method1(Object[] param);
+   void method2(Object[][] param);
+   void method3(Object[][][] param);
+   void method4(Object[][][][] param);
 }

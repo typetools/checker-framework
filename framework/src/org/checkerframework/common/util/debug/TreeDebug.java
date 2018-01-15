@@ -47,10 +47,10 @@ public class TreeDebug extends AbstractProcessor {
 
     public static class Visitor extends TreePathScanner<Void, Void> {
 
-        private final StringBuffer buf;
+        private final StringBuilder buf;
 
         public Visitor() {
-            buf = new StringBuffer();
+            buf = new StringBuilder();
         }
 
         @Override

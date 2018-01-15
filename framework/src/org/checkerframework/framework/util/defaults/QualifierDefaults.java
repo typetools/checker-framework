@@ -48,7 +48,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -390,7 +389,7 @@ public class QualifierDefaults {
             if (method != null) {
                 return method;
             } else {
-                return InternalUtils.symbol(tree);
+                return TreeUtils.elementFromTree(tree);
             }
         }
 
@@ -567,7 +566,7 @@ public class QualifierDefaults {
             if (elt.getKind() == ElementKind.PACKAGE) {
                 // elt.getEnclosingElement() on a package is null; therefore,
                 // use the dedicated method.
-                parent = ElementUtils.parentPackage(elements, (PackageElement) elt);
+                parent = ElementUtils.parentPackage((PackageElement) elt, elements);
             } else {
                 parent = elt.getEnclosingElement();
             }
@@ -623,7 +622,7 @@ public class QualifierDefaults {
 
         Element parent;
         if (elt.getKind() == ElementKind.PACKAGE) {
-            parent = ElementUtils.parentPackage(elements, (PackageElement) elt);
+            parent = ElementUtils.parentPackage((PackageElement) elt, elements);
         } else {
             parent = elt.getEnclosingElement();
         }

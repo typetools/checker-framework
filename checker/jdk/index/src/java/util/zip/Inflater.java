@@ -118,7 +118,7 @@ class Inflater {
      * @param len the length of the input data
      * @see Inflater#needsInput
      */
-    public void setInput(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
+    public void setInput(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
         if (b == null) {
             throw new NullPointerException();
         }
@@ -154,7 +154,7 @@ class Inflater {
      * @see Inflater#needsDictionary
      * @see Inflater#getAdler
      */
-    public void setDictionary(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
+    public void setDictionary(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
         if (b == null) {
             throw new NullPointerException();
         }
@@ -243,7 +243,7 @@ class Inflater {
      * @see Inflater#needsInput
      * @see Inflater#needsDictionary
      */
-    public @GTENegativeOne int inflate(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len)
+    public @GTENegativeOne int inflate(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len)
         throws DataFormatException
     {
         if (b == null) {
