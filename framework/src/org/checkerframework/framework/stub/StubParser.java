@@ -1794,19 +1794,20 @@ public class StubParser {
     ///
 
     /** Represents a class: its package name and simple name. */
-    private class FqName {
+    private static class FqName {
         /** Name of the package being parsed, or null. */
-        String packageName;
+        public String packageName;
 
         /** Name of the type being parsed. Includes outer class names if any. */
-        String className;
+        public String className;
 
-        FqName(String packageName, String className) {
+        public FqName(String packageName, String className) {
             this.packageName = packageName;
             this.className = className;
         }
 
         /** Fully-qualified name of the class. */
+        @Override
         public String toString() {
             if (packageName == null) {
                 return className;
