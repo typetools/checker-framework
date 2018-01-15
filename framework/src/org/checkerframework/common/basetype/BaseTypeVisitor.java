@@ -219,26 +219,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @SuppressWarnings("unchecked") // unchecked cast to type variable
     protected Factory createTypeFactory() {
-        // Try to reflectively load the type factory.
-        Class<?> checkerClass = checker.getClass();
-        while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "AnnotatedTypeFactory")
-                            .replace("Subchecker", "AnnotatedTypeFactory");
+        try {
+            // Try to reflectively load the type factory.
+            Class<?> checkerClass = checker.getClass();
+            while (checkerClass != BaseTypeChecker.class) {
+                final String classToLoad =
+                        checkerClass
+                                .getName()
+                                .replace("Checker", "AnnotatedTypeFactory")
+                                .replace("Subchecker", "AnnotatedTypeFactory");
 
-            AnnotatedTypeFactory result =
-                    BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
-                            new Class<?>[] {BaseTypeChecker.class},
-                            new Object[] {checker});
-            if (result != null) {
-                return (Factory) result;
+                AnnotatedTypeFactory result =
+                        BaseTypeChecker.invokeConstructorFor(
+                                classToLoad,
+                                new Class<?>[] {BaseTypeChecker.class},
+                                new Object[] {checker});
+                if (result != null) {
+                    return (Factory) result;
+                }
+                checkerClass = checkerClass.getSuperclass();
             }
-            checkerClass = checkerClass.getSuperclass();
+            return (Factory) new BaseAnnotatedTypeFactory(checker);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
         }
-        return (Factory) new BaseAnnotatedTypeFactory(checker);
     }
 
     public final Factory getTypeFactory() {
