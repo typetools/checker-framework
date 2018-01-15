@@ -1308,6 +1308,7 @@ public class StubParser {
         if (typeElement != null) {
             importedTypes.put(name, typeElement);
         }
+        // for debugging: stubWarn("getTypeElementOrNull(%s) => %s%n", name, typeElement);
         return typeElement;
     }
 
@@ -1451,18 +1452,20 @@ public class StubParser {
     }
 
     /**
-     * Returns the TypeElement with the fully-qualified name {@code name}, if one exists. Otherwise,
-     * checks the class and package of {@code parseState} for a class named {@code name}.
+     * Returns the TypeElement with the name {@code name}, if one exists. Otherwise, checks the
+     * class and package of {@code parseState} for a class named {@code name}.
      *
      * @param name classname (simple or fully-qualified)
      * @return the TypeElement for {@code name}, or null if not found
      */
     private /*@Nullable*/ TypeElement findTypeOfName(String name) {
         String packageName = parseState.packageName;
-        String enclosingClass = parseState.className;
+        String enclosingClass = parseState.toString();
 
         // As soon as typeElement is set to a non-null value, it will be returned.
         TypeElement typeElement = getTypeElementOrNull(name);
+        // TODO: this implementation is gross and should be revised; there is no need to parse
+        // enclosingClass (or to even create that fully-qualified name for the use of this loop).
         while (typeElement == null && !enclosingClass.equals(packageName)) {
             typeElement = getTypeElementOrNull(enclosingClass + "." + name);
             int lastDot = enclosingClass.lastIndexOf('.');
