@@ -436,7 +436,7 @@ public class StubParser {
         if (!cu.getPackageDeclaration().isPresent()) {
             packageName = null;
             packageAnnos = null;
-            parseState = new FqName(null, "IN COMPILATION UNIT");
+            parseState = new FqName(null, null);
         } else {
             PackageDeclaration pDecl = cu.getPackageDeclaration().get();
             packageName = pDecl.getNameAsString();
@@ -453,7 +453,7 @@ public class StubParser {
     private void processPackage(PackageDeclaration packDecl) {
         assert (packDecl != null);
         String packageName = packDecl.getNameAsString();
-        parseState = new FqName(packageName, "IN PACKAGE");
+        parseState = new FqName(packageName, null);
         Element elem = elements.getPackageElement(packageName);
         // If the element lookup fails, it's because we have an annotation for a
         // package that isn't on the classpath, which is fine.
@@ -1455,28 +1455,29 @@ public class StubParser {
      * Returns the TypeElement with the name {@code name}, if one exists. Otherwise, checks the
      * class and package of {@code parseState} for a class named {@code name}.
      *
-     * @param name classname (simple or fully-qualified)
+     * @param name classname (simple, or Outer.Inner, or fully-qualified)
      * @return the TypeElement for {@code name}, or null if not found
      */
     private /*@Nullable*/ TypeElement findTypeOfName(String name) {
         String packageName = parseState.packageName;
-        String enclosingClass = parseState.toString();
+        String packagePrefix = (packageName == null) ? "" : packageName + ".";
+
+        // stubWarn("findTypeOfName(%s), parseState %s %s%n", name, packageName, enclosingClass);
 
         // As soon as typeElement is set to a non-null value, it will be returned.
         TypeElement typeElement = getTypeElementOrNull(name);
-        // TODO: this implementation is gross and should be revised; there is no need to parse
-        // enclosingClass (or to even create that fully-qualified name for the use of this loop).
-        while (typeElement == null && !enclosingClass.equals(packageName)) {
-            typeElement = getTypeElementOrNull(enclosingClass + "." + name);
+        if (typeElement == null && packageName != null) {
+            typeElement = getTypeElementOrNull(packagePrefix + name);
+        }
+        String enclosingClass = parseState.className;
+        while (typeElement == null && enclosingClass != null) {
+            typeElement = getTypeElementOrNull(packagePrefix + enclosingClass + "." + name);
             int lastDot = enclosingClass.lastIndexOf('.');
             if (lastDot == -1) {
                 break;
             } else {
                 enclosingClass = enclosingClass.substring(0, lastDot);
             }
-        }
-        if (typeElement == null && !packageName.isEmpty()) {
-            typeElement = getTypeElementOrNull(packageName + "." + name);
         }
         if (typeElement == null && !"java.lang".equals(packageName)) {
             typeElement = getTypeElementOrNull("java.lang." + name);
