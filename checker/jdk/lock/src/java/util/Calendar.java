@@ -76,13 +76,13 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
   public abstract void add(@GuardSatisfied Calendar this, int a1, int a2);
   public abstract void roll(@GuardSatisfied Calendar this, int a1, boolean a2);
   public void roll(@GuardSatisfied Calendar this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public void setTimeZone(@GuardSatisfied Calendar this, @GuardSatisfied Calendar this, TimeZone a1) { throw new RuntimeException("skeleton method"); }
+  public void setTimeZone(@GuardSatisfied Calendar this, TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public TimeZone getTimeZone(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
-  public void setLenient(@GuardSatisfied Calendar this, @GuardSatisfied Calendar this, boolean a1) { throw new RuntimeException("skeleton method"); }
+  public void setLenient(@GuardSatisfied Calendar this, boolean a1) { throw new RuntimeException("skeleton method"); }
    public boolean isLenient(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
-  public void setFirstDayOfWeek(@GuardSatisfied Calendar this, @GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public void setFirstDayOfWeek(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
   public int getFirstDayOfWeek(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
-  public void setMinimalDaysInFirstWeek(@GuardSatisfied Calendar this, @GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public void setMinimalDaysInFirstWeek(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
   public int getMinimalDaysInFirstWeek(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
   public abstract int getMinimum(@GuardSatisfied Calendar this, int a1);
   public abstract int getMaximum(@GuardSatisfied Calendar this, int a1);
