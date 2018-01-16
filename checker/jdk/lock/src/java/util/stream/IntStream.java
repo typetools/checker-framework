@@ -70,7 +70,7 @@ public interface IntStream extends BaseStream<Integer,IntStream> {
     interface Builder extends IntConsumer {
         @Override
         void accept(int arg0);
-        Builder add(int arg0);
+        Builder add(@GuardSatisfied Builder this, int arg0);
         IntStream build();
     }
 }

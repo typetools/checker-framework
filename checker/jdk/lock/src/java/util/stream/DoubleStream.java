@@ -66,7 +66,7 @@ public interface DoubleStream extends BaseStream<Double,DoubleStream> {
     interface Builder extends DoubleConsumer {
         @Override
         void accept(double arg0);
-        Builder add(double arg0);
+        Builder add(@GuardSatisfied Builder this, double arg0);
         DoubleStream build();
     }
 }

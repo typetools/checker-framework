@@ -60,7 +60,7 @@ public interface Stream<T> extends BaseStream<T,Stream<T>> {
     interface Builder<T> extends Consumer<T> {
         @Override
         void accept(T arg0);
-        Builder<T> add(T arg0);
+        Builder<T> add(@GuardSatisfied Builder<E> this, T arg0);
         Stream<T> build();
     }
 

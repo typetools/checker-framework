@@ -1,5 +1,5 @@
 package java.util.function;
 
 public interface DoubleSupplier {
-    double getAsDouble();
+    double getAsDouble(@GuardSatisfied DoubleSupplier this);
 }

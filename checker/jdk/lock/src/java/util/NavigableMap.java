@@ -14,8 +14,8 @@ public interface NavigableMap<K extends Object, V extends Object> extends Sorted
   public abstract K higherKey(K a1);
   public abstract Map. Entry<K, V> firstEntry();
   public abstract Map. Entry<K, V> lastEntry();
-  public abstract Map. Entry<K, V> pollFirstEntry();
-  public abstract Map. Entry<K, V> pollLastEntry();
+  public abstract Map. Entry<K, V> pollFirstEntry(@GuardSatisfied NavigableMap<K, V> this);
+  public abstract Map. Entry<K, V> pollLastEntry(@GuardSatisfied NavigableMap<K, V> this);
   public abstract NavigableMap<K, V> descendingMap();
   public abstract NavigableSet<K> navigableKeySet();
   public abstract NavigableSet<K> descendingKeySet();
