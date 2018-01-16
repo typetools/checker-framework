@@ -242,7 +242,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return (Factory) new BaseAnnotatedTypeFactory(checker);
         } catch (Throwable t) {
             t.printStackTrace();
-            return null;
+            throw t;
         }
     }
 
