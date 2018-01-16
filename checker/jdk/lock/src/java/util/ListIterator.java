@@ -1,6 +1,8 @@
 package java.util;
 
 
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+
 public interface ListIterator<E extends Object> extends Iterator<E> {
   public abstract boolean hasNext();
   public abstract E next(@GuardSatisfied ListIterator<E> this);

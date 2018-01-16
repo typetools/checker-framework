@@ -1,5 +1,6 @@
 package java.util;
 
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import java.util.function.IntConsumer;
 
 public class IntSummaryStatistics implements IntConsumer {

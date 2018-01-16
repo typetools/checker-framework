@@ -2,6 +2,8 @@ package java.util;
 
 
 // permits null elements
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+
 public class Stack<E> extends Vector<E> {
   private static final long serialVersionUID = 0;
   public Stack() { throw new RuntimeException("skeleton method"); }

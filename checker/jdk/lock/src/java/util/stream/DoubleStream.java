@@ -1,5 +1,6 @@
 package java.util.stream;
 
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import java.util.DoubleSummaryStatistics;
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
