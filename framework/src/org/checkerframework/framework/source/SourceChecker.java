@@ -698,6 +698,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return swString.split(",");
     }
 
+    @Override
+    public void warn(String format, Object... args) {
+        String msg = String.format(format, args);
+        this.messager.printMessage(Kind.MANDATORY_WARNING, msg);
+    }
+
+    private Set<String> warnedBefore = new HashSet<>();
+
+    @Override
+    public void warnOnce(String format, Object... args) {
+        if (warnedBefore.add(String.format(format, args))) {
+            warn(format, args);
+        }
+    }
+
     /**
      * Exception type used only internally to abort processing. Only public to allow
      * tests.AnnotationBuilderTest; this class should be private.
