@@ -1399,7 +1399,7 @@
 
     <target name="download-jdk" description="Downloads jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
         <!-- See instructions for updating the jdk.jar at https://github.com/typetools/annotated-libraries/blob/master/README.jdk -->
-        <get src="https://github.com/typetools/annotated-libraries/raw/9f7a3361371e654678e79a974f3f01a6300664b8/jdk8.jar" dest="jdk/jdk8.jar"
+        <get src="https://github.com/typetools/annotated-libraries/raw/e8ffc1e9d23418dfba52ae615cd25affc5c16367/jdk8.jar" dest="jdk/jdk8.jar"
              usetimestamp="true"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
