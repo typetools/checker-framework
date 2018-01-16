@@ -14,7 +14,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
   public void set(@GuardSatisfied BitSet this, int a1, int a2, boolean a3) { throw new RuntimeException("skeleton method"); }
   public void clear(@GuardSatisfied BitSet this, int a1) { throw new RuntimeException("skeleton method"); }
   public void clear(@GuardSatisfied BitSet this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public void clear(@GuardSatisfied BitSet this, ) { throw new RuntimeException("skeleton method"); }
+  public void clear(@GuardSatisfied BitSet this) { throw new RuntimeException("skeleton method"); }
   public boolean get(@GuardSatisfied BitSet this, int a1) { throw new RuntimeException("skeleton method"); }
   public BitSet get(@GuardSatisfied BitSet this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public int nextSetBit(@GuardSatisfied BitSet this, int a1) { throw new RuntimeException("skeleton method"); }
