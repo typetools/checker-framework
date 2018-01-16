@@ -219,30 +219,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @SuppressWarnings("unchecked") // unchecked cast to type variable
     protected Factory createTypeFactory() {
-        try {
-            // Try to reflectively load the type factory.
-            Class<?> checkerClass = checker.getClass();
-            while (checkerClass != BaseTypeChecker.class) {
-                final String classToLoad =
-                        checkerClass
-                                .getName()
-                                .replace("Checker", "AnnotatedTypeFactory")
-                                .replace("Subchecker", "AnnotatedTypeFactory");
+        // Try to reflectively load the type factory.
+        Class<?> checkerClass = checker.getClass();
+        while (checkerClass != BaseTypeChecker.class) {
+            final String classToLoad =
+                    checkerClass
+                            .getName()
+                            .replace("Checker", "AnnotatedTypeFactory")
+                            .replace("Subchecker", "AnnotatedTypeFactory");
 
-                AnnotatedTypeFactory result =
-                        BaseTypeChecker.invokeConstructorFor(
-                                classToLoad,
-                                new Class<?>[] {BaseTypeChecker.class},
-                                new Object[] {checker});
-                if (result != null) {
-                    return (Factory) result;
-                }
-                checkerClass = checkerClass.getSuperclass();
+            AnnotatedTypeFactory result =
+                    BaseTypeChecker.invokeConstructorFor(
+                            classToLoad,
+                            new Class<?>[] {BaseTypeChecker.class},
+                            new Object[] {checker});
+            if (result != null) {
+                return (Factory) result;
             }
+            checkerClass = checkerClass.getSuperclass();
+        }
+        try {
             return (Factory) new BaseAnnotatedTypeFactory(checker);
         } catch (Throwable t) {
-            t.printStackTrace();
-            throw t;
+            ErrorReporter.errorAbort(
+                    "Unexpected "
+                            + t.getClass().getSimpleName()
+                            + " when invoking BaseAnnotatedTypeFactory for checker "
+                            + t.getClass().getSimpleName(),
+                    t);
+            return null; // dead code
         }
     }
 
