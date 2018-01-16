@@ -1129,7 +1129,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setLevel(@GuardSatisfied Logger this, @GuardSatisfied Logger this, Level newLevel) throws SecurityException { throw new RuntimeException(); }
+    public void setLevel(@GuardSatisfied Logger this, Level newLevel) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Get the log Level that has been specified for this Logger.
@@ -1198,7 +1198,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setUseParentHandlers(@GuardSatisfied Logger this, @GuardSatisfied Logger this, boolean useParentHandlers) { throw new RuntimeException(); }
+    public void setUseParentHandlers(@GuardSatisfied Logger this, boolean useParentHandlers) { throw new RuntimeException(); }
 
     /**
      * Discover whether or not this logger is sending its output

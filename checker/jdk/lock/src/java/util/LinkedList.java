@@ -32,7 +32,7 @@ public class LinkedList<E extends Object> extends AbstractSequentialList<E> impl
   public E peek() { throw new RuntimeException("skeleton method"); }
   public E element() { throw new RuntimeException("skeleton method"); }
   public E poll(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
-  public E remove(@GuardSatisfied LinkedList<E> this, @GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
+  public E remove(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
   public boolean offer(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean offerFirst(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean offerLast(E a1) { throw new RuntimeException("skeleton method"); }
