@@ -3,6 +3,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("type.inference.not.same")
 class TestInfer1 {
     <T> T getValue(List<T> l) {
         return l.get(0);
@@ -16,6 +17,7 @@ class TestInfer1 {
     }
 }
 
+@SuppressWarnings("type.inference.not.same")
 class TestInfer2 {
     <T extends String> T getValue(List<T> l) {
         return l.get(0);

@@ -3,6 +3,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("type.inference.not.same")
 class TestInfer {
     <T extends Object> T getValue(List<T> l) {
         return l.get(0);

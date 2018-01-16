@@ -10,14 +10,18 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -469,8 +473,27 @@ public final class TypesUtils {
         return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
     }
 
+    public static boolean isUnboundWildcard(TypeMirror type) {
+        return type.getKind() == TypeKind.WILDCARD && ((Type.WildcardType) type).isUnbound();
+    }
+
+    public static boolean isExtendsBoundWildcard(TypeMirror type) {
+        return type.getKind() == TypeKind.WILDCARD
+                && !isUnboundWildcard(type)
+                && ((Type.WildcardType) type).isExtendsBound();
+    }
+
+    public static boolean isSuperBoundWildcard(TypeMirror type) {
+        return type.getKind() == TypeKind.WILDCARD
+                && !isUnboundWildcard(type)
+                && ((Type.WildcardType) type).isSuperBound();
+    }
+
     /** Returns whether a TypeVariable represents a captured type. */
-    public static boolean isCaptured(TypeVariable typeVar) {
+    public static boolean isCaptured(TypeMirror typeVar) {
+        if (typeVar.getKind() != TypeKind.TYPEVAR) {
+            return false;
+        }
         return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
     }
 
@@ -650,5 +673,134 @@ public final class TypesUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
         return javacTypes.isFunctionalInterface((Type) type);
+    }
+
+    /**
+     * TThis method returns the single abstract method declared by {@code functionalInterfaceType}.
+     * (The type of this method is referred to as the function type.)
+     *
+     * @param functionalInterfaceType functional interface
+     * @param env ProcessingEnvironment
+     * @return the single abstract method declared by the type of the tree
+     */
+    public static ExecutableElement findFunction(
+            TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return (ExecutableElement)
+                javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+    }
+
+    /**
+     * This method eturns the single abstract method declared by {@code functionalInterfaceType}.
+     * (The type of this method is referred to as the function type.)
+     *
+     * @param functionalInterfaceType functional interface
+     * @param env ProcessingEnvironment
+     * @return the single abstract method declared by the type of the tree
+     */
+    public static ExecutableType findFunctionType(
+            TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return (ExecutableType) javacTypes.findDescriptorType((Type) functionalInterfaceType);
+    }
+
+    /** @return whether or not {@code type} is raw */
+    public static boolean isRaw(TypeMirror type) {
+        if (type.getKind() == TypeKind.DECLARED) {
+            TypeElement typeelem = (TypeElement) ((DeclaredType) type).asElement();
+            DeclaredType declty = (DeclaredType) typeelem.asType();
+            return !declty.getTypeArguments().isEmpty()
+                    && ((DeclaredType) type).getTypeArguments().isEmpty();
+        }
+        return false;
+    }
+
+    /**
+     * Returns the most specific super type of {@code type} that is an array or null if {@code type}
+     * is not a subtype of an array.
+     */
+    public static TypeMirror getMostSpecificArrayType(TypeMirror type, Types types) {
+        if (type.getKind() == TypeKind.ARRAY) {
+            return type;
+        } else {
+            for (TypeMirror superType : types.directSupertypes(type)) {
+                TypeMirror arrayType = getMostSpecificArrayType(superType, types);
+                if (arrayType != null) {
+                    return arrayType;
+                }
+            }
+            return null;
+        }
+    }
+
+    /** @return whether {@code type} is a parameterized type. */
+    public static boolean isParameterizedType(TypeMirror type) {
+        return ((Type) type).isParameterized();
+    }
+
+    /**
+     * @return true if {@code typeMirror} is a declared type with at least on wildcard as a type
+     *     argument
+     */
+    public static boolean isWildcardParameterized(TypeMirror typeMirror) {
+        if (isParameterizedType(typeMirror) && typeMirror.getKind() == TypeKind.DECLARED) {
+            for (TypeMirror t : ((DeclaredType) typeMirror).getTypeArguments()) {
+                if (t.getKind() == TypeKind.WILDCARD) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a new type mirror with the same type as {@code type} where all the type variables in
+     * {@code typeVariables} have been substituted with the type arguments in {@code typeArgs}.
+     *
+     * <p>This is a wrapper around {@link com.sun.tools.javac.code.Types#subst(Type,
+     * com.sun.tools.javac.util.List, com.sun.tools.javac.util.List)}
+     *
+     * @return a new type mirror with the same type as {@code type} where all the type variables in
+     *     {@code typeVariables} have been substituted with the type arguments in {@code typeArgs}.
+     */
+    public static TypeMirror substitute(
+            TypeMirror type,
+            List<? extends TypeVariable> typeVariables,
+            List<? extends TypeMirror> typeArgs,
+            ProcessingEnvironment env) {
+
+        List<Type> newP = new ArrayList<>();
+        for (TypeVariable typeVariable : typeVariables) {
+            newP.add((Type) typeVariable);
+        }
+
+        List<Type> newT = new ArrayList<>();
+        for (TypeMirror typeMirror : typeArgs) {
+            newT.add((Type) typeMirror);
+        }
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+        return types.subst(
+                (Type) type,
+                com.sun.tools.javac.util.List.from(newP),
+                com.sun.tools.javac.util.List.from(newT));
+    }
+
+    /**
+     * Creates a wildcard with the given bounds. If upper bound is Object, then the created wildcard
+     * will not have an upper bound.
+     */
+    public static TypeMirror createWildcard(
+            TypeMirror lowerBound, TypeMirror upperBound, Types types) {
+        if (isObject(upperBound)) {
+            upperBound = null;
+        }
+
+        assert lowerBound == null || upperBound == null;
+        WildcardType wildcardType = types.getWildcardType(upperBound, lowerBound);
+        return com.sun.tools.javac.util.List.of((Type) wildcardType).head;
     }
 }
