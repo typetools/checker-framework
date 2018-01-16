@@ -1,5 +1,7 @@
 package java.util;
 
+import org.checkerframework.checker.lock.qual.*;
+
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
