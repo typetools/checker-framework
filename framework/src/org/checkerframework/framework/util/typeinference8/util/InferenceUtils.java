@@ -7,6 +7,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -72,7 +73,9 @@ public class InferenceUtils {
                 return assignedToExecutable(
                         path, newClassTree, newClassTree.getArguments(), context);
             case NEW_ARRAY:
-                throw new RuntimeException("Not implement");
+                NewArrayTree newArrayTree = (NewArrayTree) assignmentContext;
+                ArrayType arrayType = (ArrayType) TreeUtils.typeOf(newArrayTree);
+                return arrayType.getComponentType();
             case RETURN:
                 HashSet<Kind> kinds =
                         new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
