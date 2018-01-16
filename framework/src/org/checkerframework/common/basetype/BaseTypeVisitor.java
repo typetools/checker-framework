@@ -245,7 +245,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     "Unexpected "
                             + t.getClass().getSimpleName()
                             + " when invoking BaseAnnotatedTypeFactory for checker "
-                            + t.getClass().getSimpleName(),
+                            + checker.getClass().getSimpleName(),
                     t);
             return null; // dead code
         }
