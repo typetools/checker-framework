@@ -1,3 +1,5 @@
+// warning: Interpreting @com.sun.istack.internal.NotNull as a type annotation on an array component type.
+// warning: Interpreting @javax.annotation.CheckForNull as a type annotation on an array component type.
 import javax.annotation.CheckForNull;
 
 class Issue1667 {
