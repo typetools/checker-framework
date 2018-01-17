@@ -639,12 +639,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 node, getCurrentPath(), checker.getContext());
             }
 
-            DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
-            if (dependentTypesHelper != null) {
-                annotation =
-                        dependentTypesHelper.standardizeAnnotation(
-                                flowExprContext, getCurrentPath(), annotation, false);
-            }
+            annotation =
+                    standardizeAnnotationFromContract(
+                            annotation, flowExprContext, getCurrentPath());
 
             FlowExpressions.Receiver expr = null;
             try {
@@ -687,6 +684,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
+        }
+    }
+
+    /** Standardize a type qualifier annotation obtained from a contract. */
+    private AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            FlowExpressionContext flowExprContext,
+            TreePath path) {
+        DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            return dependentTypesHelper.standardizeAnnotation(
+                    flowExprContext, path, annoFromContract, false);
+        } else {
+            return annoFromContract;
         }
     }
 
@@ -1082,12 +1093,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
 
-            DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
-            if (dependentTypesHelper != null) {
-                anno =
-                        dependentTypesHelper.standardizeAnnotation(
-                                flowExprContext, getCurrentPath(), anno, false);
-            }
+            anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
 
             try {
                 FlowExpressions.Receiver expr =
@@ -3208,12 +3214,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 checker.getContext());
             }
 
-            DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
-            if (dependentTypesHelper != null) {
-                annotation =
-                        dependentTypesHelper.standardizeAnnotation(
-                                flowExprContext, path, annotation, false);
-            }
+            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, path);
 
             try {
                 // TODO: currently, these expressions are parsed many times.

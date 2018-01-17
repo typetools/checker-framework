@@ -520,11 +520,7 @@ public abstract class CFAbstractTransfer<
 
             TreePath localScope = analysis.atypeFactory.getPath(methodTree);
 
-            if (analysis.dependentTypesHelper != null) {
-                annotation =
-                        analysis.dependentTypesHelper.standardizeAnnotation(
-                                flowExprContext, localScope, annotation, false);
-            }
+            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, localScope);
 
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -538,6 +534,19 @@ public abstract class CFAbstractTransfer<
             } catch (FlowExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
             }
+        }
+    }
+
+    /** Standardize a type qualifier annotation obtained from a contract. */
+    private AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            FlowExpressionContext flowExprContext,
+            TreePath path) {
+        if (analysis.dependentTypesHelper != null) {
+            return analysis.dependentTypesHelper.standardizeAnnotation(
+                    flowExprContext, path, annoFromContract, false);
+        } else {
+            return annoFromContract;
         }
     }
 
@@ -1009,11 +1018,7 @@ public abstract class CFAbstractTransfer<
 
             TreePath localScope = analysis.atypeFactory.getPath(tree);
 
-            if (analysis.dependentTypesHelper != null) {
-                anno =
-                        analysis.dependentTypesHelper.standardizeAnnotation(
-                                flowExprContext, localScope, anno, false);
-            }
+            anno = standardizeAnnotationFromContract(anno, flowExprContext, localScope);
 
             try {
                 FlowExpressions.Receiver r =
