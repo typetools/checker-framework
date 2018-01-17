@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -45,7 +44,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -56,7 +54,6 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -73,14 +70,8 @@ public class NullnessAnnotatedTypeFactory
     /** Annotation constants */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
 
-    /** Dependent types instance. */
-    protected final DependentTypes dependentTypes;
-
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
-
-    /** Factory for arbitrary qualifiers, used for declarations and "unused" qualifier. */
-    protected final GeneralAnnotatedTypeFactory generalFactory;
 
     /** Cache for the nullness annotations */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
@@ -156,12 +147,6 @@ public class NullnessAnnotatedTypeFactory
                 org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class,
                 MONOTONIC_NONNULL);
 
-        // TODO: These heuristics are just here temporarily. They all either
-        // need to be replaced, or carefully checked for correctness.
-        generalFactory = new GeneralAnnotatedTypeFactory(checker);
-        // Alias the same generalFactory below and ensure that setRoot updates it.
-        dependentTypes = new DependentTypes(checker, generalFactory);
-
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
 
         postInit();
@@ -204,20 +189,6 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    @Override
-    public void setRoot(CompilationUnitTree root) {
-        generalFactory.setRoot(root);
-        super.setRoot(root);
-    }
-
-    // handle dependent types
-    @Override
-    protected void addComputedTypeAnnotations(
-            Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-        super.addComputedTypeAnnotations(tree, type, useFlow);
-        dependentTypes.handle(tree, type);
-    }
-
     /**
      * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or {@link
      * PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis has determined
@@ -243,17 +214,6 @@ public class NullnessAnnotatedTypeFactory
                 lhsType.replaceAnnotation(NULLABLE);
             }
         }
-    }
-
-    // handle dependent types
-    @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
-            NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse =
-                super.constructorFromUse(tree);
-        AnnotatedExecutableType constructor = fromUse.first;
-        dependentTypes.handleConstructor(tree, generalFactory.getAnnotatedType(tree), constructor);
-        return fromUse;
     }
 
     @Override

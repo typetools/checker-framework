@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type;
+package org.checkerframework.common.util.debug;
 
 /*>>>
 import org.checkerframework.checker.interning.qual.*;
@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
