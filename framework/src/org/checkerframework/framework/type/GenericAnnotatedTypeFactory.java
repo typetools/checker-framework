@@ -226,7 +226,7 @@ public abstract class GenericAnnotatedTypeFactory<
         super.postInit();
 
         this.dependentTypesHelper = createDependentTypesHelper();
-        this.defaults = createQualifierDefaults();
+        this.defaults = createAndInitQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
 
@@ -497,8 +497,8 @@ public abstract class GenericAnnotatedTypeFactory<
     // Both methods should have some functionality merged into a single location.
     // See Issue 683
     // https://github.com/typetools/checker-framework/issues/683
-    protected final QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults defs = new QualifierDefaults(elements, this);
+    protected final QualifierDefaults createAndInitQualifierDefaults() {
+        QualifierDefaults defs = createQualifierDefaults();
         addCheckedCodeDefaults(defs);
         addCheckedStandardDefaults(defs);
         addUncheckedCodeDefaults(defs);
@@ -506,6 +506,10 @@ public abstract class GenericAnnotatedTypeFactory<
         checkForDefaultQualifierInHierarchy(defs);
 
         return defs;
+    }
+
+    protected QualifierDefaults createQualifierDefaults() {
+        return new QualifierDefaults(elements, this);
     }
 
     /** Defines alphabetical sort ordering for qualifiers */
