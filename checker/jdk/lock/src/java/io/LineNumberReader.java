@@ -106,7 +106,7 @@ public class LineNumberReader extends BufferedReader {
      *
      * @see #setLineNumber
      */
-    public int getLineNumber() {
+    public int getLineNumber(@GuardSatisfied LineNumberReader this) {
         return lineNumber;
     }
 
