@@ -788,6 +788,14 @@
         -->
     </target>
 
+    <!-- Whereas "dist" just makes the framework distribution, dist-nobuildjdk
+         makes the checker distribution too. -->
+    <target name="dist-nobuildjdk"
+            description="Rebuild the framework, then rebuild checker without rebuilding the JDK">
+        <ant dir="..">
+            <target name="dist-nobuildjdk"/>
+        </ant>
+    </target>
 
     <!-- These depend on checker project being built already. -->
 

@@ -27,13 +27,13 @@
 
   <target name="dist-nobuildjdk"
           description="Rebuild the framework.  Rebuild checker on top of framework without rebuilding the JDK">
-      <ant dir="framework">
-          <target name="clean"/>
-          <target name="dist"/>
-      </ant>
-      <ant dir="checker">
-          <target name="dist-nobuildjdk"/>
-      </ant>
+    <ant dir="framework">
+      <target name="clean"/>
+      <target name="dist"/>
+    </ant>
+    <ant dir="checker">
+      <target name="dist-nobuildjdk"/>
+    </ant>
   </target>
 
   <target name="build"
