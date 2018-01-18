@@ -14,6 +14,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -2487,7 +2488,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // This doesn't get the correct type for a "MyOuter.super" based on the receiver of the
         // enclosing method.
         // That is handled separately in method receiver check.
-        // TODO: Class type argument inference
         AnnotatedTypeMirror overridingType =
                 atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
 
@@ -2495,6 +2495,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // The ::method element
         ExecutableElement overridingElement =
                 (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
+        if (!ElementUtils.isStatic(overridingElement)
+                && overridingType.getKind() == TypeKind.DECLARED
+                && ((AnnotatedDeclaredType) overridingType).wasRaw()) {
+            if (memberReferenceTree.getMode() == ReferenceMode.INVOKE) {
+                AnnotatedTypeMirror p1 = overriddenMethodType.getParameterTypes().get(0);
+                TypeMirror asSuper =
+                        TypesUtils.asSuper(
+                                p1.getUnderlyingType(),
+                                overridingType.getUnderlyingType(),
+                                atypeFactory.getProcessingEnv());
+                if (asSuper != null) {
+                    overridingType = AnnotatedTypes.asSuper(atypeFactory, p1, overridingType);
+                }
+            }
+            // else method reference is something like ArrayList::new
+            // TODO: Use diamond, <>, inference to infer the class type arguments.
+            // for now this case is skipped below in checkMethodReferenceInference.
+        }
+
         AnnotatedExecutableType overridingMethodType =
                 atypeFactory.methodFromUse(memberReferenceTree, overridingElement, overridingType)
                         .first;
@@ -2572,18 +2591,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                 requiresInference = true;
             } else if (overridingType.getKind() == TypeKind.DECLARED
-                    && ((AnnotatedDeclaredType) overridingType).getTypeArguments().size() > 0) {
+                    && ((AnnotatedDeclaredType) overridingType).wasRaw()) {
                 // Class type args
-
-                if (memberReferenceTree.getQualifierExpression().getKind()
-                        != Tree.Kind.PARAMETERIZED_TYPE) {
-                    requiresInference = true;
-                } else if (((AnnotatedDeclaredType) overridingType).getTypeArguments().size()
-                        != ((ParameterizedTypeTree) memberReferenceTree.getQualifierExpression())
-                                .getTypeArguments()
-                                .size()) {
-                    requiresInference = true;
-                }
+                requiresInference = true;
             }
             if (requiresInference) {
                 if (checker.hasOption("conservativeUninferredTypeArguments")) {
