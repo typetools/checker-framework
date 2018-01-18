@@ -179,7 +179,6 @@ public class Expression extends Constraint {
         if (compileTimeDecl.getReturnType().getKind() == TypeKind.VOID) {
             return ConstraintSet.TRUE;
         }
-        ExecutableType funcType = TypesUtils.findFunctionType(T.getJavaType(), context.env);
         AbstractType r = T.getFunctionTypeReturnType();
         if (r.getTypeKind() == TypeKind.VOID) {
             return ConstraintSet.TRUE;
