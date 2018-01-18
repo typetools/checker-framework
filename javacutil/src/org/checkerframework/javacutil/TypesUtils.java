@@ -692,7 +692,7 @@ public final class TypesUtils {
     }
 
     /**
-     * This method eturns the single abstract method declared by {@code functionalInterfaceType}.
+     * This method returns the single abstract method declared by {@code functionalInterfaceType}.
      * (The type of this method is referred to as the function type.)
      *
      * @param functionalInterfaceType functional interface
