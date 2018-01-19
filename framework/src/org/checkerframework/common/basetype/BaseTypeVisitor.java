@@ -33,6 +33,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.SuppressWarnings;
@@ -2498,7 +2500,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // This doesn't get the correct type for a "MyOuter.super" based on the receiver of the
         // enclosing method.
         // That is handled separately in method receiver check.
-        // TODO: Class type argument inference
 
         // The type of from  <expression>::method or <type use>::method.
         AnnotatedTypeMirror type =
@@ -2508,6 +2509,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // The ::method element
         ExecutableElement compileTimeDeclaration =
                 (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
+
+        if (type.getKind() == TypeKind.DECLARED && ((AnnotatedDeclaredType) type).wasRaw()) {
+            if (((JCMemberReference) memberReferenceTree).kind == ReferenceKind.UNBOUND) {
+                // The method reference is of the form :Type # instMethod
+                // and Type is a raw type.
+                // If the first parameter of the function type, p1, is a subtype
+                // of type, then type should be p1.  This has the effect of "infering" the
+                // class type parameter.
+                AnnotatedTypeMirror p1 = functionType.getParameterTypes().get(0);
+                TypeMirror asSuper =
+                        TypesUtils.asSuper(
+                                p1.getUnderlyingType(),
+                                type.getUnderlyingType(),
+                                atypeFactory.getProcessingEnv());
+                if (asSuper != null) {
+                    type = AnnotatedTypes.asSuper(atypeFactory, p1, type);
+                }
+            }
+            // else method reference is something like ArrayList::new
+            // TODO: Use diamond, <>, inference to infer the class type arguments.
+            // for now this case is skipped below in checkMethodReferenceInference.
+        }
 
         // They type of the compileTimeDeclaration if it were invoked with a receiver expression
         // of type {@code type}
@@ -2588,18 +2611,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                 requiresInference = true;
             } else if (overridingType.getKind() == TypeKind.DECLARED
-                    && ((AnnotatedDeclaredType) overridingType).getTypeArguments().size() > 0) {
+                    && ((AnnotatedDeclaredType) overridingType).wasRaw()) {
                 // Class type args
-
-                if (memberReferenceTree.getQualifierExpression().getKind()
-                        != Tree.Kind.PARAMETERIZED_TYPE) {
-                    requiresInference = true;
-                } else if (((AnnotatedDeclaredType) overridingType).getTypeArguments().size()
-                        != ((ParameterizedTypeTree) memberReferenceTree.getQualifierExpression())
-                                .getTypeArguments()
-                                .size()) {
-                    requiresInference = true;
-                }
+                requiresInference = true;
             }
             if (requiresInference) {
                 if (checker.hasOption("conservativeUninferredTypeArguments")) {
