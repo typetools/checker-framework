@@ -12,30 +12,32 @@ class ParametersInBodyGenerics {
         void method(@NonNull List<String> s);
     }
 
-    // :: error: (dereference.of.nullable)
-    NullableConsumer fn0 = (List<String> i) -> i.get(0).toString();
-    NullableConsumer fn2 =
-            (List<@Nullable String> i) -> {
-                // :: error: (dereference.of.nullable)
-                i.get(0).toString();
-            };
-    NullableConsumer fn3 =
-            (List<String> i) -> {
-                // :: error: (dereference.of.nullable)
-                i.get(0).toString();
-            };
-    NullableConsumer fn3b =
-            (i) -> {
-                // :: error: (dereference.of.nullable)
-                i.get(0).toString();
-            };
+    void test() {
+        // :: error: (lambda.param.type.incompatible)
+        NullableConsumer fn0 = (List<String> i) -> i.get(0).toString();
+        NullableConsumer fn2 =
+                (List<@Nullable String> i) -> {
+                    // :: error: (dereference.of.nullable)
+                    i.get(0).toString();
+                };
+        NullableConsumer fn3 =
+                // :: error: (lambda.param.type.incompatible)
+                (List<String> i) -> {
+                    i.get(0).toString();
+                };
+        NullableConsumer fn3b =
+                (i) -> {
+                    // :: error: (dereference.of.nullable)
+                    i.get(0).toString();
+                };
 
-    NonNullConsumer fn4 =
-            (List<String> i) -> {
-                i.get(0).toString();
-            };
-    NonNullConsumer fn4b =
-            (i) -> {
-                i.get(0).toString();
-            };
+        NonNullConsumer fn4 =
+                (List<String> i) -> {
+                    i.get(0).toString();
+                };
+        NonNullConsumer fn4b =
+                (i) -> {
+                    i.get(0).toString();
+                };
+    }
 }

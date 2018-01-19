@@ -112,6 +112,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                 // The parameter has a declared type that may or may not have annotations.
                 // If it does not have an annotation for a hierarchy, then copy the annotation from
                 // the function type rather than use usual defaulting rules.
+                // Note lambdaParam is a super type of funcTypeParam, so only primary annotations
+                // can be copied.
                 lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
                 return lambdaParam;
             }
