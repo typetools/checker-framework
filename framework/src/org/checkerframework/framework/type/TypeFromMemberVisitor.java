@@ -109,7 +109,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                 return lambdaParam;
 
             } else {
-                // The parameter has a declared type that may or may not have annotations.
+                // The lambda expressions is explicitly type, so the parameters have declared types:
+                // (String s) -> ...
+                // The declared type that may or may not have explicit annotations.
                 // If it does not have an annotation for a hierarchy, then copy the annotation from
                 // the function type rather than use usual defaulting rules.
                 // Note lambdaParam is a super type of funcTypeParam, so only primary annotations
