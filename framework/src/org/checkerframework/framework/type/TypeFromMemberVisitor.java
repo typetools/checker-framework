@@ -7,11 +7,14 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Converts a field or methods tree into an AnnotatedTypeMirror
@@ -30,7 +33,10 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         // Add primary annotations
         Element elt = TreeUtils.elementFromDeclaration(node);
         ElementAnnotationApplier.apply(result, elt, f);
-        inferLambdaParamAnnotations(f, result, elt);
+        AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
+        if (lambdaParamType != null) {
+            return lambdaParamType;
+        }
         return result;
 
         /* An alternative I played around with. It unfortunately
@@ -71,13 +77,17 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         return result;
     }
 
-    private static void inferLambdaParamAnnotations(
-            AnnotatedTypeFactory f, AnnotatedTypeMirror result, Element paramElement) {
-        if (f.declarationFromElement(paramElement) == null
+    /**
+     * @return the type of the lambda parameter or null if paramElement is not a lambda parameter
+     */
+    private static AnnotatedTypeMirror inferLambdaParamAnnotations(
+            AnnotatedTypeFactory f, AnnotatedTypeMirror lambdaParam, Element paramElement) {
+        if (paramElement.getKind() != ElementKind.PARAMETER
+                || f.declarationFromElement(paramElement) == null
                 || f.getPath(f.declarationFromElement(paramElement)) == null
                 || f.getPath(f.declarationFromElement(paramElement)).getParentPath() == null) {
 
-            return;
+            return null;
         }
         Tree declaredInTree =
                 f.getPath(f.declarationFromElement(paramElement)).getParentPath().getLeaf();
@@ -86,10 +96,26 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
             Pair<AnnotatedDeclaredType, AnnotatedExecutableType> res =
                     f.getFnInterfaceFromTree(lambdaDecl);
-            AnnotatedExecutableType fnMethod = res.second;
-            AnnotatedTypeMirror declaredParam = fnMethod.getParameterTypes().get(index);
-            // TODO: Should we infer nested types (e.g. List<@x String>)
-            result.addMissingAnnotations(declaredParam.getAnnotations());
+            AnnotatedExecutableType functionType = res.second;
+            AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
+            if (TreeUtils.isImplicitlyTypeLambda(declaredInTree)) {
+                if (TypesUtils.isErasedSubtype(
+                        funcTypeParam.actualType, lambdaParam.actualType, f.types)) {
+                    // The Java types should be exactly the same, but because invocation type inferece
+                    // (#979) isn't implement, check first.
+                    return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
+                }
+                lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
+                return lambdaParam;
+
+            } else {
+                // The parameter has a declared type that may or may not have annotations.
+                // If it does not have an annotation for a hierarchy, then copy the annotation from
+                // the function type rather than use usual defaulting rules.
+                lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
+                return lambdaParam;
+            }
         }
+        return null;
     }
 }
