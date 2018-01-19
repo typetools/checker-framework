@@ -14,6 +14,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -2537,8 +2538,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invocationType =
                 atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, type).first;
 
-        if (checkMethodReferenceInference(
-                memberReferenceTree, invocationType, functionType, type)) {
+        if (checkMethodReferenceInference(memberReferenceTree, invocationType, type)) {
             // Type argument inference is required, skip check.
             // #checkMethodReferenceInference issued a warning.
             return true;
@@ -2593,36 +2593,34 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** Check if method reference type argument inference is required. Issue an error if it is. */
     private boolean checkMethodReferenceInference(
             MemberReferenceTree memberReferenceTree,
-            AnnotatedExecutableType memberReferenceType,
-            AnnotatedExecutableType overridden,
-            AnnotatedTypeMirror overridingType) {
+            AnnotatedExecutableType invocationType,
+            AnnotatedTypeMirror type) {
         // TODO: Issue #802
         // TODO: https://github.com/typetools/checker-framework/issues/802
         // TODO: Method type argument inference
         // TODO: Enable checks for method reference with inferred type arguments.
         // For now, error on mismatch of class or method type arguments.
-        if (overridden.getTypeVariables().size() == 0) {
-            boolean requiresInference = false;
-            // The functional interface does not have any method type parameters
-            if (memberReferenceType.getTypeVariables().size() > 0
-                    && (memberReferenceTree.getTypeArguments() == null
-                            || memberReferenceTree.getTypeArguments().size() == 0)) {
-                // Method type args
-
-                requiresInference = true;
-            } else if (overridingType.getKind() == TypeKind.DECLARED
-                    && ((AnnotatedDeclaredType) overridingType).wasRaw()) {
+        boolean requiresInference = false;
+        // If the function to which the member reference refers is generic, but the member
+        // reference does not provide method type arguments, then java 8 inference is required.
+        // Issue 979.
+        if (invocationType.getTypeVariables().size() > 0
+                && (memberReferenceTree.getTypeArguments() == null
+                        || memberReferenceTree.getTypeArguments().size() == 0)) {
+            // Method type args
+            requiresInference = true;
+        } else if (memberReferenceTree.getMode() == ReferenceMode.NEW) {
+            if (type.getKind() == TypeKind.DECLARED && ((AnnotatedDeclaredType) type).wasRaw()) {
                 // Class type args
                 requiresInference = true;
             }
-            if (requiresInference) {
-                if (checker.hasOption("conservativeUninferredTypeArguments")) {
-                    checker.report(
-                            Result.warning("methodref.inference.unimplemented"),
-                            memberReferenceTree);
-                }
-                return true;
+        }
+        if (requiresInference) {
+            if (checker.hasOption("conservativeUninferredTypeArguments")) {
+                checker.report(
+                        Result.warning("methodref.inference.unimplemented"), memberReferenceTree);
             }
+            return true;
         }
         return false;
     }
