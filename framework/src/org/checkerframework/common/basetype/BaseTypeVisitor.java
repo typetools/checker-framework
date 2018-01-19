@@ -2489,75 +2489,81 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
                 atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
-        AnnotatedDeclaredType overriddenType = result.first;
-        AnnotatedExecutableType overriddenMethodType = result.second;
+        // The type to which the member reference is a assigned -- also known as the target type of the reference.
+        AnnotatedDeclaredType functionalInterface = result.first;
+        // The type of the single method in declared by the functional interface.
+        AnnotatedExecutableType functionType = result.second;
 
         // ========= Overriding Type =========
-        // Get declared type from <expression>::method or <type use>::method
         // This doesn't get the correct type for a "MyOuter.super" based on the receiver of the
         // enclosing method.
         // That is handled separately in method receiver check.
         // TODO: Class type argument inference
-        AnnotatedTypeMirror overridingType =
+
+        // The type of from  <expression>::method or <type use>::method.
+        AnnotatedTypeMirror type =
                 atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
 
         // ========= Overriding Executable =========
         // The ::method element
-        ExecutableElement overridingElement =
+        ExecutableElement compileTimeDeclaration =
                 (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
-        AnnotatedExecutableType overridingMethodType =
-                atypeFactory.methodFromUse(memberReferenceTree, overridingElement, overridingType)
-                        .first;
+
+        // They type of the compileTimeDeclaration if it were invoked with a receiver expression
+        // of type {@code type}
+        AnnotatedExecutableType invocationType =
+                atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, type).first;
 
         if (checkMethodReferenceInference(
-                memberReferenceTree, overridingMethodType, overriddenMethodType, overridingType)) {
+                memberReferenceTree, invocationType, functionType, type)) {
             // Type argument inference is required, skip check.
             // #checkMethodReferenceInference issued a warning.
             return true;
         }
 
-        // This needs to be done before overridingMethodType.getReturnType() and
-        // overriddenMethodType.getReturnType()
-        if (overridingMethodType.getTypeVariables().isEmpty()
-                && !overriddenMethodType.getTypeVariables().isEmpty()) {
-            overriddenMethodType = overriddenMethodType.getErased();
+        // This needs to be done before invocationType.getReturnType() and
+        // functionType.getReturnType()
+        if (invocationType.getTypeVariables().isEmpty()
+                && !functionType.getTypeVariables().isEmpty()) {
+            functionType = functionType.getErased();
         }
 
-        // Use the functional interface's parameters to resolve poly quals.
+        // Use the function type's parameters to resolve polymorpich qualifiers.
         QualifierPolymorphism poly =
                 new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
-        poly.annotate(overriddenMethodType, overridingMethodType);
+        poly.annotate(functionType, invocationType);
 
-        AnnotatedTypeMirror overridingReturnType;
-        if (overridingElement.getKind() == ElementKind.CONSTRUCTOR) {
-            if (overridingType.getKind() == TypeKind.ARRAY) {
+        AnnotatedTypeMirror invocationReturnType;
+        if (compileTimeDeclaration.getKind() == ElementKind.CONSTRUCTOR) {
+            if (type.getKind() == TypeKind.ARRAY) {
                 // Special casing for the return of array constructor
-                overridingReturnType = overridingType;
+                invocationReturnType = type;
             } else {
-                overridingReturnType =
+                invocationReturnType =
                         atypeFactory.getResultingTypeOfConstructorMemberReference(
-                                memberReferenceTree, overridingMethodType);
+                                memberReferenceTree, invocationType);
             }
         } else {
-            overridingReturnType = overridingMethodType.getReturnType();
+            invocationReturnType = invocationType.getReturnType();
         }
 
-        AnnotatedTypeMirror overriddenReturnType = overriddenMethodType.getReturnType();
-        if (overriddenReturnType.getKind() == TypeKind.VOID) {
+        AnnotatedTypeMirror functionTypeReturnType = functionType.getReturnType();
+        if (functionTypeReturnType.getKind() == TypeKind.VOID) {
             // If the functional interface return type is void, the overriding return
             // type doesn't matter.
-            overriddenReturnType = overridingReturnType;
+            functionTypeReturnType = invocationReturnType;
         }
 
+        // Check the member reference as if invocationType overrides functionType.
         OverrideChecker overrideChecker =
                 createOverrideChecker(
                         memberReferenceTree,
-                        overridingMethodType,
-                        overridingType,
-                        overridingReturnType,
-                        overriddenMethodType,
-                        overriddenType,
-                        overriddenReturnType);
+                        invocationType,
+                        type,
+                        invocationReturnType,
+                        functionType,
+                        functionalInterface,
+                        functionTypeReturnType);
         return overrideChecker.checkOverride();
     }
 
