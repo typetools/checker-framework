@@ -724,10 +724,10 @@ public class QualifierDefaults {
         return new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
     }
 
-    public class DefaultApplierElement {
+    public static class DefaultApplierElement {
 
-        private final AnnotatedTypeFactory atypeFactory;
-        private final Element scope;
+        protected final AnnotatedTypeFactory atypeFactory;
+        protected final Element scope;
         protected final AnnotatedTypeMirror type;
 
         /**
