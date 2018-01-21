@@ -42,6 +42,14 @@ public class LessThanLen {
 
     public static void m6(int[] shorter) {
         int[] longer = new int[4 * shorter.length];
+        // TODO: enable when https://github.com/kelloggm/checker-framework/issues/211 is fixed
+        // // :: error: (assignment.type.incompatible)
+        // @LTLengthOf("longer") int x = shorter.length;
+        @LTEqLengthOf("longer") int y = shorter.length;
+    }
+
+    public static void m7(int @MinLen(1) [] shorter) {
+        int[] longer = new int[4 * shorter.length];
         @LTLengthOf("longer") int x = shorter.length;
         @LTEqLengthOf("longer") int y = shorter.length;
     }
