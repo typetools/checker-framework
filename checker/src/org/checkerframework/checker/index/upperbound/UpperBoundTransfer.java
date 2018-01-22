@@ -112,8 +112,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         } else if (node instanceof NumericalSubtractionNode) {
             propagateToSubtractionOperands(typeOfNode, (NumericalSubtractionNode) node, in, store);
         } else if (node instanceof NumericalMultiplicationNode) {
-            if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)
-                    || atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
+            if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
                 Node right = ((NumericalMultiplicationNode) node).getRightOperand();
                 Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
                 propagateToMultiplicationOperand(typeOfNode, left, right, in, store);
