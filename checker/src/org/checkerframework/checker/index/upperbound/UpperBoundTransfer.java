@@ -344,7 +344,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                             atypeFactory, (FieldAccessNode) lengthAccess);
             receiver = fa.getReceiver();
 
-        } else if (atypeFactory.getMethodIdentifier().isStringLengthInvocation(lengthAccess)) {
+        } else if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthAccess)) {
             Receiver ma = FlowExpressions.internalReprOf(atypeFactory, lengthAccess);
             if (ma instanceof MethodCall) {
                 receiver = ((MethodCall) ma).getReceiver();
@@ -529,7 +529,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
 
-        if (atypeFactory.getMethodIdentifier().isStringLengthInvocation(n)) {
+        if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(n)) {
             Receiver stringLength = FlowExpressions.internalReprOf(atypeFactory, n);
             if (stringLength instanceof MethodCall) {
                 Receiver stringRec = ((MethodCall) stringLength).getReceiver();

@@ -122,7 +122,7 @@ public class IndexUtil {
             Tree lengthTree, IndexMethodIdentifier imf, ProcessingEnvironment processingEnv) {
         if (TreeUtils.isArrayLengthAccess(lengthTree)) {
             return ((MemberSelectTree) lengthTree).getExpression();
-        } else if (imf.isStringLength(lengthTree, processingEnv)) {
+        } else if (imf.isLengthOfMethodInvocation(lengthTree)) {
             return TreeUtils.getReceiverTree((MethodInvocationTree) lengthTree);
         }
 
