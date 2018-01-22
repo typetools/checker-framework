@@ -103,10 +103,7 @@ public class IndexMethodIdentifier {
         }
         List<String> values =
                 AnnotationUtils.getElementValueArray(len, "value", String.class, false);
-        if (values.size() == 1) {
-            return values.get(0).equals("this");
-        }
-        return false;
+        return values.contains("this");
     }
 
     /**
