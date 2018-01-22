@@ -395,7 +395,7 @@ like the following:
 
 \begin{Verbatim}
   boolean lessThan(double[] arr1, double @SameLen("#1") [] arr2) {
-    for (int i=0; i<arr1.length; i++) {
+    for (int i = 0; i < arr1.length; i++) {
       if (arr1[i] < arr2[i]) {
         return true;
       } else if (arr1[i] > arr2[i]) {
@@ -450,7 +450,7 @@ represents this concept.
   \label{fig-index-searchindex}
 \end{figure}
 
-The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) has four type qualifiers:
+The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) has four type qualifiers:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
   An expression with this type represents an integer that could have been
