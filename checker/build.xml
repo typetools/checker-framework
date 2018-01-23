@@ -1070,6 +1070,13 @@
         </antcall>
     </target>
 
+    <target name="linear-tests" depends="jar,build-tests"
+            description="Run tests for the Linear Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LinearTest"/>
+        </antcall>
+    </target>
+
     <target name="tainting-tests" depends="jar,build-tests"
             description="Run tests for the classic Tainting Checker">
         <antcall target="-run-tests">
