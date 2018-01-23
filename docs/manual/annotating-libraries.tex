@@ -59,9 +59,9 @@ Checker Framework to include annotated versions of libraries.
 
 \section{Creating an annotated library\label{annotated-libraries-creating}}
 
-This section describes how to create an annotated library.
-If you annotate a new library, please inform the Checker Framework
-developers so that they can include it in the Checker Framework distribution.
+This section describes how to create an annotated library --- that is, how
+to add annotations to a library so that the Checker Framework can better
+typecheck clients of the library.
 
 You make the library's annotations known to the checkers by writing
 annotations in a copy of the library's source code (or in a ``stub
@@ -106,9 +106,9 @@ Given the library annotations, you have two options:
 \end{enumerate}
 
 
-If you write any library annotations,
-please share them so that they
-can be distributed with the Checker Framework.
+If you annotate a new library, please inform the Checker Framework
+developers so that your annotated library can be distributed with the
+Checker Framework.
 Sharing your annotations is useful even if the library is only partially
 annotated.
 However, as noted in Section~\ref{get-started-with-legacy-code}, it is
@@ -140,13 +140,21 @@ documentation.  If you have a documentation improvement or a bug fix, then
 pull-request them against the upstream version of the library.  This will
 benefit all users of the library.
 
+If you do not annotate the full library, then make it easy for others to
+know what parts you have annotated and what parts you have not.  Also,
+ensure that every file is fully annotated or not annotated at all --- it's
+very confusing when a file has partial annotations.
 
-\subsection{Creating a new annotated JDK\label{annotating-jdk}}
+
+\subsection{Creating an annotated JDK\label{annotating-jdk}}
 
 When you create a new checker, you need to also supply annotations for
 parts of the JDK, either as stub files or as source code that will be
 compiled and its annotations inserted into the JDK\@.  This
 section describes the latter approach.
+
+If you are adding annotations to an existing annotated JDK, then you only
+need to follow the last two steps.
 
 \begin{enumerate}
 \item
