@@ -16,18 +16,22 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An annotation processor for listing the facts about types and array accesses locations of
- * annotations. To invoke it, use
+ * An annotation processor for listing the facts about Java code.
+ *
+ * <p>To invoke it, use
  *
  * <pre>
- * javac -proc:only -processor org.checkerframework.common.util.count.TypeStatistics <em>MyFile.java ...</em>
+ * javac -proc:only -processor org.checkerframework.common.util.count.JavaCodeStatistics <em>MyFile.java ...</em>
  * </pre>
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class TypeStatistics extends SourceChecker {
+public class JavaCodeStatistics extends SourceChecker {
 
+    /** The number of type parameters declarations and uses. */
     int generics = 0;
+    /** The number of array accesses and dimensions in array creations. */
     int arrayAccesses = 0;
+    /** The number of type casts. */
     int typecasts = 0;
 
     @Override
@@ -44,7 +48,7 @@ public class TypeStatistics extends SourceChecker {
 
     class Visitor extends SourceVisitor<Void, Void> {
 
-        public Visitor(TypeStatistics l) {
+        public Visitor(JavaCodeStatistics l) {
             super(l);
         }
 
@@ -69,7 +73,6 @@ public class TypeStatistics extends SourceChecker {
 
         @Override
         public Void visitNewClass(NewClassTree node, Void aVoid) {
-            // TODO: diamonds
             if (TreeUtils.isDiamondTree(node)) {
                 generics++;
             }

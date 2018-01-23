@@ -73,6 +73,7 @@ public class AnnotationStatistics extends SourceChecker {
         }
     }
 
+    /** Increment the number of times annotation with name {@code annoName} has appeared. */
     protected void incrementCount(Name annoName) {
         if (!annotationCount.containsKey(annoName)) {
             annotationCount.put(annoName, 1);
