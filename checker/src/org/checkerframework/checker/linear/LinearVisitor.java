@@ -2,21 +2,26 @@ package org.checkerframework.checker.linear;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import javax.lang.model.element.Element;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import org.checkerframework.checker.linear.qual.Linear;
 import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
+
+import javax.lang.model.element.Element;
 
 /**
  * A type-checking visitor for the Linear type system. The visitor reports an error ("unsafe.use")
  * for any use of a reference of {@link Unusable} type. In other words, it reports an error for any
- * {@code Linear} references that is used more than once, or is used after it has been "used up".
+ * {@link Linear} references that is used more than once, or is used after it has been "used up".
  *
  * @see LinearChecker
  */
@@ -47,7 +52,9 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
         }
     }
 
-    /** Issue an error if the node represents a reference that has been used up. */
+    /**
+     * Issue an error if the node represents a reference that has been used up.
+     */
     private void checkLegality(ExpressionTree node) {
         if (isLocalVarOrParam(node)) {
             if (atypeFactory.getAnnotatedType(node).hasAnnotation(Unusable.class)) {
@@ -69,9 +76,27 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
         return super.visitMemberSelect(node, p);
     }
 
-    /** Linear Checker does not contain a rule for method invocation. */
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
+                                         AnnotatedTypeMirror valueType,
+                                         Tree valueTree,
+                                         String errorKey) {
+        if (varType.hasAnnotation(Linear.class)) {
+            if (valueTree instanceof LiteralTree || valueTree instanceof NewClassTree) {
+                valueType.removeAnnotation(atypeFactory.NORMAL);
+                valueType.addAnnotation(atypeFactory.LINEAR);
+            }
+        }
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
+    /**
+     * Linear Checker does not contain a rule for method invocation.
+     */
     // Premature optimization:  Don't check method invocability
     @Override
     protected void checkMethodInvocability(
-            AnnotatedExecutableType method, MethodInvocationTree node) {}
+            AnnotatedExecutableType method, MethodInvocationTree node) {
+    }
+
 }
