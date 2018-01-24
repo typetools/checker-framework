@@ -101,7 +101,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(PolyIndex.class, POLY);
         addAliasedAnnotation(SubstringIndexFor.class, GTEN1);
 
-        imf = new IndexMethodIdentifier(processingEnv);
+        imf = new IndexMethodIdentifier(this);
 
         this.postInit();
     }
@@ -306,7 +306,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /** Special handling for Math.max. The return is the GLB of the arguments. */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            if (imf.isMathMax(tree, processingEnv)) {
+            if (imf.isMathMax(tree)) {
                 ExpressionTree left = tree.getArguments().get(0);
                 ExpressionTree right = tree.getArguments().get(1);
                 type.replaceAnnotation(
@@ -358,7 +358,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * an string length method.
      */
     Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
-        if (imf.isStringLength(tree, processingEnv)) {
+        if (imf.isLengthOfMethodInvocation(tree)) {
             return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
         }
         return null;

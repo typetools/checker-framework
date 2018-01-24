@@ -239,7 +239,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             checkerClass = checkerClass.getSuperclass();
         }
-        return (Factory) new BaseAnnotatedTypeFactory(checker);
+        try {
+            return (Factory) new BaseAnnotatedTypeFactory(checker);
+        } catch (Throwable t) {
+            ErrorReporter.errorAbort(
+                    "Unexpected "
+                            + t.getClass().getSimpleName()
+                            + " when invoking BaseAnnotatedTypeFactory for checker "
+                            + checker.getClass().getSimpleName(),
+                    t);
+            return null; // dead code
+        }
     }
 
     public final Factory getTypeFactory() {

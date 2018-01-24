@@ -112,8 +112,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         } else if (node instanceof NumericalSubtractionNode) {
             propagateToSubtractionOperands(typeOfNode, (NumericalSubtractionNode) node, in, store);
         } else if (node instanceof NumericalMultiplicationNode) {
-            if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)
-                    || atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
+            if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
                 Node right = ((NumericalMultiplicationNode) node).getRightOperand();
                 Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
                 propagateToMultiplicationOperand(typeOfNode, left, right, in, store);
@@ -344,7 +343,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                             atypeFactory, (FieldAccessNode) lengthAccess);
             receiver = fa.getReceiver();
 
-        } else if (atypeFactory.getMethodIdentifier().isStringLengthInvocation(lengthAccess)) {
+        } else if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthAccess)) {
             Receiver ma = FlowExpressions.internalReprOf(atypeFactory, lengthAccess);
             if (ma instanceof MethodCall) {
                 receiver = ((MethodCall) ma).getReceiver();
@@ -529,7 +528,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
 
-        if (atypeFactory.getMethodIdentifier().isStringLengthInvocation(n)) {
+        if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(n)) {
             Receiver stringLength = FlowExpressions.internalReprOf(atypeFactory, n);
             if (stringLength instanceof MethodCall) {
                 Receiver stringRec = ((MethodCall) stringLength).getReceiver();
