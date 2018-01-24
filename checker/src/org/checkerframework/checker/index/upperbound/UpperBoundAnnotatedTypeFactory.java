@@ -89,7 +89,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
-        imf = new IndexMethodIdentifier(processingEnv);
+        imf = new IndexMethodIdentifier(this);
 
         this.postInit();
     }
@@ -204,7 +204,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // Wrapper methods for accessing the IndexMethodIdentifier.
 
     public boolean isMathMin(Tree methodTree) {
-        return imf.isMathMin(methodTree, processingEnv);
+        return imf.isMathMin(methodTree);
     }
 
     public boolean isRandomNextInt(Tree methodTree) {
