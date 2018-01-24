@@ -68,7 +68,7 @@ might be indices:
   the lower bound on an integer, such as whether it is known to be positive
   (Section~\ref{index-lowerbound})
 \item
-  the upper bound an integer, such as whether it is less than the length
+  the upper bound on an integer, such as whether it is less than the length
   of a given sequence (Section~\ref{index-upperbound})
 \item
   whether an integer came from calling the JDK's binary search routine on
@@ -395,7 +395,7 @@ like the following:
 
 \begin{Verbatim}
   boolean lessThan(double[] arr1, double @SameLen("#1") [] arr2) {
-    for (int i=0; i<arr1.length; i++) {
+    for (int i = 0; i < arr1.length; i++) {
       if (arr1[i] < arr2[i]) {
         return true;
       } else if (arr1[i] > arr2[i]) {
@@ -450,7 +450,7 @@ represents this concept.
   \label{fig-index-searchindex}
 \end{figure}
 
-The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) has four type qualifiers:
+The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) has four type qualifiers:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
   An expression with this type represents an integer that could have been
@@ -657,6 +657,10 @@ public class ArrayWrapper<T> {
     }
 }
 \end{Verbatim}
+
+The Index Checker treats methods annotated with \code{@LengthOf("this")}  as
+the length of a sequence like \code{arr.length} for arrays and
+\code{str.length()} for strings.
 
 With these annotations, client code like the following typechecks with no
 warnings:

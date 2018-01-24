@@ -1,4 +1,5 @@
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class LessThanLen {
 
@@ -10,7 +11,7 @@ public class LessThanLen {
         }
     }
 
-    public static void m2(int[] shorter) {
+    public static void m2(int @MinLen(1) [] shorter) {
         int[] longer = new int[shorter.length * 2];
         for (int i = 0; i < shorter.length; i++) {
             longer[i] = shorter[i];
@@ -24,7 +25,7 @@ public class LessThanLen {
         }
     }
 
-    public static void m4(int[] shorter) {
+    public static void m4(int @MinLen(1) [] shorter) {
         int[] longer = new int[shorter.length * 1];
         // :: error: (assignment.type.incompatible)
         @LTLengthOf("longer") int x = shorter.length;
@@ -40,7 +41,7 @@ public class LessThanLen {
         @LTEqLengthOf("longer") int y = shorter.length;
     }
 
-    public static void m6(int[] shorter) {
+    public static void m6(int @MinLen(1) [] shorter) {
         int[] longer = new int[4 * shorter.length];
         @LTLengthOf("longer") int x = shorter.length;
         @LTEqLengthOf("longer") int y = shorter.length;
