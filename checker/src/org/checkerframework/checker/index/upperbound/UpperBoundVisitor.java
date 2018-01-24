@@ -226,6 +226,20 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
         UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
 
+        UBQualifier lessThanQual = atypeFactory.fromLessThan(valueExp, getCurrentPath());
+        if (lessThanQual != null) {
+            expQual = expQual.glb(lessThanQual);
+        }
+
+        UBQualifier lessThanOrEqualQual =
+                atypeFactory.fromLessThanOrEqual(valueExp, getCurrentPath());
+        if (lessThanOrEqualQual != null) {
+            expQual = expQual.glb(lessThanOrEqualQual);
+        }
+        if (expQual.isSubtype(varLtlQual)) {
+            return true;
+        }
+
         Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());
 
         if (value == null && !expQual.isLessThanLengthQualifier()) {

@@ -51,6 +51,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new OffsetDependentTypesHelper(this);
     }
 
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new LessThanQualifierHierarchy(factory);
     }
@@ -144,6 +145,19 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns a modifiable list of expressions in the annotation sorted. If the annotation is
+     * {@link LessThanBottom}, return null. If the annotation is {@link LessThanUnknown} return the
+     * empty list.
+     */
+    public List<String> getLessThanExpressions(Tree tree) {
+        AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(tree);
+        if (annotatedTypeMirror.getAnnotations().size() != 1) {
+            return new ArrayList<>();
+        }
+        return getLessThanExpressions(annotatedTypeMirror.getAnnotations().iterator().next());
     }
 
     /**

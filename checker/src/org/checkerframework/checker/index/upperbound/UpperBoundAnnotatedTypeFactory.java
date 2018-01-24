@@ -7,6 +7,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +20,8 @@ import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
+import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
+import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
@@ -50,12 +53,17 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -152,6 +160,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
+    }
+
+    /** Returns the LessThan Checker's annotated type factory. */
+    public LessThanAnnotatedTypeFactory getLessThanAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(LessThanChecker.class);
     }
 
     @Override
@@ -588,5 +601,58 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;
         return ltlQualifier.convertToAnnotation(processingEnv);
+    }
+
+    UBQualifier fromLessThan(Tree tree, TreePath treePath) {
+        List<String> lessThanExpressions =
+                getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
+        if (lessThanExpressions == null) {
+            return null;
+        }
+        UBQualifier ubQualifier = fromLessThanOrEqual(tree, treePath, lessThanExpressions);
+        if (ubQualifier != null) {
+            return ubQualifier.plusOffset(1);
+        }
+        return null;
+    }
+
+    UBQualifier fromLessThanOrEqual(Tree tree, TreePath treePath) {
+        List<String> lessThanExpressions =
+                getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
+        if (lessThanExpressions == null) {
+            return null;
+        }
+        UBQualifier ubQualifier = fromLessThanOrEqual(tree, treePath, lessThanExpressions);
+        return ubQualifier;
+    }
+
+    private UBQualifier fromLessThanOrEqual(
+            Tree tree, TreePath treePath, List<String> lessThanExpressions) {
+        UBQualifier ubQualifier = null;
+        for (String expression : lessThanExpressions) {
+            FlowExpressions.Receiver receiver;
+            try {
+                receiver = getReceiverFromJavaExpressionString(expression, treePath);
+            } catch (FlowExpressionParseException e) {
+                receiver = null;
+            }
+            if (receiver == null || !CFAbstractStore.canInsertReceiver(receiver)) {
+                continue;
+            }
+            CFStore store = getStoreBefore(tree);
+            if (store != null) {
+                CFValue value = store.getValue(receiver);
+                if (value != null && value.getAnnotations().size() == 1) {
+                    UBQualifier newUBQ =
+                            UBQualifier.createUBQualifier(value.getAnnotations().iterator().next());
+                    if (ubQualifier == null) {
+                        ubQualifier = newUBQ;
+                    } else {
+                        ubQualifier = ubQualifier.glb(newUBQ);
+                    }
+                }
+            }
+        }
+        return ubQualifier;
     }
 }
