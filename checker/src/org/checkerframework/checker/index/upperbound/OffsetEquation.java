@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -18,6 +19,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -425,11 +427,10 @@ public class OffsetEquation {
      * @return an offset equation from value of known or null if the value isn't known
      */
     public static OffsetEquation createOffsetFromNodesValue(
-            Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+            Node node, ValueAnnotatedTypeFactory factory, char op) {
         assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Long i =
-                    IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
+            Long i = IndexUtil.getExactValue(node.getTree(), factory);
             if (i != null) {
                 if (op == '-') {
                     i = -i;
@@ -459,7 +460,7 @@ public class OffsetEquation {
      * @return an offset equation from the Node
      */
     public static OffsetEquation createOffsetFromNode(
-            Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+            Node node, AnnotationProvider factory, char op) {
         assert op == '+' || op == '-';
         OffsetEquation eq = new OffsetEquation();
         createOffsetFromNode(node, factory, eq, op);
@@ -467,7 +468,7 @@ public class OffsetEquation {
     }
 
     private static void createOffsetFromNode(
-            Node node, UpperBoundAnnotatedTypeFactory factory, OffsetEquation eq, char op) {
+            Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
         Receiver r = FlowExpressions.internalReprOf(factory, node);
         if (r instanceof Unknown || r == null) {
             if (node instanceof NumericalAdditionNode) {

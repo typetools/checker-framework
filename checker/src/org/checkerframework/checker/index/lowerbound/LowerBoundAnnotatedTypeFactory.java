@@ -16,6 +16,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
+import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
@@ -170,6 +172,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns the SearchIndexFor Checker's annotated type factory. */
     public SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
+    }
+
+    /** Returns the LessThan Checker's annotated type factory. */
+    public LessThanAnnotatedTypeFactory getLessThanAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(LessThanChecker.class);
     }
 
     /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
