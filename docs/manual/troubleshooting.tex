@@ -1072,6 +1072,13 @@ instructions.
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
 
+\subsection{Configure Eclipse to edit the Checker Framework\label{building-eclipse}}
+\begin{enumerate}
+\item Download Eclipse from the \href{https://www.eclipse.org/downloads}{official Eclipse website} and install it.
+\item Once the installation is completed, run Eclipse and set the workspace to \$JSR308.
+\item Enter the main Eclipse working screen and under "File" tab, select Import, General, and then Existing Projects into workspace. After the Import Projects window appears, select "Select Root Directory", browse for \$JSR308 folder, and select the whole folder. Try to deselect the projects related to Eclipse, encryption, tutorial, and demo.
+\item After all projects have been imported, everything must be built successfully.
+\end{enumerate}
 
 \subsection{Enable Travis continuous integration builds\label{building-travis}}
 
