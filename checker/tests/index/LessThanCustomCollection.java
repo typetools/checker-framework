@@ -15,21 +15,21 @@ public class LessThanCustomCollection {
     // This object is a subset of array. So, if something is an index for "this"
     // then it is >= start and < end.
     private final int[] array;
-    private final @IndexOrHigh("array") @LessThan("end - 1") int start;
+    private final @IndexOrHigh("array") @LessThan("end + 1") int start;
     private final @LTLengthOf(
         value = {"array", "this"},
         offset = {" - 1", "- start"}
     ) int end;
 
     private LessThanCustomCollection(int[] array) {
-        // 0 should be @LessThan(array.length - 1)
+        // 0 should be @LessThan(array.length + 1)
         // :: error: (argument.type.incompatible)
         this(array, 0, array.length);
     }
 
     private LessThanCustomCollection(
             int[] array,
-            @IndexOrHigh("#1") @LessThan("#3 - 1") int start,
+            @IndexOrHigh("#1") @LessThan("#3 + 1") int start,
             @IndexOrHigh("#1") int end) {
         this.array = array;
         // can't est. that end - start is the lenght of this.

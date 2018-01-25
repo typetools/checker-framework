@@ -136,9 +136,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (expressions.contains(right)) {
             return true;
         }
-        // {@code @LessThan("end - 1")} is equivalent to {@code @LessThanOrEqual("end")}.
+        // {@code @LessThan("end + 1")} is equivalent to {@code @LessThanOrEqual("end")}.
         for (String expression : expressions) {
-            if (expression.endsWith(" - 1")) {
+            if (expression.endsWith(" + 1")) {
                 if (expression.substring(0, expression.length() - 4).equals(right)) {
                     return true;
                 }

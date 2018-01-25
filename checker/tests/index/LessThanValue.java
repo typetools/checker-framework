@@ -11,8 +11,8 @@ public class LessThanValue {
     void subtyping(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
         @LessThan("x")
         int q = a;
-        // :: error: (assignment.type.incompatible)
         @LessThan({"x", "y"})
+        // :: error: (assignment.type.incompatible)
         int r = b;
     }
 
@@ -21,8 +21,8 @@ public class LessThanValue {
     void lub(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
         @LessThan("x")
         int r = flag ? a : b;
-        // :: error: (assignment.type.incompatible)
         @LessThan({"x", "y"})
+        // :: error: (assignment.type.incompatible)
         int s = flag ? a : b;
     }
 
@@ -30,8 +30,8 @@ public class LessThanValue {
         if (a < b) {
             if (b < c) {
                 // Not implemented
-                // :: error: (assignment.type.incompatible)
                 @LessThan("c")
+                // :: error: (assignment.type.incompatible)
                 int x = a;
             }
         }
@@ -42,7 +42,7 @@ public class LessThanValue {
         @Positive int y = end - start;
     }
 
-    @NonNegative int method(@LessThan("#2 - 1") @NonNegative int start, int end) {
+    @NonNegative int method(@LessThan("#2 + 1") @NonNegative int start, int end) {
         return end - start;
     }
 

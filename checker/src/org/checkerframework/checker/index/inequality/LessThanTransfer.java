@@ -69,7 +69,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            lessThanExpressions.add(leftRec.toString() + " - 1");
+            lessThanExpressions.add(leftRec.toString() + " + 1");
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
         }
