@@ -470,7 +470,7 @@ option.
 A concrete example (using the Nullness Checker) is:
 
 \begin{Verbatim}
-  javac -processor NullnessChecker MyFile.java
+  javac -processor nullness MyFile.java
 \end{Verbatim}
 
 \noindent
@@ -758,6 +758,10 @@ checker is an ``annotation processor''.
   whenever a compiler warning/error is produced. Useful when debugging
   the compiler or a checker.
 \end{itemize}
+
+The Checker Framework does not support \<-source 1.4> or earlier.  You must
+supply \<-source 1.5> or later, or no \<-source> command-line argument,
+when running \<javac>.
 
 
 \subsection{Checker auto-discovery\label{checker-auto-discovery}}
@@ -1357,6 +1361,8 @@ If you have trouble understanding a Checker Framework warning message, you
 can search for its text in this manual.  Also see
 Section~\ref{common-problems-typechecking} and
 Chapter~\ref{troubleshooting}, Troubleshooting.
+In particular, Section~\ref{common-problems-typechecking} explains this
+same methodology in different words.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc

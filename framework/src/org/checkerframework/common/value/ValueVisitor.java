@@ -28,7 +28,8 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -109,15 +110,25 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      *     will be used on the lhs of an assignment or pseudo-assignment.
      */
     private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
-        SimpleAnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
-                new SimpleAnnotatedTypeScanner<Void, Void>() {
+        AnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
+                new AnnotatedTypeScanner<Void, Void>() {
                     @Override
-                    protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
+                    protected Void scan(AnnotatedTypeMirror type, Void p) {
                         if (type.hasAnnotation(IntRangeFromPositive.class)
                                 || type.hasAnnotation(IntRangeFromNonNegative.class)
                                 || type.hasAnnotation(IntRangeFromGTENegativeOne.class)) {
                             type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
                         }
+                        return super.scan(type, p);
+                    }
+
+                    @Override
+                    public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
+                        // Skip type arguments.
+                        if (type.getEnclosingType() != null) {
+                            scan(type.getEnclosingType(), p);
+                        }
+
                         return null;
                     }
                 };

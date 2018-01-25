@@ -62,7 +62,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
 
-        imf = new IndexMethodIdentifier(processingEnv);
+        imf = new IndexMethodIdentifier(this);
 
         this.postInit();
     }
