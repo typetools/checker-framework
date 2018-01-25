@@ -2119,8 +2119,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Finds a minimum length of an array specified by the provided annotation. Returns 0 if there
-     * is no minimum length known, or if the passed annotation is null.
+     * Finds a minimum length of an array specified by the provided annotation. Returns null if
+     * there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
      * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
