@@ -12,5 +12,4 @@ public class NewInstances {
         System.out.println(s);
         System.out.println(o);
     }
-
 }

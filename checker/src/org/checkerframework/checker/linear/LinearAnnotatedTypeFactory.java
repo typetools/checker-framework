@@ -1,9 +1,12 @@
 package org.checkerframework.checker.linear;
 
-import org.checkerframework.checker.linear.qual.Linear;
-import org.checkerframework.checker.linear.qual.Unusable;
-import org.checkerframework.checker.linear.qual.Normal;
 import com.sun.source.tree.Tree;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.linear.qual.Linear;
+import org.checkerframework.checker.linear.qual.Normal;
+import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -19,22 +22,21 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-import javax.lang.model.element.AnnotationMirror;
-import java.lang.annotation.Annotation;
-import java.util.Set;
-
 /**
  * Marks a {@link Linear} variable as {@link Unusable} once the variable is:
+ *
  * <p>
+ *
  * <ol>
- * <li value="1">the receiver of a method call</li>
- * <li value="2">TODO</li>
+ *   <li value="1">the receiver of a method call
+ *   <li value="2">TODO
  * </ol>
  */
 public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     final AnnotationMirror LINEAR, UNUSABLE, NORMAL;
 
+    @SuppressWarnings("method.invocation.invalid")
     public LinearAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -47,12 +49,12 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll(
-                Linear.class, Normal.class, Unusable.class);
+        return getBundledTypeQualifiersWithPolyAll(Linear.class, Normal.class, Unusable.class);
     }
 
     @Override
-    public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return new LinearFlow(analysis);
     }
 
@@ -65,21 +67,22 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public TransferResult<CFValue, CFStore> visitMethodInvocation(MethodInvocationNode node,
-                                                                      TransferInput<CFValue, CFStore> in) {
+        public TransferResult<CFValue, CFStore> visitMethodInvocation(
+                MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
             TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, in);
 
             @Nullable Tree receiverTree = node.getTarget().getReceiver().getTree();
             if (receiverTree != null) {
                 AnnotatedTypeMirror type = factory.getAnnotatedType(receiverTree);
                 if (type.isAnnotatedInHierarchy(LINEAR)) {
-                    return new RegularTransferResult<>(analysis.createSingleAnnotationValue(UNUSABLE,
-                            result.getResultValue().getUnderlyingType()), in.getRegularStore());
+                    return new RegularTransferResult<>(
+                            analysis.createSingleAnnotationValue(
+                                    UNUSABLE, result.getResultValue().getUnderlyingType()),
+                            in.getRegularStore());
                 }
             }
 
             return result;
         }
     }
-
 }

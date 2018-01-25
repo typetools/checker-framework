@@ -13,5 +13,4 @@ public class UseUnusableVariable {
 
         System.out.println(t);
     }
-
 }
