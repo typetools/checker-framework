@@ -484,6 +484,9 @@ following ways:
 
 \subsection{Creating a stub file\label{stub-creating}}
 
+Stub files are generally stored together with the checker implementation,
+in the same directory as the checker's \<.java> source code.
+
 
 \subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
 
@@ -507,7 +510,8 @@ annotations are in a format that the library maintainers can even
 incorporate.
 
 The downside of this approach is that the stub files are larger.  This can
-slow down parsing.
+slow down the Checker Framework, because it parses the stub files each time
+it runs.
 % Furthermore, a programmer must search the stub file
 % for a given method rather than just skimming a few pages of method signatures.
 
