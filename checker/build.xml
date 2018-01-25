@@ -1505,6 +1505,14 @@
               unless="an.annotated.jdk.exists"/>
     </target>
 
+    <target name="reformat"
+          description="Reformat Java code">
+        <ant dir="..">
+            <target name="reformat"/>
+        </ant>
+    </target>
+
+
     <!-- For debugging -->
     <target name="showvars" depends="prep">
         <echo>[java.home] ${java.home}</echo>

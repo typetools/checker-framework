@@ -21,5 +21,4 @@ extraction:
     index:
       build_command:
       - cd checker
-      - ant -Djsr308.langtools=${LGTM_WORKSPACE}/jsr308-langtools -Dannotation.tools=${LGTM_WORKSPACE}/annotation-tools\
-        \ -Dstubparser.loc=${LGTM_WORKSPACE}/stubparser dist-downloadjdk
+      - ant -Djsr308.langtools=${LGTM_WORKSPACE}/jsr308-langtools -Dannotation.tools=${LGTM_WORKSPACE}/annotation-tools -Dstubparser.loc=${LGTM_WORKSPACE}/stubparser dist-downloadjdk
