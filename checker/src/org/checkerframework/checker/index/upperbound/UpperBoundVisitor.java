@@ -92,8 +92,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         // Check against the minlen of the array itself.
-        Integer minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
-        if (valMax != null && minLen != null && valMax < minLen) {
+        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
+        if (valMax != null && valMax < minLen) {
             return;
         }
 
