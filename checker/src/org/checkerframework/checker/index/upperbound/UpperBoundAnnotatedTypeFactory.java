@@ -433,6 +433,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
                     break;
+                case REMAINDER:
+                    addAnnotationForRemainder(left, right, type);
+                    break;
                 case AND:
                     addAnnotationForAnd(left, right, type);
                     break;
@@ -468,6 +471,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
         private ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
             return IndexUtil.getLengthSequenceTree(lengthTree, imf, processingEnv);
+        }
+
+        /** Infers upper-bound annotation for {@code numerator % divisor}. */
+        private void addAnnotationForRemainder(
+                ExpressionTree numeratorTree,
+                ExpressionTree divisorTree,
+                AnnotatedTypeMirror resultType) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
+            UBQualifier result = UpperBoundUnknownQualifier.UNKNOWN;
+            // if numerator >= 0, then numerator%divisor <= numerator
+            if (lowerBoundATF.getAnnotatedType(numeratorTree).hasAnnotation(NonNegative.class)) {
+                result = UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
+            }
+            // if divisor >= 0, then numerator%divisor < divisor
+            if (lowerBoundATF.getAnnotatedType(divisorTree).hasAnnotation(NonNegative.class)) {
+                UBQualifier divisor =
+                        UBQualifier.createUBQualifier(getAnnotatedType(divisorTree), UNKNOWN);
+                result = result.glb(divisor.plusOffset(1));
+            }
+            resultType.addAnnotation(convertUBQualifierToAnnotation(result));
         }
 
         private void addAnnotationForDivide(
