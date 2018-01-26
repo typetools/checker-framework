@@ -128,7 +128,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return expressions.contains(right);
     }
 
-    /** @return {@code smaller} < {@code bigger}, using information from the Value Checker */
+    /** @return {@code smaller < bigger}, using information from the Value Checker */
     public boolean isLessThanByValue(Tree smaller, String bigger, TreePath path) {
         Long smallerValue = IndexUtil.getMinValue(smaller, getValueAnnotatedTypeFactory());
         if (smallerValue == null) {
