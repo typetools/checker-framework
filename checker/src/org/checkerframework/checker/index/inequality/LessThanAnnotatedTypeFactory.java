@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index.inequality;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,16 +10,21 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.LessThanBottom;
 import org.checkerframework.checker.index.qual.LessThanUnknown;
+import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -28,7 +34,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, LessThanBottom.class);
-    private final AnnotationMirror UNKNOWN =
+    public final AnnotationMirror UNKNOWN =
             AnnotationBuilder.fromClass(elements, LessThanUnknown.class);
 
     public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -122,6 +128,49 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return expressions.contains(right);
     }
 
+    /** @return {@code smaller} < {@code bigger}, using information from the Value Checker */
+    public boolean isLessThanByValue(Tree smaller, String bigger, TreePath path) {
+        Long smallerValue = IndexUtil.getMinValue(smaller, getValueAnnotatedTypeFactory());
+        if (smallerValue == null) {
+            return false;
+        }
+        long minValueOfBigger = getMinValueFromString(bigger, smaller, path);
+        return smallerValue < minValueOfBigger;
+    }
+
+    /** Returns the minimum value of {@code expressions} at {@code tree}. */
+    private long getMinValueFromString(String expression, Tree tree, TreePath path) {
+        OffsetEquation offsetEquation = OffsetEquation.createOffsetFromJavaExpression(expression);
+        if (offsetEquation.isInt()) {
+            return offsetEquation.getInt();
+        }
+
+        AnnotationMirror intRange = null;
+        try {
+            intRange =
+                    getValueAnnotatedTypeFactory()
+                            .getAnnotationFromJavaExpressionString(
+                                    expression, tree, path, IntRange.class);
+        } catch (FlowExpressionParseException e) {
+        }
+        if (intRange != null) {
+            return ValueAnnotatedTypeFactory.getRange(intRange).from;
+        }
+        AnnotationMirror intValue = null;
+        try {
+            intValue =
+                    getValueAnnotatedTypeFactory()
+                            .getAnnotationFromJavaExpressionString(
+                                    expression, tree, path, IntVal.class);
+        } catch (FlowExpressionParseException e) {
+        }
+        if (intValue != null) {
+
+            List<Long> possibleValues = ValueAnnotatedTypeFactory.getIntValues(intValue);
+            return Collections.min(possibleValues);
+        }
+        return Long.MIN_VALUE;
+    }
     /** @return Is left less than or equal to right? */
     public boolean isLessThanOrEqual(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);

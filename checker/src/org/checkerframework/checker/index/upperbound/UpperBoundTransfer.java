@@ -476,6 +476,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      */
     private TransferResult<CFValue, CFStore> visitLengthAccess(
             Node n, TransferInput<CFValue, CFStore> in, Receiver sequenceRec, Tree sequenceTree) {
+        if (sequenceTree == null) {
+            return null;
+        }
         // Look up the SameLen type of the sequence.
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
         List<String> sameLenSequences =

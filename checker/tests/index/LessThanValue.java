@@ -29,20 +29,23 @@ public class LessThanValue {
     void transitive(int a, int b, int c) {
         if (a < b) {
             if (b < c) {
-                // Not implemented
                 @LessThan("c")
-                // :: error: (assignment.type.incompatible)
                 int x = a;
             }
         }
     }
 
-    void methodStrict(@LessThan("#2") @NonNegative int start, int end) {
+    void calls() {
+        isLessThan(0, 1);
+        isLessThanOrEqual(0, 0);
+    }
+
+    void isLessThan(@LessThan("#2") @NonNegative int start, int end) {
         @NonNegative int x = end - start - 1;
         @Positive int y = end - start;
     }
 
-    @NonNegative int method(@LessThan("#2 + 1") @NonNegative int start, int end) {
+    @NonNegative int isLessThanOrEqual(@LessThan("#2 + 1") @NonNegative int start, int end) {
         return end - start;
     }
 
@@ -71,5 +74,16 @@ public class LessThanValue {
     @LessThan("#1")
     @NonNegative int foo(int in) {
         throw new RuntimeException();
+    }
+
+    void test(int maximum, int count) {
+        if (maximum < 0) {
+            throw new IllegalArgumentException("Negative 'maximum' argument.");
+        }
+        if (count > maximum) {
+            int deleteIndex = count - maximum - 1;
+            // :: error: (argument.type.incompatible)
+            isLessThanOrEqual(0, deleteIndex);
+        }
     }
 }
