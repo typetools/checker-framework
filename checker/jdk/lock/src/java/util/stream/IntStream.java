@@ -1,5 +1,6 @@
 package java.util.stream;
 
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import java.util.IntSummaryStatistics;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -70,7 +71,7 @@ public interface IntStream extends BaseStream<Integer,IntStream> {
     interface Builder extends IntConsumer {
         @Override
         void accept(int arg0);
-        Builder add(int arg0);
+        Builder add(@GuardSatisfied Builder this, int arg0);
         IntStream build();
     }
 }

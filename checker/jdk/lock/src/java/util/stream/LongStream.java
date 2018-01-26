@@ -1,5 +1,6 @@
 package java.util.stream;
 
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import java.util.LongSummaryStatistics;
 import java.util.OptionalDouble;
 import java.util.OptionalLong;
@@ -70,7 +71,7 @@ public interface LongStream extends BaseStream<Long,LongStream> {
     interface Builder extends LongConsumer {
         @Override
         void accept(long arg0);
-        Builder add(long arg0);
+        Builder add(@GuardSatisfied Builder this, long arg0);
         LongStream build();
     }
 }

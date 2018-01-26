@@ -21,19 +21,19 @@ public abstract class AbstractCollection<E extends Object> implements Collection
   @Override
   public <T> T [] toArray(T [] a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
+  public boolean add(@GuardSatisfied AbstractCollection<E> this, E a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean remove(@GuardSatisfied AbstractCollection<E> this, Object a1) { throw new RuntimeException("skeleton method"); }
   @Override
-   public boolean containsAll(@GuardSatisfied AbstractCollection<E> this,@GuardSatisfied Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+  public boolean containsAll(@GuardSatisfied AbstractCollection<E> this, @GuardSatisfied Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
+  public boolean addAll(@GuardSatisfied AbstractCollection<E> this, Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean removeAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+  public boolean removeAll(@GuardSatisfied AbstractCollection<E> this, Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean retainAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+  public boolean retainAll(@GuardSatisfied AbstractCollection<E> this, Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public void clear() { throw new RuntimeException("skeleton method"); }
+  public void clear(@GuardSatisfied AbstractCollection<E> this) { throw new RuntimeException("skeleton method"); }
   @Override
    public String toString(@GuardSatisfied AbstractCollection<E> this) { throw new RuntimeException("skeleton method"); }
 }

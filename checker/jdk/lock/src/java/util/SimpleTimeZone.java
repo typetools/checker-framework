@@ -10,21 +10,21 @@ public class SimpleTimeZone extends TimeZone {
   public SimpleTimeZone(int a1, String a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10) { throw new RuntimeException("skeleton method"); }
   public SimpleTimeZone(int a1, String a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11) { throw new RuntimeException("skeleton method"); }
   public SimpleTimeZone(int a1, String a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13) { throw new RuntimeException("skeleton method"); }
-  public void setStartYear(int a1) { throw new RuntimeException("skeleton method"); }
-  public void setStartRule(int a1, int a2, int a3, int a4) { throw new RuntimeException("skeleton method"); }
-  public void setStartRule(int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public void setStartRule(int a1, int a2, int a3, int a4, boolean a5) { throw new RuntimeException("skeleton method"); }
-  public void setEndRule(int a1, int a2, int a3, int a4) { throw new RuntimeException("skeleton method"); }
-  public void setEndRule(int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public void setEndRule(int a1, int a2, int a3, int a4, boolean a5) { throw new RuntimeException("skeleton method"); }
-  public int getOffset(long a1) { throw new RuntimeException("skeleton method"); }
-  public int getOffset(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
-  public int getRawOffset() { throw new RuntimeException("skeleton method"); }
-  public void setRawOffset(int a1) { throw new RuntimeException("skeleton method"); }
-  public void setDSTSavings(int a1) { throw new RuntimeException("skeleton method"); }
-  public int getDSTSavings() { throw new RuntimeException("skeleton method"); }
-  public boolean useDaylightTime() { throw new RuntimeException("skeleton method"); }
-  public boolean inDaylightTime(Date a1) { throw new RuntimeException("skeleton method"); }
+  public void setStartYear(@GuardSatisfied SimpleTimeZone this, int a1) { throw new RuntimeException("skeleton method"); }
+  public void setStartRule(@GuardSatisfied SimpleTimeZone this, int a1, int a2, int a3, int a4) { throw new RuntimeException("skeleton method"); }
+  public void setStartRule(@GuardSatisfied SimpleTimeZone this, int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public void setStartRule(@GuardSatisfied SimpleTimeZone this, int a1, int a2, int a3, int a4, boolean a5) { throw new RuntimeException("skeleton method"); }
+  public void setEndRule(@GuardSatisfied SimpleTimeZone this, int a1, int a2, int a3, int a4) { throw new RuntimeException("skeleton method"); }
+  public void setEndRule(@GuardSatisfied SimpleTimeZone this, int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public void setEndRule(@GuardSatisfied SimpleTimeZone this, int a1, int a2, int a3, int a4, boolean a5) { throw new RuntimeException("skeleton method"); }
+  public int getOffset(@GuardSatisfied SimpleTimeZone this, long a1) { throw new RuntimeException("skeleton method"); }
+  public int getOffset(@GuardSatisfied SimpleTimeZone this, int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
+  public int getRawOffset(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
+  public void setRawOffset(@GuardSatisfied SimpleTimeZone this, int a1) { throw new RuntimeException("skeleton method"); }
+  public void setDSTSavings(@GuardSatisfied SimpleTimeZone this, int a1) { throw new RuntimeException("skeleton method"); }
+  public int getDSTSavings(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
+  public boolean useDaylightTime(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
+  public boolean inDaylightTime(@GuardSatisfied SimpleTimeZone this, Date a1) { throw new RuntimeException("skeleton method"); }
    public synchronized int hashCode(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
    public boolean equals(@GuardSatisfied SimpleTimeZone this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(TimeZone a1) { throw new RuntimeException("skeleton method"); }
