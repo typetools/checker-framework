@@ -446,7 +446,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitBinary(tree, type);
         }
 
-        /** Infers upper-bound annotation for (left >> right) and (left >>> right) */
+        /** Infers upper-bound annotation for {@code left >> right} and {@code left >>> right} */
         private void addAnnotationForRightShift(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
