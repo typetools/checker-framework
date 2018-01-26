@@ -89,8 +89,10 @@ public class AnnotationClassLoader {
      * The loaded annotation classes, which includes bundled and external annotations that are
      * deemed supported by the checker. Each checker can override {@link
      * #isSupportedAnnotationClass(Class)} to determine whether an annotation is supported or not.
+     * Call {@link #getBundledAnnotationClasses()} rather than using this field directly as it may
+     * be null.
      */
-    private final Set<Class<? extends Annotation>> supportedBundledAnnotationClasses;
+    private Set<Class<? extends Annotation>> supportedBundledAnnotationClasses;
 
     /**
      * Constructor for loading annotations defined for a checker.
@@ -124,7 +126,9 @@ public class AnnotationClassLoader {
                         Pattern.compile(Character.toString(DOT), Pattern.LITERAL)
                                 .split(packageName)));
 
-        supportedBundledAnnotationClasses = new LinkedHashSet<Class<? extends Annotation>>();
+        // this is initialized in {@link #getBundledAnnotationClasses()}, which is called only if
+        // a checker wants to use the loading mechanism to load its bundled annotations
+        supportedBundledAnnotationClasses = null;
 
         ClassLoader classLoader = getClassLoader();
 
@@ -145,9 +149,6 @@ public class AnnotationClassLoader {
             // qual directory
             resourceURL = getURLFromClasspaths();
         }
-
-        // Load bundled annotations
-        loadBundledAnnotationClasses();
     }
 
     /**
@@ -458,13 +459,25 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Loads the set of the annotation classes in the qual directory of a checker shipped with the
-     * Checker Framework.
+     * Gets the set of annotation classes in the qual directory of a checker shipped with the
+     * Checker Framework. Note that the returned set from this method is mutable. This method is
+     * intended to be called within {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
+     * createSupportedTypeQualifiers()} (or its helper methods) to help define the set of supported
+     * qualifiers.
+     *
+     * @see AnnotatedTypeFactory#createSupportedTypeQualifiers()
+     * @return a mutable set of the loaded bundled annotation classes
      */
-    private final void loadBundledAnnotationClasses() {
+    public final Set<Class<? extends Annotation>> getBundledAnnotationClasses() {
+        if (supportedBundledAnnotationClasses != null) {
+            return supportedBundledAnnotationClasses;
+        }
+
+        supportedBundledAnnotationClasses = new LinkedHashSet<Class<? extends Annotation>>();
+
+        // if there's no resourceURL, then there's nothing we can load
         if (resourceURL == null) {
-            // if there's no resourceURL, then there's nothing we can load
-            return;
+            return supportedBundledAnnotationClasses;
         }
 
         // retrieve the fully qualified class names of the annotations
@@ -502,19 +515,6 @@ public class AnnotationClassLoader {
         }
 
         supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames, false));
-    }
-
-    /**
-     * Gets the set of the loaded annotation classes in the qual directory of a checker shipped with
-     * the Checker Framework. Note that the returned set from this method is mutable. This method is
-     * intended to be called within {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
-     * createSupportedTypeQualifiers()} (or its helper methods) to help define the set of supported
-     * qualifiers.
-     *
-     * @see AnnotatedTypeFactory#createSupportedTypeQualifiers()
-     * @return a mutable set of the loaded bundled annotation classes
-     */
-    public final Set<Class<? extends Annotation>> getBundledAnnotationClasses() {
         return supportedBundledAnnotationClasses;
     }
 
