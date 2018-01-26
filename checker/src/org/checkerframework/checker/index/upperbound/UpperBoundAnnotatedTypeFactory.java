@@ -450,7 +450,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private void addAnnotationForRightShift(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
-            if (lowerBoundATF.getAnnotatedType(left).hasAnnotation(NonNegative.class)) {
+            if (lowerBoundATF.isNonNegative(left)) {
                 type.addAnnotation(getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN));
             }
         }
