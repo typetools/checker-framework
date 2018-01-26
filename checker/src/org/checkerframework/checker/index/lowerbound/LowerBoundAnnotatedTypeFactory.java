@@ -406,4 +406,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         return null;
     }
+
+    /** Checks if the expression is non-negative, i.e. it has Positive on NonNegative annotation. */
+    public boolean isNonNegative(Tree tree) {
+        AnnotatedTypeMirror treeType = getAnnotatedType(tree);
+        return treeType.hasAnnotation(NonNegative.class) || treeType.hasAnnotation(Positive.class);
+    }
 }

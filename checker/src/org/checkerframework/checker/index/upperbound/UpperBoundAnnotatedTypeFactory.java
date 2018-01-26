@@ -29,10 +29,8 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
@@ -447,21 +445,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private void addAnnotationForAnd(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
             AnnotatedTypeMirror leftType = getAnnotatedType(left);
-            AnnotatedTypeMirror leftLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
             AnnotationMirror leftResultType = UNKNOWN;
-            if (leftLBType.hasAnnotation(NonNegative.class)
-                    || leftLBType.hasAnnotation(Positive.class)) {
+            if (lowerBoundATF.isNonNegative(left)) {
                 leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(right);
-            AnnotatedTypeMirror rightLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
             AnnotationMirror rightResultType = UNKNOWN;
-            if (rightLBType.hasAnnotation(NonNegative.class)
-                    || rightLBType.hasAnnotation(Positive.class)) {
+            if (lowerBoundATF.isNonNegative(right)) {
                 rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
             }
 
@@ -481,11 +474,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
             UBQualifier result = UpperBoundUnknownQualifier.UNKNOWN;
             // if numerator >= 0, then numerator%divisor <= numerator
-            if (lowerBoundATF.getAnnotatedType(numeratorTree).hasAnnotation(NonNegative.class)) {
+            if (lowerBoundATF.isNonNegative(numeratorTree)) {
                 result = UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
             }
             // if divisor >= 0, then numerator%divisor < divisor
-            if (lowerBoundATF.getAnnotatedType(divisorTree).hasAnnotation(NonNegative.class)) {
+            if (lowerBoundATF.isNonNegative(divisorTree)) {
                 UBQualifier divisor =
                         UBQualifier.createUBQualifier(getAnnotatedType(divisorTree), UNKNOWN);
                 result = result.glb(divisor.plusOffset(1));
