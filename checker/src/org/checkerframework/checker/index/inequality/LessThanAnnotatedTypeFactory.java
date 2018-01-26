@@ -134,16 +134,25 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (smallerValue == null) {
             return false;
         }
-        long minValueOfBigger = getMinValueFromString(bigger, smaller, path);
+
+        OffsetEquation offsetEquation = OffsetEquation.createOffsetFromJavaExpression(bigger);
+        if (offsetEquation.isInt()) {
+            // bigger is an int literal
+            return smallerValue < offsetEquation.getInt();
+        }
+        // If bigger is "expression + literal", then smaller < expression + literal
+        // can be reduced to smaller - literal < expression + literal - literal
+        smallerValue = smallerValue - offsetEquation.getInt();
+        offsetEquation =
+                offsetEquation.copyAdd(
+                        '-', OffsetEquation.createOffsetForInt(offsetEquation.getInt()));
+
+        long minValueOfBigger = getMinValueFromString(offsetEquation.toString(), smaller, path);
         return smallerValue < minValueOfBigger;
     }
 
     /** Returns the minimum value of {@code expressions} at {@code tree}. */
     private long getMinValueFromString(String expression, Tree tree, TreePath path) {
-        OffsetEquation offsetEquation = OffsetEquation.createOffsetFromJavaExpression(expression);
-        if (offsetEquation.isInt()) {
-            return offsetEquation.getInt();
-        }
 
         AnnotationMirror intRange = null;
         try {
@@ -171,6 +180,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         return Long.MIN_VALUE;
     }
+
     /** @return Is left less than or equal to right? */
     public boolean isLessThanOrEqual(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);

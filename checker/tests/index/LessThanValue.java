@@ -4,6 +4,7 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.common.value.qual.*;
 
 // Test for LessThanChecker
 public class LessThanValue {
@@ -82,8 +83,26 @@ public class LessThanValue {
         }
         if (count > maximum) {
             int deleteIndex = count - maximum - 1;
+            // TODO: shouldn't error
             // :: error: (argument.type.incompatible)
             isLessThanOrEqual(0, deleteIndex);
+        }
+    }
+
+    void count(int count) {
+        if (count > 0) {
+            if (count % 2 == 1) {
+
+            } else {
+                // TODO: improve value checker
+                // :: error: (assignment.type.incompatible)
+                @IntRange(from = 0) int countDivMinus = count / 2 - 1;
+                // Reasign to update the value in the store.
+                countDivMinus = countDivMinus;
+                // :: error: (argument.type.incompatible)
+                isLessThan(0, countDivMinus);
+                isLessThanOrEqual(0, countDivMinus);
+            }
         }
     }
 }
