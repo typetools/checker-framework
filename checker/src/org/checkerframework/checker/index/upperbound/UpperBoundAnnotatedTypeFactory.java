@@ -436,23 +436,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case AND:
                     addAnnotationForAnd(left, right, type);
                     break;
-                case RIGHT_SHIFT:
-                case UNSIGNED_RIGHT_SHIFT:
-                    addAnnotationForRightShift(left, right, type);
-                    break;
                 default:
                     break;
             }
             return super.visitBinary(tree, type);
-        }
-
-        /** Infers upper-bound annotation for (left >> right) and (left >>> right) */
-        private void addAnnotationForRightShift(
-                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
-            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
-            if (lowerBoundATF.getAnnotatedType(left).hasAnnotation(NonNegative.class)) {
-                type.addAnnotation(getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN));
-            }
         }
 
         private void addAnnotationForAnd(
