@@ -531,12 +531,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(n)) {
             Receiver stringLength = FlowExpressions.internalReprOf(atypeFactory, n);
             if (stringLength instanceof MethodCall) {
-                Receiver stringRec = ((MethodCall) stringLength).getReceiver();
-                Tree stringTree = n.getTarget().getReceiver().getTree();
-                TransferResult<CFValue, CFStore> result =
-                        visitLengthAccess(n, in, stringRec, stringTree);
-                if (result != null) {
-                    return result;
+                Receiver receiverRec = ((MethodCall) stringLength).getReceiver();
+                Tree receiverTree = n.getTarget().getReceiver().getTree();
+                // receiverTree is null when the receiver is implicit "this".
+                if (receiverTree != null) {
+                    TransferResult<CFValue, CFStore> result =
+                            visitLengthAccess(n, in, receiverRec, receiverTree);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
