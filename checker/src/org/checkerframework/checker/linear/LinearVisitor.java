@@ -82,9 +82,10 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
             Tree valueTree,
             String errorKey) {
         if (varType.hasAnnotation(Linear.class)) {
+
+            // when assigning to a @Linear variable, the following trees are acceptable
             if (valueTree instanceof LiteralTree || valueTree instanceof NewClassTree) {
-                valueType.removeAnnotation(atypeFactory.NORMAL);
-                valueType.addAnnotation(atypeFactory.LINEAR);
+                valueType.replaceAnnotation(atypeFactory.LINEAR);
             }
         }
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
