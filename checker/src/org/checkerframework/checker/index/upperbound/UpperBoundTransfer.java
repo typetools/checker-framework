@@ -261,8 +261,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Refines the subtrahend in a subtraction which is greater than a certain offset. The type of
-     * the subtrahend is refined to the type of the minuend with the offset added.
+     * Refines the subtrahend in a subtraction which is greater than or equal to a certain offset.
+     * The type of the subtrahend is refined to the type of the minuend with the offset added.
      *
      * <p>This is based on the fact that if {@code (minuend - subtrahend) >= offset}, and {@code
      * minuend + o < l}, then {@code subtrahend + o + offset < l}.
