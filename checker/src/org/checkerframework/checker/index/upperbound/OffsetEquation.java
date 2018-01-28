@@ -257,6 +257,7 @@ public class OffsetEquation {
                 return (Integer) value;
             }
         } else if (termReceiver instanceof FlowExpressions.MethodCall) {
+            // TODO: generalize
             // Length of string literal
             FlowExpressions.MethodCall call = (FlowExpressions.MethodCall) termReceiver;
             if (call.getElement().getSimpleName().toString().equals("length")) {
