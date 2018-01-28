@@ -452,7 +452,22 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
             if (lowerBoundATF.isNonNegative(left)) {
-                type.addAnnotation(getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN));
+                AnnotationMirror annotation =
+                        getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
+                // For non-negative numbers, right shift is equivalent to division by a power of two
+                // The range of the shift amount is limited to 0..30 to avoid overflows and int/long differences
+                Long shiftAmount = IndexUtil.getExactValue(right, getValueAnnotatedTypeFactory());
+                if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
+                    int divisor = 1 << shiftAmount;
+                    // Support average by shift just like for division
+                    UBQualifier plusDivQualifier = plusTreeDivideByVal(divisor, left);
+                    if (!plusDivQualifier.isUnknown()) {
+                        UBQualifier qualifier = UBQualifier.createUBQualifier(annotation);
+                        qualifier = qualifier.glb(plusDivQualifier);
+                        annotation = convertUBQualifierToAnnotation(qualifier);
+                    }
+                }
+                type.addAnnotation(annotation);
             }
         }
 
