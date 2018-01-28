@@ -23,6 +23,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -680,5 +681,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore info = in.getRegularStore();
             return new RegularTransferResult<>(finishValue(value, info), info);
         }
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitCase(
+            CaseNode n, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
+        // Refines subtrahend in the switch expression
+        // TODO: this cannot be done in strengthenAnnotationOfEqualTo, because that does not provide transfer input
+        Node caseNode = n.getCaseOperand();
+        AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+        Node switchNode = assign.getExpression();
+        refineSubtrahendWithOffset(switchNode, caseNode, 0, in, result.getThenStore());
+        return result;
     }
 }
