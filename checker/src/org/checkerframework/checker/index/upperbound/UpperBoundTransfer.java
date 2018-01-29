@@ -23,6 +23,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -225,6 +226,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             propagateToOperands((LessThanLengthOf) largerQualPlus1, smaller, in, store);
         }
 
+        refineSubtrahendWithOffset(larger, smaller, true, in, store);
+
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), smaller);
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
     }
@@ -252,8 +255,49 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             propagateToOperands((LessThanLengthOf) leftQualifier, right, in, store);
         }
 
+        refineSubtrahendWithOffset(left, right, false, in, store);
+
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
+    }
+
+    /**
+     * Refines the subtrahend in a subtraction which is greater than or equal to a certain offset.
+     * The type of the subtrahend is refined to the type of the minuend with the offset added.
+     *
+     * <p>This is based on the fact that if {@code (minuend - subtrahend) >= offset}, and {@code
+     * minuend + o < l}, then {@code subtrahend + o + offset < l}.
+     *
+     * <p>If {@code gtNode} is not a {@link NumericalSubtractionNode}, the method does nothing.
+     *
+     * @param gtNode the node that is greater or equal to the offset
+     * @param offsetNode a node part of the offset
+     * @param offsetAddOne whether to add one to the offset
+     * @param in input of the transfer function
+     * @param store location to store the refined types
+     */
+    private void refineSubtrahendWithOffset(
+            Node gtNode,
+            Node offsetNode,
+            boolean offsetAddOne,
+            TransferInput<CFValue, CFStore> in,
+            CFStore store) {
+        if (gtNode instanceof NumericalSubtractionNode) {
+            NumericalSubtractionNode subtractionNode = (NumericalSubtractionNode) gtNode;
+
+            Node minuend = subtractionNode.getLeftOperand();
+            UBQualifier minuendQual = getUBQualifier(minuend, in);
+            Node subtrahend = subtractionNode.getRightOperand();
+            UBQualifier subtrahendQual = getUBQualifier(subtrahend, in);
+
+            UBQualifier newQual =
+                    subtrahendQual.glb(
+                            minuendQual
+                                    .plusOffset(offsetNode, atypeFactory)
+                                    .plusOffset(offsetAddOne ? 1 : 0));
+            Receiver subtrahendRec = FlowExpressions.internalReprOf(atypeFactory, subtrahend);
+            store.insertValue(subtrahendRec, atypeFactory.convertUBQualifierToAnnotation(newQual));
+        }
     }
 
     @Override
@@ -639,5 +683,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore info = in.getRegularStore();
             return new RegularTransferResult<>(finishValue(value, info), info);
         }
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitCase(
+            CaseNode n, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
+        // Refines subtrahend in the switch expression
+        // TODO: this cannot be done in strengthenAnnotationOfEqualTo, because that does not provide transfer input
+        Node caseNode = n.getCaseOperand();
+        AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+        Node switchNode = assign.getExpression();
+        refineSubtrahendWithOffset(switchNode, caseNode, false, in, result.getThenStore());
+        return result;
     }
 }
