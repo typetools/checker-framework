@@ -694,7 +694,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         Node caseNode = n.getCaseOperand();
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
         Node switchNode = assign.getExpression();
-        refineSubtrahendWithOffset(switchNode, caseNode, 0, in, result.getThenStore());
+        refineSubtrahendWithOffset(switchNode, caseNode, false, in, result.getThenStore());
         return result;
     }
 }
