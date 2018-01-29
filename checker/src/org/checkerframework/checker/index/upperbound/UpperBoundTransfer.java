@@ -226,7 +226,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             propagateToOperands((LessThanLengthOf) largerQualPlus1, smaller, in, store);
         }
 
-        refineSubtrahendWithOffset(larger, smaller, 1, in, store);
+        refineSubtrahendWithOffset(larger, smaller, true, in, store);
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), smaller);
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
@@ -255,7 +255,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             propagateToOperands((LessThanLengthOf) leftQualifier, right, in, store);
         }
 
-        refineSubtrahendWithOffset(left, right, 0, in, store);
+        refineSubtrahendWithOffset(left, right, false, in, store);
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
@@ -268,18 +268,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * <p>This is based on the fact that if {@code (minuend - subtrahend) >= offset}, and {@code
      * minuend + o < l}, then {@code subtrahend + o + offset < l}.
      *
-     * <p>If gtNode is not a subtraction, the method does nothing.
+     * <p>If {@code gtNode} is not a {@link NumericalSubtractionNode}, the method does nothing.
      *
      * @param gtNode the node that is greater or equal to the offset
      * @param offsetNode a node part of the offset
-     * @param offsetVal a constant part of the offset
+     * @param offsetAddOne whether to add one to the offset
      * @param in input of the transfer function
      * @param store location to store the refined types
      */
     private void refineSubtrahendWithOffset(
             Node gtNode,
             Node offsetNode,
-            int offsetVal,
+            boolean offsetAddOne,
             TransferInput<CFValue, CFStore> in,
             CFStore store) {
         if (gtNode instanceof NumericalSubtractionNode) {
@@ -292,7 +292,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
             UBQualifier newQual =
                     subtrahendQual.glb(
-                            minuendQual.plusOffset(offsetNode, atypeFactory).plusOffset(offsetVal));
+                            minuendQual
+                                    .plusOffset(offsetNode, atypeFactory)
+                                    .plusOffset(offsetAddOne ? 1 : 0));
             Receiver subtrahendRec = FlowExpressions.internalReprOf(atypeFactory, subtrahend);
             store.insertValue(subtrahendRec, atypeFactory.convertUBQualifierToAnnotation(newQual));
         }
