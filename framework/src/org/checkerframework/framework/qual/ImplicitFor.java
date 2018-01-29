@@ -8,7 +8,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.lang.model.type.TypeKind;
 
 /**
  * A meta-annotation that specifies the trees and types for which the framework should automatically
