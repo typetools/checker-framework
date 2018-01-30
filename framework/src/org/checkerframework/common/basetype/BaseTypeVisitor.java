@@ -1290,6 +1290,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // TODO: Post conditions?
+        // https://github.com/typetools/checker-framework/issues/801
 
         return super.visitLambdaExpression(node, p);
     }
