@@ -79,8 +79,8 @@ public class CustomContractWithArgs {
             }
         }
 
-        // TODO: this should be an error, because targetOffset refers to non-existent parameter
         @EnsuresLTLIf(expression = "b", targetValue = "#1", targetOffset = "#3", result = true)
+        //:: error: (flowexpr.parse.error)
         boolean ltlPostInvalid(int[] a, int c) {
             return false;
         }

@@ -610,6 +610,44 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Checks every Java expression element of the annotation to see if the expression is an error
+     * string as specified by DependentTypesError#isExpressionError. If any expression is an error,
+     * then a non-empty list of {@link DependentTypesError} is returned.
+     */
+    private List<DependentTypesError> checkForError(AnnotationMirror am) {
+        List<DependentTypesError> errors = new ArrayList<>();
+
+        for (String element : getListOfExpressionElements(am)) {
+            List<String> value =
+                    AnnotationUtils.getElementValueArray(am, element, String.class, true);
+            for (String v : value) {
+                if (DependentTypesError.isExpressionError(v)) {
+                    errors.add(new DependentTypesError(v));
+                }
+            }
+        }
+        return errors;
+    }
+
+    /**
+     * Checks every Java expression element of the annotation to see if the expression is an error
+     * string as specified by DependentTypesError#isExpressionError. If any expression is an error,
+     * then an error is reported at {@code errorTree}.
+     *
+     * @param annotation annotation to check
+     * @param errorTree location at which to issue errors
+     */
+    public void checkAnnotation(AnnotationMirror annotation, Tree errorTree) {
+        List<DependentTypesError> errors = checkForError(annotation);
+        if (errors.isEmpty()) {
+            return;
+        }
+        SourceChecker checker = factory.getContext().getChecker();
+        String error = PluginUtil.join("\n", errors);
+        checker.report(Result.failure("flowexpr.parse.error", error), errorTree);
+    }
+
+    /**
      * Checks all expressions in the method declaration AnnotatedTypeMirror to see if the expression
      * string is an error string as specified by DependentTypesError#isExpressionError. If the
      * annotated type has any errors, a flowexpr.parse.error is issued.
@@ -689,26 +727,6 @@ public class DependentTypesHelper {
             } else {
                 return null;
             }
-        }
-
-        /**
-         * Checks every Java expression element of the annotation to see if the expression is an
-         * error string as specified by DependentTypesError#isExpressionError. If any expression is
-         * an error, then a non-empty list of {@link DependentTypesError} is returned.
-         */
-        private List<DependentTypesError> checkForError(AnnotationMirror am) {
-            List<DependentTypesError> errors = new ArrayList<>();
-
-            for (String element : getListOfExpressionElements(am)) {
-                List<String> value =
-                        AnnotationUtils.getElementValueArray(am, element, String.class, true);
-                for (String v : value) {
-                    if (DependentTypesError.isExpressionError(v)) {
-                        errors.add(new DependentTypesError(v));
-                    }
-                }
-            }
-            return errors;
         }
     }
 
