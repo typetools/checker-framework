@@ -1358,9 +1358,9 @@ public class ValueTransfer extends CFTransfer {
 
             Node argumentNode = n.getArgument(0);
             AnnotationMirror argumentAnno = getArrayOrStringAnnotation(argumentNode);
-            Integer minLength = atypefactory.getMinLenValue(argumentAnno);
+            int minLength = atypefactory.getMinLenValue(argumentAnno);
             // Update the annotation of the receiver
-            if (minLength != null && minLength != 0) {
+            if (minLength != 0) {
                 Receiver receiver =
                         FlowExpressions.internalReprOf(atypefactory, n.getTarget().getReceiver());
 

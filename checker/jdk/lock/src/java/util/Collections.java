@@ -13,17 +13,17 @@ public class Collections {
   public static <T extends Object> void sort(List<T> a1, Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
   public static <T> int binarySearch(List<? extends Comparable<? super T>> a2, T a3) { throw new RuntimeException("skeleton method"); }
   public static <T> int binarySearch(List<? extends T> a1, T a2, Comparator<? super T> a3) { throw new RuntimeException("skeleton method"); }
-  public static void reverse(List<?> a1) { throw new RuntimeException("skeleton method"); }
-  public static void shuffle(List<?> a1) { throw new RuntimeException("skeleton method"); }
-  public static void shuffle(List<?> a1, Random a2) { throw new RuntimeException("skeleton method"); }
-  public static void swap(List<?> a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static <T> void fill(List<? super T> a1, T a2) { throw new RuntimeException("skeleton method"); }
+  public static void reverse(@GuardSatisfied List<?> a1) { throw new RuntimeException("skeleton method"); }
+  public static void shuffle(@GuardSatisfied List<?> a1) { throw new RuntimeException("skeleton method"); }
+  public static void shuffle(@GuardSatisfied List<?> a1, Random a2) { throw new RuntimeException("skeleton method"); }
+  public static void swap(@GuardSatisfied List<?> a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public static <T> void fill(@GuardSatisfied List<? super T> a1, T a2) { throw new RuntimeException("skeleton method"); }
   public static <T> void copy(List<? super T> a1, List<? extends T> a2) { throw new RuntimeException("skeleton method"); }
   public static <T extends Object & Comparable<? super T>> T min(Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> T min(Collection<? extends T> a1, Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
   public static <T extends Object & Comparable<? super T>> T max(Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> T max(Collection<? extends T> a1, Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
-  public static void rotate(List<?> a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public static void rotate(@GuardSatisfied List<?> a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static <T> boolean replaceAll(List<T> a1, T a2, T a3) { throw new RuntimeException("skeleton method"); }
    public static int indexOfSubList(@GuardSatisfied List<?> a1, @GuardSatisfied List<?> a2) { throw new RuntimeException("skeleton method"); }
    public static int lastIndexOfSubList(@GuardSatisfied List<?> a1, @GuardSatisfied List<?> a2) { throw new RuntimeException("skeleton method"); }
@@ -60,7 +60,7 @@ public class Collections {
   public static boolean disjoint(Collection<?> a1, Collection<?> a2) { throw new RuntimeException("skeleton method"); }
   // In JDK7, should instead be: @SafeVarargs
   @SuppressWarnings({"varargs","unchecked"})
-  public static <T> boolean addAll(Collection<? super T> a1, T... a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> boolean addAll(@GuardSatisfied Collection<? super T> a1, T... a2) { throw new RuntimeException("skeleton method"); }
   public static <E> Set<E> newSetFromMap(Map<E, Boolean> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> Queue<T> asLifoQueue(Deque<T> a1) { throw new RuntimeException("skeleton method"); }
 }
