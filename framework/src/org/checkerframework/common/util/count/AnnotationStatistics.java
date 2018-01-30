@@ -15,8 +15,12 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Name;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -26,7 +30,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * An annotation processor for listing the potential locations of annotations. To invoke it, use
  *
  * <pre>
- * javac -proc:only -processor org.checkerframework.common.util.count.Locations <em>MyFile.java ...</em>
+ * javac -proc:only -processor org.checkerframework.common.util.count.AnnotationStatistics <em>MyFile.java ...</em>
  * </pre>
  *
  * <p>You probably want to pipe the output through another program:
@@ -41,8 +45,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * used to adjust the output:
  *
  * <ul>
- *   <li>{@code -Aannotations}: prints, on the same line as each location, information about the
- *       annotation that is written there, if any
+ *   <li>{@code -Aannotations}: prints information about the annotations
  *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
  *       {@code -Aannotations}
  * </ul>
@@ -54,14 +57,37 @@ import org.checkerframework.javacutil.AnnotationProvider;
  */
 @SupportedOptions({"nolocations", "annotations"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class Locations extends SourceChecker {
+public class AnnotationStatistics extends SourceChecker {
+
+    final Map<Name, Integer> annotationCount = new HashMap<Name, Integer>();
+
+    @Override
+    public void typeProcessingOver() {
+        if (annotationCount.isEmpty()) {
+            System.out.println("No annotations found.");
+        } else {
+            System.out.println("Found annotations: ");
+            for (Map.Entry<Name, Integer> entry : annotationCount.entrySet()) {
+                System.out.println(entry.getKey() + "\t" + entry.getValue());
+            }
+        }
+    }
+
+    /** Increment the number of times annotation with name {@code annoName} has appeared. */
+    protected void incrementCount(Name annoName) {
+        if (!annotationCount.containsKey(annoName)) {
+            annotationCount.put(annoName, 1);
+        } else {
+            annotationCount.put(annoName, annotationCount.get(annoName) + 1);
+        }
+    }
 
     @Override
     protected SourceVisitor<?, ?> createSourceVisitor() {
         return new Visitor(this);
     }
 
-    static class Visitor extends SourceVisitor<Void, Void> {
+    class Visitor extends SourceVisitor<Void, Void> {
 
         /** Whether annotation locations should be printed. */
         private final boolean locations;
@@ -69,7 +95,7 @@ public class Locations extends SourceChecker {
         /** Whether annotation details should be printed. */
         private final boolean annotations;
 
-        public Visitor(Locations l) {
+        public Visitor(AnnotationStatistics l) {
             super(l);
 
             locations = !l.hasOption("nolocations");
@@ -79,6 +105,8 @@ public class Locations extends SourceChecker {
         @Override
         public Void visitAnnotation(AnnotationTree tree, Void p) {
             if (annotations) {
+                Name annoName = ((JCAnnotation) tree).annotationType.type.tsym.getQualifiedName();
+                incrementCount(annoName);
 
                 // An annotation is a body annotation if, while ascending the
                 // AST from the annotation to the root, we find a block
@@ -120,6 +148,12 @@ public class Locations extends SourceChecker {
 
         @Override
         public Void visitClass(ClassTree tree, Void p) {
+            if (shouldSkipDefs(tree)) {
+                // Not "return super.visitClass(classTree, p);" because that would
+                // recursively call visitors on subtrees; we want to skip the
+                // class entirely.
+                return null;
+            }
             if (locations) {
                 System.out.println("class");
                 if (tree.getExtendsClause() != null) {
