@@ -12,6 +12,10 @@ public class Issue194 {
         public Object get(@IndexFor("this") int i) {
             return null;
         }
+
+        void call() {
+            length();
+        }
     }
 
     public boolean m(Custom a, Custom b) {
