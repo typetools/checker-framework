@@ -101,7 +101,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             if (TreeUtils.isImplicitlyTypeLambda(declaredInTree)) {
                 if (TypesUtils.isErasedSubtype(
                         funcTypeParam.actualType, lambdaParam.actualType, f.types)) {
-                    // The Java types should be exactly the same, but because invocation type inferece
+                    // The Java types should be exactly the same, but because invocation type inferrece
                     // (#979) isn't implement, check first.
                     return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
                 }
@@ -109,9 +109,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                 return lambdaParam;
 
             } else {
-                // The lambda expressions is explicitly type, so the parameters have declared types:
+                // The lambda expression is explicitly typed, so the parameters have declared types:
                 // (String s) -> ...
-                // The declared type that may or may not have explicit annotations.
+                // The declared type may or may not have explicit annotations.
                 // If it does not have an annotation for a hierarchy, then copy the annotation from
                 // the function type rather than use usual defaulting rules.
                 // Note lambdaParam is a super type of funcTypeParam, so only primary annotations

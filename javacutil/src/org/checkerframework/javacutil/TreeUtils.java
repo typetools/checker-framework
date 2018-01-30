@@ -1285,8 +1285,8 @@ public final class TreeUtils {
     /**
      * Returns true if {@code tree} is an implicitly typed lambda.
      *
-     * <p>An lambda whose formal type parameters have inferred types is an implicitly typed lambda.
-     * (See JLS 15.27.1)
+     * <p>A lambda expression whose formal type parameters have inferred types is an implicitly
+     * typed lambda. (See JLS 15.27.1)
      *
      * @param tree any kind of tree
      * @return true iff {@code tree} is an implicitly typed lambda.

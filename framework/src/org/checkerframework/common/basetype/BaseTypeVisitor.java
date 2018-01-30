@@ -2492,9 +2492,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
                 atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
-        // The type to which the member reference is a assigned -- also known as the target type of the reference.
+        // The type to which the member reference is assigned -- also known as the target type of the reference.
         AnnotatedDeclaredType functionalInterface = result.first;
-        // The type of the single method in declared by the functional interface.
+        // The type of the single method that is declared by the functional interface.
         AnnotatedExecutableType functionType = result.second;
 
         // ========= Overriding Type =========
@@ -2502,21 +2502,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // enclosing method.
         // That is handled separately in method receiver check.
 
-        // The type of from  <expression>::method or <type use>::method.
+        // The type of the expression or type use, <expression>::method or <type use>::method.
         AnnotatedTypeMirror type =
                 atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
 
         // ========= Overriding Executable =========
-        // The ::method element
+        // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
         ExecutableElement compileTimeDeclaration =
                 (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
 
         if (type.getKind() == TypeKind.DECLARED && ((AnnotatedDeclaredType) type).wasRaw()) {
             if (((JCMemberReference) memberReferenceTree).kind == ReferenceKind.UNBOUND) {
-                // The method reference is of the form :Type # instMethod
+                // The method reference is of the form: Type # instMethod
                 // and Type is a raw type.
                 // If the first parameter of the function type, p1, is a subtype
-                // of type, then type should be p1.  This has the effect of "infering" the
+                // of type, then type should be p1.  This has the effect of "inferring" the
                 // class type parameter.
                 AnnotatedTypeMirror p1 = functionType.getParameterTypes().get(0);
                 TypeMirror asSuper =
@@ -2533,7 +2533,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // for now this case is skipped below in checkMethodReferenceInference.
         }
 
-        // They type of the compileTimeDeclaration if it were invoked with a receiver expression
+        // The type of the compileTimeDeclaration if it were invoked with a receiver expression
         // of type {@code type}
         AnnotatedExecutableType invocationType =
                 atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, type).first;
@@ -2551,7 +2551,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             functionType = functionType.getErased();
         }
 
-        // Use the function type's parameters to resolve polymorpich qualifiers.
+        // Use the function type's parameters to resolve polymorphic qualifiers.
         QualifierPolymorphism poly =
                 new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
         poly.annotate(functionType, invocationType);
@@ -2606,7 +2606,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue 979.
         if (invocationType.getTypeVariables().size() > 0
                 && (memberReferenceTree.getTypeArguments() == null
-                        || memberReferenceTree.getTypeArguments().size() == 0)) {
+                        || memberReferenceTree.getTypeArguments().isEmpty())) {
             // Method type args
             requiresInference = true;
         } else if (memberReferenceTree.getMode() == ReferenceMode.NEW) {
