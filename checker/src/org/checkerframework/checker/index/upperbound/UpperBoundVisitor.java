@@ -92,8 +92,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         // Check against the minlen of the array itself.
-        Integer minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
-        if (valMax != null && minLen != null && valMax < minLen) {
+        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
+        if (valMax != null && valMax < minLen) {
             return;
         }
 
@@ -144,10 +144,24 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
-            ExpressionTree valueExp,
+            ExpressionTree valueTree,
             @CompilerMessageKey String errorKey) {
-        if (!relaxedCommonAssignment(varType, valueExp)) {
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
+        if (!relaxedCommonAssignment(varType, valueTree)) {
+            super.commonAssignmentCheck(varType, valueTree, errorKey);
+        } else if (checker.hasOption("showchecks")) {
+            // Print the success message because super isn't called.
+            long valuePos = positions.getStartPosition(root, valueTree);
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueTree);
+            System.out.printf(
+                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    "success: actual is subtype of expected",
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    valueTree.getKind(),
+                    valueTree,
+                    valueType.getKind(),
+                    valueType.toString(),
+                    varType.getKind(),
+                    varType.toString());
         }
     }
 

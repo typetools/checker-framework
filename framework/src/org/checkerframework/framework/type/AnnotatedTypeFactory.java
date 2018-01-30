@@ -2886,7 +2886,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Parses the stub files in the following order: <br>
+     * Parses the stub files in the following order:
      *
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
@@ -2919,8 +2919,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             InputStream in = null;
             in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
-                StubParser stubParser = new StubParser("jdk.astub", in, this, processingEnv);
-                stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
+                StubParser.parse(
+                        "jdk.astub",
+                        in,
+                        this,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
             }
         }
 
@@ -2928,8 +2933,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // stub file for type-system independent annotations
         InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
         if (input != null) {
-            StubParser stubParser = new StubParser("flow.astub", input, this, processingEnv);
-            stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
+            StubParser.parse(
+                    "flow.astub",
+                    input,
+                    this,
+                    processingEnv,
+                    typesFromStubFiles,
+                    declAnnosFromStubFiles);
         }
 
         // Stub files specified via stubs compiler option, stubs system property,
@@ -2983,8 +2993,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 InputStream in = null;
                 in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
-                    StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
-                    stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
+                    StubParser.parse(
+                            stubPath,
+                            in,
+                            this,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
                     // We could handle the stubPath -> continue.
                     continue;
                 }
@@ -3006,9 +3021,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             "Could not read stub resource: " + resource.getDescription());
                     continue;
                 }
-                StubParser stubParser =
-                        new StubParser(resource.getDescription(), stubStream, this, processingEnv);
-                stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
+                StubParser.parse(
+                        resource.getDescription(),
+                        stubStream,
+                        this,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
             }
         }
 

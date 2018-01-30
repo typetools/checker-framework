@@ -9,13 +9,13 @@ public interface Set<E extends Object> extends Collection<E> {
   public abstract Iterator<E> iterator();
   public abstract Object [] toArray();
   public abstract <T> T [] toArray(T [] a1);
-  public abstract boolean add(E a1);
-  public abstract boolean remove(Object a1);
+  public abstract boolean add(@GuardSatisfied Set<E> this, E a1);
+  public abstract boolean remove(@GuardSatisfied Set<E> this, Object a1);
   public abstract boolean containsAll(@GuardSatisfied Set<E> this, @GuardSatisfied Collection<?> a1);
-  public abstract boolean addAll(Collection<? extends E> a1);
-  public abstract boolean retainAll(Collection<?> a1);
-  public abstract boolean removeAll(Collection<?> a1);
-  public abstract void clear();
+  public abstract boolean addAll(@GuardSatisfied Set<E> this, Collection<? extends E> a1);
+  public abstract boolean retainAll(@GuardSatisfied Set<E> this, Collection<?> a1);
+  public abstract boolean removeAll(@GuardSatisfied Set<E> this, Collection<?> a1);
+  public abstract void clear(@GuardSatisfied Set<E> this);
   public abstract boolean equals(@GuardSatisfied Set<E> this, @GuardSatisfied Object a1);
   public abstract int hashCode(@GuardSatisfied Set<E> this);
 }

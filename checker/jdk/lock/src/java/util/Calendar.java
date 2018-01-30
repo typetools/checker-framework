@@ -54,42 +54,42 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
   public static Calendar getInstance(Locale a1) { throw new RuntimeException("skeleton method"); }
   public static Calendar getInstance(TimeZone a1, Locale a2) { throw new RuntimeException("skeleton method"); }
   public static synchronized Locale[] getAvailableLocales() { throw new RuntimeException("skeleton method"); }
-  public final Date getTime() { throw new RuntimeException("skeleton method"); }
-  public final void setTime(Date a1) { throw new RuntimeException("skeleton method"); }
-  public long getTimeInMillis() { throw new RuntimeException("skeleton method"); }
-  public void setTimeInMillis(long a1) { throw new RuntimeException("skeleton method"); }
-   public int get(@GuardSatisfied Calendar this,int a1) { throw new RuntimeException("skeleton method"); }
-  public void set(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public final void set(int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public final void set(int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
-  public final void set(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
-  public final void clear() { throw new RuntimeException("skeleton method"); }
-  public final void clear(int a1) { throw new RuntimeException("skeleton method"); }
-   public final boolean isSet(@GuardSatisfied Calendar this,int a1) { throw new RuntimeException("skeleton method"); }
-  public String getDisplayName(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
-  public Map<String, Integer> getDisplayNames(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
-   public boolean equals(@GuardSatisfied Calendar this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+  public final Date getTime(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+  public final void setTime(@GuardSatisfied Calendar this, Date a1) { throw new RuntimeException("skeleton method"); }
+  public long getTimeInMillis(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+  public void setTimeInMillis(@GuardSatisfied Calendar this, long a1) { throw new RuntimeException("skeleton method"); }
+  public int get(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public void set(@GuardSatisfied Calendar this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public final void set(@GuardSatisfied Calendar this, int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public final void set(@GuardSatisfied Calendar this, int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
+  public final void set(@GuardSatisfied Calendar this, int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
+  public final void clear(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+  public final void clear(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public final boolean isSet(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public String getDisplayName(@GuardSatisfied Calendar this, int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
+  public Map<String, Integer> getDisplayNames(@GuardSatisfied Calendar this, int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
+  public boolean equals(@GuardSatisfied Calendar this, @GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
    public int hashCode(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
   public boolean before(Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean after(Object a1) { throw new RuntimeException("skeleton method"); }
-   public int compareTo(@GuardSatisfied Calendar this,@GuardSatisfied Calendar a1) { throw new RuntimeException("skeleton method"); }
-  public abstract void add(int a1, int a2);
-  public abstract void roll(int a1, boolean a2);
-  public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
-  public void setLenient(boolean a1) { throw new RuntimeException("skeleton method"); }
+  public int compareTo(@GuardSatisfied Calendar this, @GuardSatisfied Calendar a1) { throw new RuntimeException("skeleton method"); }
+  public abstract void add(@GuardSatisfied Calendar this, int a1, int a2);
+  public abstract void roll(@GuardSatisfied Calendar this, int a1, boolean a2);
+  public void roll(@GuardSatisfied Calendar this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public void setTimeZone(@GuardSatisfied Calendar this, TimeZone a1) { throw new RuntimeException("skeleton method"); }
+  public TimeZone getTimeZone(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+  public void setLenient(@GuardSatisfied Calendar this, boolean a1) { throw new RuntimeException("skeleton method"); }
    public boolean isLenient(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
-  public void setFirstDayOfWeek(int a1) { throw new RuntimeException("skeleton method"); }
-  public int getFirstDayOfWeek() { throw new RuntimeException("skeleton method"); }
-  public void setMinimalDaysInFirstWeek(int a1) { throw new RuntimeException("skeleton method"); }
-  public int getMinimalDaysInFirstWeek() { throw new RuntimeException("skeleton method"); }
-  public abstract int getMinimum(int a1);
-  public abstract int getMaximum(int a1);
-  public abstract int getGreatestMinimum(int a1);
-  public abstract int getLeastMaximum(int a1);
-  public int getActualMinimum(int a1) { throw new RuntimeException("skeleton method"); }
-  public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
+  public void setFirstDayOfWeek(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public int getFirstDayOfWeek(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+  public void setMinimalDaysInFirstWeek(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public int getMinimalDaysInFirstWeek(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+  public abstract int getMinimum(@GuardSatisfied Calendar this, int a1);
+  public abstract int getMaximum(@GuardSatisfied Calendar this, int a1);
+  public abstract int getGreatestMinimum(@GuardSatisfied Calendar this, int a1);
+  public abstract int getLeastMaximum(@GuardSatisfied Calendar this, int a1);
+  public int getActualMinimum(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public int getActualMaximum(@GuardSatisfied Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
    public Object clone(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
   private static final String[] FIELD_NAME = {
         "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH", "DAY_OF_MONTH",

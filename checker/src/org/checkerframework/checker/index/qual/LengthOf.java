@@ -12,7 +12,8 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+// Has target of METHOD so that it is stored as a declaration annotation and SameLen Checker can read it.
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER, ElementType.METHOD})
 public @interface LengthOf {
     /** Sequences that the annotated expression is equal to the lengeth of. */
     String[] value();
