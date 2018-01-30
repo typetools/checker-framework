@@ -647,7 +647,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return ltlQualifier.convertToAnnotation(processingEnv);
     }
 
-    UBQualifier fromLessThan(Tree tree, TreePath treePath) {
+    UBQualifier fromLessThan(ExpressionTree tree, TreePath treePath) {
         List<String> lessThanExpressions =
                 getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
         if (lessThanExpressions == null) {
@@ -660,7 +660,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return null;
     }
 
-    UBQualifier fromLessThanOrEqual(Tree tree, TreePath treePath) {
+    UBQualifier fromLessThanOrEqual(ExpressionTree tree, TreePath treePath) {
         List<String> lessThanExpressions =
                 getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
         if (lessThanExpressions == null) {

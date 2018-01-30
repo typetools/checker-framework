@@ -27,7 +27,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             TransferInput<CFValue, CFStore> in) {
         LessThanAnnotatedTypeFactory factory =
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
-        // left > right so right is less than left
+        // left > right so right < left
         // Refine right to @LessThan("left")
         Receiver leftRec = FlowExpressions.internalReprOf(factory, left);
         if (leftRec != null && leftRec.isUnmodifiableByOtherCode()) {
@@ -41,9 +41,6 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
         }
-
-        // TODO: Could add transitive here:
-        // other > left and left > right then other > right
     }
 
     @Override
@@ -74,31 +71,4 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
         }
     }
-
-    //    @Override
-    //    public TransferResult<CFValue, CFStore> visitNumericalSubtraction(NumericalSubtractionNode node,
-    //            TransferInput<CFValue, CFStore> in) {
-    //        TransferResult<CFValue, CFStore> result = super.visitNumericalSubtraction(node, in);
-    //        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
-    //
-    //
-    //
-    //
-    //        return createNewResult(result, newAnno);
-    //    }
-    //
-    //    /**
-    //     * Create a new transfer result based on the original result and the new annotation.
-    //     *
-    //     * @param result the original result
-    //     * @param resultAnno the new annotation
-    //     * @return the new transfer result
-    //     */
-    //    private TransferResult<CFValue, CFStore> createNewResult(
-    //            TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
-    //        CFValue newResultValue =
-    //                analysis.createSingleAnnotationValue(
-    //                        resultAnno, result.getResultValue().getUnderlyingType());
-    //        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
-    //    }
 }

@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.inequality;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -54,6 +55,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
+        // Allows + or - in a @LessThan.
         return new OffsetDependentTypesHelper(this);
     }
 
@@ -207,12 +209,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a modifiable list of expressions in the annotation sorted. If the annotation is
-     * {@link LessThanBottom}, return null. If the annotation is {@link LessThanUnknown} return the
-     * empty list.
+     * Returns a sorted, modifiable list of expressions that {@code expression} is less than. If the
+     * {@code expression} is annotated with {@link LessThanBottom}, null is returned.
      */
-    public List<String> getLessThanExpressions(Tree tree) {
-        AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(tree);
+    public List<String> getLessThanExpressions(ExpressionTree expression) {
+        AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
         if (annotatedTypeMirror.getAnnotations().size() != 1) {
             return new ArrayList<>();
         }
