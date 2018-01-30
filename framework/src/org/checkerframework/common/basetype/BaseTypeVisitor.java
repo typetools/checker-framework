@@ -2503,7 +2503,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // That is handled separately in method receiver check.
 
         // The type of the expression or type use, <expression>::method or <type use>::method.
-        AnnotatedTypeMirror type =
+        AnnotatedTypeMirror enclosingType =
                 atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
 
         // ========= Overriding Executable =========
@@ -2511,7 +2511,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement compileTimeDeclaration =
                 (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
 
-        if (type.getKind() == TypeKind.DECLARED && ((AnnotatedDeclaredType) type).wasRaw()) {
+        if (enclosingType.getKind() == TypeKind.DECLARED
+                && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
             if (((JCMemberReference) memberReferenceTree).kind == ReferenceKind.UNBOUND) {
                 // The method reference is of the form: Type # instMethod
                 // and Type is a raw type.
@@ -2522,10 +2523,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 TypeMirror asSuper =
                         TypesUtils.asSuper(
                                 p1.getUnderlyingType(),
-                                type.getUnderlyingType(),
+                                enclosingType.getUnderlyingType(),
                                 atypeFactory.getProcessingEnv());
                 if (asSuper != null) {
-                    type = AnnotatedTypes.asSuper(atypeFactory, p1, type);
+                    enclosingType = AnnotatedTypes.asSuper(atypeFactory, p1, enclosingType);
                 }
             }
             // else method reference is something like ArrayList::new
@@ -2536,9 +2537,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // The type of the compileTimeDeclaration if it were invoked with a receiver expression
         // of type {@code type}
         AnnotatedExecutableType invocationType =
-                atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, type).first;
+                atypeFactory.methodFromUse(
+                                memberReferenceTree, compileTimeDeclaration, enclosingType)
+                        .first;
 
-        if (checkMethodReferenceInference(memberReferenceTree, invocationType, type)) {
+        if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
             // Type argument inference is required, skip check.
             // #checkMethodReferenceInference issued a warning.
             return true;
@@ -2558,9 +2561,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         AnnotatedTypeMirror invocationReturnType;
         if (compileTimeDeclaration.getKind() == ElementKind.CONSTRUCTOR) {
-            if (type.getKind() == TypeKind.ARRAY) {
+            if (enclosingType.getKind() == TypeKind.ARRAY) {
                 // Special casing for the return of array constructor
-                invocationReturnType = type;
+                invocationReturnType = enclosingType;
             } else {
                 invocationReturnType =
                         atypeFactory.getResultingTypeOfConstructorMemberReference(
@@ -2582,7 +2585,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 createOverrideChecker(
                         memberReferenceTree,
                         invocationType,
-                        type,
+                        enclosingType,
                         invocationReturnType,
                         functionType,
                         functionalInterface,
