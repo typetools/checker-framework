@@ -104,10 +104,9 @@ public class IndexUtil {
 
     /**
      * Queries the Value Checker to determine if there is a known minimum length for the array
-     * represented by {@code tree}. If not, returns null.
+     * represented by {@code tree}. If not, returns 0.
      */
-    public static Integer getMinLen(
-            Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
+    public static int getMinLen(Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
         AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
     }

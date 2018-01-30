@@ -152,6 +152,8 @@ When you create a new checker, you need to also supply annotations for
 parts of the JDK, either as stub files or as source code that will be
 compiled and its annotations inserted into the JDK\@.  This
 section describes the latter approach.
+It assumes that you have already followed the instructions for building the
+Checker Framework from source (Section~\ref{build-source}).
 
 If you are adding annotations to an existing annotated JDK, then you only
 need to follow the last two steps.
@@ -367,6 +369,8 @@ but no method bodies.  A
 checker uses the annotated signatures at compile time, instead of or in
 addition to annotations that appear in the library.
 
+Section~\ref{annotating-jdk} explains how you should choose between
+creating stub classes or creating an annotated library.
 Section~\ref{stub-creating} describes how to create stub classes.
 Section~\ref{stub-using} describes how to use stub classes.
 These sections illustrate stub classes via the example of creating a \refqualclass{checker/interning/qual}{Interned}-annotated
@@ -480,6 +484,9 @@ following ways:
 
 \subsection{Creating a stub file\label{stub-creating}}
 
+Stub files are generally stored together with the checker implementation,
+in the same directory as the checker's \<.java> source code.
+
 
 \subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
 
@@ -503,7 +510,8 @@ annotations are in a format that the library maintainers can even
 incorporate.
 
 The downside of this approach is that the stub files are larger.  This can
-slow down parsing.
+slow down the Checker Framework, because it parses the stub files each time
+it runs.
 % Furthermore, a programmer must search the stub file
 % for a given method rather than just skimming a few pages of method signatures.
 

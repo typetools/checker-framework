@@ -815,6 +815,13 @@
         </antcall>
     </target>
 
+    <target name="reformat"
+          description="Reformat Java code">
+        <ant dir="..">
+            <target name="reformat"/>
+        </ant>
+    </target>
+
 
     <!-- For debugging -->
     <target name="showvars" depends="prep">

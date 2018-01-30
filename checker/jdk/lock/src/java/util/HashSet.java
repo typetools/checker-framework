@@ -12,8 +12,8 @@ public class HashSet<E extends Object> extends AbstractSet<E> implements Set<E>,
    public boolean isEmpty(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
    public boolean contains(@GuardSatisfied HashSet<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
    public boolean containsAll(@GuardSatisfied HashSet<E> this, @GuardSatisfied Collection<?> a1) { throw new RuntimeException("skeleton method"); }
-  public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
-  public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
-  public void clear() { throw new RuntimeException("skeleton method"); }
+  public boolean add(@GuardSatisfied HashSet<E> this, E a1) { throw new RuntimeException("skeleton method"); }
+  public boolean remove(@GuardSatisfied HashSet<E> this, Object a1) { throw new RuntimeException("skeleton method"); }
+  public void clear(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
    public Object clone(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
 }
