@@ -98,7 +98,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                     f.getFnInterfaceFromTree(lambdaDecl);
             AnnotatedExecutableType functionType = res.second;
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
-            if (TreeUtils.isImplicitlyTypeLambda(declaredInTree)) {
+            if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
                 if (TypesUtils.isErasedSubtype(
                         funcTypeParam.actualType, lambdaParam.actualType, f.types)) {
                     // The Java types should be exactly the same, but because invocation type inferrece
