@@ -80,7 +80,7 @@ public class CustomContractWithArgs {
         }
 
         @EnsuresLTLIf(expression = "b", targetValue = "#1", targetOffset = "#3", result = true)
-        //:: error: (flowexpr.parse.error)
+        // :: error: (flowexpr.parse.error)
         boolean ltlPostInvalid(int[] a, int c) {
             return false;
         }
