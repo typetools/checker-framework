@@ -154,7 +154,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected AnnotationClassLoader createAnnotationClassLoader() {
-        // Use the Units Annotated Type Loader instead of the default one
+        // Use the UnitsAnnotationClassLoader instead of the default one
         return new UnitsAnnotationClassLoader(checker);
     }
 

@@ -286,10 +286,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected ReflectionResolver reflectionResolver;
 
-    /**
-     * Annotated Type Loader used to load annotation classes via reflective lookup. This field can
-     * be set to null to disable the use of a loader.
-     */
+    /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
     protected AnnotationClassLoader loader;
 
     /** Indicates that the whole-program inference is on. */
@@ -701,10 +698,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Factory method to easily change what {@link AnnotationClassLoader} is created to load
+     * Factory method to easily change what {@link AnnotationClassLoader} is created to load type
      * annotation classes. Subclasses can override this method and return a custom
-     * AnnotationClassLoader subclass to customize loading logic, or return null to disable the
-     * loader.
+     * AnnotationClassLoader subclass to customize loading logic.
      */
     protected AnnotationClassLoader createAnnotationClassLoader() {
         return new AnnotationClassLoader(checker);
