@@ -11,7 +11,11 @@ JAVAC?=../../../checker/bin/javac
 # for custom projects, it is best to encode the full root path as a variable
 PROJECTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-all: compile-for-test named-quals-test qual-folder-test clean
+# NOTE: disabling units extension test as we no longer support loading external classes
+# that are not type annotations, in this case FrequencyRelations.java.
+# A future PR will update the mechanism for specifying units relationships externally
+all: clean
+# all: compile-for-test named-quals-test qual-folder-test clean
 
 demo:
 	$(JAVAC) $(JAVAOPTS) $(FILES)
