@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -66,6 +67,12 @@ public class KeyForAnnotatedTypeFactory
         erasedMapType = types.erasure(mapType);
 
         this.postInit();
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // KeyForChecker does not use a class loader
+        return null;
     }
 
     @Override

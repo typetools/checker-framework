@@ -49,7 +49,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected AnnotationClassLoader createAnnotationClassLoader() {
-        // Search Index Checker does not use a class loader
+        // SearchIndexChecker does not use a class loader
         return null;
     }
 

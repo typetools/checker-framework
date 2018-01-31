@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.UnknownClass;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -45,6 +46,12 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         super(checker);
         postInit();
         addTypeNameImplicit(java.lang.Void.class, BOTTOM);
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // WholeProgramInferenceTestChecker does not use a class loader
+        return null;
     }
 
     @Override

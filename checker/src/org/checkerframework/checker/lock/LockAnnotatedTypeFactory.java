@@ -45,6 +45,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -211,6 +212,12 @@ public class LockAnnotatedTypeFactory
         } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions
             return false;
         }
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // LockChecker does not use a class loader
+        return null;
     }
 
     @Override

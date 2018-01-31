@@ -109,7 +109,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected AnnotationClassLoader createAnnotationClassLoader() {
-        // Lower Bound Checker does not use a class loader
+        // LowerBoundChecker does not use a class loader
         return null;
     }
 

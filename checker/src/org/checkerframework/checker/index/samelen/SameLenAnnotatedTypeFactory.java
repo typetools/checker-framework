@@ -75,7 +75,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected AnnotationClassLoader createAnnotationClassLoader() {
-        // Same Len Checker does not use a class loader
+        // SameLenChecker does not use a class loader
         return null;
     }
 

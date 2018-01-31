@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import testlib.defaulting.LowerBoundQual.LB_BOTTOM;
 import testlib.defaulting.LowerBoundQual.LB_EXPLICIT;
 import testlib.defaulting.LowerBoundQual.LB_IMPLICIT;
@@ -16,6 +17,12 @@ public class DefaultingLowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeF
     public DefaultingLowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // DefaultingLowerBoundChecker does not use a class loader
+        return null;
     }
 
     @Override

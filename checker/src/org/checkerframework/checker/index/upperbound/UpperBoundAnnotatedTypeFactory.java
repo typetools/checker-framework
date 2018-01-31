@@ -100,7 +100,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected AnnotationClassLoader createAnnotationClassLoader() {
-        // Upper Bound Checker does not use a class loader
+        // UpperBoundChecker does not use a class loader
         return null;
     }
 

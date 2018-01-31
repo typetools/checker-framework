@@ -9,6 +9,7 @@ import org.checkerframework.checker.i18n.qual.LocalizableKeyBottom;
 import org.checkerframework.checker.i18n.qual.UnknownLocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
@@ -21,6 +22,12 @@ public class LocalizableKeyAnnotatedTypeFactory extends PropertyKeyAnnotatedType
 
     public LocalizableKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // LocalizableKeyChecker does not use a class loader
+        return null;
     }
 
     @Override

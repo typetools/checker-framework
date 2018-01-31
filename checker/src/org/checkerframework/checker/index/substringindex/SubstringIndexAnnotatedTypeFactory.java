@@ -40,7 +40,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     protected AnnotationClassLoader createAnnotationClassLoader() {
-        // Substring Index Checker does not use a class loader
+        // SubstringIndexChecker does not use a class loader
         return null;
     }
 

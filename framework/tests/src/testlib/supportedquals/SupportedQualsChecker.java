@@ -7,6 +7,7 @@ import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import testlib.supportedquals.qual.BottomQualifier;
 import testlib.supportedquals.qual.Qualifier;
 
@@ -30,6 +31,12 @@ public class SupportedQualsChecker extends BaseTypeChecker {
         public SupportedQualsAnnotatedTypeFactory(BaseTypeChecker checker) {
             super(checker);
             postInit();
+        }
+
+        @Override
+        protected AnnotationClassLoader createAnnotationClassLoader() {
+            // SupportedQualsChecker does not use a class loader
+            return null;
         }
 
         @Override

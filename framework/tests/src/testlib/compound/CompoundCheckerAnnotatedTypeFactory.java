@@ -10,6 +10,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -21,6 +22,12 @@ public class CompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     public CompoundCheckerAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // CompoundChecker does not use a class loader
+        return null;
     }
 
     @Override
