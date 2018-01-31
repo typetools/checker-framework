@@ -16,10 +16,13 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        AnnotationClassLoader loader = new SubtypingAnnotationClassLoader(checker);
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        return new SubtypingAnnotationClassLoader(checker);
+    }
 
-        Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        Set<Class<? extends Annotation>> qualSet = new HashSet<>();
 
         String qualNames = checker.getOption("quals");
         String qualDirectories = checker.getOption("qualDirs");
