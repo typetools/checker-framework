@@ -291,7 +291,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Annotated Type Loader used to load annotation classes via reflective lookup. This field can
      * be set to null to disable the use of a loader.
      */
-    protected AnnotationClassLoader loader;
+    protected final AnnotationClassLoader loader;
 
     /** Indicates that the whole-program inference is on. */
     private final boolean infer;
@@ -865,12 +865,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("varargs")
     private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
-        Set<Class<? extends Annotation>> annotations = new LinkedHashSet<>();
+        Set<Class<? extends Annotation>> annotations;
 
         // If the loader is not disabled, add the annotations bunded in the qual directory to the
         // annotation set
         if (loader != null) {
-            annotations.addAll(loader.getBundledAnnotationClasses());
+            annotations = loader.getBundledAnnotationClasses();
+        } else {
+            annotations = new LinkedHashSet<>();
         }
 
         // add in all explicitly Listed qualifiers

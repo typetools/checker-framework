@@ -121,7 +121,7 @@ public class AnnotationClassLoader {
         // each component of the fully qualified package name will be used later
         // to recursively descend from a root directory to see if the package
         // exists in some particular root directory
-        fullyQualifiedPackageNameSegments = new ArrayList<String>();
+        fullyQualifiedPackageNameSegments = new ArrayList<>();
 
         // from the fully qualified package name, split it at every dot then add
         // to the list
@@ -150,7 +150,7 @@ public class AnnotationClassLoader {
             resourceURL = getURLFromClasspaths();
         }
 
-        supportedBundledAnnotationClasses = new LinkedHashSet<Class<? extends Annotation>>();
+        supportedBundledAnnotationClasses = new LinkedHashSet<>();
 
         loadBundledAnnotationClasses();
     }
@@ -393,7 +393,7 @@ public class AnnotationClassLoader {
      * @return an immutable linked hashset of the classpaths
      */
     private final Set<String> getClasspaths() {
-        Set<String> paths = new LinkedHashSet<String>();
+        Set<String> paths = new LinkedHashSet<>();
 
         // add all extension paths
         paths.addAll(Arrays.asList(System.getProperty("java.ext.dirs").split(File.pathSeparator)));
@@ -533,7 +533,7 @@ public class AnnotationClassLoader {
      * @return a set of fully qualified class names of the annotations
      */
     private final Set<String> getBundledAnnotationNamesFromJar(final JarFile jar) {
-        Set<String> annos = new LinkedHashSet<String>();
+        Set<String> annos = new LinkedHashSet<>();
 
         // get an enumeration iterator for all the content entries in the jar
         // file
@@ -607,7 +607,7 @@ public class AnnotationClassLoader {
      */
     private final Set<String> getAnnotationNamesFromDirectory(
             final String packageName, final String rootDirectory, final File currentDirectory) {
-        Set<String> results = new LinkedHashSet<String>();
+        Set<String> results = new LinkedHashSet<>();
 
         // check every file and directory within the current directory
         File[] directoryContents = currentDirectory.listFiles();
@@ -751,8 +751,7 @@ public class AnnotationClassLoader {
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
             final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames, boolean issueWarnings) {
-        Set<Class<? extends Annotation>> loadedClasses =
-                new LinkedHashSet<Class<? extends Annotation>>();
+        Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
         if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {
             // loop through each class name & load the class

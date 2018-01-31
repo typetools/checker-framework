@@ -7,7 +7,6 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -162,8 +161,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // get all the loaded annotations
-        Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<>();
-        qualSet.addAll(getBundledTypeQualifiersWithPolyAll());
+        Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiersWithPolyAll();
 
         // load all the external units
         loadAllExternalUnits();
