@@ -6,19 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotationClassLoader;
 
 public class DefaultingUpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public DefaultingUpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
-    }
-
-    @Override
-    protected AnnotationClassLoader createAnnotationClassLoader() {
-        // DefaultingUpperBoundChecker does not use a class loader
-        return null;
     }
 
     @Override

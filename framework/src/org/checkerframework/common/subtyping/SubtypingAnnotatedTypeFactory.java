@@ -1,7 +1,7 @@
 package org.checkerframework.common.subtyping;
 
 import java.lang.annotation.Annotation;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -22,7 +22,11 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Set<Class<? extends Annotation>> qualSet = new HashSet<>();
+        // Subtyping Checker doesn't have a qual directory, so we instantiate the loader here to
+        // load externally declared annotations
+        loader = createAnnotationClassLoader();
+
+        Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<>();
 
         String qualNames = checker.getOption("quals");
         String qualDirectories = checker.getOption("qualDirs");

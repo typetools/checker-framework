@@ -37,8 +37,14 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // Load everything in qual directory
-        Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiersWithPolyAll();
+        // Load everything in qual directory, and top, bottom, unqualified, and fake enum
+        Set<Class<? extends Annotation>> qualSet =
+                getBundledTypeQualifiersWithPolyAll(
+                        FenumTop.class,
+                        Fenum.class,
+                        FenumUnqualified.class,
+                        FenumBottom.class,
+                        PolyFenum.class);
 
         // Load externally defined quals given in the -Aquals and/or -AqualDirs options
         String qualNames = checker.getOption("quals");
@@ -57,13 +63,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
             }
         }
-
-        // Load top, bottom, unqualified, and fake enum
-        qualSet.add(FenumTop.class);
-        qualSet.add(Fenum.class);
-        qualSet.add(FenumUnqualified.class);
-        qualSet.add(FenumBottom.class);
-        qualSet.add(PolyFenum.class);
 
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...

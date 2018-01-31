@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -291,7 +290,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Annotated Type Loader used to load annotation classes via reflective lookup. This field can
      * be set to null to disable the use of a loader.
      */
-    protected final AnnotationClassLoader loader;
+    protected AnnotationClassLoader loader;
 
     /** Indicates that the whole-program inference is on. */
     private final boolean infer;
@@ -353,7 +352,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
-        this.loader = createAnnotationClassLoader();
         this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
@@ -847,9 +845,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Loads all annotations contained in the qual directory of a checker via reflection, and has
-     * the option to include an explicitly stated list of annotations (eg ones found in a different
-     * directory than qual).
+     * Instantiates the AnnotationClassLoader and loads all annotations contained in the qual
+     * directory of a checker via reflection, and has the option to include an explicitly stated
+     * list of annotations (eg ones found in a different directory than qual).
      *
      * <p>The annotations that are automatically loaded must have the {@link
      * java.lang.annotation.Target Target} meta-annotation with the value of {@link
@@ -865,15 +863,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("varargs")
     private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
-        Set<Class<? extends Annotation>> annotations;
+        loader = createAnnotationClassLoader();
 
-        // If the loader is not disabled, add the annotations bunded in the qual directory to the
-        // annotation set
-        if (loader != null) {
-            annotations = loader.getBundledAnnotationClasses();
-        } else {
-            annotations = new LinkedHashSet<>();
-        }
+        Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
 
         // add in all explicitly Listed qualifiers
         if (explicitlyListedAnnotations != null) {

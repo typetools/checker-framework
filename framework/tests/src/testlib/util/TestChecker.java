@@ -71,12 +71,6 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected AnnotationClassLoader createAnnotationClassLoader() {
-        // TestChecker does not use a class loader
-        return null;
-    }
-
-    @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new HashSet<Class<? extends Annotation>>(
                 Arrays.asList(
