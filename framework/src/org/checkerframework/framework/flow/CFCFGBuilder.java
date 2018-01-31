@@ -154,6 +154,7 @@ public class CFCFGBuilder extends CFGBuilder {
                 AnnotatedArrayType newArrayType =
                         (AnnotatedArrayType) AnnotatedTypeMirror.createType(type, factory, false);
                 newArrayType.setComponentType(annotatedArrayType);
+                newArrayType.addAnnotations(annotatedArrayType.getEffectiveAnnotations());
                 annotatedArrayType = newArrayType;
             }
 
