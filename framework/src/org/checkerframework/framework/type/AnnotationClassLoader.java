@@ -25,8 +25,6 @@ import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.subtyping.SubtypingChecker;
-import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -741,7 +739,7 @@ public class AnnotationClassLoader {
      *
      * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
      *     class's fully qualified name
-     * @param issueWarnings set to true to issue a warning when a loaded annotation is not a type
+     * @param issueErrors set to true to issue an error when a loaded annotation is not a type
      *     annotation. It is useful to set this to true if the given set of annotations must all be
      *     well-defined type annotations (eg annotation class names given as command line
      *     arguments). This should be set to false if the given set of annotations contain
@@ -750,14 +748,14 @@ public class AnnotationClassLoader {
      * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames, boolean issueWarnings) {
+            final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames, boolean issueErrors) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
         if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {
             // loop through each class name & load the class
             for (String fullyQualifiedAnnoName : fullyQualifiedAnnoNames) {
                 Class<? extends Annotation> annoClass =
-                        loadAnnotationClass(fullyQualifiedAnnoName, issueWarnings);
+                        loadAnnotationClass(fullyQualifiedAnnoName, issueErrors);
                 if (annoClass != null) {
                     loadedClasses.add(annoClass);
                 }
@@ -768,12 +766,12 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Checks to see whether a particular annotation class has the @Target meta-annotation, and has
-     * the required {@link ElementType} values as checked by {@link
+     * Checks to see whether a particular annotation class has the {@link Target} meta-annotation,
+     * and has the required {@link ElementType} values as checked by {@link
      * AnnotatedTypes#hasTypeQualifierElementTypes(ElementType[], Class)}.
      *
      * <p>A subclass may override this method to load annotations that are not intended to be
-     * annotated in source code. E.g.: {@link SubtypingChecker} overrides this method to load {@link
+     * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code
      * Unqualified}
      *
      * @param annoClass an annotation class
@@ -781,7 +779,6 @@ public class AnnotationClassLoader {
      */
     protected boolean hasWellDefinedTargetMetaAnnotation(
             final Class<? extends Annotation> annoClass) {
-        // make sure the loaded annotation class has or is the special qualifier @Unqualified
         return annoClass.getAnnotation(Target.class) != null
                 && AnnotatedTypes.hasTypeQualifierElementTypes(
                         annoClass.getAnnotation(Target.class).value(), annoClass);
