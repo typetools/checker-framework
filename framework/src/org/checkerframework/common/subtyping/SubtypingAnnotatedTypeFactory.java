@@ -17,7 +17,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        AnnotationClassLoader loader = new AnnotationClassLoader(checker);
+        AnnotationClassLoader loader = new SubtypingAnnotationClassLoader(checker);
 
         Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
 

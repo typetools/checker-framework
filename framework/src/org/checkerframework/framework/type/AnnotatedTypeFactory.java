@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -286,7 +287,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected ReflectionResolver reflectionResolver;
 
-    /** Annotated Type Loader used to load annotation classes via reflective lookup */
+    /**
+     * Annotated Type Loader used to load annotation classes via reflective lookup. This field can
+     * be set to null to disable the use of a loader.
+     */
     protected AnnotationClassLoader loader;
 
     /** Indicates that the whole-program inference is on. */
@@ -349,7 +353,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
-        this.loader = new AnnotationClassLoader(checker);
+        this.loader = createAnnotationClassLoader();
         this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
@@ -699,6 +703,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Factory method to easily change what {@link AnnotationClassLoader} is created to load
+     * annotation classes. Subclasses can override this method and return a custom
+     * AnnotationClassLoader subclass to customize loading logic, or return null to disable the
+     * loader.
+     */
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        return new AnnotationClassLoader(checker);
+    }
+
+    /**
      * Returns a mutable set of annotation classes that are supported by a checker
      *
      * <p>Subclasses may override this method and to return a mutable set of their supported type
@@ -800,7 +814,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithPolyAll(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations =
-                loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
+                getBundledTypeQualifiersWithoutPolyAll(explicitlyListedAnnotations);
         boolean addPolyAll = false;
         for (Class<? extends Annotation> annotationClass : annotations) {
             if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
@@ -851,8 +865,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("varargs")
     private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
-        // add the loaded annotations to the annotation set
-        Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
+        Set<Class<? extends Annotation>> annotations = new LinkedHashSet<>();
+
+        // If the loader is not disabled, add the annotations bunded in the qual directory to the
+        // annotation set
+        if (loader != null) {
+            annotations.addAll(loader.getBundledAnnotationClasses());
+        }
 
         // add in all explicitly Listed qualifiers
         if (explicitlyListedAnnotations != null) {

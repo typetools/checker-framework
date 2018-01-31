@@ -13,6 +13,7 @@ import org.checkerframework.checker.index.upperbound.UBQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -35,6 +36,12 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         UNKNOWN = AnnotationBuilder.fromClass(elements, SubstringIndexUnknown.class);
         BOTTOM = AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
         this.postInit();
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // Substring Index Checker does not use a class loader
+        return null;
     }
 
     /**

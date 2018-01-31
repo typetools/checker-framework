@@ -7,7 +7,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -23,6 +23,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -153,12 +154,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+    protected AnnotationClassLoader createAnnotationClassLoader() {
         // Use the Units Annotated Type Loader instead of the default one
-        loader = new UnitsAnnotationClassLoader(checker);
+        return new UnitsAnnotationClassLoader(checker);
+    }
 
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // get all the loaded annotations
-        Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
+        Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<>();
         qualSet.addAll(getBundledTypeQualifiersWithPolyAll());
 
         // load all the external units
@@ -190,6 +194,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Loads and processes a single external units qualifier. */
     private void loadExternalUnit(String annoName) {
+        // loadExternalAnnotationClass() returns null for alias units
         Class<? extends Annotation> loadedClass = loader.loadExternalAnnotationClass(annoName);
         if (loadedClass != null) {
             addUnitToExternalQualMap(loadedClass);

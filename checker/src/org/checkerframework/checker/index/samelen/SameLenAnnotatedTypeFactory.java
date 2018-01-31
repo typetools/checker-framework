@@ -29,6 +29,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -70,6 +71,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Gets a helper object that holds references to methods with special handling. */
     IndexMethodIdentifier getMethodIdentifier() {
         return imf;
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // Same Len Checker does not use a class loader
+        return null;
     }
 
     @Override

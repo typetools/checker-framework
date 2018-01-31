@@ -18,6 +18,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -44,6 +45,12 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // Search Index Checker does not use a class loader
+        return null;
     }
 
     @Override

@@ -41,6 +41,7 @@ import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -104,6 +105,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         imf = new IndexMethodIdentifier(this);
 
         this.postInit();
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // Lower Bound Checker does not use a class loader
+        return null;
     }
 
     @Override

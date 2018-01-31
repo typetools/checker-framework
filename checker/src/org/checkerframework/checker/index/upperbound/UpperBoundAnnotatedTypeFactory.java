@@ -53,6 +53,7 @@ import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -97,6 +98,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Gets a helper object that holds references to methods with special handling. */
     IndexMethodIdentifier getMethodIdentifier() {
         return imf;
+    }
+
+    @Override
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // Upper Bound Checker does not use a class loader
+        return null;
     }
 
     @Override
