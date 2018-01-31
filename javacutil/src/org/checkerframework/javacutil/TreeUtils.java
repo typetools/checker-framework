@@ -38,6 +38,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
+import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -1278,5 +1280,19 @@ public final class TreeUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         Types javacTypes = Types.instance(ctx);
         return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
+    }
+
+    /**
+     * Returns true if {@code tree} is an implicitly typed lambda.
+     *
+     * <p>A lambda expression whose formal type parameters have inferred types is an implicitly
+     * typed lambda. (See JLS 15.27.1)
+     *
+     * @param tree any kind of tree
+     * @return true iff {@code tree} is an implicitly typed lambda.
+     */
+    public static boolean isImplicitlyTypedLambda(Tree tree) {
+        return tree.getKind() == Kind.LAMBDA_EXPRESSION
+                && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
     }
 }
