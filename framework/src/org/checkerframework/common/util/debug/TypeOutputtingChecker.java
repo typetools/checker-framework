@@ -106,6 +106,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
         Elements elements = env.getElementUtils();
 
+        // TODO: Instead of using a GeneralAnnotatedTypeFactory, just use standard javac classes
+        // to print explicit annotations.
         AnnotatedTypeFactory atypeFactory = new GeneralAnnotatedTypeFactory(this);
 
         for (String className : args) {
@@ -136,8 +138,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     }
 
     /**
-     * A "general" annotated type factory that supports qualifiers from any type hierarchy. One big
-     * limitation is that it does not support annotations coming from a stub file.
+     * Stores any explicit annotation in AnnotatedTypeMirrors. It doesn't have a qualifier
+     * hierarchy, so it violates most of the specifications for AnnotatedTypeMirrors and
+     * AnnotatedTypeFactorys, which may cause crashes and other unexpected behaviors.
      */
     public static class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
