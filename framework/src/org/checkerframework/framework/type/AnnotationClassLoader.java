@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -485,7 +484,7 @@ public class AnnotationClassLoader {
                 jarFile = connection.getJarFile();
             } catch (IOException e) {
                 ErrorReporter.errorAbort(
-                        "AnnotatedTypeLoader: cannot open the Jar file " + resourceURL.getFile());
+                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
             }
 
             // get class names inside the jar file within the particular package
@@ -504,7 +503,7 @@ public class AnnotationClassLoader {
                             packageName + DOT, resourceURL.getFile(), packageDir);
         } else {
             // We do not support a resource URL with any other protocols, so create an empty set.
-            annotationNames = new HashSet<>();
+            annotationNames = Collections.emptySet();
         }
 
         supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
@@ -786,8 +785,8 @@ public class AnnotationClassLoader {
      * <p>By default, all loaded annotations that pass the basic checks in {@link
      * #loadAnnotationClass(String, boolean)} are supported.
      *
-     * <p>Individual checkers can create a subclass of AnnotatedTypeLoader and override this method
-     * to indicate whether a particular annotation is supported.
+     * <p>Individual checkers can create a subclass of AnnotationClassLoader and override this
+     * method to indicate whether a particular annotation is supported.
      *
      * @param annoClass an annotation class
      * @return true if the annotation is supported, false if it isn't
