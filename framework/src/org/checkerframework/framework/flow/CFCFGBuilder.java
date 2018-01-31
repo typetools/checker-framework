@@ -148,15 +148,13 @@ public class CFCFGBuilder extends CFGBuilder {
             factory.shouldCache = false;
             AnnotatedTypeMirror annotatedArrayType = factory.getAnnotatedType(expression);
             factory.shouldCache = oldShouldCache;
-            if (annotatedArrayType.getKind() == TypeKind.WILDCARD) {
-                if (((AnnotatedWildcardType) annotatedArrayType).isUninferredTypeArgument()) {
-                    TypeMirror type = TreeUtils.typeOf(expression);
-                    AnnotatedArrayType newArrayType =
-                            (AnnotatedArrayType)
-                                    AnnotatedTypeMirror.createType(type, factory, false);
-                    newArrayType.setComponentType(annotatedArrayType);
-                    annotatedArrayType = newArrayType;
-                }
+            if (annotatedArrayType.getKind() == TypeKind.WILDCARD
+                    && ((AnnotatedWildcardType) annotatedArrayType).isUninferredTypeArgument()) {
+                TypeMirror type = TreeUtils.typeOf(expression);
+                AnnotatedArrayType newArrayType =
+                        (AnnotatedArrayType) AnnotatedTypeMirror.createType(type, factory, false);
+                newArrayType.setComponentType(annotatedArrayType);
+                annotatedArrayType = newArrayType;
             }
 
             assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType)
