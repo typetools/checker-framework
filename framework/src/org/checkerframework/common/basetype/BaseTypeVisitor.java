@@ -2901,8 +2901,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     receiverArg = overridingType;
                     break;
                 case IMPLICIT_INNER:
+                    // JLS 15.13.1 "It is a compile-time error if the method reference expression is
+                    // of the form ClassType :: [TypeArguments] new and a compile-time error would
+                    // occur when determining an enclosing instance for ClassType as specified in
+                    // 15.9.2 (treating the method reference expression as if it were an unqualified
+                    // class instance creation expression)."
+
+                    // So a member reference can only refer to an inner class constructor if a type
+                    // that encloses the inner class can be found. So either "this" is that enclosing
+                    // type or "this" has an enclosing type that is that type.
                     receiverDecl = overrider.getReceiverType();
                     receiverArg = atypeFactory.getSelfType(memberTree);
+                    while (!TypesUtils.isErasedSubtype(
+                            receiverArg.getUnderlyingType(),
+                            receiverDecl.getUnderlyingType(),
+                            types)) {
+                        receiverArg = ((AnnotatedDeclaredType) receiverArg).getEnclosingType();
+                    }
+
                     break;
                 case TOPLEVEL:
                 case STATIC:
