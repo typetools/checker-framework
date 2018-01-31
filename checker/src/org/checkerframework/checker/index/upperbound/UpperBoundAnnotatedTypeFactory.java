@@ -29,10 +29,8 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
@@ -440,8 +438,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
                     break;
+                case REMAINDER:
+                    addAnnotationForRemainder(left, right, type);
+                    break;
                 case AND:
                     addAnnotationForAnd(left, right, type);
+                    break;
+                case RIGHT_SHIFT:
+                case UNSIGNED_RIGHT_SHIFT:
+                    addAnnotationForRightShift(left, right, type);
                     break;
                 default:
                     break;
@@ -449,23 +454,42 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitBinary(tree, type);
         }
 
+        /** Infers upper-bound annotation for {@code left >> right} and {@code left >>> right} */
+        private void addAnnotationForRightShift(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
+            if (lowerBoundATF.isNonNegative(left)) {
+                AnnotationMirror annotation =
+                        getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
+                // For non-negative numbers, right shift is equivalent to division by a power of two
+                // The range of the shift amount is limited to 0..30 to avoid overflows and int/long differences
+                Long shiftAmount = IndexUtil.getExactValue(right, getValueAnnotatedTypeFactory());
+                if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
+                    int divisor = 1 << shiftAmount;
+                    // Support average by shift just like for division
+                    UBQualifier plusDivQualifier = plusTreeDivideByVal(divisor, left);
+                    if (!plusDivQualifier.isUnknown()) {
+                        UBQualifier qualifier = UBQualifier.createUBQualifier(annotation);
+                        qualifier = qualifier.glb(plusDivQualifier);
+                        annotation = convertUBQualifierToAnnotation(qualifier);
+                    }
+                }
+                type.addAnnotation(annotation);
+            }
+        }
+
         private void addAnnotationForAnd(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
             AnnotatedTypeMirror leftType = getAnnotatedType(left);
-            AnnotatedTypeMirror leftLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
             AnnotationMirror leftResultType = UNKNOWN;
-            if (leftLBType.hasAnnotation(NonNegative.class)
-                    || leftLBType.hasAnnotation(Positive.class)) {
+            if (lowerBoundATF.isNonNegative(left)) {
                 leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(right);
-            AnnotatedTypeMirror rightLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
             AnnotationMirror rightResultType = UNKNOWN;
-            if (rightLBType.hasAnnotation(NonNegative.class)
-                    || rightLBType.hasAnnotation(Positive.class)) {
+            if (lowerBoundATF.isNonNegative(right)) {
                 rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
             }
 
@@ -475,6 +499,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
         private ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
             return IndexUtil.getLengthSequenceTree(lengthTree, imf, processingEnv);
+        }
+
+        /** Infers upper-bound annotation for {@code numerator % divisor}. */
+        private void addAnnotationForRemainder(
+                ExpressionTree numeratorTree,
+                ExpressionTree divisorTree,
+                AnnotatedTypeMirror resultType) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
+            UBQualifier result = UpperBoundUnknownQualifier.UNKNOWN;
+            // if numerator >= 0, then numerator%divisor <= numerator
+            if (lowerBoundATF.isNonNegative(numeratorTree)) {
+                result = UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
+            }
+            // if divisor >= 0, then numerator%divisor < divisor
+            if (lowerBoundATF.isNonNegative(divisorTree)) {
+                UBQualifier divisor =
+                        UBQualifier.createUBQualifier(getAnnotatedType(divisorTree), UNKNOWN);
+                result = result.glb(divisor.plusOffset(1));
+            }
+            resultType.addAnnotation(convertUBQualifierToAnnotation(result));
         }
 
         private void addAnnotationForDivide(
