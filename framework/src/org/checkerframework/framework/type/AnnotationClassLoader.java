@@ -507,7 +507,7 @@ public class AnnotationClassLoader {
             annotationNames = new HashSet<>();
         }
 
-        supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames, false));
+        supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
     }
 
     /**
@@ -587,7 +587,7 @@ public class AnnotationClassLoader {
             final String dirName) {
         File rootDirectory = new File(dirName);
         Set<String> annoNames = getAnnotationNamesFromDirectory("", dirName, rootDirectory);
-        return loadAnnotationClasses(annoNames, true);
+        return loadAnnotationClasses(annoNames);
     }
 
     /**
@@ -667,7 +667,8 @@ public class AnnotationClassLoader {
      * @param fullyQualifiedClassName the fully qualified name of the class
      * @param issueError set to true to issue a warning when a loaded annotation is not a type
      *     annotation. It is useful to set this to true if a given annotation must be a well-defined
-     *     type annotation (eg for annotation class names given as command line arguments).
+     *     type annotation (eg for annotation class names given as command line arguments). It
+     *     should be set to false if the annotation is a meta-annotation or non-type annotation.
      * @return the loaded annotation class if it has a {@code @Target} meta-annotation with the
      *     required ElementType values, and is a supported annotation by a checker. If the
      *     annotation is not supported by a checker, null is returned.
@@ -739,23 +740,18 @@ public class AnnotationClassLoader {
      *
      * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
      *     class's fully qualified name
-     * @param issueErrors set to true to issue an error when a loaded annotation is not a type
-     *     annotation. It is useful to set this to true if the given set of annotations must all be
-     *     well-defined type annotations (eg annotation class names given as command line
-     *     arguments). This should be set to false if the given set of annotations contain
-     *     meta-annotations or non-type annotations.
      * @return a set of loaded annotation classes
      * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames, boolean issueErrors) {
+            final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
         if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {
             // loop through each class name & load the class
             for (String fullyQualifiedAnnoName : fullyQualifiedAnnoNames) {
                 Class<? extends Annotation> annoClass =
-                        loadAnnotationClass(fullyQualifiedAnnoName, issueErrors);
+                        loadAnnotationClass(fullyQualifiedAnnoName, false);
                 if (annoClass != null) {
                     loadedClasses.add(annoClass);
                 }
