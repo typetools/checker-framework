@@ -955,7 +955,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (hasOption("filenames")) {
                 message(
                         Kind.NOTE,
-                        "Checker: %s is Type-checking: %s",
+                        "Checker: %s is type-checking: %s",
                         (Object) this.getClass().getSimpleName(),
                         currentRoot.getSourceFile().getName());
             }

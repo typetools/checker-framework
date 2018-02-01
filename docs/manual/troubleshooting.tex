@@ -328,6 +328,19 @@ nested class.
 
 Similar arguments apply when annotating \<package.Outer.Nested>.
 
+\item
+A message of the form
+
+\begin{Verbatim}
+warning: StubParser: annotateTypeParameters: mismatched sizes
+\end{Verbatim}
+
+might be because you compiled your project with \<-source 1.4>.  Java 1.4
+doesn't support type parameters, but the Checker Framework expects that
+classes such as \<List> have a type parameter.  The discrepancy causes a
+problem.  To fix the problem, supply \<-source 1.5> or later, or no
+\<-source> command-line argument.
+
 \end{itemize}
 
 
@@ -340,15 +353,37 @@ give unexpected results.
 \begin{itemize}
 \item
   If the Checker Framework is unable to verify a property that you know is
-  true, then it is helpful to formulate an argument about why the property
-  is true.  Recall that the Checker Framework does modular verification,
+  true, then you should formulate a proof about why the property is true.
+  Your proof depends on some set of facts about the program and its
+  operation.  State them completely; for example, don't write ``the field
+  \<f> cannot be null when execution reaches line 22'', but justify
+  \emph{why} the field cannot be null.
+
+  Once you have written down your proof, translate each fact into a Java
+  annotation.
+
+  If you are unable to express some aspect of your proof as an annotation,
+  then the type system is not capable of reproducing your proof.  You might
+  need to find a different proof, or extend the type system to be more
+  expressive, or suppress the warning.
+
+  If you are able to express your entire proof as annotations, then look at
+  the Checker Framework error messages.  One possibility is that the errors
+  indicate that your proof was incomplete or incorrect.  Maybe your proof
+  implicitly depended on some fact you didn't write down, such as ``method
+  \<m> has no side effects.''  In this case, you should revise your proof
+  and add more annotations to your Java code.  Another possibility is that
+  your proof is incorrect, and the errors indicate where.  Another
+  possibility is that there is a bug in the type-checker.  In this case,
+  you should report it to the maintainers, giving your proof and explaining
+  why the type-checker should be able to make the same inferences that you did.
+
+  Recall that the Checker Framework does modular verification,
   one procedure at a time; it observes the specifications, but not the
   implementations, of other methods.
 
-  If any aspects of your argument are not expressed as annotations, then
-  you may need to write more annotations.  If any aspects of your argument
-  are not expressible as annotations, then you may need to extend the
-  type-checker.
+  Alo see Section~\ref{handling-warnings}, which explains this same
+  methodology in different words.
 
 \item
 If a checker seems to be ignoring the annotation on a method, then it is

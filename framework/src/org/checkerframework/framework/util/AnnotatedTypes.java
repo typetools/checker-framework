@@ -533,6 +533,7 @@ public class AnnotatedTypes {
         } else if (expr instanceof MemberReferenceTree) {
             targs = ((MemberReferenceTree) expr).getTypeArguments();
             if (targs == null) {
+                // TODO: Add type argument inference as part of fix for #979
                 return new HashMap<>();
             }
         } else {
@@ -733,12 +734,6 @@ public class AnnotatedTypes {
             atypeFactory.getVisitorState().setAssignmentContext(preAssCtxt);
         }
         return types;
-    }
-
-    /** @deprecated use AnnotatedTypeMirror.equals() */
-    @Deprecated // remove after release 2.2.3
-    public static boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
-        return t1.equals(t2);
     }
 
     /**
