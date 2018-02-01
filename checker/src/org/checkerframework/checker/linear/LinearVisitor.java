@@ -2,21 +2,25 @@ package org.checkerframework.checker.linear;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.linear.qual.Linear;
 import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A type-checking visitor for the Linear type system. The visitor reports an error ("unsafe.use")
  * for any use of a reference of {@link Unusable} type. In other words, it reports an error for any
- * {@code Linear} references that is used more than once, or is used after it has been "used up".
+ * {@link Linear} references that is used more than once, or is used after it has been "used up".
  *
  * @see LinearChecker
  */
@@ -28,6 +32,8 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
 
     /**
      * Return true if the node represents a reference to a local variable or parameter.
+     *
+     * <p>
      *
      * <p>In Linear Checker, only local variables and method parameters can be of {@link Linear} or
      * {@link Unusable} types.
@@ -67,6 +73,22 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         checkLegality(node);
         return super.visitMemberSelect(node, p);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            String errorKey) {
+        if (varType.hasAnnotation(Linear.class)) {
+
+            // when assigning to a @Linear variable, the following trees are acceptable
+            if (valueTree instanceof LiteralTree || valueTree instanceof NewClassTree) {
+                valueType.replaceAnnotation(atypeFactory.LINEAR);
+            }
+        }
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     /** Linear Checker does not contain a rule for method invocation. */
