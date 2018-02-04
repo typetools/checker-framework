@@ -305,7 +305,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     + qual.toString()
                                     + ". @UnitsRelations value "
                                     + theClass.toString()
-                                    + ", is not a subclass of org.checkerframework.checker.units.UnitsRelations.");
+                                    + ", is not a subclass of "
+                                    + UnitsRelations.class.getCanonicalName()
+                                    + ".");
                     continue;
                 }
                 String canonicalClassName = unitsRelationsClass.getCanonicalName();
