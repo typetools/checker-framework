@@ -5,7 +5,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Annotated type factory for the Units Checker.
@@ -286,8 +284,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Look for an @UnitsRelations annotation on the qualifier and add it to the list of
-     * UnitsRelations.
+     * Look for an {@link org.checkerframework.checker.units.qual.UnitsRelations} annotation on the
+     * qualifier and add it to the list of UnitsRelations.
      *
      * @param qual the qualifier to investigate
      */
@@ -296,44 +294,36 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
-                Class<? extends UnitsRelations> theclass;
+                Class<?> theClass = AnnotationUtils.getElementValueClass(ama, "value", true);
+
+                Class<? extends UnitsRelations> unitsRelationsClass = null;
                 try {
-                    theclass =
-                            AnnotationUtils.getElementValueClass(ama, "value", true)
-                                    .asSubclass(UnitsRelations.class);
+                    unitsRelationsClass = theClass.asSubclass(UnitsRelations.class);
                 } catch (ClassCastException ex) {
-                    Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
-                    ErrorReporter.errorAbort(
-                            "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
-                                    + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
-                            qual.toString(), clazz.toString());
+                    checker.userErrorAbort(
+                            "Invalid @UnitsRelations meta-annotation found in "
+                                    + qual.toString()
+                                    + ". @UnitsRelations value "
+                                    + theClass.toString()
+                                    + ", is not a subclass of org.checkerframework.checker.units.UnitsRelations.");
                     continue;
                 }
-                String classname = theclass.getCanonicalName();
+                String canonicalClassName = unitsRelationsClass.getCanonicalName();
 
-                if (!getUnitsRel().containsKey(classname)) {
+                if (!getUnitsRel().containsKey(canonicalClassName)) {
                     try {
                         unitsRel.put(
-                                classname,
-                                theclass.getDeclaredConstructor()
+                                canonicalClassName,
+                                unitsRelationsClass
+                                        .getDeclaredConstructor()
                                         .newInstance()
                                         .init(processingEnv));
-                    } catch (NoSuchMethodException e) {
-                        // TODO
-                        e.printStackTrace();
-                        ErrorReporter.errorAbort("Exception NoSuchMethodException");
-                    } catch (InvocationTargetException e) {
-                        // TODO
-                        e.printStackTrace();
-                        ErrorReporter.errorAbort("Exception InvocationTargetException");
-                    } catch (InstantiationException e) {
-                        // TODO
-                        e.printStackTrace();
-                        ErrorReporter.errorAbort("Exception InstantiationException");
-                    } catch (IllegalAccessException e) {
-                        // TODO
-                        e.printStackTrace();
-                        ErrorReporter.errorAbort("Exception IllegalAccessException");
+                    } catch (Exception e) {
+                        checker.userErrorAbort(
+                                checker.getClass().getSimpleName()
+                                        + ": the class: "
+                                        + canonicalClassName
+                                        + " cannot be instantiated reflectively.");
                     }
                 }
             }

@@ -11,14 +11,24 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 /**
  * Units Checker main class.
  *
- * <p>Supports "units" option to add support for additional individually named and externally
- * defined units, and "unitsDirs" option to add support for directories of externally defined units.
- * Directories must be well-formed paths from file system root, separated by colon (:) between each
- * directory.
+ * <p>Provides "units" option to support the use of externally defined, individually named units.
+ * The units must be named using their fully qualified annotation names, separated by commas. E.g.
+ * {@code -Aunits=A,myPackage.B} .
+ *
+ * <p>Provides "unitsDirs" option to support the use of externally defined units identified by the
+ * directory they are contained in. Directories must be well-formed paths from file system root,
+ * separated by colon (:) between each directory. E.g. {@code
+ * -AunitsDirs=/path/to/qual:/path/to/otherquals} .
+ *
+ * <p>Also provides "unitsRelations" option to support the use of externally defined multiplication
+ * and division units relationships, which are subclasses of {@link
+ * org.checkerframework.checker.units.UnitsRelations}. These subclasses must be named using their
+ * fully qualified class names, separated by commas. E.g. {@code
+ * -AunitsRelations=SomeRelations,myPackage.OtherRelations} .
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@SupportedOptions({"units", "unitsDirs"})
+@SupportedOptions({"units", "unitsDirs", "unitsRelations"})
 public class UnitsChecker extends BaseTypeChecker {
 
     /*

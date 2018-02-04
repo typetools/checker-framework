@@ -1,4 +1,4 @@
-package qual;
+package relations;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -8,6 +8,7 @@ import org.checkerframework.checker.units.UnitsRelationsTools;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import qual.Hz;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;

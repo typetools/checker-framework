@@ -1,5 +1,5 @@
-FILES=qual/Frequency.java \
-  qual/FrequencyRelations.java \
+FILES=relations/FrequencyRelations.java \
+  qual/Frequency.java \
   qual/Hz.java \
   qual/kHz.java
 
@@ -11,11 +11,7 @@ JAVAC?=../../../checker/bin/javac
 # for custom projects, it is best to encode the full root path as a variable
 PROJECTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-# NOTE: disabling units extension test as we no longer support loading external classes
-# that are not type annotations, in this case FrequencyRelations.java.
-# A future PR will update the mechanism for specifying units relationships externally
-all: clean
-# all: compile-for-test named-quals-test qual-folder-test clean
+all: compile-for-test named-quals-test qual-folder-test clean
 
 demo:
 	$(JAVAC) $(JAVAOPTS) $(FILES)
@@ -24,7 +20,7 @@ demo:
 
 # compile qualifiers
 compile-for-test:
-	$(JAVAC) $(JAVAOPTS) $(FILES)
+	$(JAVAC) -classpath $(PROJECTDIR) $(JAVAOPTS) $(FILES)
 
 # test case for using externally defined units by explicitly naming them using the -Aunits option
 named-quals-test:
@@ -41,3 +37,4 @@ qual-folder-test:
 # test clean up
 clean:
 	rm -f qual/*.class
+	rm -f relations/*.class

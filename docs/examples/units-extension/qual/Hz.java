@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnitsRelations;
 import org.checkerframework.framework.qual.SubtypeOf;
+import relations.FrequencyRelations;
 
 /** Hertz (Hz), a unit of frequency. */
 @Documented

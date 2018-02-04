@@ -417,7 +417,7 @@ public class AnnotationClassLoader {
      * @return the classloader used to load the checker class, or the system classloader, or null if
      *     both are unavailable
      */
-    private final /*@Nullable*/ URLClassLoader getClassLoader() {
+    public final /*@Nullable*/ URLClassLoader getClassLoader() {
         return (URLClassLoader) InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
