@@ -2504,8 +2504,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // That is handled separately in method receiver check.
 
         // The type of the expression or type use, <expression>::method or <type use>::method.
-        AnnotatedTypeMirror enclosingType =
-                atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
+        ExpressionTree qexpTree = memberReferenceTree.getQualifierExpression();
+        AnnotatedTypeMirror enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qexpTree);
+        if (qexpTree.getKind() == Tree.Kind.IDENTIFIER) {
+            // This is a hack around the ambiguity between identifiers that could be
+            // types or expressions. Using TreeUtils.isTypeTree unfortunately doesn't
+            // help, as it isn't precise enough.
+            // TODO: determine a nicer way. Is taking the main qualifiers enough?
+            AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(qexpTree);
+            if (enclosingType != expType) {
+                enclosingType.replaceAnnotations(expType.getEffectiveAnnotations());
+            }
+        }
 
         // ========= Overriding Executable =========
         // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
