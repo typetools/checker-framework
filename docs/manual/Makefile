@@ -108,7 +108,7 @@ very_clean: clean
 
 .PHONY: checklink
 checklink:
-	${INV}/scripts/checklink -q -e `grep -v '^#' ${INV}/scripts/checklink-args.txt` manual.html
+	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` manual.html
 
 .PHONY: tags
 tags: TAGS
