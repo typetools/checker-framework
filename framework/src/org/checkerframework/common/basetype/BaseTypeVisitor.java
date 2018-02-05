@@ -2504,17 +2504,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // That is handled separately in method receiver check.
 
         // The type of the expression or type use, <expression>::method or <type use>::method.
-        ExpressionTree qexpTree = memberReferenceTree.getQualifierExpression();
-        AnnotatedTypeMirror enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qexpTree);
-        if (qexpTree.getKind() == Tree.Kind.IDENTIFIER) {
-            // This is a hack around the ambiguity between identifiers that could be
-            // types or expressions. Using TreeUtils.isTypeTree unfortunately doesn't
-            // help, as it isn't precise enough.
-            // TODO: determine a nicer way. Is taking the main qualifiers enough?
-            AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(qexpTree);
-            if (enclosingType != expType) {
-                enclosingType.replaceAnnotations(expType.getEffectiveAnnotations());
-            }
+        final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
+        final ReferenceKind memRefKind = ((JCMemberReference) memberReferenceTree).kind;
+        AnnotatedTypeMirror enclosingType;
+        if (memberReferenceTree.getMode() == ReferenceMode.NEW
+                || memRefKind == ReferenceKind.UNBOUND
+                || memRefKind == ReferenceKind.STATIC) {
+            // The "qualifier expression" is a type tree.
+            enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+        } else {
+            // The "qualifier expression" is an expression.
+            enclosingType = atypeFactory.getAnnotatedType(qualifierExpression);
         }
 
         // ========= Overriding Executable =========
@@ -2524,7 +2524,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (enclosingType.getKind() == TypeKind.DECLARED
                 && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-            if (((JCMemberReference) memberReferenceTree).kind == ReferenceKind.UNBOUND) {
+            if (memRefKind == ReferenceKind.UNBOUND) {
                 // The method reference is of the form: Type # instMethod
                 // and Type is a raw type.
                 // If the first parameter of the function type, p1, is a subtype

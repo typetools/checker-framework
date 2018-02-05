@@ -307,22 +307,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Mapping from an expression tree to its annotated type; before implicits are applied, just
-     * what the programmer wrote. Might alias the same object as fromMemberTreeCache and
-     * fromTypeTreeCache.
+     * what the programmer wrote.
      */
     protected final Map<Tree, AnnotatedTypeMirror> fromExpressionTreeCache;
 
     /**
      * Mapping from a member tree to its annotated type; before implicits are applied, just what the
-     * programmer wrote. Might alias the same object as fromExpressionTreeCache and
-     * fromTypeTreeCache
+     * programmer wrote.
      */
     protected final Map<Tree, AnnotatedTypeMirror> fromMemberTreeCache;
 
     /**
      * Mapping from a type tree to its annotated type; before implicits are applied, just what the
-     * programmer wrote. Might alias the same object as fromExpressionTreeCache and
-     * fromMemberTreeCache.
+     * programmer wrote.
      */
     protected final Map<Tree, AnnotatedTypeMirror> fromTypeTreeCache;
 
