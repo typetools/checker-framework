@@ -1084,7 +1084,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             }
         }
 
-        if (subtype.getUnderlyingType() == superTypeMirror) {
+        if (superTypeMirror.getKind() == TypeKind.WILDCARD) {
             // This can happen at a method invocation where a type variable in the method
             // declaration is substituted with a wildcard.
             // For example:
