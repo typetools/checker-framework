@@ -84,9 +84,6 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
-  \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
-  re-use (see \chapterpageref{linear-checker})
-\item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
 % \item
@@ -1206,7 +1203,6 @@ annotations at all are needed on type parameters such as \code{E} in \<MultiSet>
 \subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
 
 %% I want to get rid of this syntax.
-%% However, @Linear provides a compelling use case.
 
 In the checkers distributed with the Checker Framework, an annotation on a
 constructor invocation is equivalent to a cast on a constructor result.
