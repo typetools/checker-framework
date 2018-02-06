@@ -7,7 +7,6 @@ import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
@@ -124,12 +123,6 @@ public class CheckerActions {
     public static class AliasingAction extends RunCheckerAction {
         public AliasingAction() {
             super(AliasingChecker.class.getCanonicalName());
-        }
-    }
-
-    public static class LinearAction extends RunCheckerAction {
-        public LinearAction() {
-            super(LinearChecker.class.getCanonicalName());
         }
     }
 

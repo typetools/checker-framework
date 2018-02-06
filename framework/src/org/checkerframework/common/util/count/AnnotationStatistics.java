@@ -49,6 +49,8 @@ import org.checkerframework.javacutil.AnnotationProvider;
  *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
  *       {@code -Aannotations}
  * </ul>
+ *
+ * @see JavaCodeStatistics
  */
 /*
  * TODO: add an option to only list declaration or type annotations.
