@@ -802,10 +802,10 @@ public class CFGBuilder {
      * when control flows outside of the try block.
      */
     @SuppressWarnings("serial")
-    protected static class FakeLabelsMap extends HashMap<Name, Label> implements Map<Name, Label> {
+    protected static class TryFinallyScopeMap extends HashMap<Name, Label> {
         private final Label finallyLabel;
 
-        protected FakeLabelsMap(Label finallyLabel) {
+        protected TryFinallyScopeMap(Label finallyLabel) {
             this.finallyLabel = finallyLabel;
         }
 
@@ -4342,9 +4342,9 @@ public class CFGBuilder {
                 tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
                 returnTargetL = finallyLabel;
                 breakTargetL = finallyLabel;
-                breakLabels = new FakeLabelsMap(finallyLabel);
+                breakLabels = new TryFinallyScopeMap(finallyLabel);
                 continueTargetL = finallyLabel;
-                continueLabels = new FakeLabelsMap(finallyLabel);
+                continueLabels = new TryFinallyScopeMap(finallyLabel);
             }
 
             Label doneLabel = new Label();
