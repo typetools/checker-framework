@@ -1,5 +1,14 @@
 ---------------------------------------------------------------------------
 
+Version 2.4.0, March 1, 2018
+
+Added the Index Checker, which eliminates ArrayIndexOutOfBoundsException.
+
+Removed the Linear Checker, whose implementation was inconsistent with its
+documentation.
+
+---------------------------------------------------------------------------
+
 Version 2.3.2, February 1, 2018
 
 Closed issues:

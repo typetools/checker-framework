@@ -2504,8 +2504,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // That is handled separately in method receiver check.
 
         // The type of the expression or type use, <expression>::method or <type use>::method.
-        AnnotatedTypeMirror enclosingType =
-                atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
+        final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
+        final ReferenceKind memRefKind = ((JCMemberReference) memberReferenceTree).kind;
+        AnnotatedTypeMirror enclosingType;
+        if (memberReferenceTree.getMode() == ReferenceMode.NEW
+                || memRefKind == ReferenceKind.UNBOUND
+                || memRefKind == ReferenceKind.STATIC) {
+            // The "qualifier expression" is a type tree.
+            enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+        } else {
+            // The "qualifier expression" is an expression.
+            enclosingType = atypeFactory.getAnnotatedType(qualifierExpression);
+        }
 
         // ========= Overriding Executable =========
         // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
@@ -2514,7 +2524,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (enclosingType.getKind() == TypeKind.DECLARED
                 && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-            if (((JCMemberReference) memberReferenceTree).kind == ReferenceKind.UNBOUND) {
+            if (memRefKind == ReferenceKind.UNBOUND) {
                 // The method reference is of the form: Type # instMethod
                 // and Type is a raw type.
                 // If the first parameter of the function type, p1, is a subtype
