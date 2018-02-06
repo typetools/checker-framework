@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 import org.checkerframework.checker.units.qual.UnitsRelations;
 import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.framework.qual.SubtypeOf;
-import relations.FrequencyRelations;
 
 /** Units of frequency, such as hertz (@{@link Hz}). */
 @Documented

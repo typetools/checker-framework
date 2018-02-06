@@ -9,7 +9,6 @@ import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnitsMultiple;
 import org.checkerframework.checker.units.qual.UnitsRelations;
 import org.checkerframework.framework.qual.SubtypeOf;
-import relations.FrequencyRelations;
 
 /** Kilohertz (kHz), a unit of frequency, and an alias of @Hz(Prefix.kilo). */
 @Documented

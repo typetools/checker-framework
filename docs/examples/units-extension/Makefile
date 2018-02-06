@@ -1,5 +1,5 @@
-FILES=relations/FrequencyRelations.java \
-  qual/Frequency.java \
+FILES=qual/Frequency.java \
+  qual/FrequencyRelations.java \
   qual/Hz.java \
   qual/kHz.java
 
@@ -37,4 +37,3 @@ qual-folder-test:
 # test clean up
 clean:
 	rm -f qual/*.class
-	rm -f relations/*.class
