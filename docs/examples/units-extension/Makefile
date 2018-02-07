@@ -20,7 +20,7 @@ demo:
 
 # compile qualifiers
 compile-for-test:
-	$(JAVAC) -classpath $(PROJECTDIR) $(JAVAOPTS) $(FILES)
+	$(JAVAC) $(JAVAOPTS) $(FILES)
 
 # test case for using externally defined units by explicitly naming them using the -Aunits option
 named-quals-test:
