@@ -36,7 +36,7 @@ public class MarkerNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public /*@Nullable*/ Tree getTree() {
         return tree;
     }
 
