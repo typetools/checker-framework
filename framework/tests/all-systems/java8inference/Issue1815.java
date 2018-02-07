@@ -1,11 +1,10 @@
 // Test case for Issue 1815:
 // https://github.com/typetools/checker-framework/issues/1815
 
-// @skip-test
-
 import java.util.List;
 import java.util.stream.Stream;
 
+@SuppressWarnings("") // just check for crashes
 abstract class Issue1815 {
 
     class A extends B {}
