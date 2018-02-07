@@ -160,6 +160,26 @@ public class NullnessAnnotatedTypeFactory
         NONNULL_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NONNULL));
         NULLABLE_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NULLABLE));
 
+        // Add compatibility annotations:
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class,
+                MONOTONIC_NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class,
+                MONOTONIC_NONNULL);
+
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
 
         postInit();
