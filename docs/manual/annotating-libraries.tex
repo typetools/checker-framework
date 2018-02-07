@@ -617,7 +617,8 @@ StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 
 \section{Library annotations should reflect the specification, not the implementation\label{libraries-specification}}
 
-When you write library annotations, you should base them on the library
+Publicly-visible annotations (including those on public method formal
+parameters and return types) should be based on the
 documentation, typically the method's Javadoc.
 
 If a fact is not mentioned in the documentation, then it is an
