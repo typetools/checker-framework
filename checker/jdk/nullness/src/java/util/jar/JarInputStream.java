@@ -30,7 +30,7 @@ import java.io.*;
 import sun.security.util.ManifestEntryVerifier;
 import sun.misc.JarIndex;
 
-import org.checkerframework.checker.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * The <code>JarInputStream</code> class is used to read the contents of
