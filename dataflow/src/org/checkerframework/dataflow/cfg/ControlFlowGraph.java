@@ -53,10 +53,10 @@ public class ControlFlowGraph {
      * map to two distinct Nodes. The Node for the pre-conversion value is stored in treeLookup,
      * while the Node for the post-conversion value is stored in convertedTreeLookup.
      */
-    protected IdentityHashMap<Tree, Node> treeLookup;
+    protected IdentityHashMap<Tree, Set<Node>> treeLookup;
 
     /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
-    protected IdentityHashMap<Tree, Node> convertedTreeLookup;
+    protected IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
     protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
@@ -67,19 +67,15 @@ public class ControlFlowGraph {
      */
     protected final List<ReturnNode> returnNodes;
 
-    /** Map from AST {@link Tree}s to generated {@link Tree}s. */
-    protected final IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
-
     public ControlFlowGraph(
             SpecialBlock entryBlock,
             SpecialBlockImpl regularExitBlock,
             SpecialBlockImpl exceptionalExitBlock,
             UnderlyingAST underlyingAST,
-            IdentityHashMap<Tree, Node> treeLookup,
-            IdentityHashMap<Tree, Node> convertedTreeLookup,
+            IdentityHashMap<Tree, Set<Node>> treeLookup,
+            IdentityHashMap<Tree, Set<Node>> convertedTreeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
-            List<ReturnNode> returnNodes,
-            IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap) {
+            List<ReturnNode> returnNodes) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
@@ -89,11 +85,10 @@ public class ControlFlowGraph {
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
         this.returnNodes = returnNodes;
-        this.generatedTreesLookupMap = generatedTreesLookupMap;
     }
 
     /** @return the {@link Node} to which the {@link Tree} {@code t} corresponds. */
-    public Node getNodeCorrespondingToTree(Tree t) {
+    public Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
             return convertedTreeLookup.get(t);
         } else {
@@ -225,18 +220,13 @@ public class ControlFlowGraph {
     }
 
     /** @return the copied tree-lookup map */
-    public IdentityHashMap<Tree, Node> getTreeLookup() {
+    public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
     }
 
     /** @return the copied lookup-map of the assign node for unary operation */
     public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
         return new IdentityHashMap<>(unaryAssignNodeLookup);
-    }
-
-    /** @return the copied map to lookup generated {@link Tree}s from {@link Tree} */
-    public IdentityHashMap<Tree, List<Tree>> getGeneratedTreesLookup() {
-        return new IdentityHashMap<>(generatedTreesLookupMap);
     }
 
     /**

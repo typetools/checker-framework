@@ -61,7 +61,6 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
@@ -74,7 +73,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -102,9 +100,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.BlockImpl;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl;
-import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl;
-import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
@@ -180,6 +176,7 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
+import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.dataflow.util.MostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
@@ -577,7 +574,7 @@ public class CFGBuilder {
     protected static class Label {
         private static int uid = 0;
 
-        protected String name;
+        protected final String name;
 
         public Label(String name) {
             this.name = name;
@@ -944,74 +941,7 @@ public class CFGBuilder {
                     }
                 }
             }
-
-            // collect all reachable trees
-            final Set<Tree> allReachableTrees =
-                    Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
-            for (Block b : cfg.getAllBlocks()) {
-                if (b instanceof RegularBlock) {
-                    for (Node n : ((RegularBlock) b).getContents()) {
-                        Tree tree = n.getTree();
-                        if (tree != null) {
-                            allReachableTrees.add(tree);
-                        }
-                    }
-                } else if (b instanceof ExceptionBlock) {
-                    Tree tree = ((ExceptionBlock) b).getNode().getTree();
-                    if (tree != null) {
-                        allReachableTrees.add(tree);
-                    }
-                }
-            }
-
-            // remove a generated tree if any child tree of it is unreachable because such tree is
-            // not analyzed by dataflow framework and cause of false errors.
-            ContainsAnyScanner s = new ContainsAnyScanner(allReachableTrees);
-            for (List<Tree> generatedTrees : cfg.generatedTreesLookupMap.values()) {
-                Iterator<Tree> generatedTreesIterator = generatedTrees.iterator();
-                while (generatedTreesIterator.hasNext()) {
-                    Tree root = generatedTreesIterator.next();
-                    s.reset();
-                    s.scan(root, null);
-                    if (!s.contains) {
-                        generatedTreesIterator.remove();
-                    }
-                }
-            }
-
             return cfg;
-        }
-
-        /**
-         * {@code contains} will be true after calling {@link #scan(Tree, Void)} if {@code trees}
-         * contains {@code node} or any child tree of {@code node}
-         */
-        private static class ContainsAnyScanner extends TreeScanner<Void, Void> {
-            private boolean contains = false;
-            private final Set<Tree> trees;
-
-            private ContainsAnyScanner(Set<Tree> trees) {
-                this.trees = trees;
-            }
-
-            @Override
-            public Void scan(Tree node, Void aVoid) {
-                if (node == null) {
-                    return null;
-                }
-
-                if (trees.contains(node)) {
-                    contains = true;
-                }
-                if (!contains) {
-                    super.scan(node, aVoid);
-                }
-                return null;
-            }
-
-            private void reset() {
-                contains = false;
-            }
         }
 
         /**
@@ -1402,8 +1332,7 @@ public class CFGBuilder {
                     in.treeLookupMap,
                     in.convertedTreeLookupMap,
                     in.unaryAssignNodeLookupMap,
-                    in.returnNodes,
-                    in.generatedTreesLookupMap);
+                    in.returnNodes);
         }
     }
 
@@ -1417,26 +1346,24 @@ public class CFGBuilder {
      */
     protected static class PhaseOneResult {
 
-        private final IdentityHashMap<Tree, Node> treeLookupMap;
-        private final IdentityHashMap<Tree, Node> convertedTreeLookupMap;
+        private final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
+        private final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
         private final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
         private final UnderlyingAST underlyingAST;
         private final Map<Label, Integer> bindings;
         private final ArrayList<ExtendedNode> nodeList;
         private final Set<Integer> leaders;
         private final List<ReturnNode> returnNodes;
-        private final IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
 
         public PhaseOneResult(
                 UnderlyingAST underlyingAST,
-                IdentityHashMap<Tree, Node> treeLookupMap,
-                IdentityHashMap<Tree, Node> convertedTreeLookupMap,
+                IdentityHashMap<Tree, Set<Node>> treeLookupMap,
+                IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap,
                 IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap,
                 ArrayList<ExtendedNode> nodeList,
                 Map<Label, Integer> bindings,
                 Set<Integer> leaders,
-                List<ReturnNode> returnNodes,
-                IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap) {
+                List<ReturnNode> returnNodes) {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.convertedTreeLookupMap = convertedTreeLookupMap;
@@ -1445,7 +1372,6 @@ public class CFGBuilder {
             this.bindings = bindings;
             this.leaders = leaders;
             this.returnNodes = returnNodes;
-            this.generatedTreesLookupMap = generatedTreesLookupMap;
         }
 
         @Override
@@ -1552,10 +1478,10 @@ public class CFGBuilder {
          * in the treeLookupMap, while the Node for the post-conversion value is stored in the
          * convertedTreeLookupMap.
          */
-        protected IdentityHashMap<Tree, Node> treeLookupMap;
+        protected IdentityHashMap<Tree, Set<Node>> treeLookupMap;
 
         /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
-        protected IdentityHashMap<Tree, Node> convertedTreeLookupMap;
+        protected IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
 
         /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
         protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
@@ -1574,9 +1500,6 @@ public class CFGBuilder {
          * return something
          */
         private List<ReturnNode> returnNodes;
-
-        /** Map from AST {@link Tree}s to generated {@link Tree}s. */
-        protected IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
 
         /** Nested scopes of try-catch blocks in force at the current program point. */
         private TryStack tryStack;
@@ -1600,7 +1523,6 @@ public class CFGBuilder {
                 TreeBuilder treeBuilder,
                 AnnotationProvider annotationProvider) {
             this.env = env;
-            this.tryStack = new TryStack(exceptionalExitLabel);
             this.treeBuilder = treeBuilder;
             this.annotationProvider = annotationProvider;
             elements = env.getElementUtils();
@@ -1616,11 +1538,12 @@ public class CFGBuilder {
             nodeList = new ArrayList<>();
             bindings = new HashMap<>();
             leaders = new HashSet<>();
+
+            tryStack = new TryStack(exceptionalExitLabel);
             returnTargetL = regularExitLabel;
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
             returnNodes = new ArrayList<>();
-            generatedTreesLookupMap = new IdentityHashMap<>();
 
             // traverse AST of the method body
             Node finalNode = scan(bodyPath, null);
@@ -1656,8 +1579,7 @@ public class CFGBuilder {
                     nodeList,
                     bindings,
                     leaders,
-                    returnNodes,
-                    generatedTreesLookupMap);
+                    returnNodes);
         }
 
         public PhaseOneResult process(
@@ -1668,6 +1590,7 @@ public class CFGBuilder {
                 TreeBuilder treeBuilder,
                 AnnotationProvider annotationProvider) {
             trees = Trees.instance(env);
+            // TODO: Isn't this costly? Can't we ask a type factory?
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
             assert bodyPath != null;
             return process(
@@ -1701,13 +1624,23 @@ public class CFGBuilder {
             if (tree == null) {
                 return;
             }
-            if (!treeLookupMap.containsKey(tree)) {
-                treeLookupMap.put(tree, node);
+            Set<Node> existing = treeLookupMap.get(tree);
+            if (existing == null) {
+                treeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
+            } else if (!existing.contains(node)) {
+                existing.add(node);
+            } else {
+                // Nothing to do if existing already contains the Node.
             }
 
             Tree enclosingParens = parenMapping.get(tree);
             while (enclosingParens != null) {
-                treeLookupMap.put(enclosingParens, node);
+                Set<Node> exp = treeLookupMap.get(enclosingParens);
+                if (exp == null) {
+                    treeLookupMap.put(enclosingParens, new IdentityMostlySingleton<>(node));
+                } else if (!existing.contains(node)) {
+                    exp.add(node);
+                }
                 enclosingParens = parenMapping.get(enclosingParens);
             }
         }
@@ -1735,7 +1668,14 @@ public class CFGBuilder {
         protected void addToConvertedLookupMap(Tree tree, Node node) {
             assert tree != null;
             assert treeLookupMap.containsKey(tree);
-            convertedTreeLookupMap.put(tree, node);
+            Set<Node> existing = convertedTreeLookupMap.get(tree);
+            if (existing == null) {
+                convertedTreeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
+            } else if (!existing.contains(node)) {
+                existing.add(node);
+            } else {
+                // Nothing to do if existing already contains the Node.
+            }
         }
 
         /**
@@ -1747,21 +1687,6 @@ public class CFGBuilder {
          */
         protected void addToUnaryAssignLookupMap(UnaryTree tree, AssignmentNode unaryAssignNode) {
             unaryAssignNodeLookupMap.put(tree, unaryAssignNode);
-        }
-
-        /**
-         * Add a tree in the generated-trees lookup map.
-         *
-         * @param tree the tree used as a key in the map
-         * @param generatedTree the tree to add to the lookup map
-         */
-        protected void addToGeneratedTreesLookupMap(Tree tree, Tree generatedTree) {
-            assert tree != null;
-            assert generatedTree != null;
-            if (!generatedTreesLookupMap.containsKey(tree)) {
-                generatedTreesLookupMap.put(tree, new ArrayList<Tree>());
-            }
-            generatedTreesLookupMap.get(tree).add(generatedTree);
         }
 
         /**
@@ -1899,6 +1824,7 @@ public class CFGBuilder {
          * Add the label {@code l} to the extended node that will be placed next in the sequence.
          */
         protected void addLabelForNextNode(Label l) {
+            assert !bindings.containsKey(l);
             leaders.add(nodeList.size());
             bindings.put(l, nodeList.size());
         }
@@ -4310,8 +4236,6 @@ public class CFGBuilder {
             List<? extends CatchTree> catches = tree.getCatches();
             BlockTree finallyBlock = tree.getFinallyBlock();
 
-            extendWithNode(new MarkerNode(tree, "start of try statement", env.getTypeUtils()));
-
             // TODO: Should we handle try-with-resources blocks by also generating code
             // for automatically closing the resources?
             List<? extends Tree> resources = tree.getResources();
@@ -4334,24 +4258,43 @@ public class CFGBuilder {
             Map<Name, Label> oldContinueLabels = continueLabels;
 
             Label finallyLabel = null;
-            // Label exceptionalFinallyLabel = null; // #293
+            Label exceptionalFinallyLabel = null;
+            Label returnFinallyLabel = null;
+            Label breakFinallyLabel = null;
+            Label continueFinallyLabel = null;
+
             if (finallyBlock != null) {
                 finallyLabel = new Label();
-                // exceptionalFinallyLabel = new Label(); // #293
-                // tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
-                tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
-                returnTargetL = finallyLabel;
-                breakTargetL = finallyLabel;
-                breakLabels = new TryFinallyScopeMap(finallyLabel);
-                continueTargetL = finallyLabel;
-                continueLabels = new TryFinallyScopeMap(finallyLabel);
+
+                exceptionalFinallyLabel = new Label();
+                tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+
+                returnFinallyLabel = new Label();
+                returnTargetL = returnFinallyLabel;
+
+                breakFinallyLabel = new Label();
+                breakTargetL = breakFinallyLabel;
+                // TODO: we probably need a separate clone of the finally block for each labeled break!
+                breakLabels = new TryFinallyScopeMap(breakFinallyLabel);
+
+                continueFinallyLabel = new Label();
+                continueTargetL = continueFinallyLabel;
+                // TODO: we probably need a separate clone of the finally block for each labeled continue!
+                continueLabels = new TryFinallyScopeMap(continueFinallyLabel);
             }
 
             Label doneLabel = new Label();
 
             tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
+            extendWithNode(
+                    new MarkerNode(
+                            tree, "start of try block #" + tree.hashCode(), env.getTypeUtils()));
             scan(tree.getBlock(), p);
+            extendWithNode(
+                    new MarkerNode(
+                            tree, "end of try block #" + tree.hashCode(), env.getTypeUtils()));
+
             extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
             tryStack.popFrame();
@@ -4359,7 +4302,18 @@ public class CFGBuilder {
             int catchIndex = 0;
             for (CatchTree c : catches) {
                 addLabelForNextNode(catchLabels.get(catchIndex).second);
+                extendWithNode(
+                        new MarkerNode(
+                                tree,
+                                "start of catch block for " + c.getClass() + " #" + tree.hashCode(),
+                                env.getTypeUtils()));
                 scan(c, p);
+                extendWithNode(
+                        new MarkerNode(
+                                tree,
+                                "end of catch block for " + c.getClass() + " #" + tree.hashCode(),
+                                env.getTypeUtils()));
+
                 catchIndex++;
                 extendWithExtendedNode(
                         new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
@@ -4375,46 +4329,101 @@ public class CFGBuilder {
             if (finallyLabel != null) {
                 tryStack.popFrame();
 
-                // if (hasExceptionalPath(exceptionalFinallyLabel)) {  // #293
-                // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-                // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
-                // is no successful path, it will be removed in later phase.
-                // addLabelForNextNode(exceptionalFinallyLabel);
-
+                // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
+                // because there is no path to 'exceptionalFinallyLabel'.
                 addLabelForNextNode(finallyLabel);
+                extendWithNode(
+                        new MarkerNode(
+                                tree,
+                                "start of finally block #" + tree.hashCode(),
+                                env.getTypeUtils()));
                 scan(finallyBlock, p);
+                extendWithNode(
+                        new MarkerNode(
+                                tree,
+                                "end of finally block #" + tree.hashCode(),
+                                env.getTypeUtils()));
+                extendWithExtendedNode(new UnconditionalJump(doneLabel));
 
-                TypeMirror throwableType = elements.getTypeElement("java.lang.Throwable").asType();
-                NodeWithExceptionsHolder throwing =
-                        extendWithNodeWithException(
-                                new MarkerNode(tree, "end of finally block", env.getTypeUtils()),
-                                throwableType);
-                /* #293
-                              throwing.setTerminatesExecution(true);
+                if (hasExceptionalPath(exceptionalFinallyLabel)) {
+                    // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
+                    // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
+                    // is no successful path, it will be removed in later phase.
+                    // TODO: Don't we need a separate finally block for each kind of exception?
+                    addLabelForNextNode(exceptionalFinallyLabel);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "start of finally block for Throwable",
+                                    env.getTypeUtils()));
 
-                              addLabelForNextNode(finallyLabel);
-                              BlockTree successfulFinallyBlock = treeBuilder.copy(finallyBlock);
-                              addToGeneratedTreesLookupMap(finallyBlock, successfulFinallyBlock);
-                              scan(successfulFinallyBlock, p);
-                              extendWithNode(
-                                      new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
-                              extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                       } else {
-                              // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
-                              // because there is no path to 'exceptionalFinallyLabel'.
-                              addLabelForNextNode(finallyLabel);
-                              scan(finallyBlock, p);
+                    scan(finallyBlock, p);
 
-                              extendWithNode(
-                                      new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
-                              extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                }*/
+                    TypeMirror throwableType =
+                            elements.getTypeElement("java.lang.Throwable").asType();
+                    NodeWithExceptionsHolder throwing =
+                            extendWithNodeWithException(
+                                    new MarkerNode(
+                                            tree,
+                                            "end of finally block for Throwable",
+                                            env.getTypeUtils()),
+                                    throwableType);
+
+                    throwing.setTerminatesExecution(true);
+                }
+
+                { // TODO: Find some way to check whether a return occurred
+                    addLabelForNextNode(returnFinallyLabel);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "start of finally block for return #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    scan(finallyBlock, p);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "end of finally block for return #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(returnTargetL));
+                }
+
+                if (breakTargetL != null) {
+                    // TODO: Find some way to check whether a break occurred
+                    addLabelForNextNode(breakFinallyLabel);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "start of finally block for break #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    scan(finallyBlock, p);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "end of finally block for break #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(breakTargetL));
+                }
+
+                if (continueTargetL != null) {
+                    // TODO: Find some way to check whether a continue occurred
+                    addLabelForNextNode(continueFinallyLabel);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "start of finally block for continue #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    scan(finallyBlock, p);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "end of finally block for continue #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(continueTargetL));
+                }
             }
 
             addLabelForNextNode(doneLabel);
-
-            // TODO: if there was control flow, e.g. a return, in the try block,
-            // we need to add an edge to that same location again.
 
             return null;
         }
