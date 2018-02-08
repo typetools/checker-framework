@@ -484,10 +484,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Create {@link QualifierDefaults} which handles checker specified defaults. Subclasses should
-     * override {@link GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)}
-     * or {@link GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to
-     * add more defaults or use different defaults.
+     * Create {@link QualifierDefaults} which handles checker specified defaults, and initialize the
+     * created {@link QualifierDefaults} to all groups of defaults. (e.g . CheckedCodeDefault,
+     * UnCheckedCodeDefault) Subclasses should override {@link
+     * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} or {@link
+     * GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to add more
+     * defaults or use different defaults.
      *
      * @return the QualifierDefaults object
      */
@@ -508,6 +510,10 @@ public abstract class GenericAnnotatedTypeFactory<
         return defs;
     }
 
+    /**
+     * Create {@link QualifierDefaults} which handles checker specified defaults. Sub-classes
+     * override this method to provide customized {@code QualifierDefault}.
+     */
     protected QualifierDefaults createQualifierDefaults() {
         return new QualifierDefaults(elements, this);
     }
