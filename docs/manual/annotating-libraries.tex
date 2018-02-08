@@ -204,9 +204,21 @@ the same directory structure as the JDK\@.
 Whenever you add a file, fully annotate it, as described in
 Section~\ref{annotating-tips}.
 
+If you are only annotating fields and method signatures (but not
+ensuring that method bodies type-check), then you don't need to suppress
+warnings, because the JDK is built using the \<-Awarns> command-line
+option.
+
 \item
 Build the annotated JDK:
 	run \<ant> in \<\$JSR308/checker-framework/checker>
+
+You may receive a compilation error because your files use a part of the
+JDK that is not in the annotated JDK\@.  If the missing part is relatively
+small, please add it.  If the missing part is large, then you can make
+small changes to the JDK source code, such as commenting out a method body.
+(Use \</*> and \<*/> on their own lines, so that the diffs are minimal.)
+
 \end{enumerate}
 
 
