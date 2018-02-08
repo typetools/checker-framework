@@ -3,6 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// @skip-test
 class Issue1797 {
     void fooReturn(@Nullable Object o) {
         try {
@@ -10,6 +11,18 @@ class Issue1797 {
         } finally {
             if (o != null) {
                 o.toString();
+            }
+        }
+    }
+
+    void fooWhileReturn(@Nullable Object o) {
+        while (this.hashCode() < 5) {
+            try {
+                return;
+            } finally {
+                if (o != null) {
+                    o.toString();
+                }
             }
         }
     }
