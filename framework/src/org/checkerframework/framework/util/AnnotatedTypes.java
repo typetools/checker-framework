@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -52,6 +51,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -886,23 +886,37 @@ public class AnnotatedTypes {
      */
     public static boolean isValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
-        boolean res = isValidType(qualifierHierarchy, type, Collections.emptySet());
+        SimpleAnnotatedTypeScanner<Boolean, Void> scanner =
+                new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+                    @Override
+                    protected Boolean defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+                        return isTopLevelValidType(qualifierHierarchy, type);
+                    }
+
+                    @Override
+                    protected Boolean reduce(Boolean r1, Boolean r2) {
+                        if (r1 == null) {
+                            if (r2 == null) {
+                                return true;
+                            }
+                            return r2;
+                        } else if (r2 == null) {
+                            return r1;
+                        }
+                        return r1 && r2;
+                    }
+                };
+
+        boolean res = scanner.visit(type);
         return res;
     }
 
-    private static boolean isValidType(
-            QualifierHierarchy qualifierHierarchy,
-            AnnotatedTypeMirror type,
-            Set<AnnotatedTypeMirror> v) {
+    /** Checks every property listed in #isValidType, but only for the top level type. */
+    private static boolean isTopLevelValidType(
+            QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
         if (type == null) {
             return false;
         }
-
-        Set<AnnotatedTypeMirror> visited = new HashSet<>(v);
-        if (visited.contains(type)) {
-            return true; // prevent infinite recursion
-        }
-        visited.add(type);
 
         // multiple annotations from the same hierarchy
         Set<AnnotationMirror> annotations = type.getAnnotations();
@@ -935,42 +949,6 @@ public class AnnotatedTypes {
         // wrong number of annotations
         if (!canHaveEmptyAnnotationSet && n != expectedN) {
             return false;
-        }
-
-        // recurse for composite types
-        if (type instanceof AnnotatedArrayType) {
-            AnnotatedArrayType at = (AnnotatedArrayType) type;
-            if (!isValidType(qualifierHierarchy, at.getComponentType(), visited)) {
-                return false;
-            }
-        } else if (type instanceof AnnotatedTypeVariable) {
-            AnnotatedTypeVariable at = (AnnotatedTypeVariable) type;
-            AnnotatedTypeMirror lowerBound = at.getLowerBound();
-            AnnotatedTypeMirror upperBound = at.getUpperBound();
-            if (lowerBound != null && !isValidType(qualifierHierarchy, lowerBound, visited)) {
-                return false;
-            }
-            if (upperBound != null && !isValidType(qualifierHierarchy, upperBound, visited)) {
-                return false;
-            }
-        } else if (type instanceof AnnotatedWildcardType) {
-            AnnotatedWildcardType at = (AnnotatedWildcardType) type;
-            AnnotatedTypeMirror extendsBound = at.getExtendsBound();
-            AnnotatedTypeMirror superBound = at.getSuperBound();
-            if (extendsBound != null && !isValidType(qualifierHierarchy, extendsBound, visited)) {
-                return false;
-            }
-            if (superBound != null && !isValidType(qualifierHierarchy, superBound, visited)) {
-                return false;
-            }
-
-        } else if (type instanceof AnnotatedDeclaredType) {
-            AnnotatedDeclaredType at = (AnnotatedDeclaredType) type;
-            for (AnnotatedTypeMirror typeArgument : at.getTypeArguments()) {
-                if (!isValidType(qualifierHierarchy, typeArgument, visited)) {
-                    return false;
-                }
-            }
         }
         return true;
     }

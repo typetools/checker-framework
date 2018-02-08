@@ -26,7 +26,7 @@ class TestPolyAll2 {
     }
 
     // Real duplicate forbidden.
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     public static boolean noDuplicates4(@NonNull @PolyAll @Nullable String[] a) {
         return true;
     }

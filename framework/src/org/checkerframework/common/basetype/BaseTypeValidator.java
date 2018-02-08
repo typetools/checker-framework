@@ -13,13 +13,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -27,7 +25,6 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -368,48 +365,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        // TODO why is this not needed?
-        // visitedNodes.put(type, null);
 
         if (type.isDeclaration() && !areBoundsValid(type.getUpperBound(), type.getLowerBound())) {
             reportInvalidBounds(type, tree);
-        }
-
-        // Keep in sync with visitWildcard
-        Set<AnnotationMirror> onVar = type.getAnnotations();
-        if (!onVar.isEmpty()) {
-            // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree:
-            // %s)%n",
-            // type, tree);
-
-            // TODO: the following check should not be necessary, once we are
-            // able to
-            // recurse on type parameters in AnnotatedTypes.isValidType (see
-            // todo there).
-            {
-                // Check whether multiple qualifiers from the same hierarchy
-                // appear.
-                checkConflictingPrimaryAnnos(type, tree);
-            }
-
-            // TODO: because of the way AnnotatedTypeMirror fixes up the bounds,
-            // i.e. an annotation on the type variable always replaces a
-            // corresponding
-            // annotation in the bound, some of these checks are not actually
-            // meaningful.
-            /*if (type.getUpperBoundField() != null) {
-                AnnotatedTypeMirror upper = type.getUpperBoundField();
-
-                for (AnnotationMirror aOnVar : onVar) {
-                    if (upper.isAnnotatedInHierarchy(aOnVar) &&
-                            !checker.getQualifierHierarchy().isSubtype(aOnVar,
-                                    upper.findAnnotationInHierarchy(aOnVar))) {
-                        this.reportInvalidType(type, tree);
-                    }
-                }
-                upper.replaceAnnotations(onVar);
-            }*/
-
         }
 
         return super.visitTypeVariable(type, tree);
@@ -420,64 +378,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        // TODO why is this not neede?
-        // visitedNodes.put(type, null);
 
         if (!areBoundsValid(type.getExtendsBound(), type.getSuperBound())) {
             reportInvalidBounds(type, tree);
         }
 
-        // Keep in sync with visitTypeVariable
-        Set<AnnotationMirror> onVar = type.getAnnotations();
-        if (!onVar.isEmpty()) {
-            // System.out.printf("BaseTypeVisitor.TypeValidator.visitWildcard(type: %s, tree: %s)",
-            // type, tree);
-
-            // TODO: the following check should not be necessary, once we are
-            // able to
-            // recurse on type parameters in AnnotatedTypes.isValidType (see
-            // todo there).
-            {
-                // Check whether multiple qualifiers from the same hierarchy
-                // appear.
-                checkConflictingPrimaryAnnos(type, tree);
-            }
-
-            /* TODO: see note with visitTypeVariable
-            if (type.getExtendsBoundField() != null) {
-                AnnotatedTypeMirror upper = type.getExtendsBoundField();
-                for (AnnotationMirror aOnVar : onVar) {
-                    if (upper.isAnnotatedInHierarchy(aOnVar) &&
-                            !atypeFactory.getQualifierHierarchy().isSubtype(aOnVar,
-                                    upper.findAnnotationInHierarchy(aOnVar))) {
-                        this.reportInvalidType(type, tree);
-                    }
-                }
-                upper.replaceAnnotations(onVar);
-            }
-            */
-
-            if (type.getSuperBoundField() != null) {
-                AnnotatedTypeMirror lower = type.getSuperBoundField();
-                for (AnnotationMirror aOnVar : onVar) {
-                    if (lower.isAnnotatedInHierarchy(aOnVar)
-                            && !atypeFactory
-                                    .getQualifierHierarchy()
-                                    .isSubtype(lower.getAnnotationInHierarchy(aOnVar), aOnVar)) {
-                        this.reportInvalidType(type, tree);
-                    }
-                }
-                lower.replaceAnnotations(onVar);
-            }
-        }
         return super.visitWildcard(type, tree);
-    }
-
-    @Override
-    public Void visitNull(final AnnotatedNullType type, final Tree tree) {
-        checkConflictingPrimaryAnnos(type, tree);
-
-        return super.visitNull(type, tree);
     }
 
     /**
@@ -499,31 +405,5 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         //  a bound.type.incompatible
 
         return true;
-    }
-
-    /**
-     * Determines if there are multiple qualifiers from a single hierarchy in type's primary
-     * annotations. If so, report an error.
-     *
-     * @param type the type to check
-     * @param tree tree on which an error is reported
-     * @return true if an error was reported
-     */
-    public boolean checkConflictingPrimaryAnnos(final AnnotatedTypeMirror type, final Tree tree) {
-        boolean error = false;
-        Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror aOnVar : type.getAnnotations()) {
-            if (AnnotationUtils.areSameByClass(aOnVar, PolyAll.class)) {
-                continue;
-            }
-            AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
-            if (seenTops.contains(top)) {
-                reportValidityResult("type.invalid.conflicting.annos", type, tree);
-                error = true;
-            }
-            seenTops.add(top);
-        }
-
-        return error;
     }
 }

@@ -3479,7 +3479,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // basic consistency checks
         if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type)) {
             checker.report(
-                    Result.failure("type.invalid", type.getAnnotations(), type.toString()), tree);
+                    Result.failure(
+                            "type.invalid.conflicting.annos",
+                            type.getAnnotations(),
+                            type.toString()),
+                    tree);
             return false;
         }
 
