@@ -963,18 +963,15 @@ public class AnnotatedTypes {
             if (superBound != null && !isValidType(qualifierHierarchy, superBound, visited)) {
                 return false;
             }
+
+        } else if (type instanceof AnnotatedDeclaredType) {
+            AnnotatedDeclaredType at = (AnnotatedDeclaredType) type;
+            for (AnnotatedTypeMirror typeArgument : at.getTypeArguments()) {
+                if (!isValidType(qualifierHierarchy, typeArgument, visited)) {
+                    return false;
+                }
+            }
         }
-        // TODO: the recursive checks on type arguments are currently skipped, because
-        // this breaks various tests.  it seems that checking the validity changes the
-        // annotations on some types.
-        //        } else if (type instanceof AnnotatedDeclaredType) {
-        //            AnnotatedDeclaredType at = (AnnotatedDeclaredType) type;
-        //            for (AnnotatedTypeMirror typeArgument : at.getTypeArguments()) {
-        //                if (!isValidType(qualifierHierarchy, typeArgument, visited)) {
-        //                    return false;
-        //                }
-        //            }
-        //        }
         return true;
     }
 
