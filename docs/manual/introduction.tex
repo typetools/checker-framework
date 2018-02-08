@@ -28,9 +28,9 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
-%\item
-%  \ahrefloc{index-checker}{Index Checker} for array accesses
-%  (see \chapterpageref{index-checker})
+\item
+  \ahrefloc{index-checker}{Index Checker} for array accesses
+  (see \chapterpageref{index-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
   patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
@@ -83,9 +83,6 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
-  \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
-  re-use (see \chapterpageref{linear-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -210,7 +207,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.3.1.zip}
+  \url{https://checkerframework.org/checker-framework-2.3.2.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -1206,7 +1203,6 @@ annotations at all are needed on type parameters such as \code{E} in \<MultiSet>
 \subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
 
 %% I want to get rid of this syntax.
-%% However, @Linear provides a compelling use case.
 
 In the checkers distributed with the Checker Framework, an annotation on a
 constructor invocation is equivalent to a cast on a constructor result.
