@@ -546,6 +546,8 @@ public abstract class CFAbstractTransfer<
         if (analysis.dependentTypesHelper != null) {
             return analysis.dependentTypesHelper.standardizeAnnotation(
                     flowExprContext, path, annoFromContract, false);
+            // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
+            // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
         } else {
             return annoFromContract;
         }
