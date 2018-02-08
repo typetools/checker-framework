@@ -865,14 +865,26 @@ public abstract class GenericAnnotatedTypeFactory<
             return flowResult.getStoreBefore(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
-        Node node = analysis.getNodeForTree(tree);
-        if (node == null) {
+        Set<Node> nodes = analysis.getNodesForTree(tree);
+        if (nodes == null) {
             // TODO: is there something better we can do? Check for
             // lambda expressions. This fixes Issue 448, but might not
             // be the best possible.
             return null;
         }
-        return getStoreBefore(node);
+        if (nodes.size() == 1) {
+            return getStoreBefore(nodes.iterator().next());
+        }
+        Store merge = null;
+        for (Node aNode : nodes) {
+            Store s = getStoreBefore(aNode);
+            if (merge == null) {
+                merge = s;
+            } else if (s != null) {
+                merge = merge.leastUpperBound(s);
+            }
+        }
+        return merge;
     }
 
     /** @return the store immediately before a given {@link Node}. */
@@ -896,24 +908,31 @@ public abstract class GenericAnnotatedTypeFactory<
             return flowResult.getStoreAfter(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
-        Node node = analysis.getNodeForTree(tree);
-        Store store =
-                AnalysisResult.runAnalysisFor(
-                        node, false, analysis.getInput(node.getBlock()), flowResultAnalysisCaches);
-        return store;
+        Set<Node> nodes = analysis.getNodesForTree(tree);
+        Store merge = null;
+        for (Node aNode : nodes) {
+            Store s =
+                    AnalysisResult.runAnalysisFor(
+                            aNode,
+                            false,
+                            analysis.getInput(aNode.getBlock()),
+                            flowResultAnalysisCaches);
+            if (merge == null) {
+                merge = s;
+            } else if (s != null) {
+                merge = merge.leastUpperBound(s);
+            }
+        }
+        return merge;
     }
 
     /** @return the {@link Node} for a given {@link Tree}. */
     public Node getNodeForTree(Tree tree) {
-        return flowResult.getNodeForTree(tree);
-    }
-
-    /** @return the generated {@link Tree}s for a given {@link Tree}. */
-    public List<Tree> getGeneratedTrees(Tree tree) {
-        if (!useFlow) {
-            return Collections.emptyList();
-        }
-        return flowResult.getGeneratedTrees(tree);
+        // TODO!!! This returns whatever happens to be the first
+        // Node for the Tree. Either we change this to also
+        // return a Set<Node> or we find a way to create a new
+        // Node that contains a conservative value.
+        return flowResult.getNodesForTree(tree).iterator().next();
     }
 
     /** @return the value of effectively final local variables */
@@ -1053,7 +1072,7 @@ public abstract class GenericAnnotatedTypeFactory<
                             false);
                 }
 
-                while (lambdaQueue.size() > 0) {
+                while (!lambdaQueue.isEmpty()) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(
                             queue,
