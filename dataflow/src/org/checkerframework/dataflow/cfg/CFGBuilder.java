@@ -630,6 +630,23 @@ public class CFGBuilder {
             this.catchLabels = catchLabels;
         }
 
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            if (this.catchLabels.isEmpty()) {
+                sb.append("TryCatchFrame: no catch labels.\n");
+            } else {
+                sb.append("TryCatchFrame: ");
+            }
+            for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
+                sb.append(ptml.first.toString());
+                sb.append(" -> ");
+                sb.append(ptml.second.toString());
+                sb.append('\n');
+            }
+            return sb.toString();
+        }
+
         /**
          * Given a type of thrown exception, add the set of possible control flow successor {@link
          * Label}s to the argument set. Return true if the exception is known to be caught by one of
@@ -713,6 +730,13 @@ public class CFGBuilder {
         }
 
         @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("TryFinallyFrame: finallyLabel: " + finallyLabel + '\n');
+            return sb.toString();
+        }
+
+        @Override
         public boolean possibleLabels(TypeMirror thrown, Set<Label> labels) {
             labels.add(finallyLabel);
             return true;
@@ -756,6 +780,47 @@ public class CFGBuilder {
             }
             labels.add(exitLabel);
             return labels;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("TryStack: exitLabel: " + this.exitLabel + '\n');
+            if (this.frames.isEmpty()) {
+                sb.append("No TryFrames.\n");
+            }
+            for (TryFrame tf : this.frames) {
+                sb.append(tf.toString());
+            }
+            return sb.toString();
+        }
+    }
+
+    /**
+     * A map that keeps track of new labels added within a try block. For names that are outside of
+     * the try block, the finally label is returned. This ensures that a finally block is executed
+     * when control flows outside of the try block.
+     */
+    @SuppressWarnings("serial")
+    protected static class TryFinallyScopeMap extends HashMap<Name, Label> {
+        private final Label finallyLabel;
+
+        protected TryFinallyScopeMap(Label finallyLabel) {
+            this.finallyLabel = finallyLabel;
+        }
+
+        @Override
+        public Label get(Object key) {
+            if (super.containsKey(key)) {
+                return super.get(key);
+            } else {
+                return finallyLabel;
+            }
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return true;
         }
     }
 
@@ -1451,6 +1516,12 @@ public class CFGBuilder {
         protected AnnotationProvider annotationProvider;
 
         /**
+         * Current {@link Label} to which a return statement should jump, or null if there is no
+         * valid destination.
+         */
+        protected /*@Nullable*/ Label returnTargetL;
+
+        /**
          * Current {@link Label} to which a break statement with no label should jump, or null if
          * there is no valid destination.
          */
@@ -1545,6 +1616,7 @@ public class CFGBuilder {
             nodeList = new ArrayList<>();
             bindings = new HashMap<>();
             leaders = new HashSet<>();
+            returnTargetL = regularExitLabel;
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
             returnNodes = new ArrayList<>();
@@ -4147,8 +4219,12 @@ public class CFGBuilder {
                 returnNodes.add(result);
                 extendWithNode(result);
             }
-            extendWithExtendedNode(new UnconditionalJump(regularExitLabel));
-            // TODO: return statements should also flow to an enclosing finally block
+
+            extendWithExtendedNode(new UnconditionalJump(this.returnTargetL));
+
+            // TODO: return statements flow to an enclosing finally, but we need a way to get
+            // the finally to flow back to the original return.
+
             return result;
         }
 
@@ -4250,6 +4326,13 @@ public class CFGBuilder {
                 catchLabels.add(Pair.of(type, new Label()));
             }
 
+            // Store return/break/continue labels, just in case we need them for a finally block.
+            Label oldReturnTargetL = returnTargetL;
+            Label oldBreakTargetL = breakTargetL;
+            Map<Name, Label> oldBreakLabels = breakLabels;
+            Label oldContinueTargetL = continueTargetL;
+            Map<Name, Label> oldContinueLabels = continueLabels;
+
             Label finallyLabel = null;
             // Label exceptionalFinallyLabel = null; // #293
             if (finallyBlock != null) {
@@ -4257,6 +4340,11 @@ public class CFGBuilder {
                 // exceptionalFinallyLabel = new Label(); // #293
                 // tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
                 tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
+                returnTargetL = finallyLabel;
+                breakTargetL = finallyLabel;
+                breakLabels = new TryFinallyScopeMap(finallyLabel);
+                continueTargetL = finallyLabel;
+                continueLabels = new TryFinallyScopeMap(finallyLabel);
             }
 
             Label doneLabel = new Label();
@@ -4277,6 +4365,13 @@ public class CFGBuilder {
                         new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
             }
 
+            // Reset values before analyzing the finally block!
+            returnTargetL = oldReturnTargetL;
+            breakTargetL = oldBreakTargetL;
+            breakLabels = oldBreakLabels;
+            continueTargetL = oldContinueTargetL;
+            continueLabels = oldContinueLabels;
+
             if (finallyLabel != null) {
                 tryStack.popFrame();
 
@@ -4285,6 +4380,7 @@ public class CFGBuilder {
                 // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
                 // is no successful path, it will be removed in later phase.
                 // addLabelForNextNode(exceptionalFinallyLabel);
+
                 addLabelForNextNode(finallyLabel);
                 scan(finallyBlock, p);
 
@@ -4316,6 +4412,9 @@ public class CFGBuilder {
             }
 
             addLabelForNextNode(doneLabel);
+
+            // TODO: if there was control flow, e.g. a return, in the try block,
+            // we need to add an edge to that same location again.
 
             return null;
         }
