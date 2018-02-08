@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.util;
 
 import java.util.HashSet;
 import java.util.Objects;
-import org.checkerframework.dataflow.util.AbstractMostlySingleton.State;
 
 /** A set that is more efficient than HashSet for 0 and 1 elements. */
 public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
