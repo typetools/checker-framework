@@ -4425,6 +4425,9 @@ public class CFGBuilder {
 
             addLabelForNextNode(doneLabel);
 
+            // TODO: if there was control flow, e.g. a return, in the try block,
+            // we need to add an edge to that same location again.
+
             return null;
         }
 

@@ -286,7 +286,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected ReflectionResolver reflectionResolver;
 
-    /** Annotated Type Loader used to load annotation classes via reflective lookup */
+    /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
     protected AnnotationClassLoader loader;
 
     /** Indicates that the whole-program inference is on. */
@@ -361,7 +361,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
-        this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
@@ -717,6 +716,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Factory method to easily change what {@link AnnotationClassLoader} is created to load type
+     * annotation classes. Subclasses can override this method and return a custom
+     * AnnotationClassLoader subclass to customize loading logic.
+     */
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        return new AnnotationClassLoader(checker);
+    }
+
+    /**
      * Returns a mutable set of annotation classes that are supported by a checker
      *
      * <p>Subclasses may override this method and to return a mutable set of their supported type
@@ -818,7 +826,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithPolyAll(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations =
-                loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
+                getBundledTypeQualifiersWithoutPolyAll(explicitlyListedAnnotations);
         boolean addPolyAll = false;
         for (Class<? extends Annotation> annotationClass : annotations) {
             if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
@@ -851,9 +859,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Loads all annotations contained in the qual directory of a checker via reflection, and has
-     * the option to include an explicitly stated list of annotations (eg ones found in a different
-     * directory than qual).
+     * Instantiates the AnnotationClassLoader and loads all annotations contained in the qual
+     * directory of a checker via reflection, and has the option to include an explicitly stated
+     * list of annotations (eg ones found in a different directory than qual).
      *
      * <p>The annotations that are automatically loaded must have the {@link
      * java.lang.annotation.Target Target} meta-annotation with the value of {@link
@@ -869,8 +877,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("varargs")
     private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
-        // add the loaded annotations to the annotation set
-        Set<Class<? extends Annotation>> annotations = loader.getLoadedAnnotationClasses();
+        loader = createAnnotationClassLoader();
+
+        Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
 
         // add in all explicitly Listed qualifiers
         if (explicitlyListedAnnotations != null) {
