@@ -1,39 +1,32 @@
 \htmlhr
 \chapter{Annotating libraries\label{annotating-libraries}}
 
+When your code uses a library that is not currently being compiled,
+the Checker Framework looks up the library's annotations in its class files.
 If your code uses a library that does \emph{not} contain type annotations,
 then the type-checker has no way to know the library's behavior.
 The type-checker
-makes conservative assumptions about unannotated bytecode:  it assumes that
-every method parameter has the bottom type annotation and that every method
-return type has the top type annotation (see
+makes conservative assumptions about unannotated bytecode.
+% :  it assumes that every method parameter has the bottom type annotation
+% and that every method return type has the top type annotation
+(See
 Section~\ref{defaults-classfile} for details, an example, and how to
-override this conservative behavior).
+override this conservative behavior.)
 These conservative library
 annotations invariably lead to checker warnings.
+
 This chapter describes how to eliminate
 the warnings by adding annotations to the library.
 (Alternately, you can instead
-suppress all warnings related to an unannotated library by use of the
+suppress all warnings related to an unannotated library, or to part of your
+codebase, by use of the
 \code{-AskipUses} or \code{-AonlyUses} command-line option; see
-Section~\ref{askipuses}.)
-
-(Note: This chapter uses ``library'' to refer to code that is provided in
-\<.class> or \<.jar> form.  You should use this approach for parts of your
-own codebase if you typically compile different parts separately.  If
-your codebase is typically compiled together and you are type-checking only
-part of it, you can use the approach described in this chapter, or you can
-use command-line arguments such as \<-AskipUses> and \<-AskipDefs> (see
-Sections~\ref{askipuses}--\ref{askipdefs}).  Also, recall that the Checker
-Framework analyzes all, and only, the source code that is passed to it.
-The Checker Framework is a plug-in to the javac compiler, and it never
-analyzes code that is not being compiled, though it does look up
-annotations in the class files for code that was previously compiled.)
+Sections~\ref{askipuses}--\ref{askipdefs}.)
 
 
 \section{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
 
-The Checker Framework distribution contains annotated versions of popular
+The Checker Framework distribution contains annotated versions of a few
 libraries in directory \<checker-framework/checker/lib/>.  See its
 \href{https://github.com/typetools/checker-framework/tree/master/checker/lib}{\<README>
   file} for a list of the currently-available libraries.
@@ -61,19 +54,20 @@ Checker Framework to include annotated versions of libraries.
 
 This section describes how to create an annotated library --- that is, how
 to add annotations to a library so that the Checker Framework can better
-typecheck clients of the library.
+type-check clients of the library.
 
-You make the library's annotations known to the checkers by writing
-annotations in a copy of the library's source code (or in a ``stub
-file'' if you do not have access to the source code).
-Given the library annotations, you have two options:
+You can write annotations for a library, and make them known to a checker, in two ways.
 
 \begin{enumerate}
 \item
-  You can compile the library to create \<.class> and \<.jar> files that
-  contain the annotations.  Then, when doing pluggable type-checking, you
-  would put those files on the classpath.
-  When running your code, you can use either version of the library:  the
+  Write annotations in a copy of the library's source code.
+
+  Compile the library to create \<.class> and \<.jar> files that
+  contain the annotations.
+
+  Then, when doing pluggable \emph{type-checking},
+  put those files on the classpath.
+  When \emph{running} your code, you can use either version of the library:  the
   one you created or the original distributed version.
 
   %% There is no point to advertising this deprecated workflow.
@@ -91,15 +85,20 @@ Given the library annotations, you have two options:
   Section~\ref{compiling-libraries} describes how to compile a library.
 
 \item
-  You can supply the annotated library source code, or a very concise
-  variant called a ``stub file'', textually to the Checker Framework.
+  Write annotations in a ``stub file'', if you do not have access to the
+  source code.
+  %% Leave out this complication.
+  % This approach is possible with annotated source code.
 
-  The stub file approach does not require you to compile the library source
+  Supply the ``stub file'' textually to the Checker Framework.
+
+  This approach does not require you to compile the library source
   code.
   A stub file is applicable to multiple versions of a library, so
   the stub file does not need to be updated when a new version of the
   library is released.
-  When provided by the author of the checker, a stub file is used
+
+  When provided by the author of a checker, a stub file is used
   automatically, with no need for the user to supply a command-line option.
   Section~\ref{stub} describes how to create and use stub files.
 
@@ -141,9 +140,24 @@ pull-request them against the upstream version of the library.  This will
 benefit all users of the library.
 
 If you do not annotate the full library, then make it easy for others to
-know what parts you have annotated and what parts you have not.  Also,
-ensure that every file is fully annotated or not annotated at all --- it's
-very confusing when a file has partial annotations.
+know what files you have annotated and what files you have not.  The
+\refqualclass{framework/qual}{AnnotatedFor} annotation may be helpful for
+this.
+
+Whenever you annotate any part of a file, fully annotate the file!  That
+is, write annotations for all the methods and fields, based on their
+documentation.  If you don't annotate the whole file, then other people
+won't know whether a particular method is unannotated because you didn't
+get to it yet or because you decided that it didn't need any annotations.
+
+Ideally, after you annotate a file, you can type-check the file to verify
+the correctness and completeness of your annotations.  An alternative is to
+only annotate method signatures.  The alternative is quicker but more
+error-prone, and there is no difference from the point of view of clients,
+who can only see annotations on public methods and fields.  When you
+compile the library, the type-checker will probably issue warnings, but if
+you supply \<-Awarns>, you don't have to suppress those warnings and the
+compiler will still produce \<.class> files.
 
 
 \subsection{Creating an annotated JDK\label{annotating-jdk}}
@@ -187,10 +201,8 @@ directory
 \<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}/src/>, using
 the same directory structure as the JDK\@.
 
-\textbf{Whenever you add a file, fully annotate it!}  (Don't add a file
-with partial annotations, because then other people won't know whether a
-particular method is unannotated because you didn't get to it yet or
-because you considered it and decided that it didn't need any annotations.)
+Whenever you add a file, fully annotate it, as described in
+Section~\ref{annotating-tips}.
 
 \item
 Build the annotated JDK:
@@ -207,11 +219,10 @@ classpath.  You get a guarantee that the library contains no errors.
 The rest of this section tells you how to compile a library if you
 \emph{partially} annotate it:  that is, you write annotations for some of its
 classes but not others.
+
 (There is another type of partial annotation, which is when you annotate
-method signatures but do not type-check the bodies.  To do that variety of
-partial annotation, simply suppress warnings; see
-Chapter~\ref{suppressing-warnings}.  You can combine the two types of
-partial annotation.)
+method signatures but do not type-check the bodies.
+See Section~\ref{annotating-tips}.)
 
 When compiling a partially-annotated library, the checker needs to use normal
 defaulting rules (Section~\ref{climb-to-top}) for code you have annotated and
@@ -666,4 +677,4 @@ read whether the library's annotations are parsed.
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
 %%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
 %  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
-%  LocalWords:  AstubWarnIfOverwritesBytecode
+%  LocalWords:  AstubWarnIfOverwritesBytecode Awarns
