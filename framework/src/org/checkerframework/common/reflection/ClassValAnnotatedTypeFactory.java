@@ -329,6 +329,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return float.class.getCanonicalName();
                 case BOOLEAN:
                     return boolean.class.getCanonicalName();
+                case VOID:
+                    return "void";
                 default:
                     checker.errorAbort(
                             "ClassValAnnotatedTypeFactory.getClassname: did not expect "

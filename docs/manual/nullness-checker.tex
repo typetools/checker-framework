@@ -2023,6 +2023,11 @@ a \<@NonNull>
 field may be observed to be null, until that field is set.  In
 particular, the Nullness Checker issues a warning for code like this:
 
+%  import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+%  import org.checkerframework.checker.nullness.qual.NonNull;
+% Declaration of m() needs:
+%   @UnderInitialization(MyClass.class) MyClass this
+% or @UnknownInitialization
 \begin{Verbatim}
   public class MyClass {
     private @NonNull Object f;
@@ -2038,6 +2043,7 @@ particular, the Nullness Checker issues a warning for code like this:
     }
     public MyClass(int x, int y, int z) {
       m();
+      this.f = new Object();
     }
     public void m() {
       // Error because this.f is accessed before f is initialized,
