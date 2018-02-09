@@ -13,6 +13,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
  * An implementation of the nullness type-system, parameterized by an initialization type-system for
  * safe initialization. It can use freedom-before-commitment or rawness as its initialization type
  * system.
+ *
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SupportedLintOptions({
     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,

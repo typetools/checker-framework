@@ -9,6 +9,7 @@ import java.lang.annotation.RetentionPolicy;
  * multiply, ...) with another unit.
  *
  * @see org.checkerframework.checker.units.UnitsRelations
+ * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

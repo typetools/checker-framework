@@ -30,6 +30,7 @@ import java.lang.annotation.Target;
  * @see DefaultQualifiers
  * @see DefaultQualifierInHierarchy
  * @see DefaultFor
+ * @checker_framework.manual #defaults Default qualifier for unannotated types
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
