@@ -2,11 +2,7 @@ package org.checkerframework.dataflow.cfg.block;
 
 import org.checkerframework.dataflow.analysis.Store;
 
-/**
- * Implementation of a conditional basic block.
- *
- * @author Stefan Heule
- */
+/** Implementation of a conditional basic block. */
 public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock {
 
     /** Successor of the then branch. */

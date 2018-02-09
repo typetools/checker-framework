@@ -13,7 +13,6 @@ import java.lang.annotation.Target;
  * is done in {@link org.checkerframework.checker.i18nformatter.I18nFormatterTransfer}
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

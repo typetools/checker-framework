@@ -11,8 +11,6 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 /**
  * A postcondition annotation to indicate that a method ensures certain expressions to be {@link
  * Odd}.
- *
- * @author Stefan Heule
  */
 @PostconditionAnnotation(qualifier = Odd.class)
 @Documented

@@ -15,7 +15,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * freedom-before-commitment (which is generally preferred) and rawness.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
- * @author Stefan Heule
  */
 public abstract class InitializationChecker extends BaseTypeChecker {
 

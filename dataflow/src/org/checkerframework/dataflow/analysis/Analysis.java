@@ -45,7 +45,6 @@ import org.checkerframework.javacutil.Pair;
  * An implementation of an iterative algorithm to solve a org.checkerframework.dataflow problem,
  * given a control flow graph and a transfer function.
  *
- * @author Stefan Heule
  * @param <A> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
  * @param <T> the transfer function type that is used to approximated runtime behavior

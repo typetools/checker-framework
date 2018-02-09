@@ -11,7 +11,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * is passed to {@link java.text.MessageFormat#format(String, Object...)}, an exception will result.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 @SubtypeOf(I18nUnknownFormat.class)
 @Retention(RetentionPolicy.RUNTIME)
