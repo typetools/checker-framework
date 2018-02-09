@@ -45,6 +45,7 @@ The following repositories will be cloned or updated from their origins:
         message += interm_to_build[1] + "\n"
 
     message += PLUME_LIB + "\n"
+    message += CHECKLINK + "\n"
     message += PLUME_BIB + "\n"
     message += STUBPARSER + "\n\n"
 
@@ -66,6 +67,7 @@ The following repositories will be cloned or updated from their origins:
         clone_from_scratch_or_update(interm_to_build[0], interm_to_build[1], clone_from_scratch, False)
 
     clone_from_scratch_or_update(LIVE_PLUME_LIB, PLUME_LIB, clone_from_scratch, False)
+    clone_from_scratch_or_update(LIVE_CHECKLINK, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
 

@@ -286,7 +286,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected ReflectionResolver reflectionResolver;
 
-    /** Annotated Type Loader used to load annotation classes via reflective lookup */
+    /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
     protected AnnotationClassLoader loader;
 
     /** Indicates that the whole-program inference is on. */
@@ -306,10 +306,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Map<Tree, AnnotatedTypeMirror> classAndMethodTreeCache;
 
     /**
-     * Mapping from a Tree to its annotated type; before implicits are applied, just what the
+     * Mapping from an expression tree to its annotated type; before implicits are applied, just
+     * what the programmer wrote.
+     */
+    protected final Map<Tree, AnnotatedTypeMirror> fromExpressionTreeCache;
+
+    /**
+     * Mapping from a member tree to its annotated type; before implicits are applied, just what the
      * programmer wrote.
      */
-    protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache;
+    protected final Map<Tree, AnnotatedTypeMirror> fromMemberTreeCache;
+
+    /**
+     * Mapping from a type tree to its annotated type; before implicits are applied, just what the
+     * programmer wrote.
+     */
+    protected final Map<Tree, AnnotatedTypeMirror> fromTypeTreeCache;
 
     /**
      * Mapping from an Element to its annotated type; before implicits are applied, just what the
@@ -349,7 +361,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
-        this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
@@ -361,12 +372,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (shouldCache) {
             int cacheSize = getCacheSize();
             this.classAndMethodTreeCache = CollectionUtils.createLRUCache(cacheSize);
-            this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.fromExpressionTreeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.fromMemberTreeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.fromTypeTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
         } else {
             this.classAndMethodTreeCache = null;
-            this.fromTreeCache = null;
+            this.fromExpressionTreeCache = null;
+            this.fromMemberTreeCache = null;
+            this.fromTypeTreeCache = null;
             this.elementCache = null;
             this.elementToTreeCache = null;
         }
@@ -530,7 +545,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Clear the caches with trees because once the compilation unit changes,
             // the trees may be modified and lose type arguments.
             elementToTreeCache.clear();
-            fromTreeCache.clear();
+            fromExpressionTreeCache.clear();
+            fromMemberTreeCache.clear();
+            fromTypeTreeCache.clear();
             classAndMethodTreeCache.clear();
 
             // There is no need to clear the following cache, it is limited by cache size and it
@@ -699,6 +716,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Factory method to easily change what {@link AnnotationClassLoader} is created to load type
+     * annotation classes. Subclasses can override this method and return a custom
+     * AnnotationClassLoader subclass to customize loading logic.
+     */
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        return new AnnotationClassLoader(checker);
+    }
+
+    /**
      * Returns a mutable set of annotation classes that are supported by a checker
      *
      * <p>Subclasses may override this method and to return a mutable set of their supported type
@@ -800,7 +826,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithPolyAll(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations =
-                loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
+                getBundledTypeQualifiersWithoutPolyAll(explicitlyListedAnnotations);
         boolean addPolyAll = false;
         for (Class<? extends Annotation> annotationClass : annotations) {
             if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
@@ -833,9 +859,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Loads all annotations contained in the qual directory of a checker via reflection, and has
-     * the option to include an explicitly stated list of annotations (eg ones found in a different
-     * directory than qual).
+     * Instantiates the AnnotationClassLoader and loads all annotations contained in the qual
+     * directory of a checker via reflection, and has the option to include an explicitly stated
+     * list of annotations (eg ones found in a different directory than qual).
      *
      * <p>The annotations that are automatically loaded must have the {@link
      * java.lang.annotation.Target Target} meta-annotation with the value of {@link
@@ -851,8 +877,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("varargs")
     private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
-        // add the loaded annotations to the annotation set
-        Set<Class<? extends Annotation>> annotations = loader.getLoadedAnnotationClasses();
+        loader = createAnnotationClassLoader();
+
+        Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
 
         // add in all explicitly Listed qualifiers
         if (explicitlyListedAnnotations != null) {
@@ -1179,13 +1206,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + tree);
             return null; // dead code
         }
-        if (shouldCache && fromTreeCache.containsKey(tree)) {
-            return fromTreeCache.get(tree).deepCopy();
+        if (shouldCache && fromMemberTreeCache.containsKey(tree)) {
+            return fromMemberTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
         annotateInheritedFromClass(result);
         if (shouldCache) {
-            fromTreeCache.put(tree, result.deepCopy());
+            fromMemberTreeCache.put(tree, result.deepCopy());
         }
         return result;
     }
@@ -1207,8 +1234,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @see TypeFromExpressionVisitor
      */
     private AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
-        if (shouldCache && fromTreeCache.containsKey(tree)) {
-            return fromTreeCache.get(tree).deepCopy();
+        if (shouldCache && fromExpressionTreeCache.containsKey(tree)) {
+            return fromExpressionTreeCache.get(tree).deepCopy();
         }
 
         AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
@@ -1216,7 +1243,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         annotateInheritedFromClass(result);
 
         if (shouldCache) {
-            fromTreeCache.put(tree, result.deepCopy());
+            fromExpressionTreeCache.put(tree, result.deepCopy());
         }
         return result;
     }
@@ -1236,15 +1263,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the (partially) annotated type of the type in the AST
      */
     /*package private*/ final AnnotatedTypeMirror fromTypeTree(Tree tree) {
-        if (shouldCache && fromTreeCache.containsKey(tree)) {
-            return fromTreeCache.get(tree).deepCopy();
+        if (shouldCache && fromTypeTreeCache.containsKey(tree)) {
+            return fromTypeTreeCache.get(tree).deepCopy();
         }
 
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(this, tree);
 
         annotateInheritedFromClass(result);
         if (shouldCache) {
-            fromTreeCache.put(tree, result.deepCopy());
+            fromTypeTreeCache.put(tree, result.deepCopy());
         }
         return result;
     }
@@ -2779,12 +2806,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 : "AnnotatedTypeFactory.getPath: root needs to be set when used on trees; factory: "
                         + this.getClass();
 
-        if (node == null) return null;
+        if (node == null) {
+            return null;
+        }
 
         if (treePathCache.isCached(node)) {
             return treePathCache.getPath(root, node);
         }
-        ;
 
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null) {
@@ -2859,9 +2887,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     static final boolean validAnnotatedType(AnnotatedTypeMirror type) {
         if (type == null) {
             return false;
-        }
-        if (type.getUnderlyingType() == null) {
-            return true; // e.g., for receiver types
         }
         return validType(type.getUnderlyingType());
     }
@@ -3529,7 +3554,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private AnnotatedDeclaredType getFunctionalInterfaceType(Tree tree) {
 
-        Tree parentTree = TreePath.getPath(this.root, tree).getParentPath().getLeaf();
+        Tree parentTree = getPath(tree).getParentPath().getLeaf();
         switch (parentTree.getKind()) {
             case PARENTHESIZED:
                 return getFunctionalInterfaceType(parentTree);
@@ -3604,7 +3629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             case RETURN:
                 Tree enclosing =
                         TreeUtils.enclosingOfKind(
-                                TreePath.getPath(this.root, parentTree),
+                                getPath(parentTree),
                                 new HashSet<>(
                                         Arrays.asList(
                                                 Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
