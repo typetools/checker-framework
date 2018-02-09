@@ -2453,8 +2453,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>By specifying the alias/canonical relationship using this method, the elements of the
      * alias are not preserved when the canonical annotation to use is constructed from the alias.
-     * If you want the elements to be copied over as well, please refer to {@link
-     * #addAliasedAnnotation(Class, AnnotationMirror, boolean, String...)}.
+     * If you want the elements to be copied over as well, use {@link #addAliasedAnnotation(Class,
+     * AnnotationMirror, boolean, String...)}.
      *
      * @param aliasClass the class of the aliased annotation
      * @param type the canonical annotation
@@ -2468,9 +2468,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * for the canonical annotation {@code type} that will be used by the Checker Framework in the
      * alias's place.
      *
-     * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
-     * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
-     * AnnotationMirror)} version instead.
+     * <p>Use this method if the alias class is not necessary on the classpath at Checker Framework
+     * compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class, AnnotationMirror)}
+     * which prevents the possibility of a typo in the class name.
      *
      * @param aliasName the fully-qualified name of the aliased annotation
      * @param type the canonical annotation
@@ -2518,9 +2518,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * for the canonical annotation {@code type} that will be used by the Checker Framework in the
      * alias's place.
      *
-     * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
-     * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
-     * AnnotationMirror)} version instead.
+     * <p>Use this method if the alias class is not necessarily on the classpath at Checker
+     * Framework compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class,
+     * AnnotationMirror, boolean, String[])} which prevents the possibility of a typo in the class
+     * name.
      *
      * @param aliasName the fully-qualified name of the aliased class
      * @param type the canonical annotation

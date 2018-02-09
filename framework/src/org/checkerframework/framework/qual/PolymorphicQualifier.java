@@ -23,10 +23,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PolymorphicQualifier {
     /**
-     * Usually, you can write {@code @PolymorphicQualifier} without an argument. When multiple type
-     * hierarchies are supported by a single type system, then each polymorphic qualifier needs to
-     * indicate which sub-hierarchy it belongs to. Do so by passing a qualifier from the given
-     * hierarchy, by convention the top qualifier.
+     * Indicates which type system this annotation refers to (optional, and usually unnecessary).
+     * When multiple type hierarchies are supported by a single type system, then each polymorphic
+     * qualifier needs to indicate which sub-hierarchy it belongs to. Do so by passing a qualifier
+     * from the given hierarchy, by convention the top qualifier.
      */
     // We use the meaningless PolymorphicQualifier.class as default value and
     // then ensure there is a single top qualifier to use.
