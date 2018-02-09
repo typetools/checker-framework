@@ -518,6 +518,10 @@ public abstract class CFAbstractTransfer<
                                 methodTree, method.getClassTree(), analysis.checker.getContext());
             }
 
+            TreePath localScope = analysis.atypeFactory.getPath(methodTree);
+
+            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, localScope);
+
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
@@ -525,14 +529,27 @@ public abstract class CFAbstractTransfer<
                 // (same for other annotations)
                 FlowExpressions.Receiver expr =
                         FlowExpressionParseUtil.parse(
-                                expression,
-                                flowExprContext,
-                                analysis.atypeFactory.getPath(methodTree),
-                                false);
+                                expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
             }
+        }
+    }
+
+    /** Standardize a type qualifier annotation obtained from a contract. */
+    private AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            FlowExpressionContext flowExprContext,
+            TreePath path) {
+        // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
+        if (analysis.dependentTypesHelper != null) {
+            return analysis.dependentTypesHelper.standardizeAnnotation(
+                    flowExprContext, path, annoFromContract, false);
+            // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
+            // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
+        } else {
+            return annoFromContract;
         }
     }
 
@@ -1002,13 +1019,14 @@ public abstract class CFAbstractTransfer<
                                 n, analysis.checker.getContext());
             }
 
+            TreePath localScope = analysis.atypeFactory.getPath(tree);
+
+            anno = standardizeAnnotationFromContract(anno, flowExprContext, localScope);
+
             try {
                 FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
-                                expression,
-                                flowExprContext,
-                                analysis.atypeFactory.getPath(tree),
-                                false);
+                                expression, flowExprContext, localScope, false);
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
                         thenStore.insertValue(r, anno);

@@ -7,9 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods of the form: <br>
+ * Annotation for methods like {@code Constructor.newInstance}, whose signature is: <br>
  * {@code T method({@link MethodVal}(classname=c, methodname="<init>", params=p) Constructor this,
  * Object... args)}
+ *
+ * @checker_framework.manual #reflection-resolution Reflection resolution
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

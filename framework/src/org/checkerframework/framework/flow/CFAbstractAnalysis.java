@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -47,6 +48,11 @@ public abstract class CFAbstractAnalysis<
     /** The type hierarchy. */
     protected final TypeHierarchy typeHierarchy;
 
+    /**
+     * The dependent type helper used to standardize annotations belonging to the type hierarchy.
+     */
+    protected final DependentTypesHelper dependentTypesHelper;
+
     /** A type factory that can provide static type annotations for AST Trees. */
     protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
             atypeFactory;
@@ -68,6 +74,7 @@ public abstract class CFAbstractAnalysis<
         super(checker.getProcessingEnvironment(), null, maxCountBeforeWidening);
         qualifierHierarchy = factory.getQualifierHierarchy();
         typeHierarchy = factory.getTypeHierarchy();
+        dependentTypesHelper = factory.getDependentTypesHelper();
         this.atypeFactory = factory;
         this.checker = checker;
         this.transferFunction = createTransferFunction();

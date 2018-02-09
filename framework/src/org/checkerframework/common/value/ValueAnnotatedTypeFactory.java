@@ -145,7 +145,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         addAliasedAnnotation(
-                android.support.annotation.IntRange.class,
+                "android.support.annotation.IntRange",
                 AnnotationBuilder.fromClass(elements, IntRange.class),
                 true);
 

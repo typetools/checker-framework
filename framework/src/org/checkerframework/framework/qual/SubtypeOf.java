@@ -47,6 +47,9 @@ import java.lang.annotation.Target;
  * <p>No @SubtypeOf meta-annotation is needed on (or can be written on) the Unqualified
  * pseudo-qualifier, whose position in the hierarchy is inferred from the meta-annotations on the
  * explicit qualifiers.
+ *
+ * @checker_framework.manual #creating-declarative-hierarchy Declaratively defining the qualifier
+ *     hierarchy
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

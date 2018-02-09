@@ -109,6 +109,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.QualifierPolymorphism;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -650,6 +651,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 node, getCurrentPath(), checker.getContext());
             }
+
+            annotation =
+                    standardizeAnnotationFromContract(
+                            annotation, flowExprContext, getCurrentPath());
+
             FlowExpressions.Receiver expr = null;
             try {
                 expr =
@@ -691,6 +697,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
+        }
+    }
+
+    /** Standardize a type qualifier annotation obtained from a contract. */
+    private AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            FlowExpressionContext flowExprContext,
+            TreePath path) {
+        DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            AnnotationMirror anno =
+                    dependentTypesHelper.standardizeAnnotation(
+                            flowExprContext, path, annoFromContract, false);
+            dependentTypesHelper.checkAnnotation(anno, path.getLeaf());
+            return anno;
+        } else {
+            return annoFromContract;
         }
     }
 
@@ -1085,6 +1108,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
+
+            anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
 
             try {
                 FlowExpressions.Receiver expr =
@@ -3249,6 +3274,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 method.getReceiverType().getUnderlyingType(),
                                 checker.getContext());
             }
+
+            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, path);
 
             try {
                 // TODO: currently, these expressions are parsed many times.

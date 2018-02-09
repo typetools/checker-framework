@@ -20,6 +20,9 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * to denote that the literal {@code null} always has the type qualifier {@code @Nullable}.
+ *
+ * @checker_framework.manual #creating-declarative-type-introduction Declaratively specifying
+ *     implicit annotations
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
