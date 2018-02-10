@@ -24,7 +24,6 @@ units-checker.tex \
 signedness-checker.tex \
 constant-value-checker.tex \
 aliasing-checker.tex \
-linear-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \
@@ -108,7 +107,7 @@ very_clean: clean
 
 .PHONY: checklink
 checklink:
-	${INV}/scripts/checklink -q -e `grep -v '^#' ${INV}/scripts/checklink-args.txt` manual.html
+	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` manual.html
 
 .PHONY: tags
 tags: TAGS

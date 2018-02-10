@@ -8,8 +8,6 @@ import com.sun.source.tree.Tree;
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow
  * graph.
- *
- * @author Stefan Heule
  */
 public abstract class UnderlyingAST {
     public enum Kind {

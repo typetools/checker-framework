@@ -25,7 +25,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @see I18nConversionCategory
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 @SubtypeOf(I18nUnknownFormat.class)
 @Retention(RetentionPolicy.RUNTIME)

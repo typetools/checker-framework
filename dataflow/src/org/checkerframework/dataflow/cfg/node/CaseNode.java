@@ -15,9 +15,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   case <em>constant</em>:
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class CaseNode extends Node {
 

@@ -11,8 +11,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * <pre>
  * forall n in getContents() :: n.getBlock() == this
  * </pre>
- *
- * @author Stefan Heule
  */
 public interface RegularBlock extends SingleSuccessorBlock {
 

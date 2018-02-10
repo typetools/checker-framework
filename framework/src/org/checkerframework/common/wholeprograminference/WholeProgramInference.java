@@ -23,7 +23,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  * the previous and new types.
  *
  * @checker_framework.manual #whole-program-inference Whole-program inference
- * @author pbsf
  */
 public interface WholeProgramInference {
 

@@ -30,11 +30,7 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * Class to generate the DOT representation of the control flow graph of a given method.
- *
- * @author Stefan Heule
- */
+/** Class to generate the DOT representation of the control flow graph of a given method. */
 public class JavaSource2CFGDOT {
 
     /** Main method. */

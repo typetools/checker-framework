@@ -21,6 +21,7 @@ import java.lang.annotation.Target;
  * value of this annotation.
  *
  * @see org.checkerframework.framework.source.SupportedOptions
+ * @checker_framework.manual #creating-compiler-interface The checker class: Compiler interface
  */
 @Inherited
 @Documented

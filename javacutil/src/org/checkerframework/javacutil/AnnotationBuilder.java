@@ -180,6 +180,30 @@ public class AnnotationBuilder {
         return;
     }
 
+    /**
+     * Copies the specified element values from the given annotation, using the specified renaming
+     * map. Each value in the map must be an element name in the annotation being built. If an
+     * element from the given annotation is not a key in the map, it is ignored.
+     *
+     * @param valueHolder the annotation that holds the values to be copied
+     * @param elementNameRenaming a map from element names in {@code valueHolder} to element names
+     *     of the annotation being built
+     */
+    public void copyRenameElementValuesFromAnnotation(
+            AnnotationMirror valueHolder, Map<String, String> elementNameRenaming) {
+
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+                valueHolder.getElementValues().entrySet()) {
+
+            String sourceName = eltValToCopy.getKey().getSimpleName().toString();
+            String targetName = elementNameRenaming.get(sourceName);
+            if (targetName == null) {
+                continue;
+            }
+            elementValues.put(findElement(targetName), eltValToCopy.getValue());
+        }
+    }
+
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
         setValue(elementName, (Object) value);
         return this;

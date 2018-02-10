@@ -27,8 +27,6 @@ import org.checkerframework.dataflow.cfg.block.Block;
  * type != null
  * tree != null &rArr; node.getType() == InternalUtils.typeOf(node.getTree())
  * </pre>
- *
- * @author Stefan Heule
  */
 public abstract class Node {
 

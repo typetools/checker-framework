@@ -14,9 +14,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   <em>throw</em> expr
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ThrowNode extends Node {
 

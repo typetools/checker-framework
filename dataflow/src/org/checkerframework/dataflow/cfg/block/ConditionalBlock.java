@@ -3,11 +3,7 @@ package org.checkerframework.dataflow.cfg.block;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-/**
- * Represents a conditional basic block that contains exactly one boolean {@link Node}.
- *
- * @author Stefan Heule
- */
+/** Represents a conditional basic block that contains exactly one boolean {@link Node}. */
 public interface ConditionalBlock extends Block {
 
     /** @return the entry block of the then branch */

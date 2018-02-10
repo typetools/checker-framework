@@ -109,6 +109,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.QualifierPolymorphism;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -650,6 +651,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 node, getCurrentPath(), checker.getContext());
             }
+
+            annotation =
+                    standardizeAnnotationFromContract(
+                            annotation, flowExprContext, getCurrentPath());
+
             FlowExpressions.Receiver expr = null;
             try {
                 expr =
@@ -691,6 +697,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
+        }
+    }
+
+    /** Standardize a type qualifier annotation obtained from a contract. */
+    private AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            FlowExpressionContext flowExprContext,
+            TreePath path) {
+        DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            AnnotationMirror anno =
+                    dependentTypesHelper.standardizeAnnotation(
+                            flowExprContext, path, annoFromContract, false);
+            dependentTypesHelper.checkAnnotation(anno, path.getLeaf());
+            return anno;
+        } else {
+            return annoFromContract;
         }
     }
 
@@ -1085,6 +1108,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
+
+            anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
 
             try {
                 FlowExpressions.Receiver expr =
@@ -2504,8 +2529,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // That is handled separately in method receiver check.
 
         // The type of the expression or type use, <expression>::method or <type use>::method.
-        AnnotatedTypeMirror enclosingType =
-                atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
+        final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
+        final ReferenceKind memRefKind = ((JCMemberReference) memberReferenceTree).kind;
+        AnnotatedTypeMirror enclosingType;
+        if (memberReferenceTree.getMode() == ReferenceMode.NEW
+                || memRefKind == ReferenceKind.UNBOUND
+                || memRefKind == ReferenceKind.STATIC) {
+            // The "qualifier expression" is a type tree.
+            enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+        } else {
+            // The "qualifier expression" is an expression.
+            enclosingType = atypeFactory.getAnnotatedType(qualifierExpression);
+        }
 
         // ========= Overriding Executable =========
         // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
@@ -2514,7 +2549,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (enclosingType.getKind() == TypeKind.DECLARED
                 && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-            if (((JCMemberReference) memberReferenceTree).kind == ReferenceKind.UNBOUND) {
+            if (memRefKind == ReferenceKind.UNBOUND) {
                 // The method reference is of the form: Type # instMethod
                 // and Type is a raw type.
                 // If the first parameter of the function type, p1, is a subtype
@@ -3239,6 +3274,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 method.getReceiverType().getUnderlyingType(),
                                 checker.getContext());
             }
+
+            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, path);
 
             try {
                 // TODO: currently, these expressions are parsed many times.

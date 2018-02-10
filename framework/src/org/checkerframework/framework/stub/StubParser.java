@@ -171,7 +171,6 @@ public class StubParser {
      * file.
      *
      * @param filename name of stub file, used only for diagnostic messages
-     * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedtypeFactory to use
      * @param processingEnv ProcessingEnviroment to use
      */

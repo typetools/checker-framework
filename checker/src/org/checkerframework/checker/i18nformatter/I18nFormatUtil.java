@@ -19,7 +19,6 @@ import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
  * This class provides a collection of utilities to ease working with i18n format strings.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 public class I18nFormatUtil {
 
