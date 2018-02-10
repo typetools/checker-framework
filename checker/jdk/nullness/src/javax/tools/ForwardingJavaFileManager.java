@@ -1,26 +1,26 @@
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package javax.tools;
@@ -61,7 +61,7 @@ public class ForwardingJavaFileManager<M extends JavaFileManager> implements Jav
      * @throws SecurityException {@inheritDoc}
      * @throws IllegalStateException {@inheritDoc}
      */
-    @SuppressWarnings("nullness") 
+     
     public @Nullable ClassLoader getClassLoader(Location location) {
         return fileManager.getClassLoader(location);
     }
@@ -82,7 +82,6 @@ public class ForwardingJavaFileManager<M extends JavaFileManager> implements Jav
     /**
      * @throws IllegalStateException {@inheritDoc}
      */
-    @SuppressWarnings("nullness") 
     public @Nullable String inferBinaryName(Location location, JavaFileObject file) {
         return fileManager.inferBinaryName(location, file);
     }
@@ -114,7 +113,6 @@ public class ForwardingJavaFileManager<M extends JavaFileManager> implements Jav
      * @throws IllegalArgumentException {@inheritDoc}
      * @throws IllegalStateException {@inheritDoc}
      */
-    @SuppressWarnings("nullness") 
     public @Nullable JavaFileObject getJavaFileForInput(Location location,
                                               String className,
                                               Kind kind)
@@ -127,11 +125,10 @@ public class ForwardingJavaFileManager<M extends JavaFileManager> implements Jav
      * @throws IllegalArgumentException {@inheritDoc}
      * @throws IllegalStateException {@inheritDoc}
      */
-    @SuppressWarnings("nullness") 
-    public @Nullable JavaFileObject getJavaFileForOutput(Location location,
+    public JavaFileObject getJavaFileForOutput(Location location,
                                                String className,
                                                Kind kind,
-                                               FileObject sibling)
+                                               @Nullable FileObject sibling)
         throws IOException
     {
         return fileManager.getJavaFileForOutput(location, className, kind, sibling);
@@ -141,7 +138,6 @@ public class ForwardingJavaFileManager<M extends JavaFileManager> implements Jav
      * @throws IllegalArgumentException {@inheritDoc}
      * @throws IllegalStateException {@inheritDoc}
      */
-   @SuppressWarnings("nullness") 
    public @Nullable FileObject getFileForInput(Location location,
                                       String packageName,
                                       String relativeName)
@@ -154,11 +150,10 @@ public class ForwardingJavaFileManager<M extends JavaFileManager> implements Jav
      * @throws IllegalArgumentException {@inheritDoc}
      * @throws IllegalStateException {@inheritDoc}
      */
-    @SuppressWarnings("nullness") 
-    public @Nullable FileObject getFileForOutput(Location location,
+    public FileObject getFileForOutput(Location location,
                                        String packageName,
                                        String relativeName,
-                                       FileObject sibling)
+                                       @Nullable FileObject sibling)
         throws IOException
     {
         return fileManager.getFileForOutput(location, packageName, relativeName, sibling);
