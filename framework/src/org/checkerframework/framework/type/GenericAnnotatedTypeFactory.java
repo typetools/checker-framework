@@ -58,6 +58,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -872,6 +873,10 @@ public abstract class GenericAnnotatedTypeFactory<
             // be the best possible.
             return null;
         }
+        return getStoreBefore(nodes);
+    }
+
+    public Store getStoreBefore(Set<Node> nodes) {
         if (nodes.size() == 1) {
             return getStoreBefore(nodes.iterator().next());
         }
@@ -926,13 +931,13 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
-    /** @return the {@link Node} for a given {@link Tree}. */
-    public Node getNodeForTree(Tree tree) {
-        // TODO!!! This returns whatever happens to be the first
-        // Node for the Tree. Either we change this to also
-        // return a Set<Node> or we find a way to create a new
-        // Node that contains a conservative value.
-        return flowResult.getNodesForTree(tree).iterator().next();
+    /**
+     * @see org.checkerframework.dataflow.analysis.AnalysisResult.getNodesForTree(Tree) for
+     *     explanation of Set<Node>
+     * @return the {@link Node} for a given {@link Tree}.
+     */
+    public Set<Node> getNodesForTree(Tree tree) {
+        return flowResult.getNodesForTree(tree);
     }
 
     /** @return the value of effectively final local variables */
@@ -1312,24 +1317,34 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
 
-        Node node;
-        List<Node> args;
-        switch (tree.getKind()) {
-            case METHOD_INVOCATION:
-                node = getNodeForTree(tree);
-                args = ((MethodInvocationNode) node).getArguments();
-                break;
-            case NEW_CLASS:
-                node = getNodeForTree(tree);
-                args = ((ObjectCreationNode) node).getArguments();
-                break;
-            default:
-                throw new AssertionError("Unexpected kind of tree: " + tree);
-        }
+        Set<Node> nodes = getNodesForTree(tree);
+        AnnotatedTypeMirror merged = null;
+        for (Node node : nodes) {
+            if (node instanceof LambdaResultExpressionNode) {
+                continue;
+            }
+            List<Node> args;
+            switch (tree.getKind()) {
+                case METHOD_INVOCATION:
+                    args = ((MethodInvocationNode) node).getArguments();
+                    break;
+                case NEW_CLASS:
+                    args = ((ObjectCreationNode) node).getArguments();
+                    break;
+                default:
+                    throw new AssertionError("Unexpected kind of tree: " + tree);
+            }
 
-        assert !args.isEmpty() : "Arguments are empty";
-        Node varargsArray = args.get(args.size() - 1);
-        return getAnnotatedType(varargsArray.getTree());
+            assert !args.isEmpty() : "Arguments are empty";
+            Node varargsArray = args.get(args.size() - 1);
+            AnnotatedTypeMirror varargtype = getAnnotatedType(varargsArray.getTree());
+            if (merged == null) {
+                merged = varargtype;
+            } else {
+                merged = AnnotatedTypes.leastUpperBound(this, merged, varargtype);
+            }
+        }
+        return merged;
     }
 
     /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
