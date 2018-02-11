@@ -33,8 +33,6 @@ import java.lang.annotation.Target;
  *
  * <p>Note that variables of a monotonic type can be re-assigned arbitrarily often, but only with
  * expressions of the target type.
- *
- * @author Stefan Heule
  */
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)

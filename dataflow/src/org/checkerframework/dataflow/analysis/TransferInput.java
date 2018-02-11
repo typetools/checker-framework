@@ -15,7 +15,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <p>A {@code TransferInput} contains one or two stores. If two stores are present, one belongs to
  * 'then', and the other to 'else'.
  *
- * @author Stefan Heule
  * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {

@@ -33,9 +33,6 @@ import org.checkerframework.checker.nullness.qual.*;
  * <p>The purpose of this class is twofold: Firstly, it serves as factory for abstract values,
  * stores and the transfer function. Furthermore, it makes it easy for the transfer function and the
  * stores to access the {@link AnnotatedTypeFactory}, the qualifier hierarchy, etc.
- *
- * @author Charlie Garrett
- * @author Stefan Heule
  */
 public abstract class CFAbstractAnalysis<
                 V extends CFAbstractValue<V>,

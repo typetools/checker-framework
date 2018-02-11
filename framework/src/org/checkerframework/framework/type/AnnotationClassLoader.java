@@ -54,8 +54,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * #isSupportedAnnotationClass(Class)}. See {@link
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader UnitsAnnotationClassLoader} for an
  * example.
- *
- * @author Jeff Luo
  */
 public class AnnotationClassLoader {
     // For issuing errors to the user

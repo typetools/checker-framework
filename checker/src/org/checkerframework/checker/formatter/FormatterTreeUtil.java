@@ -40,8 +40,6 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * This class provides a collection of utilities to ease working with syntax trees that have
  * something to do with Formatters.
- *
- * @author Konstantin Weitz
  */
 public class FormatterTreeUtil {
     public final BaseTypeChecker checker;

@@ -4,11 +4,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
-/**
- * The default abstract value used in the Checker Framework.
- *
- * @author Stefan Heule
- */
+/** The default abstract value used in the Checker Framework. */
 public class CFValue extends CFAbstractValue<CFValue> {
 
     public CFValue(

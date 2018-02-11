@@ -110,8 +110,8 @@ developers so that your annotated library can be distributed with the
 Checker Framework.
 Sharing your annotations is useful even if the library is only partially
 annotated.
-However, as noted in Section~\ref{get-started-with-legacy-code}, it is
-best to annotate an entire class at a time.
+However, as noted in Section~\ref{get-started-with-legacy-code}, you
+should annotate an entire class at a time.
 You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
 when getting started, but you should always examine their results.
 %% This text does not feel so relevant.
@@ -134,9 +134,22 @@ between upstream and your version.  Unnecessary diffs make it harder for
 others to understand what you have done, and they make it harder to pull
 changes from upstream into the annotated library.
 
+Your annotations should re-state facts that are in the Javadoc
+documentation.  Do not add requirements or guarantees beyond what the
+library author has already committed to.  Sometimes the Javadoc
+documentation omits some facts.  If a project's Javadoc says nothing about
+nullness, then you should not assume that the specification forbids null,
+nor that it permits it.  You need to get guidance from the library author.
+(If the project's Javadoc does sometimes explicitly permit/forbid null,
+then you can assume the opposite at places where the author omitted those
+statements.)  In some cases, you can infer some facts from the
+implementation, such as that null is permitted for a method's parameter or
+return type if the implementation explicitly passes null to the method or
+the method implementation returns null.
+
 While annotating the library, you may discover bugs or missing/wrong
 documentation.  If you have a documentation improvement or a bug fix, then
-pull-request them against the upstream version of the library.  This will
+open a pullrequest against the upstream version of the library.  This will
 benefit all users of the library.
 
 If you do not annotate the full library, then make it easy for others to

@@ -25,8 +25,6 @@ import org.checkerframework.framework.source.SourceChecker;
 /**
  * Stores information that describes a particular checker such as its label, the class to run, or
  * the quals path that is associate with it.
- *
- * @author asumu
  */
 public class CheckerInfo {
 

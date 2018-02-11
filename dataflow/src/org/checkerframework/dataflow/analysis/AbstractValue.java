@@ -1,10 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
-/**
- * An abstract value used in the org.checkerframework.dataflow analysis.
- *
- * @author Stefan Heule
- */
+/** An abstract value used in the org.checkerframework.dataflow analysis. */
 public interface AbstractValue<V extends AbstractValue<V>> {
 
     /**

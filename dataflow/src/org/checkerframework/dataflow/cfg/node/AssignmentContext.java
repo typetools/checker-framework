@@ -16,8 +16,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>The main use of {@link AssignmentContext} is to be able to get the declared type of the
  * left-hand side of the assignment for proper type-refinement.
- *
- * @author Stefan Heule
  */
 public abstract class AssignmentContext {
 

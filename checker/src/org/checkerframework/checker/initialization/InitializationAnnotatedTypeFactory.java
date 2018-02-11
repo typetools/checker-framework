@@ -64,8 +64,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * another type-system whose safe initialization should be tracked. For an example, see the {@link
  * NullnessChecker}. Also supports rawness as a type-system for tracking initialization, though FBC
  * is preferred.
- *
- * @author Stefan Heule
  */
 public abstract class InitializationAnnotatedTypeFactory<
                 Value extends CFAbstractValue<Value>,
