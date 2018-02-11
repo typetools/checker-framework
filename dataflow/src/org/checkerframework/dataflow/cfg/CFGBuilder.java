@@ -829,8 +829,13 @@ public class CFGBuilder {
     }
 
     protected static class TryFinallyScopeCell {
-        private final Label label;
+        private Label label;
         private boolean accessed;
+
+        protected TryFinallyScopeCell() {
+            this.label = null;
+            this.accessed = false;
+        }
 
         protected TryFinallyScopeCell(Label label) {
             this.label = label;
@@ -838,6 +843,9 @@ public class CFGBuilder {
         }
 
         public Label accessLabel() {
+            if (label == null) {
+                label = new Label();
+            }
             accessed = true;
             return label;
         }
@@ -4290,9 +4298,6 @@ public class CFGBuilder {
 
             Label finallyLabel = null;
             Label exceptionalFinallyLabel = null;
-            Label returnFinallyLabel = null;
-            Label breakFinallyLabel = null;
-            Label continueFinallyLabel = null;
 
             if (finallyBlock != null) {
                 finallyLabel = new Label();
@@ -4300,15 +4305,12 @@ public class CFGBuilder {
                 exceptionalFinallyLabel = new Label();
                 tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
 
-                returnFinallyLabel = new Label();
-                returnTargetL = new TryFinallyScopeCell(returnFinallyLabel);
+                returnTargetL = new TryFinallyScopeCell();
 
-                breakFinallyLabel = new Label();
-                breakTargetL = new TryFinallyScopeCell(breakFinallyLabel);
+                breakTargetL = new TryFinallyScopeCell();
                 breakLabels = new TryFinallyScopeMap();
 
-                continueFinallyLabel = new Label();
-                continueTargetL = new TryFinallyScopeCell(continueFinallyLabel);
+                continueTargetL = new TryFinallyScopeCell();
                 continueLabels = new TryFinallyScopeMap();
             }
 
@@ -4399,9 +4401,9 @@ public class CFGBuilder {
                 }
 
                 if (returnTargetL.wasAccessed()) {
+                    addLabelForNextNode(returnTargetL.peekLabel());
                     returnTargetL = oldReturnTargetL;
 
-                    addLabelForNextNode(returnFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
                                     tree,
@@ -4419,9 +4421,9 @@ public class CFGBuilder {
                 }
 
                 if (breakTargetL.wasAccessed()) {
+                    addLabelForNextNode(breakTargetL.peekLabel());
                     breakTargetL = oldBreakTargetL;
 
-                    addLabelForNextNode(breakFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
                                     tree,
@@ -4470,9 +4472,9 @@ public class CFGBuilder {
                 }
 
                 if (continueTargetL.wasAccessed()) {
+                    addLabelForNextNode(continueTargetL.peekLabel());
                     continueTargetL = oldContinueTargetL;
 
-                    addLabelForNextNode(continueFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
                                     tree,
