@@ -2,6 +2,7 @@ package org.checkerframework.checker.i18nformatter;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -13,7 +14,9 @@ import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -31,15 +34,21 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
     }
 
     @Override
-    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        MethodInvocationNode nodeNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
-        I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
-        I18nFormatCall fc = tu.createFormatForCall(node, nodeNode, atypeFactory);
-        if (fc != null) {
-            checkInvocationFormatFor(fc);
-            return p;
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+        Set<Node> nodes = atypeFactory.getNodesForTree(tree);
+        for (Node node : nodes) {
+            if (node instanceof LambdaResultExpressionNode) {
+                continue;
+            }
+            MethodInvocationNode nodeNode = (MethodInvocationNode) node;
+            I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
+            I18nFormatCall fc = tu.createFormatForCall(tree, nodeNode, atypeFactory);
+            if (fc != null) {
+                checkInvocationFormatFor(fc);
+                return p;
+            }
         }
-        return super.visitMethodInvocation(node, p);
+        return super.visitMethodInvocation(tree, p);
     }
 
     private void checkInvocationFormatFor(I18nFormatCall fc) {
