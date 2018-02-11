@@ -137,9 +137,19 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * Document two reasons for multiple Nodes: 1. lambda expression () -> 5 the 5 is both literal
-     * and LambdaResultExpressionNode. 2. Cloning of finally. Always iterate through set, possibly
-     * ignore LambdaResultExpressionNode.
+     * Returns the {@code Node}s corresponding to a particular {@code Tree}. Multiple {@code Node}s
+     * can correspond to a single {@code Tree} because of two reasons:
+     *
+     * <ol>
+     *   <li>In a lambda expression such as {@code () -> 5} the {@code 5} is both an {@code
+     *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}. The caller of the method
+     *       needs to decide which {@code Node} they are interested in.
+     *   <li>Trees for {@code finally} blocks are cloned to achieve a precise CFG. Any {@code Tree}
+     *       within a finally block can have multiple corresponding {@code Node}s attached to them.
+     * </ol>
+     *
+     * Callers of this method should always iterate through the returned set, possibly ignoring all
+     * {@code LambdaResultExpressionNode}.
      *
      * @return the set of {@link Node}s for a given {@link Tree}.
      */
