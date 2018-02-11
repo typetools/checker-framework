@@ -800,10 +800,10 @@ public class CFGBuilder {
      */
     @SuppressWarnings("serial")
     protected static class TryFinallyScopeMap extends HashMap<Name, Label> {
-        private final Label finallyLabel;
+        private final Map<Name, Label> accessedNames;
 
-        protected TryFinallyScopeMap(Label finallyLabel) {
-            this.finallyLabel = finallyLabel;
+        protected TryFinallyScopeMap() {
+            this.accessedNames = new HashMap<>();
         }
 
         @Override
@@ -811,13 +811,45 @@ public class CFGBuilder {
             if (super.containsKey(key)) {
                 return super.get(key);
             } else {
-                return finallyLabel;
+                if (accessedNames.containsKey(key)) {
+                    return accessedNames.get(key);
+                }
+                Label l = new Label();
+                accessedNames.put((Name) key, l);
+                return l;
             }
         }
 
         @Override
         public boolean containsKey(Object key) {
             return true;
+        }
+
+        public Map<Name, Label> getAccessedNames() {
+            return accessedNames;
+        }
+    }
+
+    protected static class TryFinallyScopeCell {
+        private final Label label;
+        private boolean accessed;
+
+        protected TryFinallyScopeCell(Label label) {
+            this.label = label;
+            this.accessed = false;
+        }
+
+        public Label accessLabel() {
+            accessed = true;
+            return label;
+        }
+
+        public Label peekLabel() {
+            return label;
+        }
+
+        public boolean wasAccessed() {
+            return accessed;
         }
     }
 
@@ -1133,19 +1165,23 @@ public class CFGBuilder {
 
     /** Tuple class with up to three members. */
     protected static class Tuple<A, B, C> {
-        public A a;
-        public B b;
-        public C c;
+        public final A a;
+        public final B b;
+        public final C c;
 
         public Tuple(A a, B b) {
-            this.a = a;
-            this.b = b;
+            this(a, b, null);
         }
 
         public Tuple(A a, B b, C c) {
             this.a = a;
             this.b = b;
             this.c = c;
+        }
+
+        @Override
+        public String toString() {
+            return "Tuple<" + a + ", " + b + ", " + c + ">";
         }
     }
 
@@ -1160,7 +1196,7 @@ public class CFGBuilder {
          * @param in the result of phase one
          * @return a control flow graph that might still contain degenerate basic block (such as
          *     empty regular basic blocks or conditional blocks with the same block as 'then' and
-         *     'else' sucessor)
+         *     'else' successor)
          */
         public ControlFlowGraph process(PhaseOneResult in) {
 
@@ -1445,13 +1481,13 @@ public class CFGBuilder {
          * Current {@link Label} to which a return statement should jump, or null if there is no
          * valid destination.
          */
-        protected /*@Nullable*/ Label returnTargetL;
+        protected /*@Nullable*/ TryFinallyScopeCell returnTargetL;
 
         /**
          * Current {@link Label} to which a break statement with no label should jump, or null if
          * there is no valid destination.
          */
-        protected /*@Nullable*/ Label breakTargetL;
+        protected /*@Nullable*/ TryFinallyScopeCell breakTargetL;
 
         /**
          * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates
@@ -1463,7 +1499,7 @@ public class CFGBuilder {
          * Current {@link Label} to which a continue statement with no label should jump, or null if
          * there is no valid destination.
          */
-        protected /*@Nullable*/ Label continueTargetL;
+        protected /*@Nullable*/ TryFinallyScopeCell continueTargetL;
 
         /**
          * Map from AST label Names to CFG {@link Label}s for continues. Each labeled statement
@@ -1540,7 +1576,7 @@ public class CFGBuilder {
             leaders = new HashSet<>();
 
             tryStack = new TryStack(exceptionalExitLabel);
-            returnTargetL = regularExitLabel;
+            returnTargetL = new TryFinallyScopeCell(regularExitLabel);
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
             returnNodes = new ArrayList<>();
@@ -3253,7 +3289,7 @@ public class CFGBuilder {
             if (label == null) {
                 assert breakTargetL != null : "no target for break statement";
 
-                extendWithExtendedNode(new UnconditionalJump(breakTargetL));
+                extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
             } else {
                 assert breakLabels.containsKey(label);
 
@@ -3283,13 +3319,13 @@ public class CFGBuilder {
             }
 
             public void build() {
-                Label oldBreakTargetL = breakTargetL;
-                breakTargetL = new Label();
+                TryFinallyScopeCell oldBreakTargetL = breakTargetL;
+                breakTargetL = new TryFinallyScopeCell(new Label());
                 int cases = caseBodyLabels.length - 1;
                 for (int i = 0; i < cases; ++i) {
                     caseBodyLabels[i] = new Label();
                 }
-                caseBodyLabels[cases] = breakTargetL;
+                caseBodyLabels[cases] = breakTargetL.peekLabel();
 
                 TypeMirror switchExprType = TreeUtils.typeOf(switchTree.getExpression());
                 VariableTree variable =
@@ -3338,7 +3374,7 @@ public class CFGBuilder {
                     buildCase(switchTree.getCases().get(defaultIndex), defaultIndex);
                 }
 
-                addLabelForNextNode(breakTargetL);
+                addLabelForNextNode(breakTargetL.peekLabel());
                 breakTargetL = oldBreakTargetL;
             }
 
@@ -3416,7 +3452,7 @@ public class CFGBuilder {
             if (label == null) {
                 assert continueTargetL != null : "no target for continue statement";
 
-                extendWithExtendedNode(new UnconditionalJump(continueTargetL));
+                extendWithExtendedNode(new UnconditionalJump(continueTargetL.accessLabel()));
             } else {
                 assert continueLabels.containsKey(label);
 
@@ -3443,11 +3479,11 @@ public class CFGBuilder {
                 conditionStart = new Label();
             }
 
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = loopExit;
+            TryFinallyScopeCell oldBreakTargetL = breakTargetL;
+            breakTargetL = new TryFinallyScopeCell(loopExit);
 
-            Label oldContinueTargetL = continueTargetL;
-            continueTargetL = conditionStart;
+            TryFinallyScopeCell oldContinueTargetL = continueTargetL;
+            continueTargetL = new TryFinallyScopeCell(conditionStart);
 
             // Loop body
             addLabelForNextNode(loopEntry);
@@ -3502,11 +3538,11 @@ public class CFGBuilder {
                 updateStart = new Label();
             }
 
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = loopExit;
+            TryFinallyScopeCell oldBreakTargetL = breakTargetL;
+            breakTargetL = new TryFinallyScopeCell(loopExit);
 
-            Label oldContinueTargetL = continueTargetL;
-            continueTargetL = updateStart;
+            TryFinallyScopeCell oldContinueTargetL = continueTargetL;
+            continueTargetL = new TryFinallyScopeCell(updateStart);
 
             // Distinguish loops over Iterables from loops over arrays.
 
@@ -3817,11 +3853,11 @@ public class CFGBuilder {
                 updateStart = new Label();
             }
 
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = loopExit;
+            TryFinallyScopeCell oldBreakTargetL = breakTargetL;
+            breakTargetL = new TryFinallyScopeCell(loopExit);
 
-            Label oldContinueTargetL = continueTargetL;
-            continueTargetL = updateStart;
+            TryFinallyScopeCell oldContinueTargetL = continueTargetL;
+            continueTargetL = new TryFinallyScopeCell(updateStart);
 
             // Initializer
             for (StatementTree init : tree.getInitializer()) {
@@ -4095,12 +4131,12 @@ public class CFGBuilder {
         }
 
         /**
-         * Maps a {@code Tree} its directly enclosing {@code ParenthesizedTree} if one exists.
+         * Maps a {@code Tree} to its directly enclosing {@code ParenthesizedTree} if one exists.
          *
          * <p>This map is used by {@link CFGTranslationPhaseOne#addToLookupMap(Node)} to associate a
          * {@code ParenthesizedTree} with the dataflow {@code Node} that was used during inference.
          * This map is necessary because dataflow does not create a {@code Node} for a {@code
-         * ParenthesizedTree.}
+         * ParenthesizedTree}.
          */
         private final Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
 
@@ -4146,10 +4182,7 @@ public class CFGBuilder {
                 extendWithNode(result);
             }
 
-            extendWithExtendedNode(new UnconditionalJump(this.returnTargetL));
-
-            // TODO: return statements flow to an enclosing finally, but we need a way to get
-            // the finally to flow back to the original return.
+            extendWithExtendedNode(new UnconditionalJump(this.returnTargetL.accessLabel()));
 
             return result;
         }
@@ -4251,10 +4284,10 @@ public class CFGBuilder {
             }
 
             // Store return/break/continue labels, just in case we need them for a finally block.
-            Label oldReturnTargetL = returnTargetL;
-            Label oldBreakTargetL = breakTargetL;
+            TryFinallyScopeCell oldReturnTargetL = returnTargetL;
+            TryFinallyScopeCell oldBreakTargetL = breakTargetL;
             Map<Name, Label> oldBreakLabels = breakLabels;
-            Label oldContinueTargetL = continueTargetL;
+            TryFinallyScopeCell oldContinueTargetL = continueTargetL;
             Map<Name, Label> oldContinueLabels = continueLabels;
 
             Label finallyLabel = null;
@@ -4270,17 +4303,15 @@ public class CFGBuilder {
                 tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
 
                 returnFinallyLabel = new Label();
-                returnTargetL = returnFinallyLabel;
+                returnTargetL = new TryFinallyScopeCell(returnFinallyLabel);
 
                 breakFinallyLabel = new Label();
-                breakTargetL = breakFinallyLabel;
-                // TODO: we probably need a separate clone of the finally block for each labeled break!
-                breakLabels = new TryFinallyScopeMap(breakFinallyLabel);
+                breakTargetL = new TryFinallyScopeCell(breakFinallyLabel);
+                breakLabels = new TryFinallyScopeMap();
 
                 continueFinallyLabel = new Label();
-                continueTargetL = continueFinallyLabel;
-                // TODO: we probably need a separate clone of the finally block for each labeled continue!
-                continueLabels = new TryFinallyScopeMap(continueFinallyLabel);
+                continueTargetL = new TryFinallyScopeCell(continueFinallyLabel);
+                continueLabels = new TryFinallyScopeMap();
             }
 
             Label doneLabel = new Label();
@@ -4319,31 +4350,28 @@ public class CFGBuilder {
                         new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
             }
 
-            // Reset values before analyzing the finally block!
-            returnTargetL = oldReturnTargetL;
-            breakTargetL = oldBreakTargetL;
-            breakLabels = oldBreakLabels;
-            continueTargetL = oldContinueTargetL;
-            continueLabels = oldContinueLabels;
-
             if (finallyLabel != null) {
+                // Reset values before analyzing the finally block!
+
                 tryStack.popFrame();
 
-                // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
-                // because there is no path to 'exceptionalFinallyLabel'.
-                addLabelForNextNode(finallyLabel);
-                extendWithNode(
-                        new MarkerNode(
-                                tree,
-                                "start of finally block #" + tree.hashCode(),
-                                env.getTypeUtils()));
-                scan(finallyBlock, p);
-                extendWithNode(
-                        new MarkerNode(
-                                tree,
-                                "end of finally block #" + tree.hashCode(),
-                                env.getTypeUtils()));
-                extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                {
+                    // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
+                    // because there is no path to 'exceptionalFinallyLabel'.
+                    addLabelForNextNode(finallyLabel);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "start of finally block #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    scan(finallyBlock, p);
+                    extendWithNode(
+                            new MarkerNode(
+                                    tree,
+                                    "end of finally block #" + tree.hashCode(),
+                                    env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                }
 
                 if (hasExceptionalPath(exceptionalFinallyLabel)) {
                     // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
@@ -4372,7 +4400,9 @@ public class CFGBuilder {
                     throwing.setTerminatesExecution(true);
                 }
 
-                { // TODO: Find some way to check whether a return occurred
+                if (returnTargetL.wasAccessed()) {
+                    returnTargetL = oldReturnTargetL;
+
                     addLabelForNextNode(returnFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
@@ -4385,11 +4415,14 @@ public class CFGBuilder {
                                     tree,
                                     "end of finally block for return #" + tree.hashCode(),
                                     env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(returnTargetL));
+                    extendWithExtendedNode(new UnconditionalJump(returnTargetL.peekLabel()));
+                } else {
+                    returnTargetL = oldReturnTargetL;
                 }
 
-                if (breakTargetL != null) {
-                    // TODO: Find some way to check whether a break occurred
+                if (breakTargetL.wasAccessed()) {
+                    breakTargetL = oldBreakTargetL;
+
                     addLabelForNextNode(breakFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
@@ -4402,11 +4435,45 @@ public class CFGBuilder {
                                     tree,
                                     "end of finally block for break #" + tree.hashCode(),
                                     env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(breakTargetL));
+                    extendWithExtendedNode(new UnconditionalJump(breakTargetL.peekLabel()));
+                } else {
+                    breakTargetL = oldBreakTargetL;
                 }
 
-                if (continueTargetL != null) {
-                    // TODO: Find some way to check whether a continue occurred
+                Map<Name, Label> accessedBreakLabels =
+                        ((TryFinallyScopeMap) breakLabels).getAccessedNames();
+                if (!accessedBreakLabels.isEmpty()) {
+                    breakLabels = oldBreakLabels;
+
+                    for (Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
+                        addLabelForNextNode(access.getValue());
+                        extendWithNode(
+                                new MarkerNode(
+                                        tree,
+                                        "start of finally block for break label "
+                                                + access.getKey()
+                                                + " #"
+                                                + tree.hashCode(),
+                                        env.getTypeUtils()));
+                        scan(finallyBlock, p);
+                        extendWithNode(
+                                new MarkerNode(
+                                        tree,
+                                        "end of finally block for break label "
+                                                + access.getKey()
+                                                + " #"
+                                                + tree.hashCode(),
+                                        env.getTypeUtils()));
+                        extendWithExtendedNode(
+                                new UnconditionalJump(breakLabels.get(access.getKey())));
+                    }
+                } else {
+                    breakLabels = oldBreakLabels;
+                }
+
+                if (continueTargetL.wasAccessed()) {
+                    continueTargetL = oldContinueTargetL;
+
                     addLabelForNextNode(continueFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
@@ -4419,7 +4486,40 @@ public class CFGBuilder {
                                     tree,
                                     "end of finally block for continue #" + tree.hashCode(),
                                     env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(continueTargetL));
+                    extendWithExtendedNode(new UnconditionalJump(continueTargetL.peekLabel()));
+                } else {
+                    continueTargetL = oldContinueTargetL;
+                }
+
+                Map<Name, Label> accessedContinueLabels =
+                        ((TryFinallyScopeMap) continueLabels).getAccessedNames();
+                if (!accessedContinueLabels.isEmpty()) {
+                    continueLabels = oldContinueLabels;
+
+                    for (Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
+                        addLabelForNextNode(access.getValue());
+                        extendWithNode(
+                                new MarkerNode(
+                                        tree,
+                                        "start of finally block for continue label "
+                                                + access.getKey()
+                                                + " #"
+                                                + tree.hashCode(),
+                                        env.getTypeUtils()));
+                        scan(finallyBlock, p);
+                        extendWithNode(
+                                new MarkerNode(
+                                        tree,
+                                        "end of finally block for continue label "
+                                                + access.getKey()
+                                                + " #"
+                                                + tree.hashCode(),
+                                        env.getTypeUtils()));
+                        extendWithExtendedNode(
+                                new UnconditionalJump(continueLabels.get(access.getKey())));
+                    }
+                } else {
+                    continueLabels = oldContinueLabels;
                 }
             }
 
@@ -4721,11 +4821,11 @@ public class CFGBuilder {
                 conditionStart = new Label();
             }
 
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = loopExit;
+            TryFinallyScopeCell oldBreakTargetL = breakTargetL;
+            breakTargetL = new TryFinallyScopeCell(loopExit);
 
-            Label oldContinueTargetL = continueTargetL;
-            continueTargetL = conditionStart;
+            TryFinallyScopeCell oldContinueTargetL = continueTargetL;
+            continueTargetL = new TryFinallyScopeCell(conditionStart);
 
             // Condition
             addLabelForNextNode(conditionStart);
