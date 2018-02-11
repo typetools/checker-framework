@@ -1,6 +1,5 @@
 // Test case for Issue 548:
 // https://github.com/typetools/checker-framework/issues/548
-// @skip-test
 
 class TryFinallyBreak {
     String foo() {
