@@ -133,6 +133,9 @@ Changes like these will increase the size of the diffs
 between upstream and your version.  Unnecessary diffs make it harder for
 others to understand what you have done, and they make it harder to pull
 changes from upstream into the annotated library.
+(The only time it is acceptable to comment out existing code in the library
+is if the regular Java compiler cannot compile the code; but this should be
+extremely rare.)
 
 While annotating the library, you may discover bugs or missing/wrong
 documentation.  If you have a documentation improvement or a bug fix, then
