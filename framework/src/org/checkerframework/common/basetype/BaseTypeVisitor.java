@@ -907,7 +907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-        AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(node.getVariable());
+        AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(node.getVariable());
         AnnotatedTypeMirror iterableType = atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror iteratedType =
                 AnnotatedTypes.getIteratedType(
