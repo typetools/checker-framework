@@ -23,8 +23,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *   <li>boolean literal
  *   <li>null literal
  * </ul>
- *
- * @author Stefan Heule
  */
 public abstract class ValueLiteralNode extends Node {
 

@@ -17,10 +17,7 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-/**
- * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
- */
+/** @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker */
 public class I18nFormatterTransfer extends CFTransfer {
 
     public I18nFormatterTransfer(CFAnalysis analysis) {

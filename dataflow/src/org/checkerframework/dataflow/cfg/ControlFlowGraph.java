@@ -28,11 +28,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
-/**
- * A control flow graph (CFG for short) of a single method.
- *
- * @author Stefan Heule
- */
+/** A control flow graph (CFG for short) of a single method. */
 public class ControlFlowGraph {
 
     /** The entry block of the control flow graph. */

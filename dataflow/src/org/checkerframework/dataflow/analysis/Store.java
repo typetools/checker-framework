@@ -6,7 +6,6 @@ import org.checkerframework.dataflow.cfg.CFGVisualizer;
  * A store is used to keep track of the information that the org.checkerframework.dataflow analysis
  * has accumulated at any given point in time.
  *
- * @author Stefan Heule
  * @param <S> the type of the store returned by {@code copy} and that is used in {@code
  *     leastUpperBound}. Usually it is the implementing class itself, e.g. in {@code T extends
  *     Store<T>}.

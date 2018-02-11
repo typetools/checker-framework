@@ -4,11 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Base class of the {@link Block} implementation hierarchy.
- *
- * @author Stefan Heule
- */
+/** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {
 
     /** A unique ID for this node. */

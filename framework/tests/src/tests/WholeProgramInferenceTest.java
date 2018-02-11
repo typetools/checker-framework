@@ -12,8 +12,6 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
  * <p>IMPORTANT: The errors captured in the tests located in tests/whole-program-inference/ are not
  * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
  * the expected ones. The errors on .java files must be ignored.
- *
- * @author pbsf
  */
 public class WholeProgramInferenceTest extends CheckerFrameworkPerDirectoryTest {
 

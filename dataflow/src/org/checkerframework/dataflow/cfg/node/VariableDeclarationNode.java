@@ -15,8 +15,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * Note: Does not have an initializer block, as that will be translated to a separate {@link
  * AssignmentNode}.
- *
- * @author Stefan Heule
  */
 public class VariableDeclarationNode extends Node {
 

@@ -11,9 +11,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   <em>this</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public abstract class ThisLiteralNode extends Node {
 

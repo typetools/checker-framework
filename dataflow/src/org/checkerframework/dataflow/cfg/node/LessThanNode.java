@@ -13,9 +13,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * </pre>
  *
  * We allow less than nodes without corresponding AST {@link Tree}s.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class LessThanNode extends BinaryOperationNode {
 
