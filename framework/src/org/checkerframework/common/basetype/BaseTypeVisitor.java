@@ -1095,7 +1095,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 String expression = p.expression;
                 AnnotationMirror anno = p.annotation;
 
-            anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
+                anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
 
                 try {
                     FlowExpressions.Receiver expr =
