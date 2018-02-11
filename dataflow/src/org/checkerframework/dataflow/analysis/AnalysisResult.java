@@ -89,6 +89,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Combine with another analysis result. */
     public void combine(AnalysisResult<A, S> other) {
         nodeValues.putAll(other.nodeValues);
+        // TODO: should the sets be merged?
         treeLookup.putAll(other.treeLookup);
         unaryAssignNodeLookup.putAll(other.unaryAssignNodeLookup);
         stores.putAll(other.stores);
@@ -136,7 +137,13 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
     }
 
-    /** @return the {@link Node} for a given {@link Tree}. */
+    /**
+     * Document two reasons for multiple Nodes: 1. lambda expression () -> 5 the 5 is both literal
+     * and LambdaResultExpressionNode. 2. Cloning of finally. Always iterate through set, possibly
+     * ignore LambdaResultExpressionNode.
+     *
+     * @return the set of {@link Node}s for a given {@link Tree}.
+     */
     public /*@Nullable*/ Set<Node> getNodesForTree(Tree tree) {
         return treeLookup.get(tree);
     }
@@ -155,18 +162,17 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
         if (nodes.size() == 1) {
             return getStoreBefore(nodes.iterator().next());
-        } else {
-            S merged = null;
-            for (Node aNode : nodes) {
-                S s = getStoreBefore(aNode);
-                if (merged == null) {
-                    merged = s;
-                } else if (s != null) {
-                    merged = merged.leastUpperBound(s);
-                }
-            }
-            return merged;
         }
+        S merged = null;
+        for (Node node : nodes) {
+            S s = getStoreBefore(node);
+            if (merged == null) {
+                merged = s;
+            } else if (s != null) {
+                merged = merged.leastUpperBound(s);
+            }
+        }
+        return merged;
     }
 
     /** @return the store immediately before a given {@link Node}. */
@@ -182,18 +188,17 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
         if (nodes.size() == 1) {
             return getStoreAfter(nodes.iterator().next());
-        } else {
-            S merged = null;
-            for (Node aNode : nodes) {
-                S s = getStoreAfter(aNode);
-                if (merged == null) {
-                    merged = s;
-                } else if (s != null) {
-                    merged = merged.leastUpperBound(s);
-                }
-            }
-            return merged;
         }
+        S merged = null;
+        for (Node node : nodes) {
+            S s = getStoreAfter(node);
+            if (merged == null) {
+                merged = s;
+            } else if (s != null) {
+                merged = merged.leastUpperBound(s);
+            }
+        }
+        return merged;
     }
 
     /** @return the store immediately after a given {@link Node}. */
