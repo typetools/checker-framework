@@ -14,9 +14,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>A {@link NarrowingConversionNode} does not correspond to any tree node in the parsed AST. It
  * is introduced when a value of some primitive type appears in a context that requires a different
  * primitive with more bits of precision.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class NarrowingConversionNode extends Node {
 

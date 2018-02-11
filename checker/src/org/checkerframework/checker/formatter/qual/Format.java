@@ -29,7 +29,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @see ConversionCategory
  * @checker_framework.manual #formatter-checker Format String Checker
- * @author Konstantin Weitz
  */
 @SubtypeOf(UnknownFormat.class)
 @Retention(RetentionPolicy.RUNTIME)

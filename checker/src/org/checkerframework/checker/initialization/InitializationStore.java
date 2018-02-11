@@ -26,7 +26,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
  * reference have been initialized.
  *
- * @author Stefan Heule
  * @see InitializationTransfer
  */
 public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>

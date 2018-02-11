@@ -1,10 +1,6 @@
 package org.checkerframework.dataflow.cfg.block;
 
-/**
- * Represents a basic block in a control flow graph.
- *
- * @author Stefan Heule
- */
+/** Represents a basic block in a control flow graph. */
 public interface Block {
 
     /** The types of basic blocks */

@@ -51,7 +51,6 @@ import java.lang.annotation.Target;
  * }
  * </code></pre>
  *
- * @author Stefan Heule
  * @see EnsuresQualifier
  * @see QualifierArgument
  */

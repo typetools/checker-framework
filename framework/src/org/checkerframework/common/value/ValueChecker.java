@@ -16,7 +16,6 @@ import org.checkerframework.framework.source.SupportedOptions;
  * code containing {@code Positive} annotations, then the Index Checker also needs to be run to
  * guarantee soundness.
  *
- * @author plvines
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @StubFiles("statically-executable.astub")

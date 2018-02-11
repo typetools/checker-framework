@@ -11,8 +11,6 @@ import java.util.Collections;
  * <pre>
  *   <em>"abc"</em>
  * </pre>
- *
- * @author Stefan Heule
  */
 public class StringLiteralNode extends ValueLiteralNode {
 

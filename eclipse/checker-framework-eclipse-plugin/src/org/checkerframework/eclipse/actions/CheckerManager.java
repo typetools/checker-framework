@@ -12,8 +12,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 /**
  * This class manages the current checkers that can be run. Also keeps track of custom checkers that
  * are made by the user.
- *
- * @author asumu
  */
 public class CheckerManager {
 

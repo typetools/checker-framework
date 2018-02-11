@@ -16,8 +16,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>expression</em> . <em>field</em>
  * </pre>
- *
- * @author Stefan Heule
  */
 public class FieldAccessNode extends Node {
 

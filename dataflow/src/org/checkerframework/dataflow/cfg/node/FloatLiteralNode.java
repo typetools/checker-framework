@@ -12,9 +12,6 @@ import java.util.Collections;
  *   <em>8.0f</em>
  *   <em>6.022137e+23F</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class FloatLiteralNode extends ValueLiteralNode {
 
