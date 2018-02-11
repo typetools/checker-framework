@@ -66,6 +66,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
@@ -1051,47 +1052,53 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        Node node = atypeFactory.getNodeForTree(tree);
+        Set<Node> nodes = atypeFactory.getNodesForTree(tree);
 
-        FlowExpressionContext flowExprContext =
-                FlowExpressionContext.buildContextForMethodUse(
-                        (MethodInvocationNode) node, checker.getContext());
+        for (Node node : nodes) {
+            if (node instanceof LambdaResultExpressionNode) {
+                continue;
+            }
 
-        if (flowExprContext == null) {
-            checker.report(Result.failure("flowexpr.parse.context.not.determined", node), tree);
-            return;
-        }
+            FlowExpressionContext flowExprContext =
+                    FlowExpressionContext.buildContextForMethodUse(
+                            (MethodInvocationNode) node, checker.getContext());
 
-        for (Precondition p : preconditions) {
-            String expression = p.expression;
-            AnnotationMirror anno = p.annotation;
+            if (flowExprContext == null) {
+                checker.report(Result.failure("flowexpr.parse.context.not.determined", node), tree);
+                return;
+            }
 
-            try {
-                FlowExpressions.Receiver expr =
-                        FlowExpressionParseUtil.parse(
-                                expression, flowExprContext, getCurrentPath(), false);
+            for (Precondition p : preconditions) {
+                String expression = p.expression;
+                AnnotationMirror anno = p.annotation;
 
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
+                try {
+                    FlowExpressions.Receiver expr =
+                            FlowExpressionParseUtil.parse(
+                                    expression, flowExprContext, getCurrentPath(), false);
 
-                CFAbstractValue<?> value = store.getValue(expr);
+                    CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(nodes);
 
-                AnnotationMirror inferredAnno = null;
-                if (value != null) {
-                    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-                    Set<AnnotationMirror> annos = value.getAnnotations();
-                    inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
+                    CFAbstractValue<?> value = store.getValue(expr);
+
+                    AnnotationMirror inferredAnno = null;
+                    if (value != null) {
+                        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                        Set<AnnotationMirror> annos = value.getAnnotations();
+                        inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
+                    }
+                    if (!checkContract(expr, anno, inferredAnno, store)) {
+                        checker.report(
+                                Result.failure(
+                                        "contracts.precondition.not.satisfied",
+                                        tree.toString(),
+                                        expr == null ? expression : expr.toString()),
+                                tree);
+                    }
+                } catch (FlowExpressionParseException e) {
+                    // report errors here
+                    checker.report(e.getResult(), tree);
                 }
-                if (!checkContract(expr, anno, inferredAnno, store)) {
-                    checker.report(
-                            Result.failure(
-                                    "contracts.precondition.not.satisfied",
-                                    tree.toString(),
-                                    expr == null ? expression : expr.toString()),
-                            tree);
-                }
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), tree);
             }
         }
     }
