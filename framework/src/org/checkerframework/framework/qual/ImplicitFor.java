@@ -8,7 +8,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.lang.model.type.TypeKind;
 
 /**
  * A meta-annotation that specifies the trees and types for which the framework should automatically
@@ -21,6 +20,9 @@ import javax.lang.model.type.TypeKind;
  * </pre>
  *
  * to denote that the literal {@code null} always has the type qualifier {@code @Nullable}.
+ *
+ * @checker_framework.manual #creating-declarative-type-introduction Declaratively specifying
+ *     implicit annotations
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)

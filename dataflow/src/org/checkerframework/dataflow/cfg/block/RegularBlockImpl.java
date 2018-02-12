@@ -5,11 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-/**
- * Implementation of a regular basic block.
- *
- * @author Stefan Heule
- */
+/** Implementation of a regular basic block. */
 public class RegularBlockImpl extends SingleSuccessorBlockImpl implements RegularBlock {
 
     /** Internal representation of the contents. */

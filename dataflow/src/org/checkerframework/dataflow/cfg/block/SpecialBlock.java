@@ -8,8 +8,6 @@ package org.checkerframework.dataflow.cfg.block;
  *   <li>Regular exit block of a method.
  *   <li>Exceptional exit block of a method.
  * </ul>
- *
- * @author Stefan Heule
  */
 public interface SpecialBlock extends SingleSuccessorBlock {
 

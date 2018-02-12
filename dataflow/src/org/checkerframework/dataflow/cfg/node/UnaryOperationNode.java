@@ -15,8 +15,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  *   <em>expressionNode</em> <em>operator</em>
  * </pre>
- *
- * @author charleszhuochen
  */
 public abstract class UnaryOperationNode extends Node {
 

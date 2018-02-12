@@ -17,7 +17,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  * @checker_framework.manual #bottom-type the bottom type
- * @author Stefan Heule
  */
 @SubtypeOf({UnderInitialization.class, Initialized.class})
 @ImplicitFor(literals = LiteralKind.NULL)

@@ -7,7 +7,7 @@ public interface Map<K extends Object, V extends Object> {
   public static interface Entry<K extends Object, V extends Object> {
      public abstract K getKey(@GuardSatisfied Entry<K,V> this);
      public abstract V getValue(@GuardSatisfied Entry<K,V> this);
-    public abstract V setValue(V a1);
+    public abstract V setValue(@GuardSatisfied Entry<K,V> this, V a1);
      public abstract boolean equals(@GuardSatisfied Entry<K,V> this, @GuardSatisfied Object a1);
      public abstract int hashCode(@GuardSatisfied Entry<K,V> this);
   }
@@ -23,9 +23,9 @@ public interface Map<K extends Object, V extends Object> {
   // annotatied (see ArrayList, LinkedList, HashMap).
    public abstract V get(@GuardSatisfied Map<K,V> this, @GuardSatisfied Object a1);
   @ReleasesNoLocks public abstract V put(@GuardSatisfied Map<K,V> this, K a1, V a2);
-  public abstract V remove(Object a1);
-  public abstract void putAll(Map<? extends K, ? extends V> a1);
-  public abstract void clear();
+  public abstract V remove(@GuardSatisfied Map<K,V> this, Object a1);
+  public abstract void putAll(@GuardSatisfied Map<K,V> this, Map<? extends K, ? extends V> a1);
+  public abstract void clear(@GuardSatisfied Map<K,V> this);
    public abstract Set<K> keySet(@GuardSatisfied Map<K,V> this);
    public abstract Collection<V> values(@GuardSatisfied Map<K,V> this);
    public abstract Set<Map.Entry<K,V>> entrySet(@GuardSatisfied Map<K,V> this);

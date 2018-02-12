@@ -13,7 +13,6 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and
  *     flow-sensitive analysis
- * @author Stefan Heule
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

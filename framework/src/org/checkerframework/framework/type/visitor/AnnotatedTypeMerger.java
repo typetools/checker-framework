@@ -19,8 +19,6 @@ import org.checkerframework.javacutil.ErrorReporter;
  * AnnotatedTypeMirror parameter = ...;
  * visitType.accept(new AnnotatedTypesMerger(), parameter);
  * }</pre>
- *
- * @author smillst
  */
 public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 

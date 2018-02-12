@@ -5,11 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * Tests the MethodVal Checker.
- *
- * @author smillst
- */
+/** Tests the MethodVal Checker. */
 public class MethodValTest extends CheckerFrameworkPerDirectoryTest {
 
     public MethodValTest(List<File> testFiles) {

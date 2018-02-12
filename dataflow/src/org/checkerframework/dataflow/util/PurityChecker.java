@@ -39,7 +39,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
- * @author Stefan Heule
  */
 public class PurityChecker {
 

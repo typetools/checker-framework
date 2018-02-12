@@ -58,7 +58,7 @@ public interface CharSequence {
      *
      * @return  the number of <code>char</code>s in this sequence
      */
-    @NonNegative int length();
+    @LengthOf("this") int length();
 
     /**
      * Returns the <code>char</code> value at the specified index.  An index ranges from zero
@@ -107,6 +107,6 @@ public interface CharSequence {
      *
      * @return  a string consisting of exactly this sequence of characters
      */
-    public String toString();
+    public @SameLen("this") String toString();
 
 }

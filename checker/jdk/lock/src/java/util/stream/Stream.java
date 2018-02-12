@@ -1,5 +1,6 @@
 package java.util.stream;
 
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -60,7 +61,7 @@ public interface Stream<T> extends BaseStream<T,Stream<T>> {
     interface Builder<T> extends Consumer<T> {
         @Override
         void accept(T arg0);
-        Builder<T> add(T arg0);
+        Builder<T> add(@GuardSatisfied Builder<T> this, T arg0);
         Stream<T> build();
     }
 

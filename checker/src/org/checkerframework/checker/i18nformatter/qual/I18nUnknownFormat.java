@@ -15,7 +15,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * string.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 @InvisibleQualifier
 @SubtypeOf({})

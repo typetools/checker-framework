@@ -13,9 +13,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>new constructor(arg1, arg2, ...)</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ObjectCreationNode extends Node {
 

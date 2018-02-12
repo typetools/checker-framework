@@ -14,7 +14,6 @@ import org.checkerframework.javacutil.Pair;
  * Method#invoke(Object, Object...)} or {@link Constructor#newInstance(Object...)}.
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
- * @author rjust
  */
 public interface ReflectionResolver {
     /** Constant for "method name" of constructors */

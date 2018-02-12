@@ -12,9 +12,6 @@ import java.util.Collections;
  *   <em>-3l</em>
  *   <em>0x80808080L</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class LongLiteralNode extends ValueLiteralNode {
 

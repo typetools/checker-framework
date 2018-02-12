@@ -37,11 +37,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.ErrorReporter;
 
-/**
- * Generate a graph description in the DOT language of a control graph.
- *
- * @author Stefan Heule
- */
+/** Generate a graph description in the DOT language of a control graph. */
 public class DOTCFGVisualizer<
                 A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
         implements CFGVisualizer<A, S, T> {

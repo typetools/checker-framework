@@ -16,7 +16,6 @@ import java.lang.annotation.Target;
  * <p>The initial String parameter may optionally be preceded by a Locale parameter.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
- * @author Konstantin Weitz
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

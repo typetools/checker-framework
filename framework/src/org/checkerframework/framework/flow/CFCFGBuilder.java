@@ -12,6 +12,8 @@ import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -19,14 +21,14 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A control-flow graph builder (see {@link CFGBuilder}) that knows about the Checker Framework
  * annotations and their representation as {@link AnnotatedTypeMirror}s.
- *
- * @author Stefan Heule
  */
 public class CFCFGBuilder extends CFGBuilder {
 
@@ -144,6 +146,15 @@ public class CFCFGBuilder extends CFGBuilder {
             factory.shouldCache = false;
             AnnotatedTypeMirror annotatedArrayType = factory.getAnnotatedType(expression);
             factory.shouldCache = oldShouldCache;
+            if (annotatedArrayType.getKind() == TypeKind.WILDCARD
+                    && ((AnnotatedWildcardType) annotatedArrayType).isUninferredTypeArgument()) {
+                TypeMirror type = TreeUtils.typeOf(expression);
+                AnnotatedArrayType newArrayType =
+                        (AnnotatedArrayType) AnnotatedTypeMirror.createType(type, factory, false);
+                newArrayType.setComponentType(annotatedArrayType);
+                newArrayType.addAnnotations(annotatedArrayType.getEffectiveAnnotations());
+                annotatedArrayType = newArrayType;
+            }
 
             assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType)
                     : "ArrayType must be represented by AnnotatedArrayType";

@@ -7,6 +7,8 @@ import java.lang.annotation.Annotation;
  *
  * <p>TODO: add support for factors and more general formulas? E.g. it would be cool if the relation
  * hour &rarr; minute and Fahrenheit &rarr; Celsius could be expressed.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 public @interface UnitsMultiple {
     /** @return the base unit to use */
