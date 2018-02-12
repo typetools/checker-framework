@@ -229,7 +229,7 @@ public class Expression extends Constraint {
 
         ConstraintSet constraintSet = new ConstraintSet();
 
-        if (!TreeUtils.isImplicitlyTypeLambda(lambda)) {
+        if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
             // Explicitly typed lambda
             List<? extends VariableTree> parameters = lambda.getParameters();
             List<AbstractType> gs = T.getFunctionTypeParameterTypes();

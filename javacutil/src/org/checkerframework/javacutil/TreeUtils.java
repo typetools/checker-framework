@@ -1312,7 +1312,7 @@ public final class TreeUtils {
      * @param tree any kind of tree
      * @return true iff {@code tree} is an implicitly typed lambda.
      */
-    public static boolean isImplicitlyTypeLambda(Tree tree) {
+    public static boolean isImplicitlyTypedLambda(Tree tree) {
         return tree.getKind() == Kind.LAMBDA_EXPRESSION
                 && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
     }

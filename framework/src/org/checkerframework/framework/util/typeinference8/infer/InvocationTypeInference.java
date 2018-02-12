@@ -587,7 +587,7 @@ public class InvocationTypeInference {
         switch (expressionTree.getKind()) {
             case LAMBDA_EXPRESSION:
                 LambdaExpressionTree lambda = (LambdaExpressionTree) expressionTree;
-                if (TreeUtils.isImplicitlyTypeLambda(lambda) || isTargetVariable) {
+                if (TreeUtils.isImplicitlyTypedLambda(lambda) || isTargetVariable) {
                     // An implicitly typed lambda expression.
                     return true;
                 } else {

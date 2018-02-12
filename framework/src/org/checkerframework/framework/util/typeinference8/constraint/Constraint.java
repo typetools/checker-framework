@@ -69,7 +69,7 @@ public abstract class Constraint implements ReductionResult {
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
                     List<Variable> inputs = new ArrayList<>();
-                    if (TreeUtils.isImplicitlyTypeLambda(lambdaTree)) {
+                    if (TreeUtils.isImplicitlyTypedLambda(lambdaTree)) {
                         List<AbstractType> params = T.getFunctionTypeParameterTypes();
                         if (params == null) {
                             // T is not a function type.
