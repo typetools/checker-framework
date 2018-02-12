@@ -678,15 +678,30 @@ public class LockAnnotatedTypeFactory
      * @param atm the AnnotatedTypeMirror for element - the {@code @GuardedBy} type qualifier will
      *     be inserted here
      */
+    @SuppressWarnings("unchecked") // cast to generic type
     private void translateJcipAndJavaxAnnotations(Element element, AnnotatedTypeMirror atm) {
         if (!element.getKind().isField()) {
             return;
         }
 
-        AnnotationMirror anno = getDeclAnnotation(element, net.jcip.annotations.GuardedBy.class);
+        AnnotationMirror anno = null;
 
-        if (anno == null) {
-            anno = getDeclAnnotation(element, javax.annotation.concurrent.GuardedBy.class);
+        try {
+            anno =
+                    getDeclAnnotation(
+                            element,
+                            (Class<? extends Annotation>)
+                                    Class.forName("net.jcip.annotations.GuardedBy"));
+
+            if (anno == null) {
+                anno =
+                        getDeclAnnotation(
+                                element,
+                                (Class<? extends Annotation>)
+                                        Class.forName("javax.annotation.concurrent.GuardedBy"));
+            }
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
         }
 
         if (anno == null) {
