@@ -12,9 +12,6 @@ import java.util.Collections;
  *   <em>-9.</em>
  *   <em>3.14159D</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class DoubleLiteralNode extends ValueLiteralNode {
 

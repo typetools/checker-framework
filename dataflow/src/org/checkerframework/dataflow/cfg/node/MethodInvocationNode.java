@@ -19,9 +19,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * CFGs may contain {@link MethodInvocationNode}s that correspond to no AST {@link Tree}, in which
  * case, the tree field will be null.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class MethodInvocationNode extends Node {
 

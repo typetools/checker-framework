@@ -52,7 +52,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * something to do with I18nFormatters.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 public class I18nFormatterTreeUtil {
     public final BaseTypeChecker checker;

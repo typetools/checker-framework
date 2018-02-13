@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: checker.framework.eclipse.plugin;singleton:=true
-Bundle-Version: 2.3.1
+Bundle-Version: 2.3.2
 Bundle-ClassPath: lib/jdk8.jar,
  lib/checker.jar,
  lib/javac.jar,
@@ -43,8 +43,6 @@ Export-Package: com.sun.source.tree,
  org.checkerframework.checker.i18n.qual,
  org.checkerframework.checker.interning,
  org.checkerframework.checker.interning.qual,
- org.checkerframework.checker.linear,
- org.checkerframework.checker.linear.qual,
  org.checkerframework.checker.lock,
  org.checkerframework.checker.lock.qual,
  org.checkerframework.checker.nullness,

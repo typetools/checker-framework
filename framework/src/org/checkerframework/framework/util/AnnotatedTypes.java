@@ -533,6 +533,7 @@ public class AnnotatedTypes {
         } else if (expr instanceof MemberReferenceTree) {
             targs = ((MemberReferenceTree) expr).getTypeArguments();
             if (targs == null) {
+                // TODO: Add type argument inference as part of fix for #979
                 return new HashMap<>();
             }
         } else {

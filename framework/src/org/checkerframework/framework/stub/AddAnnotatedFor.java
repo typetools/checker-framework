@@ -36,8 +36,6 @@ import scenelib.annotations.io.ParseException;
 /**
  * Utility that generates {@code @AnnotatedFor} class annotations. The {@link #main} method acts as
  * a filter: it reads a JAIF from standard input and writes an augmented JAIF to standard output.
- *
- * @author dbro
  */
 public class AddAnnotatedFor {
     /** Definition of {@code @AnnotatedFor} annotation. */

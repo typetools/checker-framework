@@ -13,8 +13,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>lefOperandNode</em> <em>operator</em> <em>rightOperandNode</em>
  * </pre>
- *
- * @author charleszhuochen
  */
 public abstract class BinaryOperationNode extends Node {
 

@@ -11,8 +11,6 @@ import java.util.Collections;
  * <pre>
  *   <em>42</em>
  * </pre>
- *
- * @author Stefan Heule
  */
 public class IntegerLiteralNode extends ValueLiteralNode {
 

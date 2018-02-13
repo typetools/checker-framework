@@ -29,7 +29,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * ConversionCategory} values for every parameter of the format.
  *
  * @see ConversionCategory
- * @author Konstantin Weitz
  */
 public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 

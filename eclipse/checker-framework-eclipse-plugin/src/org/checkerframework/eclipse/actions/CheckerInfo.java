@@ -8,7 +8,6 @@ import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
@@ -26,8 +25,6 @@ import org.checkerframework.framework.source.SourceChecker;
 /**
  * Stores information that describes a particular checker such as its label, the class to run, or
  * the quals path that is associate with it.
- *
- * @author asumu
  */
 public class CheckerInfo {
 
@@ -76,7 +73,6 @@ public class CheckerInfo {
                             new CheckerInfo("Signedness Checker", SignednessChecker.class),
                             new CheckerInfo("Constant Value Checker", ValueChecker.class),
                             new CheckerInfo("Aliasing Checker", AliasingChecker.class),
-                            new CheckerInfo("Linear Checker", LinearChecker.class),
                             new CheckerInfo("Subtyping Checker", SubtypingChecker.class, null));
 
             final Map<String, CheckerInfo> modifiableCheckers =
