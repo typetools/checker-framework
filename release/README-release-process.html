@@ -119,7 +119,9 @@ The process takes around 3 hours (including manual steps) when all goes accordin
          <ul>
           <li>Update projects from upstream.  For example:
 <pre>
-(cd $t/stubparser && git pull https://github.com/javaparser/javaparser.git)
+# Don't do this.  Instead, follow the instructions in section
+# "Updating from upstream JavaParser" of file $t/stubparser/readme.md
+# (cd $t/stubparser && git pull https://github.com/javaparser/javaparser.git)
 
 (cd $t/libraries/commons-bcel && git pull https://github.com/codespecs/commons-bcel.git)
 (cd $t/libraries/commons-io && git pull https://github.com/apache/commons-io.git)
@@ -127,7 +129,7 @@ The process takes around 3 hours (including manual steps) when all goes accordin
 (cd $t/libraries/java-getopt && git pull https://github.com/arenn/java-getopt.git)
 (cd $t/libraries/junit5 && git pull https://github.com/junit-team/junit5.git)
 </pre>
-             Resolve any conflicts and push the changes to the typetools repositories.
+             Resolve any conflicts, ensure the projects build, push the changes to a branch, and then merge into the typetools repositories.
            </li>
          </ul>
          <ul>
