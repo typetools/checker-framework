@@ -464,6 +464,7 @@ public class CFGBuilder {
     protected static class NodeWithExceptionsHolder extends ExtendedNode {
 
         protected Node node;
+
         /**
          * Map from exception type to labels of successors that may be reached as a result of that
          * exception.
@@ -509,7 +510,9 @@ public class CFGBuilder {
 
         public ConditionalJump(Label trueSucc, Label falseSucc) {
             super(ExtendedNodeType.CONDITIONAL_JUMP);
+            assert trueSucc != null;
             this.trueSucc = trueSucc;
+            assert falseSucc != null;
             this.falseSucc = falseSucc;
         }
 
@@ -550,6 +553,7 @@ public class CFGBuilder {
 
         public UnconditionalJump(Label jumpTarget) {
             super(ExtendedNodeType.UNCONDITIONAL_JUMP);
+            assert jumpTarget != null;
             this.jumpTarget = jumpTarget;
         }
 
@@ -838,6 +842,7 @@ public class CFGBuilder {
         }
 
         protected TryFinallyScopeCell(Label label) {
+            assert label != null;
             this.label = label;
             this.accessed = false;
         }
@@ -851,6 +856,7 @@ public class CFGBuilder {
         }
 
         public Label peekLabel() {
+            assert label != null;
             return label;
         }
 
@@ -1273,6 +1279,8 @@ public class CFGBuilder {
                             // 'then' and 'else' successor of the conditional block
                             final Label thenLabel = cj.getThenLabel();
                             final Label elseLabel = cj.getElseLabel();
+                            Integer target = bindings.get(thenLabel);
+                            assert target != null;
                             missingEdges.add(
                                     new Tuple<>(
                                             new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
@@ -1281,7 +1289,9 @@ public class CFGBuilder {
                                                     cb.setThenSuccessor(successor);
                                                 }
                                             },
-                                            bindings.get(thenLabel)));
+                                            target));
+                            target = bindings.get(elseLabel);
+                            assert target != null;
                             missingEdges.add(
                                     new Tuple<>(
                                             new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
@@ -1290,7 +1300,7 @@ public class CFGBuilder {
                                                     cb.setElseSuccessor(successor);
                                                 }
                                             },
-                                            bindings.get(elseLabel)));
+                                            target));
                             break;
                         }
                     case UNCONDITIONAL_JUMP:
@@ -1305,7 +1315,9 @@ public class CFGBuilder {
                         } else if (node.getLabel() == exceptionalExitLabel) {
                             block.setSuccessor(exceptionalExitBlock);
                         } else {
-                            missingEdges.add(new Tuple<>(block, bindings.get(node.getLabel())));
+                            Integer target = bindings.get(node.getLabel());
+                            assert target != null;
+                            missingEdges.add(new Tuple<>(block, target));
                         }
                         block = new RegularBlockImpl();
                         break;
@@ -1331,6 +1343,8 @@ public class CFGBuilder {
                             TypeMirror cause = entry.getKey();
                             for (Label label : entry.getValue()) {
                                 Integer target = bindings.get(label);
+                                // TODO: This is sometimes null; is this a problem?
+                                // assert target != null;
                                 missingExceptionalEdges.add(
                                         new Tuple<ExceptionBlockImpl, Integer, TypeMirror>(
                                                 e, target, cause));
@@ -1344,6 +1358,7 @@ public class CFGBuilder {
             // add missing edges
             for (Tuple<? extends SingleSuccessorBlockImpl, Integer, ?> p : missingEdges) {
                 Integer index = p.b;
+                assert index != null : "CFGBuilder: problem in CFG construction " + p.a;
                 ExtendedNode extendedNode = nodeList.get(index);
                 BlockImpl target = extendedNode.getBlock();
                 SingleSuccessorBlockImpl source = p.a;
@@ -4415,7 +4430,7 @@ public class CFGBuilder {
                                     tree,
                                     "end of finally block for return #" + tree.hashCode(),
                                     env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(returnTargetL.peekLabel()));
+                    extendWithExtendedNode(new UnconditionalJump(returnTargetL.accessLabel()));
                 } else {
                     returnTargetL = oldReturnTargetL;
                 }
@@ -4435,7 +4450,7 @@ public class CFGBuilder {
                                     tree,
                                     "end of finally block for break #" + tree.hashCode(),
                                     env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(breakTargetL.peekLabel()));
+                    extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
                 } else {
                     breakTargetL = oldBreakTargetL;
                 }
@@ -4486,7 +4501,7 @@ public class CFGBuilder {
                                     tree,
                                     "end of finally block for continue #" + tree.hashCode(),
                                     env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(continueTargetL.peekLabel()));
+                    extendWithExtendedNode(new UnconditionalJump(continueTargetL.accessLabel()));
                 } else {
                     continueTargetL = oldContinueTargetL;
                 }
@@ -4524,9 +4539,6 @@ public class CFGBuilder {
             }
 
             addLabelForNextNode(doneLabel);
-
-            // TODO: if there was control flow, e.g. a return, in the try block,
-            // we need to add an edge to that same location again.
 
             return null;
         }
