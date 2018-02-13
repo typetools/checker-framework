@@ -27,7 +27,6 @@ import org.checkerframework.dataflow.qual.Pure;
  *
  * @see Format
  * @checker_framework.manual #formatter-checker Format String Checker
- * @author Konstantin Weitz
  */
 public enum ConversionCategory {
     /** Use if the parameter can be of any type. Applicable for conversions b, B, h, H, s, S. */

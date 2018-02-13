@@ -12,9 +12,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>variable</em> += <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class StringConcatenateAssignmentNode extends Node {
     protected final Tree tree;

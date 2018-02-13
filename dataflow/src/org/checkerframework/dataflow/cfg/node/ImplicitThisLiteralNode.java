@@ -3,11 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import javax.lang.model.type.TypeMirror;
 
-/**
- * A node to model the implicit {@code this}, e.g., in a field access.
- *
- * @author Stefan Heule
- */
+/** A node to model the implicit {@code this}, e.g., in a field access. */
 public class ImplicitThisLiteralNode extends ThisLiteralNode {
 
     public ImplicitThisLiteralNode(TypeMirror type) {

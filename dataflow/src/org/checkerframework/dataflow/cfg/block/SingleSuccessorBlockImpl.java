@@ -6,11 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import org.checkerframework.dataflow.analysis.Store;
 
-/**
- * Implementation of a non-special basic block.
- *
- * @author Stefan Heule
- */
+/** Implementation of a non-special basic block. */
 public abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock {
 
     /** Internal representation of the successor. */

@@ -62,7 +62,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * </ul>
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
- * @author rjust
  */
 public class DefaultReflectionResolver implements ReflectionResolver {
     // Message prefix added to verbose reflection messages

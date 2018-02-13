@@ -9,8 +9,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
  * 1 and 10, inclusive. Ranges are immutable.
- *
- * @author JasonMrX
  */
 public class Range {
 

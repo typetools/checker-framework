@@ -13,9 +13,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>super</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class SuperNode extends Node {
 

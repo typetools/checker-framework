@@ -33,10 +33,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * @author plvines
- *     <p>Visitor for the Constant Value type-system
- */
+/** Visitor for the Constant Value type-system */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     public ValueVisitor(BaseTypeChecker checker) {
