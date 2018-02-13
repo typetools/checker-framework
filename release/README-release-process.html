@@ -117,6 +117,20 @@ The process takes around 3 hours (including manual steps) when all goes accordin
        </li>
        <li>One week before Feature Freeze:
          <ul>
+          <li>Update projects from upstream.  For example:
+<pre>
+(cd $t/stubparser && git pull https://github.com/javaparser/javaparser.git)
+
+(cd $t/libraries/commons-bcel && git pull https://github.com/codespecs/commons-bcel.git)
+(cd $t/libraries/commons-io && git pull https://github.com/apache/commons-io.git)
+(cd $t/libraries/guava && git pull https://github.com/google/guava)
+(cd $t/libraries/java-getopt && git pull https://github.com/arenn/java-getopt.git)
+(cd $t/libraries/junit5 && git pull https://github.com/junit-team/junit5.git)
+</pre>
+             Resolve any conflicts and push the changes to the typetools repositories.
+           </li>
+         </ul>
+         <ul>
           <li>Remind bug owners of their bugs outstanding.</li>
          </ul>
        </li>
