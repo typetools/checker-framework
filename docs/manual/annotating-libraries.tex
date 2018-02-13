@@ -572,7 +572,7 @@ and then annotate it.  The rest of this section describes this approach.
   must be on your classpath.)
 
 \begin{Verbatim}
-  export CLASSPATH=/home/user_name/checker-framework-2.3.2/checker/dist/checker.jar:javac.jar
+  export CLASSPATH=export CLASSPATH=$JSR308/checker-framework/checker/dist/checker.jar
   cd nullness-stub
   java org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
