@@ -203,7 +203,7 @@ class Issue1797 {
         }
     }
 
-    private boolean nestedCFGConstructionTest(@Nullable Object o) {
+    boolean nestedCFGConstructionTest(@Nullable Object o) {
         boolean result = true;
         java.io.BufferedWriter out = null;
         try {
@@ -221,12 +221,38 @@ class Issue1797 {
         return result;
     }
 
-    private void nestedTryFinally() {
+    void nestedTryFinally() {
         try {
             try {
             } finally {
             }
         } finally {
+        }
+    }
+
+    boolean nestedCFGConstructionTest2() throws java.io.IOException {
+        java.io.BufferedWriter out =
+                new java.io.BufferedWriter(new java.io.OutputStreamWriter(System.err));
+        try {
+            try {
+                return true;
+            } finally {
+            }
+        } finally {
+            out.write(' ');
+            out.close();
+        }
+    }
+
+    void nestedTryFinally2(java.io.BufferedWriter out) throws java.io.IOException {
+        try {
+            try {
+                return;
+            } finally {
+            }
+        } finally {
+            out.write(' ');
+            out.close();
         }
     }
 }
