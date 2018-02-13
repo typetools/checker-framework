@@ -89,6 +89,11 @@ public class LockAnnotatedTypeFactory
             GUARDEDBYBOTTOM,
             GUARDSATISFIED;
 
+    protected final Class<? extends Annotation> jcip_GuardedBy;
+
+    protected final Class<? extends Annotation> javax_GuardedBy;
+
+    @SuppressWarnings("unchecked") // cast to generic type
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
@@ -109,6 +114,27 @@ public class LockAnnotatedTypeFactory
         // not truly side-effect-free even as far as the Lock Checker is concerned,
         // so there is additional handling of this annotation in the Lock Checker.
         addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class, SIDEEFFECTFREE);
+
+        Class<? extends Annotation> testLoad;
+        try {
+            testLoad =
+                    (Class<? extends Annotation>) Class.forName("net.jcip.annotations.GuardedBy");
+
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
+            testLoad = null;
+        }
+        jcip_GuardedBy = testLoad;
+
+        try {
+            testLoad =
+                    (Class<? extends Annotation>)
+                            Class.forName("javax.annotation.concurrent.GuardedBy");
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
+            testLoad = null;
+        }
+        javax_GuardedBy = testLoad;
 
         postInit();
     }
@@ -678,7 +704,6 @@ public class LockAnnotatedTypeFactory
      * @param atm the AnnotatedTypeMirror for element - the {@code @GuardedBy} type qualifier will
      *     be inserted here
      */
-    @SuppressWarnings("unchecked") // cast to generic type
     private void translateJcipAndJavaxAnnotations(Element element, AnnotatedTypeMirror atm) {
         if (!element.getKind().isField()) {
             return;
@@ -686,22 +711,12 @@ public class LockAnnotatedTypeFactory
 
         AnnotationMirror anno = null;
 
-        try {
-            anno =
-                    getDeclAnnotation(
-                            element,
-                            (Class<? extends Annotation>)
-                                    Class.forName("net.jcip.annotations.GuardedBy"));
+        if (jcip_GuardedBy != null) {
+            anno = getDeclAnnotation(element, jcip_GuardedBy);
+        }
 
-            if (anno == null) {
-                anno =
-                        getDeclAnnotation(
-                                element,
-                                (Class<? extends Annotation>)
-                                        Class.forName("javax.annotation.concurrent.GuardedBy"));
-            }
-        } catch (Exception e) {
-            // Ignore exceptions from Class.forName
+        if (anno == null && javax_GuardedBy != null) {
+            anno = getDeclAnnotation(element, javax_GuardedBy);
         }
 
         if (anno == null) {

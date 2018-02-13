@@ -224,7 +224,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * @param methodElement the ExecutableElement for the method call referred to by {@code node}
      * @param treeForErrorReporting the MethodTree used to report the error via checker.report.
      */
-    @SuppressWarnings("unchecked") // cast to generic type
     private void issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(
             ExecutableElement methodElement, MethodTree treeForErrorReporting) {
         int lockPreconditionAnnotationCount = 0;
@@ -234,19 +233,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         try {
-            if (atypeFactory.getDeclAnnotation(
-                            methodElement,
-                            (Class<? extends Annotation>)
-                                    Class.forName("net.jcip.annotations.GuardedBy"))
-                    != null) {
+            if (atypeFactory.jcip_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcip_GuardedBy)
+                            != null) {
                 lockPreconditionAnnotationCount++;
             }
 
             if (lockPreconditionAnnotationCount < 2
-                    && atypeFactory.getDeclAnnotation(
-                                    methodElement,
-                                    (Class<? extends Annotation>)
-                                            Class.forName("javax.annotation.concurrent.GuardedBy"))
+                    && atypeFactory.javax_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javax_GuardedBy)
                             != null) {
                 lockPreconditionAnnotationCount++;
             }
