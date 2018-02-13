@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+/** Base class for sets that are more efficient than HashSet for 0 and 1 elements. */
 public abstract class AbstractMostlySingleton<T> implements Set<T> {
 
     public enum State {

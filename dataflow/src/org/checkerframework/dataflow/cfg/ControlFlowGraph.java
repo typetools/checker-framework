@@ -44,14 +44,14 @@ public class ControlFlowGraph {
     protected UnderlyingAST underlyingAST;
 
     /**
-     * Maps from AST {@link Tree}s to {@link Node}s. Every Tree that produces a value will have at
-     * least one corresponding Node. Trees that undergo conversions, such as boxing or unboxing, can
-     * map to two distinct Nodes. The Node for the pre-conversion value is stored in treeLookup,
-     * while the Node for the post-conversion value is stored in convertedTreeLookup.
+     * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
+     * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
+     * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
+     * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
      */
     protected IdentityHashMap<Tree, Set<Node>> treeLookup;
 
-    /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
+    /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
     protected IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
@@ -83,7 +83,7 @@ public class ControlFlowGraph {
         this.returnNodes = returnNodes;
     }
 
-    /** @return the {@link Node} to which the {@link Tree} {@code t} corresponds. */
+    /** @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. */
     public Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
             return convertedTreeLookup.get(t);

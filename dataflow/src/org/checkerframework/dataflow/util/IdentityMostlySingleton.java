@@ -2,7 +2,10 @@ package org.checkerframework.dataflow.util;
 
 import java.util.ArrayList;
 
-/** A set that is more efficient than HashSet for 0 and 1 elements. */
+/**
+ * A set that is more efficient than HashSet for 0 and 1 elements. Uses objects identity for object
+ * comparison and an {@link ArrayList} for backing storage.
+ */
 public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T> {
 
     public IdentityMostlySingleton() {

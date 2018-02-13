@@ -722,7 +722,7 @@ public class Analysis<
         return merged;
     }
 
-    /** Get the {@link Node} for a given {@link Tree}. */
+    /** Get the set of {@link Node}s for a given {@link Tree}. */
     public Set<Node> getNodesForTree(Tree t) {
         return cfg.getNodesCorrespondingToTree(t);
     }

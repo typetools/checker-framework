@@ -885,6 +885,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return getStoreBefore(nodes);
     }
 
+    /** @return the store immediately before a given Set of {@link Node}s. */
     public Store getStoreBefore(Set<Node> nodes) {
         if (nodes.size() == 1) {
             return getStoreBefore(nodes.iterator().next());
@@ -923,14 +924,14 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         FlowAnalysis analysis = analyses.getFirst();
         Set<Node> nodes = analysis.getNodesForTree(tree);
+        return getStoreAfter(nodes);
+    }
+
+    /** @return the store immediately after a given set of {@link Node}s. */
+    public Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
-        for (Node aNode : nodes) {
-            Store s =
-                    AnalysisResult.runAnalysisFor(
-                            aNode,
-                            false,
-                            analysis.getInput(aNode.getBlock()),
-                            flowResultAnalysisCaches);
+        for (Node node : nodes) {
+            Store s = getStoreAfter(node);
             if (merge == null) {
                 merge = s;
             } else if (s != null) {
@@ -940,9 +941,18 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
+    /** @return the store immediately after a given {@link Node}. */
+    public Store getStoreAfter(Node node) {
+        FlowAnalysis analysis = analyses.getFirst();
+        Store res =
+                AnalysisResult.runAnalysisFor(
+                        node, false, analysis.getInput(node.getBlock()), flowResultAnalysisCaches);
+        return res;
+    }
+
     /**
      * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
-     * @return the {@link Node} for a given {@link Tree}.
+     * @return the {@link Node}s for a given {@link Tree}.
      */
     public Set<Node> getNodesForTree(Tree tree) {
         return flowResult.getNodesForTree(tree);

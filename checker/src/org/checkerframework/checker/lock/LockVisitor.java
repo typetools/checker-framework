@@ -1213,7 +1213,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         Set<Node> nodes = atypeFactory.getNodesForTree(tree);
-
+        if (nodes == null) {
+            return;
+        }
         for (Node node : nodes) {
             if (node instanceof LambdaResultExpressionNode) {
                 continue;

@@ -832,6 +832,7 @@ public class CFGBuilder {
         }
     }
 
+    /** Storage cell for a single Label, with tracking whether it was accessed. */
     protected static class TryFinallyScopeCell {
         private Label label;
         private boolean accessed;
@@ -1499,14 +1500,14 @@ public class CFGBuilder {
         protected AnnotationProvider annotationProvider;
 
         /**
-         * Current {@link Label} to which a return statement should jump, or null if there is no
-         * valid destination.
+         * Current {@link TryFinallyScopeCell} to which a return statement should jump, or null if
+         * there is no valid destination.
          */
         protected /*@Nullable*/ TryFinallyScopeCell returnTargetL;
 
         /**
-         * Current {@link Label} to which a break statement with no label should jump, or null if
-         * there is no valid destination.
+         * Current {@link TryFinallyScopeCell} to which a break statement with no label should jump,
+         * or null if there is no valid destination.
          */
         protected /*@Nullable*/ TryFinallyScopeCell breakTargetL;
 
@@ -1517,8 +1518,8 @@ public class CFGBuilder {
         protected Map<Name, Label> breakLabels;
 
         /**
-         * Current {@link Label} to which a continue statement with no label should jump, or null if
-         * there is no valid destination.
+         * Current {@link TryFinallyScopeCell} to which a continue statement with no label should
+         * jump, or null if there is no valid destination.
          */
         protected /*@Nullable*/ TryFinallyScopeCell continueTargetL;
 
@@ -1529,15 +1530,15 @@ public class CFGBuilder {
         protected Map<Name, Label> continueLabels;
 
         /**
-         * Maps from AST {@link Tree}s to {@link Node}s. Every Tree that produces a value will have
-         * at least one corresponding Node. Trees that undergo conversions, such as boxing or
-         * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored
-         * in the treeLookupMap, while the Node for the post-conversion value is stored in the
-         * convertedTreeLookupMap.
+         * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value
+         * will have at least one corresponding Node. Trees that undergo conversions, such as boxing
+         * or unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is
+         * stored in the treeLookupMap, while the Node for the post-conversion value is stored in
+         * the convertedTreeLookupMap.
          */
         protected IdentityHashMap<Tree, Set<Node>> treeLookupMap;
 
-        /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
+        /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
         protected IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
 
         /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
@@ -4289,6 +4290,8 @@ public class CFGBuilder {
         public Node visitTry(TryTree tree, Void p) {
             List<? extends CatchTree> catches = tree.getCatches();
             BlockTree finallyBlock = tree.getFinallyBlock();
+
+            extendWithNode(new MarkerNode(tree, "start of try statement", env.getTypeUtils()));
 
             // TODO: Should we handle try-with-resources blocks by also generating code
             // for automatically closing the resources?

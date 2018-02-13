@@ -3,7 +3,10 @@ package org.checkerframework.dataflow.util;
 import java.util.HashSet;
 import java.util.Objects;
 
-/** A set that is more efficient than HashSet for 0 and 1 elements. */
+/**
+ * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
+ * object comparison and a {@link HashSet} for backing storage.
+ */
 public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
 
     public MostlySingleton() {

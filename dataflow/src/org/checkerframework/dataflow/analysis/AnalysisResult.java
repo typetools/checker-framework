@@ -29,7 +29,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Abstract values of nodes. */
     protected final IdentityHashMap<Node, A> nodeValues;
 
-    /** Map from AST {@link Tree}s to {@link Node}s. */
+    /** Map from AST {@link Tree}s to sets of {@link Node}s. */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */

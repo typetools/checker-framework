@@ -46,6 +46,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                 checkInvocationFormatFor(fc);
                 return p;
             }
+            // It's enough to look at one Node.
+            break;
         }
         return super.visitMethodInvocation(tree, p);
     }
