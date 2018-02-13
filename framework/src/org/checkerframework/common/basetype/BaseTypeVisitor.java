@@ -1909,6 +1909,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (shouldSkipUses(valueExp)) {
             return;
         }
+        if (valueExp.getKind() == Tree.Kind.MEMBER_REFERENCE
+                || valueExp.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            // Member references and lambda expressions are type checked separately
+            // and do not need to be checked again as arguments.
+            return;
+        }
         if (varType.getKind() == TypeKind.ARRAY
                 && valueExp instanceof NewArrayTree
                 && ((NewArrayTree) valueExp).getType() == null) {
@@ -3537,16 +3543,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected final boolean shouldSkipUses(ExpressionTree exprTree) {
         // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
-
-        // Work-around for #979: don't use commonAssignmentCheck for
-        // lambdas or method references, as their types are currently
-        // not inferred correctly.
-        // Once #979 is fixed, this work-around should be either removed
-        // or moved somewhere appropriate as a performance optimization.
-        // See discussion in #1685.
-        if (exprTree instanceof MemberReferenceTree || exprTree instanceof LambdaExpressionTree) {
-            return true;
-        }
 
         Element elm = TreeUtils.elementFromTree(exprTree);
         return checker.shouldSkipUses(elm);
