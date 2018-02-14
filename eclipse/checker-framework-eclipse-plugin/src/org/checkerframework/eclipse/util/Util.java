@@ -10,9 +10,6 @@ import org.eclipse.jdt.core.*;
  * Eclipse-specific utilities.
  *
  * <p>Copied from FindBugs.
- *
- * @author Phil Crosby
- * @author Peter Friese
  */
 public class Util {
     public static final String NL = System.getProperty("line.separator");

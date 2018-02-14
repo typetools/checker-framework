@@ -11,11 +11,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-/**
- * A node for the single expression body of a single expression lambda
- *
- * @author Lazaro Clapp
- */
+/** A node for the single expression body of a single expression lambda */
 public class LambdaResultExpressionNode extends Node {
 
     protected final ExpressionTree tree;

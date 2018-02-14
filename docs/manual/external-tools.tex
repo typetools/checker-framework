@@ -904,7 +904,21 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 
 \section{NetBeans\label{netbeans}}
 
-There are two approaches to running a checker in NetBeans:  via modifying the project properties, or via a custom ant target.
+There are two approaches to running a checker in NetBeans:  via modifying the
+project properties, or via a custom ant target.
+
+Note: The 'compile and save' action in NetBeans 8.1 automatically
+runs the Checker Framework whereas this functionality has not yet
+been incorporated into NetBeans 8.2. Additionally, JDK annotations
+are currently unavailable on Netbeans 8.1 and 8.2.
+
+% NetBeans 8.2 switched to a Java 9 javac, which breaks the Checker Framework as
+% annotation processor.
+% There is no way to set a bootclasspath for annotation processors, so we can't
+% add the JDK annotations.
+% Work on a NetBeans plug-in at
+% https://github.com/typetools/checker-framework/pull/1592
+% could not solve the bootclasspath issue, so we decided to not integrate it.
 
 
 \subsection{Adding a checker via the Project Properties window\label{netbeans-project-properties}}

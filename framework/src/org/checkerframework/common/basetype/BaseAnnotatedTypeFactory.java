@@ -12,8 +12,6 @@ import org.checkerframework.javacutil.Pair;
 /**
  * A factory that extends {@link GenericAnnotatedTypeFactory} to use the default flow-sensitive
  * analysis as provided by {@link CFAnalysis}.
- *
- * @author Stefan Heule
  */
 public class BaseAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> {

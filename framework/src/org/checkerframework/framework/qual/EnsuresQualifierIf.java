@@ -29,7 +29,6 @@ import java.lang.annotation.Target;
  * org.checkerframework.checker.nullness.qual.EnsuresNonNullIf @EnsuresNonNullIf} and {@link
  * org.checkerframework.checker.lock.qual.EnsuresLockHeldIf @EnsuresLockHeldIf}.
  *
- * @author Stefan Heule
  * @see EnsuresQualifiersIf
  * @see EnsuresQualifier
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions

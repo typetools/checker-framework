@@ -9,11 +9,7 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * A utility class to operate on a given {@link Node}.
- *
- * @author Stefan Heule
- */
+/** A utility class to operate on a given {@link Node}. */
 public class NodeUtils {
 
     /**

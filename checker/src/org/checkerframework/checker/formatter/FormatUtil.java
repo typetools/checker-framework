@@ -11,11 +11,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
 
-/**
- * This class provides a collection of utilities to ease working with format strings.
- *
- * @author Konstantin Weitz
- */
+/** This class provides a collection of utilities to ease working with format strings. */
 public class FormatUtil {
     private static class Conversion {
         private final int index;

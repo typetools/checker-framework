@@ -77,12 +77,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * AnnotatedTypeFactory for the Value type system.
- *
- * @author plvines
- * @author smillst
- */
+/** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The maximum number of values allowed in an annotation's array */

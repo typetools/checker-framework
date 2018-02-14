@@ -19,7 +19,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
- * @author Stefan Heule
  */
 public class PurityUtils {
 

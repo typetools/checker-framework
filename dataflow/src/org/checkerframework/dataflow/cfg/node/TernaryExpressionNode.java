@@ -13,9 +13,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>expression</em> ? <em>expression</em> : <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class TernaryExpressionNode extends Node {
 

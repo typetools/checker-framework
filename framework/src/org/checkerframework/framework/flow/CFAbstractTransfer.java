@@ -88,9 +88,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * propagation, CFAbstractTransfer delegates work to it instead of duplicating some logic in
  * CFAbstractTransfer. The checker-specific subclasses of CFAbstractTransfer do implement transfer
  * function logic themselves.
- *
- * @author Charlie Garrett
- * @author Stefan Heule
  */
 public abstract class CFAbstractTransfer<
                 V extends CFAbstractValue<V>,

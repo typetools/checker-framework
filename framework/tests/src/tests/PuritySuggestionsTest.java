@@ -6,11 +6,7 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.util.FlowTestChecker;
 
-/**
- * Tests for the {@code -AsuggestPureMethods} command-line argument.
- *
- * @author Stefan Heule
- */
+/** Tests for the {@code -AsuggestPureMethods} command-line argument. */
 public class PuritySuggestionsTest extends CheckerFrameworkPerDirectoryTest {
 
     public PuritySuggestionsTest(List<File> testFiles) {

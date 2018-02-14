@@ -25,8 +25,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>FunctionalInterface func = member reference</em>
  * </pre>
- *
- * @author David
  */
 public class FunctionalInterfaceNode extends Node {
 

@@ -8,11 +8,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
-/**
- * Basic aggregate checker.
- *
- * @author smillst
- */
+/** Basic aggregate checker. */
 public class TestAggregateChecker extends AggregateChecker {
 
     @Override

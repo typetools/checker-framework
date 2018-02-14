@@ -74,8 +74,6 @@ import scenelib.annotations.util.JVMNames;
  *   <li>The resulting type would be defaulted or implicited &mdash; that is, if omitting it has the
  *       same effect as writing it.
  * </ol>
- *
- * @author pbsf
  */
 //  TODO: We could add an option to update the type of explicitly annotated
 //  elements, but this currently is not recommended since the

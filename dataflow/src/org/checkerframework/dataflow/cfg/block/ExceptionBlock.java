@@ -14,8 +14,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * <pre>
  * getNode().getBlock() == this
  * </pre>
- *
- * @author Stefan Heule
  */
 public interface ExceptionBlock extends SingleSuccessorBlock {
 

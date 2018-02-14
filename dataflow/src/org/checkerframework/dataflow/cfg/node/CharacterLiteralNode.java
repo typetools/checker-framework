@@ -13,9 +13,6 @@ import java.util.Collections;
  *   <em>'\t'</em>
  *   <em>'\u03a9'</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class CharacterLiteralNode extends ValueLiteralNode {
 
