@@ -138,7 +138,7 @@ public class ToolProvider {
     }
 
 	
-    private static @SuppressWarnings("initialization") ToolProvider instance;
+    private static @Nullable ToolProvider instance;
 
     private static synchronized ToolProvider instance() {
         if (instance == null)
@@ -152,7 +152,7 @@ public class ToolProvider {
 
     // Cache for tool classloader.
     // Use a weak reference to avoid keeping it around unnecessarily
-    private @SuppressWarnings("nullness") Reference<ClassLoader> refToolClassLoader = null;
+    private @Nullable Reference<ClassLoader> refToolClassLoader = null;
 
 
     private ToolProvider() { }

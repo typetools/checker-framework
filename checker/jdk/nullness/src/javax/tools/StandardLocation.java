@@ -29,6 +29,8 @@ import javax.tools.JavaFileManager.Location;
 
 import java.util.concurrent.*;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Standard locations of file objects.
  *
@@ -84,7 +86,7 @@ public enum StandardLocation implements Location {
      * @param name a name
      * @return a location
      */
-    @SuppressWarnings("nullness") 
+    @SuppressWarnings("nullness")    // name will be having Non-Null value type when passed in locations.get(name)  
     public static Location locationFor(final String name) {
         if (locations.isEmpty()) {
             // can't use valueOf which throws IllegalArgumentException
