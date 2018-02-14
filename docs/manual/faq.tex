@@ -263,9 +263,7 @@ about, or has caused problems in the past, then you should run that
 checker.  For other properties, the benefits may not repay the effort to
 use it.  You will be the best judge of this for your own code, of course.
 
-You might want to avoid some type-checkers when you are first starting out.
-The \ahrefloc{linear-checker}{Linear Checker} (see
-\chapterpageref{linear-checker}) has not been extensively tested.
+%You might want to avoid some type-checkers when you are first starting out.
 Some of the third-party checkers (see
 \chapterpageref{third-party-checkers})
 have known bugs that limit their
@@ -865,9 +863,8 @@ For example, the following code is safe:
 \end{Verbatim}
 
 \noindent
-However, the Index Checker (which defines the
-\refqualclass{checker/index/qual}{Positive} type qualifier) cannot prove
-that either call to \<requiresPositive()> is safe, and it issues warnings
+However, the Index Checker (\chapterpageref{index-checker}), which defines the
+\refqualclass{checker/index/qual}{Positive} type qualifier, issues warnings
 saying that it cannot prove that the arguments are \<@Positive>.
 
 A slight variant of \<intExample1> can be verified:

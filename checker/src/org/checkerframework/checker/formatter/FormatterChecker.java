@@ -9,7 +9,6 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
  * formatter calls.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
- * @author Konstantin Weitz
  */
 @RelevantJavaTypes(CharSequence.class)
 public class FormatterChecker extends BaseTypeChecker {}

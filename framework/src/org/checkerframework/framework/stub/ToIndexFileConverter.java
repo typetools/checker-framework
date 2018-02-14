@@ -64,8 +64,6 @@ import scenelib.annotations.io.IndexFileWriter;
  *
  * <p>An instance of the class represents conversion of 1 stub file, but the static {@link
  * #main(String[])} method converts multiple stub files, instantiating the class multiple times.
- *
- * @author dbro
  */
 public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> {
     // The possessive modifiers "*+" are for efficiency only.

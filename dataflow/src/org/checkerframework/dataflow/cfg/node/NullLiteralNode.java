@@ -11,9 +11,6 @@ import java.util.Collections;
  * <pre>
  *   <em>null</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class NullLiteralNode extends ValueLiteralNode {
 

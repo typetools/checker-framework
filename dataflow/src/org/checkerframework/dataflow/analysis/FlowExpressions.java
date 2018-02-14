@@ -54,8 +54,6 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>Pure method calls (e.g., <em>o.m()</em>)
  *   <li>Unknown other expressions to mark that something else was present.
  * </ul>
- *
- * @author Stefan Heule
  */
 public class FlowExpressions {
 

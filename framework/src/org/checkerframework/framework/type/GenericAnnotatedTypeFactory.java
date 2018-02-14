@@ -226,7 +226,7 @@ public abstract class GenericAnnotatedTypeFactory<
         super.postInit();
 
         this.dependentTypesHelper = createDependentTypesHelper();
-        this.defaults = createQualifierDefaults();
+        this.defaults = createAndInitQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
 
@@ -484,10 +484,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Create {@link QualifierDefaults} which handles checker specified defaults. Subclasses should
-     * override {@link GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)}
-     * or {@link GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to
-     * add more defaults or use different defaults.
+     * Create {@link QualifierDefaults} which handles checker specified defaults, and initialize the
+     * created {@link QualifierDefaults}. Subclasses should override {@link
+     * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} or {@link
+     * GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to add more
+     * defaults or use different defaults.
      *
      * @return the QualifierDefaults object
      */
@@ -497,8 +498,8 @@ public abstract class GenericAnnotatedTypeFactory<
     // Both methods should have some functionality merged into a single location.
     // See Issue 683
     // https://github.com/typetools/checker-framework/issues/683
-    protected final QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults defs = new QualifierDefaults(elements, this);
+    protected final QualifierDefaults createAndInitQualifierDefaults() {
+        QualifierDefaults defs = createQualifierDefaults();
         addCheckedCodeDefaults(defs);
         addCheckedStandardDefaults(defs);
         addUncheckedCodeDefaults(defs);
@@ -506,6 +507,14 @@ public abstract class GenericAnnotatedTypeFactory<
         checkForDefaultQualifierInHierarchy(defs);
 
         return defs;
+    }
+
+    /**
+     * Create {@link QualifierDefaults} which handles checker specified defaults. Sub-classes
+     * override this method to provide a different {@code QualifierDefault} implementation.
+     */
+    protected QualifierDefaults createQualifierDefaults() {
+        return new QualifierDefaults(elements, this);
     }
 
     /** Defines alphabetical sort ordering for qualifiers */

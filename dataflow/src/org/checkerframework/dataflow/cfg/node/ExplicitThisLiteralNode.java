@@ -10,9 +10,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>this</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ExplicitThisLiteralNode extends ThisLiteralNode {
 

@@ -23,8 +23,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  *   return
  *   return <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
  */
 public class ReturnNode extends Node {
 

@@ -97,7 +97,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 \cline{1-4} \cline{6-6}
 \centering Subtyping \par Checker &
 \centering Nullness \par Checker &
-\centering Mutation \par Checker &
+\centering Index \par Checker &
 \centering Tainting \par Checker &
 \centering \ldots &
 \centering Your \par Checker &
@@ -750,17 +750,6 @@ qualifier (that type is then flow-sensitively
 refined depending on what values are stored in the local variable).
 If there is no single top qualifier, then there is no
 unambiguous choice to make for local variables.
-
-Furthermore, it is most convenient to users if the top qualifier is defined
-by the type system.  It is possible to use the framework's
-\<@Unqualified> as the top type, but this is poor practice.
-Users lose
-flexibility in expressing defaults:  there is no
-way for a user to change the default qualifier for just that type system.
-If a user specifies
-\<@DefaultQualifier(Unqualified.class)>,
-then the default would apply to every
-type system that uses \<@Unqualified>, which is unlikely to be desired.
 
 
 \subsection{Annotations whose argument is a Java expression (dependent type annotations)\label{dependent-types}}
@@ -2063,17 +2052,6 @@ That is part of the documentation and is the first thing that many users
 may see.  Also ensure that the Javadoc links back to the manual, using the
 \<@checker\_framework.manual> custom Javadoc tag.
 
-There are several other miscellaneous tasks:
-\begin{itemize}
-\item
-  Add its \<messages.properties> file to the \<check-compilermsgs> target in
-  file \<checker/build.xml>.
-\item
-  Integrate your new checker with the Eclipse plugin.
-  See \<\$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker>/ for instructions.
-\end{itemize}
-
-
 \section{javac implementation survival guide\label{creating-javac-tips}}
 
 Since this section of the manual was written, the useful ``The Hitchhiker's
@@ -2246,12 +2224,12 @@ the following:
 \item Create Ant targets for testing, as described in
   Section~\ref{creating-testing-framework}.
 
-\item Extend the \code{check-compilermsgs} target to include the
-compiler messages property file of the new checker in
-the \code{checker-args} list.  (Keep the list in alphabetical order.)
-
 \item Make sure \code{check-compilermsgs} and \code{check-purity} run
 without warnings or errors.
+
+\item
+  Integrate your new checker with the Eclipse plugin.
+  See \<\$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker>/ for instructions.
 
 \end{itemize}
 

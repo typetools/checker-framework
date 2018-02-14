@@ -187,11 +187,6 @@
             style="push">
           </command>
           <command
-            commandId="checkers.eclipse.runlinear"
-            label="Linear Checker"
-            style="push">
-          </command>
-          <command
             commandId="checkers.eclipse.runsubtypingchecker"
             label="Subtyping Checker"
             style="push">
@@ -322,12 +317,6 @@
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$AliasingAction"
       id="checkers.eclipse.runaliasingchecker"
       name="Run Aliasing Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$LinearAction"
-      id="checkers.eclipse.runlinear"
-      name="Run Linear Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"

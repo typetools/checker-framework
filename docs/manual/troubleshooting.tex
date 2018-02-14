@@ -779,6 +779,11 @@ code.  We are sure that you can make up artificial code that stymies the
 type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
 
+Please do not file an issue to report that some library class is not
+annotated.  Instead, please write the annotations (see
+Chapter~\ref{annotating-libraries}) and then submit a
+\ahref{https://github.com/typetools/checker-framework/pulls}{pull request}.
+
 
 \section{Building from source\label{build-source}}
 
@@ -1071,6 +1076,29 @@ instructions.
 \item
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
+
+
+\subsection{Configure Eclipse to edit the Checker Framework\label{building-eclipse}}
+
+\begin{enumerate}
+\item Follow the instructions earlier in Section~\ref{build-source} to
+clone and build all projects from their sources.
+\item Download Eclipse from
+the \href{https://www.eclipse.org/downloads}{official Eclipse website}
+and install it.
+\item Run Eclipse and set the
+workspace to the directory pointed to by \code{\$JSR308}.
+\item Enter the main Eclipse working screen and in the ``File'' menu,
+select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
+Projects into workspace''.
+\item After the ``Import Projects'' window appears, select ``Select
+Root Directory'', and select the directory pointed to by \code{\$JSR308}.
+\item Select all the projects in the folder except for the ones
+related to ``Eclipse'', ``encryption'', ``tutorial'', and ``demo''.
+\end{enumerate}
+Eclipse should successfully build all the imported projects.
+If Eclipse reports any errors, ensure you followed the instructions
+in Section~\ref{build-source}.
 
 
 \subsection{Enable Travis continuous integration builds\label{building-travis}}

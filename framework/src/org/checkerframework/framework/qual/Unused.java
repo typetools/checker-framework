@@ -33,6 +33,8 @@ import java.lang.annotation.Target;
  * <pre>  @LocalToThread Table table = ...;
  *   ... table.lock ...;
  * </pre>
+ *
+ * @checker_framework.manual #unused-fields Unused fields
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

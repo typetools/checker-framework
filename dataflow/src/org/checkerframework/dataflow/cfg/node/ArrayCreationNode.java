@@ -19,9 +19,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  *   <em>new type [1][2]</em>
  *   <em>new type [] = { expr1, expr2, ... }</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ArrayCreationNode extends Node {
 
