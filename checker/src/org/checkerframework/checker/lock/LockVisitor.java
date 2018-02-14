@@ -132,9 +132,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         variableTree.getModifiers().getAnnotations());
         for (AnnotationMirror anno : annos) {
             if (AnnotationUtils.areSameByClass(anno, GuardedBy.class)
-                    || AnnotationUtils.areSameByClass(anno, net.jcip.annotations.GuardedBy.class)
-                    || AnnotationUtils.areSameByClass(
-                            anno, javax.annotation.concurrent.GuardedBy.class)) {
+                    || AnnotationUtils.areSameByName(anno, "net.jcip.annotations.GuardedBy")
+                    || AnnotationUtils.areSameByName(
+                            anno, "javax.annotation.concurrent.GuardedBy")) {
                 guardedByAnnotationCount++;
                 if (guardedByAnnotationCount > 1) {
                     checker.report(Result.failure("multiple.guardedby.annotations"), variableTree);
@@ -232,16 +232,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             lockPreconditionAnnotationCount++;
         }
 
-        if (atypeFactory.getDeclAnnotation(methodElement, net.jcip.annotations.GuardedBy.class)
-                != null) {
-            lockPreconditionAnnotationCount++;
-        }
+        try {
+            if (atypeFactory.jcip_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcip_GuardedBy)
+                            != null) {
+                lockPreconditionAnnotationCount++;
+            }
 
-        if (lockPreconditionAnnotationCount < 2
-                && atypeFactory.getDeclAnnotation(
-                                methodElement, javax.annotation.concurrent.GuardedBy.class)
-                        != null) {
-            lockPreconditionAnnotationCount++;
+            if (lockPreconditionAnnotationCount < 2
+                    && atypeFactory.javax_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javax_GuardedBy)
+                            != null) {
+                lockPreconditionAnnotationCount++;
+            }
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
         }
 
         if (lockPreconditionAnnotationCount > 1) {
