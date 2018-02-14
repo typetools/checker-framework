@@ -123,7 +123,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness") // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
+    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
     public boolean containsKey(Object key) {
         checkKey(key);
         return map.containsKey(key);
@@ -135,7 +135,7 @@ public class SimpleBindings implements Bindings {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor") // No proper annotations scheme found.
+    @SuppressWarnings("keyfor")    // No proper annotations scheme found.
     public Set<Map.Entry<String, Object>> entrySet() {
         return map.entrySet();
     }
@@ -161,7 +161,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness") // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass.  
+    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass.  
     public @Nullable Object get(Object key) {
         checkKey(key);
         return map.get(key);
@@ -173,7 +173,7 @@ public class SimpleBindings implements Bindings {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor") // No proper annotations scheme found. 
+    @SuppressWarnings("keyfor")    // No proper annotations scheme found. 
     public Set< String> keySet() {
         return map.keySet();
     }
@@ -200,7 +200,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness") // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
+    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
     public @Nullable Object remove(Object key) {
         checkKey(key);
         return map.remove(key);
