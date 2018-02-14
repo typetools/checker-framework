@@ -69,7 +69,7 @@ public abstract class AbstractProcessor implements Processor {
     /**
      * Constructor for subclasses to call.
      */
-    @SuppressWarnings("nullness") 
+    @SuppressWarnings("nullness")    // Lazy initialization of processingEnv is done with init() method and it must be executed after constructor is done executing 
     protected AbstractProcessor() {}
 
     /**

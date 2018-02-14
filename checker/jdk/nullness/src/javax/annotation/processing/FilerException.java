@@ -47,7 +47,7 @@ public class FilerException extends IOException {
      * @param s the detail message, which should include the name of
      * the file attempting to be opened; may be {@code null}
      */
-    @SuppressWarnings("initialization") 
+    @SuppressWarnings("initialization")    // Main aim is to call super() constructor for IOException class, dereference of a null is not happening in this context.
     public @Nullable FilerException(String s) {
         super(s);
     }
