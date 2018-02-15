@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // but in such a case:
 //   * the subclass must override initialValue to return a non-null value
 //   * the subclass needs to suppress a warning:
-//     @SuppressWarnings("nullness:type.argument.type.incompatible") // overrides initialValue
+//     @SuppressWarnings("nullness:type.argument.type.incompatible") // initialValue returns non-null
 public class ThreadLocal<@Nullable T extends @Nullable Object> {
   public ThreadLocal() { throw new RuntimeException("skeleton method"); }
   public T get() { throw new RuntimeException("skeleton method"); }
