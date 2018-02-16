@@ -40,7 +40,7 @@ else
     fi
     set -e
     echo "Running:  (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
-    (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)
+    (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git) || (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)
     echo "... done: (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
 fi
 
@@ -67,7 +67,7 @@ else
     fi
     set -e
     echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git)"
-    (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git)
+    (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git) || (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git)
     echo "... done: (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git)"
 fi
 

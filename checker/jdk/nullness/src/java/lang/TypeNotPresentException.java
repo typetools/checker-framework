@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -54,6 +55,7 @@ public class TypeNotPresentException extends RuntimeException {
      * @param cause the exception that was thrown when the system attempted to
      *    load the named type, or <tt>null</tt> if unavailable or inapplicable
      */
+    @SideEffectFree
     public TypeNotPresentException(String typeName, @Nullable Throwable cause) {
         super("Type " + typeName + " not present", cause);
         this.typeName = typeName;

@@ -21,6 +21,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +30,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -104,7 +104,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -195,7 +194,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.everUseFlow = useFlow;
         this.shouldDefaultTypeVarLocals = useFlow;
         this.useFlow = useFlow;
-        this.analyses = new LinkedList<>();
+        this.analyses = new ArrayDeque<>();
         this.scannedClasses = new HashMap<>();
         this.flowResult = null;
         this.regularExitStores = null;
@@ -227,7 +226,7 @@ public abstract class GenericAnnotatedTypeFactory<
         super.postInit();
 
         this.dependentTypesHelper = createDependentTypesHelper();
-        this.defaults = createQualifierDefaults();
+        this.defaults = createAndInitQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
 
@@ -485,10 +484,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Create {@link QualifierDefaults} which handles checker specified defaults. Subclasses should
-     * override {@link GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)}
-     * or {@link GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to
-     * add more defaults or use different defaults.
+     * Create {@link QualifierDefaults} which handles checker specified defaults, and initialize the
+     * created {@link QualifierDefaults}. Subclasses should override {@link
+     * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} or {@link
+     * GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to add more
+     * defaults or use different defaults.
      *
      * @return the QualifierDefaults object
      */
@@ -498,8 +498,8 @@ public abstract class GenericAnnotatedTypeFactory<
     // Both methods should have some functionality merged into a single location.
     // See Issue 683
     // https://github.com/typetools/checker-framework/issues/683
-    protected final QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults defs = new QualifierDefaults(elements, this);
+    protected final QualifierDefaults createAndInitQualifierDefaults() {
+        QualifierDefaults defs = createQualifierDefaults();
         addCheckedCodeDefaults(defs);
         addCheckedStandardDefaults(defs);
         addUncheckedCodeDefaults(defs);
@@ -507,6 +507,14 @@ public abstract class GenericAnnotatedTypeFactory<
         checkForDefaultQualifierInHierarchy(defs);
 
         return defs;
+    }
+
+    /**
+     * Create {@link QualifierDefaults} which handles checker specified defaults. Sub-classes
+     * override this method to provide a different {@code QualifierDefault} implementation.
+     */
+    protected QualifierDefaults createQualifierDefaults() {
+        return new QualifierDefaults(elements, this);
     }
 
     /** Defines alphabetical sort ordering for qualifiers */
@@ -790,7 +798,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public FlowExpressions.Receiver getReceiverFromJavaExpressionString(
             String expression, TreePath currentPath) throws FlowExpressionParseException {
-        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
         FlowExpressions.Receiver r =
                 FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
@@ -940,7 +948,7 @@ public abstract class GenericAnnotatedTypeFactory<
             return;
         }
 
-        Queue<ClassTree> queue = new LinkedList<>();
+        Queue<ClassTree> queue = new ArrayDeque<>();
         List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
         queue.add(classTree);
         while (!queue.isEmpty()) {
@@ -961,7 +969,7 @@ public abstract class GenericAnnotatedTypeFactory<
             initializationStaticStore = null;
             initializationStore = null;
 
-            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new LinkedList<>();
+            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
             try {
                 List<CFGMethod> methods = new ArrayList<>();

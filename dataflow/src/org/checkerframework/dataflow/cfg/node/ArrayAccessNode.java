@@ -2,10 +2,10 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for an array access:
@@ -15,9 +15,6 @@ import org.checkerframework.javacutil.InternalUtils;
  * </pre>
  *
  * We allow array accesses without corresponding AST {@link Tree}s.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ArrayAccessNode extends Node {
 
@@ -26,7 +23,7 @@ public class ArrayAccessNode extends Node {
     protected final Node index;
 
     public ArrayAccessNode(Tree t, Node array, Node index) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         assert t instanceof ArrayAccessTree;
         this.tree = t;
         this.array = array;
@@ -73,7 +70,7 @@ public class ArrayAccessNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(2);
         list.add(getArray());
         list.add(getIndex());
         return list;

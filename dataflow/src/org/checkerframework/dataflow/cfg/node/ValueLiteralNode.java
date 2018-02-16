@@ -4,7 +4,7 @@ import com.sun.source.tree.LiteralTree;
 import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -23,8 +23,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *   <li>boolean literal
  *   <li>null literal
  * </ul>
- *
- * @author Stefan Heule
  */
 public abstract class ValueLiteralNode extends Node {
 
@@ -34,7 +32,7 @@ public abstract class ValueLiteralNode extends Node {
     public abstract /*@Nullable*/ Object getValue();
 
     public ValueLiteralNode(LiteralTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
     }
 

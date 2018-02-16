@@ -60,7 +60,7 @@ class Adler32 implements Checksum {
     /**
      * Updates the checksum with the specified array of bytes.
      */
-    public void update(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
+    public void update(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
         if (b == null) {
             throw new NullPointerException();
         }

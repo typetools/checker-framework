@@ -44,7 +44,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -170,7 +169,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof NewClassTree) {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
-            ExecutableElement constructorElt = InternalUtils.constructor(newClassTree);
+            ExecutableElement constructorElt = TreeUtils.constructor(newClassTree);
             AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
             res =
                     assignedToExecutable(
@@ -225,10 +224,12 @@ public class TypeArgInferenceUtil {
                 break;
             }
         }
-        assert treeIndex != -1
-                : "Could not find path in MethodInvocationTree.\n" + "treePath=" + path.toString();
         final AnnotatedTypeMirror paramType;
-        if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
+        if (treeIndex == -1) {
+            // The tree wasn't found as an argument, so it has to be the receiver.
+            // This can happen for inner class constructors that take an outer class argument.
+            paramType = method.getReceiverType();
+        } else if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
             paramType = method.getParameterTypes().get(method.getParameterTypes().size() - 1);
         } else {
             paramType = method.getParameterTypes().get(treeIndex);

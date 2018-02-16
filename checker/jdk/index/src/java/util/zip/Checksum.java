@@ -46,7 +46,7 @@ interface Checksum {
      * @param off the start offset of the data
      * @param len the number of bytes to use for the update
      */
-    public void update(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len);
+    public void update(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len);
 
     /**
      * Returns the current checksum value.

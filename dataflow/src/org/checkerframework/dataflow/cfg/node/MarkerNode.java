@@ -16,9 +16,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * which will be part of the String representation of the MarkerNode.
  *
  * <p>An example use case for MarkerNodes is representing switch statements.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class MarkerNode extends Node {
 
@@ -47,9 +44,10 @@ public class MarkerNode extends Node {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("marker ");
-        sb.append("(" + message + ")");
+        StringBuilder sb = new StringBuilder();
+        sb.append("marker (");
+        sb.append(message);
+        sb.append(")");
         return sb.toString();
     }
 

@@ -2,9 +2,9 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for the string concatenation compound assignment:
@@ -12,9 +12,6 @@ import org.checkerframework.javacutil.InternalUtils;
  * <pre>
  *   <em>variable</em> += <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class StringConcatenateAssignmentNode extends Node {
     protected final Tree tree;
@@ -22,7 +19,7 @@ public class StringConcatenateAssignmentNode extends Node {
     protected final Node right;
 
     public StringConcatenateAssignmentNode(Tree tree, Node left, Node right) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert tree.getKind() == Kind.PLUS_ASSIGNMENT;
         this.tree = tree;
         this.left = left;
@@ -49,7 +46,7 @@ public class StringConcatenateAssignmentNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(2);
         list.add(getLeftOperand());
         list.add(getRightOperand());
         return list;

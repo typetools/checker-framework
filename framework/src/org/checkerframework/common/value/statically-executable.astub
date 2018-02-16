@@ -262,10 +262,10 @@ class Short{
 
 class String{
     @StaticallyExecutable String();
-    @StaticallyExecutable String(String original);
+    @StaticallyExecutable @PolyValue String(@PolyValue String original);
     @StaticallyExecutable String(StringBuffer buffer);
     @StaticallyExecutable String(StringBuilder builder);
-    @StaticallyExecutable String(char[] value);
+    @StaticallyExecutable @PolyValue String(char @PolyValue[] value);
     @StaticallyExecutable String(char[] value, int offset, int count);
     @StaticallyExecutable String(int[] codePoints, int offset, int count);
 
@@ -279,7 +279,7 @@ class String{
     @StaticallyExecutable boolean contains(CharSequence s);
     @StaticallyExecutable boolean contentEquals(CharSequence cs);
     @StaticallyExecutable boolean contentEquals(StringBuffer sb);
-    @StaticallyExecutable static String copyValueOf(char[] data);
+    @StaticallyExecutable static @PolyValue String copyValueOf(char @PolyValue[] data);
     @StaticallyExecutable static String copyValueOf(char[] data, int offset, int count);
     @StaticallyExecutable boolean endsWith(String suffix);
     @StaticallyExecutable boolean equalsIgnoreCase(String anotherString);
@@ -294,8 +294,8 @@ class String{
     @StaticallyExecutable int indexOf(int ch, int fromIndex);
     @StaticallyExecutable int indexOf(String str);
     @StaticallyExecutable int indexOf(String str, int fromIndex);
-    @StaticallyExecutable String intern();
-    @StaticallyExecutable boolean isEmpty();
+    @StaticallyExecutable @PolyValue String intern(@PolyValue String this);
+    @StaticallyExecutable @EnsuresMinLenIf(expression="this", result=false, targetValue=1) boolean isEmpty();
     @StaticallyExecutable int lastIndexOf(int ch);
     @StaticallyExecutable int lastIndexOf(int ch, int fromIndex);
     @StaticallyExecutable int lastIndexOf(String str);
@@ -316,16 +316,16 @@ class String{
     @StaticallyExecutable CharSequence subSequence(int beginIndex, int endIndex);
     @StaticallyExecutable String substring(int beginIndex);
     @StaticallyExecutable String substring(int beginIndex, int endIndex);
-    @StaticallyExecutable char[] toCharArray();
+    @StaticallyExecutable char @PolyValue[] toCharArray(@PolyValue String this);
     @StaticallyExecutable String toLowerCase();
     @StaticallyExecutable String toLowerCase(Locale locale);
-    @StaticallyExecutable String toString();
+    @StaticallyExecutable @PolyValue String toString(@PolyValue String this);
     @StaticallyExecutable String toUpperCase();
     @StaticallyExecutable String toUpperCase(Locale locale);
     @StaticallyExecutable String trim();
     @StaticallyExecutable static @StringVal({"true", "false"}) String valueOf(boolean b);
     @StaticallyExecutable static @ArrayLen(1) String valueOf(char c);
-    @StaticallyExecutable static String valueOf(char[] data);
+    @StaticallyExecutable static @PolyValue String valueOf(char @PolyValue[] data);
     @StaticallyExecutable static String valueOf(char[] data, int offset, int count);
     @StaticallyExecutable static String valueOf(double d);
     @StaticallyExecutable static String valueOf(float f);
@@ -346,4 +346,50 @@ package java.util;
 class StringTokenizer {
     @MinLen(1) String nextToken();
     @MinLen(1) String nextToken(String delim);
+}
+
+class Arrays {
+    static @MinLen(2) String toString(long[] a);
+    static @MinLen(2) String toString(int[] a);
+    static @MinLen(2) String toString(short[] a);
+    static @MinLen(2) String toString(char[] a);
+    static @MinLen(2) String toString(byte[] a);
+    static @MinLen(2) String toString(boolean[] a);
+    static @MinLen(2) String toString(float[] a);
+    static @MinLen(2) String toString(double[] a);
+    static @MinLen(2) String toString(Object[] a);
+    static @MinLen(2) String deepToString(Object[] a);
+}
+
+class Calendar {
+    public @IntRange(from = 1, to = 7) int getFirstDayOfWeek();
+    public void setFirstDayOfWeek(@IntRange(from = 1, to = 7) int value);
+    public @IntRange(from = 1, to = 7) int getMinimalDaysInFirstWeek();
+    public void setMinimalDaysInFirstWeek(@IntRange(from = 1, to = 7) int value);
+}
+
+package java.awt.image;
+
+class ColorModel {
+   public int @PolyValue [] getComponents(int pixel, int @PolyValue [] components, int offset);
+   public int @PolyValue [] getComponents(Object pixel, int @PolyValue [] components, int offset);
+}
+
+package java.text;
+
+class DateFormatSymbols {
+    public String @ArrayLen(2) [] getEras();
+    public void setEras(String @ArrayLen(2) [] newEras);
+    public String @ArrayLen(13) [] getMonths();
+    public void setMonths(String @ArrayLen(13) [] newMonths);
+    public String @ArrayLen(13) [] getShortMonths();
+    public void setShortMonths(String @ArrayLen(13) [] newShortMonths);
+    public String @ArrayLen(8) [] getWeekdays();
+    public void setWeekdays(String @ArrayLen(8) [] newWeekdays);
+    public String @ArrayLen(8) [] getShortWeekdays();
+    public void setShortWeekdays(String @ArrayLen(8) [] newShortWeekdays);
+    public String @ArrayLen(2) [] getAmPmStrings();
+    public void setAmPmStrings(String @ArrayLen(2) [] newAmpms);
+    public String @ArrayLen(2) [] @MinLen(5) [] getZoneStrings();
+    public void setZoneStrings(String @ArrayLen(2) [] @MinLen(5) [] newZoneStrings);
 }

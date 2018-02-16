@@ -255,7 +255,7 @@ Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib
 
 \begin{Verbatim}
 @SuppressWarnings("purity") // side effect to local state of type BitSet
-@SuppressWarnings("cast") // cast is redundant (except in JSR 308)
+@SuppressWarnings("cast") // cast is redundant (except when checking nullness)
 @SuppressWarnings("interning") // FbType.FREE is interned but is not annotated
 @SuppressWarnings("interning") // equality testing optimization
 @SuppressWarnings("nullness") // used portion of array is non-null
@@ -859,7 +859,7 @@ instances of ``\verb|\s*|''.
   To remove all commented annotations, remove ``\verb|@\1|''.
 \end{itemize}
 
-The second command handles \code{/*>>>...*/} comments (.
+The second command handles \code{/*>>>...*/} comments.
 You can customize this command:
 \begin{itemize}
 \item

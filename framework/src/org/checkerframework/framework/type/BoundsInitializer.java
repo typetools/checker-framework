@@ -73,31 +73,9 @@ public class BoundsInitializer {
         for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
             TypeMirror javaTypeArg;
             if (declaredType.wasRaw()) {
-                TypeMirror upperBound =
-                        ((TypeVariable) typeElement.getTypeParameters().get(i).asType())
-                                .getUpperBound();
-                switch (upperBound.getKind()) {
-                    case ARRAY:
-                    case DECLARED:
-                    case TYPEVAR:
-                        javaTypeArg =
-                                declaredType.atypeFactory.types.getWildcardType(upperBound, null);
-                        break;
-                    case INTERSECTION:
-                        // Can't create a wildcard with an intersection as the upper bound, so use
-                        // an unbound wildcard instead.  The extends bound of the
-                        // AnnotatedWildcardType
-                        // be initialized properly below.
-                        javaTypeArg = declaredType.atypeFactory.types.getWildcardType(null, null);
-                        break;
-                    default:
-                        ErrorReporter.errorAbort(
-                                "Unexpected upper bound kind: %s type: %s",
-                                upperBound.getKind(), upperBound);
-                        javaTypeArg = null; // dead code
-                        break;
-                }
-
+                TypeVariable typeVariable =
+                        (TypeVariable) typeElement.getTypeParameters().get(i).asType();
+                javaTypeArg = getUpperBoundAsWildcard(typeVariable, declaredType.atypeFactory);
             } else {
                 javaTypeArg = declaredType.getUnderlyingType().getTypeArguments().get(i);
             }
@@ -131,6 +109,31 @@ public class BoundsInitializer {
             }
         }
         declaredType.typeArgs = Collections.unmodifiableList(typeArgs);
+    }
+
+    /**
+     * Returns a wildcard whose upper bound is the same as {@code typeVariable}. If the upper bound
+     * is an intersection, then this method returns an unbound wildcard.
+     */
+    private static WildcardType getUpperBoundAsWildcard(
+            TypeVariable typeVariable, AnnotatedTypeFactory factory) {
+        TypeMirror upperBound = typeVariable.getUpperBound();
+        switch (upperBound.getKind()) {
+            case ARRAY:
+            case DECLARED:
+            case TYPEVAR:
+                return factory.types.getWildcardType(upperBound, null);
+            case INTERSECTION:
+                // Can't create a wildcard with an intersection as the upper bound, so use
+                // an unbound wildcard instead.  The extends bound of the
+                // AnnotatedWildcardType will be initialized properly by this class.
+                return factory.types.getWildcardType(null, null);
+            default:
+                ErrorReporter.errorAbort(
+                        "Unexpected upper bound kind: %s type: %s",
+                        upperBound.getKind(), upperBound);
+                return null; // dead code
+        }
     }
 
     /**
@@ -483,7 +486,7 @@ public class BoundsInitializer {
             if (underlyingSuperBound == null) {
                 underlyingSuperBound =
                         TypesUtils.wildLowerBound(
-                                wildcard.atypeFactory.processingEnv, underlyingType);
+                                underlyingType, wildcard.atypeFactory.processingEnv);
             }
 
             final AnnotatedTypeMirror superBound =
@@ -512,7 +515,7 @@ public class BoundsInitializer {
                 // Otherwise use the upper bound of the java wildcard.
                 javaExtendsBound =
                         TypesUtils.wildUpperBound(
-                                wildcard.atypeFactory.processingEnv, javaWildcardType);
+                                javaWildcardType, wildcard.atypeFactory.processingEnv);
             }
 
             if (wildcard.isUninferredTypeArgument()) {
@@ -601,8 +604,7 @@ public class BoundsInitializer {
                 if (rawTypeWildcards.containsKey(typeVariable)) {
                     return rawTypeWildcards.get(typeVariable);
                 }
-                TypeMirror upperBound = typeVariable.getUpperBound();
-                WildcardType wildcard = type.atypeFactory.types.getWildcardType(upperBound, null);
+                WildcardType wildcard = getUpperBoundAsWildcard(typeVariable, type.atypeFactory);
                 rawTypeWildcards.put(typeVariable, wildcard);
                 return wildcard;
             } else {
@@ -778,9 +780,10 @@ public class BoundsInitializer {
         }
 
         public AnnotatedTypeMirror traverseToParent(
-                final AnnotatedTypeMirror start, final List<BoundPathNode> path) {
+                final AnnotatedTypeMirror start, final BoundPath path) {
             AnnotatedTypeMirror current = start;
             for (int i = 0; i < path.size() - 1; i++) {
+                // Note that the last element in path isn't inspected.
                 current = path.get(i).next(current);
             }
 
@@ -888,8 +891,8 @@ public class BoundsInitializer {
         }
     }
 
-    /** An array list of BoundPathNodes whose equals method is a referential equality check */
-    @SuppressWarnings("serial")
+    /** A linked list of BoundPathNodes whose equals method is a referential equality check */
+    @SuppressWarnings({"serial", "JdkObsolete"})
     private static class BoundPath extends LinkedList<BoundPathNode> {
 
         @Override

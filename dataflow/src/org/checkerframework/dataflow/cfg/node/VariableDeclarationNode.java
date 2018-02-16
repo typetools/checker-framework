@@ -4,7 +4,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a local variable declaration:
@@ -15,8 +15,6 @@ import org.checkerframework.javacutil.InternalUtils;
  *
  * Note: Does not have an initializer block, as that will be translated to a separate {@link
  * AssignmentNode}.
- *
- * @author Stefan Heule
  */
 public class VariableDeclarationNode extends Node {
 
@@ -26,7 +24,7 @@ public class VariableDeclarationNode extends Node {
     // TODO: make modifier accessible
 
     public VariableDeclarationNode(VariableTree t) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         tree = t;
         name = tree.getName().toString();
     }

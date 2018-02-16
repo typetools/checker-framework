@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -20,9 +19,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p><em>package</em>.class.object(...)
  *
  * <p>parent.<em>package</em>.class.object(...)
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class PackageNameNode extends Node {
 
@@ -34,14 +30,14 @@ public class PackageNameNode extends Node {
     protected final /*@Nullable*/ PackageNameNode parent;
 
     public PackageNameNode(IdentifierTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = null;
     }
 
     public PackageNameNode(MemberSelectTree tree, PackageNameNode parent) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = parent;

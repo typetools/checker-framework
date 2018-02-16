@@ -1,20 +1,25 @@
 package org.checkerframework.checker.guieffect;
 
-import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUIType;
 import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
@@ -24,7 +29,9 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Require that only UI code invokes code with the UI effect. */
@@ -33,8 +40,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     protected final boolean debugSpew;
 
     // effStack and currentMethods should always be the same size.
-    protected final Stack<Effect> effStack;
-    protected final Stack<MethodTree> currentMethods;
+    protected final ArrayDeque<Effect> effStack;
+    protected final ArrayDeque<MethodTree> currentMethods;
 
     public GuiEffectVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -42,8 +49,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         if (debugSpew) {
             System.err.println("Running GuiEffectVisitor");
         }
-        effStack = new Stack<Effect>();
-        currentMethods = new Stack<MethodTree>();
+        effStack = new ArrayDeque<Effect>();
+        currentMethods = new ArrayDeque<MethodTree>();
     }
 
     @Override
@@ -65,14 +72,104 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // TODO: Undo this hack!
     }
 
+    protected class GuiEffectOverrideChecker extends OverrideChecker {
+        /**
+         * Extend the receiver part of the method override check. We extend the standard check, to
+         * additionally permit narrowing the receiver's permission to {@code @AlwaysSafe} in a safe
+         * instantiation of a {@code @PolyUIType}. Returns true if the override is permitted.
+         */
+        @Override
+        protected boolean checkReceiverOverride() {
+            // We cannot reuse the inherited method because it directly issues the failure, but we
+            // want a more permissive check.  So this is copied down and modified from
+            // BaseTypeVisitor.OverrideChecker.checkReceiverOverride.
+            // isSubtype() requires its arguments to be actual subtypes with
+            // respect to JLS, but the overrider receiver is not a subtype of the
+            // overridden receiver.  Hence copying the annotations.
+            // TODO: Does this need to be improved for generic receivers?  I.e., do we need to
+            // add extra checking to reject the case of also changing qualifiers in type parameters?
+            // Such as overriding a {@code @PolyUI C<@UI T>} by {@code @AlwaysSafe C<@AlwaysSafe
+            // T>}?  The change to the receiver permission is acceptable, while the change to the
+            // parameter should be rejected.
+            AnnotatedTypeMirror overriddenReceiver =
+                    overrider.getReceiverType().getErased().shallowCopy(false);
+            overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
+            if (!atypeFactory
+                    .getTypeHierarchy()
+                    .isSubtype(overriddenReceiver, overrider.getReceiverType().getErased())) {
+                // This is the point at which the default check would issue an error.
+                // We additionally permit overrides to move from @PolyUI receivers to @AlwaysSafe
+                // receivers, if it's in a @AlwaysSafe specialization of a @PolyUIType
+                boolean safeParent = overriddenType.getAnnotation(AlwaysSafe.class) != null;
+                boolean polyParentDecl =
+                        atypeFactory.getDeclAnnotation(
+                                        overriddenType.getUnderlyingType().asElement(),
+                                        PolyUIType.class)
+                                != null;
+                // TODO: How much validation do I need here?  Do I need to check that the overridden
+                // receiver was really @PolyUI and the method is really an @PolyUIEffect?  I don't
+                // think so - we know it's a polymorphic parent type, so all receivers would be
+                // @PolyUI.
+                // Java would already reject before running type annotation processors if the Java
+                // types were wrong.
+                // The *only* extra leeway we want to permit is overriding @PolyUI receiver to
+                // @AlwaysSafe.  But with generics, the tentative check below is inadequate.
+                boolean safeReceiverOverride =
+                        overrider.getReceiverType().getAnnotation(AlwaysSafe.class) != null;
+                if (safeParent && polyParentDecl && safeReceiverOverride) {
+                    return true;
+                }
+                checker.report(
+                        Result.failure(
+                                "override.receiver.invalid",
+                                overriderMeth,
+                                overriderTyp,
+                                overriddenMeth,
+                                overriddenTyp,
+                                overrider.getReceiverType(),
+                                overridden.getReceiverType()),
+                        overriderTree);
+                return false;
+            }
+            return true;
+        }
+
+        public GuiEffectOverrideChecker(
+                Tree overriderTree,
+                AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+                AnnotatedTypeMirror overridingType,
+                AnnotatedTypeMirror overridingReturnType,
+                AnnotatedExecutableType overridden,
+                AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+                AnnotatedTypeMirror overriddenReturnType) {
+            super(
+                    overriderTree,
+                    overrider,
+                    overridingType,
+                    overridingReturnType,
+                    overridden,
+                    overriddenType,
+                    overriddenReturnType);
+        }
+    }
+
     @Override
-    protected boolean checkOverride(
-            MethodTree overriderTree,
-            AnnotatedTypeMirror.AnnotatedDeclaredType enclosingType,
-            AnnotatedTypeMirror.AnnotatedExecutableType overridden,
-            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType) {
-        // Method override validity is checked manually by the type factory during visitation
-        return true;
+    protected OverrideChecker createOverrideChecker(
+            Tree overriderTree,
+            AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror overridingType,
+            AnnotatedTypeMirror overridingReturnType,
+            AnnotatedExecutableType overridden,
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+            AnnotatedTypeMirror overriddenReturnType) {
+        return new GuiEffectOverrideChecker(
+                overriderTree,
+                overrider,
+                overridingType,
+                overridingReturnType,
+                overridden,
+                overriddenType,
+                overriddenReturnType);
     }
 
     @Override
@@ -110,6 +207,83 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         return ret;
     }
 
+    // For assignments and local variable initialization:
+    // Check for @UI annotations on the lhs, use them to infer @UI types on lambda expressions in the rhs
+    private void lambdaAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            LambdaExpressionTree lambdaExp,
+            @CompilerMessageKey String errorKey) {
+        AnnotatedTypeMirror lambdaType = atypeFactory.getAnnotatedType(lambdaExp);
+        assert lambdaType != null : "null type for expression: " + lambdaExp;
+        commonAssignmentCheck(varType, lambdaType, lambdaExp, errorKey);
+    }
+
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        Void result = super.visitVariable(node, p);
+        if (node.getInitializer() != null
+                && node.getInitializer().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            lambdaAssignmentCheck(
+                    atypeFactory.getAnnotatedType(node),
+                    (LambdaExpressionTree) node.getInitializer(),
+                    "assignment.type.incompatible");
+        }
+        return result;
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree node, Void p) {
+        Void result = super.visitAssignment(node, p);
+        if (node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            lambdaAssignmentCheck(
+                    atypeFactory.getAnnotatedType(node.getVariable()),
+                    (LambdaExpressionTree) node.getExpression(),
+                    "assignment.type.incompatible");
+        }
+        return result;
+    }
+
+    // Returning a lambda expression also triggers inference based on the method's return type.
+    @Override
+    public Void visitReturn(ReturnTree node, Void p) {
+        Void result = super.visitReturn(node, p);
+        if (node.getExpression() != null
+                && node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+
+            // Unfortunatelly, need to duplicate a fair bit of BaseTypeVisitor.visitReturn after lambdas have been
+            // inferred.
+            Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+            try {
+                Tree enclosing = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
+                AnnotatedTypeMirror ret = null;
+                if (enclosing.getKind() == Tree.Kind.METHOD) {
+                    MethodTree enclosingMethod = (MethodTree) enclosing;
+                    boolean valid = validateTypeOf(enclosing);
+                    if (valid) {
+                        ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
+                    }
+                } else {
+                    ret =
+                            atypeFactory
+                                    .getFnInterfaceFromTree((LambdaExpressionTree) enclosing)
+                                    .second
+                                    .getReturnType();
+                }
+
+                if (ret != null) {
+                    visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
+                    lambdaAssignmentCheck(
+                            ret,
+                            (LambdaExpressionTree) node.getExpression(),
+                            "return.type.incompatible");
+                }
+            } finally {
+                visitorState.setAssignmentContext(preAssCtxt);
+            }
+        }
+        return result;
+    }
+
     // Check that the invoked effect is <= permitted effect (effStack.peek())
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -123,7 +297,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             System.err.println("methodElt found");
         }
 
-        MethodTree callerTree = TreeUtils.enclosingMethod(getCurrentPath());
+        Tree callerTree = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
         if (callerTree == null) {
             // Static initializer; let's assume this is safe to have the UI effect
             if (debugSpew) {
@@ -132,41 +306,35 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             return super.visitMethodInvocation(node, p);
         }
         if (debugSpew) {
-            System.err.println("callerTree found");
+            System.err.println("callerTree found: " + callerTree.getKind());
         }
 
-        ExecutableElement callerElt = TreeUtils.elementFromDeclaration(callerTree);
-        if (debugSpew) {
-            System.err.println("callerElt found");
-        }
+        Effect targetEffect =
+                atypeFactory.getComputedEffectAtCallsite(
+                        node, visitorState.getMethodReceiver(), methodElt);
 
-        Effect targetEffect = atypeFactory.getDeclaredEffect(methodElt);
-        // System.err.println("Dispatching method "+node+"on "+node.getMethodSelect());
-        if (targetEffect.isPoly()) {
-            AnnotatedTypeMirror srcType = null;
-            assert (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER
-                    || node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT);
-            if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
-                ExpressionTree src = ((MemberSelectTree) node.getMethodSelect()).getExpression();
-                srcType = atypeFactory.getAnnotatedType(src);
-            } else {
-                // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
-                srcType = visitorState.getMethodReceiver();
+        Effect callerEffect = null;
+        if (callerTree.getKind() == Tree.Kind.METHOD) {
+            ExecutableElement callerElt = TreeUtils.elementFromDeclaration((MethodTree) callerTree);
+            if (debugSpew) {
+                System.err.println("callerElt found");
             }
 
-            // Instantiate type-polymorphic effects
-            if (srcType.hasAnnotation(AlwaysSafe.class)) {
-                targetEffect = new Effect(SafeEffect.class);
-            } else if (srcType.hasAnnotation(UI.class)) {
-                targetEffect = new Effect(UIEffect.class);
+            callerEffect = atypeFactory.getDeclaredEffect(callerElt);
+            // Field initializers inside anonymous inner classes show up with a null current-method ---
+            // the traversal goes straight from the class to the initializer.
+            assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
+        } else if (callerTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            callerEffect =
+                    atypeFactory.getInferedEffectForLambdaExpression(
+                            (LambdaExpressionTree) callerTree);
+            // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI lambda
+            if (targetEffect.isUI() && callerEffect.isPoly()) {
+                atypeFactory.constrainLambdaToUI((LambdaExpressionTree) callerTree);
+                callerEffect = new Effect(UIEffect.class);
             }
-            // Poly substitution would be a noop.
         }
-
-        Effect callerEffect = atypeFactory.getDeclaredEffect(callerElt);
-        // Field initializers inside anonymous inner classes show up with a null current-method ---
-        // the traversal goes straight from the class to the initializer.
-        assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
+        assert callerEffect != null;
 
         if (!Effect.LE(targetEffect, callerEffect)) {
             checker.report(Result.failure("call.invalid.ui", targetEffect, callerEffect), node);
@@ -179,7 +347,26 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     "Successfully finished main non-recursive checkinv of invocation " + node);
         }
 
-        return super.visitMethodInvocation(node, p);
+        Void result = super.visitMethodInvocation(node, p);
+
+        // Check arguments to this method invocation for UI-lambdas, this must be re-checked after visiting the lambda
+        // body due to inference.
+        List<? extends ExpressionTree> args = node.getArguments();
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
+                atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        List<AnnotatedTypeMirror> argsTypes =
+                AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
+        for (int i = 0; i < args.size(); ++i) {
+            if (args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                lambdaAssignmentCheck(
+                        argsTypes.get(i),
+                        (LambdaExpressionTree) args.get(i),
+                        "argument.type.incompatible");
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -245,46 +432,46 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         // We hang onto the current method here for ease.  We back up the old
         // current method because this code is reentrant when we traverse methods of an inner class
-        currentMethods.push(node);
+        currentMethods.addFirst(node);
         // effStack.push(targetSafeP != null ? new Effect(AlwaysSafe.class) :
         //                (targetPolyP != null ? new Effect(PolyUI.class) :
         //                   (targetUIP != null ? new Effect(UI.class) :
         //                      (range != null ? range.min :
         // (isUIType(((TypeElement)methElt.getEnclosingElement())) ? new Effect(UI.class) : new
         // Effect(AlwaysSafe.class))))));
-        effStack.push(atypeFactory.getDeclaredEffect(methElt));
+        effStack.addFirst(atypeFactory.getDeclaredEffect(methElt));
         if (debugSpew) {
             System.err.println(
                     "Pushing " + effStack.peek() + " onto the stack when checking " + methElt);
         }
 
         Void ret = super.visitMethod(node, p);
-        currentMethods.pop();
-        effStack.pop();
+        currentMethods.removeFirst();
+        effStack.removeFirst();
         return ret;
     }
 
-    @Override
-    public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        // TODO: Same effect checks as for methods
-        return super.visitMemberSelect(node, p);
-    }
+    // @Override
+    // public Void visitMemberSelect(MemberSelectTree node, Void p) {
+    // TODO: Same effect checks as for methods
+    // return super.visitMemberSelect(node, p);
+    // }
 
-    @Override
-    public void processClassTree(ClassTree node) {
-        // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
-        // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the
-        // TypeFactory
-        // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
+    // @Override
+    // public void processClassTree(ClassTree node) {
+    // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
+    // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the
+    // TypeFactory
+    // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
 
-        // Push a null method and UI effect onto the stack for static field initialization
-        // TODO: Figure out if this is safe! For static data, almost certainly,
-        // but for statically initialized instance fields, I'm assuming those
-        // are implicitly moved into each constructor, which must then be @UI
-        currentMethods.push(null);
-        effStack.push(new Effect(UIEffect.class));
-        super.processClassTree(node);
-        currentMethods.pop();
-        effStack.pop();
-    }
+    // Push a null method and UI effect onto the stack for static field initialization
+    // TODO: Figure out if this is safe! For static data, almost certainly,
+    // but for statically initialized instance fields, I'm assuming those
+    // are implicitly moved into each constructor, which must then be @UI
+    // currentMethods.addFirst(null);
+    // effStack.addFirst(new Effect(UIEffect.class));
+    // super.processClassTree(node);
+    // currentMethods.removeFirst();
+    // effStack.removeFirst();
+    // }
 }

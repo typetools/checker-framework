@@ -74,7 +74,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -89,9 +88,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * propagation, CFAbstractTransfer delegates work to it instead of duplicating some logic in
  * CFAbstractTransfer. The checker-specific subclasses of CFAbstractTransfer do implement transfer
  * function logic themselves.
- *
- * @author Charlie Garrett
- * @author Stefan Heule
  */
 public abstract class CFAbstractTransfer<
                 V extends CFAbstractValue<V>,
@@ -326,7 +322,7 @@ public abstract class CFAbstractTransfer<
             Element enclosingElement = null;
             if (enclosingTree.getKind() == Tree.Kind.METHOD) {
                 // If it is in an initializer, we need to use locals from the initializer.
-                enclosingElement = InternalUtils.symbol(enclosingTree);
+                enclosingElement = TreeUtils.elementFromTree(enclosingTree);
 
             } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -338,7 +334,7 @@ public abstract class CFAbstractTransfer<
                 TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
                 Element anEnclosingElement = null;
                 while (loopTree.getLeaf() != enclosingTree) {
-                    Element sym = InternalUtils.symbol(loopTree.getLeaf());
+                    Element sym = TreeUtils.elementFromTree(loopTree.getLeaf());
                     if (sym != null) {
                         anEnclosingElement = sym;
                         break;
@@ -346,7 +342,7 @@ public abstract class CFAbstractTransfer<
                     loopTree = loopTree.getParentPath();
                 }
                 while (anEnclosingElement != null
-                        && !anEnclosingElement.equals(InternalUtils.symbol(enclosingTree))) {
+                        && !anEnclosingElement.equals(TreeUtils.elementFromTree(enclosingTree))) {
                     if (anEnclosingElement.getKind() == ElementKind.INSTANCE_INIT
                             || anEnclosingElement.getKind() == ElementKind.STATIC_INIT) {
                         enclosingElement = anEnclosingElement;
@@ -379,7 +375,7 @@ public abstract class CFAbstractTransfer<
 
         // Add knowledge about final fields, or values of non-final fields
         // if we are inside a constructor (information about initializers)
-        TypeMirror classType = InternalUtils.typeOf(classTree);
+        TypeMirror classType = TreeUtils.typeOf(classTree);
         List<Pair<VariableElement, V>> fieldValues = analysis.getFieldValues();
         for (Pair<VariableElement, V> p : fieldValues) {
             VariableElement element = p.first;
@@ -519,6 +515,10 @@ public abstract class CFAbstractTransfer<
                                 methodTree, method.getClassTree(), analysis.checker.getContext());
             }
 
+            TreePath localScope = analysis.atypeFactory.getPath(methodTree);
+
+            annotation = standardizeAnnotationFromContract(annotation, flowExprContext, localScope);
+
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
@@ -526,14 +526,27 @@ public abstract class CFAbstractTransfer<
                 // (same for other annotations)
                 FlowExpressions.Receiver expr =
                         FlowExpressionParseUtil.parse(
-                                expression,
-                                flowExprContext,
-                                analysis.atypeFactory.getPath(methodTree),
-                                false);
+                                expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
             }
+        }
+    }
+
+    /** Standardize a type qualifier annotation obtained from a contract. */
+    private AnnotationMirror standardizeAnnotationFromContract(
+            AnnotationMirror annoFromContract,
+            FlowExpressionContext flowExprContext,
+            TreePath path) {
+        // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
+        if (analysis.dependentTypesHelper != null) {
+            return analysis.dependentTypesHelper.standardizeAnnotation(
+                    flowExprContext, path, annoFromContract, false);
+            // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
+            // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
+        } else {
+            return annoFromContract;
         }
     }
 
@@ -808,7 +821,7 @@ public abstract class CFAbstractTransfer<
         if (shouldPerformWholeProgramInference(n.getTree())) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
-            ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
+            ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
             // Updates the inferred return type of the method
             analysis.atypeFactory
                     .getWholeProgramInference()
@@ -944,7 +957,7 @@ public abstract class CFAbstractTransfer<
         if (!shouldPerformWholeProgramInference(expressionTree)) {
             return false;
         }
-        Element elt = InternalUtils.symbol(lhsTree);
+        Element elt = TreeUtils.elementFromTree(lhsTree);
         return !analysis.checker.shouldSuppressWarnings(elt, null);
     }
 
@@ -1003,13 +1016,14 @@ public abstract class CFAbstractTransfer<
                                 n, analysis.checker.getContext());
             }
 
+            TreePath localScope = analysis.atypeFactory.getPath(tree);
+
+            anno = standardizeAnnotationFromContract(anno, flowExprContext, localScope);
+
             try {
                 FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
-                                expression,
-                                flowExprContext,
-                                analysis.atypeFactory.getPath(tree),
-                                false);
+                                expression, flowExprContext, localScope, false);
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
                         thenStore.insertValue(r, anno);

@@ -5,9 +5,13 @@
 # Invoke it like this:
 #   count-suppressions nullness
 
-# If warning suppression text contains a colon, it prints only the text
-# before the colon, under the assumption that the initial text is a
-# category name.
+# If warning suppression text contains a colon, this script prints only
+# the text before the colon, under the assumption that the initial text
+# is a category name.
+
+# You can use this to determine the most frequent reasons for warning
+# suppressions.  However, use common.util.count.AnnotationStatistics (not
+# this script) to count the total number of warning suppressions.
 
 debug=0
 
@@ -23,7 +27,7 @@ if [ "$regex" = "nullness" ]; then
     regex="\(nullness\|initialization\|rawness\|keyfor\)"
 fi
 if [ "$regex" = "index" ]; then
-    regex="\(index\|lowerbound\|upperbound\)"
+    regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
 fi
 
 # Implementation notes:
@@ -38,8 +42,9 @@ echo "regex=${regex}"
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
 # This grep command captures a few stray lines; users should ignore them.
 grep -n --recursive --include='*.java' "\"${regex}[:\"]\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
-echo -n "Total: "
-cat ${greplines} | wc -l
+## Don't output a total, to avoid people using this approximate count.
+# echo -n "Total: "
+# cat ${greplines} | wc -l
 cat ${greplines} \
     | sed 's/.*\/\/ //g' \
     | sed "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \

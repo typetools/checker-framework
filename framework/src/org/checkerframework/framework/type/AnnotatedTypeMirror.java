@@ -10,9 +10,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -883,7 +881,6 @@ public abstract class AnnotatedTypeMirror {
                 // Copy annotations from the declaration to the wildcards.
                 AnnotatedDeclaredType declaration =
                         atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
-                Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
                 for (int i = 0; i < typeArgs.size(); i++) {
                     AnnotatedTypeVariable typeParam =
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);

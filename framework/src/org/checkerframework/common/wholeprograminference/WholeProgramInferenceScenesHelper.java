@@ -1,15 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import annotations.Annotation;
-import annotations.el.AClass;
-import annotations.el.AField;
-import annotations.el.AMethod;
-import annotations.el.AScene;
-import annotations.el.ATypeElement;
-import annotations.el.DefException;
-import annotations.el.InnerTypeLocation;
-import annotations.io.IndexFileParser;
-import annotations.io.IndexFileWriter;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.FileWriter;
@@ -38,14 +28,24 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import scenelib.annotations.Annotation;
+import scenelib.annotations.el.AClass;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.AScene;
+import scenelib.annotations.el.ATypeElement;
+import scenelib.annotations.el.DefException;
+import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.io.IndexFileParser;
+import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * This class stores annotations for fields, method return types, and method parameters.
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
- * annotations.el.AScene}, which {@link #writeScenesToJaif} can write into a .jaif file. For
- * example, a class field of a class whose fully-qualified name is {@code my.package.MyClass} will
- * have its inferred type stored in a Scene, and later written into a file named {@code
+ * scenelib.annotations.el.AScene}, which {@link #writeScenesToJaif} can write into a .jaif file.
+ * For example, a class field of a class whose fully-qualified name is {@code my.package.MyClass}
+ * will have its inferred type stored in a Scene, and later written into a file named {@code
  * my.package.MyClass.jaif}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
@@ -377,10 +377,10 @@ public class WholeProgramInferenceScenesHelper {
         // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator.
         ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
         if (implicitFor != null) {
-            TypeKind[] types = implicitFor.types();
+            org.checkerframework.framework.qual.TypeKind[] types = implicitFor.types();
             TypeKind atmKind = atm.getUnderlyingType().getKind();
-            for (TypeKind tk : types) {
-                if (tk == atmKind) return true;
+            if (hasMatchingTypeKind(atmKind, types)) {
+                return true;
             }
 
             try {
@@ -403,6 +403,17 @@ public class WholeProgramInferenceScenesHelper {
         return false;
     }
 
+    /** Returns true, iff a matching TypeKind is found. */
+    private boolean hasMatchingTypeKind(
+            TypeKind atmKind, org.checkerframework.framework.qual.TypeKind[] types) {
+        for (org.checkerframework.framework.qual.TypeKind tk : types) {
+            if (tk.name().equals(atmKind.name())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Returns a subset of annosSet, consisting of the annotations supported by atf. */
     private Set<Annotation> getSupportedAnnosInSet(
             Set<Annotation> annosSet, AnnotatedTypeFactory atf) {
@@ -422,10 +433,10 @@ public class WholeProgramInferenceScenesHelper {
 
     /**
      * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} to contain the
-     * {@link annotations.Annotation}s of an {@link annotations.el.ATypeElement}.
+     * {@link scenelib.annotations.Annotation}s of an {@link scenelib.annotations.el.ATypeElement}.
      *
      * @param atm the AnnotatedTypeMirror to be modified
-     * @param type the {@link annotations.el.ATypeElement}
+     * @param type the {@link scenelib.annotations.el.ATypeElement}
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      */
@@ -452,7 +463,7 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Updates an {@link annotations.el.ATypeElement} to have the annotations of an {@link
+     * Updates an {@link scenelib.annotations.el.ATypeElement} to have the annotations of an {@link
      * org.checkerframework.framework.type.AnnotatedTypeMirror} passed as argument. Annotations in
      * the original set that should be ignored (see {@link #shouldIgnore}) are not added to the
      * resulting set. This method also checks if the AnnotatedTypeMirror has explicit annotations in

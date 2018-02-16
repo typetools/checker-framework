@@ -1,9 +1,9 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a binary expression.
@@ -13,8 +13,6 @@ import org.checkerframework.javacutil.InternalUtils;
  * <pre>
  *   <em>lefOperandNode</em> <em>operator</em> <em>rightOperandNode</em>
  * </pre>
- *
- * @author charleszhuochen
  */
 public abstract class BinaryOperationNode extends Node {
 
@@ -23,7 +21,7 @@ public abstract class BinaryOperationNode extends Node {
     protected final Node right;
 
     public BinaryOperationNode(BinaryTree tree, Node left, Node right) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.left = left;
         this.right = right;
@@ -44,7 +42,7 @@ public abstract class BinaryOperationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(2);
         list.add(getLeftOperand());
         list.add(getRightOperand());
         return list;

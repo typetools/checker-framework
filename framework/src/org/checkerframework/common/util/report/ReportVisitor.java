@@ -14,6 +14,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.lang.annotation.Annotation;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,25 +44,31 @@ import org.checkerframework.javacutil.TreeUtils;
 
 public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
-    /** The tree kinds that should be reported. */
-    private final String[] treeKinds;
+    /** The tree kinds that should be reported; may be null. */
+    private final EnumSet<Tree.Kind> treeKinds;
 
-    /** The modifiers that should be reported. */
-    private final String[] modifiers;
+    /** The modifiers that should be reported; may be null. */
+    private final EnumSet<Modifier> modifiers;
 
     public ReportVisitor(BaseTypeChecker checker) {
         super(checker);
 
         if (checker.hasOption("reportTreeKinds")) {
             String trees = checker.getOption("reportTreeKinds");
-            treeKinds = trees.split(",");
+            treeKinds = EnumSet.noneOf(Tree.Kind.class);
+            for (String treeKind : trees.split(",")) {
+                treeKinds.add(Tree.Kind.valueOf(treeKind.toUpperCase()));
+            }
         } else {
             treeKinds = null;
         }
 
         if (checker.hasOption("reportModifiers")) {
             String mods = checker.getOption("reportModifiers");
-            modifiers = mods.split(",");
+            modifiers = EnumSet.noneOf(Modifier.class);
+            for (String modifier : mods.split(",")) {
+                modifiers.add(Modifier.valueOf(modifier.toUpperCase()));
+            }
         } else {
             modifiers = null;
         }
@@ -88,12 +95,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     @SuppressWarnings("CompilerMessages") // These warnings are not translated.
     @Override
     public Void scan(Tree tree, Void p) {
-        if (tree != null && treeKinds != null) {
-            for (String tk : treeKinds) {
-                if (tree.getKind().toString().equals(tk)) {
-                    checker.report(Result.failure("Tree.Kind." + tk), tree);
-                }
-            }
+        if ((tree != null) && (treeKinds != null) && treeKinds.contains(tree.getKind())) {
+            checker.report(Result.failure("Tree.Kind." + tree.getKind()), tree);
         }
         return super.scan(tree, p);
     }
@@ -122,7 +125,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
                 break;
             } else {
                 if (loop.getKind() == ElementKind.PACKAGE) {
-                    loop = ElementUtils.parentPackage(elements, (PackageElement) loop);
+                    loop = ElementUtils.parentPackage((PackageElement) loop, elements);
                     continue;
                 }
             }
@@ -147,7 +150,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         // this.atypeFactory.getDeclAnnotation(member, ReportInherit.class) != null;
 
         // Check whether any superclass/interface had the ReportInherit annotation.
-        List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, member);
+        List<TypeElement> suptypes = ElementUtils.getSuperTypes(member, elements);
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
@@ -272,7 +275,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
         if (!report) {
             // Check whether any superclass/interface had the ReportCreation annotation.
-            List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, (TypeElement) member);
+            List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement) member, elements);
             for (TypeElement sup : suptypes) {
                 report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
                 if (report) {
@@ -312,11 +315,9 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     @Override
     public Void visitModifiers(ModifiersTree node, Void p) {
         if (node != null && modifiers != null) {
-            for (Modifier hasmod : node.getFlags()) {
-                for (String searchmod : modifiers) {
-                    if (hasmod.toString().equals(searchmod)) {
-                        checker.report(Result.failure("Modifier." + hasmod), node);
-                    }
+            for (Modifier mod : node.getFlags()) {
+                if (modifiers.contains(mod)) {
+                    checker.report(Result.failure("Modifier." + mod), node);
                 }
             }
         }

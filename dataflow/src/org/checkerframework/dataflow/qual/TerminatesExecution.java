@@ -26,7 +26,6 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #type-refinement Automatic type refinement (flow-sensitive type
  *     qualifier inference)
- * @author Stefan Heule
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

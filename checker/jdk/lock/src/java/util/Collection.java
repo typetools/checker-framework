@@ -18,13 +18,13 @@ public interface Collection<E extends Object> extends Iterable<E> {
   // in the surface syntax that the nullness annotations support.
   Object [] toArray();
   <T extends Object> T [] toArray(T [] a1);
-  boolean add(E a1);
-  boolean remove(Object a1);
+  boolean add(@GuardSatisfied Collection<E> this, E a1);
+  boolean remove(@GuardSatisfied Collection<E> this, Object a1);
    public abstract boolean containsAll(@GuardSatisfied Collection<E> this, @GuardSatisfied Collection<?> a1);
-  boolean addAll(Collection<? extends E> a1);
-  boolean removeAll(Collection<?> a1);
-  boolean retainAll(Collection<?> a1);
-  void clear();
+  boolean addAll(@GuardSatisfied Collection<E> this, Collection<? extends E> a1);
+  boolean removeAll(@GuardSatisfied Collection<E> this, Collection<?> a1);
+  boolean retainAll(@GuardSatisfied Collection<E> this, Collection<?> a1);
+  void clear(@GuardSatisfied Collection<E> this);
   @Override
    public abstract boolean equals(@GuardSatisfied Collection<E> this, @GuardSatisfied Object a1);
   @Override

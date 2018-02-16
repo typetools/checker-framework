@@ -13,7 +13,6 @@ import java.lang.annotation.Target;
  * must hold after the method's execution are indicated by {@code expression} and are specified
  * using a string. The qualifier is specified by {@code qualifier}.
  *
- * @author Stefan Heule
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented

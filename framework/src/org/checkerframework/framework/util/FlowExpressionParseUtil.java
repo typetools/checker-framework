@@ -52,7 +52,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
@@ -62,8 +61,6 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 /**
  * A collection of helper methods to parse a string that represents a restricted Java expression.
  * Such expressions can be found in annotations (e.g., to specify a pre- or postcondition).
- *
- * @author Stefan Heule
  */
 public class FlowExpressionParseUtil {
 
@@ -600,8 +597,8 @@ public class FlowExpressionParseUtil {
                         s, "a non-static method call cannot have a class name as a receiver.");
             }
             TypeMirror methodType =
-                    InternalUtils.substituteMethodReturnType(
-                            env, methodElement, context.receiver.getType());
+                    TypesUtils.substituteMethodReturnType(
+                            methodElement, context.receiver.getType(), env);
             return new MethodCall(methodType, methodElement, context.receiver, parameters);
         }
     }
@@ -875,8 +872,6 @@ public class FlowExpressionParseUtil {
     /**
      * A very simple parser for parameter lists, i.e. strings of the form {@code a, b, c} for some
      * expressions {@code a}, {@code b} and {@code c}.
-     *
-     * @author Stefan Heule
      */
     private static class ParameterListParser {
 
@@ -1090,7 +1085,7 @@ public class FlowExpressionParseUtil {
         public static FlowExpressionContext buildContextForMethodDeclaration(
                 MethodTree methodDeclaration, Tree enclosingTree, BaseContext checkerContext) {
             return buildContextForMethodDeclaration(
-                    methodDeclaration, InternalUtils.typeOf(enclosingTree), checkerContext);
+                    methodDeclaration, TreeUtils.typeOf(enclosingTree), checkerContext);
         }
 
         /**
@@ -1134,7 +1129,7 @@ public class FlowExpressionParseUtil {
 
         public static FlowExpressionContext buildContextForLambda(
                 LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
-            TypeMirror enclosingType = InternalUtils.typeOf(TreeUtils.enclosingClass(path));
+            TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(path));
             Node receiver = new ImplicitThisLiteralNode(enclosingType);
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(
@@ -1174,7 +1169,7 @@ public class FlowExpressionParseUtil {
          */
         public static FlowExpressionContext buildContextForClassDeclaration(
                 ClassTree classTree, BaseContext checkerContext) {
-            Node receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(classTree));
+            Node receiver = new ImplicitThisLiteralNode(TreeUtils.typeOf(classTree));
 
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(

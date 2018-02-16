@@ -20,18 +20,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.processing.AbstractProcessor;
@@ -59,7 +58,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorHandler;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -530,17 +528,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         this.messages = new Properties();
-        Stack<Class<?>> checkers = new Stack<Class<?>>();
+        ArrayDeque<Class<?>> checkers = new ArrayDeque<Class<?>>();
 
         Class<?> currClass = this.getClass();
         while (currClass != SourceChecker.class) {
-            checkers.push(currClass);
+            checkers.addFirst(currClass);
             currClass = currClass.getSuperclass();
         }
-        checkers.push(SourceChecker.class);
+        checkers.addFirst(SourceChecker.class);
 
-        while (!checkers.empty()) {
-            messages.putAll(getProperties(checkers.pop(), MSGS_FILE));
+        while (!checkers.isEmpty()) {
+            messages.putAll(getProperties(checkers.removeFirst(), MSGS_FILE));
         }
         return this.messages;
     }
@@ -957,7 +955,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (hasOption("filenames")) {
                 message(
                         Kind.NOTE,
-                        "Checker: %s is Type-checking: %s",
+                        "Checker: %s is type-checking: %s",
                         (Object) this.getClass().getSimpleName(),
                         currentRoot.getSourceFile().getName());
             }
@@ -1351,13 +1349,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
-        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), errKey)) {
+        if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
             return true;
         }
 
         /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null) {
-            /*@Nullable*/ Element elt = InternalUtils.symbol(method);
+            /*@Nullable*/ Element elt = TreeUtils.elementFromTree(method);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
@@ -1373,7 +1371,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null) {
-            /*@Nullable*/ Element elt = InternalUtils.symbol(cls);
+            /*@Nullable*/ Element elt = TreeUtils.elementFromTree(cls);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
@@ -1790,7 +1788,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // {@link org.checkerframework.framework.source.SupportedOptions}
         // we additionally add
         Class<?> clazz = this.getClass();
-        List<Class<?>> clazzPrefixes = new LinkedList<>();
+        List<Class<?>> clazzPrefixes = new ArrayList<>();
 
         do {
             clazzPrefixes.add(clazz);
@@ -1920,10 +1918,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * checker.skipUses} property. In contrast to {@link #shouldSkipUses(Element)} this version can
      * also be used from primitive types, which don't have an element.
      *
+     * <p>Checkers that require their annotations not to be checked on certain JDK classes may
+     * override this method to skip them. They shall call {@code super.shouldSkipUses(typerName)} to
+     * also skip the classes matching the pattern.
+     *
      * @param typeName the fully-qualified name of a type
      * @return true iff the enclosing class of element should be skipped
      */
-    public final boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(String typeName) {
         // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
         //                   element,
         //                   name,
@@ -1954,7 +1956,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return true if checker should not test node
      */
     public final boolean shouldSkipDefs(ClassTree node) {
-        String qualifiedName = InternalUtils.typeOf(node).toString();
+        String qualifiedName = TreeUtils.typeOf(node).toString();
         // System.out.printf("shouldSkipDefs(%s) %s%nskipDefs %s%nonlyDefs %s%nresult %s%n%n",
         //                   node,
         //                   qualifiedName,

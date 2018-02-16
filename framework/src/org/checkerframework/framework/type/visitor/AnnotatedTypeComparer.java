@@ -112,7 +112,6 @@ public abstract class AnnotatedTypeComparer<R>
 
     @Override
     public R visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedTypeVariable : p;
         R r;
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
@@ -129,7 +128,7 @@ public abstract class AnnotatedTypeComparer<R>
         } else {
             r = scan(type.getLowerBound(), p.getErased());
             visitedNodes.put(type, r);
-            r = scanAndReduce(type.getUpperBound(), p, r);
+            r = scanAndReduce(type.getUpperBound(), p.getErased(), r);
             visitedNodes.put(type, r);
         }
         return r;

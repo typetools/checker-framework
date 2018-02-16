@@ -12,20 +12,25 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -93,12 +98,15 @@ public class AnnotationUtils {
             return false;
         }
 
-        Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
-                getElementValuesWithDefaults(a1);
-        Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
-                getElementValuesWithDefaults(a2);
+        // This commented implementation is less efficient.  It is also wrong:  it requires a
+        // particular order for fields, and it distinguishes the long constants "33" and "33L".
+        // Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
+        //         getElementValuesWithDefaults(a1);
+        // Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
+        //         getElementValuesWithDefaults(a2);
+        // return elval1.toString().equals(elval2.toString());
 
-        return elval1.toString().equals(elval2.toString());
+        return sameElementValues(a1, a2);
     }
 
     /**
@@ -347,6 +355,63 @@ public class AnnotationUtils {
         return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
     }
 
+    /**
+     * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
+     */
+    public static EnumSet<ElementKind> getElementKindsForTarget(/*@Nullable*/ Target target) {
+        if (target == null) {
+            // A missing @Target implies that the annotation can be written everywhere.
+            return EnumSet.allOf(ElementKind.class);
+        }
+        EnumSet<ElementKind> eleKinds = EnumSet.noneOf(ElementKind.class);
+        for (ElementType elementType : target.value()) {
+            eleKinds.addAll(getElementKindsForElementType(elementType));
+        }
+        return eleKinds;
+    }
+
+    /**
+     * Returns the set of {@link ElementKind}s corresponding to {@code elementType}. If the element
+     * type is TYPE_USE, then ElementKinds returned should be the same as those returned for TYPE
+     * and TYPE_PARAMETER, but this method returns the empty set instead.
+     *
+     * @return the set of {@link ElementKind}s corresponding to {@code elementType}
+     */
+    public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
+        switch (elementType) {
+            case TYPE:
+                return EnumSet.of(
+                        ElementKind.CLASS,
+                        ElementKind.INTERFACE,
+                        ElementKind.ANNOTATION_TYPE,
+                        ElementKind.ENUM);
+            case FIELD:
+                return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
+            case METHOD:
+                return EnumSet.of(ElementKind.METHOD);
+            case PARAMETER:
+                return EnumSet.of(ElementKind.PARAMETER);
+            case CONSTRUCTOR:
+                return EnumSet.of(ElementKind.CONSTRUCTOR);
+            case LOCAL_VARIABLE:
+                return EnumSet.of(
+                        ElementKind.LOCAL_VARIABLE,
+                        ElementKind.RESOURCE_VARIABLE,
+                        ElementKind.EXCEPTION_PARAMETER);
+            case ANNOTATION_TYPE:
+                return EnumSet.of(ElementKind.ANNOTATION_TYPE);
+            case PACKAGE:
+                return EnumSet.of(ElementKind.PACKAGE);
+            case TYPE_PARAMETER:
+                return EnumSet.of(ElementKind.TYPE_PARAMETER);
+            case TYPE_USE:
+                return EnumSet.noneOf(ElementKind.class);
+            default:
+                ErrorReporter.errorAbort("New ElementType: %s", elementType);
+                return EnumSet.noneOf(ElementKind.class);
+        }
+    }
+
     // **********************************************************************
     // Extractors for annotation values
     // **********************************************************************
@@ -376,6 +441,87 @@ public class AnnotationUtils {
             }
         }
         return valMap;
+    }
+
+    /**
+     * Returns true if the two annotations have the same elements (fields). The arguments {@code
+     * am1} and {@code am2} must be the same type of annotation.
+     */
+    public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
+        for (ExecutableElement meth :
+                ElementFilter.methodsIn(
+                        am1.getAnnotationType().asElement().getEnclosedElements())) {
+            AnnotationValue aval1 = vals1.get(meth);
+            AnnotationValue aval2 = vals2.get(meth);
+            if (aval1 == null) {
+                aval1 = meth.getDefaultValue();
+            }
+            if (aval2 == null) {
+                aval2 = meth.getDefaultValue();
+            }
+            if (!sameAnnotationValue(aval1, aval2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Return true iff the two AnnotationValue objects are the same. Use this instead of
+     * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the receiver is some
+     * AnnotationValue other than CheckerFrameworkAnnotationValue.
+     */
+    public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
+        if (av1 == av2) {
+            return true;
+        }
+        if (av1 == null || av2 == null) {
+            return false;
+        }
+        return sameAnnotationValueValue(av1.getValue(), av2.getValue());
+    }
+
+    /**
+     * Return true if the two annotation values are the same. The arguments to this method are
+     * values that are returned by {@code AnnotationValue.getValue()}.
+     */
+    private static boolean sameAnnotationValueValue(Object val1, Object val2) {
+        if (val1 == val2) {
+            return true;
+        }
+
+        // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
+        // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
+        // equals().  So, write my own version of deepEquals().
+        if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
+            List<?> list1 = (List<?>) val1;
+            List<?> list2 = (List<?>) val2;
+            if (list1.size() != list2.size()) {
+                return false;
+            }
+            // Don't compare setwise, because order can matter. These mean different things:
+            //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
+            //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
+            for (int i = 0; i < list1.size(); i++) {
+                if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
+            return areSame((AnnotationMirror) val1, (AnnotationMirror) val2);
+        } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
+            // This case occurs because of the recursive call when comparing arrays of
+            // annotation values.
+            return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
+        } else if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
+            // Type.ClassType does not override equals
+            return TypesUtils.areSameDeclaredTypes((Type.ClassType) val1, (Type.ClassType) val2);
+        } else {
+            return Objects.equals(val1, val2);
+        }
     }
 
     /**
@@ -562,7 +708,7 @@ public class AnnotationUtils {
         ModifiersTree modifiersTree = constructorDeclaration.getModifiers();
         if (modifiersTree != null) {
             List<? extends AnnotationTree> annotationTrees = modifiersTree.getAnnotations();
-            annotationSet.addAll(InternalUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
+            annotationSet.addAll(TreeUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
         }
         return annotationSet;
     }

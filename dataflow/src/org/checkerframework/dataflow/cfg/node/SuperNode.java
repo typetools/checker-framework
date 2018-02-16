@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a reference to 'super'.
@@ -13,16 +13,13 @@ import org.checkerframework.javacutil.InternalUtils;
  * <pre>
  *   <em>super</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class SuperNode extends Node {
 
     protected final Tree tree;
 
     public SuperNode(Tree t) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         assert t instanceof IdentifierTree && ((IdentifierTree) t).getName().contentEquals("super");
         tree = t;
     }

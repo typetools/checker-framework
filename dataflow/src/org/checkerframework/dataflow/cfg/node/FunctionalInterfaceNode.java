@@ -4,9 +4,9 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Collections;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for member references and lambdas.
@@ -25,20 +25,18 @@ import org.checkerframework.javacutil.InternalUtils;
  * <pre>
  *   <em>FunctionalInterface func = member reference</em>
  * </pre>
- *
- * @author David
  */
 public class FunctionalInterfaceNode extends Node {
 
     protected final Tree tree;
 
     public FunctionalInterfaceNode(MemberReferenceTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
     }
 
     public FunctionalInterfaceNode(LambdaExpressionTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
     }
 
@@ -84,7 +82,6 @@ public class FunctionalInterfaceNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
-        return list;
+        return Collections.emptyList();
     }
 }

@@ -9,8 +9,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
  * 1 and 10, inclusive. Ranges are immutable.
- *
- * @author JasonMrX
  */
 public class Range {
 
@@ -283,8 +281,8 @@ public class Range {
 
     /**
      * Returns the smallest range that includes all possible values resulting from adding an
-     * arbitrary value in the specified range to an arbitrary value in this range. We call this We
-     * call this the addition of two ranges.
+     * arbitrary value in the specified range to an arbitrary value in this range. We call this the
+     * addition of two ranges.
      *
      * @param right a range to be added to this range
      * @return the range resulting from the addition of the specified range and this range
@@ -298,7 +296,11 @@ public class Range {
             // This bound is adequate to guarantee no overflow when using long to evaluate
             long resultFrom = from + right.from;
             long resultTo = to + right.to;
-            return new Range(resultFrom, resultTo);
+            if (from > to) {
+                return Range.EVERYTHING;
+            } else {
+                return new Range(resultFrom, resultTo);
+            }
         } else {
             BigInteger bigFrom = BigInteger.valueOf(from).add(BigInteger.valueOf(right.from));
             BigInteger bigTo = BigInteger.valueOf(to).add(BigInteger.valueOf(right.to));
@@ -591,8 +593,16 @@ public class Range {
         }
     }
 
-    /** We give up the analysis for unsigned shift right operation */
+    /**
+     * When this range only contains non-negative values, the refined result should be the same as
+     * {@link #signedShiftRight(Range)}. We give up the analysis when this range contains negative
+     * value(s).
+     */
     public Range unsignedShiftRight(Range right) {
+        if (this.from >= 0) {
+            return signedShiftRight(right);
+        }
+
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
         }

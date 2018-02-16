@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -41,6 +42,7 @@ class NegativeArraySizeException extends RuntimeException {
      * Constructs a <code>NegativeArraySizeException</code> with no
      * detail message.
      */
+    @SideEffectFree
     public NegativeArraySizeException() {
         super();
     }
@@ -51,6 +53,7 @@ class NegativeArraySizeException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public NegativeArraySizeException(@Nullable String s) {
         super(s);
     }

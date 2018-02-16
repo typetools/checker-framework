@@ -117,6 +117,22 @@ The process takes around 3 hours (including manual steps) when all goes accordin
        </li>
        <li>One week before Feature Freeze:
          <ul>
+          <li>Update projects from upstream.  For example:
+<pre>
+# Don't do this.  Instead, follow the instructions in section
+# "Updating from upstream JavaParser" of file $t/stubparser/readme.md
+# (cd $t/stubparser && git pull https://github.com/javaparser/javaparser.git)
+
+(cd $t/libraries/commons-bcel && git pull https://github.com/codespecs/commons-bcel.git)
+(cd $t/libraries/commons-io && git pull https://github.com/apache/commons-io.git)
+(cd $t/libraries/guava && git pull https://github.com/google/guava)
+(cd $t/libraries/java-getopt && git pull https://github.com/arenn/java-getopt.git)
+(cd $t/libraries/junit5 && git pull https://github.com/junit-team/junit5.git)
+</pre>
+             Resolve any conflicts, ensure the projects build, push the changes to a branch, and then merge into the typetools repositories.
+           </li>
+         </ul>
+         <ul>
           <li>Remind bug owners of their bugs outstanding.</li>
          </ul>
        </li>
@@ -339,7 +355,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <li>guava-typecheck: <img src="https://travis-ci.org/typetests/guava-typecheck.svg?branch=master" alt="Travis typetests/guava-typecheck status"/></li>
     <li>plume-lib: <img src="https://travis-ci.org/mernst/plume-lib.svg?branch=master" alt="Travis mernst/plume-lib status"/></li>
     <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetests/plume-lib-typecheck.svg?branch=master" alt="Travis typetests/plume-lib-typecheck status"/></li>
-    <li>plume-lib-check-index-new: <img src="https://travis-ci.org/mernst/plume-lib-check-index-new.svg?branch=master" alt="Travis mernst/plume-lib-check-index-new status"/></li>
     <li>Sparta: <img src="https://travis-ci.org/typetools/sparta.svg?branch=master" alt="Travis typetools/sparta status"/></li>
   </ul>
   </li>
@@ -836,5 +851,5 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 
 <!--  LocalWords:  JSR langtools serif px pre CCC JDK AFS PAG mkdir cd svn co
  -->
-<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg INV buildfile
+<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg buildfile
  -->

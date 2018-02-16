@@ -8,11 +8,12 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -27,11 +28,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
-/**
- * A control flow graph (CFG for short) of a single method.
- *
- * @author Stefan Heule
- */
+/** A control flow graph (CFG for short) of a single method. */
 public class ControlFlowGraph {
 
     /** The entry block of the control flow graph. */
@@ -125,7 +122,7 @@ public class ControlFlowGraph {
     /** @return the set of all basic block in this control flow graph */
     public Set<Block> getAllBlocks() {
         Set<Block> visited = new HashSet<>();
-        Queue<Block> worklist = new LinkedList<>();
+        Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
         visited.add(entryBlock);
 
@@ -135,7 +132,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Queue<Block> succs = new LinkedList<>();
+            Queue<Block> succs = new ArrayDeque<>();
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
                 ConditionalBlock ccur = ((ConditionalBlock) cur);
                 succs.add(ccur.getThenSuccessor());
@@ -174,9 +171,9 @@ public class ControlFlowGraph {
      *     <p>Blocks may appear more than once in the sequence.
      */
     public List<Block> getDepthFirstOrderedBlocks() {
-        List<Block> dfsOrderResult = new LinkedList<>();
+        List<Block> dfsOrderResult = new ArrayList<>();
         Set<Block> visited = new HashSet<>();
-        Deque<Block> worklist = new LinkedList<>();
+        Deque<Block> worklist = new ArrayDeque<>();
         worklist.add(entryBlock);
         while (!worklist.isEmpty()) {
             Block cur = worklist.getLast();
@@ -201,7 +198,7 @@ public class ControlFlowGraph {
      * @return a Deque of successor Blocks
      */
     private Deque<Block> getSuccessors(Block cur) {
-        Deque<Block> succs = new LinkedList<>();
+        Deque<Block> succs = new ArrayDeque<>();
         if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
             ConditionalBlock ccur = ((ConditionalBlock) cur);
             succs.add(ccur.getThenSuccessor());

@@ -5,24 +5,20 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-/**
- * A node for the single expression body of a single expression lambda
- *
- * @author Lazaro Clapp
- */
+/** A node for the single expression body of a single expression lambda */
 public class LambdaResultExpressionNode extends Node {
 
     protected final ExpressionTree tree;
     protected final /*@Nullable*/ Node result;
 
     public LambdaResultExpressionNode(ExpressionTree t, /*@Nullable*/ Node result, Types types) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         this.result = result;
         tree = t;
     }

@@ -1,4 +1,6 @@
-// @skip-test
+// @skip-test until these issues are fixed:
+// https://github.com/typetools/checker-framework/issues/84
+// https://github.com/typetools/checker-framework/issues/766
 
 import org.checkerframework.checker.interning.qual.Interned;
 

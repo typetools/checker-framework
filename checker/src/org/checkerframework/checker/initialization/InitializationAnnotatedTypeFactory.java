@@ -55,7 +55,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -65,8 +64,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * another type-system whose safe initialization should be tracked. For an example, see the {@link
  * NullnessChecker}. Also supports rawness as a type-system for tracking initialization, though FBC
  * is preferred.
- *
- * @author Stefan Heule
  */
 public abstract class InitializationAnnotatedTypeFactory<
                 Value extends CFAbstractValue<Value>,
@@ -818,7 +815,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return a;
             }
 
-            return InternalUtils.leastUpperBound(processingEnv, a, b);
+            return TypesUtils.leastUpperBound(a, b, processingEnv);
         }
 
         @Override

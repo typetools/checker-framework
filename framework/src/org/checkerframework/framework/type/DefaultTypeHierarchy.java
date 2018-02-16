@@ -35,7 +35,6 @@ import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -46,7 +45,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * options passed to DefaultTypeHierarchy.
  *
  * <p>Subtyping rules of the JLS can be found in section 4.10, "Subtyping":
- * http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.10
+ * https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.10
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
  * TypeHierarchy interface reference which will only allow isSubtype to be called. It does not make
@@ -380,7 +379,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
      * Containment is described in the JLS section 4.5.1 "Type Arguments of Parameterized Types",
-     * http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.5.1
+     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.5.1
      *
      * @param inside the "subtype" type argument
      * @param outside the "supertype" type argument
@@ -399,16 +398,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return true;
         }
 
-        if (canBeCovariant && isSubtype(inside, outside, visited)) {
-            return true;
-        }
-
         if (outside.getKind() == TypeKind.WILDCARD) {
             final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
-
-            if (!checkAndSubtype(outsideWc.getSuperBound(), inside, visited)) {
-                return false;
-            }
 
             AnnotatedTypeMirror outsideWcUB = outsideWc.getExtendsBound();
             if (inside.getKind() == TypeKind.WILDCARD) {
@@ -421,9 +412,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             }
 
             AnnotatedTypeMirror castedInside = castedAsSuper(inside, outsideWcUB);
-            return checkAndSubtype(castedInside, outsideWcUB, visited);
+            if (!checkAndSubtype(castedInside, outsideWcUB, visited)) {
+                return false;
+            }
+
+            return canBeCovariant || checkAndSubtype(outsideWc.getSuperBound(), inside, visited);
         } else { // TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN
             // ARE_EQUAL -> DO CAPTURE CONVERSION
+            if (canBeCovariant) {
+                return isSubtype(inside, outside, visited);
+            }
             return areEqualInHierarchy(inside, outside, currentTop);
         }
     }
@@ -639,7 +637,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         Types types = checker.getTypeUtils();
         for (AnnotatedDeclaredType supertypeAltern : supertype.getAlternatives()) {
             if (TypesUtils.isErasedSubtype(
-                            types, subtype.getUnderlyingType(), supertypeAltern.getUnderlyingType())
+                            subtype.getUnderlyingType(), supertypeAltern.getUnderlyingType(), types)
                     && isSubtype(subtype, supertypeAltern)) {
                 return true;
             }
@@ -663,7 +661,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             Types types = checker.getTypeUtils();
             if (TypesUtils.isErasedSubtype(
-                            types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())
+                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype)) {
                 return true;
             }
@@ -694,7 +692,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             for (AnnotatedDeclaredType supertypeI : supertype.directSuperTypes()) {
                 if (TypesUtils.isErasedSubtype(
-                                types, subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType())
+                                subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType(), types)
                         && !isSubtype(subtypeI, supertypeI)) {
                     return false;
                 }
@@ -724,7 +722,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             Types types = checker.getTypeUtils();
             if (TypesUtils.isErasedSubtype(
-                            types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())
+                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype)) {
                 return true;
             }
@@ -1081,8 +1079,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         TypeMirror superTypeMirror = supertype.getUnderlyingType();
         if (supertype.getKind() == TypeKind.TYPEVAR) {
             TypeVariable atv = (TypeVariable) supertype.getUnderlyingType();
-            if (InternalUtils.isCaptured(atv)) {
-                superTypeMirror = InternalUtils.getCapturedWildcard(atv);
+            if (TypesUtils.isCaptured(atv)) {
+                superTypeMirror = TypesUtils.getCapturedWildcard(atv);
             }
         }
 

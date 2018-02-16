@@ -90,7 +90,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   fi
   set -e
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
+  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
@@ -108,7 +108,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   fi
   set -e
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
-  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
+  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git) || (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
 
   export CHECKERFRAMEWORK=`pwd`
@@ -132,7 +132,10 @@ if [[ "${GROUP}" == "demos" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
-  cd checker; ant jdk.jar
+  cd checker
+  ant jdk.jar
+  ## Run the tests for the type systems that use the annotated JDK
+  ant index-tests lock-tests nullness-tests-nobuildjdk
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -147,7 +150,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   release/checkPluginUtil.sh
 
   # Run error-prone
-  (cd checker; ant check-errorprone)
+  ant check-errorprone
 
   # Documentation
   ant javadoc-private
@@ -158,5 +161,8 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   # I cannot reproduce the problem locally and it isn't important enough to fix.
   # make -C ../jsr308-langtools/doc
   make -C ../jsr308-langtools/doc pdf
+
+  # HTML legality
+  ant html-validate
 
 fi

@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -19,8 +18,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * We allow local variable uses introduced by the {@link
  * org.checkerframework.dataflow.cfg.CFGBuilder} without corresponding AST {@link Tree}s.
- *
- * @author Stefan Heule
  */
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
@@ -33,7 +30,7 @@ public class LocalVariableNode extends Node {
     }
 
     public LocalVariableNode(Tree t, Node receiver) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         // IdentifierTree for normal uses of the local variable or parameter,
         // and VariableTree for the translation of an initializer block
         assert t != null;

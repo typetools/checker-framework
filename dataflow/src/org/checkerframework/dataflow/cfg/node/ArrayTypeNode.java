@@ -5,22 +5,19 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node representing a array type used in an expression such as a field access
  *
  * <p><em>type</em> .class
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ArrayTypeNode extends Node {
 
     protected final ArrayTypeTree tree;
 
     public ArrayTypeNode(ArrayTypeTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
     }
 

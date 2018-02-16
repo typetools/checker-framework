@@ -163,7 +163,7 @@ class PushbackInputStream extends FilterInputStream {
      *             or an I/O error occurs.
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public @IndexOrLow("#1") int read(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         ensureOpen();
         if (b == null) {
             throw new NullPointerException();
@@ -227,7 +227,7 @@ class PushbackInputStream extends FilterInputStream {
      *            invoking its {@link #close()} method.
      * @since     JDK1.1
      */
-    public void unread(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void unread(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         ensureOpen();
         if (len > pos) {
             throw new IOException("Push back buffer is full");

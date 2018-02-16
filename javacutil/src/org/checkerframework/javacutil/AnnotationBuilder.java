@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -177,6 +178,30 @@ public class AnnotationBuilder {
             elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
         }
         return;
+    }
+
+    /**
+     * Copies the specified element values from the given annotation, using the specified renaming
+     * map. Each value in the map must be an element name in the annotation being built. If an
+     * element from the given annotation is not a key in the map, it is ignored.
+     *
+     * @param valueHolder the annotation that holds the values to be copied
+     * @param elementNameRenaming a map from element names in {@code valueHolder} to element names
+     *     of the annotation being built
+     */
+    public void copyRenameElementValuesFromAnnotation(
+            AnnotationMirror valueHolder, Map<String, String> elementNameRenaming) {
+
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+                valueHolder.getElementValues().entrySet()) {
+
+            String sourceName = eltValToCopy.getKey().getSimpleName().toString();
+            String targetName = elementNameRenaming.get(sourceName);
+            if (targetName == null) {
+                continue;
+            }
+            elementValues.put(findElement(targetName), eltValToCopy.getValue());
+        }
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
@@ -468,7 +493,7 @@ public class AnnotationBuilder {
         }
 
         if (!isSubtype) {
-            if (found.toString().equals(expected.toString())) {
+            if (types.isSameType(found, expected)) {
                 ErrorReporter.errorAbort(
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
@@ -602,8 +627,7 @@ public class AnnotationBuilder {
                     encl = encl + '.';
                 }
                 toStringVal = encl + var.toString();
-            } else if (value instanceof TypeMirror
-                    && InternalUtils.isClassType((TypeMirror) value)) {
+            } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
                 toStringVal = value.toString() + ".class";
             } else {
                 toStringVal = value.toString();
@@ -643,6 +667,21 @@ public class AnnotationBuilder {
                 assert false : " unknown type : " + v.getClass();
                 return v.visitUnknown(this, p);
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            // System.out.printf("Calling CFAV.equals()%n");
+            if (!(obj instanceof AnnotationValue)) {
+                return false;
+            }
+            AnnotationValue other = (AnnotationValue) obj;
+            return Objects.equals(this.getValue(), other.getValue());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(this.value);
         }
     }
 }

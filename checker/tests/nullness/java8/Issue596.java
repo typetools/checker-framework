@@ -8,15 +8,15 @@ import org.checkerframework.checker.nullness.qual.*;
 class Issue596 {
 
     private static String getOrEmpty(AtomicReference<String> ref) {
-        return Optional.fromNullable(ref.get()).or("");
+        return Optional596.fromNullable(ref.get()).or("");
     }
 }
 
 // From Google Guava
-class Optional<T> {
+class Optional596<T> {
 
-    public static <T> Optional<T> fromNullable(@Nullable T nullableReference) {
-        return new Optional<T>();
+    public static <T> Optional596<T> fromNullable(@Nullable T nullableReference) {
+        return new Optional596<T>();
     }
 
     public T or(T defaultValue) {

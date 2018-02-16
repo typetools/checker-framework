@@ -49,7 +49,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -357,7 +356,7 @@ public class DependentTypesHelper {
         if (enclosingClass == null) {
             return;
         }
-        TypeMirror enclosingType = InternalUtils.typeOf(enclosingClass);
+        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
 
         FlowExpressions.Receiver receiver =
                 FlowExpressions.internalRepOfPseudoReceiver(path, enclosingType);
@@ -390,7 +389,7 @@ public class DependentTypesHelper {
                         return;
                     }
                     ErrorReporter.errorAbort(this.getClass() + ": tree not found");
-                } else if (InternalUtils.typeOf(tree) == null) {
+                } else if (TreeUtils.typeOf(tree) == null) {
                     // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
                     // gets the assignment context for a pseudo assignment of an argument to
                     // a method parameter.
@@ -454,6 +453,62 @@ public class DependentTypesHelper {
         return !annoToElements.isEmpty();
     }
 
+    /**
+     * Standardizes Java expressions in an annotation. If the annotation is not a dependent type
+     * annotation, returns the same annotation unchanged.
+     *
+     * @param context information about any receiver and arguments
+     * @param localScope path to local scope to use
+     * @param anno the annotation to be standardized
+     * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
+     * @return the standardized annotation
+     */
+    public AnnotationMirror standardizeAnnotation(
+            FlowExpressionContext context,
+            TreePath localScope,
+            AnnotationMirror anno,
+            boolean useLocalScope) {
+        if (!isExpressionAnno(anno)) {
+            return anno;
+        }
+        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
+    }
+
+    /** Standardizes an annotation. If it is not a dependent type annotation, returns null. */
+    private AnnotationMirror standardizeAnnotationIfDependentType(
+            FlowExpressionContext context,
+            TreePath localScope,
+            AnnotationMirror anno,
+            boolean useLocalScope) {
+        if (!isExpressionAnno(anno)) {
+            return null;
+        }
+        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
+    }
+
+    /** Standardizes a dependent type annotation. */
+    private AnnotationMirror standardizeDependentTypeAnnotation(
+            FlowExpressionContext context,
+            TreePath localScope,
+            AnnotationMirror anno,
+            boolean useLocalScope) {
+        AnnotationBuilder builder =
+                new AnnotationBuilder(
+                        factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
+
+        for (String value : getListOfExpressionElements(anno)) {
+            List<String> expressionStrings =
+                    AnnotationUtils.getElementValueArray(anno, value, String.class, true);
+            List<String> standardizedStrings = new ArrayList<>();
+            for (String expression : expressionStrings) {
+                standardizedStrings.add(
+                        standardizeString(expression, context, localScope, useLocalScope));
+            }
+            builder.setValue(value, standardizedStrings);
+        }
+        return builder.build();
+    }
+
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
         private final FlowExpressionContext context;
         private final TreePath localScope;
@@ -465,31 +520,6 @@ public class DependentTypesHelper {
             this.context = context;
             this.localScope = localScope;
             this.useLocalScope = useLocalScope;
-        }
-
-        private AnnotationMirror standardizeAnnotation(
-                FlowExpressionContext context,
-                TreePath localScope,
-                AnnotationMirror anno,
-                boolean useLocalScope) {
-            if (!isExpressionAnno(anno)) {
-                return null;
-            }
-            AnnotationBuilder builder =
-                    new AnnotationBuilder(
-                            factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
-
-            for (String value : getListOfExpressionElements(anno)) {
-                List<String> expressionStrings =
-                        AnnotationUtils.getElementValueArray(anno, value, String.class, true);
-                List<String> standardizedStrings = new ArrayList<>();
-                for (String expression : expressionStrings) {
-                    standardizedStrings.add(
-                            standardizeString(expression, context, localScope, useLocalScope));
-                }
-                builder.setValue(value, standardizedStrings);
-            }
-            return builder.build();
         }
 
         @Override
@@ -521,7 +551,8 @@ public class DependentTypesHelper {
             List<AnnotationMirror> newAnnos = new ArrayList<>();
             for (AnnotationMirror anno : type.getAnnotations()) {
                 AnnotationMirror annotationMirror =
-                        standardizeAnnotation(context, localScope, anno, useLocalScope);
+                        standardizeAnnotationIfDependentType(
+                                context, localScope, anno, useLocalScope);
                 if (annotationMirror != null) {
                     newAnnos.add(annotationMirror);
                 }
@@ -576,6 +607,44 @@ public class DependentTypesHelper {
         SourceChecker checker = factory.getContext().getChecker();
         String error = PluginUtil.join("\n", errors);
         checker.report(Result.failure("expression.unparsable.type.invalid", error), errorTree);
+    }
+
+    /**
+     * Checks every Java expression element of the annotation to see if the expression is an error
+     * string as specified by DependentTypesError#isExpressionError. If any expression is an error,
+     * then a non-empty list of {@link DependentTypesError} is returned.
+     */
+    private List<DependentTypesError> checkForError(AnnotationMirror am) {
+        List<DependentTypesError> errors = new ArrayList<>();
+
+        for (String element : getListOfExpressionElements(am)) {
+            List<String> value =
+                    AnnotationUtils.getElementValueArray(am, element, String.class, true);
+            for (String v : value) {
+                if (DependentTypesError.isExpressionError(v)) {
+                    errors.add(new DependentTypesError(v));
+                }
+            }
+        }
+        return errors;
+    }
+
+    /**
+     * Checks every Java expression element of the annotation to see if the expression is an error
+     * string as specified by DependentTypesError#isExpressionError. If any expression is an error,
+     * then an error is reported at {@code errorTree}.
+     *
+     * @param annotation annotation to check
+     * @param errorTree location at which to issue errors
+     */
+    public void checkAnnotation(AnnotationMirror annotation, Tree errorTree) {
+        List<DependentTypesError> errors = checkForError(annotation);
+        if (errors.isEmpty()) {
+            return;
+        }
+        SourceChecker checker = factory.getContext().getChecker();
+        String error = PluginUtil.join("\n", errors);
+        checker.report(Result.failure("flowexpr.parse.error", error), errorTree);
     }
 
     /**
@@ -658,26 +727,6 @@ public class DependentTypesHelper {
             } else {
                 return null;
             }
-        }
-
-        /**
-         * Checks every Java expression element of the annotation to see if the expression is an
-         * error string as specified by DependentTypesError#isExpressionError. If any expression is
-         * an error, then a non-empty list of {@link DependentTypesError} is returned.
-         */
-        private List<DependentTypesError> checkForError(AnnotationMirror am) {
-            List<DependentTypesError> errors = new ArrayList<>();
-
-            for (String element : getListOfExpressionElements(am)) {
-                List<String> value =
-                        AnnotationUtils.getElementValueArray(am, element, String.class, true);
-                for (String v : value) {
-                    if (DependentTypesError.isExpressionError(v)) {
-                        errors.add(new DependentTypesError(v));
-                    }
-                }
-            }
-            return errors;
         }
     }
 

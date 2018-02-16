@@ -2,8 +2,8 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
@@ -13,9 +13,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   assert <em>condition</em> : <em>detail</em> ;
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class AssertionErrorNode extends Node {
 
@@ -72,7 +69,7 @@ public class AssertionErrorNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(2);
         list.add(getCondition());
         list.add(getDetail());
         return list;

@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a reference to 'this'.
@@ -10,16 +10,13 @@ import org.checkerframework.javacutil.InternalUtils;
  * <pre>
  *   <em>this</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ExplicitThisLiteralNode extends ThisLiteralNode {
 
     protected final Tree tree;
 
     public ExplicitThisLiteralNode(Tree t) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         assert t instanceof IdentifierTree && ((IdentifierTree) t).getName().contentEquals("this");
         tree = t;
     }

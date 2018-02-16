@@ -2,10 +2,10 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a conditional expression:
@@ -13,9 +13,6 @@ import org.checkerframework.javacutil.InternalUtils;
  * <pre>
  *   <em>expression</em> ? <em>expression</em> : <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class TernaryExpressionNode extends Node {
 
@@ -26,7 +23,7 @@ public class TernaryExpressionNode extends Node {
 
     public TernaryExpressionNode(
             ConditionalExpressionTree tree, Node condition, Node thenOperand, Node elseOperand) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
         this.tree = tree;
         this.condition = condition;
@@ -85,7 +82,7 @@ public class TernaryExpressionNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(3);
         list.add(getConditionOperand());
         list.add(getThenOperand());
         list.add(getElseOperand());

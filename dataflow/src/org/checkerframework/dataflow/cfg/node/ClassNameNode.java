@@ -13,16 +13,12 @@ import java.util.Collections;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node representing a class name used in an expression such as a static method invocation.
  *
  * <p>parent.<em>class</em> .forName(...)
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ClassNameNode extends Node {
 
@@ -34,7 +30,7 @@ public class ClassNameNode extends Node {
     protected final /*@Nullable*/ Node parent;
 
     public ClassNameNode(IdentifierTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert tree.getKind() == Tree.Kind.IDENTIFIER;
         this.tree = tree;
         this.element = TreeUtils.elementFromUse(tree);
@@ -42,7 +38,7 @@ public class ClassNameNode extends Node {
     }
 
     public ClassNameNode(ClassTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert tree.getKind() == Tree.Kind.CLASS
                 || tree.getKind() == Tree.Kind.ENUM
                 || tree.getKind() == Tree.Kind.INTERFACE
@@ -53,7 +49,7 @@ public class ClassNameNode extends Node {
     }
 
     public ClassNameNode(MemberSelectTree tree, Node parent) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = parent;

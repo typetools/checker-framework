@@ -39,7 +39,6 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -48,8 +47,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * type-system and this class are abstract and need to be combined with another type-system whose
  * safe initialization should be tracked. For an example, see the {@link NullnessChecker}. Also
  * supports rawness as a type-system for tracking initialization, though FBC is preferred.
- *
- * @author Stefan Heule
  */
 public class InitializationVisitor<
                 Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
@@ -435,7 +432,7 @@ public class InitializationVisitor<
             Iterator<VariableTree> itor = violatingFields.iterator();
             while (itor.hasNext()) {
                 VariableTree f = itor.next();
-                Element e = InternalUtils.symbol(f);
+                Element e = TreeUtils.elementFromTree(f);
                 if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
                     itor.remove();
                 }

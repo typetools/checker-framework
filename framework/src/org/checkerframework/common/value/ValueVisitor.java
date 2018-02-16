@@ -28,14 +28,12 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * @author plvines
- *     <p>Visitor for the Constant Value type-system
- */
+/** Visitor for the Constant Value type-system */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     public ValueVisitor(BaseTypeChecker checker) {
@@ -109,15 +107,25 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      *     will be used on the lhs of an assignment or pseudo-assignment.
      */
     private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
-        SimpleAnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
-                new SimpleAnnotatedTypeScanner<Void, Void>() {
+        AnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
+                new AnnotatedTypeScanner<Void, Void>() {
                     @Override
-                    protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
+                    protected Void scan(AnnotatedTypeMirror type, Void p) {
                         if (type.hasAnnotation(IntRangeFromPositive.class)
                                 || type.hasAnnotation(IntRangeFromNonNegative.class)
                                 || type.hasAnnotation(IntRangeFromGTENegativeOne.class)) {
                             type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
                         }
+                        return super.scan(type, p);
+                    }
+
+                    @Override
+                    public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
+                        // Skip type arguments.
+                        if (type.getEnclosingType() != null) {
+                            scan(type.getEnclosingType(), p);
+                        }
+
                         return null;
                     }
                 };
@@ -145,7 +153,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return super.visitAnnotation(node, p);
         }
 
-        AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
+        AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
 
         if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             // If there are 2 arguments, issue an error if from.greater.than.to.
@@ -259,5 +267,35 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             }
         }
         return super.visitTypeCast(node, p);
+    }
+
+    /**
+     * Overridden to issue errors at the appropriate place if an {@code IntRange} or {@code
+     * ArrayLenRange} annotation has {@code from > to}. {@code from > to} either indicates a user
+     * error when writing an annotation or an error in the checker's implementation, as {@code from}
+     * should always be {@code <= to}.
+     */
+    @Override
+    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
+        boolean result = super.validateType(tree, type);
+        if (!result) {
+            AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+            if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                long to = atypeFactory.getToValueFromIntRange(type);
+                long from = atypeFactory.getFromValueFromIntRange(type);
+                if (from > to) {
+                    checker.report(Result.failure("from.greater.than.to"), tree);
+                    return false;
+                }
+            } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+                int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
+                int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+                if (from > to) {
+                    checker.report(Result.failure("from.greater.than.to"), tree);
+                    return false;
+                }
+            }
+        }
+        return result;
     }
 }

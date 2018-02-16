@@ -19,19 +19,22 @@ import java.util.regex.Pattern;
  * This file contains basic utility functions that should be reused to create a command-line call to
  * {@code CheckerMain}.
  *
- * <p>NOTE: There are multiple copies of this file in the following projects/locations:
+ * <p>NOTE: There are multiple copies of this file:
  *
  * <pre>
- * checker-framework-eclipse-plugin/
- *     org.checkerframework.eclipse.util.PluginUtil
- *
- * checker-framework/
- *     org.checkerframework.framework.util.PluginUtil
+ * eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java
+ * framework/src/org/checkerframework/framework/util/PluginUtil.java
  * </pre>
  *
  * These files MUST be IDENTICAL after the package descriptor.
  */
 public class PluginUtil {
+
+    /**
+     * Option name for specifying an alternative checker-qual.jar location. The accompanying value
+     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String CHECKER_QUAL_PATH_OPT = "-checkerQualJar";
 
     /**
      * Option name for specifying an alternative javac.jar location. The accompanying value MUST be
@@ -155,7 +158,7 @@ public class PluginUtil {
     public static <T> String join(final String delimiter, final T[] objs) {
 
         boolean notFirst = false;
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
 
         for (final Object obj : objs) {
             if (notFirst) {
@@ -171,13 +174,13 @@ public class PluginUtil {
     public static String join(String delimiter, Iterable<?> values) {
         StringBuilder sb = new StringBuilder();
 
-        boolean isntFirst = false;
+        boolean notFirst = false;
         for (Object value : values) {
-            if (isntFirst) {
+            if (notFirst) {
                 sb.append(delimiter);
             }
             sb.append(value);
-            isntFirst = true;
+            notFirst = true;
         }
 
         return sb.toString();

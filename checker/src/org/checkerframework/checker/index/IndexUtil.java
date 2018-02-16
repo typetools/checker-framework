@@ -104,10 +104,9 @@ public class IndexUtil {
 
     /**
      * Queries the Value Checker to determine if there is a known minimum length for the array
-     * represented by {@code tree}. If not, returns null.
+     * represented by {@code tree}. If not, returns 0.
      */
-    public static Integer getMinLen(
-            Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
+    public static int getMinLen(Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
         AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
     }
@@ -122,7 +121,7 @@ public class IndexUtil {
             Tree lengthTree, IndexMethodIdentifier imf, ProcessingEnvironment processingEnv) {
         if (TreeUtils.isArrayLengthAccess(lengthTree)) {
             return ((MemberSelectTree) lengthTree).getExpression();
-        } else if (imf.isStringLength(lengthTree, processingEnv)) {
+        } else if (imf.isLengthOfMethodInvocation(lengthTree)) {
             return TreeUtils.getReceiverTree((MethodInvocationTree) lengthTree);
         }
 

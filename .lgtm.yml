@@ -1,0 +1,24 @@
+# Configuration file for lgtm.com
+# Results at:
+# https://lgtm.com/projects/g/typetools/checker-framework
+
+extraction:
+  java:
+    before_index:
+    - mkdir ${LGTM_WORKSPACE}/downloads
+    - wget -O ${LGTM_WORKSPACE}/downloads/jsr308-langtools.zip https://bitbucket.org/typetools/jsr308-langtools/get/tip.zip
+    - unzip -q -d ${LGTM_WORKSPACE} ${LGTM_WORKSPACE}/downloads/jsr308-langtools.zip
+    - mv ${LGTM_WORKSPACE}/*jsr308-langtools* ${LGTM_WORKSPACE}/jsr308-langtools
+    - (cd ${LGTM_WORKSPACE}/jsr308-langtools/make; ant)
+    - wget -O ${LGTM_WORKSPACE}/downloads/stubparser.zip https://github.com/typetools/stubparser/archive/master.zip
+    - unzip -q -d ${LGTM_WORKSPACE} ${LGTM_WORKSPACE}/downloads/stubparser.zip
+    - mv ${LGTM_WORKSPACE}/*stubparser* ${LGTM_WORKSPACE}/stubparser
+    - (cd ${LGTM_WORKSPACE}/stubparser; mvn -q package -Dmaven.test.skip=true)
+    - wget -O ${LGTM_WORKSPACE}/downloads/annotation-tools.zip https://github.com/typetools/annotation-tools/archive/master.zip
+    - unzip -q -d ${LGTM_WORKSPACE} ${LGTM_WORKSPACE}/downloads/annotation-tools.zip
+    - mv ${LGTM_WORKSPACE}/*annotation-tools* ${LGTM_WORKSPACE}/annotation-tools
+    - (cd ${LGTM_WORKSPACE}/annotation-tools; ant compile)
+    index:
+      build_command:
+      - cd checker
+      - ant -Djsr308.langtools=${LGTM_WORKSPACE}/jsr308-langtools -Dannotation.tools=${LGTM_WORKSPACE}/annotation-tools -Dstubparser.loc=${LGTM_WORKSPACE}/stubparser dist-downloadjdk

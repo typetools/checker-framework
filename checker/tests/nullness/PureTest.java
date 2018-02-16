@@ -52,15 +52,13 @@ class PureTest {
     }
 
     static void shortCircuitAnd(PureTest pt) {
-        if ((pt.getSuperclass() != null)
-                && pt.getSuperclass().toString().equals("java.lang.Enum")) {
+        if ((pt.getSuperclass() != null) && pt.getSuperclass().equals(Enum.class)) {
             // empty body
         }
     }
 
     static void shortCircuitOr(PureTest pt) {
-        if ((pt.getSuperclass() == null)
-                || pt.getSuperclass().toString().equals("java.lang.Enum")) {
+        if ((pt.getSuperclass() == null) || pt.getSuperclass().equals(Enum.class)) {
             // empty body
         }
     }

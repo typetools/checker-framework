@@ -43,8 +43,14 @@ within the \<then> block of an \code{if (x > 0)} statement.
 The programmer does need to write field types and method pre-conditions or post-conditions. For instance,
 if a method's formal parameter is used as an index for
 \<myArray>, the programmer might need to
-write an \refqualclasswithparams{checker/index/qual}{IndexFor}{myArray}
+write an \refqualclasswithparams{checker/index/qual}{IndexFor}{"myArray"}
 annotation on the formal parameter's types.
+
+The Index Checker checks fixed-size data structures, whose size is never
+changed after creation.  A fixed-size data structure has no \<add> or
+\<remove> operation.  Examples are strings and arrays, and you can add
+support for other fixed-size data structures (see
+Section~\ref{index-annotating-fixed-size}).
 
 To run the Index Checker, run the command
 
@@ -55,24 +61,15 @@ To run the Index Checker, run the command
 
 \section{Index Checker structure and annotations\label{index-annotations}}
 
-Internally, the Index Checker computes several types of information about
-program variables, recording each one in a different type system.  The
-Index Checker does type-checking of all these type systems at once; the
-type systems cooperate to permit precise verification of sequence indexing
-operations.  This manual discusses each type system in a different
-section:
+Internally, the Index Checker computes information about integers that
+might be indices:
 \begin{itemize}
 \item
   the lower bound on an integer, such as whether it is known to be positive
   (Section~\ref{index-lowerbound})
 \item
-  the upper bound an integer, such as whether it is less than the length
+  the upper bound on an integer, such as whether it is less than the length
   of a given sequence (Section~\ref{index-upperbound})
-\item
-  the minimum length of a sequence, such ``\<myArray> contains at least 3
-  elements'' (Section~\ref{index-minlen})
-\item
-  whether two sequences have the same length (Section~\ref{index-samelen})
 \item
   whether an integer came from calling the JDK's binary search routine on
   an array (Section~\ref{index-searchindex})
@@ -81,8 +78,20 @@ section:
   (Section~\ref{index-substringindex})
 \end{itemize}
 
-In addition to the indexing annotations described in those sections, there
-are some annotations that give multiple types of information:
+\noindent
+and about sequence lengths:
+\begin{itemize}
+\item
+  the minimum length of a sequence, such ``\<myArray> contains at least 3
+  elements'' (Section~\ref{index-minlen})
+\item
+  whether two sequences have the same length (Section~\ref{index-samelen})
+\end{itemize}
+
+The Index Checker checks of all these properties at once, but
+this manual discusses each type system in a different section.
+There are some annotations that are shorthand for writing multiple
+annotations, each from a different type system:
 
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{IndexFor}{String[] names}]
@@ -298,6 +307,20 @@ or \code{@LTOMLengthOf("arr")}.
 
 \end{description}
 
+The following method annotations can be used to establish a postcondition
+of a method which ensures that a certain expression is a valid index for a sequence:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOf}{String[] value, String[] targetValue, String[] offset}]
+  When the method with this annotation returns, the expression (or all the expressions) given in the \code{value} element
+  is less than the length of the given sequences with the given offsets. More preciesly, the expression
+  has the \code{@LTLengthOf} qualifier with the \code{value} and \code{offset} arguments
+  taken from the \code{targetValue} and \code{offset} elements of this annotation.
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOfIf}{String[] expression, boolean result, String[] targetValue, String[] offset}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions)
+  is less than the length of the given sequences with the given offsets.
+\end{description}
 
 \section{Sequence minimum lengths\label{index-minlen}}
 
@@ -378,6 +401,16 @@ can establish the minimum length of a sequence:
   \label{fig-index-array-types}
 \end{figure}
 
+The following method annotation can be used to establish a postcondition
+of a method which ensures that a certain sequence has a minimum length:
+
+\begin{description}
+\item[\refqualclasswithparams{common/value/qual}{EnsuresMinLenIf}{String[] expression, boolean result, int targetValue}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions) is a sequence
+  with at least \code{targetValue} elements.
+\end{description}
+
 \section{Sequences of the same length\label{index-samelen}}
 
 The Index Checker determines whether two or more sequences have the same length.
@@ -386,7 +419,7 @@ like the following:
 
 \begin{Verbatim}
   boolean lessThan(double[] arr1, double @SameLen("#1") [] arr2) {
-    for (int i=0; i<arr1.length; i++) {
+    for (int i = 0; i < arr1.length; i++) {
       if (arr1[i] < arr2[i]) {
         return true;
       } else if (arr1[i] > arr2[i]) {
@@ -441,7 +474,7 @@ represents this concept.
   \label{fig-index-searchindex}
 \end{figure}
 
-The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) has four type qualifiers:
+The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) has four type qualifiers:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
   An expression with this type represents an integer that could have been
@@ -611,6 +644,61 @@ the example type-check without false positives, a new annotation such as
 is necessary.
 
 
+\section{Annotating fixed-size data structures\label{index-annotating-fixed-size}}
+
+The Index Checker has built-in support for Strings and arrays.
+You can add support for additional fixed-size data structures by writing
+annotations.
+This allows the Index Checker to typecheck the data structure's
+implementation and to typecheck uses of the class.
+
+This section gives an example:  a fixed-length collection.
+
+%% The code that follows is copied from checker/tests/index/ArrayWrapper.java.
+%% If this code is updated, please update that file, too.
+
+\begin{Verbatim}
+/** ArrayWrapper is a fixed-size generic collection. */
+public class ArrayWrapper<T> {
+    private final Object @SameLen("this") [] delegate;
+
+    @SuppressWarnings("index") // constructor creates object of size @SameLen(this) by definition
+    ArrayWrapper(@NonNegative int size) {
+        delegate = new Object[size];
+    }
+
+    public @LengthOf("this") int size() {
+        return delegate.length;
+    }
+
+    public void set(@IndexFor("this") int index, T obj) {
+        delegate[index] = obj;
+    }
+
+    @SuppressWarnings("unchecked") // required for normal Java compilation due to unchecked cast
+    public T get(@IndexFor("this") int index) {
+        return (T) delegate[index];
+    }
+}
+\end{Verbatim}
+
+The Index Checker treats methods annotated with \code{@LengthOf("this")}  as
+the length of a sequence like \code{arr.length} for arrays and
+\code{str.length()} for strings.
+
+With these annotations, client code like the following typechecks with no
+warnings:
+\begin{Verbatim}
+    public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
+        a.set(i, null);
+    }
+
+    public static void clearIndex2(ArrayWrapper<? extends Object> a, int i) {
+        if (0 <= i && i < a.size()) {
+            a.set(i, null);
+        }
+    }
+\end{Verbatim}
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE

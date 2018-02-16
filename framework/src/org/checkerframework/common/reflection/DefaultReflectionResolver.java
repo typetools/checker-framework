@@ -29,7 +29,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -51,7 +50,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -64,7 +62,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * </ul>
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
- * @author rjust
  */
 public class DefaultReflectionResolver implements ReflectionResolver {
     // Message prefix added to verbose reflection messages
@@ -89,8 +86,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
     @Override
     public boolean isReflectiveMethodInvocation(MethodInvocationTree tree) {
-        if ((provider.getDeclAnnotation(InternalUtils.symbol(tree), Invoke.class) != null
-                || provider.getDeclAnnotation(InternalUtils.symbol(tree), NewInstance.class)
+        if ((provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), Invoke.class) != null
+                || provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), NewInstance.class)
                         != null)) {
             return true;
         }
@@ -104,7 +101,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             MethodInvocationTree tree,
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> origResult) {
         assert isReflectiveMethodInvocation(tree);
-        if (provider.getDeclAnnotation(InternalUtils.symbol(tree), NewInstance.class) != null) {
+        if (provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), NewInstance.class)
+                != null) {
             return resolveConstructorCall(factory, tree, origResult);
         } else {
             return resolveMethodCall(factory, tree, origResult);
@@ -232,7 +230,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         for (int i = 0; i < parameters.size(); i++) {
             VariableElement param = parameters.get(i);
             ExpressionTree arg = arguments.get(i);
-            TypeMirror argType = InternalUtils.typeOf(arg);
+            TypeMirror argType = TreeUtils.typeOf(arg);
             TypeMirror paramType = param.asType();
             if (argType.getKind() == TypeKind.ARRAY && paramType.getKind() != argType.getKind()) {
                 return false;
@@ -488,7 +486,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Resolve resolve = Resolve.instance(context);
         Names names = Names.instance(context);
 
-        List<Symbol> result = new LinkedList<>();
+        List<Symbol> result = new ArrayList<>();
         try {
             Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
@@ -544,7 +542,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Resolve resolve = Resolve.instance(context);
         Names names = Names.instance(context);
 
-        List<Symbol> result = new LinkedList<>();
+        List<Symbol> result = new ArrayList<>();
         try {
             Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
