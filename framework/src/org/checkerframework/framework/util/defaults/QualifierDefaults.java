@@ -202,12 +202,7 @@ public class QualifierDefaults {
         return false;
     }
 
-    /**
-     * Add standard unchecked defaults that do not conflict with previously added defaults.
-     *
-     * @param tops AnnotationMirrors that are top
-     * @param bottoms AnnotationMirrors that are bottom
-     */
+    /** Add standard unchecked defaults that do not conflict with previously added defaults. */
     public void addUncheckedStandardDefaults() {
         for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
@@ -229,12 +224,7 @@ public class QualifierDefaults {
         }
     }
 
-    /**
-     * Add standard CLIMB defaults that do not conflict with previously added defaults.
-     *
-     * @param tops AnnotationMirrors that are top
-     * @param bottoms AnnotationMirrors that are bottom
-     */
+    /** Add standard CLIMB defaults that do not conflict with previously added defaults. */
     public void addClimbStandardDefaults() {
         QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
         Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
