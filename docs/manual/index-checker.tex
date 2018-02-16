@@ -307,6 +307,20 @@ or \code{@LTOMLengthOf("arr")}.
 
 \end{description}
 
+The following method annotations can be used to establish a postcondition
+of a method which ensures that a certain expression is a valid index for a sequence:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOf}{String[] value, String[] targetValue, String[] offset}]
+  When the method with this annotation returns, the expression (or all the expressions) given in the \code{value} element
+  is less than the length of the given sequences with the given offsets. More preciesly, the expression
+  has the \code{@LTLengthOf} qualifier with the \code{value} and \code{offset} arguments
+  taken from the \code{targetValue} and \code{offset} elements of this annotation.
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOfIf}{String[] expression, boolean result, String[] targetValue, String[] offset}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions)
+  is less than the length of the given sequences with the given offsets.
+\end{description}
 
 \section{Sequence minimum lengths\label{index-minlen}}
 
@@ -386,6 +400,16 @@ can establish the minimum length of a sequence:
     internally by the type system.}
   \label{fig-index-array-types}
 \end{figure}
+
+The following method annotation can be used to establish a postcondition
+of a method which ensures that a certain sequence has a minimum length:
+
+\begin{description}
+\item[\refqualclasswithparams{common/value/qual}{EnsuresMinLenIf}{String[] expression, boolean result, int targetValue}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions) is a sequence
+  with at least \code{targetValue} elements.
+\end{description}
 
 \section{Sequences of the same length\label{index-samelen}}
 
