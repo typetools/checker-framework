@@ -208,12 +208,10 @@ public class QualifierDefaults {
      * @param tops AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
      */
-    public void addUncheckedStandardDefaults(
-            Iterable<? extends AnnotationMirror> tops,
-            Iterable<? extends AnnotationMirror> bottoms) {
+    public void addUncheckedStandardDefaults() {
         for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
-            for (AnnotationMirror top : tops) {
+            for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, top, loc)) {
                     addUncheckedCodeDefault(top, loc);
                 }
@@ -221,7 +219,8 @@ public class QualifierDefaults {
         }
 
         for (TypeUseLocation loc : standardUncheckedDefaultsBottom) {
-            for (AnnotationMirror bottom : bottoms) {
+            for (AnnotationMirror bottom :
+                    atypeFactory.getQualifierHierarchy().getBottomAnnotations()) {
                 // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
                     addUncheckedCodeDefault(bottom, loc);
@@ -236,9 +235,11 @@ public class QualifierDefaults {
      * @param tops AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
      */
-    public void addClimbStandardDefaults(
-            Iterable<? extends AnnotationMirror> tops,
-            Iterable<? extends AnnotationMirror> bottoms) {
+    public void addClimbStandardDefaults() {
+        QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+        Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+        Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
+
         for (TypeUseLocation loc : standardClimbDefaultsTop) {
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
