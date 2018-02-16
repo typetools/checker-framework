@@ -204,9 +204,13 @@ public class QualifierDefaults {
 
     /** Add standard unchecked defaults that do not conflict with previously added defaults. */
     public void addUncheckedStandardDefaults() {
+        QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+        Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+        Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
+
         for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
-            for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+            for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, top, loc)) {
                     addUncheckedCodeDefault(top, loc);
                 }
@@ -214,8 +218,7 @@ public class QualifierDefaults {
         }
 
         for (TypeUseLocation loc : standardUncheckedDefaultsBottom) {
-            for (AnnotationMirror bottom :
-                    atypeFactory.getQualifierHierarchy().getBottomAnnotations()) {
+            for (AnnotationMirror bottom : bottoms) {
                 // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
                     addUncheckedCodeDefault(bottom, loc);
