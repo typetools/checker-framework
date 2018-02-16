@@ -56,7 +56,7 @@ Three choices for creating your own checker are:
   one distributed with the Checker Framework or a third-party one.
   This can be fast, or you can get tangled up if you don't fully understand
   the subtleties of the existing checker that you are modifying.
-  Oftentimes following the instructions in this chapter is easier.
+  Usually following the instructions in this chapter is easier.
   (If you are going to copy a checker, one good choice to copy and modify
   is the Regex Checker (\chapterpageref{regex-checker}).  A bad choice is
   the Nullness Checker (\chapterpageref{nullness-checker}),
@@ -113,7 +113,7 @@ Other \par tools
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
   \href{https://checkerframework.org/jsr308/}{Type Annotations} syntax
-  and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
+  and classfile format \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
 
@@ -173,8 +173,8 @@ Framework:
   Checker (Chapter~\ref{subtyping-checker}), so there is nothing for you to do.
 \item
   Additional rules that are specific to your particular checker.  For
-  example, in the Nullness type system, only references with a
-  \refqualclass{checker/nullness/qual}{NonNull} type may be dereferenced.  You
+  example, in the Nullness type system, only references whose type is
+  \refqualclass{checker/nullness/qual}{NonNull} may be dereferenced.  You
   write these additional rules yourself.
 \end{itemize}
 
@@ -183,12 +183,12 @@ Framework:
   expressions, a qualifier should be treated as implicitly present even if a
   programmer did not explicitly write it.  For example, in the Nullness
   type system every literal
-  other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type;
-  examples of literals include \code{"some string"} and \<java.util.Date.class>.
+  other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type.
+  Examples of literals include \code{"some string"} and \<java.util.Date.class>.
 
 \item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
-  type qualifier inference (local variable type inference).
+  type qualifier inference (also known as local variable type inference).
 
 \item{\ref{creating-compiler-interface}}
   \textbf{Interface to the compiler.}  The compiler interface indicates
@@ -226,12 +226,10 @@ built-in checker (Section~\ref{running}):
 simply pass the fully-qualified name of your \<BaseTypeChecker>
 subclass to the \<-processor> command-line option:
 \begin{alltt}
-  javac \textbackslash
-    -processor \textit{mypackage.MyPropChecker} \textbackslash
-    SourceFile.java
+  javac -processor \textit{mypackage.MyPropChecker} SourceFile.java
 \end{alltt}
 Note that your custom checker's
-compiled files must be on the Java classpath.
+\<.class> files must be on the Java classpath.
 Invoking a custom checker that builds on
 the Subtyping Checker is slightly different (Section~\ref{subtyping-using}).
 
@@ -258,8 +256,8 @@ Here is a good way to proceed.
   is comprehensible.
 
   Once you have designed and documented the parts of your type system, you
-  may also want to choose some case studies and ``play computer'', manually
-  type-checking the code according to the rules you defined.
+  may also want to ``play computer'', manually
+  type-checking some code according to the rules you defined.
   During manual checking, ask
   yourself what reasoning you applied, what information you needed, and
   whether your written-down rules were sufficient.
@@ -473,15 +471,15 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % \refqualclass{framework/qual}{SubtypeOf} and
 % \sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
 
-The annotations should be placed within a directory called \<qual>, and this
-directory should be placed in the same directory as your Checker's source file.
+The annotations should be placed within a directory called \<qual>, and
+\<qual> should be placed in the same directory as your checker's source file.
 
 For example, the Nullness Checker's source file is located at
-\<.../nullness/NullnessChecker.java>. The \<NonNull> qualifier is located in the
-directory \<.../nullness/qual/>.
+\<.../nullness/NullnessChecker.java>. The \<@NonNull> qualifier is defined in
+file \<.../nullness/qual/NonNull.java>.
 
 The Checker Framework automatically treats any annotation that
-is declared in the qual package as a type qualifier.
+is declared in the \<qual> package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
 
 % \noindent
@@ -554,8 +552,11 @@ hierarchy.
   \end{Verbatim}
 
   \begin{sloppypar}
-  If the top qualifier of the hierarchy is the unqualified type, then its children
-  will use \code{@SubtypeOf(Unqualified.class)}, but no \code{@SubtypeOf(\{\})} annotation on the top qualifier is necessary.  For an example, see the
+  If the top qualifier of the hierarchy is the generic unqualified type
+  (this is not recommended!), then its children
+  will use \code{@SubtypeOf(Unqualified.class)}, but no
+  \code{@SubtypeOf(\{\})} annotation on the top qualifier \<Unqualified> is
+  necessary.  For an example, see the
   \<Encrypted> type system of Section~\ref{encrypted-example}.
   \end{sloppypar}
 
@@ -771,10 +772,10 @@ the expression is not valid, an error is issued and the string in the
 annotation is changed to indicate that the expression is not valid.
 
 The Checker Framework standardizes the expression strings.  For example, a
-field \<f> can be referred to as either ``f'' or ``this.f''.  If the
-programmer writes ``f'', the Checker Framework changes it to
-``this.f'', as if the programmer had written that.
-An advantage of this canonicalization is that
+field \<f> can be referred to as either ``\<f>'' or ``\<this.f>''.  If the
+programmer writes ``\<f>'', the Checker Framework treats it
+as if the programmer had written ``\<this.f>''.
+An advantage of this canonicalization is
 that comparisons, such as \<isSubtype>, can be implemented as string comparisons.
 
 The Checker Framework viewpoint-adapts type annotations on method, constructor,
@@ -833,10 +834,10 @@ Most type-checkers
 override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.
-The the last line of the overridden version is
-\<return super.visit\emph{TreeType}(node, p);>
-so that, if the method didn't raise any error,
-the superclass version can perform standard checks.
+The last line of the overridden version is
+``\<return super.visit\emph{TreeType}(node, p);>''.
+If the method didn't raise any error,
+the superclass implementation can perform standard checks.
 
 
 By default, \refclass{common/basetype}{BaseTypeVisitor} performs subtyping checks that are
@@ -913,7 +914,8 @@ It may be tempting to write a type-checking rule for method invocation,
 where your rule checks the name of the method being called and then treats
 the method in a special way.  This is sometimes necessary but is usually
 the wrong approach.  It is better to write annotations, in a stub file
-(Chapter~\ref{annotating-libraries}), and leave the work to the standard
+or annotated JDK (Chapter~\ref{annotating-libraries}),
+and leave the work to the standard
 type-checking rules.
 
 
@@ -1095,7 +1097,7 @@ As an example, consider an equality test in the Nullness type system:
     }
 \end{Verbatim}
 
-The type of \<s != null> is always \<@NonNull boolean>.  However, in the
+The type of \<s != null> is always \<boolean>.  However, in the
 true branch, the type of \<s> can be refined to \<@NonNull String>.
 
 \end{enumerate}
@@ -1550,7 +1552,7 @@ subdirectory, annotations that have other \<ElementType> values, or to indicate
 whether a checker supports the polymorphic qualifier
 \refqualclass{framework/qual}{PolyAll}, checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
-method (open the link for details).
+method (see its Javadoc for details).
 
 An aggregate checker (which extends
 \refclass{framework/source}{AggregateChecker}) does not need to specify its
@@ -1577,14 +1579,14 @@ multiple processors to the \<-processor> command-line option.
 For example, instead of a user having to run
 
 \begin{Verbatim}
-  javac -processor DistanceUnitChecker,VelocityUnitChecker,MassUnitChecker ... files ...
+  javac -processor DistanceUnitChecker,VelocityUnitChecker,MassUnitChecker MyFile.java
 \end{Verbatim}
 
 \noindent
 the user can write
 
 \begin{Verbatim}
-  javac -processor MyUnitCheckers ... files ...
+  javac -processor MyUnitCheckers MyFile.java
 \end{Verbatim}
 
 \noindent
@@ -1664,8 +1666,8 @@ To pass a flag on the command line, call javac as follows:
 
 \subsubsection{Named string values\label{creating-providing-command-line-options-named-string-values}}
 
-For more complicated options, one can use the standard annotation
-processing \code{@SupportedOptions} annotation on the checker, as in:
+For more complicated options, one can use the standard
+\code{@SupportedOptions} annotation on the checker, as in:
 
 \begin{alltt}
   \refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
@@ -2229,7 +2231,7 @@ without warnings or errors.
 
 \item
   Integrate your new checker with the Eclipse plugin.
-  See \<\$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker>/ for instructions.
+  See \<\$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker> for instructions.
 
 \end{itemize}
 
