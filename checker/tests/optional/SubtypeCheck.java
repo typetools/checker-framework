@@ -7,10 +7,10 @@ import org.checkerframework.checker.optional.qual.Present;
 public class SubtypeCheck {
 
     void foo(@MaybePresent int mp, @Present int p) {
-        @MaybePresent int a = mp;
-        @MaybePresent int b = p;
+        @MaybePresent int mp2 = mp;
+        @MaybePresent int mp3 = p;
         //:: error: assignment.type.incompatible
-        @Present int c = mp;
-        @Present int d = p;
+        @Present int p2 = mp;
+        @Present int p3 = p;
     }
 }
