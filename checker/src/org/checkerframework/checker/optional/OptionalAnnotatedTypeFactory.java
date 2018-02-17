@@ -14,6 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Adds {@link Present} to the type of tree, for calls to ofNullable whose argument is @NonNull. */
 public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {

@@ -46,7 +46,7 @@ public class OptionalVisitor
 
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
-        collectionType = types.erasure(TypesUtils.typeFromClass(types, elements, Collection.class));
+        collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
     }
 
     /** Provides a way to query the Nullness Checker. */
