@@ -155,10 +155,9 @@ documentation.  If you have a documentation improvement or a bug fix, then
 open a pullrequest against the upstream version of the library.  This will
 benefit all users of the library.
 
-If you do not annotate the full library, then make it easy for others to
-know what files you have annotated and what files you have not.  The
-\refqualclass{framework/qual}{AnnotatedFor} annotation may be helpful for
-this.
+If you do not annotate all the files in the library, then use
+\refqualclass{framework/qual}{AnnotatedFor} to indicate what files you have
+annotated.
 
 Whenever you annotate any part of a file, fully annotate the file!  That
 is, write annotations for all the methods and fields, based on their
@@ -266,7 +265,8 @@ You use \<@AnnotatedFor> to indicate which classes you have annotated.
 When compiling a library that is not fully annotated, use command-line
 argument \<-AuseDefaultsForUncheckedCode=source,bytecode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For all other classes, the checker uses unchecked code defaults
+annotation.  For classes without \<@AnnotatedFor>, the checker uses
+unchecked code defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
 \end{sloppypar}
