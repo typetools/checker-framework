@@ -10,8 +10,6 @@ import testlib.util.FlowTestChecker;
  * Tests for the flow-sensitive part of the framework. These tests complement the tests of {@link
  * FlowTest} and have been written when the org.checkerframework.dataflow analysis has been
  * completely rewritten.
- *
- * @author Stefan Heule
  */
 public class Flow2Test extends CheckerFrameworkPerDirectoryTest {
 

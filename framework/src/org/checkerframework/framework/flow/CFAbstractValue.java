@@ -50,8 +50,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * upper bound is ever used. So, the set of annotations represents the primary annotation on the
  * wildcard's upper bound. If that upper bound is a type variable, then the set of annotations could
  * be missing an annotation in a hierarchy.
- *
- * @author Stefan Heule
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
 

@@ -1,16 +1,17 @@
-// Test case for Issue 409:
+// Test case for Issue #409
 // https://github.com/typetools/checker-framework/issues/409
-// @skip-test
+
+// @skip-test until the issue is fixed
 
 public class Issue409 {
-    static interface Proc {
-        void call();
+    public static void main(String[] args) {
+        new Callback();
     }
+}
 
-    Proc p;
+class Callback {
 
-    class MyProc implements Proc {
-        @Override
+    class MyProc {
         public void call() {
             doStuff();
         }
@@ -18,17 +19,17 @@ public class Issue409 {
 
     String foo;
 
-    Issue409() {
-        p = new MyProc();
+    Callback() {
+        MyProc p = new MyProc();
+        // This call is illegal.  It passes an @UnderInitialization outer this, but MyProc.call is
+        // declared to take an @Initialized outer this (whith is the default type).
+        // :: error: (method.invocation.invalid)
         p.call();
         foo = "hello";
     }
 
     void doStuff() {
-        System.out.println(foo.toLowerCase());
-    }
-
-    public static void main(String[] args) {
-        new Issue409();
+        System.out.println(
+                foo.toLowerCase()); // this line throws a NullPointerException at run time
     }
 }

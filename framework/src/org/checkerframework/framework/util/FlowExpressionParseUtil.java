@@ -61,8 +61,6 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 /**
  * A collection of helper methods to parse a string that represents a restricted Java expression.
  * Such expressions can be found in annotations (e.g., to specify a pre- or postcondition).
- *
- * @author Stefan Heule
  */
 public class FlowExpressionParseUtil {
 
@@ -874,8 +872,6 @@ public class FlowExpressionParseUtil {
     /**
      * A very simple parser for parameter lists, i.e. strings of the form {@code a, b, c} for some
      * expressions {@code a}, {@code b} and {@code c}.
-     *
-     * @author Stefan Heule
      */
     private static class ParameterListParser {
 

@@ -31,8 +31,6 @@ import testlib.wholeprograminference.qual.WholeProgramInferenceBottom;
  * AnnotatedTypeFactory to test whole-program inference using .jaif files.
  *
  * <p>The used qualifier hierarchy is straightforward and only intended for test purposes.
- *
- * @author pbsf
  */
 public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -78,8 +76,6 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
     /**
      * Using a MultiGraphQualifierHierarchy to enable tests with Annotations that contain
      * fields. @see SiblingWithFields.
-     *
-     * @author pbsf
      */
     protected class WholeProgramInferenceTestQualifierHierarchy
             extends MultiGraphQualifierHierarchy {
