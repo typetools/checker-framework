@@ -29,7 +29,6 @@ import javax.xml.validation.Schema;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**

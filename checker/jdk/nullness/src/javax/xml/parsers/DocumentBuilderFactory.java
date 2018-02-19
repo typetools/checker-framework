@@ -26,7 +26,6 @@
 package javax.xml.parsers;
 
 import javax.xml.validation.Schema;
-
 import org.checkerframework.checker.nullness.qual.Nullable ;
 
 /**

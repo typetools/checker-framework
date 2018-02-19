@@ -24,7 +24,6 @@
  */
 
 package javax.xml.parsers;
-
 import org.checkerframework.checker.nullness.qual.Nullable ;
 
 /**
