@@ -255,7 +255,7 @@ Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib
 
 \begin{Verbatim}
 @SuppressWarnings("purity") // side effect to local state of type BitSet
-@SuppressWarnings("cast") // cast is redundant (except in JSR 308)
+@SuppressWarnings("cast") // cast is redundant (except when checking nullness)
 @SuppressWarnings("interning") // FbType.FREE is interned but is not annotated
 @SuppressWarnings("interning") // equality testing optimization
 @SuppressWarnings("nullness") // used portion of array is non-null

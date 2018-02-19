@@ -38,7 +38,7 @@
     <developers>
 
         <developer>
-            <id>Michael Ernst &lt;mernst@cs.washington.edu&gt;</id>
+            <id>Michael Ernst</id>
             <name>Michael Ernst</name>
             <email>mernst@cs.washington.edu</email>
             <url>http://homes.cs.washington.edu/~mernst/</url>
@@ -55,10 +55,10 @@
         </developer>
 
         <developer>
-            <id>Suzanne Millstein  &lt;smillst@cs.washington.edu&gt;</id>
+            <id>Suzanne Millstein</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
+            <organization>University of Washington</organization>
             <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
         </developer>
 
