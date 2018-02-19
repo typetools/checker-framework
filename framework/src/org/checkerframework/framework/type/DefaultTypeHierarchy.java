@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import static org.checkerframework.framework.util.AnnotatedTypes.isDeclarationOfJavaLangEnum;
 import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -331,11 +330,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             final AnnotatedTypeMirror supertype,
             VisitHistory visited) {
         if (visited.contains(subtype, supertype)) {
-            return true;
+            return visited.getValue(subtype, supertype);
         }
 
-        visited.add(subtype, supertype);
-        return isSubtype(subtype, supertype, visited);
+        // Remove for 1838 to work, but needed for other tests :-(
+        visited.add(subtype, supertype, true);
+
+        Boolean result = isSubtype(subtype, supertype, visited);
+        visited.add(subtype, supertype, result);
+        return result;
     }
 
     protected boolean isSubtypeOfAll(
@@ -497,13 +500,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         }
 
         if (visited.contains(subtypeAsSuper, supertype)) {
-            return true;
+            return visited.getValue(subtypeAsSuper, supertype);
         }
 
-        visited.add(subtypeAsSuper, supertype);
         final Boolean result =
                 visitTypeArgs(
                         subtypeAsSuper, supertype, visited, subtype.wasRaw(), supertype.wasRaw());
+        visited.add(subtypeAsSuper, supertype, result);
 
         return result;
     }
@@ -541,22 +544,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             AnnotationMirror covam =
                     supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
 
-            if (covam == null) {
-                // Fall back to deprecated Nullness Checker version of the annotation.
-                // This should be removed once that version is removed.
-                // Using String instead of .class to prevent dependency.
-                try {
-                    @SuppressWarnings({"unchecked", "LiteralClassName"})
-                    Class<? extends Annotation> nncov =
-                            (Class<? extends Annotation>)
-                                    Class.forName(
-                                            "org.checkerframework.checker.nullness.qual.Covariant");
-                    covam = supertype.atypeFactory.getDeclAnnotation(supertypeElem, nncov);
-                } catch (ClassNotFoundException ex) {
-                    covam = null;
-                }
-            }
-
             if (covam != null) {
                 covariantArgIndexes =
                         AnnotationUtils.getElementValueArray(covam, "value", Integer.class, false);
@@ -568,8 +555,25 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 final boolean covariant =
                         covariantArgIndexes != null && covariantArgIndexes.contains(i);
 
-                if (!compareTypeArgs(
-                        subTypeArg, superTypeArg, supertypeRaw, subtypeRaw, covariant, visited)) {
+                if (visited.contains(subTypeArg, superTypeArg)) {
+                    if (visited.getValue(subTypeArg, superTypeArg)) {
+                        continue;
+                    } else {
+                        return false;
+                    }
+                }
+
+                Boolean result =
+                        compareTypeArgs(
+                                subTypeArg,
+                                superTypeArg,
+                                supertypeRaw,
+                                subtypeRaw,
+                                covariant,
+                                visited);
+                visited.add(subTypeArg, superTypeArg, result);
+
+                if (!result) {
                     return false;
                 }
             }
@@ -1029,10 +1033,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             AnnotatedIntersectionType supertype,
             VisitHistory visited) {
         if (visited.contains(subtype, supertype)) {
-            return true;
+            return visited.getValue(subtype, supertype);
         }
-        visited.add(subtype, supertype);
-        return isSubtypeOfAll(subtype, supertype.directSuperTypes(), visited);
+        Boolean result = isSubtypeOfAll(subtype, supertype.directSuperTypes(), visited);
+        visited.add(subtype, supertype, result);
+        return result;
     }
 
     /** A type variable is a supertype if its lower bound is above subtype. */

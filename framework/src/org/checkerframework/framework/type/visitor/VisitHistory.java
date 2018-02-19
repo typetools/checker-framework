@@ -1,10 +1,9 @@
 package org.checkerframework.framework.type.visitor;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * IMPORTANT: DO NOT USE VisitHistory FOR VISITORS THAT UPDATE AN ANNOTATED TYPE MIRROR'S
@@ -23,10 +22,10 @@ import org.checkerframework.javacutil.Pair;
  */
 public class VisitHistory {
 
-    private final Set<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> visited;
+    private final Map<AnnotatedTypeMirror, Map<AnnotatedTypeMirror, Boolean>> visited;
 
     public VisitHistory() {
-        this.visited = new HashSet<>();
+        this.visited = new HashMap<>();
     }
 
     public void clear() {
@@ -34,8 +33,15 @@ public class VisitHistory {
     }
 
     /** Add a visit for type1 and type2. */
-    public void add(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        this.visited.add(Pair.of(type1, type2));
+    public void add(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, Boolean b) {
+        Map<AnnotatedTypeMirror, Boolean> hit = visited.get(type1);
+        if (hit != null) {
+            hit.put(type2, b);
+        } else {
+            hit = new HashMap<>();
+            hit.put(type2, b);
+            this.visited.put(type1, hit);
+        }
     }
 
     /**
@@ -45,11 +51,29 @@ public class VisitHistory {
      * @return true if an equivalent pair has already been added to the history
      */
     public boolean contains(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        return this.visited.contains(Pair.of(type1, type2));
+        Map<AnnotatedTypeMirror, Boolean> hit = visited.get(type1);
+        if (hit != null) {
+            return hit.containsKey(type2);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Returns the value of a previous encounter of type1 and type2 or null if the pair hasn't
+     * occurred before.
+     */
+    public Boolean getValue(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
+        Map<AnnotatedTypeMirror, Boolean> hit = visited.get(type1);
+        if (hit != null) {
+            return hit.get(type2);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String toString() {
-        return "VisitHistory( " + PluginUtil.join(", ", visited) + " )";
+        return "VisitHistory( " + PluginUtil.join(", ", visited.keySet()) + " )";
     }
 }

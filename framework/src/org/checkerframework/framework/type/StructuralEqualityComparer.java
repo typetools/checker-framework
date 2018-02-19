@@ -128,9 +128,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return AnnotationUtils.areSame(
                     type1.getAnnotationInHierarchy(currentTop),
                     type2.getAnnotationInHierarchy(currentTop));
-        } // else
-
-        return AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations());
+        } else {
+            return AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations());
+        }
     }
 
     /**
@@ -146,10 +146,15 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final VisitHistory visited) {
         if (types1.size() != types2.size()) {
             ErrorReporter.errorAbort(
-                    "Mismatching collection sizes:\n"
-                            + PluginUtil.join(",", types1)
-                            + "\n"
-                            + PluginUtil.join(",", types2));
+                    "Mismatching collection sizes:\n    types 1: "
+                            + PluginUtil.join("; ", types1)
+                            + " ("
+                            + types1.size()
+                            + ")\n    types 2: "
+                            + PluginUtil.join("; ", types2)
+                            + " ("
+                            + types2.size()
+                            + ")");
         }
 
         final Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
@@ -174,12 +179,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final AnnotatedTypeMirror type2,
             final VisitHistory visited) {
         if (visited.contains(type1, type2)) {
-            return true;
+            return visited.getValue(type1, type2);
         }
 
         final Boolean result = areEqual(type1, type2, visited);
-        visited.add(type1, type2);
-
+        visited.add(type1, type2, result);
         return result;
     }
 
@@ -242,14 +246,21 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final AnnotatedDeclaredType type2,
             final VisitHistory visited) {
         if (visited.contains(type1, type2)) {
-            return true;
+            return visited.getValue(type1, type2);
         }
+
+        // TODO: same class/interface is not enforced. Why?
 
         if (!arePrimeAnnosEqual(type1, type2)) {
             return false;
         }
-        visited.add(type1, type2);
-        return visitTypeArgs(type1, type2, visited);
+
+        // Prevent infinite recursion e.g. in Issue1587b
+        visited.add(type1, type2, true);
+
+        Boolean result = visitTypeArgs(type1, type2, visited);
+        visited.add(type1, type2, result);
+        return result;
     }
 
     /**
@@ -274,13 +285,21 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return true;
         }
 
-        if (type1Args.size() > 0) {
-            if (!areAllEqual(type1Args, type2Args, visited)) {
-                return false;
-            }
+        if (type1Args.size() == type2Args.size()) {
+            return areAllEqual(type1Args, type2Args, visited);
+        } else {
+            ErrorReporter.errorAbort(
+                    "Mismatching type argument sizes:\n    type 1: "
+                            + type1
+                            + " ("
+                            + type1Args.size()
+                            + ")\n    type 2: "
+                            + type2
+                            + " ("
+                            + type2Args.size()
+                            + ")");
+            return false;
         }
-
-        return true;
     }
 
     /**
@@ -302,8 +321,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return false;
         }
 
-        visited.add(type1, type2);
-        return areAllEqual(type1.directSuperTypes(), type2.directSuperTypes(), visited);
+        Boolean result = areAllEqual(type1.directSuperTypes(), type2.directSuperTypes(), visited);
+        visited.add(type1, type2, result);
+        return result;
     }
 
     /**
@@ -351,22 +371,27 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final AnnotatedTypeVariable type2,
             final VisitHistory visited) {
         if (visited.contains(type1, type2)) {
-            return true;
+            return visited.getValue(type1, type2);
         }
-        visited.add(type1, type2);
 
         // TODO: Remove this code when capture conversion is implemented
         if (TypesUtils.isCaptured(type1.getUnderlyingType())
                 || TypesUtils.isCaptured(type2.getUnderlyingType())) {
             if (!boundsMatch(type1, type2)) {
-                return subtypeAndCompare(type1.getUpperBound(), type2.getUpperBound(), visited)
-                        && subtypeAndCompare(type1.getLowerBound(), type2.getLowerBound(), visited);
+                Boolean result =
+                        subtypeAndCompare(type1.getUpperBound(), type2.getUpperBound(), visited)
+                                && subtypeAndCompare(
+                                        type1.getLowerBound(), type2.getLowerBound(), visited);
+                visited.add(type1, type2, result);
+                return result;
             }
         }
 
-        visited.add(type1, type2);
-        return areEqual(type1.getUpperBound(), type2.getUpperBound(), visited)
-                && areEqual(type1.getLowerBound(), type2.getLowerBound(), visited);
+        Boolean result =
+                areEqual(type1.getUpperBound(), type2.getUpperBound(), visited)
+                        && areEqual(type1.getLowerBound(), type2.getLowerBound(), visited);
+        visited.add(type1, type2, result);
+        return result;
     }
 
     /**
@@ -386,7 +411,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         final AnnotatedTypeMirror t2;
 
         if (type1.getKind() == TypeKind.NULL && type2.getKind() == TypeKind.NULL) {
-            return areEqual(type1, type2);
+            return areEqual(type1, type2, visited);
         }
         if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
             t1 = type1;
@@ -434,6 +459,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                         .getUnderlyingType()
                         .equals(type2.getLowerBound().getUnderlyingType());
     }
+
     /**
      * Two wildcards are equal if:
      *
@@ -453,17 +479,19 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final AnnotatedWildcardType type2,
             final VisitHistory visited) {
         if (visited.contains(type1, type2)) {
-            return true;
+            return visited.getValue(type1, type2);
         }
 
-        visited.add(type1, type2);
         if (type1.atypeFactory.ignoreUninferredTypeArguments
                 && (type1.isUninferredTypeArgument() || type2.isUninferredTypeArgument())) {
             return true;
         }
 
-        return areEqual(type1.getExtendsBound(), type2.getExtendsBound(), visited)
-                && areEqual(type1.getSuperBound(), type2.getSuperBound(), visited);
+        Boolean result =
+                areEqual(type1.getExtendsBound(), type2.getExtendsBound(), visited)
+                        && areEqual(type1.getSuperBound(), type2.getSuperBound(), visited);
+        visited.add(type1, type2, result);
+        return result;
     }
 
     // since we don't do a boxing conversion between primitive and declared types in some cases
@@ -496,7 +524,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * variables are "inferred" to be wildcards, this method allows the comparison of a wildcard to
      * a type variable even though they should never truly be equal.
      *
-     * <p>A wildcard is equal tyo a type variable if:
+     * <p>A wildcard is equal to a type variable if:
      *
      * <ul>
      *   <li>The wildcard's bounds are equal to the type variable's bounds
@@ -508,15 +536,18 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final AnnotatedTypeVariable type2,
             final VisitHistory visited) {
         if (visited.contains(type1, type2)) {
-            return true;
+            return visited.getValue(type1, type2);
         }
-
-        visited.add(type1, type2);
 
         if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {
             return true;
         }
-        return areEqual(type1.getExtendsBound(), type2.getUpperBound(), visited)
-                && areEqual(type1.getSuperBound(), type2.getLowerBound(), visited);
+
+        Boolean result =
+                areEqual(type1.getExtendsBound(), type2.getUpperBound(), visited)
+                        && areEqual(type1.getSuperBound(), type2.getLowerBound(), visited);
+
+        visited.add(type1, type2, result);
+        return result;
     }
 }
