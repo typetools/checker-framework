@@ -1,26 +1,26 @@
 /*
  * Copyright (c) 2005, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package javax.script;
@@ -30,8 +30,7 @@ import java.util.HashMap;
 import java.util.Collection;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.*;
 
 /**
  * A simple implementation of Bindings backed by
@@ -78,7 +77,6 @@ public class SimpleBindings implements Bindings {
      * @throws NullPointerException if the name is null.
      * @throws IllegalArgumentException if the name is empty.
      */
-    @SuppressWarnings("nullness") 
     public @Nullable Object put(String name, Object value) {
         checkKey(name);
         return map.put(name,value);
@@ -125,20 +123,19 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness") 
+    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
     public boolean containsKey(Object key) {
         checkKey(key);
         return map.containsKey(key);
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("nullness")
-    public boolean containsValue(Object value) {
+    public boolean containsValue(@Nullable Object value) {
         return map.containsValue(value);
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor")
+    @SuppressWarnings("keyfor")    // No proper annotations scheme found.
     public Set<Map.Entry<String, Object>> entrySet() {
         return map.entrySet();
     }
@@ -164,7 +161,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")	 
+    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass.  
     public @Nullable Object get(Object key) {
         checkKey(key);
         return map.get(key);
@@ -176,8 +173,8 @@ public class SimpleBindings implements Bindings {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor")
-    public Set<String> keySet() {
+    @SuppressWarnings("keyfor")    // No proper annotations scheme found. 
+    public Set< String> keySet() {
         return map.keySet();
     }
 
@@ -203,7 +200,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness") 
+    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
     public @Nullable Object remove(Object key) {
         checkKey(key);
         return map.remove(key);

@@ -1,26 +1,26 @@
 /*
  * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package javax.script;
@@ -58,7 +58,7 @@ public class ScriptEngineManager  {
      *
      * @see java.lang.Thread#getContextClassLoader
      */
-    @SuppressWarnings("initialization") 
+    @SuppressWarnings("initialization")    // Until execution of this constructor, no such dereferencing problems will be there as illustrated in the manual 
     public ScriptEngineManager() {
         ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
         init(ctxtLoader);
@@ -74,12 +74,12 @@ public class ScriptEngineManager  {
      *
      * @param loader ClassLoader used to discover script engine factories.
      */
-    @SuppressWarnings("initialization") 
-    public ScriptEngineManager(@Nullable ClassLoader loader) {
+    @SuppressWarnings("initialization")    // Until execution of this constructor, no such dereferencing problems will be there as illustrated in the manual 
+    public ScriptEngineManager(ClassLoader loader) {
         init(loader);
     }
 
-    private void init(final ClassLoader loader) {
+    private void init(final @Nullable ClassLoader loader) {
         globalScope = new SimpleBindings();
         engineSpis = new HashSet<ScriptEngineFactory>();
         nameAssociations = new HashMap<String, ScriptEngineFactory>();
@@ -96,12 +96,13 @@ public class ScriptEngineManager  {
         }
     }
 
-    private void initEngines(final ClassLoader loader) {
+    private void initEngines(final @Nullable ClassLoader loader) {
         Iterator<ScriptEngineFactory> itr = null;
         try {
             ServiceLoader<ScriptEngineFactory> sl = AccessController.doPrivileged(
                 new PrivilegedAction<ServiceLoader<ScriptEngineFactory>>() {
                     @Override
+                    @SuppressWarnings("nullness")    // As this method run() from interface PrivilegedAction<T> doesn't specify a non-null behaviour as such instead it tells to write own specification.  
                     public ServiceLoader<ScriptEngineFactory> run() {
                         return getServiceLoader(loader);
                     }
@@ -192,8 +193,7 @@ public class ScriptEngineManager  {
      * @param key The key whose value is to be returned.
      * @return The value for the specified key.
      */
-    @SuppressWarnings("nullness")
-    public Object get(String key) {
+    public @Nullable Object get(String key) {
         return globalScope.get(key);
     }
 
@@ -405,17 +405,17 @@ public class ScriptEngineManager  {
     }
 
     /** Set of script engine factories discovered. */
-    private @SuppressWarnings("initialization") HashSet<ScriptEngineFactory> engineSpis;
+    private @SuppressWarnings("initialization") HashSet<ScriptEngineFactory> engineSpis;    // gets initialized in init method which is called by constuctor of class
 
     /** Map of engine name to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> nameAssociations;
+    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> nameAssociations;    // gets initialized in init method which is called by constuctor of class method
 
     /** Map of script file extension to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> extensionAssociations;
+    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> extensionAssociations;    // gets initialized in init method which is called by constuctor of class
 
     /** Map of script script MIME type to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> mimeTypeAssociations;
+    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> mimeTypeAssociations;    // gets initialized in init method which is called by constuctor of class
 
     /** Global bindings associated with script engines created by this manager. */
-    private @SuppressWarnings("initialization") Bindings globalScope;
+    private @SuppressWarnings("initialization") Bindings globalScope;    // gets initialized in init method which is called by constuctor of class
 }
