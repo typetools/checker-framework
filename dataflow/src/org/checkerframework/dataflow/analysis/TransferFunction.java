@@ -27,7 +27,6 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  * (and modify) the stores contained in the argument passed; the ownership is transfered from the
  * caller to that function.
  *
- * @author Stefan Heule
  * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>>

@@ -46,8 +46,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *       If it would not be, then the dereference would have raised a {@link NullPointerException}.
  *   <li>Tracks whether {@link PolyNull} is known to be {@link Nullable}.
  * </ol>
- *
- * @author Stefan Heule
  */
 public class NullnessTransfer
         extends InitializationTransfer<NullnessValue, NullnessTransfer, NullnessStore> {

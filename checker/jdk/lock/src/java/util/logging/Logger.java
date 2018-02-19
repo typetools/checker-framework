@@ -281,9 +281,9 @@ public class Logger {
 
     Logger(String name, String resourceBundleName, Class<?> caller) { throw new RuntimeException(); }
 
-    private void setCallersClassLoaderRef(Class<?> caller) { throw new RuntimeException(); }
+    private void setCallersClassLoaderRef(@GuardSatisfied Logger this, Class<?> caller) { throw new RuntimeException(); }
 
-    private ClassLoader getCallersClassLoader() { throw new RuntimeException(); }
+    private ClassLoader getCallersClassLoader(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     // This constructor is used only to create the global Logger.
     // It is needed to break a cyclic dependence between the LogManager
@@ -292,7 +292,7 @@ public class Logger {
 
     // It is called from the LogManager.<clinit> to complete
     // initialization of the global Logger.
-    void setLogManager(LogManager manager) { throw new RuntimeException(); }
+    void setLogManager(@GuardSatisfied Logger this, LogManager manager) { throw new RuntimeException(); }
 
     private void checkPermission() throws SecurityException { throw new RuntimeException(); }
 
@@ -455,7 +455,7 @@ public class Logger {
      *
      * @return localization bundle (may be null)
      */
-    public ResourceBundle getResourceBundle() { throw new RuntimeException(); }
+    public ResourceBundle getResourceBundle(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     /**
      * Retrieve the localization resource bundle name for this
@@ -464,7 +464,7 @@ public class Logger {
      *
      * @return localization bundle name (may be null)
      */
-    public String getResourceBundleName() { throw new RuntimeException(); }
+    public String getResourceBundleName(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     /**
      * Set a filter to control output on this Logger.
@@ -477,14 +477,14 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setFilter(Filter newFilter) throws SecurityException { throw new RuntimeException(); }
+    public void setFilter(@GuardSatisfied Logger this, Filter newFilter) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Get the current filter for this Logger.
      *
      * @return  a filter object (may be null)
      */
-    public Filter getFilter() { throw new RuntimeException(); }
+    public Filter getFilter(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     /**
      * Log a LogRecord.
@@ -1129,7 +1129,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setLevel(Level newLevel) throws SecurityException { throw new RuntimeException(); }
+    public void setLevel(@GuardSatisfied Logger this, Level newLevel) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Get the log Level that has been specified for this Logger.
@@ -1138,7 +1138,7 @@ public class Logger {
      *
      * @return  this Logger's level
      */
-    public Level getLevel() { throw new RuntimeException(); }
+    public Level getLevel(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     /**
      * Check if a message of the given level would actually be logged
@@ -1154,7 +1154,7 @@ public class Logger {
      * Get the name for this logger.
      * @return logger name.  Will be null for anonymous Loggers.
      */
-    public String getName() { throw new RuntimeException(); }
+    public String getName(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     /**
      * Add a log Handler to receive logging messages.
@@ -1167,7 +1167,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void addHandler(Handler handler) throws SecurityException { throw new RuntimeException(); }
+    public void addHandler(@GuardSatisfied Logger this, Handler handler) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Remove a log Handler.
@@ -1178,14 +1178,14 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void removeHandler(Handler handler) throws SecurityException { throw new RuntimeException(); }
+    public void removeHandler(@GuardSatisfied Logger this, Handler handler) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Get the Handlers associated with this logger.
      * <p>
      * @return  an array of all registered Handlers
      */
-    public Handler[] getHandlers() { throw new RuntimeException(); }
+    public Handler[] getHandlers(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     /**
      * Specify whether or not this logger should send its output
@@ -1198,7 +1198,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setUseParentHandlers(boolean useParentHandlers) { throw new RuntimeException(); }
+    public void setUseParentHandlers(@GuardSatisfied Logger this, boolean useParentHandlers) { throw new RuntimeException(); }
 
     /**
      * Discover whether or not this logger is sending its output
@@ -1206,7 +1206,7 @@ public class Logger {
      *
      * @return  true if output is to be sent to the logger's parent
      */
-    public boolean getUseParentHandlers() { throw new RuntimeException(); }
+    public boolean getUseParentHandlers(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     static final String SYSTEM_LOGGER_RB_NAME = "sun.util.logging.resources.logging";
 
@@ -1232,7 +1232,7 @@ public class Logger {
     // that a suitable ResourceBundle exists before setting the
     // resourceBundleName field.
     // Synchronized to prevent races in setting the fields.
-    private synchronized void setupResourceInfo(String name,
+    private synchronized void setupResourceInfo(@GuardSatisfied Logger this, String name,
                                                 Class<?> callersClass) { throw new RuntimeException(); }
 
     /**
@@ -1248,7 +1248,7 @@ public class Logger {
      *
      * @return nearest existing parent Logger
      */
-    public Logger getParent() { throw new RuntimeException(); }
+    public Logger getParent(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
     /**
      * Set the parent for this Logger.  This method is used by
@@ -1260,21 +1260,21 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setParent(Logger parent) { throw new RuntimeException(); }
+    public void setParent(@GuardSatisfied Logger this, @GuardSatisfied Logger parent) { throw new RuntimeException(); }
 
     // Private method to do the work for parenting a child
     // Logger onto a parent logger.
-    private void doSetParent(Logger newParent) { throw new RuntimeException(); }
+    private void doSetParent(@GuardSatisfied Logger this, @GuardSatisfied Logger newParent) { throw new RuntimeException(); }
 
     // Package-level method.
     // Remove the weak reference for the specified child Logger from the
     // kid list. We should only be called from LoggerWeakRef.dispose().
-    final void removeChildLogger(LogManager.LoggerWeakRef child) { throw new RuntimeException(); }
+    final void removeChildLogger(@GuardSatisfied Logger this, LogManager.LoggerWeakRef child) { throw new RuntimeException(); }
 
     // Recalculate the effective level for this node and
     // recursively for our children.
 
-    private void updateEffectiveLevel() { throw new RuntimeException(); }
+    private void updateEffectiveLevel(@GuardSatisfied Logger this) { throw new RuntimeException(); }
 
 
     // Private method to get the potentially inherited

@@ -25,7 +25,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * java.text.MessageFormat#format(String, Object...)}, when the first argument is {@code "format"}.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

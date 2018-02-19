@@ -9,7 +9,6 @@ package org.checkerframework.dataflow.cfg.node;
  * <p>This is useful to implement a visitor that performs the same operation (e.g., nothing) for
  * most {@link Node}s and only has special behavior for a few.
  *
- * @author Stefan Heule
  * @param <R> return type of the visitor
  * @param <P> parameter type of the visitor
  */

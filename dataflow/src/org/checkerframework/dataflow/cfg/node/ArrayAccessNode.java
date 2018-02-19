@@ -15,9 +15,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * We allow array accesses without corresponding AST {@link Tree}s.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ArrayAccessNode extends Node {
 

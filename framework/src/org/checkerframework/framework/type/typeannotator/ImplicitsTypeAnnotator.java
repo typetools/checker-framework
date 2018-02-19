@@ -67,18 +67,32 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         // classes and kinds into maps.
         for (Class<? extends Annotation> qual : quals) {
             ImplicitFor implicit = qual.getAnnotation(ImplicitFor.class);
-            if (implicit == null) continue;
+            if (implicit == null) {
+                continue;
+            }
 
             AnnotationMirror theQual =
                     AnnotationBuilder.fromClass(typeFactory.getElementUtils(), qual);
-            for (TypeKind typeKind : implicit.types()) {
-                addTypeKind(typeKind, theQual);
+            for (org.checkerframework.framework.qual.TypeKind typeKind : implicit.types()) {
+                TypeKind mappedTk = mapTypeKinds(typeKind);
+                addTypeKind(mappedTk, theQual);
             }
 
             for (Class<?> typeName : implicit.typeNames()) {
                 addTypeName(typeName, theQual);
             }
         }
+    }
+
+    /**
+     * Map between {@link org.checkerframework.framework.qual.TypeKind} and {@link
+     * javax.lang.model.type.TypeKind}.
+     *
+     * @param typeKind the Checker Framework TypeKind
+     * @return the javax TypeKind
+     */
+    private TypeKind mapTypeKinds(org.checkerframework.framework.qual.TypeKind typeKind) {
+        return TypeKind.valueOf(typeKind.name());
     }
 
     public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {

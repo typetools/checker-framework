@@ -21,17 +21,8 @@
 
   <target name="-errorprone.download" depends="errorprone.check" unless="errorprone.exists">
     <get
-        src="https://github.com/google/error-prone/archive/v${errorprone.version}.tar.gz"
-        dest="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz" />
-    <untar src="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz"
-           dest="${errorprone.home}/../"
-           compression="gzip" />
-
-    <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
-      <arg value="-q"/>
-      <arg value="package"/>
-      <arg value="-Dmaven.test.skip=true"/>
-    </exec>
+        src="https://repo1.maven.org/maven2/com/google/errorprone/error_prone_ant/${errorprone.version}/error_prone_ant-${errorprone.version}.jar"
+        dest="${errorprone.lib}"/>
   </target>
 
   <target name="check-errorprone" depends="-errorprone.download"
@@ -57,6 +48,8 @@
       <compilerarg value="-Xep:ReferenceEquality:OFF"/>
       <!-- These might be worth fixing. -->
       <compilerarg value="-Xep:DefaultCharset:OFF"/>
+      <!-- Not useful to suggest Splitter; maybe clean up. -->
+      <compilerarg value="-Xep:StringSplitter:OFF"/>
       <compilerarg value="-Werror"/>
     </javac>
 

@@ -263,7 +263,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this list
      */
-    boolean remove(Object o);
+    boolean remove(@GuardSatisfied List<E> this, Object o);
 
 
     // Bulk Modification Operations
@@ -310,7 +310,7 @@ public interface List<E extends Object> extends Collection<E> {
      *         specified collection prevents it from being added to this list
      * @see #add(Object)
      */
-    boolean addAll(Collection<? extends E> c);
+    boolean addAll(@GuardSatisfied List<E> this, Collection<? extends E> c);
 
     /**
      * Inserts all of the elements in the specified collection into this
@@ -339,7 +339,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
-    boolean addAll(int index, Collection<? extends E> c);
+    boolean addAll(@GuardSatisfied List<E> this, int index, Collection<? extends E> c);
 
     /**
      * Removes from this list all of its elements that are contained in the
@@ -359,7 +359,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    boolean removeAll(@GuardSatisfied List<E> this, Collection<?> c);
 
     /**
      * Retains only the elements in this list that are contained in the
@@ -381,7 +381,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean retainAll(Collection<?> c);
+    boolean retainAll(@GuardSatisfied List<E> this, Collection<?> c);
 
     /**
      * Removes all of the elements from this list (optional operation).
@@ -390,7 +390,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>clear</tt> operation
      *         is not supported by this list
      */
-    void clear();
+    void clear(@GuardSatisfied List<E> this);
 
 
     // Comparison and hashing
@@ -464,7 +464,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E set(int index, E element);
+    E set(@GuardSatisfied List<E> this, int index, E element);
 
     /**
      * Inserts the specified element at the specified position in this list

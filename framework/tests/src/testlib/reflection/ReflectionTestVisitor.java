@@ -3,11 +3,7 @@ package testlib.reflection;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
-/**
- * Visitor for a simple type system to test reflection resolution.
- *
- * @author rjust
- */
+/** Visitor for a simple type system to test reflection resolution. */
 public final class ReflectionTestVisitor
         extends BaseTypeVisitor<ReflectionTestAnnotatedTypeFactory> {
 

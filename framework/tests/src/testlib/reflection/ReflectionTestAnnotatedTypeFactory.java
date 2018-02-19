@@ -16,8 +16,6 @@ import testlib.reflection.qual.ReflectBottom;
 /**
  * AnnotatedTypeFactory with reflection resolution enabled. The used qualifier hierarchy is
  * straightforward and only intended for test purposes.
- *
- * @author rjust, smillst
  */
 public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {
