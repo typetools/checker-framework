@@ -92,10 +92,15 @@ public class CheckerMain {
 
         this.checkerJar = checkerJar;
         final File searchPath = checkerJar.getParentFile();
-        this.checkerQualJar = new File(searchPath, "checker-qual.jar");
 
         replaceShorthandProcessor(args);
         argListFiles = collectArgFiles(args);
+
+        this.checkerQualJar =
+                extractFileArg(
+                        PluginUtil.CHECKER_QUAL_PATH_OPT,
+                        new File(searchPath, "checker-qual.jar"),
+                        args);
 
         this.javacJar =
                 extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);

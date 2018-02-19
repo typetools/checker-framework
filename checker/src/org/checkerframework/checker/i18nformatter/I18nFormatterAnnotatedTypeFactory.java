@@ -42,7 +42,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * invoked.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 

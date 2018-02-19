@@ -29,7 +29,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * specified in the Format String Checker manual.
  *
  * @checker_framework.manual #formatter-guarantees Format String Checker
- * @author Konstantin Weitz
  */
 public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFactory> {
     public FormatterVisitor(BaseTypeChecker checker) {

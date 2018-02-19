@@ -10,9 +10,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   <em>expression</em> &amp;&amp; <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ConditionalAndNode extends BinaryOperationNode {
 

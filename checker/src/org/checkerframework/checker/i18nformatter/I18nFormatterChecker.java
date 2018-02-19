@@ -9,7 +9,6 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
  * (MessageFormat.format()).
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 @SupportedOptions({"bundlenames", "propfiles"})
 @RelevantJavaTypes(CharSequence.class)

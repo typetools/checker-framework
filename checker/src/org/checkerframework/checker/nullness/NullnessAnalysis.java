@@ -13,8 +13,6 @@ import org.checkerframework.javacutil.Pair;
 /**
  * The analysis class for the non-null type system (serves as factory for the transfer function,
  * stores and abstract values.
- *
- * @author Stefan Heule
  */
 public class NullnessAnalysis
         extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {

@@ -13,8 +13,6 @@ import java.util.Map;
  * <p>This class replicates some logic from TreePath.getPath but also adds caching to all
  * intermediate TreePaths that are generated. The intermediate TreePaths are reused when other
  * targets have overlapping paths.
- *
- * @author mcarthur
  */
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 

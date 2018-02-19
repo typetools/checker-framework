@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 /**
  * A meta-annotation to allow multiple precondition annotations.
  *
- * @author Stefan Heule
  * @see RequiresQualifier
  */
 @Documented

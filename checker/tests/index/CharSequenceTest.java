@@ -47,14 +47,12 @@ public class CharSequenceTest {
         sink(ab, 2);
     }
 
-    // Tests that length retrieved from CharSequence cannot be used as an index
+    // Tests that length retrieved from CharSequence can be used as an index
     void getLength(CharSequence cs, int i) {
         if (i >= 0 && i < cs.length()) {
-            // :: error: (argument.type.incompatible)
             cs.charAt(i);
         }
 
-        // :: error: (assignment.type.incompatible)
         @IndexOrHigh("cs") int l = cs.length();
     }
 

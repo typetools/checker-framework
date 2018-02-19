@@ -27,8 +27,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
  * from lookupKeys.
- *
- * @author wmdietl
  */
 public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 

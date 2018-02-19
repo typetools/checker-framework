@@ -10,8 +10,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   <em>expression</em> + <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
  */
 public class NumericalAdditionNode extends BinaryOperationNode {
 

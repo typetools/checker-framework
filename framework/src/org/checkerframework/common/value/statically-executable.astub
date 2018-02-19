@@ -295,7 +295,7 @@ class String{
     @StaticallyExecutable int indexOf(String str);
     @StaticallyExecutable int indexOf(String str, int fromIndex);
     @StaticallyExecutable @PolyValue String intern(@PolyValue String this);
-    @StaticallyExecutable boolean isEmpty();
+    @StaticallyExecutable @EnsuresMinLenIf(expression="this", result=false, targetValue=1) boolean isEmpty();
     @StaticallyExecutable int lastIndexOf(int ch);
     @StaticallyExecutable int lastIndexOf(int ch, int fromIndex);
     @StaticallyExecutable int lastIndexOf(String str);
@@ -359,4 +359,37 @@ class Arrays {
     static @MinLen(2) String toString(double[] a);
     static @MinLen(2) String toString(Object[] a);
     static @MinLen(2) String deepToString(Object[] a);
+}
+
+class Calendar {
+    public @IntRange(from = 1, to = 7) int getFirstDayOfWeek();
+    public void setFirstDayOfWeek(@IntRange(from = 1, to = 7) int value);
+    public @IntRange(from = 1, to = 7) int getMinimalDaysInFirstWeek();
+    public void setMinimalDaysInFirstWeek(@IntRange(from = 1, to = 7) int value);
+}
+
+package java.awt.image;
+
+class ColorModel {
+   public int @PolyValue [] getComponents(int pixel, int @PolyValue [] components, int offset);
+   public int @PolyValue [] getComponents(Object pixel, int @PolyValue [] components, int offset);
+}
+
+package java.text;
+
+class DateFormatSymbols {
+    public String @ArrayLen(2) [] getEras();
+    public void setEras(String @ArrayLen(2) [] newEras);
+    public String @ArrayLen(13) [] getMonths();
+    public void setMonths(String @ArrayLen(13) [] newMonths);
+    public String @ArrayLen(13) [] getShortMonths();
+    public void setShortMonths(String @ArrayLen(13) [] newShortMonths);
+    public String @ArrayLen(8) [] getWeekdays();
+    public void setWeekdays(String @ArrayLen(8) [] newWeekdays);
+    public String @ArrayLen(8) [] getShortWeekdays();
+    public void setShortWeekdays(String @ArrayLen(8) [] newShortWeekdays);
+    public String @ArrayLen(2) [] getAmPmStrings();
+    public void setAmPmStrings(String @ArrayLen(2) [] newAmpms);
+    public String @ArrayLen(2) [] @MinLen(5) [] getZoneStrings();
+    public void setZoneStrings(String @ArrayLen(2) [] @MinLen(5) [] newZoneStrings);
 }

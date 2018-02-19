@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 /**
  * A meta-annotation to allow multiple conditional postcondition annotations.
  *
- * @author Stefan Heule
  * @see EnsuresQualifierIf
+ * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

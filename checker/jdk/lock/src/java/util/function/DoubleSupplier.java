@@ -1,5 +1,7 @@
 package java.util.function;
 
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+
 public interface DoubleSupplier {
-    double getAsDouble();
+    double getAsDouble(@GuardSatisfied DoubleSupplier this);
 }
