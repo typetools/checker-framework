@@ -1,5 +1,3 @@
-This is the checker-framework repository.
-
 If you wish to use the Checker Framework, see file README.txt.
 
 This repository contains several related projects:
