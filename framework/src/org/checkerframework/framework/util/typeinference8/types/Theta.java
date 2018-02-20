@@ -12,7 +12,8 @@ import org.checkerframework.framework.util.typeinference8.util.Context;
 /** A mapping from type variable to inference variable. */
 public class Theta extends HashMap<TypeVariable, Variable> {
     private static final long serialVersionUID = 42L;
-    List<Entry<TypeVariable, Variable>> entryList = new ArrayList<>();
+
+    private final List<Entry<TypeVariable, Variable>> entryList = new ArrayList<>();
 
     @Override
     public Variable put(TypeVariable key, Variable value) {
@@ -44,7 +45,7 @@ public class Theta extends HashMap<TypeVariable, Variable> {
      * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
      * variables to newly created variables.
      *
-     * <p>Otherwise, return the previously created mapping.
+     * <p>Otherwise, returns the previously created mapping.
      *
      * @param invocation method or constructor invocation
      * @param methodType type of generic method

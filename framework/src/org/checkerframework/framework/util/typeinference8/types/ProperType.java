@@ -35,10 +35,11 @@ public class ProperType extends AbstractType {
         }
 
         ProperType otherProperType = (ProperType) o;
-        if (properType == otherProperType.properType) {
-            return true;
-        }
-        return context.env.getTypeUtils().isSameType(properType, otherProperType.properType);
+
+        return properType == otherProperType.properType // faster
+                || context.env
+                        .getTypeUtils()
+                        .isSameType(properType, otherProperType.properType); // slower
     }
 
     @Override

@@ -54,11 +54,12 @@ public class Context {
 
     /** Number of non-capture variables. */
     private int variableCount = 1;
+
     /** Number of capture variables. */
     private int captureVariableCount = 1;
 
     /** TypeMirror for java.lang.RuntimeException. */
-    public TypeMirror runtimeEx;
+    public final TypeMirror runtimeEx;
 
     public Context(
             ProcessingEnvironment env,

@@ -20,7 +20,7 @@ import javax.lang.model.type.WildcardType;
 
 public class ContainsInferenceVariable {
 
-    /** Returns true is {@code type} contains any of the type varibles in {@code typeVariables}. */
+    /** Returns true if {@code type} contains any of the type variables in {@code typeVariables}. */
     public static boolean hasAnyTypeVariable(
             Collection<TypeVariable> typeVariables, TypeMirror type) {
         return new Visitor(typeVariables).visit(type);
@@ -39,8 +39,11 @@ public class ContainsInferenceVariable {
 
         /** Type variables for which to search. */
         private final Collection<TypeVariable> typeVariables;
-        /** Type variables in {@code typeVariables} that have ben found. */
+
+        /** Type variables in {@code typeVariables} that have been found. */
+        // default visibility to allow direct access from getMentionedTypeVariables
         final LinkedHashSet<TypeVariable> foundVariables = new LinkedHashSet<>();
+
         /** A set of types that have been visited. Used to prevent infinite recursion. */
         private final Set<TypeMirror> visitedTypes = new HashSet<>();
 

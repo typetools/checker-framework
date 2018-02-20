@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Represents a constraints between two {@link AbstractType}. One of:
+ * Represents a constraint between two {@link AbstractType}. One of:
  *
  * <ul>
  *   <li>{@link Kind#TYPE_COMPATIBILITY} {@code < S -> T >}: A type S is compatible in a loose
@@ -35,6 +35,7 @@ public class Typing extends Constraint {
 
     /** One of the abstract types in this constraint. {@link #T} is the other. */
     private AbstractType S;
+
     /**
      * Kind of constraint. One of: {@link Kind#TYPE_COMPATIBILITY}, {@link Kind#SUBTYPE}, {@link
      * Kind#CONTAINED}, or {@link Kind#TYPE_EQUALITY}
@@ -182,7 +183,7 @@ public class Typing extends Constraint {
 
             return set;
         } else {
-            //the constraint reduces to true if T is among the supertypes of S, and false otherwise.
+            // The constraint reduces to true if T is among the supertypes of S, and false otherwise.
             return ConstraintSet.TRUE;
         }
     }
@@ -218,6 +219,7 @@ public class Typing extends Constraint {
             return ConstraintSet.FALSE;
         }
     }
+
     /**
      * Returns the result of reducing this constraint, assuming it is a subtyping constraint where
      * {@code T} is an intersection type. See JLS 18.2.3.
@@ -229,6 +231,7 @@ public class Typing extends Constraint {
         }
         return constraintSet;
     }
+
     /**
      * Returns the result of reducing this constraint, assuming it is a containment constraint. See
      * JLS 18.2.3.
@@ -264,6 +267,7 @@ public class Typing extends Constraint {
             }
         }
     }
+
     /**
      * Returns the result of reducing this constraint, assume it is a type compatibility constraint.
      * See JLS 18.2.2
@@ -398,13 +402,9 @@ public class Typing extends Constraint {
             return false;
         }
 
-        org.checkerframework.framework.util.typeinference8.constraint.Typing typing =
-                (org.checkerframework.framework.util.typeinference8.constraint.Typing) o;
+        Typing typing = (Typing) o;
 
-        if (!S.equals(typing.S)) {
-            return false;
-        }
-        return kind == typing.kind;
+        return S.equals(typing.S) && kind == typing.kind;
     }
 
     @Override

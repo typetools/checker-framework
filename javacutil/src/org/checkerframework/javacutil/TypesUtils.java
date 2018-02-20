@@ -687,7 +687,7 @@ public final class TypesUtils {
     }
 
     /**
-     * TThis method returns the single abstract method declared by {@code functionalInterfaceType}.
+     * This method returns the single abstract method declared by {@code functionalInterfaceType}.
      * (The type of this method is referred to as the function type.)
      *
      * @param functionalInterfaceType functional interface
@@ -752,7 +752,7 @@ public final class TypesUtils {
     }
 
     /**
-     * @return true if {@code typeMirror} is a declared type with at least on wildcard as a type
+     * @return true if {@code typeMirror} is a declared type with at least one wildcard as a type
      *     argument
      */
     public static boolean isWildcardParameterized(TypeMirror typeMirror) {

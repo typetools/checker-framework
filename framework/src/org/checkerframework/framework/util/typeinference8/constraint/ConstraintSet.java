@@ -24,6 +24,7 @@ public class ConstraintSet implements ReductionResult {
                     return "TRUE";
                 }
             };
+
     public static final ReductionResult FALSE =
             new ReductionResult() {
                 @Override
@@ -31,25 +32,27 @@ public class ConstraintSet implements ReductionResult {
                     return "FALSE";
                 }
             };
+
     /**
      * A list of constraints in this set. It does not contain constraints that are equal. This needs
      * to be kept in the order created, which should be lexically left to right. This is so the
      * {@link #getClosedSubset(Dependencies)} is computed correctly.
      */
-    private final List<Constraint> list = new ArrayList<>();
+    private final List<Constraint> list;
 
     public ConstraintSet(Constraint... constraints) {
         if (constraints != null) {
+            list = new ArrayList<>(constraints.length);
             list.addAll(Arrays.asList(constraints));
+        } else {
+            list = new ArrayList<>();
         }
     }
 
     /** Adds {@code c} to this set, if c isn't already in the list. */
     public void add(Constraint c) {
-        if (c != null) {
-            if (!list.contains(c)) {
-                list.add(c);
-            }
+        if (c != null && !list.contains(c)) {
+            list.add(c);
         }
     }
 
@@ -189,7 +192,7 @@ public class ConstraintSet implements ReductionResult {
     /**
      * Reduces all the constraints in this set. (See JLS 18.2)
      *
-     * @return the bound set produce by reducing this constraint set
+     * @return the bound set produced by reducing this constraint set
      */
     public BoundSet reduce(Context context) {
         BoundSet boundSet = new BoundSet(context);
@@ -197,11 +200,11 @@ public class ConstraintSet implements ReductionResult {
             Constraint constraint = this.pop();
             ReductionResult result = constraint.reduce(context);
             if (result instanceof ReductionResultPair) {
-                boundSet.merge(((ReductionResultPair) result).second);
+                boundSet.merge(((ReductionResultPair) result).boundSet);
                 if (boundSet.containsFalse()) {
                     throw new FalseBoundException(constraint);
                 }
-                this.addAll(((ReductionResultPair) result).first);
+                this.addAll(((ReductionResultPair) result).constraintSet);
             } else if (result instanceof Constraint) {
                 this.add((Constraint) result);
             } else if (result instanceof ConstraintSet) {

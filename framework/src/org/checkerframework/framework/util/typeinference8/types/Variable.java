@@ -45,7 +45,7 @@ public class Variable extends AbstractType {
     protected final EnumMap<BoundKind, Set<AbstractType>> bounds = new EnumMap<>(BoundKind.class);
 
     /** Constraints implied by complementary pairs of bounds found during incorporation. */
-    public ConstraintSet constraints = new ConstraintSet();
+    public final ConstraintSet constraints = new ConstraintSet();
 
     /** Whether or not this variable has a throws bounds. */
     private boolean hasThrowsBound = false;
@@ -113,13 +113,11 @@ public class Variable extends AbstractType {
         }
 
         Variable variable = (Variable) o;
-        if (context.factory
-                .getContext()
-                .getTypeUtils()
-                .isSameType(typeVariable, variable.typeVariable)) {
-            return invocation == variable.invocation;
-        }
-        return false;
+        return context.factory
+                        .getContext()
+                        .getTypeUtils()
+                        .isSameType(typeVariable, variable.typeVariable)
+                && invocation == variable.invocation;
     }
 
     @Override

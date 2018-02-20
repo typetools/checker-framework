@@ -18,6 +18,7 @@ public class InferenceType extends AbstractType {
      * in {@code map}.
      */
     private final TypeMirror type;
+
     /** A mapping of type variables to inference variables. */
     private final Theta map;
 

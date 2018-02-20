@@ -40,7 +40,7 @@ public abstract class AbstractType {
         INFERENCE_TYPE
     }
 
-    public AbstractType(Context context) {
+    protected AbstractType(Context context) {
         this.context = context;
     }
 
@@ -114,11 +114,11 @@ public abstract class AbstractType {
     }
 
     /**
-     * If {@code superType} is a super type of this type, then this method returns super type of
-     * this type that is that same class as {@code superType}. Otherwise, it returns null
+     * If {@code superType} is a super type of this type, then this method returns the super type of
+     * this type that is the same class as {@code superType}. Otherwise, it returns null
      *
      * @param superType a type, need not be a super type of this type
-     * @return per type of this type that is that same class as {@code superType} or null if one
+     * @return super type of this type that is the same class as {@code superType} or null if one
      *     doesn't exist
      */
     public final AbstractType asSuper(TypeMirror superType) {
@@ -156,7 +156,7 @@ public abstract class AbstractType {
      * If this type is a functional interface, then this method returns the parameter types of the
      * function type of that functional interface. Otherwise, it returns null.
      *
-     * @return the paramter types of the function type of this type or null if no function type
+     * @return the parameter types of the function type of this type or null if no function type
      *     exists.
      */
     public final List<AbstractType> getFunctionTypeParameterTypes() {
@@ -196,10 +196,10 @@ public abstract class AbstractType {
     }
 
     /**
-     * whether the proper type is a parameterized class or interface type, or an inner class type of
+     * Whether the proper type is a parameterized class or interface type, or an inner class type of
      * a parameterized class or interface type (directly or indirectly)
      *
-     * @return whether T is a parametrized type.
+     * @return whether T is a parameterized type.
      */
     public final boolean isParameterizedType() {
         // TODO this isn't matching the JavaDoc.
@@ -244,6 +244,7 @@ public abstract class AbstractType {
     public final AbstractType getTypeVarUpperBound() {
         return create(((TypeVariable) getJavaType()).getUpperBound());
     }
+
     /**
      * @return assuming this type is a type variable that has a lower bound, this method returns the
      *     lower bound of this type.
@@ -295,7 +296,7 @@ public abstract class AbstractType {
         }
     }
 
-    /** @return true if the type is a wildcard with an lower bound */
+    /** @return true if the type is a wildcard with a lower bound */
     public final boolean isLowerBoundedWildcard() {
         if (getJavaType().getKind() == TypeKind.WILDCARD) {
             return ((WildcardType) getJavaType()).isSuperBound();
@@ -327,12 +328,12 @@ public abstract class AbstractType {
         }
     }
 
-    /** @return a new type that whose Java type is the erasure of this type */
+    /** @return a new type whose Java type is the erasure of this type */
     public AbstractType getErased() {
         return create(context.env.getTypeUtils().erasure(getJavaType()));
     }
 
-    /** @return the array componentn type of this type or null if one does not exist. */
+    /** @return the array component type of this type or null if one does not exist. */
     public final AbstractType getComponentType() {
         if (getJavaType().getKind() == TypeKind.ARRAY) {
             return create(((ArrayType) getJavaType()).getComponentType());

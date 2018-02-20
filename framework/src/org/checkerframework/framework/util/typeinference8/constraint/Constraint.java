@@ -45,6 +45,7 @@ public abstract class Constraint implements ReductionResult {
          */
         METHOD_REF_EXCEPTION,
     }
+
     /** T: may contain inference variables. */
     public AbstractType T;
 

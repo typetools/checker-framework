@@ -34,11 +34,12 @@ public class BoundSet implements ReductionResult {
     private final Context context;
 
     /** Whether or not this bounds set contains the false bound. */
-    private boolean containsFalse = false;
+    private boolean containsFalse;
+
     /**
      * Whether or not unchecked conversion was necessary to reduce and incorporate this bound set.
      */
-    private boolean uncheckedConversion = false;
+    private boolean uncheckedConversion;
 
     public BoundSet(Context context) {
         assert context != null;
@@ -46,14 +47,15 @@ public class BoundSet implements ReductionResult {
         this.captures = new LinkedHashSet<>();
         this.context = context;
         this.containsFalse = false;
+        this.uncheckedConversion = false;
     }
 
     /** Copy constructor */
     public BoundSet(BoundSet toCopy) {
-        this(toCopy.context);
+        this.context = toCopy.context;
         this.containsFalse = toCopy.containsFalse;
-        this.captures.addAll(toCopy.captures);
-        this.variables.addAll(toCopy.variables);
+        this.captures = new LinkedHashSet<>(toCopy.captures);
+        this.variables = new LinkedHashSet<>(toCopy.variables);
         this.uncheckedConversion = toCopy.uncheckedConversion;
         for (Variable v : variables) {
             v.save();
@@ -129,7 +131,7 @@ public class BoundSet implements ReductionResult {
         return uncheckedConversion;
     }
 
-    /** Sets whether or not uncheck conversion is required. */
+    /** Sets whether or not unchecked conversion is required. */
     public void setUncheckedConversion(boolean uncheckedConversion) {
         this.uncheckedConversion = uncheckedConversion;
     }

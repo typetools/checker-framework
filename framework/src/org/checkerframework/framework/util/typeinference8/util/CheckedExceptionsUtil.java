@@ -34,7 +34,7 @@ public class CheckedExceptionsUtil {
      */
     private static class CheckedExceptionVisitor extends TreeScanner<List<TypeMirror>, Void> {
 
-        private Context context;
+        private final Context context;
 
         private CheckedExceptionVisitor(Context context) {
             this.context = context;

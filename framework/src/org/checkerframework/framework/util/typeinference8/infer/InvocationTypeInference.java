@@ -28,7 +28,6 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.Capture;
-import org.checkerframework.framework.util.typeinference8.constraint.*;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
@@ -53,10 +52,10 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <p>At a high level, inference creates variables, as place holders for the method type arguments
  * to infer for the invocation of a method. Then it creates constraints between the arguments to the
- * method invocation and the its formal parameter types and the return type of the method and the
- * target type of the invocation. These constraints are reduced to produce bounds on the varibles.
- * These variables are then incorporated, which produces more bounds or constraints. Then a type for
- * the variable is computing by resolving the bounds.
+ * method invocation and its formal parameter types and the return type of the method and the target
+ * type of the invocation. These constraints are reduced to produce bounds on the variables. These
+ * variables are then incorporated, which produces more bounds or constraints. Then a type for each
+ * variable is computed by resolving the bounds.
  *
  * <p>{@link AbstractType}s are type-like structures that might include inference variables.
  *
@@ -79,7 +78,7 @@ public class InvocationTypeInference {
         this.context = new Context(factory.getProcessingEnv(), factory, pathToExpression, this);
     }
 
-    /** Preform invocation type inference on {@code methodInvocation}. */
+    /** Perform invocation type inference on {@code methodInvocation}. */
     public List<Variable> infer(MethodInvocationTree methodInvocation) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(context.pathToExpression);
         if (!shouldTryInference(assignmentContext, context.pathToExpression)) {

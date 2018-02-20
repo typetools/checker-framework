@@ -23,8 +23,6 @@ import org.checkerframework.javacutil.TypesUtils;
 
 public class Resolution {
     public static BoundSet resolve(Collection<Variable> as, BoundSet boundSet, Context context) {
-        List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
-
         if (as.isEmpty()) {
             return boundSet;
         }
@@ -38,12 +36,13 @@ public class Resolution {
             }
         }
 
+        List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
         unresolvedVars.removeAll(resolvedVars);
         if (unresolvedVars.isEmpty()) {
             return boundSet;
         }
 
-        Resolution resolution = new Resolution(context, dependencies, resolvedVars);
+        Resolution resolution = new Resolution(context, dependencies);
         boundSet = resolution.resolve(boundSet, unresolvedVars);
         assert !boundSet.containsFalse();
         return boundSet;
@@ -55,10 +54,9 @@ public class Resolution {
         }
         Dependencies dependencies = boundSet.getDependencies();
 
-        List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
         LinkedHashSet<Variable> unresolvedVars = new LinkedHashSet<>();
         unresolvedVars.add(a);
-        Resolution resolution = new Resolution(context, dependencies, resolvedVars);
+        Resolution resolution = new Resolution(context, dependencies);
         boundSet = resolution.resolve(unresolvedVars, boundSet);
         assert !boundSet.containsFalse();
         return boundSet;
@@ -66,20 +64,20 @@ public class Resolution {
 
     private final Context context;
     private final Dependencies dependencies;
-    private List<Variable> resolvedVars;
 
-    private Resolution(Context context, Dependencies dependencies, List<Variable> resolvedVars) {
+    private Resolution(Context context, Dependencies dependencies) {
         this.context = context;
         this.dependencies = dependencies;
-        this.resolvedVars = resolvedVars;
     }
 
     public BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
+        List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
 
         while (!unresolvedVars.isEmpty()) {
             assert !boundSet.containsFalse();
 
-            LinkedHashSet<Variable> smallestDependencySet = getSmallestDependecySet(unresolvedVars);
+            LinkedHashSet<Variable> smallestDependencySet =
+                    getSmallestDependecySet(resolvedVars, unresolvedVars);
 
             // Resolve the smallest unresolved dependency set.
             boundSet = resolve(smallestDependencySet, boundSet);
@@ -90,7 +88,8 @@ public class Resolution {
         return boundSet;
     }
 
-    private LinkedHashSet<Variable> getSmallestDependecySet(Queue<Variable> unresolvedVars) {
+    private LinkedHashSet<Variable> getSmallestDependecySet(
+            List<Variable> resolvedVars, Queue<Variable> unresolvedVars) {
         LinkedHashSet<Variable> smallestDependencySet = null;
         // This loop is looking for the smallest set of dependencies that have not been resolved.
         for (Variable alpha : unresolvedVars) {

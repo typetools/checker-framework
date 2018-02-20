@@ -5,6 +5,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -25,8 +26,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * are declared by the throws clause of the function type derived from T.
  */
 public class CheckedExceptionConstraint extends Constraint {
-    ExpressionTree expression;
-    Theta map;
+    protected final ExpressionTree expression;
+    protected final Theta map;
 
     public CheckedExceptionConstraint(ExpressionTree expression, AbstractType t, Theta map) {
         super(t);
@@ -126,7 +127,7 @@ public class CheckedExceptionConstraint extends Constraint {
 
         CheckedExceptionConstraint that = (CheckedExceptionConstraint) o;
 
-        return expression != null ? expression.equals(that.expression) : that.expression == null;
+        return Objects.equals(expression, that.expression);
     }
 
     @Override

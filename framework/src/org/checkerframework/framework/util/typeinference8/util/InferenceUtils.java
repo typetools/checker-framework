@@ -190,7 +190,7 @@ public class InferenceUtils {
 
         final Map<TypeVariable, TypeMirror> subs = new HashMap<>();
         final List<? extends TypeVariable> typeVariables;
-        Types types;
+        final Types types;
 
         public GetMapping(List<? extends TypeVariable> typeVariables, Types types) {
             this.typeVariables = typeVariables;

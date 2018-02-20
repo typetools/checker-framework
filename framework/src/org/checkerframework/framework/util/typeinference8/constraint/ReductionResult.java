@@ -22,13 +22,16 @@ public interface ReductionResult {
 
     /** A reduction result that contains a bound set and a constraint set. */
     class ReductionResultPair implements ReductionResult {
-        public ConstraintSet first;
-        public BoundSet second;
+        public final ConstraintSet constraintSet;
+        public final BoundSet boundSet;
 
-        public static ReductionResultPair of(ConstraintSet first, BoundSet second) {
-            ReductionResultPair pair = new ReductionResultPair();
-            pair.first = first;
-            pair.second = second;
+        private ReductionResultPair(ConstraintSet constraintSet, BoundSet boundSet) {
+            this.constraintSet = constraintSet;
+            this.boundSet = boundSet;
+        }
+
+        public static ReductionResultPair of(ConstraintSet constraintSet, BoundSet boundSet) {
+            ReductionResultPair pair = new ReductionResultPair(constraintSet, boundSet);
             return pair;
         }
     }
