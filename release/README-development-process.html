@@ -19,6 +19,23 @@ All of these are (to the best of our knowledge) standard development
 practices.  These practices are not specific to the Checker Framework.
 </p>
 
+<h2>Coding style</h2>
+
+<p>
+When editing files in the Checker Framework,
+see <a href="http://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
+Ernst's coding style guidelines</a>.  You may also wish to
+see <a href="http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248">Oracle's
+Java code conventions</a>.
+</p>
+
+<p>
+The codebase conforms to a consistent indentation style, which is enforced
+by a git pre-commit hook. The pre-commit hook runs <code>ant
+check-format</code> in the top level directory. <code>ant reformat</code>
+will format all files such that <code>ant check-format</code> succeeds.
+</p>
+
 <h2>Separate out unrelated changes</h2>
 
 <p>
