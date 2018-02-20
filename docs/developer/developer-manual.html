@@ -16,7 +16,7 @@
 
 <p>
 This document contains information for Checker Framework developers,
-including people who wish to edits its source code or make pull requests.
+including people who wish to edit its source code or make pull requests.
 </p>
 
 
@@ -65,12 +65,20 @@ check-format</code> in the top level directory. <code>ant reformat</code>
 will format all files such that <code>ant check-format</code> succeeds.
 </p>
 
+<p>
+We don't use <code>@author</code> Javadoc tags in code files.
+Doing so clutters the code, and is misleading because once that individual
+is no longer maintaining the code.
+Authorship (and who has made changes recently) can be obtained from the
+version control system.
+</p>
 
-<h2>Separate out unrelated changes</h2>
+
+<h2>Make commits logically uniform</h2>
 
 <p>
 Each commit should address a single issue, rather than a commit addressing
-multiple issues such as both fixing a bug, adding a feature, and changing
+multiple issues such as fixing a bug, adding a feature, and changing
 formatting.  Focusing each commit on a single issue makes the commit easier
 to understand and review; it also eases diagnosis and (if necessary)
 rollback.
@@ -94,19 +102,24 @@ controversial that you do not.
 </p>
 
 <p>
-Try to work on a branch if you are going to submit a pull request.
+Work on a branch if you are going to submit a pull request.
 This enables others to make changes directly to your branch when that
 is more efficient than leaving comments in a pull request.
 </p>
 
 <p>
 Try to address pull requests promptly, to avoid stalling others while
-waiting for your feedback.  If you have been waiting for a while after the
-pull request was assigned with no feedback, then go ahead and push your
-changes.  It's great if reviewers can give feedback, but if they are too
-busy to do so, you should recognize that and move on.
-A week is a ballpark figure, but the amount of time will vary depending on
-circumstances.
+waiting for your feedback.  If you have been waiting for more than a week
+after the pull request was assigned with no feedback, then ping the
+assignee, wait at least another business day, and then go ahead and push
+your changes.  It's great if reviewers can give feedback, but if they are
+too busy to do so, you should recognize that and move on.
+</p>
+
+<p>
+Also
+see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
+    Ernst's advice about creating GitHub pull requests</a>.
 </p>
 
 
@@ -121,16 +134,6 @@ to be noticed by someone working with the code, and it is equally easy to
 search for.  Furthermore, it doesn't clutter the issue tracker, which
 reduces morale and makes the project appear lower-quality than it actually
 is.
-</p>
-
-<h2>No <code>@author</code> tags</h2>
-
-<p>
-We don't use <code>@author</code> Javadoc tags in code files.
-Doing so clutters the code, and is misleading because once that individual
-is no longer maintaining the code.
-Authorship (and who has made changes recently) can be obtained from the
-version control system.
 </p>
 
 
