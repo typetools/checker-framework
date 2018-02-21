@@ -210,8 +210,6 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *       same block as both 'then' and 'else' successor. This phase removes these cases while
  *       preserving the control flow structure.
  * </ol>
- *
- * @author Stefan Heule
  */
 public class CFGBuilder {
 

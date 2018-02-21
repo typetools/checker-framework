@@ -19,9 +19,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p><em>package</em>.class.object(...)
  *
  * <p>parent.<em>package</em>.class.object(...)
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class PackageNameNode extends Node {
 

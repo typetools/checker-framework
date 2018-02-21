@@ -12,11 +12,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
-/**
- * A PropertyKeyATF that uses LocalizableKey to annotate the keys.
- *
- * @author wmdietl
- */
+/** A PropertyKeyATF that uses LocalizableKey to annotate the keys. */
 public class LocalizableKeyAnnotatedTypeFactory extends PropertyKeyAnnotatedTypeFactory {
 
     public LocalizableKeyAnnotatedTypeFactory(BaseTypeChecker checker) {

@@ -1,10 +1,6 @@
 package org.checkerframework.dataflow.util;
 
-/**
- * Utility class to implement the {@code hashCode} method.
- *
- * @author Stefan Heule
- */
+/** Utility class to implement the {@code hashCode} method. */
 public class HashCodeUtils {
 
     /** Odd prime number. */

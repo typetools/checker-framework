@@ -825,6 +825,7 @@ def mvn_install(pluginDir):
 def pluginDirToPom(pluginDir):
     return os.path.join(pluginDir, 'pom.xml')
 
+# classifier is None, "sources", or "javadoc"
 def mvn_sign_and_deploy(url, repo_id, pom_file, file_property, classifier, pgp_user, pgp_passphrase):
     cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file_property)
     if classifier is not None:

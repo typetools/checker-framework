@@ -23,7 +23,6 @@ import org.checkerframework.framework.qual.StubFiles;
  *       argument.
  * </ol>
  *
- * @author wmdietl
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
 @StubFiles("jdnc.astub")

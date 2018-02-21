@@ -13,7 +13,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * the annotation's value.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
- * @author Konstantin Weitz
  */
 @SubtypeOf(UnknownFormat.class)
 @Retention(RetentionPolicy.RUNTIME)

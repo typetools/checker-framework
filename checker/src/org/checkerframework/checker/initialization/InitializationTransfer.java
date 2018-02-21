@@ -51,7 +51,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *       class can safely be considered initialized.
  * </ol>
  *
- * @author Stefan Heule
  * @see InitializationStore
  * @param <T> the type of the transfer function
  */

@@ -17,9 +17,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * Parameterized types don't represent any computation to be done at runtime, so we might choose to
  * represent them differently by modifying the {@link Node}s in which parameterized types can occur,
  * such as {@link ObjectCreationNode}s.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ParameterizedTypeNode extends Node {
 
