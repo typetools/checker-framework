@@ -155,7 +155,6 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Returns the minimum value of {@code expressions} at {@code tree}. */
     private long getMinValueFromString(String expression, Tree tree, TreePath path) {
-
         AnnotationMirror intRange = null;
         try {
             intRange =
@@ -192,6 +191,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> expressions =
                 getLessThanExpressions(leftATM.getAnnotations().iterator().next());
         if (expressions == null) {
+            // left is bottom so it is always less than right.
             return true;
         }
         if (expressions.contains(right)) {

@@ -58,7 +58,6 @@ public class LessThanCustomCollection {
 
     public static @NonNegative int checkElementIndex(
             @LessThan("#2") @NonNegative int index, @NonNegative int size) {
-        // Carefully optimized for execution by hotspot (explanatory comment above)
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException();
         }
