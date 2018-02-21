@@ -3504,13 +3504,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
         // basic consistency checks
-        if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type)) {
-            checker.report(
-                    Result.failure(
-                            "type.invalid.conflicting.annos",
-                            type.getAnnotations(),
-                            type.toString()),
-                    tree);
+        Result isValid = AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type);
+        if (isValid.isFailure()) {
+            checker.report(isValid, tree);
             return false;
         }
 

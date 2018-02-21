@@ -40,6 +40,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -884,40 +885,34 @@ public class AnnotatedTypes {
      *       as bounds of type variables and wildcards.
      * </ol>
      */
-    public static boolean isValidType(
+    public static Result isValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
-        SimpleAnnotatedTypeScanner<Boolean, Void> scanner =
-                new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+        SimpleAnnotatedTypeScanner<Result, Void> scanner =
+                new SimpleAnnotatedTypeScanner<Result, Void>() {
                     @Override
-                    protected Boolean defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+                    protected Result defaultAction(AnnotatedTypeMirror type, Void aVoid) {
                         return isTopLevelValidType(qualifierHierarchy, type);
                     }
 
                     @Override
-                    protected Boolean reduce(Boolean r1, Boolean r2) {
+                    protected Result reduce(Result r1, Result r2) {
                         if (r1 == null) {
                             if (r2 == null) {
-                                return true;
+                                return Result.SUCCESS;
                             }
                             return r2;
                         } else if (r2 == null) {
                             return r1;
                         }
-                        return r1 && r2;
+                        return r1.merge(r2);
                     }
                 };
-
-        boolean res = scanner.visit(type);
-        return res;
+        return scanner.visit(type);
     }
 
     /** Checks every property listed in #isValidType, but only for the top level type. */
-    private static boolean isTopLevelValidType(
+    private static Result isTopLevelValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
-        if (type == null) {
-            return false;
-        }
-
         // multiple annotations from the same hierarchy
         Set<AnnotationMirror> annotations = type.getAnnotations();
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
@@ -930,15 +925,9 @@ public class AnnotatedTypes {
             n++;
             AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
             if (AnnotationUtils.containsSame(seenTops, top)) {
-                return false;
+                return Result.failure("type.invalid.conflicting.annos", annotations, type);
             }
             seenTops.add(top);
-        }
-
-        // too many annotations
-        int expectedN = qualifierHierarchy.getWidth();
-        if (n > expectedN) {
-            return false;
         }
 
         // treat types that have polyall like type variables
@@ -947,10 +936,10 @@ public class AnnotatedTypes {
                 QualifierHierarchy.canHaveEmptyAnnotationSet(type) || hasPolyAll;
 
         // wrong number of annotations
-        if (!canHaveEmptyAnnotationSet && n != expectedN) {
-            return false;
+        if (!canHaveEmptyAnnotationSet && seenTops.size() < qualifierHierarchy.getWidth()) {
+            return Result.failure("type.invalid.too.few.annotations", annotations, type);
         }
-        return true;
+        return Result.SUCCESS;
     }
 
     private static String annotationClassName =
