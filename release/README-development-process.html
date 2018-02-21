@@ -19,6 +19,23 @@ All of these are (to the best of our knowledge) standard development
 practices.  These practices are not specific to the Checker Framework.
 </p>
 
+<h2>Coding style</h2>
+
+<p>
+When editing files in the Checker Framework,
+see <a href="http://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
+Ernst's coding style guidelines</a>.  You may also wish to
+see <a href="http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248">Oracle's
+Java code conventions</a>.
+</p>
+
+<p>
+The codebase conforms to a consistent indentation style, which is enforced
+by a git pre-commit hook. The pre-commit hook runs <code>ant
+check-format</code> in the top level directory. <code>ant reformat</code>
+will format all files such that <code>ant check-format</code> succeeds.
+</p>
+
 <h2>Separate out unrelated changes</h2>
 
 <p>
@@ -82,6 +99,22 @@ Doing so clutters the code, and is misleading because once that individual
 is no longer maintaining the code.
 Authorship (and who has made changes recently) can be obtained from the
 version control system.
+</p>
+
+<h2>Version numbers for annotated libraries</h2>
+
+<p>
+Annotated libraries should be based on a released version of the upstream
+library, not an arbitrary commit in the upstream library's version control
+system.
+</p>
+
+<p>
+When making a new version of an annotated library, between upstream
+releases, add ".0.1" to the end of the version number.  For example, we
+already uploaded version 6.2 to Maven Central, the next version would be
+6.2.0.1.  This accommodates the possibility that the upstream maintainers
+release 6.2.1.
 </p>
 
 
