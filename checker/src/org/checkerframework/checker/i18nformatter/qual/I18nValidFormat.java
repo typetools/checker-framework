@@ -11,7 +11,6 @@ import java.lang.annotation.Target;
  * org.checkerframework.checker.i18nformatter.I18nFormatUtil#isFormat}
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

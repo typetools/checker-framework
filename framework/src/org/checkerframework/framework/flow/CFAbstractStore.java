@@ -49,9 +49,6 @@ import org.checkerframework.javacutil.Pair;
  * methods in the subclasses as well. Also check if
  * BaseTypeVisitor#getFlowExpressionContextFromNode(Node) needs to be updated. Failing to do so may
  * result in silent failures that are time consuming to debug.
- *
- * @author Charlie Garrett
- * @author Stefan Heule
  */
 // TODO: this class should be split into parts that are reusable generally, and
 // parts specific to the checker framework

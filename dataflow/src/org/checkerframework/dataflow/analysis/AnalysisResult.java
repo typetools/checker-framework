@@ -23,7 +23,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * providing the abstract values given a node or a tree. Note that it does not keep track of custom
  * results computed by some analysis.
  *
- * @author Stefan Heule
  * @param <A> type of the abstract value that is tracked
  */
 public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {

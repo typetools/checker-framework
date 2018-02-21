@@ -77,12 +77,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * AnnotatedTypeFactory for the Value type system.
- *
- * @author plvines
- * @author smillst
- */
+/** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The maximum number of values allowed in an annotation's array */
@@ -145,7 +140,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         addAliasedAnnotation(
-                android.support.annotation.IntRange.class,
+                "android.support.annotation.IntRange",
                 AnnotationBuilder.fromClass(elements, IntRange.class),
                 true);
 

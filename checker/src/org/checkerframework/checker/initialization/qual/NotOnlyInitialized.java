@@ -15,7 +15,6 @@ import java.lang.annotation.Target;
  * initialization as supported by freedom-before-commitment.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
- * @author Stefan Heule
  */
 @Documented
 @Target(ElementType.FIELD)

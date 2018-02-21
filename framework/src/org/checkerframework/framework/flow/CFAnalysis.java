@@ -9,11 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.Pair;
 
-/**
- * The default org.checkerframework.dataflow analysis used in the Checker Framework.
- *
- * @author Stefan Heule
- */
+/** The default org.checkerframework.dataflow analysis used in the Checker Framework. */
 public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
     public CFAnalysis(

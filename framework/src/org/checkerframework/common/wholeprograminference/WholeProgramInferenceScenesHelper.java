@@ -377,10 +377,10 @@ public class WholeProgramInferenceScenesHelper {
         // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator.
         ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
         if (implicitFor != null) {
-            TypeKind[] types = implicitFor.types();
+            org.checkerframework.framework.qual.TypeKind[] types = implicitFor.types();
             TypeKind atmKind = atm.getUnderlyingType().getKind();
-            for (TypeKind tk : types) {
-                if (tk == atmKind) return true;
+            if (hasMatchingTypeKind(atmKind, types)) {
+                return true;
             }
 
             try {
@@ -400,6 +400,17 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
+        return false;
+    }
+
+    /** Returns true, iff a matching TypeKind is found. */
+    private boolean hasMatchingTypeKind(
+            TypeKind atmKind, org.checkerframework.framework.qual.TypeKind[] types) {
+        for (org.checkerframework.framework.qual.TypeKind tk : types) {
+            if (tk.name().equals(atmKind.name())) {
+                return true;
+            }
+        }
         return false;
     }
 

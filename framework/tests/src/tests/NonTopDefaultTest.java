@@ -6,11 +6,7 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.nontopdefault.NTDChecker;
 
-/**
- * Tests the NonTopDefault Checker.
- *
- * @author jyluo
- */
+/** Tests the NonTopDefault Checker. */
 public class NonTopDefaultTest extends CheckerFrameworkPerDirectoryTest {
 
     public NonTopDefaultTest(List<File> testFiles) {

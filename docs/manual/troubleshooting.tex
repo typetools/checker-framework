@@ -100,8 +100,9 @@ package org.checkerframework.checker.nullness.qual does not exist
 
 If the error is
 
+% Don't remove the apostrophe here
 \begin{Verbatim}
-package org.checkerframework.checker.nullness.qual does not exist
+package 'org.checkerframework.checker.nullness.qual does not exist
 \end{Verbatim}
 
 \begin{sloppypar}
@@ -388,8 +389,9 @@ give unexpected results.
 \item
 If a checker seems to be ignoring the annotation on a method, then it is
 possible that the checker is reading the method's signature from its
-\code{.class} file, but the \code{.class} file was not created by the JSR
-308 compiler.  You can check whether the annotations actually appear in the
+\code{.class} file, but the \code{.class} file was not created by a Java 8
+or later compiler.
+You can check whether the annotations actually appear in the
 \code{.class} file by using the \code{javap} tool.
 
 If the annotations do not appear in the \code{.class} file, here are two
@@ -779,6 +781,11 @@ code.  We are sure that you can make up artificial code that stymies the
 type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
 
+Please do not file an issue to report that some library class is not
+annotated.  Instead, please write the annotations (see
+Chapter~\ref{annotating-libraries}) and then submit a
+\ahref{https://github.com/typetools/checker-framework/pulls}{pull request}.
+
 
 \section{Building from source\label{build-source}}
 
@@ -1071,6 +1078,29 @@ instructions.
 \item
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
+
+
+\subsection{Configure Eclipse to edit the Checker Framework\label{building-eclipse}}
+
+\begin{enumerate}
+\item Follow the instructions earlier in Section~\ref{build-source} to
+clone and build all projects from their sources.
+\item Download Eclipse from
+the \href{https://www.eclipse.org/downloads}{official Eclipse website}
+and install it.
+\item Run Eclipse and set the
+workspace to the directory pointed to by \code{\$JSR308}.
+\item Enter the main Eclipse working screen and in the ``File'' menu,
+select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
+Projects into workspace''.
+\item After the ``Import Projects'' window appears, select ``Select
+Root Directory'', and select the directory pointed to by \code{\$JSR308}.
+\item Select all the projects in the folder except for the ones
+related to ``Eclipse'', ``encryption'', ``tutorial'', and ``demo''.
+\end{enumerate}
+Eclipse should successfully build all the imported projects.
+If Eclipse reports any errors, ensure you followed the instructions
+in Section~\ref{build-source}.
 
 
 \subsection{Enable Travis continuous integration builds\label{building-travis}}

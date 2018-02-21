@@ -13,9 +13,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   assert <em>condition</em> : <em>detail</em> ;
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class AssertionErrorNode extends Node {
 

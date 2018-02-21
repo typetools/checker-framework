@@ -14,6 +14,8 @@ import java.lang.annotation.Target;
  * <p>This annotation is not inherited. That means that if a checker with this annotation is
  * subclassed, then this annotation must be copied to the subclass and the stub file must also be
  * copied to the directory that contains the subclass.
+ *
+ * @checker_framework.manual #creating-a-checker-annotated-jdk Annotated JDK
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
