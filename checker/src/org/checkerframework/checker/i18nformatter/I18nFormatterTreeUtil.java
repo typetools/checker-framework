@@ -200,15 +200,13 @@ public class I18nFormatterTreeUtil {
 
     /** Returns an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null. */
     public I18nFormatCall createFormatForCall(
-            MethodInvocationTree tree,
-            MethodInvocationNode node,
-            I18nFormatterAnnotatedTypeFactory atypeFactory) {
+            MethodInvocationTree tree, I18nFormatterAnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
         for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
             // find @FormatFor
             if (paramType.getAnnotation(I18nFormatFor.class) != null) {
-                return atypeFactory.treeUtil.new I18nFormatCall(tree, node, atypeFactory);
+                return atypeFactory.treeUtil.new I18nFormatCall(tree, atypeFactory);
             }
         }
         return null;
@@ -229,17 +227,14 @@ public class I18nFormatterTreeUtil {
 
         private AnnotatedTypeMirror formatAnno;
 
-        public I18nFormatCall(
-                MethodInvocationTree tree,
-                MethodInvocationNode node,
-                AnnotatedTypeFactory atypeFactory) {
+        public I18nFormatCall(MethodInvocationTree tree, AnnotatedTypeFactory atypeFactory) {
             this.tree = tree;
             this.atypeFactory = atypeFactory;
             List<? extends ExpressionTree> theargs = (tree).getArguments();
             this.args = null;
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
-            initialCheck(theargs, method, node, methodAnno);
+            initialCheck(theargs, method, tree, methodAnno);
         }
 
         @Override
@@ -254,7 +249,7 @@ public class I18nFormatterTreeUtil {
         private void initialCheck(
                 List<? extends ExpressionTree> theargs,
                 ExecutableElement method,
-                MethodInvocationNode node,
+                MethodInvocationTree node,
                 AnnotatedExecutableType methodAnno) {
             int paramIndex = -1;
             Receiver paramArg = null;

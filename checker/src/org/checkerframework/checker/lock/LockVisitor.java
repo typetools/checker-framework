@@ -48,8 +48,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
@@ -424,7 +422,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
-        if (atypeFactory.getNodeForTree(tree) instanceof FieldAccessNode) {
+        if (TreeUtils.elementFromTree(tree).getKind() == ElementKind.FIELD) {
             AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
             // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
             // it.
@@ -1091,10 +1089,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-        Node node = atypeFactory.getNodeForTree(tree);
-        if (node instanceof FieldAccessNode) {
-            Node receiverNode = ((FieldAccessNode) node).getReceiver();
-            if (receiverNode instanceof ImplicitThisLiteralNode) {
+        if (TreeUtils.elementFromTree(tree).getKind() == ElementKind.FIELD) {
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            if (parent.getKind() != Kind.MEMBER_SELECT) {
+                // If field isn't accessed via a member select, then it is accessed via
+                // an implicit this.
                 // All other field access are handle via visitMemberSelect
                 AnnotationMirror guardedBy =
                         atypeFactory
