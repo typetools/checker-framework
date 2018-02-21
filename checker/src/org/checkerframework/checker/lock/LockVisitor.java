@@ -1204,14 +1204,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             return;
         }
 
-        Node node = atypeFactory.getNodeForTree(tree);
-
-        List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, node);
+        List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, tree);
         if (expressions.isEmpty()) {
             return;
         }
 
-        LockStore store = atypeFactory.getStoreBefore(node);
+        LockStore store = atypeFactory.getStoreBefore(tree);
         for (LockExpression expression : expressions) {
             if (expression.error != null) {
                 checker.report(
@@ -1252,7 +1250,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     private List<LockExpression> getLockExpressions(
-            boolean implicitThis, AnnotationMirror gbAnno, Node node) {
+            boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
@@ -1271,6 +1269,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
 
+        Node node = atypeFactory.getNodeForTree(tree);
         Receiver self =
                 implicitThis ? pseudoReceiver : FlowExpressions.internalReprOf(atypeFactory, node);
 
