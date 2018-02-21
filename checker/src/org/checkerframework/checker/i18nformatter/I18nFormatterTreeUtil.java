@@ -255,43 +255,41 @@ public class I18nFormatterTreeUtil {
             Receiver paramArg = null;
             int i = 0;
             for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
-                if (paramType.getAnnotation(I18nFormatFor.class) != null) {
-                    this.formatArg = theargs.get(i);
-                    this.formatAnno = atypeFactory.getAnnotatedType(formatArg);
-
-                    if (!typeMirrorToClass(paramType.getUnderlyingType()).equals(String.class)) {
-                        // Invalid FormatFor invocation
-                        return;
-                    }
-                    FlowExpressionContext flowExprContext =
-                            FlowExpressionContext.buildContextForMethodUse(
-                                    node, checker.getContext());
-                    String formatforArg =
-                            AnnotationUtils.getElementValue(
-                                    paramType.getAnnotation(I18nFormatFor.class),
-                                    "value",
-                                    String.class,
-                                    false);
-                    if (flowExprContext != null) {
-                        try {
-                            paramArg =
-                                    FlowExpressionParseUtil.parse(
-                                            formatforArg,
-                                            flowExprContext,
-                                            atypeFactory.getPath(tree),
-                                            true);
-                            paramIndex = flowExprContext.arguments.indexOf(paramArg);
-                        } catch (FlowExpressionParseException e) {
-                            // report errors here
-                            checker.report(
-                                    org.checkerframework.framework.source.Result.failure(
-                                            "i18nformat.invalid.formatfor"),
-                                    tree);
-                        }
-                    }
-                    break;
+                if (paramType.getAnnotation(I18nFormatFor.class) == null) {
+                    i++;
+                    continue;
                 }
-                i++;
+                this.formatArg = theargs.get(i);
+                this.formatAnno = atypeFactory.getAnnotatedType(formatArg);
+
+                if (!typeMirrorToClass(paramType.getUnderlyingType()).equals(String.class)) {
+                    // Invalid FormatFor invocation
+                    return;
+                }
+                FlowExpressionContext flowExprContext =
+                        FlowExpressionContext.buildContextForMethodUse(node, checker.getContext());
+                String formatforArg =
+                        AnnotationUtils.getElementValue(
+                                paramType.getAnnotation(I18nFormatFor.class),
+                                "value",
+                                String.class,
+                                false);
+                try {
+                    FlowExpressionParseUtil.parse(
+                            formatforArg, flowExprContext, atypeFactory.getPath(tree), true);
+                } catch (FlowExpressionParseException e) {
+                    // report errors here
+                    checker.report(
+                            org.checkerframework.framework.source.Result.failure(
+                                    "i18nformat.invalid.formatfor"),
+                            tree);
+                    return;
+                }
+                if (formatforArg.startsWith("#")) {
+                    // formatArg should be #Number, with 1-indexing.
+                    paramIndex = Integer.valueOf(formatforArg.substring(1)) - 1;
+                }
+                break;
             }
 
             if (paramIndex != -1) {
