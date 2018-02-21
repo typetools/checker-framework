@@ -422,7 +422,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
-        if (TreeUtils.elementFromTree(tree).getKind() == ElementKind.FIELD) {
+        if (TreeUtils.isFieldAccess(tree)) {
             AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
             // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
             // it.
@@ -1089,9 +1089,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-        if (TreeUtils.elementFromTree(tree).getKind() == ElementKind.FIELD) {
+        if (TreeUtils.isFieldAccess(tree)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
-            if (parent.getKind() != Kind.MEMBER_SELECT) {
+            if (parent.getKind() != Kind.MEMBER_SELECT
+                    || ((MemberSelectTree) parent).getExpression() == tree) {
                 // If field isn't accessed via a member select, then it is accessed via
                 // an implicit this.
                 // All other field access are handle via visitMemberSelect
