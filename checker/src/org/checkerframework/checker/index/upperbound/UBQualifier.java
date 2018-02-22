@@ -675,7 +675,8 @@ public abstract class UBQualifier {
             }
 
             OffsetEquation valueOffset =
-                    OffsetEquation.createOffsetFromNodesValue(node, factory, op);
+                    OffsetEquation.createOffsetFromNodesValue(
+                            node, factory.getValueAnnotatedTypeFactory(), op);
             LessThanLengthOf valueOffsetQualifier = null;
             if (valueOffset != null && !valueOffset.hasError()) {
                 valueOffsetQualifier = (LessThanLengthOf) addOffset(valueOffset);
