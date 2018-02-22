@@ -1089,13 +1089,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
+        // If the identifier is a field accessed via an implicit this,
+        // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.
         if (TreeUtils.isFieldAccess(tree)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
+            // If the parent is not a member select, or if it is, but the field is the expression,
+            // then the field is accessed via an implicit this.
             if (parent.getKind() != Kind.MEMBER_SELECT
                     || ((MemberSelectTree) parent).getExpression() == tree) {
-                // If field isn't accessed via a member select, then it is accessed via
-                // an implicit this.
-                // All other field access are handle via visitMemberSelect
                 AnnotationMirror guardedBy =
                         atypeFactory
                                 .getSelfType(tree)

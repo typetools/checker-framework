@@ -219,7 +219,7 @@ public class I18nFormatterTreeUtil {
      */
     public class I18nFormatCall {
 
-        private final ExpressionTree tree;
+        private final MethodInvocationTree tree;
         private ExpressionTree formatArg;
         private final AnnotatedTypeFactory atypeFactory;
         private List<? extends ExpressionTree> args;
@@ -234,7 +234,7 @@ public class I18nFormatterTreeUtil {
             this.args = null;
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
-            initialCheck(theargs, method, tree, methodAnno);
+            initialCheck(theargs, method, methodAnno);
         }
 
         @Override
@@ -249,13 +249,12 @@ public class I18nFormatterTreeUtil {
         private void initialCheck(
                 List<? extends ExpressionTree> theargs,
                 ExecutableElement method,
-                MethodInvocationTree node,
                 AnnotatedExecutableType methodAnno) {
             int paramIndex = -1;
             Receiver paramArg = null;
             int i = 0;
             for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
-                if (paramType.getAnnotation(I18nFormatFor.class) == null) {
+                if (paramType.hasAnnotation(I18nFormatFor.class)) {
                     i++;
                     continue;
                 }
@@ -267,7 +266,7 @@ public class I18nFormatterTreeUtil {
                     return;
                 }
                 FlowExpressionContext flowExprContext =
-                        FlowExpressionContext.buildContextForMethodUse(node, checker.getContext());
+                        FlowExpressionContext.buildContextForMethodUse(tree, checker.getContext());
                 String formatforArg =
                         AnnotationUtils.getElementValue(
                                 paramType.getAnnotation(I18nFormatFor.class),
