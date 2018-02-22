@@ -9,9 +9,8 @@ import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.dataflow.qual.Pure;
 
-// This class has a similar implementation to several class in Guava.
-// com.google.common.primitives.ImmutableDoubleArray is one example.
-// More generally these: com.google.common.primitives.Immutable*Array
+// This class has a similar implementation to several Immutable*Array class in Guava,
+// such as com.google.common.primitives.ImmutableDoubleArray.
 public class LessThanCustomCollection {
     // This object is a subset of array. So, if something is an index for "this"
     // then it is >= start and < end.
