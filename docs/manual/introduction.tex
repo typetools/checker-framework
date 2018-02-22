@@ -502,13 +502,13 @@ Therefore, it is strongly recommended that whenever you are creating
 type-checkers for all the annotations that your have written.
 
 
-\subsection{Annotated libraries\label{annotated-libraries-using}}
+\subsection{Using annotated libraries\label{annotated-libraries-using}}
 
 When your code uses a library that is not currently being compiled, the
 Checker Framework looks up the library's annotations in its class files.
 
 Some projects are already distributed with type annotations by their
-maintainers.
+maintainers, so you do not need to do anything special.
 % such as Guava,
 % \href{https://mernst.github.io/plume-lib/}{plume-lib},
 % and
@@ -526,9 +526,12 @@ The annotated libraries appear in
 \ahref{https://search.maven.org/#search\%7Cga\%7C1\%7Cg\%3A\%22org.checkerframework.annotatedlib\%22}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
 
+\begin{itemize}
+\item
 If your project stores \<.jar> files locally, then download the \<.jar> file
 from the Central Repository.
 
+\item
 If your project manages dependencies using a tool such as Gradle or Maven,
 then update your buildfile to use the \<org.checkerframework.annotatedlib>
 group.  For example, in \<build.gradle>, change
@@ -550,8 +553,10 @@ number, if the Checker Framework developers have improved the type
 annotations since the last release by the upstream maintainers.)  If a
 newer version of the upstream library is available, then
 \ahrefloc{reporting-bugs}{open an issue} requesting that the
-\<org.checkerframework.annotatedlib> be updated.
+\<org.checkerframework.annotatedlib> version be updated.
+\end{itemize}
 
+There are two special cases.
 The annotated JDK is automatically put on your
 classpath; you don't have to do anything special for it.
 For the Javadoc classes in the JDK's com.sun.javadoc package,
