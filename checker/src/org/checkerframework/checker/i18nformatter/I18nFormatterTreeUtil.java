@@ -31,7 +31,6 @@ import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nMakeFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -251,10 +250,9 @@ public class I18nFormatterTreeUtil {
                 ExecutableElement method,
                 AnnotatedExecutableType methodAnno) {
             int paramIndex = -1;
-            Receiver paramArg = null;
             int i = 0;
             for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
-                if (paramType.hasAnnotation(I18nFormatFor.class)) {
+                if (!paramType.hasAnnotation(I18nFormatFor.class)) {
                     i++;
                     continue;
                 }
