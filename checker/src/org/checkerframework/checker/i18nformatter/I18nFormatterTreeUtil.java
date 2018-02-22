@@ -396,7 +396,7 @@ public class I18nFormatterTreeUtil {
             }
 
             ExpressionTree loc;
-            loc = ((MethodInvocationTree) tree).getMethodSelect();
+            loc = tree.getMethodSelect();
             if (type != InvocationType.VARARG && args.size() > 0) {
                 loc = args.get(0);
             }
