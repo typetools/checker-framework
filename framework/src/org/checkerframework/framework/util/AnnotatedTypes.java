@@ -1,9 +1,5 @@
 package org.checkerframework.framework.util;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.*;
-*/
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -40,6 +36,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -479,8 +476,7 @@ public class AnnotatedTypes {
         Map<AnnotatedDeclaredType, ExecutableElement> overrides = new LinkedHashMap<>();
 
         for (AnnotatedDeclaredType supertype : supertypes) {
-            /*@Nullable*/ TypeElement superElement =
-                    (TypeElement) supertype.getUnderlyingType().asElement();
+            @Nullable TypeElement superElement = (TypeElement) supertype.getUnderlyingType().asElement();
             assert superElement != null; /*nninvariant*/
             // For all method in the supertype, add it to the set if
             // it overrides the given method.

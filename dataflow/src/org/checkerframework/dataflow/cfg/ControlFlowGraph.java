@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.cfg;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -17,6 +13,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -239,7 +236,7 @@ public class ControlFlowGraph {
      * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
      * the CFG or null otherwise.
      */
-    public /*@Nullable*/ MethodTree getContainingMethod(Tree t) {
+    public @Nullable MethodTree getContainingMethod(Tree t) {
         if (treeLookup.containsKey(t)) {
             if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
                 UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
@@ -253,7 +250,7 @@ public class ControlFlowGraph {
      * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
      * the CFG or null otherwise.
      */
-    public /*@Nullable*/ ClassTree getContainingClass(Tree t) {
+    public @Nullable ClassTree getContainingClass(Tree t) {
         if (treeLookup.containsKey(t)) {
             if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
                 UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;

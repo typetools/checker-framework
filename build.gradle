@@ -1,0 +1,498 @@
+import de.undercouch.gradle.tasks.download.Download
+import org.gradle.internal.jvm.Jvm
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id "de.undercouch.download" version "3.3.0"
+    id 'java'
+    id "net.ltgt.errorprone-base" version "0.0.13"
+}
+apply plugin: "de.undercouch.download"
+
+group 'org.checkerframework'
+version '1.0-SNAPSHOT'
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+task installGitHooks(type: Copy) {
+    description 'Copies git hooks to .git directory'
+    from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
+    rename('git.(.*)', '$1')
+    into '.git/hooks'
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: "de.undercouch.download"
+    apply plugin: 'net.ltgt.errorprone-base'
+
+    ext {
+        // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
+        toolsJar = Jvm.current().toolsJar.path
+        assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8."
+
+        jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
+
+        afu = "${jsr308}/annotation-tools/annotation-file-utilities"
+        afuJar = "${afu}/annotation-file-utilities.jar"
+
+        stubparser = "${jsr308}/stubparser"
+        stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
+
+        jtregHome = "${jsr308}/jtreg"
+        haltOnTestFailure = false
+
+        javadocMemberLevel = JavadocMemberLevel.PROTECTED
+    }
+
+    // After all the tasks have been created, modify some of them.
+    afterEvaluate {
+        // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
+        // any module to reference classes in any other module.
+        // Also, build and use ManualTaglet as a taglet.
+        tasks.withType(Javadoc) {
+            dependsOn(':checker:shadowJar')
+            dependsOn(':javacutil:tagletClasses')
+            doFirst {
+                options.encoding = 'UTF-8'
+                options.memberLevel = javadocMemberLevel
+                classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
+                if (!project.name.toString().equals("javacutil")) {
+                    options.taglets 'org.checkerframework.javacutil.dist.ManualTaglet'
+                    options.tagletPath(project(':javacutil').sourceSets.taglet.output as File[])
+                }
+                options.links = ['http://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
+            }
+        }
+
+        // Add standard javac options
+        tasks.withType(JavaCompile) {
+            dependsOn(':installGitHooks')
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
+            options.failOnError = true
+            options.deprecation = true
+            options.compilerArgs += [
+                    '-g',
+                    // To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
+                    "-Xlint:-options",
+                    "-Xlint",
+            ]
+            options.encoding = 'UTF-8'
+        }
+    }
+}
+
+/**
+ * Creates a task that runs the checker on the main source set of each subproject. The task is named
+ * "check${shortName}".
+ * @param projectName name of the project
+ * @param checker full qualified name of the checker to run
+ * @param shortName shorter version of the checker to use to name the task.
+ */
+def createCheckTypeTask(projectName, checker, shortName) {
+    project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
+        description "Run the ${shortName} Checker on the main sources."
+        group 'Verification'
+        // Always run the task.
+        outputs.upToDateWhen { false }
+        source = project("${projectName}").sourceSets.main.java
+        classpath = project("${projectName}").compileJava.classpath
+        destinationDir = file("${buildDir}")
+        dependsOn project(':checker-qual').tasks.jar
+        options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archivePath)
+        options.compilerArgs += [
+                '-processor', "${checker}",
+                '-proc:only',
+                '-Xlint:-processing',
+                '-AprintErrorStack',
+        ]
+    }
+}
+/**
+ * Returns a list of all the Java file that should be formatted for the given project. These are:
+ *
+ * All java files in the main sourceSet.
+ * All java files in the tests directory that compile.
+ *
+ * @param projectName name of the project to format
+ * @return a list of all Java files that should be formatted for projectName
+ */
+List<String> getJavaFilesToFormat(projectName) {
+    List<File> javaFiles = new ArrayList<>();
+    javaFiles.addAll(project(':' + projectName).sourceSets.main.java.files)
+    // Collect all java files in tests directory
+    fileTree("${projectDir}/tests").visit { details ->
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+            javaFiles.add(details.file)
+        }
+    }
+    List<String> args = new ArrayList<>();
+    for (File f : javaFiles) {
+        args += f.absolutePath
+    }
+    return args
+}
+
+task htmlValidate(type: Exec) {
+    description 'Validate that HTML files are well-formed'
+    executable 'html5validator'
+    args = [
+            "--ignore",
+            "/api/",
+            "/build/",
+            "/docs/manual/manual.html",
+            "/checker/jdk/nullness/src/java/lang/ref/package.html"
+    ]
+}
+
+task allJavadoc(type: Javadoc, group: "Documentation") {
+    description = 'Generates a global javadoc from all the modules'
+    dependsOn(':checker:shadowJar')
+    dependsOn(':javacutil:tagletClasses')
+
+    source subprojects.collect { it.sourceSets.main.allJava }
+    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+    destinationDir = file("${projectDir}/docs/api")
+    doLast {
+        copy {
+            from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
+            rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
+            into 'docs/api/'
+        }
+    }
+}
+
+task downloadJtreg(type: Download) {
+    description "Downloads and unpacks jtreg."
+    onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
+    src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
+    overwrite true
+    dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
+    doLast {
+        copy {
+            from tarTree(dest)
+            into "${jtregHome}/.."
+        }
+    }
+}
+
+task getCodeFormatScripts(type: Exec) {
+    description 'Obtain the run-google-java-format scripts'
+    commandLine 'bash', '-c', "(cd  ${project(':checker').projectDir}/bin-devel/.run-google-java-format && git pull -q)" +
+            ' || ' +
+            "(cd  ${project(':checker').projectDir}/bin-devel && git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)"
+}
+
+subprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    configurations {
+        errorprone
+    }
+
+    dependencies {
+        errorprone group: 'com.google.errorprone', name: 'error_prone_ant', version: '2.2.0'
+    }
+
+    task checkFormat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
+        description 'Check whether the source code is properly formatted'
+        // jdk8 and checker-qual have no source, so skip
+        onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
+        executable "${project(':checker').projectDir}/bin-devel/.run-google-java-format/check-google-java-format.py"
+
+        doFirst {
+            args += "--aosp" // 4 space indentation
+            args += getJavaFilesToFormat(project.name)
+        }
+        ignoreExitValue = true
+        doLast {
+            if (execResult.exitValue != 0) {
+                throw new RuntimeException('Found improper formatting, try running:  gradle reformat"')
+            }
+        }
+    }
+
+    task reformat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
+        description 'Format the Java source code'
+        // jdk8 and checker-qual have no source, so skip
+        onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
+        executable "${project(':checker').projectDir}/bin-devel/.run-google-java-format/run-google-java-format.py"
+        doFirst {
+            args += "--aosp" // 4 space indentation
+            args += getJavaFilesToFormat(project.name)
+        }
+    }
+
+    shadowJar {
+        // Relocate JavaParser:
+        relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
+
+        // These appear in annotation-file-utilities.jar:
+        relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+        relocate 'com.google', 'org.checkerframework.com.google'
+    }
+    artifacts {
+        archives shadowJar
+    }
+
+    // Things in this block reference definitions in the subproject that do not exist,
+    // until the project is evaluated.
+    afterEvaluate {
+        // Create a sourcesJar task for each subproject
+        tasks.create(name: 'sourcesJar', type: Jar) {
+            description 'Creates sources jar.'
+            classifier = 'sources'
+            baseName = project.name
+            from sourceSets.main.java
+        }
+
+        // Create a javadocJar task for each subproject
+        tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
+            description 'Creates javadoc jar.'
+            classifier = 'javadoc'
+            baseName = name
+            from tasks.javadoc.destinationDir
+        }
+
+        // Add the sourcesJar and javadocJar as artifacts.  This way they will be called when the
+        // "build" or "assemble" task are called.
+        artifacts {
+            archives sourcesJar
+            archives javadocJar
+        }
+
+        // Adds manifest to all Jar files
+        tasks.withType(Jar) {
+            includeEmptyDirs = false
+            manifest {
+                attributes("Implementation-Version": "${version}")
+                attributes("Implementation-URL": "https://checkerframework.org")
+            }
+        }
+
+        // Add tasks to run various checkers on all the main source sets.
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
+        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
+
+        // Add jtregTests to framework and checker modules
+        if (project.name.is('framework') || project.name.is('checker')) {
+            tasks.create(name: 'jtregTests', dependsOn: ':downloadJtreg', group: 'Verification') {
+                description 'Run the jtreg tests.'
+                dependsOn('compileJava')
+                dependsOn('compileTestJava')
+                dependsOn(':jdk8:downloadJdk')
+                dependsOn('shadowJar')
+
+                String jtregOutput = "${buildDir}/jtreg"
+                String name = 'all'
+                String tests = '.'
+                doLast {
+                    exec {
+                        executable "${jtregHome}/bin/jtreg"
+                        args = [
+                                "-dir:${projectDir}/jtreg",
+                                "-workDir:${jtregOutput}/${name}/work",
+                                "-reportDir: ${jtregOutput}/${name}/report",
+                                "-verbose:summary",
+                                "-javacoptions:-g",
+                                "-keywords:!ignore",
+                                '-samevm',
+                                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
+                                // Must use langtools javap.jar rather than tools.jar because the
+                                // tools.jar in the docker vm doesn't have the required classes.
+                                "-vmoptions:-Xbootclasspath/p:${jsr308}/jsr308-langtools/dist/lib/javac.jar:" +
+                                        "${jsr308}/jsr308-langtools/dist/lib/javap.jar:" +
+                                        "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
+
+                                "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +
+                                        "${jsr308}/jsr308-langtools/dist/lib/javac.jar",
+                        ]
+                        if (project.name.is('checker')) {
+                            args += [
+                                    "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
+                            ]
+                        }
+
+                        // Location of jtreg tests
+                        args += "${tests}"
+                    }
+                }
+            }
+        }
+
+        // Create a task for each JUnit test class whose name is the same as the JUnit class name.
+        sourceSets.test.allJava.filter { it.path.contains('tests/src/tests') }.forEach { file ->
+            String className = file.name.replaceAll(".java", "")
+            tasks.create(name: "${className}", type: Test) {
+                description "Run ${className} tests."
+                include "**/${name}.class"
+            }
+        }
+
+        // Configure JUnit tests
+        tasks.withType(Test) {
+            if (project.name.is('checker')) {
+                dependsOn('installCheckerJar')
+                systemProperties = [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
+            }
+            testLogging {
+                // Always run the tests
+                outputs.upToDateWhen { false }
+
+                // Show the found unexpected diagnostics and expected diagnostics not found.
+                exceptionFormat "full"
+                events "passed", "skipped", "failed"
+            }
+        }
+
+        // Error prone tasks:
+        tasks.create(name: 'checkErrorProne', type: JavaCompile, group: 'Verification') {
+            description 'Run the error-prone compiler on the main sources'
+            toolChain net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
+            source = sourceSets.main.java.asFileTree
+            classpath = sourceSets.main.compileClasspath.asFileTree
+            destinationDir = new File("${buildDir}", 'errorprone')
+
+            options.compilerArgs = [
+                    // Many compiler classes are interned.
+                    '-Xep:ReferenceEquality:OFF',
+                    // These might be worth fixing.
+                    '-Xep:DefaultCharset:OFF',
+                    // Not useful to suggest Splitter; maybe clean up.
+                    '-Xep:StringSplitter:OFF',
+                    '-Werror',
+            ]
+        }
+
+        // Add allTests task
+        tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
+            description 'Run all Checker Framework tests'
+            tasks = ['test', 'checkPurity']
+            if (project.name.is('framework') || project.name.is('checker')) {
+                tasks += ['checkCompilerMessages', 'jtregTests']
+            }
+            if (projects.name.is('framework')) {
+                tasks += ['wholeProgramInferenceTests', 'loaderTests']
+            }
+
+            if (project.name.is('checker')) {
+                tasks += ['nullnessExtraTests', 'commandLineTests', 'checkTutorial', 'exampleTests']
+            }
+        }
+
+        task javadocPrivate(dependsOn: javadoc) {
+            doFirst {
+                javadocMemberLevel = JavadocMemberLevel.PRIVATE
+            }
+            doLast {
+                javadocMemberLevel = JavadocMemberLevel.PROTECTED
+            }
+        }
+    }
+}
+
+assemble.dependsOn(':checker:installCheckerJar')
+
+task checkStyle(group: 'Format') {
+    description 'Check basic style guidelines'
+    String[] ignoreDirectories = ['.git',
+                                  '.gradle',
+                                  '.idea',
+                                  'annotated',
+                                  'api',
+                                  'bib',
+                                  'bootstrap',
+                                  'build',
+                                  'jdk',
+                                  'maven-artifacts']
+
+    String[] ignoreFilePatterns = [
+            '*.aux',
+            '*.bib',
+            '*.class',
+            '*.dvi',
+            '*.expected',
+            '*.gif',
+            '*.jar',
+            '*.jtr',
+            '*.log',
+            '*.out',
+            '*.patch',
+            '*.pdf',
+            '*.png',
+            '*.sty',
+            '*.xcf',
+            '*~',
+            '#*#',
+            'CFLogo.ai',
+            'logfile.log.rec.index',
+            'manual.html',
+            'manual.html-e',
+            'junit.*.properties']
+    doLast {
+        FileTree tree = fileTree(dir: projectDir)
+        for (String dir : ignoreDirectories) {
+            tree.exclude "**/${dir}/**"
+        }
+        for (String file : ignoreFilePatterns) {
+            tree.exclude "**/${file}"
+        }
+        boolean failed = false
+        tree.visit {
+            if (!it.file.isDirectory()) {
+                int isBlankLine
+                it.file.eachLine { line ->
+                    if (line.endsWith(' ')) {
+                        println("Trailing whitespace: ${it.file.absolutePath}")
+                        failed = true
+                    }
+                    if (!line.startsWith('\\') &&
+                            (line.matches('^.* (else|finally|try)\\{}.*$')
+                                    || line.matches('^.*}(catch|else|finally) .*$')
+                                    || line.matches('^.* (catch|for|if|while)\\('))) {
+                        println("Missing space: ${it.file.absolutePath}")
+                        failed = true
+                    }
+                    if (line.isEmpty()) {
+                        isBlankLine++;
+                    } else {
+                        isBlankLine = 0;
+                    }
+                }
+
+                if (isBlankLine > 1) {
+                    println("Blank line at end of file: ${it.file.absolutePath}")
+                    failed = true
+                }
+
+                RandomAccessFile file
+                try {
+                    file = new RandomAccessFile(it.file, 'r')
+                    int end = file.length() - 1;
+                    if (end > 0) {
+                        file.seek(end)
+                        byte last = file.readByte()
+                        if (last != '\n') {
+                            println("Missing newline at end of file: ${it.file.absolutePath}")
+                            failed = true
+                        }
+                    }
+                } finally {
+                    if (file != null) {
+                        file.close()
+                    }
+                }
+            }
+        }
+        if (failed) {
+            throw new GradleException("Files do not meet basic style guidelines.")
+        }
+    }
+}

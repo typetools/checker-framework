@@ -1,9 +1,5 @@
 package org.checkerframework.framework.stub;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.*;
-*/
-
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
@@ -66,6 +62,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -1457,7 +1454,7 @@ public class StubParser {
      * @param name classname (simple, or Outer.Inner, or fully-qualified)
      * @return the TypeElement for {@code name}, or null if not found
      */
-    private /*@Nullable*/ TypeElement findTypeOfName(String name) {
+    private @Nullable TypeElement findTypeOfName(String name) {
         String packageName = parseState.packageName;
         String packagePrefix = (packageName == null) ? "" : packageName + ".";
 
@@ -1605,7 +1602,7 @@ public class StubParser {
     private final Map<NameExpr, VariableElement> findVariableElementNameCache =
             new HashMap<NameExpr, VariableElement>();
 
-    private /*@Nullable*/ VariableElement findVariableElement(NameExpr nexpr) {
+    private @Nullable VariableElement findVariableElement(NameExpr nexpr) {
         if (findVariableElementNameCache.containsKey(nexpr)) {
             return findVariableElementNameCache.get(nexpr);
         }
@@ -1650,7 +1647,7 @@ public class StubParser {
     private final Map<FieldAccessExpr, VariableElement> findVariableElementFieldCache =
             new HashMap<FieldAccessExpr, VariableElement>();
 
-    private /*@Nullable*/ VariableElement findVariableElement(FieldAccessExpr faexpr) {
+    private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
             return findVariableElementFieldCache.get(faexpr);
         }

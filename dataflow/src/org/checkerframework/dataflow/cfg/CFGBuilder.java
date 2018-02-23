@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.cfg;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -95,6 +91,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -1517,13 +1514,13 @@ public class CFGBuilder {
          * Current {@link Label} to which a return statement should jump, or null if there is no
          * valid destination.
          */
-        protected /*@Nullable*/ Label returnTargetL;
+        protected @Nullable Label returnTargetL;
 
         /**
          * Current {@link Label} to which a break statement with no label should jump, or null if
          * there is no valid destination.
          */
-        protected /*@Nullable*/ Label breakTargetL;
+        protected @Nullable Label breakTargetL;
 
         /**
          * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates
@@ -1535,7 +1532,7 @@ public class CFGBuilder {
          * Current {@link Label} to which a continue statement with no label should jump, or null if
          * there is no valid destination.
          */
-        protected /*@Nullable*/ Label continueTargetL;
+        protected @Nullable Label continueTargetL;
 
         /**
          * Map from AST label Names to CFG {@link Label}s for continues. Each labeled statement
@@ -2468,7 +2465,7 @@ public class CFGBuilder {
          * Returns the label {@link Name} of the leaf in the argument path, or null if the leaf is
          * not a labeled statement.
          */
-        protected /*@Nullable*/ Name getLabel(TreePath path) {
+        protected @Nullable Name getLabel(TreePath path) {
             if (path.getParentPath() != null) {
                 Tree parent = path.getParentPath().getLeaf();
                 if (parent.getKind() == Tree.Kind.LABELED_STATEMENT) {

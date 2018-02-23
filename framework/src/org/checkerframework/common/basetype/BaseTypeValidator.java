@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -31,10 +32,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
 
 /** A visitor to validate the types in a tree. */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
@@ -72,7 +69,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     protected void reportValidityResult(
-            final /*@CompilerMessageKey*/ String errorType,
+            final @CompilerMessageKey String errorType,
             final AnnotatedTypeMirror type,
             final Tree p) {
         checker.report(Result.failure(errorType, type.getAnnotations(), type.toString()), p);
@@ -86,7 +83,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * type @NonNull int".
      */
     protected void reportValidityResultOnUnannotatedType(
-            final /*@CompilerMessageKey*/ String errorType,
+            final @CompilerMessageKey String errorType,
             final AnnotatedTypeMirror type,
             final Tree p) {
         // TODO: if underlying is a compound type such as List<@Palindrome String>, then it would be

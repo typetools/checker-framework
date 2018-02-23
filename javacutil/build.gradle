@@ -1,0 +1,34 @@
+group 'org.checkerframework'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            // Exclude the ManualTaglet
+            exclude '**/javacutil/dist/**'
+        }
+    }
+
+    // Source set for the ManualTaglet
+    taglet {
+        java {
+            srcDirs = ['src/org/checkerframework/javacutil/dist']
+        }
+    }
+}
+
+dependencies {
+    compile files("${toolsJar}")
+    compileOnly project(':checker-qual')
+
+    tagletCompile files("${toolsJar}")
+}

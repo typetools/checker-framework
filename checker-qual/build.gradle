@@ -1,0 +1,28 @@
+group 'org.checkerframework'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['../checker/src', '../dataflow/src', '../framework/src']
+            include "**/FormatUtil.java"
+            include "**/NullnessUtil.java"
+            include "**/RegexUtil.java"
+            include "**/UnitsTools.java"
+            include "**/SignednessUtil.java"
+            include "**/I18nFormatUtil.java"
+            include '**/org/checkerframework/**/qual/*.java'
+            include '**/Opt.java'
+            // TODO: Should we move this into a qual directory?
+            include '**/PurityUnqualified.java'
+        }
+    }
+}
