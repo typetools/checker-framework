@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -24,7 +25,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.QualifierPolymorphism;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -63,9 +67,85 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
+        Result result = isValidType(atypeFactory.getQualifierHierarchy(), type);
+        if (result.isFailure()) {
+            checker.report(result, tree);
+        }
         this.isValid = true;
         visit(type, tree);
         return this.isValid;
+    }
+
+    /**
+     * Returns true if the given {@link AnnotatedTypeMirror} passed a set of well-formedness checks.
+     * The method will never return false for valid types, but might not catch all invalid types.
+     *
+     * <p>Currently, the following is checked:
+     *
+     * <ol>
+     *   <li>There should not be multiple annotations from the same hierarchy.
+     *   <li>There should not be more annotations than the width of the qualifier hierarchy.
+     *   <li>If the type is not a type variable, then the number of annotations should be the same
+     *       as the width of the qualifier hierarchy.
+     *   <li>These properties should also hold recursively for component types of arrays, as wells
+     *       as bounds of type variables and wildcards.
+     * </ol>
+     */
+    public static Result isValidType(
+            QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
+        SimpleAnnotatedTypeScanner<Result, Void> scanner =
+                new SimpleAnnotatedTypeScanner<Result, Void>() {
+                    @Override
+                    protected Result defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+                        return isTopLevelValidType(qualifierHierarchy, type);
+                    }
+
+                    @Override
+                    protected Result reduce(Result r1, Result r2) {
+                        if (r1 == null) {
+                            if (r2 == null) {
+                                return Result.SUCCESS;
+                            }
+                            return r2;
+                        } else if (r2 == null) {
+                            return r1;
+                        }
+                        return r1.merge(r2);
+                    }
+                };
+        return scanner.visit(type);
+    }
+
+    /** Checks every property listed in #isValidType, but only for the top level type. */
+    private static Result isTopLevelValidType(
+            QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
+        // multiple annotations from the same hierarchy
+        Set<AnnotationMirror> annotations = type.getAnnotations();
+        Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
+        int n = 0;
+        for (AnnotationMirror anno : annotations) {
+            if (QualifierPolymorphism.isPolyAll(anno)) {
+                // ignore PolyAll when counting annotations
+                continue;
+            }
+            n++;
+            AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
+            if (AnnotationUtils.containsSame(seenTops, top)) {
+                return Result.failure("type.invalid.conflicting.annos", annotations, type);
+            }
+            seenTops.add(top);
+        }
+
+        // treat types that have polyall like type variables
+        boolean hasPolyAll = type.hasAnnotation(PolyAll.class);
+        boolean canHaveEmptyAnnotationSet =
+                QualifierHierarchy.canHaveEmptyAnnotationSet(type) || hasPolyAll;
+
+        // wrong number of annotations
+        if (!canHaveEmptyAnnotationSet && seenTops.size() < qualifierHierarchy.getWidth()) {
+            return Result.failure("type.invalid.too.few.annotations", annotations, type);
+        }
+        return Result.SUCCESS;
     }
 
     protected void reportValidityResult(
