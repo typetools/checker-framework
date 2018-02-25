@@ -870,6 +870,18 @@ public class AnnotatedTypes {
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
+    /**
+     * Use {@link org.checkerframework.common.basetype.TypeValidator.isValid(AnnotatedTypeMirror,
+     * Tree)} instead. Method always returns true and will be removed.
+     *
+     * @deprecated Remove after 2.4.0 release.
+     */
+    @Deprecated
+    public static boolean isValidType(
+            QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
+        return true;
+    }
+
     /** @return true if the underlying type of this atm is a java.lang.annotation.Annotation */
     public static boolean isJavaLangAnnotation(final AnnotatedTypeMirror atm) {
         return TypesUtils.isDeclaredOfName(atm.getUnderlyingType(), annotationClassName);
