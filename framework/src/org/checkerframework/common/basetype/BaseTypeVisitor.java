@@ -3502,15 +3502,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param tree the type tree supplied by the user
      * @param type the type corresponding to tree
      */
-    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
-        // basic consistency checks
-        Result isValid = BaseTypeValidator.isValidType(atypeFactory.getQualifierHierarchy(), type);
-        if (isValid.isFailure()) {
-            checker.report(isValid, tree);
-            return false;
-        }
-
-        // more checks (also specific to checker, potentially)
+    protected boolean validateType(Tree tree, AnnotatedTypeMirror type) {
         return typeValidator.isValid(type, tree);
     }
 
