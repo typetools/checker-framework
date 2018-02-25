@@ -91,8 +91,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      *       as bounds of type variables and wildcards.
      * </ol>
      */
-    public static Result isValidType(
-            QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
+    protected Result isValidType(QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
         SimpleAnnotatedTypeScanner<Result, Void> scanner =
                 new SimpleAnnotatedTypeScanner<Result, Void>() {
                     @Override
@@ -116,19 +115,17 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         return scanner.visit(type);
     }
 
-    /** Checks every property listed in #isValidType, but only for the top level type. */
-    private static Result isTopLevelValidType(
+    /** Checks every property listed in {@link #isValidType}, but only for the top level type. */
+    protected Result isTopLevelValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
         // multiple annotations from the same hierarchy
         Set<AnnotationMirror> annotations = type.getAnnotations();
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
-        int n = 0;
         for (AnnotationMirror anno : annotations) {
             if (QualifierPolymorphism.isPolyAll(anno)) {
                 // ignore PolyAll when counting annotations
                 continue;
             }
-            n++;
             AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
             if (AnnotationUtils.containsSame(seenTops, top)) {
                 return Result.failure("type.invalid.conflicting.annos", annotations, type);
