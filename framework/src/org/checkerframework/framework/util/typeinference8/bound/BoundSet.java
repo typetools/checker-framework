@@ -17,7 +17,10 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** Holds a set of bounds. */
+/**
+ * Manages a set of bounds. Bounds are stored in the variable to which they apply, except for
+ * capture bounds which are stores in a set in this class.
+ */
 public class BoundSet implements ReductionResult {
     /**
      * Max number of incorporation loops. Use same constant as {@link

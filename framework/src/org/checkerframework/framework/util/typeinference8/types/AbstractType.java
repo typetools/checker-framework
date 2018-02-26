@@ -280,29 +280,17 @@ public abstract class AbstractType {
 
     /** @return true if the type is an unbound wildcard */
     public final boolean isUnboundWildcard() {
-        if (getJavaType().getKind() == TypeKind.WILDCARD) {
-            return ((WildcardType) getJavaType()).isUnbound();
-        } else {
-            return false;
-        }
+        return TypesUtils.isUnboundWildcard(getJavaType());
     }
 
     /** @return true if the type is a wildcard with an upper bound */
     public final boolean isUpperBoundedWildcard() {
-        if (getJavaType().getKind() == TypeKind.WILDCARD) {
-            return ((WildcardType) getJavaType()).isExtendsBound();
-        } else {
-            return false;
-        }
+        return TypesUtils.isExtendsBoundWildcard(getJavaType());
     }
 
     /** @return true if the type is a wildcard with a lower bound */
     public final boolean isLowerBoundedWildcard() {
-        if (getJavaType().getKind() == TypeKind.WILDCARD) {
-            return ((WildcardType) getJavaType()).isSuperBound();
-        } else {
-            return false;
-        }
+        return TypesUtils.isSuperBoundWildcard(getJavaType());
     }
 
     /** @return if this type is a wildcard return its lower bound; otherwise, return null. */

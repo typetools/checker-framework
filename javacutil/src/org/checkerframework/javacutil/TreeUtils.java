@@ -414,7 +414,6 @@ public final class TreeUtils {
                 return getAssignmentContext(parentPath);
             case METHOD_INVOCATION:
                 MethodInvocationTree methodInvocation = (MethodInvocationTree) parent;
-                // This was copied from old code.  Probably can be removed.
                 if (methodInvocation.getMethodSelect().getKind() == Kind.MEMBER_SELECT
                         && ((MemberSelectTree) methodInvocation.getMethodSelect()).getExpression()
                                 == treePath.getLeaf()) {

@@ -45,9 +45,9 @@ import org.checkerframework.javacutil.TypesUtils;
 public class InferenceUtils {
 
     /**
-     * Returns the annotated type that the leaf of path is assigned to, if it is within an
-     * assignment context. Returns the annotated type that the method invocation at the leaf is
-     * assigned to. If the result is a primitive, return the boxed version.
+     * Returns the type that the leaf of path is assigned to, if it is within an assignment context.
+     * Returns the type that the method invocation at the leaf is assigned to. If the result is a
+     * primitive, return the boxed version.
      *
      * @return type that path leaf is assigned to
      */

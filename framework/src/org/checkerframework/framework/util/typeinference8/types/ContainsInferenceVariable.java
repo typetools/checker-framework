@@ -104,6 +104,8 @@ public class ContainsInferenceVariable {
         @Override
         public Boolean visitTypeVariable(TypeVariable t, Void aVoid) {
             if (visitedTypes.contains(t)) {
+                // t has visited before. If it contained an inference variable,
+                // then true would have been returned, so it must not contain an inference variable.
                 return false;
             }
             visitedTypes.add(t);

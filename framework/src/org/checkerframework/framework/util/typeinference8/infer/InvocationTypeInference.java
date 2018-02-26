@@ -142,30 +142,35 @@ public class InvocationTypeInference {
     /**
      * Is the leaf of the path a generic method invocation that elides method type arguments that
      * does not require a invocation type inference to determine its target type?
+     *
+     * @param assignmentContext tree to which the leaf of path is assigned
+     * @param path path to the method invocation
+     * @return if inference should be preformed.
      */
-    private boolean shouldTryInference(Tree targetType, TreePath path) {
+    private boolean shouldTryInference(Tree assignmentContext, TreePath path) {
         if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
             return false;
         }
-        if (targetType == null) {
+        if (assignmentContext == null) {
             return true;
         }
-        switch (targetType.getKind()) {
+        switch (assignmentContext.getKind()) {
             case RETURN:
                 HashSet<Tree.Kind> kinds =
                         new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
                 Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
                 return enclosing.getKind() != Tree.Kind.LAMBDA_EXPRESSION;
             case METHOD_INVOCATION:
-                MethodInvocationTree methodInvocationTree = (MethodInvocationTree) targetType;
+                MethodInvocationTree methodInvocationTree =
+                        (MethodInvocationTree) assignmentContext;
                 if (methodInvocationTree.getTypeArguments().isEmpty()) {
                     ExecutableElement ele = TreeUtils.elementFromUse(methodInvocationTree);
                     return ele.getTypeParameters().isEmpty();
                 }
                 return false;
             default:
-                return !(targetType instanceof ExpressionTree
-                        && TreeUtils.isPolyExpression((ExpressionTree) targetType));
+                return !(assignmentContext instanceof ExpressionTree
+                        && TreeUtils.isPolyExpression((ExpressionTree) assignmentContext));
         }
     }
 

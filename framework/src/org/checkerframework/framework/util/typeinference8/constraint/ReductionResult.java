@@ -3,8 +3,8 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 
 /**
- * A result of reduction. One of: a constraint, a set of constraints, a bound set, or a bound set
- * and a constraint.
+ * A result of reduction. One of: {@link Constraint},{@link ConstraintSet},{@link BoundSet}, or
+ * {@link ReductionResultPair}.
  */
 public interface ReductionResult {
 
