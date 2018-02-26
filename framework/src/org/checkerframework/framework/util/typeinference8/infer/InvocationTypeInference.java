@@ -74,11 +74,13 @@ import org.checkerframework.javacutil.TypesUtils;
 public class InvocationTypeInference {
 
     private final Java8InferenceContext context;
+    private final SourceChecker checker;
 
     public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
         this.context =
                 new Java8InferenceContext(
                         factory.getProcessingEnv(), factory, pathToExpression, this);
+        this.checker = factory.getContext().getChecker();
     }
 
     /** Perform invocation type inference on {@code methodInvocation}. */
@@ -110,7 +112,6 @@ public class InvocationTypeInference {
 
     /** Convert the exceptions into a checker error and report it. */
     private void logException(MethodInvocationTree methodInvocation, java.lang.Exception ex) {
-        SourceChecker checker = context.factory.getContext().getChecker();
         StringBuilder message = new StringBuilder();
         message.append(ex.getLocalizedMessage());
         if (checker.hasOption("printErrorStack")) {
@@ -202,16 +203,13 @@ public class InvocationTypeInference {
                 }
                 if (!context.types.isSameType((Type) correctType, (Type) inferredType, false)) {
                     // type.inference.not.same=type variable: %s\ninferred: %s\njava type: %s
-                    context.factory
-                            .getContext()
-                            .getChecker()
-                            .report(
-                                    Result.failure(
-                                            "type.inference.not.same",
-                                            typeVariable + "(" + variable + ")",
-                                            inferredType,
-                                            correctType),
-                                    methodInvocation);
+                    checker.report(
+                            Result.failure(
+                                    "type.inference.not.same",
+                                    typeVariable + "(" + variable + ")",
+                                    inferredType,
+                                    correctType),
+                            methodInvocation);
                 }
             }
         }

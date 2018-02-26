@@ -116,10 +116,7 @@ public class Variable extends AbstractType {
         }
 
         Variable variable = (Variable) o;
-        return context.factory
-                        .getContext()
-                        .getTypeUtils()
-                        .isSameType(typeVariable, variable.typeVariable)
+        return context.modelTypes.isSameType(typeVariable, variable.typeVariable)
                 && invocation == variable.invocation;
     }
 

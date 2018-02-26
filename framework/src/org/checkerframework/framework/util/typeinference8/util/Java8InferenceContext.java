@@ -32,14 +32,14 @@ public class Java8InferenceContext {
     /** ProperType for java.lang.Object. */
     public final ProperType object;
 
-    /** Type factory */
-    public final AnnotatedTypeFactory factory;
-
     /** Invocation type inference object. */
     public final InvocationTypeInference inference;
 
     /** com.sun.tools.javac.code.Types */
     public final Types types;
+
+    /** javax.lang.model.util.Types */
+    public final javax.lang.model.util.Types modelTypes;
 
     /**
      * The type of class that encloses the top level expression whose type arguments are inferred.
@@ -68,10 +68,10 @@ public class Java8InferenceContext {
             InvocationTypeInference inference) {
         this.pathToExpression = pathToExpression;
         this.env = env;
-        this.factory = factory;
         this.inference = inference;
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         this.types = Types.instance(javacEnv.getContext());
+        this.modelTypes = factory.getContext().getChecker().getTypeUtils();
         TypeMirror objecTypeMirror =
                 TypesUtils.typeFromClass(
                         Object.class,

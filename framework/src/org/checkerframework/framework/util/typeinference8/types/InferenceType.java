@@ -77,7 +77,7 @@ public class InferenceType extends AbstractType {
         }
 
         InferenceType variable = (InferenceType) o;
-        return context.factory.getContext().getTypeUtils().isSameType(type, variable.type);
+        return context.modelTypes.isSameType(type, variable.type);
     }
 
     @Override
