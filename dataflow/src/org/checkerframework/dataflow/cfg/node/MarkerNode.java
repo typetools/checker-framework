@@ -1,14 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
@@ -19,10 +16,10 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class MarkerNode extends Node {
 
-    protected final /*@Nullable*/ Tree tree;
+    protected final @Nullable Tree tree;
     protected final String message;
 
-    public MarkerNode(/*@Nullable*/ Tree tree, String message, Types types) {
+    public MarkerNode(@Nullable Tree tree, String message, Types types) {
         super(types.getNoType(TypeKind.NONE));
         this.tree = tree;
         this.message = message;

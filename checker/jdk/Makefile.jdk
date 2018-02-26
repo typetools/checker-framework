@@ -5,7 +5,7 @@
 
 # Variables
 CHECKERFRAMEWORK ?= ../../..
-CHECKER_JAVAC ?= $(CHECKERFRAMEWORK)/checker/bin-devel/javac
+CHECKER_JAVAC ?= $(CHECKERFRAMEWORK)/checker/bin/javac
 
 LANGTOOLS ?= ../../../../jsr308-langtools
 LANGTOOLSDIST ?= $(LANGTOOLS)/dist

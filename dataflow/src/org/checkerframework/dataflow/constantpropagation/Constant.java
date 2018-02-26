@@ -1,10 +1,7 @@
 package org.checkerframework.dataflow.constantpropagation;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 
 public class Constant implements AbstractValue<Constant> {
@@ -13,7 +10,7 @@ public class Constant implements AbstractValue<Constant> {
     protected Type type;
 
     /** The value of this abstract value (or null) */
-    protected /*@Nullable*/ Integer value;
+    protected @Nullable Integer value;
 
     public enum Type {
         CONSTANT,

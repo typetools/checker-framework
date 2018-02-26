@@ -1,13 +1,10 @@
 package org.checkerframework.dataflow.cfg.node;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.Tree;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.block.Block;
 
@@ -31,13 +28,13 @@ import org.checkerframework.dataflow.cfg.block.Block;
 public abstract class Node {
 
     /** The basic block this node belongs to (see invariant about this field above). */
-    protected /*@Nullable*/ Block block;
+    protected @Nullable Block block;
 
     /** Is this node an l-value? */
     protected boolean lvalue = false;
 
     /** The assignment context of this node. See {@link AssignmentContext}. */
-    protected /*@Nullable*/ AssignmentContext assignmentContext;
+    protected @Nullable AssignmentContext assignmentContext;
 
     /**
      * Does this node represent a tree that appears in the source code (true) or one that the CFG
@@ -60,7 +57,7 @@ public abstract class Node {
      * @return the basic block this node belongs to (or {@code null} if it represents the parameter
      *     of a method).
      */
-    public /*@Nullable*/ Block getBlock() {
+    public @Nullable Block getBlock() {
         return block;
     }
 
@@ -75,7 +72,7 @@ public abstract class Node {
      *
      * @return the corresponding {@link Tree} or {@code null}.
      */
-    public abstract /*@Nullable*/ Tree getTree();
+    public abstract @Nullable Tree getTree();
 
     /**
      * Returns a {@link TypeMirror} representing the type of a {@link Node} A {@link Node} will

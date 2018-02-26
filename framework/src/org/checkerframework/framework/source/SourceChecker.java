@@ -1,10 +1,5 @@
 package org.checkerframework.framework.source;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.*;
-*/
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -46,6 +41,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -346,7 +343,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected SourceVisitor<?, ?> visitor;
 
     /** Keys for warning suppressions specified on the command line */
-    private String /*@Nullable*/ [] suppressWarnings;
+    private String @Nullable [] suppressWarnings;
 
     /**
      * Regular expression pattern to specify Java classes that are not annotated, so warnings about
@@ -685,7 +682,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return Collections.unmodifiableMap(activeOpts);
     }
 
-    private String /*@Nullable*/ [] createSuppressWarnings(Map<String, String> options) {
+    private String @Nullable [] createSuppressWarnings(Map<String, String> options) {
         if (!options.containsKey("suppressWarnings")) {
             return null;
         }
@@ -844,7 +841,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     public void initChecker() {
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
-        /*@Nullable*/ Trees trees = Trees.instance(processingEnv);
+        @Nullable Trees trees = Trees.instance(processingEnv);
         assert trees != null; /*nninvariant*/
         this.trees = trees;
 
@@ -977,7 +974,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     private CheckerError wrapThrowableAsCheckerError(
-            String where, Throwable t, /*@Nullable*/ TreePath p) {
+            String where, Throwable t, @Nullable TreePath p) {
         return new CheckerError(
                 where
                         + ": unexpected Throwable ("
@@ -1073,7 +1070,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     private void message(
             Diagnostic.Kind kind,
             Object source,
-            /*@CompilerMessageKey*/ String msgKey,
+            @CompilerMessageKey String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
@@ -1267,7 +1264,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return true if one of {@code anno}'s keys is returned by {@link
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
      */
-    private boolean checkSuppressWarnings(/*@Nullable*/ SuppressWarnings anno, String errKey) {
+    private boolean checkSuppressWarnings(@Nullable SuppressWarnings anno, String errKey) {
 
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
@@ -1294,7 +1291,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return true if one of the {@code userSwKeys} is returned by {@link
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
      */
-    private boolean checkSuppressWarnings(String /*@Nullable*/ [] userSwKeys, String errKey) {
+    private boolean checkSuppressWarnings(String @Nullable [] userSwKeys, String errKey) {
         if (userSwKeys == null) {
             return false;
         }
@@ -1343,19 +1340,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // trees.getPath might be slow, but this is only used in error reporting
         // TODO: #1586 this might return null within a cloned finally block and
         // then a warning that should be suppressed isn't. Fix this when fixing #1586.
-        /*@Nullable*/ TreePath path = trees.getPath(this.currentRoot, tree);
+        @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
         if (path == null) {
             return false;
         }
 
-        /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
+        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
         if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
             return true;
         }
 
-        /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
+        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null) {
-            /*@Nullable*/ Element elt = TreeUtils.elementFromTree(method);
+            @Nullable Element elt = TreeUtils.elementFromTree(method);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
@@ -1369,9 +1366,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
+        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null) {
-            /*@Nullable*/ Element elt = TreeUtils.elementFromTree(cls);
+            @Nullable Element elt = TreeUtils.elementFromTree(cls);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
@@ -1437,7 +1434,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     otherwise
      */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
-    public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String errKey) {
+    public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
 
         if (elt == null) {
             return false;
@@ -1456,13 +1453,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return shouldSuppressWarnings(elt.getEnclosingElement(), errKey);
     }
 
-    private boolean isAnnotatedForThisCheckerOrUpstreamChecker(/*@Nullable*/ Element elt) {
+    private boolean isAnnotatedForThisCheckerOrUpstreamChecker(@Nullable Element elt) {
 
         if (elt == null || !useUncheckedCodeDefault("source")) {
             return false;
         }
 
-        /*@Nullable*/ AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
+        @Nullable AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
 
         String[] userAnnotatedFors = (anno == null ? null : anno.value());
 
@@ -1667,17 +1664,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /** Compute the set of supported lint options. */
     protected Set<String> createSupportedLintOptions() {
-        /*@Nullable*/ SupportedLintOptions sl =
-                this.getClass().getAnnotation(SupportedLintOptions.class);
+        @Nullable SupportedLintOptions sl = this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null) {
             return Collections.emptySet();
         }
 
-        /*@Nullable*/ String /*@Nullable*/ [] slValue = sl.value();
+        @Nullable String @Nullable [] slValue = sl.value();
         assert slValue != null; /*nninvariant*/
 
-        /*@Nullable*/ String[] lintArray = slValue;
+        @Nullable String[] lintArray = slValue;
         Set<String> lintSet = new HashSet<String>(lintArray.length);
         for (String s : lintArray) {
             lintSet.add(s);

@@ -1,10 +1,5 @@
 package org.checkerframework.framework.type;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 // The imports from com.sun, but they are all
 // @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
@@ -63,6 +58,8 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
@@ -115,7 +112,6 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
-
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
  * AnnotatedTypeMirror}. The methods are:
@@ -150,7 +146,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // TODO: when should root be null? What are the use cases?
     // None of the existing test checkers has a null root.
     // Should not be modified between calls to "visit".
-    protected /*@Nullable*/ CompilationUnitTree root;
+    protected @Nullable CompilationUnitTree root;
 
     /** The processing environment to use for accessing compiler internals. */
     protected final ProcessingEnvironment processingEnv;
@@ -536,7 +532,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // TODO: document
     // Set the CompilationUnitTree that should be used.
     // What's a better name? Maybe "reset" or "start"?
-    public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
+    public void setRoot(@Nullable CompilationUnitTree root) {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
@@ -2439,7 +2435,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if that annotation is part of the type system under which this type factory
      *     operates, false otherwise
      */
-    public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
+    public boolean isSupportedQualifier(@Nullable AnnotationMirror a) {
         if (a == null) {
             return false;
         }
@@ -2552,7 +2548,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param a the qualifier to check for an alias
      * @return the canonical annotation or null if none exists
      */
-    public /*@Nullable*/ AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+    public @Nullable AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         AnnotationMirror canonicalAnno = aliases.get(qualName);
@@ -2714,7 +2710,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @return receiver type of the most enclosing method being visited
      */
-    protected final /*@Nullable*/ AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
+    protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
         AnnotatedDeclaredType res = visitorState.getMethodReceiver();
         if (res == null) {
             TreePath path = getPath(tree);
