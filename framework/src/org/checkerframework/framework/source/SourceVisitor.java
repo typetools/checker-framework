@@ -7,7 +7,6 @@ import com.sun.source.util.Trees;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**

@@ -66,7 +66,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.checker.nullness.qual.*;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
