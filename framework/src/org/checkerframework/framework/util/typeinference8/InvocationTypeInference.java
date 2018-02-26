@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.typeinference8.infer;
+package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
