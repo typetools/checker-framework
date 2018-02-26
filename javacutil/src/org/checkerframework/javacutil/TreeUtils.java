@@ -33,6 +33,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -1343,13 +1344,15 @@ public final class TreeUtils {
         }
 
         List<ExpressionTree> list = new ArrayList<>();
-        BlockTree body = (BlockTree) lambda.getBody();
-        for (StatementTree statement : body.getStatements()) {
-            if (statement.getKind() == Kind.RETURN) {
-                ReturnTree returnTree = (ReturnTree) statement;
-                list.add(returnTree.getExpression());
-            }
-        }
+        TreeScanner<Void, Void> scanner =
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitReturn(ReturnTree tree, Void o) {
+                        list.add(tree.getExpression());
+                        return super.visitReturn(tree, o);
+                    }
+                };
+        scanner.scan(lambda, null);
         return list;
     }
 
