@@ -2040,16 +2040,21 @@ You will create a new \<belly-rub-checker.tex> file,
 then \verb|\input| it at a logical place in \<manual.tex> (not
 necessarily as the last checker-related chapter).  Also add two references
 to the checker's chapter:  one at the beginning of
-chapter~\ref{introduction}, and identical text in
-Section~\ref{type-refinement-runtime-tests} (both of these lists appear in
+chapter~\ref{introduction}, and identical text in the appropriate part of
+Section~\ref{type-refinement-runtime-tests}  And add the file to \<docs/manual/Makefile>.
+Keep the lists appear in
 the same order as the manual chapters, to help us notice if anything is
-missing).
+missing.
 
 Every chapter and (sub)*section should have a label defined \emph{within} the
 \verb|\section| command.  Section labels should start with the checker
 name (as in \verb|\label{bellyrub-examples}|) and not with ``\<sec:>''.
+Figure labels should start with ``fig-\emph{checkername}'' and not with ``fig:''.
 These conventions are for the benefit of the Hevea program that produces
 the HTML version of the manual.
+Use \verb|\begin{figure}| for all figures, including those whose
+content is a table, in order to have a single consistent numbering for all
+figures.
 
 Don't forget to write Javadoc for any annotations that the checker uses.
 That is part of the documentation and is the first thing that many users
