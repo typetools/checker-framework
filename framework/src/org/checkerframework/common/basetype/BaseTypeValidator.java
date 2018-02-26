@@ -70,6 +70,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         Result result = isValidType(atypeFactory.getQualifierHierarchy(), type);
         if (result.isFailure()) {
             checker.report(result, tree);
+            return false;
         }
         this.isValid = true;
         visit(type, tree);
