@@ -1,19 +1,19 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 class Wellformed {
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     @NonNull @Nullable Object f = null;
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     class Gen1a<T extends @NonNull @Nullable Object> {}
 
     class Gen1b {
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         <T extends @NonNull @Nullable Object> void m(T p) {}
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         <@NonNull @Nullable T> void m2(T p) {}
     }
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     class Gen1c<@NonNull @Nullable TTT> {}
 
     class Gen2a<@Nullable T> {}
