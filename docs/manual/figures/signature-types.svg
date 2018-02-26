@@ -12,7 +12,7 @@
    viewBox="588 449 1049.9674 394.22627"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
    sodipodi:docname="signature-types.svg">
   <metadata
      id="metadata226">
@@ -313,6 +313,36 @@
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
          transform="scale(0.8,0.8)" />
     </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4743-1-2-2-9"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4745-4-6-1-4"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="scale(0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4743-1-2-2-6"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4745-4-6-1-0"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="scale(0.8)" />
+    </marker>
   </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -324,14 +354,14 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1176"
+     inkscape:window-height="1145"
      id="namedview222"
      showgrid="false"
      inkscape:zoom="1.9525943"
-     inkscape:cx="435.69311"
+     inkscape:cx="665.33318"
      inkscape:cy="173.89965"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2"
      showborder="true"
@@ -358,7 +388,7 @@
        id="rect8" />
     <text
        font-size="16"
-       style="font-style:normal;font-weight:700;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-weight:700;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="690.82501"
        y="549.84998"
        id="text10">
@@ -391,7 +421,7 @@
        id="rect20" />
     <text
        font-size="16"
-       style="font-style:normal;font-weight:700;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-weight:700;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="870"
        y="549.84998"
        id="text22">
@@ -443,11 +473,10 @@
        id="rect74" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="774.125"
        y="729.84998"
-       id="text76"
-       sodipodi:linespacing="125%">
+       id="text76">
       <tspan
          x="774.125"
          y="729.84998"
@@ -475,21 +504,22 @@
        id="rect74-7" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="1040.605"
        y="821.45172"
-       id="text76-0"
-       sodipodi:linespacing="125%">
+       id="text76-0">
       <tspan
          sodipodi:role="line"
          id="tspan4252"
          x="1040.605"
-         y="821.45172">@Identifier</tspan>
+         y="821.45172"
+         style="font-size:11.24050808px;line-height:1.25">@Identifier</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan4254"
          x="1040.605"
-         y="835.50238">String</tspan>
+         y="835.50238"
+         style="font-size:11.24050808px;line-height:1.25">String</tspan>
     </text>
     <rect
        style="fill:#ffffff"
@@ -507,25 +537,26 @@
        id="rect74-7-8" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="1319.3652"
        y="731.52765"
-       id="text76-0-8"
-       sodipodi:linespacing="125%">
+       id="text76-0-8">
       <tspan
          sodipodi:role="line"
          id="tspan9193"
          x="1319.3652"
-         y="731.52765">@IdentifierOrArray</tspan>
+         y="731.52765"
+         style="font-size:11.24050808px;line-height:1.25">@IdentifierOrArray</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan9195"
          x="1319.3652"
-         y="745.57831">String</tspan>
+         y="745.57831"
+         style="font-size:11.24050808px;line-height:1.25">String</tspan>
     </text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743)"
-       d="M 1358.6242,708.04116 1463.2857,584.05635"
+       d="m 1381.2912,708.52969 89.0105,-121.28636"
        id="path4260"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -591,7 +622,7 @@
        id="rect86" />
     <text
        font-size="16"
-       style="font-style:normal;font-weight:700;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-weight:700;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="1030"
        y="549.84998"
        id="text88">
@@ -624,7 +655,7 @@
        id="rect106" />
     <text
        font-size="16"
-       style="font-style:normal;font-weight:700;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-weight:700;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="1202.4"
        y="549.84998"
        id="text108">
@@ -657,11 +688,10 @@
        id="rect130" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="895"
        y="639.84998"
-       id="text132"
-       sodipodi:linespacing="125%">
+       id="text132">
       <tspan
          x="895"
          y="639.84998"
@@ -676,7 +706,7 @@
   </g>
   <text
      font-size="12.8"
-     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
      x="894"
      y="644.45911"
      id="text138">
@@ -704,11 +734,10 @@
        id="rect118" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="1140"
        y="639.84998"
-       id="text120"
-       sodipodi:linespacing="125%">
+       id="text120">
       <tspan
          x="1140"
          y="639.84998"
@@ -778,11 +807,10 @@
        id="rect178" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="694.09998"
        y="639.84998"
-       id="text180"
-       sodipodi:linespacing="125%">
+       id="text180">
       <tspan
          x="694.09998"
          y="639.84998"
@@ -797,7 +825,7 @@
   </g>
   <text
      font-size="12.8"
-     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
      x="693.09998"
      y="644.45911"
      id="text186">
@@ -808,7 +836,7 @@
   </text>
   <text
      font-size="12.8"
-     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
      x="773.12402"
      y="734.45911"
      id="text190">
@@ -857,7 +885,7 @@
   </g>
   <text
      font-size="12.8"
-     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
      x="689.82599"
      y="554.45911"
      id="text218">
@@ -885,21 +913,22 @@
        id="rect106-9" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.99945831px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="1191.1598"
        y="549.84998"
-       id="text108-3"
-       sodipodi:linespacing="125%">
+       id="text108-3">
       <tspan
          sodipodi:role="line"
          id="tspan4119"
          x="1191.1598"
-         y="549.84998">@InternalForm</tspan>
+         y="549.84998"
+         style="font-size:15.99945831px;line-height:1.25">@InternalForm</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan4121"
          x="1191.1598"
-         y="569.8493">String</tspan>
+         y="569.8493"
+         style="font-size:15.99945831px;line-height:1.25">String</tspan>
     </text>
     <rect
        style="fill:#ffffff"
@@ -917,21 +946,22 @@
        id="rect106-9-1" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.99945831px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="1368.6255"
        y="549.21057"
-       id="text108-3-9"
-       sodipodi:linespacing="125%">
+       id="text108-3-9">
       <tspan
          sodipodi:role="line"
          id="tspan4119-4"
          x="1368.6255"
-         y="549.21057">@ClassGetSimpleName</tspan>
+         y="549.21057"
+         style="font-size:15.99945831px;line-height:1.25">@ClassGetSimpleName</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan4121-5"
          x="1368.6255"
-         y="569.2099">String</tspan>
+         y="569.2099"
+         style="font-size:15.99945831px;line-height:1.25">String</tspan>
     </text>
   </g>
   <path
@@ -1007,21 +1037,22 @@
        id="rect130-7" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="872.51892"
        y="635.35376"
-       id="text132-4"
-       sodipodi:linespacing="125%">
+       id="text132-4">
       <tspan
          sodipodi:role="line"
          id="tspan3568"
          x="872.51892"
-         y="635.35376">@BinaryNameInUnnamedPackage</tspan>
+         y="635.35376"
+         style="font-size:11.24050808px;line-height:1.25">@BinaryNameInUnnamedPackage</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan3570"
          x="872.51892"
-         y="649.40442">String</tspan>
+         y="649.40442"
+         style="font-size:11.24050808px;line-height:1.25">String</tspan>
     </text>
   </g>
   <path
@@ -1055,26 +1086,30 @@
        id="rect130-4" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050776px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr;text-anchor:middle;fill:#000000;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="895"
        y="639.84998"
-       id="text132-9"
-       sodipodi:linespacing="125%">
+       id="text132-9">
       <tspan
          sodipodi:role="line"
-         id="tspan3728">@BinaryNameForNonArray-</tspan>
+         id="tspan3728"
+         x="895"
+         y="639.84998"
+         style="font-size:11.24050808px;line-height:1.25">@BinaryNameForNonArray-</tspan>
     </text>
   </g>
   <text
      font-size="16"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050776px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr;text-anchor:middle;fill:#000000;"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
      x="1064.3394"
      y="741.83722"
-     id="text132-9-4"
-     sodipodi:linespacing="125%">
+     id="text132-9-4">
     <tspan
        sodipodi:role="line"
-       id="tspan3726">InUnnamedPackage String</tspan>
+       id="tspan3726"
+       x="1064.3394"
+       y="741.83722"
+       style="font-size:11.24050808px;line-height:1.25">InUnnamedPackage String</tspan>
   </text>
   <g
      id="g126-9-2"
@@ -1088,21 +1123,69 @@
        id="rect130-7-0" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="872.51892"
        y="581.39917"
-       id="text132-4-5"
-       sodipodi:linespacing="125%">
+       id="text132-4-5">
       <tspan
          sodipodi:role="line"
          id="tspan3568-5"
          x="872.51892"
-         y="581.39917">@SignatureUnknown</tspan>
+         y="581.39917"
+         style="font-size:11.24050808px;line-height:1.25">@SignatureUnknown</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan3570-4"
          x="872.51892"
-         y="595.44983">String</tspan>
+         y="595.44983"
+         style="font-size:11.24050808px;line-height:1.25">String</tspan>
     </text>
   </g>
+  <g
+     id="g126-96"
+     transform="translate(426.97983,-2.6685844)">
+    <rect
+       style="fill:#ffffff"
+       x="817.41858"
+       y="620"
+       width="156.88985"
+       height="50"
+       id="rect128-2" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.70255458"
+       x="814.04431"
+       y="619.85126"
+       width="165.68912"
+       height="50.297447"
+       id="rect130-5" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       x="897.1076"
+       y="639.84998"
+       id="text132-44">
+      <tspan
+         x="897.1076"
+         y="639.84998"
+         id="tspan134-9"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">@InternalFormForNonArray</tspan>
+      <tspan
+         x="897.1076"
+         y="659.84998"
+         id="tspan136-9"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">String</tspan>
+    </text>
+  </g>
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-2-2-9)"
+     d="m 1137.9899,707.20562 128.4118,-32.25016"
+     id="path4260-42-7-7-5"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-2-2-6)"
+     d="m 1346.3107,617.07722 9.1401,-29.01202"
+     id="path4260-42-7-7-4"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
 </svg>
