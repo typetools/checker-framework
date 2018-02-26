@@ -16,7 +16,7 @@ public class ObjectInputStream extends InputStream implements ObjectInput, Objec
     public abstract long get(String a1, long a2) throws IOException;
     public abstract float get(String a1, float a2) throws IOException;
     public abstract double get(String a1, double a2) throws IOException;
-    public abstract Object get(String a1, Object a2) throws IOException;
+    public abstract @Nullable Object get(String a1, @Nullable Object a2) throws IOException;
   }
   public ObjectInputStream(InputStream a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public final Object readObject() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
