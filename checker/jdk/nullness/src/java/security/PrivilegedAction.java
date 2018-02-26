@@ -53,5 +53,5 @@ public interface PrivilegedAction<@Nullable T> {
      * @see AccessController#doPrivileged(PrivilegedAction,
      *                                     AccessControlContext)
      */
-    @Nullable T run();
+    @Nullable T run();    // Test case pending.
 }
