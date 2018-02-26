@@ -40,7 +40,7 @@ import org.checkerframework.checker.nullness.qual.*;
  * @see PrivilegedExceptionAction
  */
 
-public interface PrivilegedAction<T> {
+public interface PrivilegedAction<@Nullable T> {
     /**
      * Performs the computation.  This method will be called by
      * <code>AccessController.doPrivileged</code> after enabling privileges.
@@ -53,5 +53,5 @@ public interface PrivilegedAction<T> {
      * @see AccessController#doPrivileged(PrivilegedAction,
      *                                     AccessControlContext)
      */
-    @PolyNull T run();    // class-dependent implementation either @NonNull type or @Nullable type return.
+    @Nullable T run();
 }
