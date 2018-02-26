@@ -51,7 +51,7 @@ public class InferenceUtils {
      *
      * @return type that path leaf is assigned to
      */
-    public static TypeMirror getTargetType(TreePath path, Context context) {
+    public static TypeMirror getTargetType(TreePath path, Java8InferenceContext context) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(path);
         if (assignmentContext == null) {
             return null;
@@ -109,7 +109,7 @@ public class InferenceUtils {
             TreePath path,
             ExpressionTree methodInvocation,
             List<? extends ExpressionTree> arguments,
-            Context context) {
+            Java8InferenceContext context) {
         int treeIndex = -1;
         for (int i = 0; i < arguments.size(); ++i) {
             ExpressionTree argumentTree = arguments.get(i);
@@ -149,7 +149,7 @@ public class InferenceUtils {
     }
 
     /** @return the greatest lower bound of {@code a} and {@code b}. */
-    public static AbstractType glb(AbstractType a, AbstractType b, Context context) {
+    public static AbstractType glb(AbstractType a, AbstractType b, Java8InferenceContext context) {
         Type aJavaType = (Type) a.getJavaType();
         Type bJavaType = (Type) b.getJavaType();
         TypeMirror glb = TypesUtils.greatestLowerBound(aJavaType, bJavaType, context.env);

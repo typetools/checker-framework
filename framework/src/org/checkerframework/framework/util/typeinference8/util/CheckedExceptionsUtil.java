@@ -24,7 +24,7 @@ public class CheckedExceptionsUtil {
      * @return a list of types of checked exceptions that can be thrown by the lambda.
      */
     public static List<TypeMirror> thrownCheckedExceptions(
-            LambdaExpressionTree lambda, Context context) {
+            LambdaExpressionTree lambda, Java8InferenceContext context) {
         return new CheckedExceptionVisitor(context).scan(lambda, null);
     }
 
@@ -34,9 +34,9 @@ public class CheckedExceptionsUtil {
      */
     private static class CheckedExceptionVisitor extends TreeScanner<List<TypeMirror>, Void> {
 
-        private final Context context;
+        private final Java8InferenceContext context;
 
-        private CheckedExceptionVisitor(Context context) {
+        private CheckedExceptionVisitor(Java8InferenceContext context) {
             this.context = context;
         }
 
@@ -136,7 +136,7 @@ public class CheckedExceptionsUtil {
     }
 
     /** Returns true iff {@code type} is a checked exception. */
-    private static boolean isCheckedException(TypeMirror type, Context context) {
+    private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
         TypeMirror runtimeEx = context.runtimeEx;
         return context.env.getTypeUtils().isSubtype(type, runtimeEx);
     }

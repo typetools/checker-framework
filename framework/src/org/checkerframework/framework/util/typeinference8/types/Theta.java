@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
 /** A mapping from type variable to inference variable. */
 public class Theta extends HashMap<TypeVariable, Variable> {
@@ -49,11 +49,11 @@ public class Theta extends HashMap<TypeVariable, Variable> {
      *
      * @param invocation method or constructor invocation
      * @param methodType type of generic method
-     * @param context Context
+     * @param context Java8InferenceContext
      * @return a mapping of the type variables of {@code methodType} to inference variables
      */
     public static Theta create(
-            ExpressionTree invocation, ExecutableType methodType, Context context) {
+            ExpressionTree invocation, ExecutableType methodType, Java8InferenceContext context) {
         if (context.maps.containsKey(invocation)) {
             return context.maps.get(invocation);
         }

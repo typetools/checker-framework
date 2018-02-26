@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * An object to pass around for use during invocation type inference. One context is created per
  * top-level invocation expression.
  */
-public class Context {
+public class Java8InferenceContext {
 
     /** Path to the top level expression whose type arguments are inferred. */
     public final TreePath pathToExpression;
@@ -61,7 +61,7 @@ public class Context {
     /** TypeMirror for java.lang.RuntimeException. */
     public final TypeMirror runtimeEx;
 
-    public Context(
+    public Java8InferenceContext(
             ProcessingEnvironment env,
             AnnotatedTypeFactory factory,
             TreePath pathToExpression,

@@ -16,13 +16,14 @@ import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.Variable.BoundKind;
-import org.checkerframework.framework.util.typeinference8.util.Context;
 import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class Resolution {
-    public static BoundSet resolve(Collection<Variable> as, BoundSet boundSet, Context context) {
+    public static BoundSet resolve(
+            Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
         if (as.isEmpty()) {
             return boundSet;
         }
@@ -48,7 +49,7 @@ public class Resolution {
         return boundSet;
     }
 
-    public static BoundSet resolve(Variable a, BoundSet boundSet, Context context) {
+    public static BoundSet resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
         if (a.hasInstantiation()) {
             return boundSet;
         }
@@ -62,10 +63,10 @@ public class Resolution {
         return boundSet;
     }
 
-    private final Context context;
+    private final Java8InferenceContext context;
     private final Dependencies dependencies;
 
-    private Resolution(Context context, Dependencies dependencies) {
+    private Resolution(Java8InferenceContext context, Dependencies dependencies) {
         this.context = context;
         this.dependencies = dependencies;
     }
@@ -198,7 +199,7 @@ public class Resolution {
 
     /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-B */
     private static BoundSet resolveWithCapture(
-            LinkedHashSet<Variable> as, BoundSet boundSet, Context context) {
+            LinkedHashSet<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
         assert !boundSet.containsFalse();
         boundSet.removeCaptures(as);
         BoundSet resolvedBoundSet = new BoundSet(context);

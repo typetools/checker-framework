@@ -14,7 +14,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -67,7 +67,7 @@ public class CheckedExceptionConstraint extends Constraint {
 
     /** See JLS 18.2.5 */
     @Override
-    public ReductionResult reduce(Context context) {
+    public ReductionResult reduce(Java8InferenceContext context) {
         ConstraintSet constraintSet = new ConstraintSet();
         ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
         List<Variable> es = new ArrayList<>();

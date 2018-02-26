@@ -11,7 +11,7 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.1.2 */
@@ -47,7 +47,7 @@ public abstract class Constraint implements ReductionResult {
     }
 
     /** T: may contain inference variables. */
-    public AbstractType T;
+    protected AbstractType T;
 
     protected Constraint(AbstractType t) {
         assert t != null : "Can't create a constraint with a null type.";
@@ -58,7 +58,7 @@ public abstract class Constraint implements ReductionResult {
         return T;
     }
 
-    public abstract ReductionResult reduce(Context context);
+    public abstract ReductionResult reduce(Java8InferenceContext context);
 
     /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200 */
     protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType t) {

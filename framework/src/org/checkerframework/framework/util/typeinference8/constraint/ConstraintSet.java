@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,8 +11,8 @@ import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
 import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
 /** A set of constraints */
 public class ConstraintSet implements ReductionResult {
@@ -160,21 +159,21 @@ public class ConstraintSet implements ReductionResult {
     }
 
     /** @return all variables mentioned by any constraint in this set */
-    public List<Variable> getAllInferenceVariables() {
-        Set<Variable> vars = new HashSet<>();
+    public Set<Variable> getAllInferenceVariables() {
+        Set<Variable> vars = new LinkedHashSet<>();
         for (Constraint constraint : list) {
             vars.addAll(constraint.getInferenceVariables());
         }
-        return new ArrayList<>(vars);
+        return vars;
     }
 
     /** @return all input variables for all constraints in this set */
-    public List<Variable> getAllInputVariables() {
-        Set<Variable> vars = new HashSet<>();
+    public Set<Variable> getAllInputVariables() {
+        Set<Variable> vars = new LinkedHashSet<>();
         for (Constraint constraint : list) {
             vars.addAll(constraint.getInputVariables());
         }
-        return new ArrayList<>(vars);
+        return vars;
     }
 
     /** Applies the instantiations to all the constraints in this set. */
@@ -194,7 +193,7 @@ public class ConstraintSet implements ReductionResult {
      *
      * @return the bound set produced by reducing this constraint set
      */
-    public BoundSet reduce(Context context) {
+    public BoundSet reduce(Java8InferenceContext context) {
         BoundSet boundSet = new BoundSet(context);
         while (!this.isEmpty()) {
             Constraint constraint = this.pop();

@@ -16,12 +16,12 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint.
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.Variable.BoundKind;
-import org.checkerframework.framework.util.typeinference8.types.Variable.CaptureVariable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -52,7 +52,7 @@ public class Capture {
      */
     private final List<CaptureVariable> captureVariables = new ArrayList<>();
 
-    public Capture(AbstractType capturedType, ExpressionTree tree, Context context) {
+    public Capture(AbstractType capturedType, ExpressionTree tree, Java8InferenceContext context) {
         this.capturedType = capturedType;
         DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
         TypeElement ele = TypesUtils.getTypeElement(underlying);
@@ -84,7 +84,7 @@ public class Capture {
      * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
      * 18.5.2.1.
      */
-    public BoundSet incorporate(AbstractType target, Context context) {
+    public BoundSet incorporate(AbstractType target, Java8InferenceContext context) {
         // First add the non-wildcard bounds.
         for (CaptureTuple t : tuples) {
             if (t.capturedTypeArg.getTypeKind() != TypeKind.WILDCARD) {

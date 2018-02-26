@@ -7,7 +7,7 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** A type like structure that contains inference variables. */
@@ -22,7 +22,7 @@ public class InferenceType extends AbstractType {
     /** A mapping of type variables to inference variables. */
     private final Theta map;
 
-    private InferenceType(TypeMirror type, Theta map, Context context) {
+    private InferenceType(TypeMirror type, Theta map, Java8InferenceContext context) {
         super(context);
         this.type = type;
         this.map = map;
@@ -35,7 +35,7 @@ public class InferenceType extends AbstractType {
      * to an inference variable, it will return that {@link Variable}. Or if {@code type} contains
      * no type variables that are mapped in an inference variable, a {@link ProperType} is returned.
      */
-    public static AbstractType create(TypeMirror type, Theta map, Context context) {
+    public static AbstractType create(TypeMirror type, Theta map, Java8InferenceContext context) {
         assert type != null;
         if (type.getKind() == TypeKind.TYPEVAR && map.containsKey(type)) {
             return map.get(type);
@@ -54,7 +54,7 @@ public class InferenceType extends AbstractType {
      * that are mapped in an inference variable, a {@link ProperType} is returned.
      */
     public static List<AbstractType> create(
-            List<? extends TypeMirror> types, Theta map, Context context) {
+            List<? extends TypeMirror> types, Theta map, Java8InferenceContext context) {
         List<AbstractType> abstractTypes = new ArrayList<>();
         for (TypeMirror type : types) {
             abstractTypes.add(create(type, map, context));

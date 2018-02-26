@@ -4,7 +4,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -15,7 +14,7 @@ import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -26,21 +25,21 @@ import org.checkerframework.javacutil.TypesUtils;
  * inference variable.
  */
 public abstract class AbstractType {
-    protected final Context context;
+    protected final Java8InferenceContext context;
 
     public enum Kind {
         /** {@link ProperType},a type that contains no inference variables* */
         PROPER,
+        /** {@link Variable}, an inference variable. */
+        VARIABLE,
         /**
          * {@link InferenceType}, a type that contains inference variables, but is not an inference
          * variable.
          */
-        VARIABLE,
-        /** {@link Variable}, an inference variable. */
         INFERENCE_TYPE
     }
 
-    protected AbstractType(Context context) {
+    protected AbstractType(Java8InferenceContext context) {
         this.context = context;
     }
 
@@ -87,16 +86,17 @@ public abstract class AbstractType {
 
     /**
      * Assuming the type is a declared type, this method returns the upper bounds of its type
-     * parameters.
+     * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
+     * they are proper types.)
      */
-    public Iterator<ProperType> getTypeParameterBounds() {
+    public List<ProperType> getTypeParameterBounds() {
         List<ProperType> bounds = new ArrayList<>();
         TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
         for (TypeParameterElement ele : typeelem.getTypeParameters()) {
             TypeVariable typeVariable = (TypeVariable) ele.asType();
             bounds.add(new ProperType(typeVariable.getUpperBound(), context));
         }
-        return bounds.iterator();
+        return bounds;
     }
 
     /** @return a new type that is the capture of this type. */

@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -40,9 +41,9 @@ import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -72,10 +73,12 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class InvocationTypeInference {
 
-    private final Context context;
+    private final Java8InferenceContext context;
 
     public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
-        this.context = new Context(factory.getProcessingEnv(), factory, pathToExpression, this);
+        this.context =
+                new Java8InferenceContext(
+                        factory.getProcessingEnv(), factory, pathToExpression, this);
     }
 
     /** Perform invocation type inference on {@code methodInvocation}. */
@@ -262,9 +265,11 @@ public class InvocationTypeInference {
         if (b4.isUncheckedConversion()) {
             // If unchecked conversion was necessary for the method to be applicable during
             // constraint set reduction in 18.5.1, then the parameter types of the invocation type
-            // of m are obtained by applying theta' to the parameter types of m's type, and the return
+            // of m are obtained by applying thetaPrime to the parameter types of m's type, and the return
             // type and thrown types of the invocation type of m are given by the erasure of the
             // return type and thrown types of m's type.
+            // TODO: the erasure of the return type should happen were the inferred type arguments
+            // are substituted into the method type.
         }
         return thetaPrime;
     }
@@ -384,10 +389,10 @@ public class InvocationTypeInference {
      */
     private BoundSet getB4(BoundSet current, ConstraintSet c) {
         // C might contain new variables that have not yet been added to this bound set.
-        List<Variable> newVariables = c.getAllInferenceVariables();
+        Set<Variable> newVariables = c.getAllInferenceVariables();
         while (!c.isEmpty()) {
             ConstraintSet subset = c.getClosedSubset(current.getDependencies(newVariables));
-            List<Variable> alphas = subset.getAllInputVariables();
+            Set<Variable> alphas = subset.getAllInputVariables();
             if (!alphas.isEmpty()) {
                 BoundSet resolved = Resolution.resolve(alphas, current, context);
                 c.applyInstantiations(resolved.getInstantiationsInAlphas(alphas));

@@ -64,7 +64,7 @@ public class Dependencies {
         return new LinkedHashSet<>(map.get(alpha));
     }
 
-    /** Returns the set of dependencies of {@code alpha}. */
+    /** Returns the set of dependencies for all variables in {@code variables}. */
     public LinkedHashSet<Variable> get(List<Variable> variables) {
         LinkedHashSet<Variable> set = new LinkedHashSet<>();
         for (Variable v : variables) {

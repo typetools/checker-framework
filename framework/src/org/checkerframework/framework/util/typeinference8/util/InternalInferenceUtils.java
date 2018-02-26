@@ -60,7 +60,7 @@ public class InternalInferenceUtils {
      * @return ExecutableType of the method invocation or new class tree adapted to the call site.
      */
     public static ExecutableType getTypeOfMethodAdaptedToUse(
-            ExpressionTree expressionTree, Context context) {
+            ExpressionTree expressionTree, Java8InferenceContext context) {
         if (expressionTree.getKind() == Kind.NEW_CLASS) {
             return (ExecutableType) ((JCNewClass) expressionTree).constructorType;
         } else if (expressionTree.getKind() != Kind.METHOD_INVOCATION) {
@@ -94,7 +94,7 @@ public class InternalInferenceUtils {
      *     otherwise, null is returned.
      */
     public static Pair<TypeMirror, TypeMirror> getParameterizedSupers(
-            TypeMirror s, TypeMirror t, Context context) {
+            TypeMirror s, TypeMirror t, Java8InferenceContext context) {
         // com.sun.tools.javac.comp.Infer#getParameterizedSupers
         TypeMirror lubResult = lub(context.env, t, s);
         if (!TypesUtils.isParameterizedType(lubResult)) {

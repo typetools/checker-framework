@@ -10,11 +10,11 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.resolution.Resolution;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.types.Variable.CaptureVariable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Holds a set of bounds. */
@@ -31,7 +31,7 @@ public class BoundSet implements ReductionResult {
     /** All capture bounds */
     private final LinkedHashSet<Capture> captures;
 
-    private final Context context;
+    private final Java8InferenceContext context;
 
     /** Whether or not this bounds set contains the false bound. */
     private boolean containsFalse;
@@ -41,7 +41,7 @@ public class BoundSet implements ReductionResult {
      */
     private boolean uncheckedConversion;
 
-    public BoundSet(Context context) {
+    public BoundSet(Java8InferenceContext context) {
         assert context != null;
         this.variables = new LinkedHashSet<>();
         this.captures = new LinkedHashSet<>();
@@ -57,6 +57,7 @@ public class BoundSet implements ReductionResult {
         this.captures = new LinkedHashSet<>(toCopy.captures);
         this.variables = new LinkedHashSet<>(toCopy.variables);
         this.uncheckedConversion = toCopy.uncheckedConversion;
+        // Save the current state of the variables so they can be restored later.
         for (Variable v : variables) {
             v.save();
         }
@@ -96,7 +97,7 @@ public class BoundSet implements ReductionResult {
      * @param context inference context
      * @return initial bounds
      */
-    public static BoundSet initialBounds(Theta theta, Context context) {
+    public static BoundSet initialBounds(Theta theta, Java8InferenceContext context) {
         BoundSet boundSet = new BoundSet(context);
         boundSet.variables.addAll(theta.values());
         return boundSet;
@@ -190,7 +191,7 @@ public class BoundSet implements ReductionResult {
     }
 
     /** Returns the dependencies between variables. */
-    public Dependencies getDependencies(List<Variable> additionalVars) {
+    public Dependencies getDependencies(Collection<Variable> additionalVars) {
         Dependencies dependencies = new Dependencies();
 
         for (Capture capture : captures) {
@@ -289,7 +290,7 @@ public class BoundSet implements ReductionResult {
      * Remove constraints between proper types introduced adding an instantiation against a captured
      * wildcard. If the captured wildcard should be recursive, then the bounds won't be satisfiable,
      * because the captured wildcard won't be recursive. (See {@link
-     * Resolution#resolveWithCapture(LinkedHashSet, BoundSet, Context)}}.
+     * Resolution#resolveWithCapture(LinkedHashSet, BoundSet, Java8InferenceContext)}}.
      */
     private void removeProblematicConstraints(Variable alpha) {
         if (!TypesUtils.isCaptured(alpha.getInstantiation().getJavaType())) {

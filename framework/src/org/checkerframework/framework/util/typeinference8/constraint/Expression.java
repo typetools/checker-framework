@@ -24,9 +24,9 @@ import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.util.Context;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -69,7 +69,7 @@ public class Expression extends Constraint {
 
     /** See JLS 18.2.1 */
     @Override
-    public ReductionResult reduce(Context context) {
+    public ReductionResult reduce(Java8InferenceContext context) {
         if (getT().isProper()) {
             return reduceProperType();
         } else if (TreeUtils.isStandaloneExpression(expression)) {
@@ -122,7 +122,7 @@ public class Expression extends Constraint {
      * <p>This bound set may contain new inference variables, as well as dependencies between these
      * new variables and the inference variables in T.
      */
-    private BoundSet reduceMethodInvocation(Context context) {
+    private BoundSet reduceMethodInvocation(Java8InferenceContext context) {
         ExpressionTree expressionTree = expression;
         List<? extends ExpressionTree> args;
         if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
@@ -141,7 +141,7 @@ public class Expression extends Constraint {
     }
 
     /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300 */
-    private ReductionResult reduceMethodRef(Context context) {
+    private ReductionResult reduceMethodRef(Java8InferenceContext context) {
         MemberReferenceTree memRef = (MemberReferenceTree) expression;
         if (TreeUtils.isExactMethodReference(memRef)) {
             ExecutableType typeOfPoAppMethod =
@@ -171,8 +171,7 @@ public class Expression extends Constraint {
             }
             return constraintSet;
         }
-        // else
-        // Otherwise, the method reference is inexact,
+        // else the method reference is inexact.
 
         // Compile-time declaration of the member reference expression
         ExecutableType compileTimeDecl = TreeUtils.compileTimeDeclarationType(memRef, context.env);
@@ -187,18 +186,17 @@ public class Expression extends Constraint {
         // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300-D-B-BC
         // Otherwise, if the method reference expression elides TypeArguments, and the
         // compile-time declaration is a generic method, and
-        // the return type of the
-        // compile-time declaration mentions at least one of the method's type parameters,
+        // the return type of the compile-time declaration mentions at least one of the method's
+        // type parameters, the constraint reduces to the bound set B3 which would be used to
+        // determine the method reference's invocation type when targeting the return type of the
+        // function type, as defined in 18.5.2. B3 may contain new inference variables, as well as
+        // dependencies between these new variables and the inference variables in T.
         Theta map = Theta.create(memRef, compileTimeDecl, context);
         AbstractType compileTimeReturn =
                 InferenceType.create(compileTimeDecl.getReturnType(), map, context);
         if (memRef.getTypeArguments() == null
                 && !compileTimeDecl.getTypeVariables().isEmpty()
                 && !compileTimeReturn.isProper()) {
-            // the constraint reduces to the bound set B3 which would be used to determine the
-            // method reference's invocation type when targeting the return type of the function
-            // type, as defined in 18.5.2. B3 may contain new inference variables, as well as
-            // dependencies between these new variables and the inference variables in T.
             BoundSet b2 =
                     context.inference.createB2MethodRef(
                             memRef, compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
@@ -221,7 +219,7 @@ public class Expression extends Constraint {
     }
 
     /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-200 */
-    private ReductionResultPair reduceLambda(Context context) {
+    private ReductionResultPair reduceLambda(Java8InferenceContext context) {
         LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
         Pair<AbstractType, BoundSet> pair = getGroundTargetType(T, lambda, context);
         AbstractType tPrime = pair.first;
@@ -268,7 +266,7 @@ public class Expression extends Constraint {
      * pair will be non-null.
      */
     private Pair<AbstractType, BoundSet> getGroundTargetType(
-            AbstractType t, LambdaExpressionTree lambda, Context context) {
+            AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
         if (!t.isWildcardParameterizedType()) {
             return Pair.of(t, null);
         }
@@ -276,7 +274,7 @@ public class Expression extends Constraint {
         // If T is a wildcard-parameterized functional interface type and the lambda expression is
         // explicitly typed, then the ground target type is inferred as described in 18.5.3.
         if (TreeUtils.isExplicitlyTypeLambda(lambda) && !lambda.getParameters().isEmpty()) {
-            return explicitlyTypedLambdasWithWildcard(t, lambda, context);
+            return explicitlyTypedLambdaWithWildcard(t, lambda, context);
         } else {
             // If T is a wildcard-parameterized functional interface type and the lambda expression
             // is implicitly typed, then the ground target type is the non-wildcard parameterization (9.9) of T.
@@ -286,9 +284,10 @@ public class Expression extends Constraint {
     }
 
     /** Returns the non-wilcard parameterization of {@code t} as defined in JLS 9.9. */
-    private AbstractType nonWildcardParameterization(AbstractType t, Context context) {
+    private AbstractType nonWildcardParameterization(
+            AbstractType t, Java8InferenceContext context) {
         List<AbstractType> As = t.getTypeArguments();
-        Iterator<ProperType> Bs = t.getTypeParameterBounds();
+        Iterator<ProperType> Bs = t.getTypeParameterBounds().iterator();
         List<AbstractType> Ts = new ArrayList<>();
         for (AbstractType Ai : As) {
             ProperType bi = Bs.next();
@@ -312,8 +311,8 @@ public class Expression extends Constraint {
      * Infers the type of {@code lambda}. See 18.5.3: Functional Interface Parameterization
      * Inference
      */
-    private Pair<AbstractType, BoundSet> explicitlyTypedLambdasWithWildcard(
-            AbstractType t, LambdaExpressionTree lambda, Context context) {
+    private Pair<AbstractType, BoundSet> explicitlyTypedLambdaWithWildcard(
+            AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
         // Where a lambda expression with explicit parameter types P1, ..., Pn targets a functional
         // interface type F<A1, ..., Am> with at least one wildcard type argument, then a parameterization
         // of F may be derived as the ground target type of the lambda expression as follows.

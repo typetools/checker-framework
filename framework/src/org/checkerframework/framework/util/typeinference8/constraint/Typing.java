@@ -13,7 +13,7 @@ import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.Variable.BoundKind;
-import org.checkerframework.framework.util.typeinference8.util.Context;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -45,6 +45,15 @@ public class Typing extends Constraint {
     public Typing(AbstractType s, AbstractType t, Kind kind) {
         super(t);
         assert s != null;
+        switch (kind) {
+            case TYPE_COMPATIBILITY:
+            case SUBTYPE:
+            case CONTAINED:
+            case TYPE_EQUALITY:
+                break;
+            default:
+                ErrorReporter.errorAbort("Unexpected kind: " + kind);
+        }
         this.S = s;
         this.kind = kind;
     }
@@ -84,7 +93,7 @@ public class Typing extends Constraint {
     }
 
     @Override
-    public ReductionResult reduce(Context context) {
+    public ReductionResult reduce(Java8InferenceContext context) {
         switch (getKind()) {
             case TYPE_COMPATIBILITY:
                 return reduceCompatible(context);
@@ -104,7 +113,7 @@ public class Typing extends Constraint {
      * Returns the result of reducing this constraint, assuming it is a subtyping constraint. See
      * JLS 18.2.3.
      */
-    private ReductionResult reduceSubtyping(Context context) {
+    private ReductionResult reduceSubtyping(Java8InferenceContext context) {
         if (S.isProper() && T.isProper()) {
             TypeMirror subType = S.getJavaType();
             TypeMirror superType = T.getJavaType();
@@ -272,7 +281,7 @@ public class Typing extends Constraint {
      * Returns the result of reducing this constraint, assume it is a type compatibility constraint.
      * See JLS 18.2.2
      */
-    private ReductionResult reduceCompatible(Context context) {
+    private ReductionResult reduceCompatible(Java8InferenceContext context) {
         if (T.isProper() && S.isProper()) {
             // the constraint reduces to true if S is compatible in a loose invocation context
             // with T (5.3), and false otherwise.
