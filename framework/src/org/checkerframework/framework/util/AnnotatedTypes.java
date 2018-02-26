@@ -871,7 +871,7 @@ public class AnnotatedTypes {
             java.lang.annotation.Annotation.class.getCanonicalName();
 
     /**
-     * Use {@link org.checkerframework.common.basetype.TypeValidator.isValid(AnnotatedTypeMirror,
+     * Use {@link org.checkerframework.common.basetype.TypeValidator#isValid(AnnotatedTypeMirror,
      * Tree)} instead. Method always returns true and will be removed.
      *
      * @deprecated Remove after 2.4.0 release.
