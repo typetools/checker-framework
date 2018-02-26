@@ -136,4 +136,12 @@ points to version ${build.version} of the 'javac.jar' library."/>
         </exec>
     </target>
 
+
+  <target name="checker-qual-jar"
+    description="Build checker-qual-jar">
+    <ant dir="checker">
+      <target name="checker-qual-jar"/>
+    </ant>
+  </target>
+
 </project>

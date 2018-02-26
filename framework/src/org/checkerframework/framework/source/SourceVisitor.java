@@ -1,9 +1,5 @@
 package org.checkerframework.framework.source;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.*;
-*/
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -11,6 +7,7 @@ import com.sun.source.util.Trees;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**

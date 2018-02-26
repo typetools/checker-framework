@@ -1,9 +1,5 @@
 package org.checkerframework.javacutil;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import static com.sun.tools.javac.code.Flags.ABSTRACT;
 import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
 import static com.sun.tools.javac.code.Flags.FINAL;
@@ -31,6 +27,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A Utility class for analyzing {@code Element}s. */
 public class ElementUtils {
@@ -49,7 +46,7 @@ public class ElementUtils {
     public static TypeElement enclosingClass(final Element elem) {
         Element result = elem;
         while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
-            /*@Nullable*/ Element encl = result.getEnclosingElement();
+            @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
         return (TypeElement) result;
@@ -66,7 +63,7 @@ public class ElementUtils {
     public static PackageElement enclosingPackage(final Element elem) {
         Element result = elem;
         while (result != null && result.getKind() != ElementKind.PACKAGE) {
-            /*@Nullable*/ Element encl = result.getEnclosingElement();
+            @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
         return (PackageElement) result;
@@ -153,7 +150,7 @@ public class ElementUtils {
      * @param element an element enclosed by a class, or a {@code TypeElement}
      * @return the qualified {@code Name} of the innermost class enclosing the element
      */
-    public static /*@Nullable*/ Name getQualifiedClassName(Element element) {
+    public static @Nullable Name getQualifiedClassName(Element element) {
         if (element.getKind() == ElementKind.PACKAGE) {
             PackageElement elem = (PackageElement) element;
             return elem.getQualifiedName();

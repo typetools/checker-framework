@@ -1,10 +1,5 @@
 package org.checkerframework.javacutil;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.interning.qual.Interned;
-*/
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -36,6 +31,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -88,8 +84,7 @@ public class AnnotationUtils {
      *
      * @return true iff a1 and a2 are the same annotation
      */
-    public static boolean areSame(
-            /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+    public static boolean areSame(@Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
@@ -114,7 +109,7 @@ public class AnnotationUtils {
      * @return true iff a1 and a2 have the same annotation type
      */
     public static boolean areSameIgnoringValues(
-            /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+            @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
@@ -358,7 +353,7 @@ public class AnnotationUtils {
     /**
      * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
      */
-    public static EnumSet<ElementKind> getElementKindsForTarget(/*@Nullable*/ Target target) {
+    public static EnumSet<ElementKind> getElementKindsForTarget(@Nullable Target target) {
         if (target == null) {
             // A missing @Target implies that the annotation can be written everywhere.
             return EnumSet.allOf(ElementKind.class);

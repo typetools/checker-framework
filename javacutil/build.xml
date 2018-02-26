@@ -46,7 +46,7 @@
         </uptodate>
     </target>
 
-    <target name="build" depends="prep,build.check.uptodate"
+    <target name="build" depends="prep,build.check.uptodate,checker-qual-jar"
             unless="build.uptodate"
             description="Compile files.  Does not update any jars">
         <pathconvert pathsep=" " property="src.files.spaceseparated_jc">
