@@ -1333,7 +1333,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns a list of expressions are returned by {@code lambda}.
+     * Returns all expressions that might be the result of {@code lambda}.
      *
      * @param lambda a lambda with or without a body.
      * @return a list of expressions are returned by {@code lambda}
