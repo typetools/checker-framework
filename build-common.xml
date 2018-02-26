@@ -136,10 +136,13 @@ points to version ${build.version} of the 'javac.jar' library."/>
         </exec>
     </target>
 
+  <target name="-check-for-checker-qual-jar" description="Check if checker-qual.jar exists.">
+    <available file="${checker.qual.lib}" property="checker-qual-exists"/>
+  </target>
 
-  <target name="checker-qual-jar"
-    description="Build checker-qual-jar">
-    <ant dir="checker">
+  <target name="checker-qual-jar" description="Build checker-qual-jar" depends="-check-for-checker-qual-jar"
+       unless="checker-qual-exists">
+    <ant dir="../checker">
       <target name="checker-qual-jar"/>
     </ant>
   </target>

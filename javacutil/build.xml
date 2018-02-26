@@ -62,7 +62,7 @@
         <echo message="${src.files.spaceseparated_jc}" file="${tmpdir}/srcfiles-javacutil.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}"
+              classpath="${checker.qual.lib}:${javac.lib}"
               classname="com.sun.tools.javac.Main">
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
@@ -130,7 +130,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${checker.qual.lib}"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
 
