@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.HashCodeUtils;

@@ -35,6 +35,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
