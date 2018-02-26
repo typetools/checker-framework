@@ -13,6 +13,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -30,8 +31,9 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        MethodInvocationNode nodeNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
-        I18nFormatCall fc = tu.createFormatForCall(node, atypeFactory);
+        I18nFormatCall fc = tu.createFormatForCall(node, nodeNode, atypeFactory);
         if (fc != null) {
             checkInvocationFormatFor(fc);
             return p;
