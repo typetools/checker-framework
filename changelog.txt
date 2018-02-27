@@ -20,6 +20,8 @@ checker/resources/javadoc.astub.
 
 Added new type @InternalFormForNonArray to the Signature Checker
 
+Ended support for the Checker Framework Eclipse plugin.
+
 ---------------------------------------------------------------------------
 
 Version 2.3.2, February 1, 2018
