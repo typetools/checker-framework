@@ -117,7 +117,7 @@ public abstract class DocumentBuilderFactory {
      * java.util.ServiceConfigurationError service configuration error} or if
      * the implementation is not available or cannot be instantiated.
      */
-    @SuppressWarnings("nullness")    // find method in FactoryFinder accepts @Nullable args where as here the requirement is @NonNull
+    @SuppressWarnings("nullness")    // find method in FactoryFinder accepts @Nullable args whereas here the requirement is @NonNull
     public static DocumentBuilderFactory newInstance() {
         return FactoryFinder.find(
                 /* The default property name according to the JAXP spec */
@@ -484,7 +484,7 @@ public abstract class DocumentBuilderFactory {
      *
      * @since 1.5
      */
-    @SuppressWarnings("nullness")    // getPackage() won't reference to null as this contained inside parsers package. 
+    @SuppressWarnings("nullness") // this.getClass().getPackage() is non-null as this class is in the `parsers` package
     public @Nullable Schema getSchema() {
         throw new UnsupportedOperationException(
             "This parser does not support specification \""
@@ -552,7 +552,7 @@ public abstract class DocumentBuilderFactory {
      *
      * @since 1.5
      */
-    @SuppressWarnings("nullness")    // getPackage() won't reference to null as this contained inside parsers package. 
+    @SuppressWarnings("nullness") // this.getClass().getPackage() is non-null as this class is in the `parsers` package
     public void setSchema(@Nullable Schema schema) {
         throw new UnsupportedOperationException(
             "This parser does not support specification \""
@@ -600,7 +600,7 @@ public abstract class DocumentBuilderFactory {
      *
      * @since 1.5
      */
-    @SuppressWarnings("nullness")    // getPackage() won't reference to null as this contained inside parsers package. 
+    @SuppressWarnings("nullness") // this.getClass().getPackage() is non-null as this class is in the `parsers` package
     public boolean isXIncludeAware() {
         throw new UnsupportedOperationException(
             "This parser does not support specification \""

@@ -285,7 +285,6 @@ class FactoryFinder {
      *
      * @return instance of provider class if found or null
      */
-    @SuppressWarnings("nullness")    // Checker analysis for return type found : @FBCBottom @Nullable  null but it also returns iterator.next() which can be non-null also. In x.getMessage() parameter found : @Initialized @Nullable String but this will not dereference a null here as underlying exception 'e' is not null. 	
     private static <T> @Nullable T findServiceProvider(final Class<T> type) {
         try {
             return AccessController.doPrivileged(new PrivilegedAction<T>() {
@@ -309,6 +308,7 @@ class FactoryFinder {
             // compatibility issues down the road.
             final RuntimeException x = new RuntimeException(
                     "Provider for " + type + " cannot be created", e);
+            @SuppressWarnings("nullness") // x.getMessage() is non-null, per constructor immediately above
             final FactoryConfigurationError error =
                     new FactoryConfigurationError(x, x.getMessage());
             throw error;

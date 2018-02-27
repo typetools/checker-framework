@@ -102,7 +102,7 @@ public class FactoryConfigurationError extends Error {
      *
      * @return The error message.
      */
-    // @Nullable annotation added(extra from JavaDoc) as this method might return null from this implementation
+    // The Javadoc doesn't mention it, but this implementation might return null
     public @Nullable String getMessage () {
         String message = super.getMessage ();
 

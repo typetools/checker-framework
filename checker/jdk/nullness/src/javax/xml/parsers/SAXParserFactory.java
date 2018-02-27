@@ -331,7 +331,7 @@ public abstract class SAXParserFactory {
      *
      * @since 1.5
      */
-    @SuppressWarnings("nullness")    // getPackage() won't reference to null as this contained inside parsers package.
+    @SuppressWarnings("nullness") // this.getClass().getPackage() is non-null as this class is in the `parsers` package
     public @Nullable Schema getSchema() {
         throw new UnsupportedOperationException(
             "This parser does not support specification \""
@@ -389,7 +389,7 @@ public abstract class SAXParserFactory {
      *
      * @since 1.5
      */
-    @SuppressWarnings("nullness")    // getPackage() won't reference to null as this contained inside parsers package.
+    @SuppressWarnings("nullness") // this.getClass().getPackage() is non-null as this class is in the `parsers` package
     public void setSchema(@Nullable Schema schema) {
         throw new UnsupportedOperationException(
             "This parser does not support specification \""
@@ -435,7 +435,7 @@ public abstract class SAXParserFactory {
      *
      * @since 1.5
      */
-    @SuppressWarnings("nullness")    // getPackage() won't reference to null as this contained inside parsers package.
+    @SuppressWarnings("nullness") // this.getClass().getPackage() is non-null as this class is in the `parsers` package
     public boolean isXIncludeAware() {
         throw new UnsupportedOperationException(
             "This parser does not support specification \""

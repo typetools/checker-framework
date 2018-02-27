@@ -44,7 +44,7 @@ class SecuritySupport  {
     ClassLoader getContextClassLoader() throws SecurityException{
         return (ClassLoader)
                 AccessController.doPrivileged(new PrivilegedAction() {
-            public @Nullable Object run() {    // Nullness annotation justification : T run(), a class-dependent value that may represent the results of the computation.
+            public @Nullable Object run() {
                 ClassLoader cl = null;
                 //try {
                 cl = Thread.currentThread().getContextClassLoader();
@@ -61,7 +61,7 @@ class SecuritySupport  {
     String getSystemProperty(final String propName) {
         return (String)
             AccessController.doPrivileged(new PrivilegedAction() {
-                public @Nullable Object run() {    // Nullness annotation justification : T run(), a class-dependent value that may represent the results of the computation.
+                public @Nullable Object run() {
                     return System.getProperty(propName);
                 }
             });
@@ -73,7 +73,7 @@ class SecuritySupport  {
         try {
             return (FileInputStream)
                 AccessController.doPrivileged(new PrivilegedExceptionAction() {
-                    public @Nullable Object run() throws FileNotFoundException {    // Nullness annotation justification : T run(), a class-dependent value that may represent the results of the computation.
+                    public Object run() throws FileNotFoundException {
                         return new FileInputStream(file);
                     }
                 });
@@ -87,7 +87,7 @@ class SecuritySupport  {
     {
         return (InputStream)
             AccessController.doPrivileged(new PrivilegedAction() {
-                public @Nullable Object run() {    // Nullness annotation justification : T run(), a class-dependent value that may represent the results of the computation.
+                public @Nullable Object run() {
                     InputStream ris;
                     if (cl == null) {
                         ris = Object.class.getResourceAsStream(name);
