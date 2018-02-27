@@ -117,22 +117,12 @@ The process takes around 3 hours (including manual steps) when all goes accordin
        </li>
        <li>One week before Feature Freeze:
          <ul>
-          <li>Update projects from upstream.  For example:
-<pre>
-# Don't do this.  Instead, follow the instructions in section
-# "Updating from upstream JavaParser" of file $t/stubparser/readme.md
-# (cd $t/stubparser && git pull https://github.com/javaparser/javaparser.git)
-
-(cd $t/libraries/commons-bcel && git pull https://github.com/codespecs/commons-bcel.git)
-(cd $t/libraries/commons-io && git pull https://github.com/apache/commons-io.git)
-(cd $t/libraries/guava && git pull https://github.com/google/guava)
-(cd $t/libraries/java-getopt && git pull https://github.com/arenn/java-getopt.git)
-(cd $t/libraries/junit5 && git pull https://github.com/junit-team/junit5.git)
-</pre>
-             Resolve any conflicts, ensure the projects build, push the changes to a branch, and then merge into the typetools repositories.
+           <li>
+             Update <a href="https://search.maven.org/#search%7Cga%7C1%7Cannotatedlib">annotated
+               libraries</a> from upstream.  If a library's maintainers have
+             made a new release, follow the instructions in the
+             README-typetools.md file in the annotated version.
            </li>
-         </ul>
-         <ul>
           <li>Remind bug owners of their bugs outstanding.</li>
          </ul>
        </li>
