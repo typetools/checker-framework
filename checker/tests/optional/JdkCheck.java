@@ -45,12 +45,12 @@ public class JdkCheck {
     }
 
     @Present Optional<String> ofTestPNble(@Nullable String s) {
-        // :: error: (of.nullable.argument) :: error: (return.type.incompatible)
+        //TODO:: error: (of.nullable.argument) :: error: (return.type.incompatible)
         return Optional.of(s);
     }
 
     Optional<String> ofTestMNble(@Nullable String s) {
-        // :: error: (of.nullable.argument) :: error: (return.type.incompatible)
+        //TODO:: error: (of.nullable.argument) :: error: (return.type.incompatible)
         return Optional.of(s);
     }
 
@@ -59,9 +59,11 @@ public class JdkCheck {
         return Optional.ofNullable(s);
     }
 
+    /* TODO: ofNullable with non-null arg gives @Present (+ a warning?)
     @Present Optional<String> ofNullableTestPNn(String s) {
         return Optional.ofNullable(s);
     }
+    */
 
     Optional<String> ofNullableTestMNble(@Nullable String s) {
         return Optional.ofNullable(s);

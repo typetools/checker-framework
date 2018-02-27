@@ -18,9 +18,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
-import org.checkerframework.checker.nullness.NullnessChecker;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -29,7 +26,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -47,11 +43,6 @@ public class OptionalVisitor
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
         collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
-    }
-
-    /** Provides a way to query the Nullness Checker. */
-    NullnessAnnotatedTypeFactory getNullnessTypeFactory() {
-        return checker.getTypeFactoryOfSubchecker(NullnessChecker.class);
     }
 
     @Override
@@ -216,31 +207,7 @@ public class OptionalVisitor
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         handleCreationElimination(node);
-        handleOfRedundantly(node);
         return super.visitMethodInvocation(node, p);
-    }
-
-    /**
-     * Redundantly force the argument of {@code Optional.of} to be non-null.
-     *
-     * <p>This is enforced by the JDK annotations for the Nullness Checker, which is run as a
-     * subchecker of the Optional Checker. However, this error is issued even if a user suppresses
-     * all nullness warnings. A user may suppress this warning as well if desired.
-     */
-    public void handleOfRedundantly(MethodInvocationTree node) {
-        if (!isCallToOf(node)) {
-            return;
-        }
-
-        // Determine the Nullness annotation on the argument.
-        ExpressionTree arg0 = node.getArguments().get(0);
-        final AnnotatedTypeMirror argNullnessType = getNullnessTypeFactory().getAnnotatedType(arg0);
-        boolean argIsNonNull =
-                AnnotationUtils.containsSameByClass(
-                        argNullnessType.getAnnotations(), NonNull.class);
-        if (!argIsNonNull) {
-            checker.report(Result.failure("of.nullable.argument"), arg0);
-        }
     }
 
     /**

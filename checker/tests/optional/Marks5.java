@@ -16,11 +16,11 @@ public class Marks5 {
     // unless BOTH are empty, in which case return an empty Optional.
 
     Optional<BigDecimal> clever(Optional<BigDecimal> first, Optional<BigDecimal> second) {
-        @SuppressWarnings("methodref.inference.unimplemented")
+        @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver.invalid"})
         Optional<BigDecimal> result =
                 Stream.of(first, second)
-                        .<Optional<BigDecimal>>filter(Optional::isPresent)
-                        .<BigDecimal>map(Optional::get)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
                         .reduce(BigDecimal::add);
         return result;
     }
