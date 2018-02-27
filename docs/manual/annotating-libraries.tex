@@ -3,6 +3,8 @@
 
 When your code uses a library that is not currently being compiled,
 the Checker Framework looks up the library's annotations in its class files.
+Section~\ref{annotated-libraries-using} tells you how to use a
+version of a library that contains type annotations.
 If your code uses a library that does \emph{not} contain type annotations,
 then the type-checker has no way to know the library's behavior.
 The type-checker
@@ -22,32 +24,6 @@ suppress all warnings related to an unannotated library, or to part of your
 codebase, by use of the
 \code{-AskipUses} or \code{-AonlyUses} command-line option; see
 Sections~\ref{askipuses}--\ref{askipdefs}.)
-
-
-\section{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
-
-The Checker Framework distribution contains annotated versions of a few
-libraries in directory \<checker-framework/checker/lib/>.  See its
-\href{https://github.com/typetools/checker-framework/tree/master/checker/lib}{\<README>
-  file} for a list of the currently-available libraries.
-
-%% Todo: this should be done automatically for the user.
-During type-checking, you should put the annotated version of the library on
-your classpath.  (The annotated JDK is automatically put on your classpath;
-you don't have to
-do anything special for it.)
-When doing ordinary compilation or while running your code,
-you can use either the annotated
-library or the regular distributed version of the library --- they
-behave identically.
-
-Some projects, such as
-  \href{http://plse.cs.washington.edu/daikon/}{Daikon}
-  and
-  \href{https://mernst.github.io/plume-lib/}{plume-lib},
-are already distributed in annotated form by their maintainers;
-over time, this should become more common, reducing the need for the
-Checker Framework to include annotated versions of libraries.
 
 
 \section{Creating an annotated library\label{annotated-libraries-creating}}
@@ -155,10 +131,9 @@ documentation.  If you have a documentation improvement or a bug fix, then
 open a pullrequest against the upstream version of the library.  This will
 benefit all users of the library.
 
-If you do not annotate the full library, then make it easy for others to
-know what files you have annotated and what files you have not.  The
-\refqualclass{framework/qual}{AnnotatedFor} annotation may be helpful for
-this.
+If you do not annotate all the files in the library, then use
+\refqualclass{framework/qual}{AnnotatedFor} to indicate what files you have
+annotated.
 
 Whenever you annotate any part of a file, fully annotate the file!  That
 is, write annotations for all the methods and fields, based on their
@@ -212,7 +187,7 @@ Set up the Checker Framework (replace \textit{mychecker} with the name of your c
 \end{enumerate}
 
 \item
-For each file you want to annotated, copy the JDK version into the
+For each file you want to annotate, copy the JDK version into the
 directory
 \<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}/src/>, using
 the same directory structure as the JDK\@.
@@ -266,7 +241,8 @@ You use \<@AnnotatedFor> to indicate which classes you have annotated.
 When compiling a library that is not fully annotated, use command-line
 argument \<-AuseDefaultsForUncheckedCode=source,bytecode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For all other classes, the checker uses unchecked code defaults
+annotation.  For classes without \<@AnnotatedFor>, the checker uses
+unchecked code defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
 \end{sloppypar}

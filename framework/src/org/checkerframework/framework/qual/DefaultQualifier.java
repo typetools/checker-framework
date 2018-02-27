@@ -26,6 +26,8 @@ import java.lang.annotation.Target;
  * systems, or with different {@code locations} fields) at the same location, use {@link
  * DefaultQualifiers}.
  *
+ * <p>This annotation currently has no effect in stub files.
+ *
  * @see org.checkerframework.framework.qual.TypeUseLocation
  * @see DefaultQualifiers
  * @see DefaultQualifierInHierarchy
