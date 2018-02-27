@@ -59,7 +59,7 @@ public class ScriptEngineManager  {
      *
      * @see java.lang.Thread#getContextClassLoader
      */
-    
+    @SuppressWarnings("initialization")    // class fields initialzed with init method.
     public ScriptEngineManager() {
         ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
         init(ctxtLoader);
@@ -75,7 +75,7 @@ public class ScriptEngineManager  {
      *
      * @param loader ClassLoader used to discover script engine factories.
      */
-     
+    @SuppressWarnings("initialization")    // class fields initialzed with init method.
     public ScriptEngineManager(ClassLoader loader) {
         init(loader);
     }
@@ -406,17 +406,17 @@ public class ScriptEngineManager  {
     }
 
     /** Set of script engine factories discovered. */
-    private @SuppressWarnings("initialization") HashSet<ScriptEngineFactory> engineSpis;    // gets initialized in init method,  called by constuctor of class.
+    private HashSet<ScriptEngineFactory> engineSpis;
 
     /** Map of engine name to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> nameAssociations;    // gets initialized in init method,  called by constuctor of class.
+    private HashMap<String, ScriptEngineFactory> nameAssociations;
 
     /** Map of script file extension to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> extensionAssociations;    // gets initialized in init method,  called by constuctor of class.
+    private HashMap<String, ScriptEngineFactory> extensionAssociations;
 
     /** Map of script script MIME type to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> mimeTypeAssociations;    // gets initialized in init method,  called by constuctor of class.
+    private HashMap<String, ScriptEngineFactory> mimeTypeAssociations;
 
     /** Global bindings associated with script engines created by this manager. */
-    private @SuppressWarnings("initialization") Bindings globalScope;    // gets initialized in init method,  called by constuctor of class.
+    private Bindings globalScope;
 }
