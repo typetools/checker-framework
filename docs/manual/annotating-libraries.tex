@@ -279,7 +279,9 @@ This section describes the typical workflow for creating a
 partially-annotated library.
 
 \begin{enumerate}
-\item Read file \<checker-framework/checker/lib/README>
+\item See the
+  \ahref{https://search.maven.org/#search\%7Cga\%7C1\%7Cg\%3A\%22org.checkerframework.annotatedlib\%22}{the
+  \<org.checkerframework.annotatedlib> group in the Central Repository}
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
 % \item Optionally, run a script that adds
@@ -287,6 +289,10 @@ partially-annotated library.
 %     to each class.  [[TODO: say where to find this script.]]
 %     This step has no semantic effect.  It only saves you the trouble of
 %     typing those 17 characters later.
+
+  If it exists, fork its repository in \url{https://github.com/typetools/},
+  tweak its buildfile to run an additional checker, and add annotations for
+  that checker.
 
   If it does not already exist, fork the project (if its license permits
   forking).  Add a note, perhaps in a README, indicating how to obtain the
@@ -352,8 +358,9 @@ partially-annotated library.
   \item
     Please inform the Checker Framework developers
     about your new annotated library by opening an issue.
-    This will let us include your annotated \<.jar> file in directory
-    \<checker-framework/checker/lib/> of the Checker Framework release.
+    This will let us add your annotations to a repository in
+    \url{https://github.com/typetools/} and upload a compiled artifact to
+    the Maven Central Repository.
 
   \item
     Encourage the library's maintainers to accept your annotations into its

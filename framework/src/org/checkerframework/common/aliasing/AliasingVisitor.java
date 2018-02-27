@@ -18,7 +18,6 @@ import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -81,8 +80,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 // this "else" block. Once constructors are implemented
                 // correctly we could remove that code below, since the type
                 // of "this" in a @Unique constructor will be @Unique.
-                MethodInvocationNode n = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
-                Tree parent = n.getTreePath().getParentPath().getLeaf();
+                Tree parent = getCurrentPath().getParentPath().getLeaf();
                 boolean parentIsStatement = parent.getKind() == Kind.EXPRESSION_STATEMENT;
                 ExecutableElement methodElement = TreeUtils.elementFromUse(node);
                 List<? extends VariableElement> params = methodElement.getParameters();
@@ -90,7 +88,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 assert (args.size() == params.size())
                         : "Number of arguments in"
                                 + " the method call "
-                                + n.toString()
+                                + node.toString()
                                 + " is different from the "
                                 + "number of parameters for the method declaration: "
                                 + methodElement.getSimpleName().toString();

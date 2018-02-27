@@ -69,7 +69,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1087,15 +1086,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (preconditions.isEmpty()) {
             return;
         }
-
-        Node node = atypeFactory.getNodeForTree(tree);
-
         FlowExpressionContext flowExprContext =
-                FlowExpressionContext.buildContextForMethodUse(
-                        (MethodInvocationNode) node, checker.getContext());
+                FlowExpressionContext.buildContextForMethodUse(tree, checker.getContext());
 
         if (flowExprContext == null) {
-            checker.report(Result.failure("flowexpr.parse.context.not.determined", node), tree);
+            checker.report(Result.failure("flowexpr.parse.context.not.determined", tree), tree);
             return;
         }
 
@@ -1110,7 +1105,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
 
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
                 CFAbstractValue<?> value = store.getValue(expr);
 
