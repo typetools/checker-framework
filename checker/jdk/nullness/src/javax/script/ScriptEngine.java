@@ -260,7 +260,7 @@ public interface ScriptEngine  {
      * @throws IllegalArgumentException if specified scope is invalid
      *
      */
-    public @Nullable Bindings getBindings(int scope);
+    public Bindings getBindings(int scope);
 
     /**
      * Sets a scope of named values to be used by scripts.  The possible scopes are:

@@ -29,7 +29,7 @@ import java.io.Writer;
 import java.io.Reader;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-
+import org.checkerframework.dataflow.qual.*;
 /**
  * The interface whose implementing classes are used to connect Script Engines
  * with objects, such as scoped Bindings, in hosting applications.  Each scope is a set
@@ -84,7 +84,7 @@ public interface ScriptContext {
      * @throws IllegalArgumentException If no <code>Bindings</code> is defined for the
      * specified scope value in <code>ScriptContext</code> of this type.
      */
-    public @Nullable Bindings getBindings(int scope);
+    public @Nullable @Pure Bindings getBindings(int scope);
 
     /**
      * Sets the value of an attribute in a given scope.
@@ -124,7 +124,6 @@ public interface ScriptContext {
      *         if the name is empty or if the scope is invalid.
      * @throws NullPointerException if the name is null.
      */
-    // Subclass implementation returns null if the attribute was not present.
     public @Nullable Object removeAttribute(String name, int scope);
 
     /**

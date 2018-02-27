@@ -76,7 +76,7 @@ public interface Bindings extends Map<String, Object> {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
+    @SuppressWarnings("nullness")    // required: @Nullable Object arguement reported, but @NonNull type is pointed out by specifications.
     public boolean containsKey(Object key);
 
     /**
@@ -100,7 +100,7 @@ public interface Bindings extends Map<String, Object> {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
+    @SuppressWarnings("nullness")    // required: @Nullable Object arguement reported, but @NonNull type is pointed out by specifications.
     public @Nullable Object get(Object key);
 
     /**
@@ -125,6 +125,6 @@ public interface Bindings extends Map<String, Object> {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
+    @SuppressWarnings("nullness")    // required: @Nullable Object arguement reported, but @NonNull type is pointed out by specifications.
     public @Nullable Object remove(Object key);
 }

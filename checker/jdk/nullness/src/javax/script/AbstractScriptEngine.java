@@ -117,7 +117,8 @@ public abstract class AbstractScriptEngine  implements ScriptEngine {
      * @throws IllegalArgumentException if the value of scope is
      * invalid for the type the protected <code>context</code> field.
      */
-    public @Nullable Bindings getBindings(int scope) {
+    @SuppressWarnings("nullness")    // getBindings() return @NonNull type, as scope has been set for it. 
+    public Bindings getBindings(int scope) {
 
         if (scope == ScriptContext.GLOBAL_SCOPE) {
             return context.getBindings(ScriptContext.GLOBAL_SCOPE);

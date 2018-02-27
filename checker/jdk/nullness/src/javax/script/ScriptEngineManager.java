@@ -30,6 +30,7 @@ import java.util.ServiceLoader;
 import java.util.ServiceConfigurationError;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.initialization.qual.*;
 
 /**
  * The <code>ScriptEngineManager</code> implements a discovery and instantiation
@@ -58,7 +59,7 @@ public class ScriptEngineManager  {
      *
      * @see java.lang.Thread#getContextClassLoader
      */
-    @SuppressWarnings("initialization")    // Until execution of this constructor, no such dereferencing problems will be there as illustrated in the manual 
+    
     public ScriptEngineManager() {
         ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
         init(ctxtLoader);
@@ -74,13 +75,12 @@ public class ScriptEngineManager  {
      *
      * @param loader ClassLoader used to discover script engine factories.
      */
-    @SuppressWarnings("initialization")    // Until execution of this constructor, no such dereferencing problems will be there as illustrated in the manual 
+     
     public ScriptEngineManager(ClassLoader loader) {
         init(loader);
     }
 
-    // initEngines() permits null argument
-    private void init(final @Nullable ClassLoader loader) {
+    private void init(@UnderInitialization(java.lang.Object.class) ScriptEngineManager this, final @Nullable ClassLoader loader) {
         globalScope = new SimpleBindings();
         engineSpis = new HashSet<ScriptEngineFactory>();
         nameAssociations = new HashMap<String, ScriptEngineFactory>();
@@ -89,7 +89,7 @@ public class ScriptEngineManager  {
         initEngines(loader);
     }
 
-    private ServiceLoader<ScriptEngineFactory> getServiceLoader(final @Nullable ClassLoader loader) {
+    private ServiceLoader<ScriptEngineFactory> getServiceLoader(@UnderInitialization(java.lang.Object.class) ScriptEngineManager this, @Nullable final ClassLoader loader) {
         if (loader != null) {
             return ServiceLoader.load(ScriptEngineFactory.class, loader);
         } else {
@@ -97,13 +97,12 @@ public class ScriptEngineManager  {
         }
     }
 
-    private void initEngines(final @Nullable ClassLoader loader) {
+    private void initEngines(@UnderInitialization(java.lang.Object.class) ScriptEngineManager this, final @Nullable ClassLoader loader) {
         Iterator<ScriptEngineFactory> itr = null;
         try {
             ServiceLoader<ScriptEngineFactory> sl = AccessController.doPrivileged(
                 new PrivilegedAction<ServiceLoader<ScriptEngineFactory>>() {
                     @Override
-                    @SuppressWarnings("nullness")    // As this method run() from interface PrivilegedAction<T> doesn't specify a non-null behaviour as such instead it tells to write own specification.  
                     public ServiceLoader<ScriptEngineFactory> run() {
                         return getServiceLoader(loader);
                     }
@@ -126,7 +125,8 @@ public class ScriptEngineManager  {
             while (itr.hasNext()) {
                 try {
                     ScriptEngineFactory fact = itr.next();
-                    engineSpis.add(fact);
+                    if(engineSpis!=null) 
+                        engineSpis.add(fact);
                 } catch (ServiceConfigurationError err) {
                     System.err.println("ScriptEngineManager providers.next(): "
                                  + err.getMessage());
@@ -406,17 +406,17 @@ public class ScriptEngineManager  {
     }
 
     /** Set of script engine factories discovered. */
-    private @SuppressWarnings("initialization") HashSet<ScriptEngineFactory> engineSpis;    // gets initialized in init method which is called by constuctor of class
+    private @SuppressWarnings("initialization") HashSet<ScriptEngineFactory> engineSpis;    // gets initialized in init method,  called by constuctor of class.
 
     /** Map of engine name to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> nameAssociations;    // gets initialized in init method which is called by constuctor of class method
+    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> nameAssociations;    // gets initialized in init method,  called by constuctor of class.
 
     /** Map of script file extension to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> extensionAssociations;    // gets initialized in init method which is called by constuctor of class
+    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> extensionAssociations;    // gets initialized in init method,  called by constuctor of class.
 
     /** Map of script script MIME type to script engine factory. */
-    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> mimeTypeAssociations;    // gets initialized in init method which is called by constuctor of class
+    private @SuppressWarnings("initialization") HashMap<String, ScriptEngineFactory> mimeTypeAssociations;    // gets initialized in init method,  called by constuctor of class.
 
     /** Global bindings associated with script engines created by this manager. */
-    private @SuppressWarnings("initialization") Bindings globalScope;    // gets initialized in init method which is called by constuctor of class
+    private @SuppressWarnings("initialization") Bindings globalScope;    // gets initialized in init method,  called by constuctor of class.
 }

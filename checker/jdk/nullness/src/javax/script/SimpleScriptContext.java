@@ -193,7 +193,6 @@ public class SimpleScriptContext  implements ScriptContext {
      *         if the name is empty or if the scope is invalid.
      * @throws NullPointerException if the name is null.
      */
-    @SuppressWarnings("nullness")    // getBindings(ENGINE_SCOPE), getBindings(GLOBAL_SCOPE) will not be causing null pointer exception  
     public @Nullable Object removeAttribute(String name, int scope) {
         checkName(name);
         switch (scope) {

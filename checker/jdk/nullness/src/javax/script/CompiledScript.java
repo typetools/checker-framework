@@ -76,7 +76,7 @@ public abstract class CompiledScript {
      *
      * @throws ScriptException if an error occurs.
      */
-    @SuppressWarnings("nullness") // as getEngine()'s implementation will never be returning null and same applies for getContext() method in ScriptEngine.java as specified in documentation. 
+    @SuppressWarnings("nullness")    // getEngine()'s implementation doesn't return null and getContext() method from ScriptEngine also, from specifications.   
     public Object eval(@Nullable Bindings bindings) throws ScriptException {
 
         ScriptContext ctxt = getEngine().getContext();
@@ -105,7 +105,7 @@ public abstract class CompiledScript {
      *
      * @throws ScriptException if an error occurs.
      */
-    @SuppressWarnings("nullness")    // as getEngine()'s implementation will never be returning null and same applies for getContext() method in ScriptEngine.java as specified in documentation.  
+    @SuppressWarnings("nullness")    // getEngine()'s implementation doesn't return null and getContext() method from ScriptEngine also, from specifications.
     public Object eval() throws ScriptException {
         return eval(getEngine().getContext());
     }

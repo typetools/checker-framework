@@ -141,7 +141,7 @@ public interface ScriptEngineFactory {
      * value is assigned to the key.
      *
      */
-    public @Nullable Object getParameter(@Nullable String key);
+    public @Nullable Object getParameter(String key);
 
     /**
      * Returns a String which can be used to invoke a method of a  Java object using the syntax

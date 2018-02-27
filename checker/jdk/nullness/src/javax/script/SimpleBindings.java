@@ -77,6 +77,7 @@ public class SimpleBindings implements Bindings {
      * @throws NullPointerException if the name is null.
      * @throws IllegalArgumentException if the name is empty.
      */
+    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it.     
     public @Nullable Object put(String name, Object value) {
         checkKey(name);
         return map.put(name,value);
@@ -123,7 +124,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
+    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it.
     public boolean containsKey(Object key) {
         checkKey(key);
         return map.containsKey(key);
@@ -135,8 +136,8 @@ public class SimpleBindings implements Bindings {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor")    // No proper annotations scheme found.
-    public Set<Map.Entry<String, Object>> entrySet() {
+    @SuppressWarnings("keyfor")    // overidding method have different behaviour as per specifications. @KeyFor("this") pointed out is not required type.
+    public Set<Map.Entry<@KeyFor("map") String, Object>> entrySet() {
         return map.entrySet();
     }
 
@@ -161,11 +162,11 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass.  
+    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it. 
     public @Nullable Object get(Object key) {
         checkKey(key);
         return map.get(key);
-    }
+    }	
 
     /** {@inheritDoc} */
     public boolean isEmpty() {
@@ -173,8 +174,8 @@ public class SimpleBindings implements Bindings {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor")    // No proper annotations scheme found. 
-    public Set< String> keySet() {
+    @SuppressWarnings("keyfor")    // overidding method have different behaviour as per specifications. @KeyFor("this") pointed out is not required type.    
+    public Set<@KeyFor("map") String> keySet() {
         return map.keySet();
     }
 
@@ -200,7 +201,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // required: @Initialized @Nullable Object, as correctly pointed out by nullness-checker is not desired as null value of key will cause NullPointerException. Here, the subclass doesn't respect annotations from superclass. 
+    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it. 
     public @Nullable Object remove(Object key) {
         checkKey(key);
         return map.remove(key);
