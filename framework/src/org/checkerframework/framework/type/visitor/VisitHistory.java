@@ -1,9 +1,12 @@
 package org.checkerframework.framework.type.visitor;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * IMPORTANT: DO NOT USE VisitHistory FOR VISITORS THAT UPDATE AN ANNOTATED TYPE MIRROR'S
@@ -20,9 +23,12 @@ import org.checkerframework.framework.util.PluginUtil;
  * Serializable<T>} and {@code @C Serializable<?>}, then isSubtype is first called one those types
  * and then on {@code @B Serializable<T>} and {@code @C Serializable<?>}.
  */
+// After review: rename and move to org.checkerframework.framework.type
 public class VisitHistory {
 
-    private final Map<AnnotatedTypeMirror, Map<AnnotatedTypeMirror, Boolean>> visited;
+    // TODO: doc that only stores true subtypes
+    private final Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>, Set<AnnotationMirror>>
+            visited;
 
     public VisitHistory() {
         this.visited = new HashMap<>();
@@ -33,14 +39,24 @@ public class VisitHistory {
     }
 
     /** Add a visit for type1 and type2. */
-    public void add(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, Boolean b) {
-        Map<AnnotatedTypeMirror, Boolean> hit = visited.get(type1);
+    public void add(
+            final AnnotatedTypeMirror type1,
+            final AnnotatedTypeMirror type2,
+            AnnotationMirror currentTop,
+            Boolean b) {
+        if (!b) {
+            // We only store information about subtype relations that hold.
+            return;
+        }
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
+        Set<AnnotationMirror> hit = visited.get(key);
+
         if (hit != null) {
-            hit.put(type2, b);
+            hit.add(currentTop);
         } else {
-            hit = new HashMap<>();
-            hit.put(type2, b);
-            this.visited.put(type1, hit);
+            hit = new HashSet<>();
+            hit.add(currentTop);
+            this.visited.put(key, hit);
         }
     }
 
@@ -50,30 +66,17 @@ public class VisitHistory {
      *
      * @return true if an equivalent pair has already been added to the history
      */
-    public boolean contains(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        Map<AnnotatedTypeMirror, Boolean> hit = visited.get(type1);
-        if (hit != null) {
-            return hit.containsKey(type2);
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Returns the value of a previous encounter of type1 and type2 or null if the pair hasn't
-     * occurred before.
-     */
-    public Boolean getValue(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        Map<AnnotatedTypeMirror, Boolean> hit = visited.get(type1);
-        if (hit != null) {
-            return hit.get(type2);
-        } else {
-            return null;
-        }
+    public boolean contains(
+            final AnnotatedTypeMirror type1,
+            final AnnotatedTypeMirror type2,
+            AnnotationMirror currentTop) {
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
+        Set<AnnotationMirror> hit = visited.get(key);
+        return hit != null && hit.contains(currentTop);
     }
 
     @Override
     public String toString() {
-        return "VisitHistory( " + PluginUtil.join(", ", visited.keySet()) + " )";
+        return "VisitHistory( " + visited + " )";
     }
 }
