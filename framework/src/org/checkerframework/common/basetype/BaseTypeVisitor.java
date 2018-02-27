@@ -1993,15 +1993,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {
-            String valueTypeString;
-            String varTypeString;
-            if (shouldPrintVerbose(varType, valueType)) {
-                valueTypeString = valueType.toString(true);
-                varTypeString = varType.toString(true);
-            } else {
-                valueTypeString = valueType.toString();
-                varTypeString = varType.toString();
-            }
+            boolean verbose = shouldPrintVerbose(varType, valueType);
+            String valueTypeString = valueType.toString(verbose);
+            String varTypeString = varType.toString(verbose);
             checker.report(Result.failure(errorKey, valueTypeString, varTypeString), valueTree);
         }
     }
@@ -2992,6 +2986,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory
                     .getTypeHierarchy()
                     .isSubtype(overriddenReceiver, overrider.getReceiverType().getErased())) {
+                boolean verbose =
+                        shouldPrintVerbose(
+                                overrider.getReceiverType(), overridden.getReceiverType());
                 checker.report(
                         Result.failure(
                                 "override.receiver.invalid",
@@ -2999,8 +2996,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                overrider.getReceiverType(),
-                                overridden.getReceiverType()),
+                                overrider.getReceiverType().toString(verbose),
+                                overridden.getReceiverType().toString(verbose)),
                         overriderTree);
                 return false;
             }
@@ -3080,6 +3077,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overriddenParams.get(index).toString());
             }
             if (!success) {
+                boolean verbose =
+                        shouldPrintVerbose(overriderParams.get(index), overriddenParams.get(index));
                 checker.report(
                         Result.failure(
                                 msgKey,
@@ -3087,8 +3086,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                overriderParams.get(index).toString(),
-                                overriddenParams.get(index).toString()),
+                                overriderParams.get(index).toString(verbose),
+                                overriddenParams.get(index).toString(verbose)),
                         posTree);
             }
         }
@@ -3178,6 +3177,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overridden.getReturnType().toString());
             }
             if (!success) {
+                boolean verbose = shouldPrintVerbose(overridingReturnType, overriddenReturnType);
                 checker.report(
                         Result.failure(
                                 msgKey,
@@ -3185,8 +3185,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                overridingReturnType,
-                                overriddenReturnType),
+                                overridingReturnType.toString(verbose),
+                                overriddenReturnType.toString(verbose)),
                         posTree);
             }
         }
