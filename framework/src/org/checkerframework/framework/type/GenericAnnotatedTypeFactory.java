@@ -603,9 +603,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void addCheckedStandardDefaults(QualifierDefaults defs) {
         if (this.everUseFlow) {
-            Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
-            Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
-            defs.addClimbStandardDefaults(tops, bottoms);
+            defs.addClimbStandardDefaults();
         }
     }
 
@@ -655,9 +653,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param defs {@link QualifierDefaults} object to which defaults are added
      */
     protected void addUncheckedStandardDefaults(QualifierDefaults defs) {
-        Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
-        Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
-        defs.addUncheckedStandardDefaults(tops, bottoms);
+        defs.addUncheckedStandardDefaults();
     }
 
     /**

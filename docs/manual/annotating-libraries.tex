@@ -3,6 +3,8 @@
 
 When your code uses a library that is not currently being compiled,
 the Checker Framework looks up the library's annotations in its class files.
+Section~\ref{annotated-libraries-using} tells you how to use a
+version of a library that contains type annotations.
 If your code uses a library that does \emph{not} contain type annotations,
 then the type-checker has no way to know the library's behavior.
 The type-checker
@@ -22,32 +24,6 @@ suppress all warnings related to an unannotated library, or to part of your
 codebase, by use of the
 \code{-AskipUses} or \code{-AonlyUses} command-line option; see
 Sections~\ref{askipuses}--\ref{askipdefs}.)
-
-
-\section{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
-
-The Checker Framework distribution contains annotated versions of a few
-libraries in directory \<checker-framework/checker/lib/>.  See its
-\href{https://github.com/typetools/checker-framework/tree/master/checker/lib}{\<README>
-  file} for a list of the currently-available libraries.
-
-%% Todo: this should be done automatically for the user.
-During type-checking, you should put the annotated version of the library on
-your classpath.  (The annotated JDK is automatically put on your classpath;
-you don't have to
-do anything special for it.)
-When doing ordinary compilation or while running your code,
-you can use either the annotated
-library or the regular distributed version of the library --- they
-behave identically.
-
-Some projects, such as
-  \href{http://plse.cs.washington.edu/daikon/}{Daikon}
-  and
-  \href{https://mernst.github.io/plume-lib/}{plume-lib},
-are already distributed in annotated form by their maintainers;
-over time, this should become more common, reducing the need for the
-Checker Framework to include annotated versions of libraries.
 
 
 \section{Creating an annotated library\label{annotated-libraries-creating}}
@@ -303,7 +279,9 @@ This section describes the typical workflow for creating a
 partially-annotated library.
 
 \begin{enumerate}
-\item Read file \<checker-framework/checker/lib/README>
+\item See the
+  \ahref{https://search.maven.org/#search\%7Cga\%7C1\%7Cg\%3A\%22org.checkerframework.annotatedlib\%22}{the
+  \<org.checkerframework.annotatedlib> group in the Central Repository}
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
 % \item Optionally, run a script that adds
@@ -311,6 +289,10 @@ partially-annotated library.
 %     to each class.  [[TODO: say where to find this script.]]
 %     This step has no semantic effect.  It only saves you the trouble of
 %     typing those 17 characters later.
+
+  If it exists, fork its repository in \url{https://github.com/typetools/},
+  tweak its buildfile to run an additional checker, and add annotations for
+  that checker.
 
   If it does not already exist, fork the project (if its license permits
   forking).  Add a note, perhaps in a README, indicating how to obtain the
@@ -376,8 +358,9 @@ partially-annotated library.
   \item
     Please inform the Checker Framework developers
     about your new annotated library by opening an issue.
-    This will let us include your annotated \<.jar> file in directory
-    \<checker-framework/checker/lib/> of the Checker Framework release.
+    This will let us add your annotations to a repository in
+    \url{https://github.com/typetools/} and upload a compiled artifact to
+    the Maven Central Repository.
 
   \item
     Encourage the library's maintainers to accept your annotations into its
@@ -568,12 +551,11 @@ and then annotate it.  The rest of this section describes this approach.
 \begin{enumerate}
 
 \item
-  Create a stub file by running the stub class generator.  (\<checker.jar> and \<javac.jar>
-  must be on your classpath.)
+  Create a stub file by running the stub class generator.  (\<checker.jar> must be on your classpath.)
 
 \begin{Verbatim}
   cd nullness-stub
-  java org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $JSR308/checker-framework/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to

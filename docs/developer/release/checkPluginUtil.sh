@@ -13,7 +13,7 @@ case `uname -s` in
 esac
 # Fail on error status
 
-FRAMEWORK_DIR=$myDir"/.."
+FRAMEWORK_DIR=$myDir"/../../.."
 MASTER=$FRAMEWORK_DIR"/framework/src/org/checkerframework/framework/util/PluginUtil.java"
 ECLIPSE=$FRAMEWORK_DIR"/eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java"
 
