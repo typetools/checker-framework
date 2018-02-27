@@ -124,6 +124,7 @@ public interface ScriptContext {
      *         if the name is empty or if the scope is invalid.
      * @throws NullPointerException if the name is null.
      */
+    // Subclass implementation returns null if the attribute was not present.
     public @Nullable Object removeAttribute(String name, int scope);
 
     /**
