@@ -239,7 +239,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        // This is a lot of code to replace annotations so that annotations that are equivalent qualifers
+        // This is a lot of code to replace annotations so that annotations that are equivalent qualifiers
         // are the same annotation.
         return new DefaultTypeHierarchy(
                 checker,
