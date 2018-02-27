@@ -31,7 +31,6 @@ import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nMakeFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -200,15 +199,13 @@ public class I18nFormatterTreeUtil {
 
     /** Returns an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null. */
     public I18nFormatCall createFormatForCall(
-            MethodInvocationTree tree,
-            MethodInvocationNode node,
-            I18nFormatterAnnotatedTypeFactory atypeFactory) {
+            MethodInvocationTree tree, I18nFormatterAnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
         for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
             // find @FormatFor
             if (paramType.getAnnotation(I18nFormatFor.class) != null) {
-                return atypeFactory.treeUtil.new I18nFormatCall(tree, node, atypeFactory);
+                return atypeFactory.treeUtil.new I18nFormatCall(tree, atypeFactory);
             }
         }
         return null;
@@ -221,7 +218,7 @@ public class I18nFormatterTreeUtil {
      */
     public class I18nFormatCall {
 
-        private final ExpressionTree tree;
+        private final MethodInvocationTree tree;
         private ExpressionTree formatArg;
         private final AnnotatedTypeFactory atypeFactory;
         private List<? extends ExpressionTree> args;
@@ -229,17 +226,14 @@ public class I18nFormatterTreeUtil {
 
         private AnnotatedTypeMirror formatAnno;
 
-        public I18nFormatCall(
-                MethodInvocationTree tree,
-                MethodInvocationNode node,
-                AnnotatedTypeFactory atypeFactory) {
+        public I18nFormatCall(MethodInvocationTree tree, AnnotatedTypeFactory atypeFactory) {
             this.tree = tree;
             this.atypeFactory = atypeFactory;
             List<? extends ExpressionTree> theargs = (tree).getArguments();
             this.args = null;
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
-            initialCheck(theargs, method, node, methodAnno);
+            initialCheck(theargs, method, methodAnno);
         }
 
         @Override
@@ -254,49 +248,46 @@ public class I18nFormatterTreeUtil {
         private void initialCheck(
                 List<? extends ExpressionTree> theargs,
                 ExecutableElement method,
-                MethodInvocationNode node,
                 AnnotatedExecutableType methodAnno) {
             int paramIndex = -1;
-            Receiver paramArg = null;
             int i = 0;
             for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
-                if (paramType.getAnnotation(I18nFormatFor.class) != null) {
-                    this.formatArg = theargs.get(i);
-                    this.formatAnno = atypeFactory.getAnnotatedType(formatArg);
-
-                    if (!typeMirrorToClass(paramType.getUnderlyingType()).equals(String.class)) {
-                        // Invalid FormatFor invocation
-                        return;
-                    }
-                    FlowExpressionContext flowExprContext =
-                            FlowExpressionContext.buildContextForMethodUse(
-                                    node, checker.getContext());
-                    String formatforArg =
-                            AnnotationUtils.getElementValue(
-                                    paramType.getAnnotation(I18nFormatFor.class),
-                                    "value",
-                                    String.class,
-                                    false);
-                    if (flowExprContext != null) {
-                        try {
-                            paramArg =
-                                    FlowExpressionParseUtil.parse(
-                                            formatforArg,
-                                            flowExprContext,
-                                            atypeFactory.getPath(tree),
-                                            true);
-                            paramIndex = flowExprContext.arguments.indexOf(paramArg);
-                        } catch (FlowExpressionParseException e) {
-                            // report errors here
-                            checker.report(
-                                    org.checkerframework.framework.source.Result.failure(
-                                            "i18nformat.invalid.formatfor"),
-                                    tree);
-                        }
-                    }
-                    break;
+                if (!paramType.hasAnnotation(I18nFormatFor.class)) {
+                    i++;
+                    continue;
                 }
-                i++;
+                this.formatArg = theargs.get(i);
+                this.formatAnno = atypeFactory.getAnnotatedType(formatArg);
+
+                if (!typeMirrorToClass(paramType.getUnderlyingType()).equals(String.class)) {
+                    // Invalid FormatFor invocation
+                    return;
+                }
+                FlowExpressionContext flowExprContext =
+                        FlowExpressionContext.buildContextForMethodUse(tree, checker.getContext());
+                String formatforArg =
+                        AnnotationUtils.getElementValue(
+                                paramType.getAnnotation(I18nFormatFor.class),
+                                "value",
+                                String.class,
+                                false);
+                // Parse the expression and issue errors.
+                try {
+                    FlowExpressionParseUtil.parse(
+                            formatforArg, flowExprContext, atypeFactory.getPath(tree), true);
+                } catch (FlowExpressionParseException e) {
+                    // report errors here
+                    checker.report(
+                            org.checkerframework.framework.source.Result.failure(
+                                    "i18nformat.invalid.formatfor"),
+                            tree);
+                    return;
+                }
+                if (formatforArg.startsWith("#")) {
+                    // formatArg should be #Number, with 1-indexing.
+                    paramIndex = Integer.valueOf(formatforArg.substring(1)) - 1;
+                }
+                break;
             }
 
             if (paramIndex != -1) {
@@ -404,7 +395,7 @@ public class I18nFormatterTreeUtil {
             }
 
             ExpressionTree loc;
-            loc = ((MethodInvocationTree) tree).getMethodSelect();
+            loc = tree.getMethodSelect();
             if (type != InvocationType.VARARG && args.size() > 0) {
                 loc = args.get(0);
             }
