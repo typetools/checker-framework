@@ -48,8 +48,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Deterministic;
@@ -133,9 +131,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         variableTree.getModifiers().getAnnotations());
         for (AnnotationMirror anno : annos) {
             if (AnnotationUtils.areSameByClass(anno, GuardedBy.class)
-                    || AnnotationUtils.areSameByClass(anno, net.jcip.annotations.GuardedBy.class)
-                    || AnnotationUtils.areSameByClass(
-                            anno, javax.annotation.concurrent.GuardedBy.class)) {
+                    || AnnotationUtils.areSameByName(anno, "net.jcip.annotations.GuardedBy")
+                    || AnnotationUtils.areSameByName(
+                            anno, "javax.annotation.concurrent.GuardedBy")) {
                 guardedByAnnotationCount++;
                 if (guardedByAnnotationCount > 1) {
                     checker.report(Result.failure("multiple.guardedby.annotations"), variableTree);
@@ -233,16 +231,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             lockPreconditionAnnotationCount++;
         }
 
-        if (atypeFactory.getDeclAnnotation(methodElement, net.jcip.annotations.GuardedBy.class)
-                != null) {
-            lockPreconditionAnnotationCount++;
-        }
+        try {
+            if (atypeFactory.jcip_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcip_GuardedBy)
+                            != null) {
+                lockPreconditionAnnotationCount++;
+            }
 
-        if (lockPreconditionAnnotationCount < 2
-                && atypeFactory.getDeclAnnotation(
-                                methodElement, javax.annotation.concurrent.GuardedBy.class)
-                        != null) {
-            lockPreconditionAnnotationCount++;
+            if (lockPreconditionAnnotationCount < 2
+                    && atypeFactory.javax_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javax_GuardedBy)
+                            != null) {
+                lockPreconditionAnnotationCount++;
+            }
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
         }
 
         if (lockPreconditionAnnotationCount > 1) {
@@ -420,24 +423,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
-        Set<Node> nodes = atypeFactory.getNodesForTree(tree);
-        if (nodes == null) {
-            return super.visitMemberSelect(tree, p);
-        }
-        for (Node node : nodes) {
-            if (node instanceof FieldAccessNode) {
-                AnnotatedTypeMirror atmOfReceiver =
-                        atypeFactory.getAnnotatedType(tree.getExpression());
-                // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
-                // it.
-                if (atmOfReceiver.getKind() != TypeKind.VOID) {
-                    AnnotationMirror gb =
-                            atmOfReceiver.getEffectiveAnnotationInHierarchy(
-                                    atypeFactory.GUARDEDBYUNKNOWN);
-                    checkLock(tree.getExpression(), gb);
-                }
+        if (TreeUtils.isFieldAccess(tree)) {
+            AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
+            // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
+            // it.
+            if (atmOfReceiver.getKind() != TypeKind.VOID) {
+                AnnotationMirror gb =
+                        atmOfReceiver.getEffectiveAnnotationInHierarchy(
+                                atypeFactory.GUARDEDBYUNKNOWN);
+                checkLock(tree.getExpression(), gb);
             }
         }
+
         return super.visitMemberSelect(tree, p);
     }
 
@@ -1093,21 +1090,19 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-        Set<Node> nodes = atypeFactory.getNodesForTree(tree);
-        if (nodes == null) {
-            return super.visitIdentifier(tree, p);
-        }
-        for (Node node : nodes) {
-            if (node instanceof FieldAccessNode) {
-                Node receiverNode = ((FieldAccessNode) node).getReceiver();
-                if (receiverNode instanceof ImplicitThisLiteralNode) {
-                    // All other field access are handle via visitMemberSelect
-                    AnnotationMirror guardedBy =
-                            atypeFactory
-                                    .getSelfType(tree)
-                                    .getAnnotationInHierarchy(atypeFactory.GUARDEDBY);
-                    checkLockOfImplicitThis(tree, guardedBy);
-                }
+        // If the identifier is a field accessed via an implicit this,
+        // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.
+        if (TreeUtils.isFieldAccess(tree)) {
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            // If the parent is not a member select, or if it is, but the field is the expression,
+            // then the field is accessed via an implicit this.
+            if (parent.getKind() != Kind.MEMBER_SELECT
+                    || ((MemberSelectTree) parent).getExpression() == tree) {
+                AnnotationMirror guardedBy =
+                        atypeFactory
+                                .getSelfType(tree)
+                                .getAnnotationInHierarchy(atypeFactory.GUARDEDBY);
+                checkLockOfImplicitThis(tree, guardedBy);
             }
         }
         return super.visitIdentifier(tree, p);
@@ -1212,43 +1207,32 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             return;
         }
 
-        Set<Node> nodes = atypeFactory.getNodesForTree(tree);
-        if (nodes == null) {
+        List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, tree);
+        if (expressions.isEmpty()) {
             return;
         }
-        for (Node node : nodes) {
-            if (node instanceof LambdaResultExpressionNode) {
-                continue;
-            }
-            List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, node);
-            if (expressions.isEmpty()) {
-                return;
+
+        LockStore store = atypeFactory.getStoreBefore(tree);
+        for (LockExpression expression : expressions) {
+            if (expression.error != null) {
+                checker.report(
+                        Result.failure(
+                                "expression.unparsable.type.invalid", expression.error.toString()),
+                        tree);
+            } else if (expression.lockExpression == null) {
+                checker.report(
+                        Result.failure(
+                                "expression.unparsable.type.invalid", expression.expressionString),
+                        tree);
+            } else if (!isLockHeld(expression.lockExpression, store)) {
+                checker.report(
+                        Result.failure("lock.not.held", expression.lockExpression.toString()),
+                        tree);
             }
 
-            LockStore store = atypeFactory.getStoreBefore(node);
-            for (LockExpression expression : expressions) {
-                if (expression.error != null) {
-                    checker.report(
-                            Result.failure(
-                                    "expression.unparsable.type.invalid",
-                                    expression.error.toString()),
-                            tree);
-                } else if (expression.lockExpression == null) {
-                    checker.report(
-                            Result.failure(
-                                    "expression.unparsable.type.invalid",
-                                    expression.expressionString),
-                            tree);
-                } else if (!isLockHeld(expression.lockExpression, store)) {
-                    checker.report(
-                            Result.failure("lock.not.held", expression.lockExpression.toString()),
-                            tree);
-                }
-
-                if (expression.error != null && expression.lockExpression != null) {
-                    ensureExpressionIsEffectivelyFinal(
-                            expression.lockExpression, expression.expressionString, tree);
-                }
+            if (expression.error != null && expression.lockExpression != null) {
+                ensureExpressionIsEffectivelyFinal(
+                        expression.lockExpression, expression.expressionString, tree);
             }
         }
     }
@@ -1269,7 +1253,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     private List<LockExpression> getLockExpressions(
-            boolean implicitThis, AnnotationMirror gbAnno, Node node) {
+            boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
@@ -1288,8 +1272,20 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
 
-        Receiver self =
-                implicitThis ? pseudoReceiver : FlowExpressions.internalReprOf(atypeFactory, node);
+        Set<Node> nodes = atypeFactory.getNodesForTree(tree);
+        Receiver self = null;
+        for (Node node : nodes) {
+            if (node instanceof LambdaResultExpressionNode) {
+                continue;
+            }
+            self =
+                    implicitThis
+                            ? pseudoReceiver
+                            : FlowExpressions.internalReprOf(atypeFactory, node);
+        }
+        if (self == null) {
+            return Collections.emptyList();
+        }
 
         List<LockExpression> lockExpressions = new ArrayList<>();
         for (String expression : expressions) {

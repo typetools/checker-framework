@@ -2,10 +2,6 @@ package org.checkerframework.checker.lock;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
-// TODO: The Lock Checker implementation has not been optimized for performance yet.
-// Run a profiler on the Lock Checker tests, as well as when type checking a large project such as
-// Daikon or Guava.
-
 // TODO: Here is a list of nice-to-have features/tests but not critical to release the Lock Checker:
 
 // Add a warning if a user annotates a static field with @GuardedBy("this") instead of

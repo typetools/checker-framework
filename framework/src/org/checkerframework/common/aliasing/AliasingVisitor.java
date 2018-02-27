@@ -14,7 +14,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
@@ -22,9 +21,6 @@ import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -87,59 +83,45 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 // this "else" block. Once constructors are implemented
                 // correctly we could remove that code below, since the type
                 // of "this" in a @Unique constructor will be @Unique.
-                Set<Node> nodes = atypeFactory.getNodesForTree(node);
-                for (Node n : nodes) {
-                    if (n instanceof LambdaResultExpressionNode) {
-                        continue;
-                    }
-
-                    Tree parent =
-                            ((MethodInvocationNode) n).getTreePath().getParentPath().getLeaf();
-                    boolean parentIsStatement = parent.getKind() == Kind.EXPRESSION_STATEMENT;
-                    ExecutableElement methodElement = TreeUtils.elementFromUse(node);
-                    List<? extends VariableElement> params = methodElement.getParameters();
-                    List<? extends ExpressionTree> args = node.getArguments();
-                    assert (args.size() == params.size())
-                            : "Number of arguments in"
-                                    + " the method call "
-                                    + n.toString()
-                                    + " is different from the "
-                                    + "number of parameters for the method declaration: "
-                                    + methodElement.getSimpleName().toString();
-                    for (int i = 0; i < args.size(); i++) {
-                        // Here we are traversing the arguments of the method call.
-                        // For every argument we check if it is a reference to "this".
-                        if (TreeUtils.isExplicitThisDereference(args.get(i))) {
-                            // If it is a reference to "this", there is still hope that
-                            // it is not being leaked (2. and 3. from the javadoc).
-                            VariableElement param = params.get(i);
-                            boolean hasNonLeaked =
-                                    atypeFactory
-                                            .getAnnotatedType(param)
-                                            .hasAnnotation(NonLeaked.class);
-                            boolean hasLeakedToResult =
-                                    atypeFactory
-                                            .getAnnotatedType(param)
-                                            .hasAnnotation(LeakedToResult.class);
-                            isUniqueCheck(node, parentIsStatement, hasNonLeaked, hasLeakedToResult);
-                        } else {
-                            // Not possible to leak reference here (case 1. from the javadoc).
-                        }
-                    }
-
-                    // Now, doing the same as above for the receiver parameter
-                    AnnotatedExecutableType annotatedType =
-                            atypeFactory.getAnnotatedType(methodElement);
-                    AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
-                    if (receiverType != null) {
-                        boolean hasNonLeaked = receiverType.hasAnnotation(NonLeaked.class);
+                Tree parent = getCurrentPath().getParentPath().getLeaf();
+                boolean parentIsStatement = parent.getKind() == Kind.EXPRESSION_STATEMENT;
+                ExecutableElement methodElement = TreeUtils.elementFromUse(node);
+                List<? extends VariableElement> params = methodElement.getParameters();
+                List<? extends ExpressionTree> args = node.getArguments();
+                assert (args.size() == params.size())
+                        : "Number of arguments in"
+                                + " the method call "
+                                + node.toString()
+                                + " is different from the "
+                                + "number of parameters for the method declaration: "
+                                + methodElement.getSimpleName().toString();
+                for (int i = 0; i < args.size(); i++) {
+                    // Here we are traversing the arguments of the method call.
+                    // For every argument we check if it is a reference to "this".
+                    if (TreeUtils.isExplicitThisDereference(args.get(i))) {
+                        // If it is a reference to "this", there is still hope that
+                        // it is not being leaked (2. and 3. from the javadoc).
+                        VariableElement param = params.get(i);
+                        boolean hasNonLeaked =
+                                atypeFactory.getAnnotatedType(param).hasAnnotation(NonLeaked.class);
                         boolean hasLeakedToResult =
-                                receiverType.hasAnnotation(LeakedToResult.class);
+                                atypeFactory
+                                        .getAnnotatedType(param)
+                                        .hasAnnotation(LeakedToResult.class);
                         isUniqueCheck(node, parentIsStatement, hasNonLeaked, hasLeakedToResult);
+                    } else {
+                        // Not possible to leak reference here (case 1. from the javadoc).
                     }
+                }
 
-                    // Only need to look at one MethodInvocationNode here, b/c this uses the node only to find a Tree (Why?)
-                    break;
+                // Now, doing the same as above for the receiver parameter
+                AnnotatedExecutableType annotatedType =
+                        atypeFactory.getAnnotatedType(methodElement);
+                AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
+                if (receiverType != null) {
+                    boolean hasNonLeaked = receiverType.hasAnnotation(NonLeaked.class);
+                    boolean hasLeakedToResult = receiverType.hasAnnotation(LeakedToResult.class);
+                    isUniqueCheck(node, parentIsStatement, hasNonLeaked, hasLeakedToResult);
                 }
             }
         }

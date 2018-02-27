@@ -502,6 +502,74 @@ Therefore, it is strongly recommended that whenever you are creating
 type-checkers for all the annotations that your have written.
 
 
+\subsection{Using annotated libraries\label{annotated-libraries-using}}
+
+When your code uses a library that is not currently being compiled, the
+Checker Framework looks up the library's annotations in its class files.
+
+Some projects are already distributed with type annotations by their
+maintainers, so you do not need to do anything special.
+% such as Guava,
+% \href{https://mernst.github.io/plume-lib/}{plume-lib},
+% and
+% \href{http://plse.cs.washington.edu/daikon/}{Daikon}
+Over time, this should become more common.
+
+For some other libraries, the Checker Framework developers have provided an
+annotated version of the library.  During type-checking, you should use the
+annotated version of the library to improve type-checking results (to issue
+fewer false positive warnings).  When doing ordinary compilation or while
+running your code, you can use either the annotated library or the regular
+distributed version of the library --- they behave identically.
+
+The annotated libraries appear in
+\ahref{https://search.maven.org/#search\%7Cga\%7C1\%7Cg\%3A\%22org.checkerframework.annotatedlib\%22}{the
+  \<org.checkerframework.annotatedlib> group in the Central Repository}.
+
+\begin{itemize}
+\item
+If your project stores \<.jar> files locally, then download the \<.jar> file
+from the Central Repository.
+
+\item
+If your project manages dependencies using a tool such as Gradle or Maven,
+then update your buildfile to use the \<org.checkerframework.annotatedlib>
+group.  For example, in \<build.gradle>, change
+
+\begin{Verbatim}
+  api group: 'org.apache.bcel', name: 'bcel', version: '6.2'
+\end{Verbatim}
+
+\noindent
+to
+
+\begin{Verbatim}
+  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.2'
+\end{Verbatim}
+
+\noindent
+Use the same version number.  (Sometimes you will use a slightly larger
+number, if the Checker Framework developers have improved the type
+annotations since the last release by the upstream maintainers.)  If a
+newer version of the upstream library is available, then
+\ahrefloc{reporting-bugs}{open an issue} requesting that the
+\<org.checkerframework.annotatedlib> version be updated.
+\end{itemize}
+
+There are two special cases.
+The annotated JDK is automatically put on your
+classpath; you don't have to do anything special for it.
+For the Javadoc classes in the JDK's com.sun.javadoc package,
+% are not exposed by ct.sym and therefore cannot be part of an
+% annotated JDK
+use the stub file \<checker/resources/javadoc.astub>.
+
+If a library you wish to use is not available, then you can request that it
+be annotated, or you can volunteer to write the annotations (see
+\chapterpageref{annotating-libraries}), which will help you and all other
+Checker Framework users.
+
+
 \subsection{Distributing your annotated project\label{distributing}}
 
 You have two main options for distributing your compiled code (\<.jar>

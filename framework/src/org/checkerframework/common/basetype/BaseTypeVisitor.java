@@ -66,8 +66,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
-import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1074,56 +1072,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (preconditions.isEmpty()) {
             return;
         }
+        FlowExpressionContext flowExprContext =
+                FlowExpressionContext.buildContextForMethodUse(tree, checker.getContext());
 
-        Set<Node> nodes = atypeFactory.getNodesForTree(tree);
+        if (flowExprContext == null) {
+            checker.report(Result.failure("flowexpr.parse.context.not.determined", tree), tree);
+            return;
+        }
 
-        for (Node node : nodes) {
-            if (node instanceof LambdaResultExpressionNode) {
-                continue;
-            }
+        for (Precondition p : preconditions) {
+            String expression = p.expression;
+            AnnotationMirror anno = p.annotation;
 
-            FlowExpressionContext flowExprContext =
-                    FlowExpressionContext.buildContextForMethodUse(
-                            (MethodInvocationNode) node, checker.getContext());
+            anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
 
-            if (flowExprContext == null) {
-                checker.report(Result.failure("flowexpr.parse.context.not.determined", node), tree);
-                return;
-            }
+            try {
+                FlowExpressions.Receiver expr =
+                        FlowExpressionParseUtil.parse(
+                                expression, flowExprContext, getCurrentPath(), false);
 
-            for (Precondition p : preconditions) {
-                String expression = p.expression;
-                AnnotationMirror anno = p.annotation;
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
-                anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
+                CFAbstractValue<?> value = store.getValue(expr);
 
-                try {
-                    FlowExpressions.Receiver expr =
-                            FlowExpressionParseUtil.parse(
-                                    expression, flowExprContext, getCurrentPath(), false);
-
-                    CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(nodes);
-
-                    CFAbstractValue<?> value = store.getValue(expr);
-
-                    AnnotationMirror inferredAnno = null;
-                    if (value != null) {
-                        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-                        Set<AnnotationMirror> annos = value.getAnnotations();
-                        inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
-                    }
-                    if (!checkContract(expr, anno, inferredAnno, store)) {
-                        checker.report(
-                                Result.failure(
-                                        "contracts.precondition.not.satisfied",
-                                        tree.toString(),
-                                        expr == null ? expression : expr.toString()),
-                                tree);
-                    }
-                } catch (FlowExpressionParseException e) {
-                    // report errors here
-                    checker.report(e.getResult(), tree);
+                AnnotationMirror inferredAnno = null;
+                if (value != null) {
+                    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                    Set<AnnotationMirror> annos = value.getAnnotations();
+                    inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
                 }
+                if (!checkContract(expr, anno, inferredAnno, store)) {
+                    checker.report(
+                            Result.failure(
+                                    "contracts.precondition.not.satisfied",
+                                    tree.toString(),
+                                    expr == null ? expression : expr.toString()),
+                            tree);
+                }
+            } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), tree);
             }
         }
     }
@@ -1894,6 +1882,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
         if (shouldSkipUses(valueExp)) {
+            return;
+        }
+        if (valueExp.getKind() == Tree.Kind.MEMBER_REFERENCE
+                || valueExp.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            // Member references and lambda expressions are type checked separately
+            // and do not need to be checked again as arguments.
             return;
         }
         if (varType.getKind() == TypeKind.ARRAY
@@ -3489,15 +3483,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param tree the type tree supplied by the user
      * @param type the type corresponding to tree
      */
-    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
-        // basic consistency checks
-        if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type)) {
-            checker.report(
-                    Result.failure("type.invalid", type.getAnnotations(), type.toString()), tree);
-            return false;
-        }
-
-        // more checks (also specific to checker, potentially)
+    protected boolean validateType(Tree tree, AnnotatedTypeMirror type) {
         return typeValidator.isValid(type, tree);
     }
 
@@ -3525,10 +3511,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected final boolean shouldSkipUses(ExpressionTree exprTree) {
         // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
 
-        // Don't use commonAssignmentCheck for lambdas or method references.
-        if (exprTree instanceof MemberReferenceTree || exprTree instanceof LambdaExpressionTree) {
-            return true;
-        }
         Element elm = TreeUtils.elementFromTree(exprTree);
         return checker.shouldSkipUses(elm);
     }
