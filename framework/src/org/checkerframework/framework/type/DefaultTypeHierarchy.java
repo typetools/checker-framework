@@ -988,7 +988,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             }
         }
 
-        if (subtype.getUnderlyingType() == superTypeMirror) {
+        if (superTypeMirror.getKind() == TypeKind.WILDCARD) {
             // This can happen at a method invocation where a type variable in the method
             // declaration is substituted with a wildcard.
             // For example:
@@ -1009,7 +1009,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                     && !supertypeHasAnno
                     && areEqualInHierarchy(subtype, supertype)) {
                 // TODO: wildcard capture conversion
-                // Two unannotated uses of reference-equal wildcard types are the same type
+                // Two unannotated uses of wildcard types are the same type
                 return true;
             }
         }

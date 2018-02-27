@@ -1,28 +1,24 @@
-package org.checkerframework.checker.index.lowerbound;
+package org.checkerframework.checker.index.inequality;
 
 import java.util.LinkedHashSet;
-import org.checkerframework.checker.index.inequality.LessThanChecker;
-import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
- * A type-checker for preventing fixed-length sequences such as arrays or strings from being
- * accessed with values that are too low. Normally bundled as part of the Index Checker.
+ * An internal checker that estimates which expression's values are less than other expressions'
+ * values.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SuppressWarningsKeys({"index", "lowerbound"})
-public class LowerBoundChecker extends BaseTypeChecker {
-
+@SuppressWarningsKeys({"index", "lessthan"})
+public class LessThanChecker extends BaseTypeChecker {
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
         checkers.add(ValueChecker.class);
-        checkers.add(LessThanChecker.class);
-        checkers.add(SearchIndexChecker.class);
+        ;
         return checkers;
     }
 }
