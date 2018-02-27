@@ -404,7 +404,15 @@ public class TestConfigurationBuilder {
         String classpath =
                 System.getProperty("tests.classpath", "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
-        return classpath + File.pathSeparator + globalclasspath;
+        return "build"
+                + File.pathSeparator
+                + "junit-4.12.jar"
+                + File.pathSeparator
+                + "hamcrest-core-1.3.jar"
+                + File.pathSeparator
+                + classpath
+                + File.pathSeparator
+                + globalclasspath;
     }
 
     /** Uses the system property "JDK_JAR" to find the annotated JDK */
