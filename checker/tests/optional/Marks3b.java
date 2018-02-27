@@ -17,7 +17,7 @@ public class Marks3b {
     Executor executor = new Executor();
 
     void bad(Optional<Task> oTask) {
-        //:: warning: (prefer.ifpresent)
+        // :: warning: (prefer.ifpresent)
         if (oTask.isPresent()) {
             executor.runTask(oTask.get());
         }

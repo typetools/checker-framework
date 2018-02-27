@@ -9,10 +9,10 @@ import java.util.Set;
 /** Test cases for Rule #6: "Avoid using Optional in fields, method parameters, and collections." */
 public class Marks6 {
 
-    //:: warning: (optional.field)
+    // :: warning: (optional.field)
     Optional<String> optionalField = Optional.ofNullable(null);
 
-    //:: warning: (optional.parameter)
+    // :: warning: (optional.parameter)
     void optionalParameter(Optional<String> arg) {}
 
     Optional<String> okUses() {
@@ -21,11 +21,11 @@ public class Marks6 {
     }
 
     void illegalInstantiations() {
-        //:: warning: (optional.as.element.type)
+        // :: warning: (optional.as.element.type)
         List<Optional<String>> los = new ArrayList<>();
-        //:: warning: (optional.as.element.type)
+        // :: warning: (optional.as.element.type)
         List<Optional<String>> los2 = new ArrayList<Optional<String>>();
-        //:: warning: (optional.as.element.type)
+        // :: warning: (optional.as.element.type)
         Set<Optional<String>> sos = new HashSet<>();
     }
 }

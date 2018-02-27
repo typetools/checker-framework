@@ -23,7 +23,7 @@ public class JdkCheck {
     // }
     //
     // String orElseThrowTest2(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
-    //     //:: error: (method.invocation.invalid)
+    //     // :: error: (method.invocation.invalid)
     //     return mos.orElseThrow(exceptionSupplier);
     // }
 
@@ -32,7 +32,7 @@ public class JdkCheck {
     }
 
     String getTest2(Optional<String> mos) {
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         return mos.get();
     }
 
@@ -45,17 +45,17 @@ public class JdkCheck {
     }
 
     @Present Optional<String> ofTestPNble(@Nullable String s) {
-        //:: error: (of.nullable.argument) :: error: (return.type.incompatible)
+        // :: error: (of.nullable.argument) :: error: (return.type.incompatible)
         return Optional.of(s);
     }
 
     Optional<String> ofTestMNble(@Nullable String s) {
-        //:: error: (of.nullable.argument) :: error: (return.type.incompatible)
+        // :: error: (of.nullable.argument) :: error: (return.type.incompatible)
         return Optional.of(s);
     }
 
     @Present Optional<String> ofNullableTestPNble(@Nullable String s) {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return Optional.ofNullable(s);
     }
 
