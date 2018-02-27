@@ -815,18 +815,8 @@ For information about the extension points, see
 % Eclipse does not directly support running the Checker Framework,
 % nor is Eclipse necessary for running the Checker Framework.
 
-There are two ways to run a checker from within the Eclipse IDE:  via Ant
-or using an Eclipse plugin.  These two methods are described below.
-
-No matter what method you choose, we suggest that
-all Checker Framework annotations be written in the comments
-if you are using a version of Eclipse that
-does not support Java 8.  This will avoid many
-text highlighting errors with versions of Eclipse that don't support Java 8
-and type annotations.
-
-Even in a version of Eclipse that supports Java 8's type annotations, you
-still need to run the Checker Framework via Ant or via the plug-in, rather
+You
+need to run the Checker Framework via Ant or via another build tool, rather
 than by supplying the \<-processor> command-line option to the ejc
 compiler, which is also known as eclipsec.
 The reason is that the Checker Framework is built upon javac,
@@ -861,17 +851,6 @@ run the Ant target by executing the following steps
   The Ant buildfile is run, and the output is sent to the Console view.
 
 \end{enumerate}
-
-
-\label{eclipse-plug-in}         % previous label for this section
-\subsection{Eclipse plugin for the Checker Framework\label{eclipse-plugin}}
-
-The Checker Framework Eclipse Plugin enables the use of the Checker
-Framework within the Eclipse IDE\@.
-Its website (\myurl{https://checkerframework.org/eclipse/}).
-The website contains instructions for installing and using the plugin.
-% The plugin has been substantially improved through a Google Summer of Code 2010 project
-% and supports all checkers that are distributed with the Checker Framework.
 
 
 \subsection{Troubleshooting Eclipse\label{eclipse-troubleshooting}}

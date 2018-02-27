@@ -33,6 +33,3 @@ if [ ! -z "$CHANGED_FILES" ]; then
     fi
 fi
 
-
-# TODO: should do this only if some file named PluginUtil.java has changed.
-docs/developer/release/checkPluginUtil.sh
