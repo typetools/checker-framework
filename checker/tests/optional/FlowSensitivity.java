@@ -1,5 +1,3 @@
-// @below-java8-jdk-skip-test
-
 import java.util.Optional;
 
 /** Test case for flow-sensitivity of Optional.isPresent(). */

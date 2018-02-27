@@ -1,5 +1,3 @@
-// @below-java8-jdk-skip-test
-
 import org.checkerframework.checker.optional.qual.MaybePresent;
 import org.checkerframework.checker.optional.qual.Present;
 

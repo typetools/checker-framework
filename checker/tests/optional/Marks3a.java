@@ -1,5 +1,3 @@
-// @below-java8-jdk-skip-test
-
 import java.util.List;
 import java.util.Optional;
 

@@ -4,6 +4,8 @@ Version 2.4.0, March 1, 2018
 
 Added the Index Checker, which eliminates ArrayIndexOutOfBoundsException.
 
+Added the Optional Checker, which verifies uses of Java 8's Optional class.
+
 Removed the Linear Checker, whose implementation was inconsistent with its
 documentation.
 
@@ -120,8 +122,6 @@ Closed issues:
 ---------------------------------------------------------------------------
 
 Version 2.1.13, 3 July 2017
-
-Adds Optional Checker to verify uses of Java 8's Optional class.
 
 Verified that the Checker Framework builds from source on Windows Subsystem
 for Linux, on Windows 10 Creators Edition.
