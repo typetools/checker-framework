@@ -117,7 +117,6 @@ public abstract class DocumentBuilderFactory {
      * java.util.ServiceConfigurationError service configuration error} or if
      * the implementation is not available or cannot be instantiated.
      */
-    @SuppressWarnings("nullness")    // find method in FactoryFinder accepts @Nullable args whereas here the requirement is @NonNull
     public static DocumentBuilderFactory newInstance() {
         return FactoryFinder.find(
                 /* The default property name according to the JAXP spec */

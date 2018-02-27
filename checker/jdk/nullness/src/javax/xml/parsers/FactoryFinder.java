@@ -285,6 +285,7 @@ class FactoryFinder {
      *
      * @return instance of provider class if found or null
      */
+    @SuppressWarnings("nullness")    // null return is acceptable as return value. 
     private static <T> @Nullable T findServiceProvider(final Class<T> type) {
         try {
             return AccessController.doPrivileged(new PrivilegedAction<T>() {
