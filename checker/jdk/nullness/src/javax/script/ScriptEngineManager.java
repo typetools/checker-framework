@@ -79,6 +79,7 @@ public class ScriptEngineManager  {
         init(loader);
     }
 
+    // initEngines() permits null argument
     private void init(final @Nullable ClassLoader loader) {
         globalScope = new SimpleBindings();
         engineSpis = new HashSet<ScriptEngineFactory>();
@@ -88,7 +89,7 @@ public class ScriptEngineManager  {
         initEngines(loader);
     }
 
-    private ServiceLoader<ScriptEngineFactory> getServiceLoader(final ClassLoader loader) {
+    private ServiceLoader<ScriptEngineFactory> getServiceLoader(final @Nullable ClassLoader loader) {
         if (loader != null) {
             return ServiceLoader.load(ScriptEngineFactory.class, loader);
         } else {
