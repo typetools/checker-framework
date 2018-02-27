@@ -1,7 +1,6 @@
 Run
   make
 to create these files:
-  eclipse-projects.zip
   sourcefiles.zip
 
 TODO: explain how the website is created
@@ -12,7 +11,6 @@ If you want to present the tutorial when Internet is not available, try this:
 mkdir cf-tutorial
 cd cf-tutorial
 wget -r -k -np https://checkerframework.org/tutorial/
-wget -r -k -np https://checkerframework.org/eclipse/
 wget -r -k -np https://checkerframework.org/manual/
 cd ..
 zip -r cf-tutorial cf-tutorial

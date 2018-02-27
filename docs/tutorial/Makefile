@@ -8,16 +8,13 @@ ZIPFILES = sourcefiles.zip
 
 all: ${ZIPFILES}
 
-sourcefiles.zip: copy-checker-qual clean-classes copy-files-from-eclipse
+sourcefiles.zip: copy-checker-qual clean-classes
 	rm -f src/README.txt
 	cp -pf README-sourcefiles.txt src/README.txt
 	zip -r sourcefiles.zip src/
 
-clean-sourcefiles:
-	@\rm -rf src/
-
 clean-classes:
 	find . -name '*.class' ! -name '.*' -exec rm {} +
 
-clean: clean-classes clean-checker-qual clean-sourcefiles
+clean: clean-classes
 	@\rm -f ${ZIPFILES}
