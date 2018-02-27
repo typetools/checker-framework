@@ -12,6 +12,14 @@ Added a @QualifierArgument annotation to be used on pre- and postcondition
   and @ConditionalPostconditionAnnotation. This allows qualifiers with
   arguments to be used in pre- and postconditions.
 
+Moved annotated libraries from checker/lib/*.jar to the Central Repository:
+https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
+
+Moved the Javadoc stub file from checker/lib/javadoc.astub to
+checker/resources/javadoc.astub.
+
+Added new type @InternalFormForNonArray to the Signature Checker
+
 ---------------------------------------------------------------------------
 
 Version 2.3.2, February 1, 2018
