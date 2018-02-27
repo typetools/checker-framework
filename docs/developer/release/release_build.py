@@ -472,8 +472,6 @@ def main(argv):
             print "of checkers in these manual sections are up to date:"
             print " * Introduction"
             print " * Run-time tests and type refinement"
-            print "and make sure that the checkers supported in the Eclipse plug-in are up to date"
-            print "by following the instructions at eclipse/README-developers.html#update_checkers"
             print ""
 
             propose_documentation_change_review("the Checker Framework documentation updates", old_jsr308_version, CHECKER_FRAMEWORK,
