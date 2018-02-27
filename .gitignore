@@ -116,7 +116,6 @@ docs/tutorial/eclipse-projects/README.txt
 docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
 docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
 docs/tutorial/sourcefiles.zip
-docs/tutorial/src
 
 # release tmps
 tmp

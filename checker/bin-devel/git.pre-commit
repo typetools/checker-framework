@@ -12,7 +12,7 @@ set -e
 # Need to keep checked files in sync with formatted.java.files in
 # build.xml. Otherwise `ant reformat` might not reformat a file that this
 # hook complains about.
-CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/eclipse/' | grep -v '/BadCast1.java$' | grep -v '/BadCast2.java$' ` || true
+CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/BadCast1.java$' | grep -v '/BadCast2.java$' ` || true
 # echo CHANGED_JAVA_FILES "'"${CHANGED_JAVA_FILES}"'"
 if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     ant -silent update-run-google-java-format
@@ -32,7 +32,3 @@ if [ ! -z "$CHANGED_FILES" ]; then
         echo "Some files have trailing whitespace: ${FILES_WITH_TRAILING_SPACES}" && exit 1
     fi
 fi
-
-
-# TODO: should do this only if some file named PluginUtil.java has changed.
-docs/developer/release/checkPluginUtil.sh

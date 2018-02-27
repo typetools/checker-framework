@@ -18,15 +18,6 @@ import java.util.regex.Pattern;
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
  * {@code CheckerMain}.
- *
- * <p>NOTE: There are multiple copies of this file:
- *
- * <pre>
- * eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java
- * framework/src/org/checkerframework/framework/util/PluginUtil.java
- * </pre>
- *
- * These files MUST be IDENTICAL after the package descriptor.
  */
 public class PluginUtil {
 

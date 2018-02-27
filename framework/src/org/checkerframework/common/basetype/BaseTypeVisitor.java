@@ -35,7 +35,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
-import java.lang.SuppressWarnings;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1974,19 +1973,39 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {
-            String valueTypeString;
-            String varTypeString;
-            if (shouldPrintVerbose(varType, valueType)) {
-                valueTypeString = valueType.toString(true);
-                varTypeString = varType.toString(true);
-            } else {
-                valueTypeString = valueType.toString();
-                varTypeString = varType.toString();
-            }
+            FoundRequired pair = FoundRequired.of(valueType, varType);
+            String valueTypeString = pair.found;
+            String varTypeString = pair.required;
             checker.report(Result.failure(errorKey, valueTypeString, varTypeString), valueTree);
         }
     }
 
+    /**
+     * Class that creates string representations of {@link AnnotatedTypeMirror}s which are only
+     * verbose if required to differentiate the two types.
+     */
+    private static class FoundRequired {
+        public final String found;
+        public final String required;
+
+        private FoundRequired(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
+            if (shouldPrintVerbose(found, required)) {
+                this.found = found.toString(true);
+                this.required = required.toString(true);
+            } else {
+                this.found = found.toString();
+                this.required = required.toString();
+            }
+        }
+
+        /**
+         * Creates string representations of {@link AnnotatedTypeMirror}s which are only verbose if
+         * required to differentiate the two types.
+         */
+        static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
+            return new FoundRequired(found, required);
+        }
+    }
     /**
      * Return whether or not the verbose toString should be used when printing the two annotated
      * types.
@@ -1996,7 +2015,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true iff there are two annotated types (in either ATM) such that their toStrings are
      *     the same but their verbose toStrings differ
      */
-    private boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
+    private static boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
         String atm1ToString = atm1.toString();
         String atm2ToString = atm2.toString();
         // If both types as strings are the same, use verbose toString.
@@ -2973,6 +2992,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory
                     .getTypeHierarchy()
                     .isSubtype(overriddenReceiver, overrider.getReceiverType().getErased())) {
+                FoundRequired pair =
+                        FoundRequired.of(overrider.getReceiverType(), overridden.getReceiverType());
                 checker.report(
                         Result.failure(
                                 "override.receiver.invalid",
@@ -2980,8 +3001,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                overrider.getReceiverType(),
-                                overridden.getReceiverType()),
+                                pair.found,
+                                pair.required),
                         overriderTree);
                 return false;
             }
@@ -3061,6 +3082,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overriddenParams.get(index).toString());
             }
             if (!success) {
+                FoundRequired pair =
+                        FoundRequired.of(overriderParams.get(index), overriddenParams.get(index));
                 checker.report(
                         Result.failure(
                                 msgKey,
@@ -3068,8 +3091,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                overriderParams.get(index).toString(),
-                                overriddenParams.get(index).toString()),
+                                pair.found,
+                                pair.required),
                         posTree);
             }
         }
@@ -3159,6 +3182,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overridden.getReturnType().toString());
             }
             if (!success) {
+                FoundRequired pair = FoundRequired.of(overridingReturnType, overriddenReturnType);
                 checker.report(
                         Result.failure(
                                 msgKey,
@@ -3166,8 +3190,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                overridingReturnType,
-                                overriddenReturnType),
+                                pair.found,
+                                pair.required),
                         posTree);
             }
         }

@@ -41,16 +41,3 @@ Base* (in checker-framework/framework/src/org/checkerframework/common/basetype) 
  * etc.
 
 ------------------------------------------------------
-
-Eclipse setup
--------------
-Describe checker-framework.importorder and formatter.
-Should these developer-focused configs be moved somewhere else?
-
-------------------------------------------------------
-
-Changelog
-
-Don't forget to update the changelog if you make changes.
-
-------------------------------------------------------

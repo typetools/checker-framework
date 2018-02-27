@@ -2,7 +2,6 @@ import org.checkerframework.checker.nullness.Opt;
 import org.checkerframework.checker.nullness.qual.*;
 
 /** Test class org.checkerframework.checker.nullness.Opt. */
-// @below-java8-jdk-skip-test
 class TestOpt {
     void foo1(@Nullable Object p) {
         if (Opt.isPresent(p)) {

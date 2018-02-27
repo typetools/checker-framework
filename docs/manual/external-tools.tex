@@ -315,7 +315,7 @@ See the directory \code{docs/examples/MavenExample/} for examples of the use of
 Maven build files that run a checker.  These examples can be used to verify that
 Maven is correctly downloading the Checker Framework from
 \href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
-  Central} and executing it.
+  Central Repository} and executing it.
 
 There are two general ways you can configure your Maven buildfile,
 corresponding to the two ways to run the Checker Framework:
@@ -530,7 +530,7 @@ See the directory \code{docs/examples/GradleExamples/} for examples of Gradle
 build files that run a checker.  You can use these examples to verify that
 Gradle is correctly downloading the Checker Framework from
 \href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
-  Central} and executing it.
+  Central Repository} and executing it.
 
 \begin{enumerate}
 
@@ -815,18 +815,8 @@ For information about the extension points, see
 % Eclipse does not directly support running the Checker Framework,
 % nor is Eclipse necessary for running the Checker Framework.
 
-There are two ways to run a checker from within the Eclipse IDE:  via Ant
-or using an Eclipse plugin.  These two methods are described below.
-
-No matter what method you choose, we suggest that
-all Checker Framework annotations be written in the comments
-if you are using a version of Eclipse that
-does not support Java 8.  This will avoid many
-text highlighting errors with versions of Eclipse that don't support Java 8
-and type annotations.
-
-Even in a version of Eclipse that supports Java 8's type annotations, you
-still need to run the Checker Framework via Ant or via the plug-in, rather
+You
+need to run the Checker Framework via Ant or via another build tool, rather
 than by supplying the \<-processor> command-line option to the ejc
 compiler, which is also known as eclipsec.
 The reason is that the Checker Framework is built upon javac,
@@ -863,24 +853,13 @@ run the Ant target by executing the following steps
 \end{enumerate}
 
 
-\label{eclipse-plug-in}         % previous label for this section
-\subsection{Eclipse plugin for the Checker Framework\label{eclipse-plugin}}
-
-The Checker Framework Eclipse Plugin enables the use of the Checker
-Framework within the Eclipse IDE\@.
-Its website (\myurl{https://checkerframework.org/eclipse/}).
-The website contains instructions for installing and using the plugin.
-% The plugin has been substantially improved through a Google Summer of Code 2010 project
-% and supports all checkers that are distributed with the Checker Framework.
-
-
 \subsection{Troubleshooting Eclipse\label{eclipse-troubleshooting}}
 
 Eclipse issues an ``Unhandled Token in @SuppressWarnings'' warning if you
 write a \<@SuppressWarnings> annotation containing a string that does not
 know about.  Unfortunately, Eclipse
 \href{https://bugs.eclipse.org/bugs/show_bug.cgi?id=122475}{hard-codes}
-this list and there is not a way for the Eclipse plug-in to extend it.
+this list.
 
 To eliminate the warnings, you have two options:
 
