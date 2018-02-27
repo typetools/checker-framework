@@ -13,6 +13,7 @@ import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -413,6 +414,23 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                 result = aTypeFactory.anmFromVal(minLen - valRight);
             }
             return result;
+        }
+
+        OffsetEquation leftExpression =
+                OffsetEquation.createOffsetFromNode(minusNode.getLeftOperand(), aTypeFactory, '+');
+        if (leftExpression != null) {
+            if (aTypeFactory
+                    .getLessThanAnnotatedTypeFactory()
+                    .isLessThan(minusNode.getRightOperand().getTree(), leftExpression.toString())) {
+                return POS;
+            }
+
+            if (aTypeFactory
+                    .getLessThanAnnotatedTypeFactory()
+                    .isLessThanOrEqual(
+                            minusNode.getRightOperand().getTree(), leftExpression.toString())) {
+                return NN;
+            }
         }
 
         // The checker can't reason about arbitrary (i.e. non-literal)
