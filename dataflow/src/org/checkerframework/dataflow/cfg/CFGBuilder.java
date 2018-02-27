@@ -1648,7 +1648,7 @@ public class CFGBuilder {
                 TreeBuilder treeBuilder,
                 AnnotationProvider annotationProvider) {
             trees = Trees.instance(env);
-            // TODO: Isn't this costly? Can't we ask a type factory?
+            // TODO: Isn't this costly? Is there no cache we can reuse?
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
             assert bodyPath != null;
             return process(
@@ -4373,9 +4373,7 @@ public class CFGBuilder {
 
                 tryStack.popFrame();
 
-                {
-                    // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
-                    // because there is no path to 'exceptionalFinallyLabel'.
+                { // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
                     addLabelForNextNode(finallyLabel);
                     extendWithNode(
                             new MarkerNode(

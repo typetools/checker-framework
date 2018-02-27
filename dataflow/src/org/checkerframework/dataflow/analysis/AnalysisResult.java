@@ -9,6 +9,7 @@ import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -88,11 +89,24 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Combine with another analysis result. */
     public void combine(AnalysisResult<A, S> other) {
         nodeValues.putAll(other.nodeValues);
-        // TODO: should the sets be merged?
-        treeLookup.putAll(other.treeLookup);
+        mergeTreeLookup(treeLookup, other.treeLookup);
         unaryAssignNodeLookup.putAll(other.unaryAssignNodeLookup);
         stores.putAll(other.stores);
         finalLocalValues.putAll(other.finalLocalValues);
+    }
+
+    // Merge all entries from otherTreeLookup into treeLookup. Merge sets if already present.
+    private static void mergeTreeLookup(
+            IdentityHashMap<Tree, Set<Node>> treeLookup,
+            IdentityHashMap<Tree, Set<Node>> otherTreeLookup) {
+        for (Entry<Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
+            Set<Node> hit = treeLookup.get(entry.getKey());
+            if (hit == null) {
+                treeLookup.put(entry.getKey(), entry.getValue());
+            } else {
+                hit.addAll(entry.getValue());
+            }
+        }
     }
 
     /** @return the value of effectively final local variables */

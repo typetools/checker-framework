@@ -88,6 +88,15 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
     }
 
     @Override
+    public boolean addAll(Collection<? extends T> c) {
+        boolean res = false;
+        for (T elem : c) {
+            res |= add(elem);
+        }
+        return res;
+    }
+
+    @Override
     public Object[] toArray() {
         throw new UnsupportedOperationException();
     }
@@ -104,11 +113,6 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
         throw new UnsupportedOperationException();
     }
 
