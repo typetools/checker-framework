@@ -34,4 +34,41 @@ public class JdkCheck {
         // :: error: (method.invocation.invalid)
         return mos.get();
     }
+
+    @Present Optional<String> ofTesPNn(String s) {
+        return Optional.of(s);
+    }
+
+    Optional<String> ofTestMNn(String s) {
+        return Optional.of(s);
+    }
+
+    @Present Optional<String> ofTestPNble(@Nullable String s) {
+        //TODO:: error: (of.nullable.argument) :: error: (return.type.incompatible)
+        return Optional.of(s);
+    }
+
+    Optional<String> ofTestMNble(@Nullable String s) {
+        //TODO:: error: (of.nullable.argument) :: error: (return.type.incompatible)
+        return Optional.of(s);
+    }
+
+    @Present Optional<String> ofNullableTestPNble(@Nullable String s) {
+        // :: error: (return.type.incompatible)
+        return Optional.ofNullable(s);
+    }
+
+    /* TODO: ofNullable with non-null arg gives @Present (+ a warning?)
+    @Present Optional<String> ofNullableTestPNn(String s) {
+        return Optional.ofNullable(s);
+    }
+    */
+
+    Optional<String> ofNullableTestMNble(@Nullable String s) {
+        return Optional.ofNullable(s);
+    }
+
+    Optional<String> ofNullableTestMNn(String s) {
+        return Optional.ofNullable(s);
+    }
 }
