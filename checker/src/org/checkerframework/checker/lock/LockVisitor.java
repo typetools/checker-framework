@@ -1282,6 +1282,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     implicitThis
                             ? pseudoReceiver
                             : FlowExpressions.internalReprOf(atypeFactory, node);
+            // It's enough to look at one Node.
+            break;
         }
         if (self == null) {
             return Collections.emptyList();
