@@ -356,29 +356,6 @@ public final class TreeUtils {
     }
 
     /**
-     * If the given tree is a block tree with a single element, return the enclosed non-block
-     * statement. Otherwise, return the same tree.
-     *
-     * @param tree a statement tree
-     * @return the single enclosed statement, if it exists; otherwise, the same tree
-     */
-    public static StatementTree skipBlocks(final StatementTree tree) {
-        if (tree == null) {
-            return tree;
-        }
-        StatementTree s = tree;
-        while (s.getKind() == Tree.Kind.BLOCK) {
-            List<? extends StatementTree> stmts = ((BlockTree) s).getStatements();
-            if (stmts.size() == 1) {
-                s = stmts.get(0);
-            } else {
-                return s;
-            }
-        }
-        return s;
-    }
-
-    /**
      * Returns the tree with the assignment context for the treePath leaf node. (Does not handle
      * pseudo-assignment of an argument to a parameter or a receiver expression to a receiver.)
      *

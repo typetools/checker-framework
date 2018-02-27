@@ -18,9 +18,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
-import org.checkerframework.checker.nullness.NullnessChecker;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -29,7 +26,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -47,11 +43,6 @@ public class OptionalVisitor
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
         collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
-    }
-
-    /** Provides a way to query the Nullness Checker. */
-    NullnessAnnotatedTypeFactory getNullnessTypeFactory() {
-        return checker.getTypeFactoryOfSubchecker(NullnessChecker.class);
     }
 
     @Override
@@ -104,6 +95,7 @@ public class OptionalVisitor
      *
      * <p>Prefer: {@code VAR.map(METHOD).orElse(VALUE);}
      */
+    // TODO: Should handle this via a transfer function, instead of pattern-matching.
     public void handleTernaryIsPresentGet(ConditionalExpressionTree node) {
 
         ExpressionTree condExpr = TreeUtils.skipParens(node.getCondition());
@@ -125,7 +117,8 @@ public class OptionalVisitor
         ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
 
         // What is a better way to do this than string comparison?
-        if (receiver.toString().equals(getReceiver.toString())) {
+        // Use transfer functions and Store entries.
+        if (sameExpression(receiver, getReceiver)) {
             ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
 
             checker.report(
@@ -168,8 +161,8 @@ public class OptionalVisitor
     public void handleConditionalStatementIsPresentGet(IfTree node) {
 
         ExpressionTree condExpr = TreeUtils.skipParens(node.getCondition());
-        StatementTree thenStmt = TreeUtils.skipBlocks(node.getThenStatement());
-        StatementTree elseStmt = TreeUtils.skipBlocks(node.getElseStatement());
+        StatementTree thenStmt = skipBlocks(node.getThenStatement());
+        StatementTree elseStmt = skipBlocks(node.getElseStatement());
 
         if (!(elseStmt == null
                 || (elseStmt.getKind() == Tree.Kind.BLOCK
@@ -216,31 +209,7 @@ public class OptionalVisitor
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         handleCreationElimination(node);
-        handleOfRedundantly(node);
         return super.visitMethodInvocation(node, p);
-    }
-
-    /**
-     * Redundantly force the argument of {@code Optional.of} to be non-null.
-     *
-     * <p>This is enforced by the JDK annotations for the Nullness Checker, which is run as a
-     * subchecker of the Optional Checker. However, this error is issued even if a user suppresses
-     * all nullness warnings. A user may suppress this warning as well if desired.
-     */
-    public void handleOfRedundantly(MethodInvocationTree node) {
-        if (!isCallToOf(node)) {
-            return;
-        }
-
-        // Determine the Nullness annotation on the argument.
-        ExpressionTree arg0 = node.getArguments().get(0);
-        final AnnotatedTypeMirror argNullnessType = getNullnessTypeFactory().getAnnotatedType(arg0);
-        boolean argIsNonNull =
-                AnnotationUtils.containsSameByClass(
-                        argNullnessType.getAnnotations(), NonNull.class);
-        if (!argIsNonNull) {
-            checker.report(Result.failure("of.nullable.argument"), arg0);
-        }
     }
 
     /**
@@ -336,5 +305,29 @@ public class OptionalVisitor
     /** Return true if tm represents java.util.Optional. */
     private boolean isOptionalType(TypeMirror tm) {
         return TypesUtils.isDeclaredOfName(tm, "java.util.Optional");
+    }
+
+    /**
+     * If the given tree is a block tree with a single element, return the enclosed non-block
+     * statement. Otherwise, return the same tree.
+     *
+     * @param tree a statement tree
+     * @return the single enclosed statement, if it exists; otherwise, the same tree
+     */
+    // TODO: The Optional Checker should work over the CFG, then it would not need this any longer.
+    public static StatementTree skipBlocks(final StatementTree tree) {
+        if (tree == null) {
+            return tree;
+        }
+        StatementTree s = tree;
+        while (s.getKind() == Tree.Kind.BLOCK) {
+            List<? extends StatementTree> stmts = ((BlockTree) s).getStatements();
+            if (stmts.size() == 1) {
+                s = stmts.get(0);
+            } else {
+                return s;
+            }
+        }
+        return s;
     }
 }

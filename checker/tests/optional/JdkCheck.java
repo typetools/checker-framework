@@ -1,7 +1,6 @@
 // @below-java8-jdk-skip-test
 
 import java.util.Optional;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 
 /** Test JDK annotations. */
@@ -34,40 +33,5 @@ public class JdkCheck {
     String getTest2(Optional<String> mos) {
         // :: error: (method.invocation.invalid)
         return mos.get();
-    }
-
-    @Present Optional<String> ofTesPNn(String s) {
-        return Optional.of(s);
-    }
-
-    Optional<String> ofTestMNn(String s) {
-        return Optional.of(s);
-    }
-
-    @Present Optional<String> ofTestPNble(@Nullable String s) {
-        // :: error: (of.nullable.argument) :: error: (return.type.incompatible)
-        return Optional.of(s);
-    }
-
-    Optional<String> ofTestMNble(@Nullable String s) {
-        // :: error: (of.nullable.argument) :: error: (return.type.incompatible)
-        return Optional.of(s);
-    }
-
-    @Present Optional<String> ofNullableTestPNble(@Nullable String s) {
-        // :: error: (return.type.incompatible)
-        return Optional.ofNullable(s);
-    }
-
-    @Present Optional<String> ofNullableTestPNn(String s) {
-        return Optional.ofNullable(s);
-    }
-
-    Optional<String> ofNullableTestMNble(@Nullable String s) {
-        return Optional.ofNullable(s);
-    }
-
-    Optional<String> ofNullableTestMNn(String s) {
-        return Optional.ofNullable(s);
     }
 }
