@@ -32,4 +32,3 @@ if [ ! -z "$CHANGED_FILES" ]; then
         echo "Some files have trailing whitespace: ${FILES_WITH_TRAILING_SPACES}" && exit 1
     fi
 fi
-
