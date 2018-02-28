@@ -1,8 +1,6 @@
 // Test case that was submitted in Issue 953, but was combined with Issue 979
 // https://github.com/typetools/checker-framework/issues/979
 
-// @below-java8-jdk-skip-test
-
 import java.util.*;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.NonNull;
