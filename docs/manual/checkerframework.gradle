@@ -42,7 +42,7 @@ dependencies {
 //         '-Awarns',    // turn Checker Framework errors into warnings
 //         '-AcheckPurityAnnotations',
 //         "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}",
-//         "-Astubs=$System.env.CHECKERFRAMEWORK/checker/lib/javadoc.astub" // TODO: does not work when downloading from Maven Central
+//         "-Astubs=$System.env.CHECKERFRAMEWORK/checker/resources/javadoc.astub" // TODO: does not work when downloading from Maven Central
 //       ]
 //       compile.options.fork = true
 //       compile.options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
