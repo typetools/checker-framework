@@ -1,4 +1,4 @@
-<project name="jsr-308" basedir="..">
+<project name="jsr-308" basedir="../../..">
 
     <description>
         Ant utilities for releasing JSR308-Langtools and Checker-Framework.  All targets in this file
