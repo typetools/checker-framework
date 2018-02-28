@@ -1,6 +1,5 @@
 // Test case for Issue 1399.
 // https://github.com/typetools/checker-framework/issues/1399
-// @below-java8-jdk-skip-test
 
 public class Issue1399 {
     static class Box<T> {

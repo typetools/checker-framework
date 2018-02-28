@@ -551,12 +551,11 @@ and then annotate it.  The rest of this section describes this approach.
 \begin{enumerate}
 
 \item
-  Create a stub file by running the stub class generator.  (\<checker.jar> and \<javac.jar>
-  must be on your classpath.)
+  Create a stub file by running the stub class generator.  (\<checker.jar> must be on your classpath.)
 
 \begin{Verbatim}
   cd nullness-stub
-  java org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $JSR308/checker-framework/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to

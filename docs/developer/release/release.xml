@@ -1,4 +1,4 @@
-<project name="jsr-308" basedir="..">
+<project name="jsr-308" basedir="../../..">
 
     <description>
         Ant utilities for releasing JSR308-Langtools and Checker-Framework.  All targets in this file
@@ -6,7 +6,7 @@
         as parameters and they do not depend on any other target.
     </description>
 
-    <property file="release/release.properties"/>
+    <property file="docs/developer/release/release.properties"/>
     <!-- Todays date -->
     <tstamp>
         <format property="release.date" pattern="d MMM yyyy"/>
@@ -107,7 +107,6 @@
         <property name="cf.docs"             value="${checker}/../docs"                      />
         <property name="checker.manual"      value="${cf.docs}/manual"                       />
         <property name="cf.docs.examples"    value="${cf.docs}/examples"                     />
-        <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
         <property name="checker.tutorial"    value="${cf.docs}/tutorial"                     />
         <property name="checker.release"     value="${checker}/../release"                   />
         <property name="checkerWebPage"      value="${cf.docs}/checker-framework-webpage.html" />
@@ -294,13 +293,13 @@
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version number is not set!"     />
 
-        <property name="langtools.excludes" value="${checkerframework}/release/langtools-excludes"/>
+        <property name="langtools.excludes" value="${checkerframework}/docs/developer/release/langtools-excludes"/>
         <available file="${langtools.excludes}"  property="langtools.excludes.available"/>
         <fail unless="${langtools.excludes.available}" message="${langtools.excludes} includes file not available"/>
 
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
-                        excludesfile="release/langtools-excludes"/>
+                        excludesfile="docs/developer/release/langtools-excludes"/>
 
             <zipfileset dir="${langtools}"
                         includes="dist/lib/javac.jar"
@@ -326,8 +325,8 @@
         <property name="dest.file" value="${dest.dir}/${file.name}"/>
         <property name="checkerframework" value="${checker}/.."/>
 
-        <property name="checker.includes" value="${checkerframework}/release/checker-includes"/>
-        <property name="checker.excludes" value="${checkerframework}/release/checker-excludes"/>
+        <property name="checker.includes" value="${checkerframework}/docs/developer/release/checker-includes"/>
+        <property name="checker.excludes" value="${checkerframework}/docs/developer/release/checker-excludes"/>
 
         <echo message="${checker.includes}" />
         <available file="${checker.includes}"  property="checker.includes.available"/>
@@ -516,9 +515,9 @@
     <target name="pylint" description="Run pylint on Python code">
         <apply executable="pylint">
             <arg value="--output-format=parseable"/>
-            <arg value="--rcfile=release/.pylintrc"/>
+            <arg value="--rcfile=docs/developer/release/.pylintrc"/>
             <srcfile/>
-            <fileset dir="." includes="release/*.py"/>
+            <fileset dir="." includes="docs/developer/release/*.py"/>
         </apply>
     </target>
 

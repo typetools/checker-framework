@@ -1,6 +1,5 @@
 // Test case for issue #1345:
 // https://github.com/typetools/checker-framework/issues/1345
-// @below-java8-jdk-skip-test
 
 // @skip-test until the issue is resolved
 

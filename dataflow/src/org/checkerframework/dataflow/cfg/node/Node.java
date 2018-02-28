@@ -24,6 +24,12 @@ import org.checkerframework.dataflow.cfg.block.Block;
  * type != null
  * tree != null &rArr; node.getType() == InternalUtils.typeOf(node.getTree())
  * </pre>
+ *
+ * Note that two {@code Node}s can be {@code .equals} but represent different CFG nodes. Take care
+ * to use reference equality, maps that handle identity {@code IdentityHashMap}, and sets like
+ * {@code IdentityMostlySingleton}.
+ *
+ * @see org.checkerframework.dataflow.util.IdentityMostlySingleton
  */
 public abstract class Node {
 

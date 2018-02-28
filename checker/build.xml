@@ -1378,7 +1378,7 @@
           <ant dir="${docs.loc}/tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
-          <ant dir="${docs.loc}/tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/src/personalblog-demo" useNativeBasedir="true">
               <target name="clean"/>
           </ant>
     </target>

@@ -55,6 +55,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -867,14 +868,31 @@ public abstract class GenericAnnotatedTypeFactory<
             return flowResult.getStoreBefore(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
-        Node node = analysis.getNodeForTree(tree);
-        if (node == null) {
+        Set<Node> nodes = analysis.getNodesForTree(tree);
+        if (nodes == null) {
             // TODO: is there something better we can do? Check for
             // lambda expressions. This fixes Issue 448, but might not
             // be the best possible.
             return null;
         }
-        return getStoreBefore(node);
+        return getStoreBefore(nodes);
+    }
+
+    /** @return the store immediately before a given Set of {@link Node}s. */
+    public Store getStoreBefore(Set<Node> nodes) {
+        if (nodes.size() == 1) {
+            return getStoreBefore(nodes.iterator().next());
+        }
+        Store merge = null;
+        for (Node aNode : nodes) {
+            Store s = getStoreBefore(aNode);
+            if (merge == null) {
+                merge = s;
+            } else if (s != null) {
+                merge = merge.leastUpperBound(s);
+            }
+        }
+        return merge;
     }
 
     /** @return the store immediately before a given {@link Node}. */
@@ -898,24 +916,63 @@ public abstract class GenericAnnotatedTypeFactory<
             return flowResult.getStoreAfter(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
-        Node node = analysis.getNodeForTree(tree);
-        Store store =
+        Set<Node> nodes = analysis.getNodesForTree(tree);
+        return getStoreAfter(nodes);
+    }
+
+    /** @return the store immediately after a given set of {@link Node}s. */
+    public Store getStoreAfter(Set<Node> nodes) {
+        Store merge = null;
+        for (Node node : nodes) {
+            Store s = getStoreAfter(node);
+            if (merge == null) {
+                merge = s;
+            } else if (s != null) {
+                merge = merge.leastUpperBound(s);
+            }
+        }
+        return merge;
+    }
+
+    /** @return the store immediately after a given {@link Node}. */
+    public Store getStoreAfter(Node node) {
+        FlowAnalysis analysis = analyses.getFirst();
+        Store res =
                 AnalysisResult.runAnalysisFor(
                         node, false, analysis.getInput(node.getBlock()), flowResultAnalysisCaches);
-        return store;
+        return res;
     }
 
-    /** @return the {@link Node} for a given {@link Tree}. */
-    public Node getNodeForTree(Tree tree) {
-        return flowResult.getNodeForTree(tree);
+    /**
+     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
+     * @return the {@link Node}s for a given {@link Tree}.
+     */
+    public Set<Node> getNodesForTree(Tree tree) {
+        return flowResult.getNodesForTree(tree);
     }
 
-    /** @return the generated {@link Tree}s for a given {@link Tree}. */
-    public List<Tree> getGeneratedTrees(Tree tree) {
-        if (!useFlow) {
-            return Collections.emptyList();
+    /**
+     * Return the first {@link Node} for a given {@link Tree} that is not a {@link
+     * LambdaResultExpressionNode}. You probably don't want to use this function: iterate over the
+     * result of {@link #getNodesForTree(Tree)} yourself or ask for a conservative approximation of
+     * the store using {@link #getStoreBefore(Tree)} or {@link #getStoreAfter(Tree)}. This method is
+     * for code that uses a {@link Node} in a rather unusual way. Callers should probably be
+     * rewritten to not use a {@link Node} at all.
+     *
+     * @see #getNodesForTree(Tree)
+     * @see #getStoreBefore(Tree)
+     * @see #getStoreAfter(Tree)
+     * @return the first {@link Node} for a given {@link Tree} that is not a {@link
+     *     LambdaResultExpressionNode}.
+     */
+    public Node getFirstNonLambdaResultExpressionNodeForTree(Tree tree) {
+        Set<Node> nodes = getNodesForTree(tree);
+        for (Node node : nodes) {
+            if (!(node instanceof LambdaResultExpressionNode)) {
+                return node;
+            }
         }
-        return flowResult.getGeneratedTrees(tree);
+        return null;
     }
 
     /** @return the value of effectively final local variables */
@@ -1055,7 +1112,7 @@ public abstract class GenericAnnotatedTypeFactory<
                             false);
                 }
 
-                while (lambdaQueue.size() > 0) {
+                while (!lambdaQueue.isEmpty()) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(
                             queue,
@@ -1295,24 +1352,34 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
 
-        Node node;
-        List<Node> args;
-        switch (tree.getKind()) {
-            case METHOD_INVOCATION:
-                node = getNodeForTree(tree);
-                args = ((MethodInvocationNode) node).getArguments();
-                break;
-            case NEW_CLASS:
-                node = getNodeForTree(tree);
-                args = ((ObjectCreationNode) node).getArguments();
-                break;
-            default:
-                throw new AssertionError("Unexpected kind of tree: " + tree);
-        }
+        Set<Node> nodes = getNodesForTree(tree);
+        AnnotatedTypeMirror merged = null;
+        for (Node node : nodes) {
+            if (node instanceof LambdaResultExpressionNode) {
+                continue;
+            }
+            List<Node> args;
+            switch (tree.getKind()) {
+                case METHOD_INVOCATION:
+                    args = ((MethodInvocationNode) node).getArguments();
+                    break;
+                case NEW_CLASS:
+                    args = ((ObjectCreationNode) node).getArguments();
+                    break;
+                default:
+                    throw new AssertionError("Unexpected kind of tree: " + tree);
+            }
 
-        assert !args.isEmpty() : "Arguments are empty";
-        Node varargsArray = args.get(args.size() - 1);
-        return getAnnotatedType(varargsArray.getTree());
+            assert !args.isEmpty() : "Arguments are empty";
+            Node varargsArray = args.get(args.size() - 1);
+            AnnotatedTypeMirror varargtype = getAnnotatedType(varargsArray.getTree());
+            if (merged == null) {
+                merged = varargtype;
+            } else {
+                merged = AnnotatedTypes.leastUpperBound(this, merged, varargtype);
+            }
+        }
+        return merged;
     }
 
     /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
