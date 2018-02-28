@@ -1,4 +1,3 @@
-// @below-java8-jdk-skip-test
 
 class InLambda {
     static class Mine<T> {

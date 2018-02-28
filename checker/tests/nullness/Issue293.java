@@ -1,6 +1,5 @@
 // Test for Issue 293:
 // https://github.com/typetools/checker-framework/issues/293
-// @skip-test until issue is fixed
 
 class Issue293 {
     void test1() {
