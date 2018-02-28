@@ -14,6 +14,18 @@ class Issue1797 {
         }
     }
 
+    void fooWhileReturn(@Nullable Object o) {
+        while (this.hashCode() < 5) {
+            try {
+                return;
+            } finally {
+                if (o != null) {
+                    o.toString();
+                }
+            }
+        }
+    }
+
     void fooReturnNested(@Nullable Object o) {
         while (this.hashCode() < 10) {
             while (this.hashCode() < 5) {
@@ -23,7 +35,7 @@ class Issue1797 {
                     if (o != null) {
                         o.toString();
                     }
-                    // TODO: should go to exit, not either loop!
+                    // go to exit, not either loop
                 }
             }
         }
@@ -51,7 +63,7 @@ class Issue1797 {
                     if (o != null) {
                         o.toString();
                     }
-                    // TODO: this should continue after outer
+                    // continue after outer
                 }
             }
         }
@@ -65,17 +77,17 @@ class Issue1797 {
                 while (this.hashCode() < 5) {
                     if (this.hashCode() < 2) {
                         break outer;
-                        // TODO: should go to finally
+                        // go to finally
                     } else {
                         break inner;
-                        // TODO: should not go to finally
+                        // do not go to finally
                     }
                 }
             } finally {
                 if (o != null) {
                     o.toString();
                 }
-                // TODO: this should continue either at outer or after outer
+                // continue either at outer or after outer
             }
         }
     }
@@ -91,7 +103,7 @@ class Issue1797 {
                     if (o != null) {
                         o.toString();
                     }
-                    // TODO: this should continue at outer
+                    // continue at outer
                 }
             }
         }
@@ -170,10 +182,77 @@ class Issue1797 {
                     if (o != null) {
                         o.toString();
                     }
-                    // TODO: should go to return 5, not either loop!
+                    // goes to return 5, not either loop!
                 }
             }
         }
         return 10;
+    }
+
+    @FunctionalInterface
+    interface NullableParamFunction {
+        String takeVal(@Nullable Object x);
+    }
+
+    void testLambda() {
+        NullableParamFunction n1 = (@Nullable Object x) -> (x == null) ? "null" : x.toString();
+        try {
+            NullableParamFunction n2 = (@Nullable Object x) -> (x == null) ? "null" : x.toString();
+        } finally {
+            NullableParamFunction n3 = (x) -> (x == null) ? "null" : x.toString();
+        }
+    }
+
+    boolean nestedCFGConstructionTest(@Nullable Object o) {
+        boolean result = true;
+        java.io.BufferedWriter out = null;
+        try {
+            try {
+            } finally {
+                out = new java.io.BufferedWriter(new java.io.OutputStreamWriter(System.err));
+            }
+            if (o != null) {
+                o.toString();
+                out.write(' ');
+            }
+        } catch (Exception e) {
+        } finally {
+        }
+        return result;
+    }
+
+    void nestedTryFinally() {
+        try {
+            try {
+            } finally {
+            }
+        } finally {
+        }
+    }
+
+    boolean nestedCFGConstructionTest2() throws java.io.IOException {
+        java.io.BufferedWriter out =
+                new java.io.BufferedWriter(new java.io.OutputStreamWriter(System.err));
+        try {
+            try {
+                return true;
+            } finally {
+            }
+        } finally {
+            out.write(' ');
+            out.close();
+        }
+    }
+
+    void nestedTryFinally2(java.io.BufferedWriter out) throws java.io.IOException {
+        try {
+            try {
+                return;
+            } finally {
+            }
+        } finally {
+            out.write(' ');
+            out.close();
+        }
     }
 }

@@ -1,19 +1,18 @@
 package org.checkerframework.dataflow.util;
 
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.ArrayList;
 
 /**
- * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
- * object comparison and a {@link HashSet} for backing storage.
+ * A set that is more efficient than HashSet for 0 and 1 elements. Uses objects identity for object
+ * comparison and an {@link ArrayList} for backing storage.
  */
-public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
+public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T> {
 
-    public MostlySingleton() {
+    public IdentityMostlySingleton() {
         this.state = State.EMPTY;
     }
 
-    public MostlySingleton(T value) {
+    public IdentityMostlySingleton(T value) {
         this.state = State.SINGLETON;
         this.value = value;
     }
@@ -28,7 +27,7 @@ public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
                 return true;
             case SINGLETON:
                 state = State.ANY;
-                set = new HashSet<T>();
+                set = new ArrayList<T>();
                 set.add(value);
                 value = null;
                 // fallthrough
@@ -45,7 +44,7 @@ public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
             case EMPTY:
                 return false;
             case SINGLETON:
-                return Objects.equals(o, value);
+                return o == value;
             case ANY:
                 return set.contains(o);
             default:
