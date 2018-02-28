@@ -1,5 +1,6 @@
 package org.checkerframework.checker.optional;
 
+import java.util.Optional;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 
