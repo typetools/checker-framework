@@ -6,7 +6,7 @@
         as parameters and they do not depend on any other target.
     </description>
 
-    <property file="release/release.properties"/>
+    <property file="docs/developer/release/release.properties"/>
     <!-- Todays date -->
     <tstamp>
         <format property="release.date" pattern="d MMM yyyy"/>
