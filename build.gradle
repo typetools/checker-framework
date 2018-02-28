@@ -31,6 +31,7 @@ allprojects {
     apply plugin: 'net.ltgt.errorprone-base'
 
     ext {
+        release = false
         // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
         toolsJar = Jvm.current().toolsJar.path
         assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
@@ -232,7 +233,11 @@ subprojects {
 
     shadowJar {
         // Relocate JavaParser:
-        relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
+        doFirst {
+            if (release) {
+                relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
+            }
+        }
 
         // These appear in annotation-file-utilities.jar:
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
