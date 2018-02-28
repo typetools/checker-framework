@@ -1,6 +1,5 @@
 // Test case for issue 529:
 // https://github.com/typetools/checker-framework/issues/529
-// @below-java8-jdk-skip-test
 
 import java.util.List;
 import java.util.stream.*;

@@ -1,8 +1,6 @@
 // Test case for Issue 1098:
 // https://github.com/typetools/checker-framework/issues/1098
 
-// @below-java8-jdk-skip-test
-
 import java.util.Optional;
 
 class Issue1098 {

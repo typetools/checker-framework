@@ -1,6 +1,5 @@
 // Test case for Issue 1424.
 // https://github.com/typetools/checker-framework/issues/1424
-// @below-java8-jdk-skip-test
 
 @SuppressWarnings("unchecked")
 abstract class Issue1424 {

@@ -1,6 +1,5 @@
 // Test case for issue #720:
 // https://github.com/typetools/checker-framework/issues/720
-// @below-java8-jdk-skip-test
 
 import java.util.function.IntConsumer;
 

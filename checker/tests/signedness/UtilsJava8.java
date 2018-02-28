@@ -1,4 +1,3 @@
-// @below-java8-jdk-skip-test
 
 import org.checkerframework.checker.signedness.qual.*;
 
