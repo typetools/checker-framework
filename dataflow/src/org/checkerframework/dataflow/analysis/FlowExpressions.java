@@ -728,18 +728,23 @@ public class FlowExpressions {
             if (obj == null || !(obj instanceof LocalVariable)) {
                 return false;
             }
+
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
+            // The code below isn't just return vs.equals(vsother) because an element might be different
+            // between subcheckers.
+
             // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of
             // Types.isSameType(...) because Types requires a processing environment, and
             // FlowExpressions is designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name)
+                    && vsother.owner.toString().equals(vs.owner.toString())
+                    && vs.pos == vsother.pos
                     && TypeAnnotationUtils.unannotatedType(vsother.type)
                             .toString()
-                            .equals(TypeAnnotationUtils.unannotatedType(vs.type).toString())
-                    && vsother.owner.toString().equals(vs.owner.toString());
+                            .equals(TypeAnnotationUtils.unannotatedType(vs.type).toString());
         }
 
         public Element getElement() {
