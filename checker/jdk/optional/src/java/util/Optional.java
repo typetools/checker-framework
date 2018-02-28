@@ -29,7 +29,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-
+import org.checkerframework.checker.optional.qual.Present;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
 /**
  * A container object which may or may not contain a non-null value.
@@ -49,7 +50,7 @@ import java.util.function.Supplier;
  *
  * @since 1.8
  */
-public final class Optional<T> {
+public final class Optional<T extends Object> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -82,7 +83,7 @@ public final class Optional<T> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static<T> Optional<T> empty() {
+    public static <T extends Object> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -106,7 +107,7 @@ public final class Optional<T> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T> Optional<T> of(T value) {
+    public static <T extends Object> @Present Optional<T> of(T value) {
         return new Optional<>(value);
     }
 
@@ -119,7 +120,7 @@ public final class Optional<T> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T> Optional<T> ofNullable(T value) {
+    public static <T extends Object> Optional<T> ofNullable(T value) {
         return value == null ? empty() : of(value);
     }
 
@@ -132,7 +133,7 @@ public final class Optional<T> {
      *
      * @see Optional#isPresent()
      */
-    public T get() {
+    public T get(@Present Optional<T> this) {
         if (value == null) {
             throw new NoSuchElementException("No value present");
         }
@@ -144,6 +145,7 @@ public final class Optional<T> {
      *
      * @return {@code true} if there is a value present, otherwise {@code false}
      */
+    @EnsuresQualifierIf(result = true, expression = "this", qualifier = Present.class)
     public boolean isPresent() {
         return value != null;
     }
@@ -285,7 +287,7 @@ public final class Optional<T> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable> T orElseThrow(@Present Optional<T> this, Supplier<? extends X> exceptionSupplier) throws X {
         if (value != null) {
             return value;
         } else {

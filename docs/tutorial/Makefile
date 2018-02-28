@@ -8,7 +8,7 @@ ZIPFILES = sourcefiles.zip
 
 all: ${ZIPFILES}
 
-sourcefiles.zip: copy-checker-qual clean-classes
+sourcefiles.zip: clean-classes
 	rm -f src/README.txt
 	cp -pf README-sourcefiles.txt src/README.txt
 	zip -r sourcefiles.zip src/
