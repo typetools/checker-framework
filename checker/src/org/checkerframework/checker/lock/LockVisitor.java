@@ -48,8 +48,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
@@ -424,7 +422,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
-        if (atypeFactory.getNodeForTree(tree) instanceof FieldAccessNode) {
+        if (TreeUtils.isFieldAccess(tree)) {
             AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
             // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
             // it.
@@ -1091,11 +1089,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-        Node node = atypeFactory.getNodeForTree(tree);
-        if (node instanceof FieldAccessNode) {
-            Node receiverNode = ((FieldAccessNode) node).getReceiver();
-            if (receiverNode instanceof ImplicitThisLiteralNode) {
-                // All other field access are handle via visitMemberSelect
+        // If the identifier is a field accessed via an implicit this,
+        // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.
+        if (TreeUtils.isFieldAccess(tree)) {
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            // If the parent is not a member select, or if it is, but the field is the expression,
+            // then the field is accessed via an implicit this.
+            if (parent.getKind() != Kind.MEMBER_SELECT
+                    || ((MemberSelectTree) parent).getExpression() == tree) {
                 AnnotationMirror guardedBy =
                         atypeFactory
                                 .getSelfType(tree)
@@ -1205,14 +1206,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             return;
         }
 
-        Node node = atypeFactory.getNodeForTree(tree);
-
-        List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, node);
+        List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, tree);
         if (expressions.isEmpty()) {
             return;
         }
 
-        LockStore store = atypeFactory.getStoreBefore(node);
+        LockStore store = atypeFactory.getStoreBefore(tree);
         for (LockExpression expression : expressions) {
             if (expression.error != null) {
                 checker.report(
@@ -1253,7 +1252,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     private List<LockExpression> getLockExpressions(
-            boolean implicitThis, AnnotationMirror gbAnno, Node node) {
+            boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
@@ -1272,6 +1271,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
 
+        Node node = atypeFactory.getNodeForTree(tree);
         Receiver self =
                 implicitThis ? pseudoReceiver : FlowExpressions.internalReprOf(atypeFactory, node);
 

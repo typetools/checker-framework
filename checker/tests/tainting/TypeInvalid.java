@@ -11,48 +11,48 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 
 abstract class TypeInvalid {
     // Duplication forbidden
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     void bad(@Tainted @Untainted TypeInvalid c) {
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         Object o = new @Tainted @Untainted Object();
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         o = new @Tainted @Untainted Object();
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         o = o.equals(new @Tainted @Untainted Object());
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         o = (Object) new @Tainted @Untainted Object();
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         o = (@Tainted @Untainted TypeInvalid) o;
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         o = (new @Tainted @Untainted Object()) instanceof Object;
-        // :: error: (type.invalid)
+        // :: error: (type.invalid.conflicting.annos)
         o = o instanceof @Tainted @Untainted TypeInvalid;
     }
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     @Tainted @Untainted Object bar() {
         return null;
     }
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     abstract @Tainted @Untainted Object absbar();
 
     void voidmethod() {}
 
     TypeInvalid() {}
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     @Tainted @Untainted TypeInvalid(int p) {}
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     void recv(@Tainted @Untainted TypeInvalid this) {}
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     @Tainted @Untainted Object field;
 
     // TODO: Note the error marker positions for the errors on fields
     // and method return types. Maybe these should be improved.
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     void athro() throws @Tainted @Untainted Exception {}
 }

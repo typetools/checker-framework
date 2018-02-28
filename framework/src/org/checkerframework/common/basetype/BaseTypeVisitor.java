@@ -38,7 +38,6 @@ import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.TreeInfo;
-import java.lang.SuppressWarnings;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,7 +68,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1093,15 +1091,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (preconditions.isEmpty()) {
             return;
         }
-
-        Node node = atypeFactory.getNodeForTree(tree);
-
         FlowExpressionContext flowExprContext =
-                FlowExpressionContext.buildContextForMethodUse(
-                        (MethodInvocationNode) node, checker.getContext());
+                FlowExpressionContext.buildContextForMethodUse(tree, checker.getContext());
 
         if (flowExprContext == null) {
-            checker.report(Result.failure("flowexpr.parse.context.not.determined", node), tree);
+            checker.report(Result.failure("flowexpr.parse.context.not.determined", tree), tree);
             return;
         }
 
@@ -1116,7 +1110,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
 
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
                 CFAbstractValue<?> value = store.getValue(expr);
 
@@ -3508,15 +3502,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param tree the type tree supplied by the user
      * @param type the type corresponding to tree
      */
-    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
-        // basic consistency checks
-        if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type)) {
-            checker.report(
-                    Result.failure("type.invalid", type.getAnnotations(), type.toString()), tree);
-            return false;
-        }
-
-        // more checks (also specific to checker, potentially)
+    protected boolean validateType(Tree tree, AnnotatedTypeMirror type) {
         return typeValidator.isValid(type, tree);
     }
 
