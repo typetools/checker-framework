@@ -954,6 +954,30 @@ public abstract class GenericAnnotatedTypeFactory<
         return flowResult.getNodesForTree(tree);
     }
 
+    /**
+     * Return the first {@link Node} for a given {@link Tree} that is not a {@link
+     * LambdaResultExpressionNode}. You probably don't want to use this function: iterate over the
+     * result of {@link #getNodesForTree(Tree)} yourself or ask for a conservative approximation of
+     * the store using {@link #getStoreBefore(Tree)} or {@link #getStoreAfter(Tree)}. This method is
+     * for code that uses a {@link Node} in a rather unusual way. Callers should probably be
+     * rewritten to not use a {@link Node} at all.
+     *
+     * @see #getNodesForTree(Tree)
+     * @see #getStoreBefore(Tree)
+     * @see #getStoreAfter(Tree)
+     * @return the first {@link Node} for a given {@link Tree} that is not a {@link
+     *     LambdaResultExpressionNode}.
+     */
+    public Node getFirstNonLambdaResultExpressionNodeForTree(Tree tree) {
+        Set<Node> nodes = getNodesForTree(tree);
+        for (Node node : nodes) {
+            if (!(node instanceof LambdaResultExpressionNode)) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     /** @return the value of effectively final local variables */
     public HashMap<Element, Value> getFinalLocalValues() {
         return flowResult.getFinalLocalValues();
