@@ -1,4 +1,5 @@
 import java.util.Optional;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 
 /** Test JDK annotations. */

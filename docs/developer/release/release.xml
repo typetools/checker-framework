@@ -107,7 +107,6 @@
         <property name="cf.docs"             value="${checker}/../docs"                      />
         <property name="checker.manual"      value="${cf.docs}/manual"                       />
         <property name="cf.docs.examples"    value="${cf.docs}/examples"                     />
-        <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
         <property name="checker.tutorial"    value="${cf.docs}/tutorial"                     />
         <property name="checker.release"     value="${checker}/../release"                   />
         <property name="checkerWebPage"      value="${cf.docs}/checker-framework-webpage.html" />

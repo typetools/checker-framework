@@ -1,4 +1,4 @@
-<project name="personalblog" basedir="../eclipse-projects/personalblog-demo/" default="check-tutorial">
+<project name="personalblog" basedir="../src/personalblog-demo/" default="check-tutorial">
 
     <property file="../../../build-common.properties"/>
     <import file="ant.xml"/>
