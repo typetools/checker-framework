@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.analysis;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
@@ -12,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -118,7 +115,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ A getValue(Node n) {
+    public @Nullable A getValue(Node n) {
         return nodeValues.get(n);
     }
 
@@ -126,7 +123,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ A getValue(Tree t) {
+    public @Nullable A getValue(Tree t) {
         Set<Node> nodes = treeLookup.get(t);
 
         if (nodes == null) {
@@ -167,7 +164,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      *
      * @return the set of {@link Node}s for a given {@link Tree}.
      */
-    public /*@Nullable*/ Set<Node> getNodesForTree(Tree tree) {
+    public @Nullable Set<Node> getNodesForTree(Tree tree) {
         return treeLookup.get(tree);
     }
 
