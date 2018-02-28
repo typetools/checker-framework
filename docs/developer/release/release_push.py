@@ -408,7 +408,8 @@ def main(argv):
             javac_sanity_check(live_checker_website, new_checker_version)
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
                 execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
-            execute("sh ../../checker-framework/release/test-checker-framework.sh " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+            sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
+            execute("sh" + sanity_test_script + " " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             # Ensure that the jsr308-langtools javac works with the system-wide java launcher
             if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
                 execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)

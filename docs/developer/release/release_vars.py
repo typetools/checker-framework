@@ -69,7 +69,7 @@ USER = pwd.getpwuid(os.geteuid())[0]
 TMP_DIR = "/scratch/" + USER + "/jsr308-release"
 
 # Location this and other release scripts are contained in
-SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
+SCRIPTS_DIR = TMP_DIR + "/checker-framework/docs/developer/release"
 
 # Location in which we will download files to run sanity checks
 SANITY_DIR = TMP_DIR + "/sanity"
