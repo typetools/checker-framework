@@ -148,7 +148,7 @@ If capture_output is not true, return the return code of the subprocess call."""
     else:
         result = subprocess.call(args, cwd=working_dir)
         if halt_if_fail and result:
-            raise Exception('Error %s while executing %s' % (result, command_args))
+            raise Exception('Error %s while executing %s' % (result, args))
         return result
 
 def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
