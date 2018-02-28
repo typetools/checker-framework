@@ -35,4 +35,4 @@ fi
 
 
 # TODO: should do this only if some file named PluginUtil.java has changed.
-release/checkPluginUtil.sh
+docs/developer/release/checkPluginUtil.sh
