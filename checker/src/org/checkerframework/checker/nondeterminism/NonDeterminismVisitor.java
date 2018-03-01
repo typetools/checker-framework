@@ -33,9 +33,11 @@ public class NonDeterminismVisitor extends BaseTypeVisitor<NonDeterminismAnnotat
         DeclaredType javaType = useType.getUnderlyingType();
 
         if (useType.hasAnnotation(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
-            if (!(isCollection(javaType.asElement().asType())))
+            if (!(isCollection(javaType.asElement().asType()))) {
                 checker.report(
                         Result.failure("OrderNonDet - can only be used with collections"), tree);
+                return false;
+            }
         }
 
         //Sets and lists
@@ -54,10 +56,11 @@ public class NonDeterminismVisitor extends BaseTypeVisitor<NonDeterminismAnnotat
                                             + " collection of "
                                             + paramAnnotation),
                             tree);
+                return false;
             }
         }
 
-        return super.isValidUse(declarationType, useType, tree);
+        return true;
     }
 
     private boolean isAnnoSubType(AnnotationMirror baseAnno, AnnotationMirror paramAnno) {
@@ -173,13 +176,9 @@ public class NonDeterminismVisitor extends BaseTypeVisitor<NonDeterminismAnnotat
 
     @Override
     protected TypeValidator createTypeValidator() {
-        // TODO Auto-generated method stub
         return new BaseTypeValidator(checker, this, atypeFactory) {
             @Override
-            protected void reportInvalidAnnotationsOnUse(AnnotatedTypeMirror type, Tree p) {
-
-                // TODO Auto-generated method stub
-            }
+            protected void reportInvalidAnnotationsOnUse(AnnotatedTypeMirror type, Tree p) {}
         };
     }
 }

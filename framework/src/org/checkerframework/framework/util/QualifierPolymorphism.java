@@ -134,6 +134,34 @@ public class QualifierPolymorphism {
         this.completer = new Completer();
     }
 
+    /**
+     * Creates a {@link QualifierPolymorphism} instance that uses the given checker for querying
+     * type qualifiers and the given factory for getting annotated types. Uses the specified {@code
+     * polyQuals} instead of finding them automatically.
+     *
+     * @param env the processing environment
+     * @param factory the factory for the current checker
+     * @param polyQuals mapping from top annotation to polymorphic annotation
+     */
+    protected QualifierPolymorphism(
+            ProcessingEnvironment env,
+            AnnotatedTypeFactory factory,
+            Map<AnnotationMirror, AnnotationMirror> polyQuals) {
+        this.atypeFactory = factory;
+
+        this.types = env.getTypeUtils();
+
+        Elements elements = env.getElementUtils();
+        POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
+        this.qualhierarchy = factory.getQualifierHierarchy();
+
+        this.polyQuals = polyQuals;
+        this.topQuals = qualhierarchy.getTopAnnotations();
+
+        this.collector = new PolyCollector();
+        this.completer = new Completer();
+    }
+
     public static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
         if (qual == null) {
             return null;
