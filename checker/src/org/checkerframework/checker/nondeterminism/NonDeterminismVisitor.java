@@ -136,34 +136,6 @@ public class NonDeterminismVisitor extends BaseTypeVisitor<NonDeterminismAnnotat
         return super.isValidUse(type, tree);
     }
 
-    /*
-    @Override
-    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-    	Tree receiverTree = TreeUtils.getReceiverTree(node);
-    	if(receiverTree != null) {
-    		if(atypeFactory.getAnnotatedType(node).getAnnotations().size() > 0) {
-    			AnnotationMirror returnAnno = atypeFactory.getAnnotatedType(node).getAnnotations().iterator().next();
-    			checker.report(Result.warning(">>>  " + returnAnno + " " + atypeFactory.getAnnotatedType(node).getAnnotations().size()), node);
-    			AnnotationMirror Ond2DTypeMirror = AnnotationBuilder.fromClass(elements, PolyOnd2D.class);
-    			if(types.isSameType(returnAnno.getAnnotationType(), Ond2DTypeMirror.getAnnotationType())) {
-    				TypeMirror receiverType = atypeFactory.getNodeForTree(receiverTree).getType();
-    				AnnotationMirror receiverAnno = atypeFactory.getAnnotatedType(receiverTree).getAnnotations().iterator().next();
-    				AnnotationMirror OrderNonDetTypeMirror = AnnotationBuilder.fromClass(elements, OrderNonDet.class);
-    				if(types.isSameType(receiverAnno.getAnnotationType(), OrderNonDetTypeMirror.getAnnotationType())) {
-    					AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(node);
-    					atm.clearAnnotations();
-    					checker.report(Result.warning("old anno " + atm.getAnnotations().size()), node);
-    					atm.addAnnotation(AnnotationBuilder.fromClass(elements, Det.class));
-    					checker.report(Result.warning("new anno" + atm.getAnnotations().iterator().next()), node);
-    				}
-    			}
-
-    		}
-    	}
-    	return super.visitMethodInvocation(node, p);
-    }
-    */
-
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,

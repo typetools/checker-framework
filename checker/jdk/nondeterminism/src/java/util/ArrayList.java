@@ -455,7 +455,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param e element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      */
-    public @PolyDet boolean add(@PolyDet ArrayList<E> this, E e) {
+    public @Ond2D @PolyDet boolean add(@PolyDet ArrayList<E> this, E e) {
         ensureCapacityInternal(size + 1);  // Increments modCount!!
         elementData[size++] = e;
         return true;

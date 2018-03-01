@@ -236,7 +236,7 @@ public interface List<E> extends Collection<E> {
      * @throws IllegalArgumentException if some property of this element
      *         prevents it from being added to this list
      */
-    @PolyDet boolean add(@PolyDet List<@Det E>this, @Det E e);
+    @Ond2D @PolyDet boolean add(@PolyDet List<@PolyDet2 E>this, @PolyDet2 E e);
 
     /**
      * Removes the first occurrence of the specified element from this list,

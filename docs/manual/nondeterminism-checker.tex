@@ -1,9 +1,9 @@
 \htmlhr
-\chapter{NonDeterminism Checker\label{nondeterminism-checker}}
+\chapter{Nondeterminism Checker\label{nondeterminism-checker}}
 When a program produces diverging outputs across executions on the same input, developers
 have a hard time debugging such programs. 
 The non-determinism checker identifies locations in source code that might result in different execution outcomes. 
-In particular, it checks for non-determinism that pertains to the use of JAVA Collections.
+In particular, it checks for non-determinism that pertains to the use of Java Collections.
 Consider the following example:
 \begin{Verbatim}
 	Set<Integer> st = new HashSet<Integer>(); 
@@ -18,14 +18,14 @@ Consider the following example:
 The code above is non-deterministic because a HashSet is not ordered and its elements could be printed in different orders across executions.
 On the other hand, certain Set functions like 'contains' always return deterministic results.
 
-To run the NonDeterminism Checker, supply the
+To run the Nondeterminism Checker, supply the
 \code{-processor NonDeterminismChecker}
 command-line option to javac.
 For example: ./bin/javac -cp NonDetTypeChecker/jsr308/checker-framework/checker/build -processor org.checkerframework.checker.nondeterminism.NonDeterminismChecker NDCheckerTest/src/TestListUnsafe2.java
 
-\section{NonDeterminism annotations for collections\label{nondeterminism-annotations-collections}}
+\section{Nondeterminism annotations for collections\label{nondeterminism-annotations-collections}}
 
-The NonDeterminism type system uses the following annotations:
+The Nondeterminism type system uses the following annotations:
 \begin{itemize}
 \item
   \refqualclass{checker/nondeterminism/qual}{ValueNonDet} indicates
@@ -44,7 +44,7 @@ The NonDeterminism type system uses the following annotations:
   polymorphic over nondeterminism (see Section~\ref{qualifier-polymorphism}).
 \end{itemize}
 
-\section{NonDeterminism annotations for all other types\label{nondeterminism-annotations-elements}}
+\section{Nondeterminism annotations for all other types\label{nondeterminism-annotations-elements}}
 
 \begin{itemize}
 \item
@@ -61,7 +61,7 @@ Note that non-collections may not be annotated as \code{@OrderNonDet}
 The annotations on Collections must satisfy the constraint that the annotation on type parameter of a Collection must be a
 subtype of the annotation on the Collection itself. Here are a few examples illustrating this.
 
-\subsection{Examples\label{SubSec:ex}}
+\subsection{Examples\label{validity-examples}}
 \begin{figure}[h]\caption{Valid types}
 	\begin{enumerate}
 		\item @Det List<@Det Integer> 
@@ -110,8 +110,8 @@ Type outer\_type( Type tx )
 }
 \end{verbatim}
 
-\section{Library Annotations\label{Sec:LibAnno}}
-\subsection{Methods common to Lists and Sets\label{SubSec:methods}}
+\section{Library Annotations\label{library-Annotations}}
+\subsection{Methods common to Lists and Sets\label{lib-methods}}
 In the type annotations that follow, @Poly and @Poly2 are polymorphic annotations. The $\downarrow$ is a function
 that converts @OrderNonDet to @Det. It leaves the other annotations unchanged. For instance, if @Poly turns out to be
 @OrderNonDet, @Poly$\downarrow$ converts it to @Det. 
@@ -123,7 +123,7 @@ that converts @OrderNonDet to @Det. It leaves the other annotations unchanged. F
 	\item[@Poly1$\downarrow$  int size (@Poly1 List <@Poly2 E> this)] 
 \end{description}
 
-\section{Error reporting\label{Sec:error}}
+\section{Error reporting\label{error-reporting}}
 In addition to its usual type mismatch errors, the checker reports the following:
 \begin{enumerate}
 	\item A \code{print} statement if any of its arguments has the type annotation @ValueNonDet or @OrderNonDet.	
