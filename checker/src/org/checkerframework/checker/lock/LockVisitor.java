@@ -1271,7 +1271,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
 
-        Node node = atypeFactory.getNodeForTree(tree);
+        Node node = atypeFactory.getFirstNonLambdaResultExpressionNodeForTree(tree);
         Receiver self =
                 implicitThis ? pseudoReceiver : FlowExpressions.internalReprOf(atypeFactory, node);
 

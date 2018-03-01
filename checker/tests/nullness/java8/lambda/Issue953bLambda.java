@@ -1,6 +1,5 @@
 // Test case for #953
 // https://github.com/typetools/checker-framework/issues/953
-// @below-java8-jdk-skip-test
 
 import java.util.ArrayList;
 import java.util.List;
