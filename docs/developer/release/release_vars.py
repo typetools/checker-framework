@@ -69,7 +69,7 @@ USER = pwd.getpwuid(os.geteuid())[0]
 TMP_DIR = "/scratch/" + USER + "/jsr308-release"
 
 # Location this and other release scripts are contained in
-SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
+SCRIPTS_DIR = TMP_DIR + "/checker-framework/docs/developer/release"
 
 # Location in which we will download files to run sanity checks
 SANITY_DIR = TMP_DIR + "/sanity"
@@ -105,7 +105,7 @@ EMAIL_TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegro
 # When we build these projects are pushed to the INTERM repositories.
 BUILD_DIR = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
-CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
+CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'docs/developer/release')
 CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
@@ -223,7 +223,7 @@ os.environ['PERLLIB'] = getAndAppend('PERLLIB', ":")  + perl_libs
 os.environ['PERL5LIB'] = getAndAppend('PERL5LIB', ":") + perl_libs
 # Still needed for santiy checks
 os.environ['JAVA_7_HOME'] = '/scratch/secs-jenkins/java/jdk1.7.0'
-os.environ['JAVA_8_HOME'] = '/scratch/secs-jenkins/java/jdk1.8.0'
+os.environ['JAVA_8_HOME'] = '/usr/lib/jvm/java-1.8.0-openjdk/'
 os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
 
 EDITOR = os.getenv('EDITOR')

@@ -1,0 +1,91 @@
+\htmlhr
+\chapter{Optional Checker for possibly-present data\label{optional-checker}}
+
+Java 8 introduced the \sunjavadoc{java/util/Optional.html}{Optional}
+class, a container that is either empty or contains a non-null value.
+
+Using \<Optional> is intended to help programmers remember to check whether
+data is present or not.  However, \<Optional> itself is prone to misuse.
+The article
+\href{https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{Nothing
+  is better than the \<Optional> type} gives reasons to use
+regular nullable references rather than \<Optional>.  However, if you do use
+\<Optional>, then the Optional Checker will help you avoid
+\<Optional>'s pitfalls.
+
+Stuart Marks gave
+\href{https://stuartmarks.wordpress.com/2016/09/27/vjug24-session-on-optional/}{7
+  rules} to avoid problems with Optional:
+\begin{enumerate}
+\item
+  Never, ever, use \<null> for an \<Optional> variable or return value.
+\item
+  Never use \sunjavadoc{java/util/Optional.html\#get--}{Optional.get()} unless you can prove that the Optional is present.
+\item
+  Prefer alternative APIs over
+  \sunjavadoc{java/util/Optional.html\#isPresent--}{Optional.isPresent()}
+  and \sunjavadoc{java/util/Optional.html\#get--}{Optional.get()}.
+\item
+  It's generally a bad idea to create an \<Optional> for the specific
+  purpose of chaining methods from it to get a value.
+\item
+  If an Optional chain has a nested \<Optional> chain, or has an
+  intermediate result of \<Optional>, it's probably too complex.
+\item
+  Avoid using \<Optional> in fields, method parameters, and collections.
+\item
+  Don't use an \<Optional> to wrap any collection type (\<List>, \<Set>,
+  \<Map>).  Instead, use an empty collection to represent the absence of
+  values.
+\end{enumerate}
+
+Rule \#1 is guaranteed by the Nullness Checker
+(\chapterpageref{nullness-checker}).
+Rules \#2--\#7 are guaranteed by the Optional Checker, described in this chapter.
+(Exception:  Rule \#5 is not yet implemented and will be checked by the
+Optional Checker in the future.)
+% They are all AST checks that would be easy to add later.
+
+Use of the Optional Checker guarantees that your program will not suffer a
+\<NullPointerException> nor a \<NoSuchElementException> when calling
+methods on an expression of \<Optional> type.
+
+
+\section{How to run the Optional Checker\label{optional-run-checker}}
+
+\begin{Verbatim}
+javac -processor optional MyFile.java ...
+\end{Verbatim}
+
+
+\section{Optional annotations\label{optional-annotations}}
+
+These qualifiers make up the Optional type system:
+
+\begin{description}
+
+% alternate name: PossiblyAbsent.  But, the Optional Javadoc is careful
+% never to use the term "absent", and it's nice parallelism to have
+% "Present" in the names of all the annotations.
+\item[\refqualclass{checker/optional/qual}{MaybePresent}]
+  The annotated \<Optional> container may or may not contain a value.
+  This is the default type.
+
+\item[\refqualclass{checker/optional/qual}{Present}]
+  The annotated \<Optional> container definitely contains a (non-null) value.
+
+\item[\refqualclass{checker/optional/qual}{PolyPresent}]
+  indicates qualifier polymorphism (see Section~\ref{qualifier-polymorphism}).
+
+\end{description}
+
+The subtyping hierarchy of the Optional Checker's qualifiers is shown in
+Figure~\ref{fig-optional-hierarchy}.
+
+\begin{figure}
+\includeimage{optional-subtyping}{3.5cm}
+\caption{The subtyping relationship of the Optional Checker's qualifiers.}
+\label{fig-optional-hierarchy}
+\end{figure}
+
+%  LocalWords:  isPresent

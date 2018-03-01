@@ -747,8 +747,8 @@ helpful if you:
   possibly other files as well.  Please attach the files, rather than
   pasting their contents into the body of your bug report or email message,
   because some mailers mangle formatting of pasted text.  If you
-  encountered a problem while using tool integration such as the Eclipse
-  plugin or Maven integration, then try to reproduce the problem from the
+  encountered a problem while using tool integration such as
+  Maven integration, then try to reproduce the problem from the
   command line as well --- this will indicate whether the problem is with
   the checker itself or with the tool integration.
 \item
@@ -1082,6 +1082,8 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 
 \subsection{Configure Eclipse to edit the Checker Framework\label{building-eclipse}}
 
+These instructions are relevant if you use Eclipse as your IDE\@.
+
 \begin{enumerate}
 \item Follow the instructions earlier in Section~\ref{build-source} to
 clone and build all projects from their sources.
@@ -1328,7 +1330,7 @@ is a verification tool that prevents or detects all errors of a given variety.  
 alternate approach is to use a bug detector such as
 \href{http://findbugs.sourceforge.net/}{FindBugs},
 \href{http://jlint.sourceforge.net/}{Jlint}, or
-\href{http://pmd.sourceforge.net/}{PMD}.
+\href{https://pmd.github.io}{PMD}.
 
 A pluggable type-checker or verifier
 differs from a bug detector in several ways:

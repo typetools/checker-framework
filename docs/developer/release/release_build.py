@@ -242,9 +242,6 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     if not manual_only:
-        # ensure all PluginUtil.java files are identical
-        execute("./checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
-
         # build the checker framework binaries and documents, run checker framework tests
         if notest:
             ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release-notest" % (ant_debug)
@@ -472,8 +469,6 @@ def main(argv):
             print "of checkers in these manual sections are up to date:"
             print " * Introduction"
             print " * Run-time tests and type refinement"
-            print "and make sure that the checkers supported in the Eclipse plug-in are up to date"
-            print "by following the instructions at eclipse/README-developers.html#update_checkers"
             print ""
 
             propose_documentation_change_review("the Checker Framework documentation updates", old_jsr308_version, CHECKER_FRAMEWORK,

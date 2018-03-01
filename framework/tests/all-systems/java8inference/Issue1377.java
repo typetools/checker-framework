@@ -1,6 +1,5 @@
 // Test case for Issue 1377.
 // https://github.com/typetools/checker-framework/issues/1377
-// @below-java8-jdk-skip-test
 
 interface Func1377<P, R> {
     R apply(P p);

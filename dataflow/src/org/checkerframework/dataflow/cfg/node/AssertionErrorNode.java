@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
@@ -59,7 +60,8 @@ public class AssertionErrorNode extends Node {
             return false;
         }
         AssertionErrorNode other = (AssertionErrorNode) obj;
-        return getCondition().equals(other.getCondition()) && getDetail().equals(other.getDetail());
+        return Objects.equals(getCondition(), other.getCondition())
+                && Objects.equals(getDetail(), other.getDetail());
     }
 
     @Override

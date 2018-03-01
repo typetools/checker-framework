@@ -160,7 +160,7 @@ def run_link_checker(site, output, additional_param=""):
     delete_if_exists(output)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
     cmd = ["sh", check_links_script, additional_param, site]
-    env = {"PLUME_BIN": "%s/bin" % PLUME_LIB}
+    env = {"CHECKLINK": CHECKLINK}
 
     out_file = open(output, 'w+')
 
@@ -254,7 +254,7 @@ def main(argv):
     development web site to Maven Central and to
     the live site. It also performs link checking on the live site, pushes
     the release to GitHub/Bitbucket repositories, and guides the user to
-    perform manual steps such as building the Eclipse plug-in and sending the
+    perform manual steps such as sending the
     release announcement e-mail."""
     # MANUAL Indicates a manual step
     # SEMIAUTO Indicates a mostly automated step with possible prompts. Most
@@ -330,8 +330,6 @@ def main(argv):
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
 
-    # NOTE: In this step you will also be prompted to build and manually test the Eclipse plugin.
-
     print_step("Push Step 3: Run development sanity tests") # SEMIAUTO
     if auto or prompt_yes_no("Perform this step?", True):
 
@@ -342,14 +340,6 @@ def main(argv):
         print_step("3b: Run Maven sanity test on development release.")
         if auto or prompt_yes_no("Run Maven sanity test on development repo?", True):
             maven_sanity_check("maven-dev", MAVEN_DEV_REPO, new_checker_version)
-
-        print_step("3c: Build the Eclipse plugin and test.")
-        print "Please download: https://checkerframework.org/dev/checker-framework-%s.zip" % new_checker_version
-        print("Use the jars in the dist directory along with the instructions at " +
-              "checker-framework/eclipse/README-developers.html to build the Eclipse plugin.\n" +
-              "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
-              "http://checker_framework.org/dev/tutorial/")
-        continue_or_exit("If the tutorial doesn't work, please abort the release and contact the appropriate developer.")
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
     # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
@@ -418,7 +408,8 @@ def main(argv):
             javac_sanity_check(live_checker_website, new_checker_version)
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
                 execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
-            execute("sh ../../checker-framework/release/test-checker-framework.sh " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+            sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
+            execute("sh " + sanity_test_script + " " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             # Ensure that the jsr308-langtools javac works with the system-wide java launcher
             if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
                 execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
@@ -427,17 +418,6 @@ def main(argv):
             execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
     else:
         print  "Test mode: Skipping javac sanity tests on the live release."
-
-    # You must manually deploy the Eclipse plugin. Follow the instructions at the prompt.
-
-    print_step("Push Step 7: Deploy the Eclipse Plugin to the live site.") # MANUAL
-    if not test_mode:
-        continue_or_exit("Follow the instruction under 'Releasing the Plugin' in checker-framework/eclipse/README-developers.html to " +
-                         "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
-                         "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
-                         "back out the release!\n")
-    else:
-        print  "Test mode: Skipping deployment of the Eclipse Plugin to the live site."
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/
@@ -450,7 +430,7 @@ def main(argv):
     # live site (the previous release). After step 5, these links point to the current
     # release and may be broken.
 
-    print_step("Push Step 8. Check live site links") # SEMIAUTO
+    print_step("Push Step 7. Check live site links") # SEMIAUTO
     if not test_mode:
         if auto or prompt_yes_no("Run link checker on LIVE site?", True):
             check_all_links(live_jsr308_website, live_afu_website, live_checker_website, "live", test_mode)
@@ -461,7 +441,7 @@ def main(argv):
     # repositories. This is the first irreversible change. After this point, you can no longer
     # backout changes and should do another release in case of critical errors.
 
-    print_step("Push Step 9. Push changes to repositories") # SEMIAUTO
+    print_step("Push Step 8. Push changes to repositories") # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
         if prompt_yes_no("Push the release to GitHub/Bitbucket repositories?  This is irreversible.", True):
@@ -475,7 +455,7 @@ def main(argv):
     # available to the Java community through the Central repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central repository.") # MANUAL
+    print_step("Push Step 9. Release staged artifacts in Central repository.") # MANUAL
     if test_mode:
         msg = ("Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "   +
                "To drop, log into https://oss.sonatype.org using your " +
@@ -489,35 +469,21 @@ def main(argv):
                "leave the \"Automatically drop\" box checked. For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
-    # TODO: fix this so that the maven plug-in directory is not included in the first place.
-
     print  msg
     prompt_to_continue()
 
     if test_mode:
-        msg = ("Test Mode: You are in test_mode.  If you built the Eclipse plugin on "   +
-               "your local machine, you may want to revert any files that were modified.")
+        print "Test complete"
     else:
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
-        print_step("Push Step 11. Announce the release.") # MANUAL
+        print_step("Push Step 10. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
                          "Note that this text may have changed since the last time a release was performed.\n" +
                          get_announcement_email(new_checker_version))
 
-        print_step("Push Step 12. Push Eclipse plugin files.") # MANUAL
-        msg = ("If you built the Eclipse plugin on your local machine, there are a few " +
-               "changed files with version number changes that need to be pushed.\n" +
-               "Do not push the .classpath file. The following files should be pushed:\n" +
-               "checker-framework-eclipse-feature/feature.xml\n" +
-               "checker-framework-eclipse-plugin/META-INF/MANIFEST.MF\n" +
-               "checker-framework-eclipse-update-site/site.xml")
-
-        print  msg
-        prompt_to_continue()
-
-        print_step("Push Step 13. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
+        print_step("Push Step 11. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
                "* Download the following files to your local machine." +
