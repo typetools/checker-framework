@@ -9,9 +9,6 @@ plugins {
 }
 apply plugin: "de.undercouch.download"
 
-group 'org.checkerframework'
-version '1.0-SNAPSHOT'
-
 repositories {
     jcenter()
     mavenCentral()
@@ -29,6 +26,13 @@ allprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: "de.undercouch.download"
     apply plugin: 'net.ltgt.errorprone-base'
+
+    group 'org.checkerframework'
+    version '2.5.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
 
     ext {
         release = false
