@@ -62,7 +62,5 @@ compileJava {
         '-AcheckPurityAnnotations',
         "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
     ]
-    options.fork = true
-    options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
   }
 }
