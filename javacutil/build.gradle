@@ -14,7 +14,8 @@ sourceSets {
     // Source set for the ManualTaglet
     taglet {
         java {
-            srcDirs = ['src/org/checkerframework/javacutil/dist']
+            srcDirs = ['src']
+            include 'org/checkerframework/javacutil/dist'
         }
     }
 }
