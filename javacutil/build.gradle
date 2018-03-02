@@ -15,7 +15,7 @@ sourceSets {
     taglet {
         java {
             srcDirs = ['src']
-            include 'org/checkerframework/javacutil/dist'
+            include '**/javacutil/dist'
         }
     }
 }
