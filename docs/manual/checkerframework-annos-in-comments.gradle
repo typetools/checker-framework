@@ -7,9 +7,6 @@ repositories {
 }
 
 configurations {
-  checkerFrameworkCheckerJar {
-    description = 'the Checker Framework, including the Type Annotations compiler'
-  }
   checkerFrameworkAnnotatedJDK {
     description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
   }
@@ -33,7 +30,6 @@ dependencies {
 //   ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
 //   checkerFrameworkAnnotatedJDK fileTree(dir: "${ext.checkerframeworkdist}", include: "jdk8.jar")
 //   checkerFrameworkJavac fileTree(dir: "${ext.checkerframeworkdist}", include: "javac.jar")
-//   checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: "checker.jar")
 //   compileOnly fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
 //   compile fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
 // }
