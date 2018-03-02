@@ -357,7 +357,20 @@ subprojects {
 
                 // Show the found unexpected diagnostics and expected diagnostics not found.
                 exceptionFormat "full"
-                events "passed", "skipped", "failed"
+                events "failed"
+            }
+            afterSuite { desc, result ->
+                if (desc.getClassName() != null) {
+                    long mils = result.getEndTime() - result.getStartTime()
+                    double seconds = mils / 1000.0
+
+                    println "Testsuite: ${desc.getClassName()}\n" +
+                            "Tests run: ${result.testCount}, " +
+                            "Failures: ${result.failedTestCount}, " +
+                            "Skipped: ${result.skippedTestCount}, " +
+                            "Time elapsed: ${seconds} sec\n"
+                }
+
             }
         }
 
