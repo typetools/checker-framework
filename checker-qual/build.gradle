@@ -12,8 +12,6 @@ task copySources(type:Copy){
     // TODO: Should we move this into a qual directory?
     include '**/PurityUnqualified.java'
 
-    // Mark files as read only
-    fileMode(0444)
     into file('src/main/java')
 }
 
