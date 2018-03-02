@@ -5,8 +5,14 @@ sourceSets {
         }
     }
 }
+
 task copySources(type:Copy){
     description 'Copy checker-qual source from other projects.'
+    doFirst {
+        // Delete the directory in case a previously copied file should no longer be in checker-qual
+        delete file('generated-src/')
+    }
+
     from files('../checker/src', '../dataflow/src', '../framework/src')
     include "**/FormatUtil.java"
     include "**/NullnessUtil.java"
@@ -28,4 +34,7 @@ task copySources(type:Copy){
 
 compileJava {
     dependsOn copySources
+}
+clean {
+    delete file('generated-src/')
 }
