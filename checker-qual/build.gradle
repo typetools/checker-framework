@@ -25,9 +25,8 @@ task copySources(type:Copy){
     // TODO: Should we move this into a qual directory?
     include '**/PurityUnqualified.java'
 
-    // Can't overwrite files that are marked as read only.
-    // https://github.com/gradle/gradle/issues/1544
-    // fileMode(0444)
+    // Make files read only.
+    fileMode(0444)
 
     into file('generated-src/')
 }
