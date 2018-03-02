@@ -15,7 +15,7 @@ sourceSets {
     taglet {
         java {
             srcDirs = ['src']
-            include '**/javacutil/dist'
+            include '**/javacutil/dist/**'
         }
     }
 }
