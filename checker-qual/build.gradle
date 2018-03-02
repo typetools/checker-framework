@@ -1,17 +1,22 @@
-sourceSets {
-    main {
-        java {
-            srcDirs = ['../checker/src', '../dataflow/src', '../framework/src']
-            include "**/FormatUtil.java"
-            include "**/NullnessUtil.java"
-            include "**/RegexUtil.java"
-            include "**/UnitsTools.java"
-            include "**/SignednessUtil.java"
-            include "**/I18nFormatUtil.java"
-            include '**/org/checkerframework/**/qual/*.java'
-            include '**/Opt.java'
-            // TODO: Should we move this into a qual directory?
-            include '**/PurityUnqualified.java'
-        }
-    }
+task copySources(type:Copy){
+    description 'Copy checker-qual source from other projects.'
+    from files('../checker/src', '../dataflow/src', '../framework/src')
+    include "**/FormatUtil.java"
+    include "**/NullnessUtil.java"
+    include "**/RegexUtil.java"
+    include "**/UnitsTools.java"
+    include "**/SignednessUtil.java"
+    include "**/I18nFormatUtil.java"
+    include '**/org/checkerframework/**/qual/*.java'
+    include '**/Opt.java'
+    // TODO: Should we move this into a qual directory?
+    include '**/PurityUnqualified.java'
+
+    // Mark files as read only
+    fileMode(0444)
+    into file('src/main/java')
+}
+
+compileJava {
+    dependsOn copySources
 }
