@@ -23,6 +23,10 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
 \item
+  \ahrefloc{optional-checker}{Optional Checker} for errors in using the
+  \sunjavadoc{java/util/Optional.html}{Optional} type (see
+  \chapterpageref{optional-checker})
+\item
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
@@ -204,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.3.2.zip}
+  \url{https://checkerframework.org/checker-framework-2.4.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -520,7 +524,7 @@ running your code, you can use either the annotated library or the regular
 distributed version of the library --- they behave identically.
 
 The annotated libraries appear in
-\ahref{https://search.maven.org/#search\%7Cga\%7C1\%7Cg\%3A\%22org.checkerframework.annotatedlib\%22}{the
+\ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
 
 \begin{itemize}

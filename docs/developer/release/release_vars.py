@@ -223,7 +223,7 @@ os.environ['PERLLIB'] = getAndAppend('PERLLIB', ":")  + perl_libs
 os.environ['PERL5LIB'] = getAndAppend('PERL5LIB', ":") + perl_libs
 # Still needed for santiy checks
 os.environ['JAVA_7_HOME'] = '/scratch/secs-jenkins/java/jdk1.7.0'
-os.environ['JAVA_8_HOME'] = '/scratch/secs-jenkins/java/jdk1.8.0'
+os.environ['JAVA_8_HOME'] = '/usr/lib/jvm/java-1.8.0-openjdk/'
 os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
 
 EDITOR = os.getenv('EDITOR')

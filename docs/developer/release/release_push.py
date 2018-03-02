@@ -160,7 +160,7 @@ def run_link_checker(site, output, additional_param=""):
     delete_if_exists(output)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
     cmd = ["sh", check_links_script, additional_param, site]
-    env = {"PLUME_BIN": "%s/bin" % PLUME_LIB}
+    env = {"CHECKLINK": CHECKLINK}
 
     out_file = open(output, 'w+')
 
@@ -409,7 +409,7 @@ def main(argv):
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
                 execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
-            execute("sh" + sanity_test_script + " " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+            execute("sh " + sanity_test_script + " " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             # Ensure that the jsr308-langtools javac works with the system-wide java launcher
             if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
                 execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
@@ -473,6 +473,7 @@ def main(argv):
     prompt_to_continue()
 
     if test_mode:
+        print "Test complete"
     else:
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
