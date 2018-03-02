@@ -54,6 +54,11 @@
 
     <target name="prep-all"
             description="Perform preparation useful for all projects">
+       <echo level="warning">
+****************************************************************************************************
+*********** Ant build files are deprecated and will be removed soon. Use Gradle instead. ***********
+****************************************************************************************************
+        </echo>
         <java fork="true"
               outputproperty="compiler.version"
               classpath="${javac.lib}"

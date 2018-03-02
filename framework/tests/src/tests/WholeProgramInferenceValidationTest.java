@@ -19,6 +19,13 @@ public class WholeProgramInferenceValidationTest extends CheckerFrameworkPerDire
         super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
     }
 
+    @Override
+    public void run() {
+        if (new File("tests/whole-program-inference/annotated/").exists()) {
+            super.run();
+        }
+    }
+
     @Parameters
     public static String[] getTestDirs() {
         return new String[] {"whole-program-inference/annotated/"};
