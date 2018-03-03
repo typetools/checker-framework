@@ -245,6 +245,7 @@ subprojects {
         // These appear in annotation-file-utilities.jar:
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
         relocate 'com.google', 'org.checkerframework.com.google'
+        relocate 'plume', 'org.checkerframework.plume'
     }
     artifacts {
         archives shadowJar
