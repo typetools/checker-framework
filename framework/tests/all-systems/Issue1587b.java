@@ -1,3 +1,5 @@
+// @skip-test
+
 abstract class Issue1587b {
 
     static class One implements Two<One, Three, Four, Four> {}

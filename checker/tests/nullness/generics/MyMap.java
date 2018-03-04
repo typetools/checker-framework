@@ -1,6 +1,8 @@
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// @skip-test issue with @KeyFor
+
 // Test case for Issue 173
 // https://github.com/typetools/checker-framework/issues/173
 public abstract class MyMap<K, V> implements Map<K, V> {

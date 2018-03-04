@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/1046
 // Addtional test case: checker/tests/nullness/java8/Issue1046.java
 
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -27,8 +28,8 @@ public class Issue1046Java7 {
 
         @Nullable Function<Object> NULL = null;
 
-        <T> void test2(@Nullable Function<? super @NonNull T> queue) {
-            Function<? super @NonNull T> x = (queue == null) ? NULL : queue;
+        <T> void test2(@Nullable Function<? super @KeyForBottom @NonNull T> queue) {
+            Function<? super @KeyForBottom @NonNull T> x = (queue == null) ? NULL : queue;
         }
     }
 }
