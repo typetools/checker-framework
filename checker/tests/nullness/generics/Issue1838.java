@@ -1,6 +1,5 @@
 // Test case for Issue 1838:
 // https://github.com/typetools/checker-framework/issues/1838
-// @skip-test Until issue is fixed
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +15,7 @@ class Issue1838 {
         list.add(null);
         List<List<@Nullable Object>> listList = new ArrayList<List<@Nullable Object>>();
         listList.add(list);
+        // :: error: (argument.type.incompatible)
         processElements(listList);
     }
 
