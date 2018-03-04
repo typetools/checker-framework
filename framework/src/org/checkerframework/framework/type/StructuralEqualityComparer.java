@@ -49,6 +49,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         this.visitHistory = typeargVisitHistory;
     }
 
+    // Fall-back for checker-framework-inference usage.
+    // Remove after CFI was adapted.
+    protected StructuralEqualityComparer(DefaultRawnessComparer fallback) {
+        this(fallback, new VisitHistory());
+    }
+
     @Override
     protected Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
         if (type1.atypeFactory.ignoreUninferredTypeArguments) {
