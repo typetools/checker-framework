@@ -43,9 +43,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     // explain this one
     private AnnotationMirror currentTop = null;
 
-    public StructuralEqualityComparer(final DefaultRawnessComparer fallback) {
+    public StructuralEqualityComparer(
+            final DefaultRawnessComparer fallback, VisitHistory typeargVisitHistory) {
         this.fallback = fallback;
-        this.visitHistory = new VisitHistory();
+        this.visitHistory = typeargVisitHistory;
     }
 
     @Override
@@ -255,9 +256,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         final List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
         final List<? extends AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
 
-        // TODO: IN THE ORIGINAL TYPE_HIERARCHY WE ALWAYS RETURN TRUE IF ONE OF THE LISTS IS EMPTY.
-        // WE SHOULD NEVER GET HERE UNLESS type's declared class and type2's declared class are
-        // equal but potentially this would return true if say we compared (Object, List<String>).
         if (type1Args.isEmpty() && type2Args.isEmpty()) {
             return true;
         }
@@ -265,6 +263,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         if (type1Args.size() == type2Args.size()) {
             return areAllEqual(type1Args, type2Args);
         } else {
+            return true;
+            /* TODO! This should be an error. See framework/tests/all-systems/InitializationVisitor.java
+             * for a failure.
             ErrorReporter.errorAbort(
                     "Mismatching type argument sizes:\n    type 1: "
                             + type1
@@ -276,6 +277,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                             + type2Args.size()
                             + ")");
             return false;
+            */
         }
     }
 

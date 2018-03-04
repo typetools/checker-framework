@@ -120,6 +120,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     protected AnnotationMirror currentTop;
 
     protected final VisitHistory visitHistory;
+    protected final VisitHistory typeargVisitHistory;
 
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
@@ -129,6 +130,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         this.checker = checker;
         this.qualifierHierarchy = qualifierHierarchy;
         this.visitHistory = new VisitHistory();
+        this.typeargVisitHistory = new VisitHistory();
         this.rawnessComparer = createRawnessComparer();
         this.equalityComparer = createEqualityComparer();
 
@@ -141,7 +143,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     public StructuralEqualityComparer createEqualityComparer() {
-        return new StructuralEqualityComparer(rawnessComparer);
+        return new StructuralEqualityComparer(rawnessComparer, typeargVisitHistory);
     }
 
     /**
@@ -279,9 +281,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             return true;
         }
 
-        // Remove for 1838 to work, but needed for other tests :-(
-        visitHistory.add(subtype, supertype, currentTop, true);
-
         Boolean result = isSubtype(subtype, supertype, currentTop);
         visitHistory.add(subtype, supertype, currentTop, result);
         return result;
@@ -339,11 +338,17 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             final AnnotatedTypeMirror inside,
             final AnnotatedTypeMirror outside,
             boolean canBeCovariant) {
+
         if (ignoreUninferredTypeArgument(inside) || ignoreUninferredTypeArgument(outside)) {
             return true;
         }
 
         if (outside.getKind() == TypeKind.WILDCARD) {
+            if (typeargVisitHistory.contains(inside, outside, currentTop)) {
+                return true;
+            }
+            typeargVisitHistory.add(inside, outside, currentTop, true);
+
             final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
 
             AnnotatedTypeMirror outsideWcUB = outsideWc.getExtendsBound();
