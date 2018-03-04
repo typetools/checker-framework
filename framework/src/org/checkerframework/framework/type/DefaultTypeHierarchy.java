@@ -328,8 +328,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *
      * @param inside the "subtype" type argument
      * @param outside the "supertype" type argument
-     * @param visited a history of type pairs that have been visited, used to halt on recursive
-     *     bounds
      * @param canBeCovariant whether or not type arguments are allowed to be covariant
      * @return true if inside is contained by outside OR, if canBeCovariant == true, inside is a
      *     subtype of outside
