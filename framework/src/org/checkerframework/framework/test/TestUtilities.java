@@ -27,14 +27,14 @@ import org.junit.Assert;
 public class TestUtilities {
 
     public static final boolean isJSR308Compiler;
-    public static final boolean isAtLeast8Jvm;
+    public static final boolean isAtLeast9Jvm;
 
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
         isJSR308Compiler = err.toString().contains("jsr308");
-        isAtLeast8Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 1.8d;
+        isAtLeast9Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 1.9d;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {
@@ -168,8 +168,8 @@ public class TestUtilities {
         }
 
         // We could implement special filtering based on directory names,
-        // but I prefer using @below-java8-jdk-skip-test
-        // if (!isAtLeast8Jvm && file.getAbsolutePath().contains("java8")) {
+        // but I prefer using @below-java9-jdk-skip-test
+        // if (!isAtLeast9Jvm && file.getAbsolutePath().contains("java9")) {
         //     return false;
         // }
 
@@ -184,7 +184,7 @@ public class TestUtilities {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test")
                     || (!isJSR308Compiler && nextLine.contains("@non-308-skip-test"))
-                    || (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test"))) {
+                    || (!isAtLeast9Jvm && nextLine.contains("@below-java9-jdk-skip-test"))) {
                 in.close();
                 return false;
             }

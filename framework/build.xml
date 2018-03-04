@@ -16,7 +16,6 @@
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
     <property name="javadoc.private" value="false"/>
-    <property name="lib" value="../checker/lib"/>
 
 
     <!-- Dependendencies on other projects (such as dataflow)

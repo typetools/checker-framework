@@ -1,6 +1,5 @@
 // Test case for Issue 1633:
 // https://github.com/typetools/checker-framework/issues/1633
-// @below-java8-jdk-skip-test
 
 import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.*;

@@ -1143,6 +1143,16 @@ is created and each of case nodes creates the branches.
 
 \flow{Switch}{Example of a switch statement with case, default and fall through.}
 
+\subsubsection{Handling \code{finally} blocks}
+\label{sec:try-finally}
+
+Control flow statements, like \code{return}, \code{break}, and \code{continue},
+within \code{try} blocks will cause execution of the \code{finally} block before
+continuing at the target of the jump. The Dataflow Framework models this
+behavior by adding a jump to a duplicate of the finally block before the
+jump to the original target of the control flow statement.
+
+
 \subsection{AST to CFG Translation}
 \label{sec:ast_to_cfg_translation}
 
