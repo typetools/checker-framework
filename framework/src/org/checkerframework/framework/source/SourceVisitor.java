@@ -61,9 +61,9 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 
     /**
      * Store the last Tree visited by the SourceVisitor. This is necessary because the finally
-     * blocks in {@link com.sun.source.util.TreePathScanner#scan(TreePath, P)} and {@link
-     * com.sun.source.util.TreePathScanner#scan(Tree, P)} set the visited Path to null. This field
-     * is used to report a rough location for the error in {@link
+     * blocks in {@link com.sun.source.util.TreePathScanner#scan(TreePath, Object)} and {@link
+     * com.sun.source.util.TreePathScanner#scan(Tree, Object)} set the visited Path to null. This
+     * field is used to report a rough location for the error in {@link
      * org.checkerframework.framework.source.SourceChecker#logCheckerError(CheckerError)}.
      */
     /*package-private*/ Tree lastVisited;
