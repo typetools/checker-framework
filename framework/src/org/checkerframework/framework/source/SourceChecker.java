@@ -763,6 +763,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
+            if (this.visitor != null) {
+                Tree lv = this.visitor.lastVisited;
+                msg.append("\nLast visited tree: " + lv);
+            }
 
             msg.append(
                     "\nException: "

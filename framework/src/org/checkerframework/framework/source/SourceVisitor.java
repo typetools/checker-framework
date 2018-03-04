@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -58,11 +59,27 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
         this.root = root;
     }
 
+    /**
+     * Store the last Tree visited by the SourceVisitor. This is necessary because the finally
+     * blocks in {@link com.sun.source.util.TreePathScanner#scan(TreePath, P)} and {@link
+     * com.sun.source.util.TreePathScanner#scan(Tree, P)} set the visited Path to null. This field
+     * is used to report a rough location for the error in {@link
+     * org.checkerframework.framework.source.SourceChecker#logCheckerError(CheckerError)}.
+     */
+    /*package-private*/ Tree lastVisited;
+
     /*
      * Entry point for a type processor: the TreePath leaf is
      * a top-level type tree within root.
      */
     public void visit(TreePath path) {
+        lastVisited = path.getLeaf();
         this.scan(path, null);
+    }
+
+    @Override
+    public R scan(Tree tree, P p) {
+        lastVisited = tree;
+        return super.scan(tree, p);
     }
 }
