@@ -25,6 +25,8 @@
 
 package java.net;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * This interface defines a factory for {@code URL} stream
  * protocol handlers.
