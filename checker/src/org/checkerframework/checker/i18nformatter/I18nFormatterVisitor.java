@@ -32,7 +32,7 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-        Node node = atypeFactory.getFirstNonLambdaResultExpressionNodeForTree(tree);
+        Node node = atypeFactory.getFirstNonImplicitNodeForTree(tree);
         MethodInvocationNode nodeNode = (MethodInvocationNode) node;
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
         I18nFormatCall fc = tu.createFormatForCall(tree, nodeNode, atypeFactory);

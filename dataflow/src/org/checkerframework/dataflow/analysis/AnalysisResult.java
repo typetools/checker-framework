@@ -152,18 +152,20 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Returns the {@code Node}s corresponding to a particular {@code Tree}. Multiple {@code Node}s
-     * can correspond to a single {@code Tree} because of two reasons:
+     * can correspond to a single {@code Tree} because of several reasons:
      *
      * <ol>
      *   <li>In a lambda expression such as {@code () -> 5} the {@code 5} is both an {@code
-     *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}. The caller of the method
-     *       needs to decide which {@code Node} they are interested in.
+     *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}.
+     *   <li>Narrowing and widening primitive conversions can result in {@code
+     *       NarrowingConversionNode} and {@code WideningConversionNode}.
+     *   <li>Automatic String conversion can result in a {@code StringConversionNode}.
      *   <li>Trees for {@code finally} blocks are cloned to achieve a precise CFG. Any {@code Tree}
      *       within a finally block can have multiple corresponding {@code Node}s attached to them.
      * </ol>
      *
      * Callers of this method should always iterate through the returned set, possibly ignoring all
-     * {@code LambdaResultExpressionNode}.
+     * {@code Node}s they are not interested in.
      *
      * @return the set of {@link Node}s for a given {@link Tree}.
      */
