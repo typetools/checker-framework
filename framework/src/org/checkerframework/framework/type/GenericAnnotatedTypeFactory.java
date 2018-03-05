@@ -58,7 +58,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -955,24 +954,24 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Return the first {@link Node} for a given {@link Tree} that is not a {@link
-     * LambdaResultExpressionNode}. You probably don't want to use this function: iterate over the
-     * result of {@link #getNodesForTree(Tree)} yourself or ask for a conservative approximation of
-     * the store using {@link #getStoreBefore(Tree)} or {@link #getStoreAfter(Tree)}. This method is
-     * for code that uses a {@link Node} in a rather unusual way. Callers should probably be
-     * rewritten to not use a {@link Node} at all.
+     * Return the first {@link Node} for a given {@link Tree} that has class {@code kind}.
+     *
+     * <p>You probably don't want to use this function: iterate over the result of {@link
+     * #getNodesForTree(Tree)} yourself or ask for a conservative approximation of the store using
+     * {@link #getStoreBefore(Tree)} or {@link #getStoreAfter(Tree)}. This method is for code that
+     * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
+     * a {@link Node} at all.
      *
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that is not a {@link
-     *     LambdaResultExpressionNode}.
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
      */
-    public Node getFirstNonLambdaResultExpressionNodeForTree(Tree tree) {
+    public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (!(node instanceof LambdaResultExpressionNode)) {
-                return node;
+            if (node.getClass().equals(kind)) {
+                return kind.cast(node);
             }
         }
         return null;
@@ -1355,34 +1354,22 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
 
-        Set<Node> nodes = getNodesForTree(tree);
-        AnnotatedTypeMirror merged = null;
-        for (Node node : nodes) {
-            if (node instanceof LambdaResultExpressionNode) {
-                continue;
-            }
-            List<Node> args;
-            switch (tree.getKind()) {
-                case METHOD_INVOCATION:
-                    args = ((MethodInvocationNode) node).getArguments();
-                    break;
-                case NEW_CLASS:
-                    args = ((ObjectCreationNode) node).getArguments();
-                    break;
-                default:
-                    throw new AssertionError("Unexpected kind of tree: " + tree);
-            }
-
-            assert !args.isEmpty() : "Arguments are empty";
-            Node varargsArray = args.get(args.size() - 1);
-            AnnotatedTypeMirror varargtype = getAnnotatedType(varargsArray.getTree());
-            if (merged == null) {
-                merged = varargtype;
-            } else {
-                merged = AnnotatedTypes.leastUpperBound(this, merged, varargtype);
-            }
+        List<Node> args;
+        switch (tree.getKind()) {
+            case METHOD_INVOCATION:
+                args = getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
+                break;
+            case NEW_CLASS:
+                args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
+                break;
+            default:
+                throw new AssertionError("Unexpected kind of tree: " + tree);
         }
-        return merged;
+
+        assert !args.isEmpty() : "Arguments are empty";
+        Node varargsArray = args.get(args.size() - 1);
+        AnnotatedTypeMirror varargtype = getAnnotatedType(varargsArray.getTree());
+        return varargtype;
     }
 
     /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
