@@ -1,9 +1,7 @@
 package org.checkerframework.javacutil;
 
-/*>>>
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-*/
 
 /**
  * Simple pair class for multiple returns.
@@ -23,7 +21,7 @@ public class Pair<V1, V2> {
         return new Pair<V1, V2>(v1, v2);
     }
 
-    /*@SideEffectFree*/
+    @SideEffectFree
     @Override
     public String toString() {
         return "Pair(" + first + ", " + second + ")";
@@ -31,7 +29,7 @@ public class Pair<V1, V2> {
 
     private int hashCode = -1;
 
-    /*@Pure*/
+    @Pure
     @Override
     public int hashCode() {
         if (hashCode == -1) {

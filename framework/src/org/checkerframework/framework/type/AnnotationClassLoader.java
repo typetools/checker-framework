@@ -23,15 +23,12 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
- */
 
 /**
  * This class assists the {@link AnnotatedTypeFactory} by reflectively looking up the list of
@@ -158,7 +155,7 @@ public class AnnotationClassLoader {
      * @return a URL to the jar that contains the qual package, or to the qual package's directory,
      *     or null if no jar or directory contains the qual package
      */
-    private final /*@Nullable*/ URL getURLFromClasspaths() {
+    private final @Nullable URL getURLFromClasspaths() {
         // Debug use, uncomment if needed to see all of the classpaths (boot
         // classpath, extension classpath, and classpath)
         // printPaths();
@@ -333,7 +330,7 @@ public class AnnotationClassLoader {
      * @param absolutePathToDirectory an absolute path to a directory
      * @return a URL reference to the directory, or null if the URL is malformed
      */
-    private final /*@Nullable*/ URL getDirectoryURL(final String absolutePathToDirectory) {
+    private final @Nullable URL getDirectoryURL(final String absolutePathToDirectory) {
         URL directoryURL = null;
 
         try {
@@ -356,7 +353,7 @@ public class AnnotationClassLoader {
      * @param absolutePathToJarFile an absolute path to a jar file
      * @return a URL reference to the jar file, or null if the URL is malformed
      */
-    private final /*@Nullable*/ URL getJarURL(final String absolutePathToJarFile) {
+    private final @Nullable URL getJarURL(final String absolutePathToJarFile) {
         URL jarURL = null;
 
         try {
@@ -415,7 +412,7 @@ public class AnnotationClassLoader {
      * @return the classloader used to load the checker class, or the system classloader, or null if
      *     both are unavailable
      */
-    private final /*@Nullable*/ URLClassLoader getClassLoader() {
+    private final @Nullable URLClassLoader getClassLoader() {
         return (URLClassLoader) InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
@@ -568,7 +565,7 @@ public class AnnotationClassLoader {
      * @return the loaded annotation class, or null if it was not a supported annotation as decided
      *     by {@link #isSupportedAnnotationClass(Class)}.
      */
-    public final /*@Nullable*/ Class<? extends Annotation> loadExternalAnnotationClass(
+    public final @Nullable Class<? extends Annotation> loadExternalAnnotationClass(
             final String annoName) {
         return loadAnnotationClass(annoName, true);
     }
@@ -670,7 +667,7 @@ public class AnnotationClassLoader {
      *     required ElementType values, and is a supported annotation by a checker. If the
      *     annotation is not supported by a checker, null is returned.
      */
-    protected final /*@Nullable*/ Class<? extends Annotation> loadAnnotationClass(
+    protected final @Nullable Class<? extends Annotation> loadAnnotationClass(
             final String fullyQualifiedClassName, boolean issueError) {
 
         // load the class
@@ -741,7 +738,7 @@ public class AnnotationClassLoader {
      * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames) {
+            final @Nullable Set<String> fullyQualifiedAnnoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
         if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {

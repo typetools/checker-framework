@@ -1,9 +1,5 @@
 package org.checkerframework.framework.type;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -42,6 +38,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -259,7 +256,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
+    public void setRoot(@Nullable CompilationUnitTree root) {
         super.setRoot(root);
         this.analyses.clear();
         this.scannedClasses.clear();
@@ -853,7 +850,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block).
      */
-    public /*@Nullable*/ Store getRegularExitStore(Tree t) {
+    public @Nullable Store getRegularExitStore(Tree t) {
         return regularExitStores.get(t);
     }
 
