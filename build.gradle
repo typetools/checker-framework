@@ -92,57 +92,10 @@ allprojects {
     }
 }
 
-task cloneAndBuildDependencies() {
+task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
-
-    // Stubparser
-    if (!file(stubparser).exists()) {
-        exec {
-            workingDir = jsr308
-            executable 'git'
-            args = [
-                    'clone',
-                    '--depth', '1',
-                    'https://github.com/typetools/stubparser.git'
-            ]
-        }
-    } else {
-        exec {
-            workingDir = stubparser
-            executable 'git'
-            args = ['pull', '-q']
-        }
-    }
-    println "Build Stubparser"
-    exec {
-        workingDir = stubparser
-        executable = './.travis-build-without-test.sh'
-    }
-
-    // Annotation Tools
-    if (!file(annotationTools).exists()) {
-        exec {
-            workingDir = jsr308
-            executable 'git'
-            args = [
-                    'clone',
-                    '--depth', '1',
-                    '-b', 'removeJsr308',
-                    'https://github.com/smillst/annotation-tools.git'
-            ]
-        }
-    } else {
-        exec {
-            workingDir = annotationTools
-            executable 'git'
-            args = ['pull', '-q']
-        }
-    }
-    println "Build Annotation Tools"
-    exec {
-        workingDir = annotationTools
-        executable = './.travis-build-without-test.sh'
-    }
+    executable './.travis-build-without-test.sh'
+    args = ['downloadjdk']
 }
 
 /**
