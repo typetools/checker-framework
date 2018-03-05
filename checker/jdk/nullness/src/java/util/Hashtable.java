@@ -15,7 +15,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object> ext
   public Hashtable(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized int size() { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-  public synchronized Enumeration<K> keys() { throw new RuntimeException("skeleton method"); }
+  public synchronized Enumeration<@KeyFor("this") K> keys() { throw new RuntimeException("skeleton method"); }
   public synchronized Enumeration<V> elements() { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized boolean contains(Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
