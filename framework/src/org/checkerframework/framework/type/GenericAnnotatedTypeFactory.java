@@ -58,14 +58,10 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.node.StringConversionNode;
-import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -958,9 +954,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Return the first {@link Node} for a given {@link Tree} that is not a {@link
-     * LambdaResultExpressionNode}, primitive conversion node, or String conversion node. You
-     * probably don't want to use this function: iterate over the result of {@link
+     * Return the first {@link Node} for a given {@link Tree} that has class {@code kind}.
+     *
+     * <p>You probably don't want to use this function: iterate over the result of {@link
      * #getNodesForTree(Tree)} yourself or ask for a conservative approximation of the store using
      * {@link #getStoreBefore(Tree)} or {@link #getStoreAfter(Tree)}. This method is for code that
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
@@ -969,17 +965,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that is not a {@link
-     *     LambdaResultExpressionNode}.
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
      */
-    public Node getFirstNonImplicitNodeForTree(Tree tree) {
+    public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (!(node instanceof LambdaResultExpressionNode
-                    || node instanceof NarrowingConversionNode
-                    || node instanceof WideningConversionNode
-                    || node instanceof StringConversionNode)) {
-                return node;
+            if (node.getClass().equals(kind)) {
+                return kind.cast(node);
             }
         }
         return null;
@@ -1362,14 +1354,13 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
 
-        Node node = this.getFirstNonImplicitNodeForTree(tree);
         List<Node> args;
         switch (tree.getKind()) {
             case METHOD_INVOCATION:
-                args = ((MethodInvocationNode) node).getArguments();
+                args = getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
                 break;
             case NEW_CLASS:
-                args = ((ObjectCreationNode) node).getArguments();
+                args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
                 break;
             default:
                 throw new AssertionError("Unexpected kind of tree: " + tree);

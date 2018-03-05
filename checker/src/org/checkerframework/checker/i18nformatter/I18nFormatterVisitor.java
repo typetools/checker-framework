@@ -14,7 +14,6 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -32,8 +31,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-        Node node = atypeFactory.getFirstNonImplicitNodeForTree(tree);
-        MethodInvocationNode nodeNode = (MethodInvocationNode) node;
+        MethodInvocationNode nodeNode =
+                atypeFactory.getFirstNodeOfKindForTree(tree, MethodInvocationNode.class);
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
         I18nFormatCall fc = tu.createFormatForCall(tree, nodeNode, atypeFactory);
         if (fc != null) {
