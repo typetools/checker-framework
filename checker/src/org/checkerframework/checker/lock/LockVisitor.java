@@ -48,7 +48,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -1270,10 +1269,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingType);
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
-
-        Node node = atypeFactory.getFirstNonImplicitNodeForTree(tree);
-        Receiver self =
-                implicitThis ? pseudoReceiver : FlowExpressions.internalReprOf(atypeFactory, node);
+        Receiver self;
+        if (implicitThis) {
+            self = pseudoReceiver;
+        } else {
+            assert TreeUtils.isExpressionTree(tree);
+            self = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) tree);
+        }
 
         List<LockExpression> lockExpressions = new ArrayList<>();
         for (String expression : expressions) {

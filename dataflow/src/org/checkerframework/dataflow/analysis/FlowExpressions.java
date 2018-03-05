@@ -290,7 +290,12 @@ public class FlowExpressions {
                     if (ElementUtils.isStatic(invokedMethod)) {
                         methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
                     } else {
-                        methodReceiver = internalReprOf(provider, mn.getMethodSelect());
+                        ExpressionTree methodReceiverTree = TreeUtils.getReceiverTree(mn);
+                        if (methodReceiverTree != null) {
+                            methodReceiver = internalReprOf(provider, methodReceiverTree);
+                        } else {
+                            methodReceiver = internalRepOfImplicitReceiver(invokedMethod);
+                        }
                     }
                     TypeMirror type = TreeUtils.typeOf(mn);
                     receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
