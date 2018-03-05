@@ -48,7 +48,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -298,7 +298,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotationMirror guardSatisfied =
                     AnnotationUtils.getAnnotationByClass(annos, checkerGuardSatisfiedClass);
             if (guardSatisfied != null) {
-                Tree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
+                ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
                 if (receiverTree == null) {
                     checkLockOfImplicitThis(methodInvocationTree, effectiveGb);
                 } else {
@@ -1135,8 +1135,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     @Override
     public Void visitBinary(BinaryTree binaryTree, Void p) {
         if (TreeUtils.isStringConcatenation(binaryTree)) {
-            Tree leftTree = binaryTree.getLeftOperand();
-            Tree rightTree = binaryTree.getRightOperand();
+            ExpressionTree leftTree = binaryTree.getLeftOperand();
+            ExpressionTree rightTree = binaryTree.getRightOperand();
 
             boolean lhsIsString = TypesUtils.isString(TreeUtils.typeOf(leftTree));
             boolean rhsIsString = TypesUtils.isString(TreeUtils.typeOf(rightTree));
@@ -1178,7 +1178,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // in contracts.precondition.not.satisfied errors being issued instead of
     // contracts.precondition.not.satisfied.field, so it would be clear that
     // the error refers to an implicit method call, not a dereference (field access).
-    private void checkPreconditionsForImplicitToStringCall(Tree tree) {
+    private void checkPreconditionsForImplicitToStringCall(ExpressionTree tree) {
         AnnotationMirror gbAnno =
                 atypeFactory
                         .getAnnotatedType(tree)
@@ -1270,10 +1270,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingType);
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
-
-        Node node = atypeFactory.getFirstNonLambdaResultExpressionNodeForTree(tree);
-        Receiver self =
-                implicitThis ? pseudoReceiver : FlowExpressions.internalReprOf(atypeFactory, node);
+        Receiver self;
+        if (implicitThis) {
+            self = pseudoReceiver;
+        } else if (TreeUtils.isExpressionTree(tree)) {
+            self = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) tree);
+        } else {
+            self = new Unknown(TreeUtils.typeOf(tree));
+        }
 
         List<LockExpression> lockExpressions = new ArrayList<>();
         for (String expression : expressions) {
