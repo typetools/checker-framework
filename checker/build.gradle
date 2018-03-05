@@ -31,7 +31,7 @@ jar {
     }
 }
 
-task installCheckerJar(dependsOn: shadowJar, group: 'Build') {
+task copyJarsToDist (dependsOn: shadowJar, group: 'Build') {
     description 'Builds or downloads jars required by CheckerMain and puts them in dist.'
     dependsOn ':jdk8:downloadJdk'
     dependsOn project(':checker-qual').tasks.jar
@@ -52,6 +52,7 @@ task installCheckerJar(dependsOn: shadowJar, group: 'Build') {
         }
     }
 }
+assemble.dependsOn copyJarsToDist
 
 shadowJar {
     description 'Creates the "fat" checker.jar in dist.'
@@ -74,21 +75,21 @@ checkCompilerMessages {
     }
 }
 
-task nullnessExtraTests(type: Exec, dependsOn: installCheckerJar, group: 'Verification') {
+task nullnessExtraTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Run extra tests for the Nullness Checker.'
     executable 'make'
     environment JAVAC: "${projectDir}/bin/javac", JAVAP: 'javap'
     args = ['-C', 'tests/nullness-extra/']
 }
 
-task commandLineTests(type: Exec, dependsOn: installCheckerJar, group: 'Verification') {
+task commandLineTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Run tests that need a special command line.'
     executable 'make'
     environment JAVAC: "${projectDir}/bin/javac"
     args = ['-C', 'tests/command-line/']
 }
 
-task checkTutorial(dependsOn: installCheckerJar, group: 'Verification') {
+task checkTutorial(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the tutorial is working as expected.'
     doLast {
         ant.ant(dir: "${rootDir}/docs/tutorial/tests", useNativeBasedir: 'true', inheritAll: 'false') {
@@ -97,14 +98,14 @@ task checkTutorial(dependsOn: installCheckerJar, group: 'Verification') {
     }
 }
 
-task exampleTests(type: Exec, dependsOn: installCheckerJar, group: 'Verification') {
+task exampleTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Run tests for the example programs.'
     executable 'make'
     environment JAVAC: "${projectDir}/bin/javac"
     args = ['-C', '../docs/examples']
 }
 
-task checkDemos(dependsOn: installCheckerJar, group: 'Verification') {
+task checkDemos(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
         File demosDir = new File(projectDir, '../../checker-framework-demos');

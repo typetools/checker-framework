@@ -340,7 +340,7 @@ subprojects {
         // Configure JUnit tests
         tasks.withType(Test) {
             if (project.name.is('checker')) {
-                dependsOn('installCheckerJar')
+                dependsOn('copyJarsToDist')
                 systemProperties = [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
             }
             testLogging {
@@ -414,7 +414,7 @@ subprojects {
     }
 }
 
-assemble.dependsOn(':checker:installCheckerJar')
+assemble.dependsOn(':checker:copyJarsToDist')
 
 task checkStyle(group: 'Format') {
     description 'Check basic style guidelines'

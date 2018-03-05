@@ -85,5 +85,5 @@ fi
 
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"ant dist-downloadjdk\" for checker-framework"
-  ./gradlew assemble installCheckerJar
+  ./gradlew assemble
 fi

@@ -30,7 +30,7 @@ task downloadJdk() {
 
 task buildJdk(type: Jar, group: 'Build') {
     description 'Builds jdk8.jar'
-    dependsOn(':checker:installCheckerJar')
+    dependsOn(':checker:copyJarsToDist')
     dependsOn(':javacutil:tagletClasses')
 
     if (System.getenv('JAVA_HOME') == null) {
