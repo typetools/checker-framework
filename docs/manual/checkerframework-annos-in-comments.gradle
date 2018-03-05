@@ -7,9 +7,10 @@ repositories {
 }
 
 configurations {
-  checkerFrameworkCheckerJar {
-    description = 'the Checker Framework, including the Type Annotations compiler'
-  }
+   checkerFrameworkCheckerJar {
+     description = 'the Checker Framework, including the Type Annotations compiler'
+   }
+
   checkerFrameworkAnnotatedJDK {
     description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
   }
@@ -21,10 +22,10 @@ configurations {
 
 // Checker Framework from Maven Central
 dependencies {
-  ext.checkerFrameworkVersion = '2.3.2'
+  ext.checkerFrameworkVersion = '2.4.0'
   checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
-  checkerFrameworkJavac "org.checkerframework:compiler:2.3.2"
-  compileOnly "org.checkerframework:checker:${checkerFrameworkVersion}"
+  checkerFrameworkJavac "org.checkerframework:compiler:2.4.0"
+  checkerFrameworkCheckerJar "org.checkerframework:checker:${checkerFrameworkVersion}"
   compile "org.checkerframework:checker-qual7:${checkerFrameworkVersion}"
 }
 
@@ -33,8 +34,7 @@ dependencies {
 //   ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
 //   checkerFrameworkAnnotatedJDK fileTree(dir: "${ext.checkerframeworkdist}", include: "jdk8.jar")
 //   checkerFrameworkJavac fileTree(dir: "${ext.checkerframeworkdist}", include: "javac.jar")
-//   checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: "checker.jar")
-//   compileOnly fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
+//   checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
 //   compile fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
 // }
 
@@ -43,6 +43,7 @@ dependencies {
 //   tasks.withType(JavaCompile).all { JavaCompile compile ->
 //     compile.doFirst {
 //       compile.options.compilerArgs = [
+//         '-processorpath', "${configurations.checkerFrameworkCheckerJar.asPath}",
 //         '-processor', 'org.checkerframework.checker.formatter.FormatterChecker,org.checkerframework.checker.index.IndexChecker,org.checkerframework.checker.lock.LockChecker,org.checkerframework.checker.nullness.NullnessChecker,org.checkerframework.checker.signature.SignatureChecker',
 //         '-Xmaxerrs', '10000',
 //         '-Awarns',    // turn Checker Framework errors into warnings
@@ -62,7 +63,8 @@ dependencies {
 compileJava {
   doFirst {
     options.compilerArgs = [
-        '-processor', 'org.checkerframework.checker.nullness.NullnessChecker,org',
+        '-processorpath', "${configurations.checkerFrameworkCheckerJar.asPath}",
+        '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
         '-Xmaxerrs', '10000',
         '-Xmaxwarns', '10000',
         // '-Awarns',      // turn Checker Framework errors into warnings

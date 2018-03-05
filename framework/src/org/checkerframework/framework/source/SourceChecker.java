@@ -10,6 +10,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.DiagnosticSource;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
@@ -759,6 +761,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
+            }
+            if (this.visitor != null) {
+                DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
+                DiagnosticSource source =
+                        new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+                int linenr = source.getLineNumber(pos.getStartPosition());
+                int col = source.getColumnNumber(pos.getStartPosition(), true);
+                String line = source.getLine(pos.getStartPosition());
+
+                msg.append(
+                        "\nLast visited tree at line " + linenr + " column " + col + ":\n" + line);
             }
 
             msg.append(

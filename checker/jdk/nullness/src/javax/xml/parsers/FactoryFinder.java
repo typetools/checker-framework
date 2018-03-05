@@ -287,7 +287,8 @@ class FactoryFinder {
      */
     private static <T> @Nullable T findServiceProvider(final Class<T> type) {
         try {
-            return AccessController.doPrivileged(new PrivilegedAction<@Nullable T>() {
+            // Commented out because of https://github.com/typetools/checker-framework/issues/1863
+            return AccessController.doPrivileged(new PrivilegedAction</*@ Nullable*/ T>() {
                 public @Nullable T run() {
                     final ServiceLoader<T> serviceLoader = ServiceLoader.load(type);
                     final Iterator<T> iterator = serviceLoader.iterator();
