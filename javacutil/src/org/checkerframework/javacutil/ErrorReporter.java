@@ -51,4 +51,35 @@ public class ErrorReporter {
             throw new RuntimeException(msg, cause);
         }
     }
+
+    /**
+     * Log a warning message use {@link String#format(String, Object...)}}.
+     *
+     * @param format a format string
+     * @param args arguments to the format string
+     */
+    public static void warn(String format, Object... args) {
+        if (handler != null) {
+            handler.warn(format, args);
+        } else {
+            String formattedMsg = String.format(format, args);
+            throw new RuntimeException(formattedMsg, new Throwable());
+        }
+    }
+
+    /**
+     * If this is the first time this warning is issued, then log a waring message using {@link
+     * String#format(String, Object...)}}. Otherwise, do nothing.
+     *
+     * @param format a format string
+     * @param args arguments to the format string
+     */
+    public static void warnOnce(String format, Object... args) {
+        if (handler != null) {
+            handler.warnOnce(format, args);
+        } else {
+            String formattedMsg = String.format(format, args);
+            throw new RuntimeException(formattedMsg, new Throwable());
+        }
+    }
 }

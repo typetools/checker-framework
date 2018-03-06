@@ -87,7 +87,17 @@ public class ElementAnnotationUtil {
     static void addAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
-        innerType.addAnnotations(annotations);
+        if (innerType != type) {
+            for (AnnotationMirror annotation : annotations) {
+                if (innerType.addAnnotation(annotation)) {
+                    ErrorReporter.warnOnce(
+                            "Interpreting %s as a type annotation on an array component type.",
+                            annotation);
+                }
+            }
+        } else {
+            innerType.addAnnotations(annotations);
+        }
     }
 
     /**

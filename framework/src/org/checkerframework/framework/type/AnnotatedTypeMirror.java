@@ -521,19 +521,20 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param a the annotation to add
      */
-    public void addAnnotation(AnnotationMirror a) {
+    public boolean addAnnotation(AnnotationMirror a) {
         if (a == null) {
             ErrorReporter.errorAbort(
                     "AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
         }
         if (atypeFactory.isSupportedQualifier(a)) {
-            this.annotations.add(a);
+            return this.annotations.add(a);
         } else {
             AnnotationMirror aliased = atypeFactory.aliasedAnnotation(a);
             if (atypeFactory.isSupportedQualifier(aliased)) {
-                addAnnotation(aliased);
+                return addAnnotation(aliased);
             }
         }
+        return false;
     }
 
     /**
@@ -1034,8 +1035,9 @@ public abstract class AnnotatedTypeMirror {
          * added to the right component.
          */
         @Override
-        public void addAnnotation(AnnotationMirror a) {
+        public boolean addAnnotation(AnnotationMirror a) {
             assert false : "AnnotatedExecutableType.addAnnotation should never be called";
+            return false;
         }
 
         /**
@@ -1353,9 +1355,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public void addAnnotation(AnnotationMirror a) {
-            super.addAnnotation(a);
+        public boolean addAnnotation(AnnotationMirror a) {
+            boolean result = super.addAnnotation(a);
             fixupBoundAnnotations();
+            return result;
         }
 
         /**
@@ -1771,9 +1774,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public void addAnnotation(AnnotationMirror a) {
-            super.addAnnotation(a);
+        public boolean addAnnotation(AnnotationMirror a) {
+            boolean result = super.addAnnotation(a);
             fixupBoundAnnotations();
+            return result;
         }
 
         /**
