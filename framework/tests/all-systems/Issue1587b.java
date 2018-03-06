@@ -1,5 +1,3 @@
-// @skip-test
-
 abstract class Issue1587b {
 
     static class One implements Two<One, Three, Four, Four> {}
@@ -27,6 +25,7 @@ abstract class Issue1587b {
         Iterable<R> q();
     }
 
+    @SuppressWarnings("keyfor:type.argument.type.incompatible")
     public Iterable<One> f(Six e) {
         return g(e.e(One.class).d().q());
     }

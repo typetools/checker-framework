@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
-// @skip-test
-
 public final class MissingBoundAnnotations {
 
     // Test that the upper bound "Comparable<...>" receives an @Unqualified annotation.
