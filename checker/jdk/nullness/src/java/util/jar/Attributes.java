@@ -38,6 +38,7 @@ import sun.util.logging.PlatformLogger;
 import java.util.Comparator;
 import sun.misc.ASCIICaseInsensitiveComparator;
 
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -242,7 +243,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
     /**
      * Returns a Set view of the attribute names (keys) contained in this Map.
      */
-    public Set<Object> keySet() {
+    public Set<@KeyFor("this") Object> keySet() {
         return map.keySet();
     }
 

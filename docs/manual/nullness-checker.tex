@@ -1821,8 +1821,13 @@ consider a doubly linked list:
 
 \subsection{How to handle warnings\label{initialization-warnings}}
 
-There are several ways to address a warning ``error:  the constructor does
-not initialize fields: \ldots''.
+
+\subsubsection{``error:  the constructor does not initialize fields: \ldots''\label{initialization-warnings-constructor}}
+
+Like any warning, ``error:  the constructor does not initialize fields:
+\ldots'' indicates that either your annotations are incorrect or your code
+is buggy.  You can fix either the annotations or the code.
+
 \begin{itemize}
 \item
   Declare the field as \refqualclass{checker/nullness/qual}{Nullable}.  Recall
@@ -1847,6 +1852,8 @@ not initialize fields: \ldots''.
   NullPointerException into a more obscure error.
 \end{itemize}
 
+\subsubsection{``call to \ldots\ is not allowed on the given receiver''\label{initialization-warnings-receiver}}
+
 If your code calls an instance method from a constructor, you may see a
 message such as the following:
 
@@ -1864,7 +1871,9 @@ but the receiver formal parameter (Section~\ref{faq-receiver}) of method
 \refqualclass{checker/initialization/qual}{Initialized}.  If
 \<initHelper()> doesn't depend on its receiver being initialized --- that
 is, it's OK to call \<x.initHelper> even if \<x> is not initialized ---
-then you can indicate that:
+then you can indicate that by using
+\refqualclass{checker/initialization/qual}{UnderInitialization} or
+\refqualclass{checker/initialization/qual}{UnknownInitialization}.
 
 \begin{Verbatim}
 class MyClass {
@@ -1885,7 +1894,6 @@ class MyClass {
 You are likely to want to annotate \<initHelper()> with
 \refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
-
 
 You may get the ``call to \ldots\ is not allowed on the given receiver''
 error even if your constructor has already initialized all the fields.

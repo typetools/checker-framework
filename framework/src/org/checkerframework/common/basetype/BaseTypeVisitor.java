@@ -61,6 +61,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -111,11 +112,6 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -609,20 +605,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
                 @SuppressWarnings("CompilerMessages")
-                /*@CompilerMessageKey*/ String msg = msgPrefix + r.second;
+                @CompilerMessageKey String msg = msgPrefix + r.second;
                 checker.report(Result.failure(msg), r.first);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
                     @SuppressWarnings("CompilerMessages")
-                    /*@CompilerMessageKey*/ String msg = "purity.not.sideeffectfree." + r.second;
+                    @CompilerMessageKey String msg = "purity.not.sideeffectfree." + r.second;
                     checker.report(Result.failure(msg), r.first);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
                     @SuppressWarnings("CompilerMessages")
-                    /*@CompilerMessageKey*/ String msg = "purity.not.deterministic." + r.second;
+                    @CompilerMessageKey String msg = "purity.not.deterministic." + r.second;
                     checker.report(Result.failure(msg), r.first);
                 }
             }
@@ -679,8 +675,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             if (formalParamNames != null && formalParamNames.contains(expression)) {
                 @SuppressWarnings("CompilerMessages")
-                /*@CompilerMessageKey*/ String key =
-                        "contracts." + contract.kind.errorKey + ".expression.parameter.name";
+                @CompilerMessageKey String key = "contracts." + contract.kind.errorKey + ".expression.parameter.name";
                 checker.report(
                         Result.warning(
                                 key,
@@ -1854,7 +1849,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(varTree);
         assert var != null : "no variable found for tree: " + varTree;
 
@@ -1879,7 +1874,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
         if (shouldSkipUses(valueExp)) {
             return;
         }
@@ -1920,7 +1915,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
 
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
@@ -2810,8 +2805,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
             @SuppressWarnings("CompilerMessages")
-            /*@CompilerMessageKey*/ String postmsg =
-                    "contracts.postcondition." + msgKey + ".invalid";
+            @CompilerMessageKey String postmsg = "contracts.postcondition." + msgKey + ".invalid";
             checkContractsSubset(
                     overriderMeth,
                     overriderTyp,
@@ -2828,7 +2822,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
             @SuppressWarnings("CompilerMessages")
-            /*@CompilerMessageKey*/ String premsg = "contracts.precondition." + msgKey + ".invalid";
+            @CompilerMessageKey String premsg = "contracts.precondition." + msgKey + ".invalid";
             checkContractsSubset(
                     overriderMeth,
                     overriderTyp,
@@ -2851,8 +2845,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Pair<Receiver, AnnotationMirror>> subCPostTrue2 =
                     resolveContracts(subCPostTrue, overrider);
             @SuppressWarnings("CompilerMessages")
-            /*@CompilerMessageKey*/ String posttruemsg =
-                    "contracts.conditional.postcondition.true." + msgKey + ".invalid";
+            @CompilerMessageKey String posttruemsg = "contracts.conditional.postcondition.true." + msgKey + ".invalid";
             checkContractsSubset(
                     overriderMeth,
                     overriderTyp,
@@ -2870,7 +2863,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 =
                     resolveContracts(subCPostFalse, overrider);
             @SuppressWarnings("CompilerMessages")
-            /*@CompilerMessageKey*/ String postfalsemsg =
+            @CompilerMessageKey String postfalsemsg =
                     "contracts.conditional.postcondition.false." + msgKey + ".invalid";
             checkContractsSubset(
                     overriderMeth,
@@ -3227,7 +3220,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String overriddenTyp,
             Set<Pair<Receiver, AnnotationMirror>> mustSubset,
             Set<Pair<Receiver, AnnotationMirror>> set,
-            /*@CompilerMessageKey*/ String messageKey) {
+            @CompilerMessageKey String messageKey) {
         for (Pair<Receiver, AnnotationMirror> weak : mustSubset) {
             boolean found = false;
 

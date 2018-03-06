@@ -80,7 +80,7 @@
         -->
     </target>
 
-    <target name="build" depends="prep,build.check.uptodate"
+    <target name="build" depends="prep,build.check.uptodate,checker-qual-jar"
             unless="build.uptodate"
             description="Compile files.  Does not update any jars">
         <pathconvert pathsep=" " property="src.files.spaceseparated_df">
@@ -94,7 +94,7 @@
         <echo message="${src.files.spaceseparated_df}" file="${tmpdir}/srcfiles-dataflow.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javacutil.lib}"
+              classpath="${checker.qual.lib}:${javac.lib}:${javacutil.lib}"
               classname="com.sun.tools.javac.Main">
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
@@ -157,7 +157,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}">
+                 classpath="${checker.qual.lib}:${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}">
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.javacutil.*"/>
             <link href="https://docs.oracle.com/javase/8/docs/api/"/>

@@ -1,4 +1,4 @@
-/* @skip-test */
+// @skip-test
 public final class ArraysMDETest {
 
     public static @PolyInterned Object[] subarray(

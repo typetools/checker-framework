@@ -1,9 +1,5 @@
 package org.checkerframework.framework.type;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-*/
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;

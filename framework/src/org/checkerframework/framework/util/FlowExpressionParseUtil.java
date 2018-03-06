@@ -1,10 +1,5 @@
 package org.checkerframework.framework.util;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -36,6 +31,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -1338,16 +1334,15 @@ public class FlowExpressionParseUtil {
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
-        private /*@CompilerMessageKey*/ String errorKey;
+        private @CompilerMessageKey String errorKey;
         public final Object[] args;
 
-        public FlowExpressionParseException(
-                /*@CompilerMessageKey*/ String errorKey, Object... args) {
+        public FlowExpressionParseException(@CompilerMessageKey String errorKey, Object... args) {
             this(null, errorKey, args);
         }
 
         public FlowExpressionParseException(
-                Throwable cause, /*@CompilerMessageKey*/ String errorKey, Object... args) {
+                Throwable cause, @CompilerMessageKey String errorKey, Object... args) {
             super(cause);
             this.errorKey = errorKey;
             this.args = args;
