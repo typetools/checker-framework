@@ -1,8 +1,6 @@
 // Test case for Issue579
 // https://github.com/typetools/checker-framework/issues/579
 
-// @skip-test caused by DefaultRawnessComparer.visitNull_Declared
-
 import java.util.Comparator;
 
 class Issue570<T> implements Comparator<T> {
