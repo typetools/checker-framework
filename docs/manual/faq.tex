@@ -1017,19 +1017,6 @@ Similarly,
 \<@Nullable Object @NonNull []> is a non-null array of possibly-null
 objects.
 
-
-Some older tools interpret a declaration like \<@NonEmpty String[] var> as
-``non-empty array of strings''.  This is in conflict with the Java type
-annotations specification, which defines it as meaning ``array of
-non-empty strings''.
-% (and has since October 2007)
-If you use one of these
-older tools, you will find this incompatibility confusing.
-You will have to live with it until the older
-tool is updated to conform to the Java specification, or until you
-transition to a newer tool that conforms to the Java specification.
-
-
 \subsection{What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?\label{faq-varargs-syntax-meaning}}
 
 Varargs annotations are treated similarly to array annotations.
