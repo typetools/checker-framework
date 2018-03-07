@@ -1,19 +1,14 @@
 package org.checkerframework.checker.nondeterminism;
 
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.ReturnTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nondeterminism.qual.Det;
-import org.checkerframework.checker.nondeterminism.qual.Ond2D;
-import org.checkerframework.checker.nondeterminism.qual.OrderNonDet;
-import org.checkerframework.checker.nondeterminism.qual.PolyDet;
-import org.checkerframework.checker.nondeterminism.qual.PolyDet2;
-import org.checkerframework.checker.nondeterminism.qual.ValueNonDet;
+import org.checkerframework.checker.nondeterminism.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -27,7 +22,9 @@ import org.checkerframework.javacutil.TreeUtils;
 public class NonDeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET = AnnotationBuilder.fromClass(elements, PolyDet.class);
     public final AnnotationMirror POLYDET2 = AnnotationBuilder.fromClass(elements, PolyDet2.class);
+    public final AnnotationMirror POLYDET3 = AnnotationBuilder.fromClass(elements, PolyDet3.class);
     public final AnnotationMirror OND2D = AnnotationBuilder.fromClass(elements, Ond2D.class);
+    public final AnnotationMirror OND2VND = AnnotationBuilder.fromClass(elements, Ond2Vnd.class);
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     public final AnnotationMirror VALUENONDET =
@@ -46,7 +43,8 @@ public class NonDeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                         OrderNonDet.class,
                         ValueNonDet.class,
                         PolyDet.class,
-                        PolyDet2.class));
+                        PolyDet2.class,
+                        PolyDet3.class));
     }
 
     @Override
@@ -67,26 +65,33 @@ public class NonDeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         }
 
         @Override
+        public Void visitReturn(ReturnTree node, AnnotatedTypeMirror p) {
+            System.out.println("Correct return anno: " + node);
+            return super.visitReturn(node, p);
+        }
+
+        @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
-            Tree receiverTree = TreeUtils.getReceiverTree(node);
-            if (receiverTree != null) {
-                if (getAnnotatedType(receiverTree).getAnnotations().size() > 0) {
-                    ExecutableElement method = TreeUtils.elementFromUse(node);
-                    AnnotationMirror declAnno = getDeclAnnotation(method, Ond2D.class);
-                    if (declAnno != null) {
+            if (p.getAnnotations().size() > 0) {
+                ExecutableElement method = TreeUtils.elementFromUse(node);
+                AnnotationMirror declAnno = getDeclAnnotation(method, Ond2D.class);
+                AnnotationMirror returnAnno = p.getAnnotations().iterator().next();
+
+                if (declAnno != null) {
+                    if (types.isSameType(declAnno.getAnnotationType(), OND2D.getAnnotationType())) {
                         if (types.isSameType(
-                                declAnno.getAnnotationType(), OND2D.getAnnotationType())) {
-                            AnnotationMirror returnAnno =
-                                    getAnnotatedType(receiverTree)
-                                            .getAnnotations()
-                                            .iterator()
-                                            .next();
-                            if (types.isSameType(
-                                    returnAnno.getAnnotationType(),
-                                    ORDERNONDET.getAnnotationType())) {
-                                p.clearAnnotations();
-                                p.addAnnotation(AnnotationBuilder.fromClass(elements, Det.class));
-                            }
+                                returnAnno.getAnnotationType(), ORDERNONDET.getAnnotationType())) {
+                            p.clearAnnotations();
+                            p.addAnnotation(AnnotationBuilder.fromClass(elements, Det.class));
+                        }
+                    }
+                    if (types.isSameType(
+                            declAnno.getAnnotationType(), OND2VND.getAnnotationType())) {
+                        if (types.isSameType(
+                                returnAnno.getAnnotationType(), ORDERNONDET.getAnnotationType())) {
+                            p.clearAnnotations();
+                            p.addAnnotation(
+                                    AnnotationBuilder.fromClass(elements, ValueNonDet.class));
                         }
                     }
                 }

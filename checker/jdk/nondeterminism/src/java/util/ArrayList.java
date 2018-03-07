@@ -297,7 +297,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element whose presence in this list is to be tested
      * @return <tt>true</tt> if this list contains the specified element
      */
-    public boolean contains(Object o) {
+    @Ond2D @PolyDet public boolean contains(@PolyDet ArrayList<E> this, @PolyDet Object o) {
         return indexOf(o) >= 0;
     }
 
@@ -308,7 +308,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    public int indexOf(Object o) {
+    @Ond2Vnd @PolyDet public int indexOf(@PolyDet ArrayList<@PolyDet2 E> this, @PolyDet Object o) {
         if (o == null) {
             for (int i = 0; i < size; i++)
                 if (elementData[i]==null)
@@ -574,7 +574,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(Collection<? extends E> c) {
+    public boolean addAll(@PolyDet ArrayList<E> this, @PolyDet Collection<? extends E> c) {
         Object[] a = c.toArray();
         int numNew = a.length;
         ensureCapacityInternal(size + numNew);  // Increments modCount

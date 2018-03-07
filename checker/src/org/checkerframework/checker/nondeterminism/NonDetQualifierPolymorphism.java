@@ -35,6 +35,8 @@ public class NonDetQualifierPolymorphism extends QualifierPolymorphism {
         super.annotate(tree, type);
         polyQuals.put(factory.VALUENONDET, factory.POLYDET2);
         super.annotate(tree, type);
+        polyQuals.put(factory.VALUENONDET, factory.POLYDET3);
+        super.annotate(tree, type);
     }
 
     @Override

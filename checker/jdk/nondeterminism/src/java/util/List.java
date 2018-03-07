@@ -119,14 +119,14 @@ public interface List<E> extends Collection<E> {
      *
      * @return the number of elements in this list
      */
-    int size();
+    @Ond2D @PolyDet int size(@PolyDet List<E> this);
 
     /**
      * Returns <tt>true</tt> if this list contains no elements.
      *
      * @return <tt>true</tt> if this list contains no elements
      */
-    boolean isEmpty();
+    @Ond2D @PolyDet boolean isEmpty(@PolyDet List<E> this);
 
     /**
      * Returns <tt>true</tt> if this list contains the specified element.
@@ -143,14 +143,14 @@ public interface List<E> extends Collection<E> {
      *         list does not permit null elements
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    boolean contains(Object o);
+    @Ond2D @PolyDet boolean contains(@PolyDet List<E> this, @PolyDet Object o);
 
     /**
      * Returns an iterator over the elements in this list in proper sequence.
      *
      * @return an iterator over the elements in this list in proper sequence
      */
-    Iterator<E> iterator();
+    @PolyDet Iterator<@PolyDet2 E> iterator(@PolyDet List<@PolyDet2 E> this);
 
     /**
      * Returns an array containing all of the elements in this list in proper
@@ -236,7 +236,7 @@ public interface List<E> extends Collection<E> {
      * @throws IllegalArgumentException if some property of this element
      *         prevents it from being added to this list
      */
-    @Ond2D @PolyDet boolean add(@PolyDet List<@PolyDet2 E>this, @PolyDet2 E e);
+    @Ond2D @PolyDet boolean add(@PolyDet List<E>this, E e);
 
     /**
      * Removes the first occurrence of the specified element from this list,
@@ -259,7 +259,7 @@ public interface List<E> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this list
      */
-    boolean remove(Object o);
+    @Ond2D @PolyDet boolean remove(@PolyDet List<E> this, @PolyDet Object o);
 
 
     // Bulk Modification Operations
@@ -282,7 +282,7 @@ public interface List<E> extends Collection<E> {
      *         or if the specified collection is null
      * @see #contains(Object)
      */
-    boolean containsAll(Collection<?> c);
+    @Ond2D @PolyDet boolean containsAll(@PolyDet List<E> this, @PolyDet Collection<?> c);
 
     /**
      * Appends all of the elements in the specified collection to the end of
@@ -305,7 +305,7 @@ public interface List<E> extends Collection<E> {
      *         specified collection prevents it from being added to this list
      * @see #add(Object)
      */
-    boolean addAll(Collection<? extends E> c);
+    boolean addAll(@PolyDet List<E> this, @PolyDet2 Collection<? extends E> c);
 
     /**
      * Inserts all of the elements in the specified collection into this
@@ -529,7 +529,7 @@ public interface List<E> extends Collection<E> {
      * @see Object#equals(Object)
      * @see #equals(Object)
      */
-    int hashCode();
+    @Ond2Vnd @PolyDet int hashCode(@PolyDet List<@PolyDet2 E> this);
 
 
     // Positional Access Operations
@@ -542,7 +542,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E get(int index);
+    @Ond2Vnd @PolyDet E get(@PolyDet List<@PolyDet2 E> this, @PolyDet int index);
 
     /**
      * Replaces the element at the specified position in this list with the
@@ -562,7 +562,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E set(int index, E element);
+    @Ond2Vnd @PolyDet E set(@PolyDet List<@PolyDet2 E> this, @PolyDet int index, @PolyDet2 E element);
 
     /**
      * Inserts the specified element at the specified position in this list
@@ -620,7 +620,7 @@ public interface List<E> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    int indexOf(Object o);
+    @Ond2Vnd @PolyDet int indexOf(@PolyDet List<@PolyDet2 E> this, @PolyDet Object o);
 
     /**
      * Returns the index of the last occurrence of the specified element
@@ -706,7 +706,7 @@ public interface List<E> extends Collection<E> {
      *         (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
      *         fromIndex &gt; toIndex</tt>)
      */
-    List<E> subList(int fromIndex, int toIndex);
+    @Ond2Vnd @PolyDet List<@PolyDet2 E> subList(@PolyDet List<@PolyDet2 E> this, @PolyDet int fromIndex, @PolyDet int toIndex);
 
     /**
      * Creates a {@link Spliterator} over the elements in this list.
