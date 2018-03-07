@@ -78,7 +78,8 @@ public class ElementAnnotationUtil {
      * understand them as type annotations. In particular, this allows the transition from Java 5
      * declaration annotations to Java 8 type annotations.
      *
-     * <p>There are some caveats to this: the interpretation for declaration and type annotations
+     * <p>If the annotation is one of the Checker Framework compatibility annotations, for example
+     * {@link org.checkerframework.checker.nullness.compatqual.NonNullDecl}, the interpretation
      * differs, in particular for arrays and inner types. See the manual for a discussion.
      *
      * @param type the type to annotate
@@ -87,7 +88,17 @@ public class ElementAnnotationUtil {
     static void addAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
-        innerType.addAnnotations(annotations);
+        if (innerType != type) {
+            for (AnnotationMirror annotation : annotations) {
+                if (AnnotationUtils.annotationName(annotation).startsWith("org.checkerframework")) {
+                    innerType.addAnnotation(annotation);
+                } else {
+                    type.addAnnotation(annotation);
+                }
+            }
+        } else {
+            type.addAnnotations(annotations);
+        }
     }
 
     /**
