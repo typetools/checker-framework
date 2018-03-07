@@ -61,9 +61,15 @@ public class DefaultInferredTypesApplier {
             AnnotationMirror inferred,
             TypeMirror inferredTypeMirror,
             AnnotationMirror top) {
-
         AnnotationMirror primary = type.getAnnotationInHierarchy(top);
         if (inferred == null) {
+            if (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
+                // Dataflow might infer a wildcard that extends a type variable for types that are
+                // actually type variables.  Use the type variable instead.
+                while (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
+                    inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
+                }
+            }
             if (primary == null) {
                 // Type doesn't have a primary either, nothing to remove
             } else if (type.getKind() == TypeKind.TYPEVAR) {
@@ -112,13 +118,6 @@ public class DefaultInferredTypesApplier {
             TypeMirror inferredTypeMirror,
             AnnotationMirror top,
             AnnotationMirror previousAnnotation) {
-        if (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
-            // Dataflow might infer a wildcard that extends a type variable for types that are
-            // actually type variables.  Use the type variable instead.
-            while (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
-                inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
-            }
-        }
         if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
             ErrorReporter.errorAbort("Missing annos");
             return;
