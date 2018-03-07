@@ -147,7 +147,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Returns true if subtype {@literal <:} supertype
+     * Returns true if subtype {@literal <:} supertype. This implementation iterates over all top
+     * annotations and invokes {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror,
+     * AnnotationMirror)}. Most type systems should not override this method, but instead override
+     * {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror, AnnotationMirror)} or some of the
+     * {@code visitXXX} methods.
      *
      * @param subtype expected subtype
      * @param supertype expected supertype
@@ -166,15 +170,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Returns true if subtype {@literal <:} supertype
+     * Returns true if subtype {@literal <:} supertype, but only for the hierarchy of which {@code
+     * top} is the top.
      *
      * @param subtype expected subtype
      * @param supertype expected supertype
      * @param top the hierarchy for which we want to make a comparison
-     * @return true if subtype is actually a subtype of supertype
+     * @return returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier
+     *     hierarchy whose top is {@code top}
      */
-    @Override
-    public boolean isSubtype(
+    protected boolean isSubtype(
             final AnnotatedTypeMirror subtype,
             final AnnotatedTypeMirror supertype,
             final AnnotationMirror top) {
