@@ -153,10 +153,17 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
     @Override
     public Boolean visitNull_Declared(
             AnnotatedNullType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
-        // This is needed for tests/nullness/java8/Issue579.java
-        // I would like an implementation similar to visitDeclared_Null (or nothing at all),
-        // but this observed an AnnotatedNullType with NonNull as annotation.
-        return true;
+        if (visited.contains(subtype, supertype, currentTop)) {
+            return true;
+        }
+
+        if (!arePrimaryAnnotationsEqual(subtype, supertype)) {
+            return false;
+        }
+
+        Boolean result = !supertype.wasRaw();
+        visited.add(subtype, supertype, currentTop, result);
+        return result;
     }
 
     @Override
