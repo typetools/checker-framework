@@ -370,8 +370,32 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             }
 
             return canBeCovariant || checkAndSubtype(outsideWc.getSuperBound(), inside);
-        } else { // TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN
-            // ARE_EQUAL -> DO CAPTURE CONVERSION
+        } else if (TypesUtils.isCaptured(outside.getUnderlyingType())) {
+            if (typeargVisitHistory.contains(inside, outside, currentTop)) {
+                return true;
+            }
+            typeargVisitHistory.add(inside, outside, currentTop, true);
+
+            final AnnotatedTypeVariable outsideCW = (AnnotatedTypeVariable) outside;
+
+            AnnotatedTypeMirror outsideWcUB = outsideCW.getUpperBound();
+            if (inside.getKind() == TypeKind.WILDCARD) {
+                outsideWcUB =
+                        checker.getTypeFactory()
+                                .widenToUpperBound(outsideWcUB, (AnnotatedWildcardType) inside);
+            }
+            while (outsideWcUB.getKind() == TypeKind.WILDCARD) {
+                outsideWcUB = ((AnnotatedWildcardType) outsideWcUB).getExtendsBound();
+            }
+
+            AnnotatedTypeMirror castedInside = castedAsSuper(inside, outsideWcUB);
+            if (!checkAndSubtype(castedInside, outsideWcUB)) {
+                return false;
+            }
+
+            return canBeCovariant || checkAndSubtype(outsideCW.getLowerBound(), inside);
+
+        } else {
             if (canBeCovariant) {
                 return isSubtype(inside, outside, currentTop);
             }
