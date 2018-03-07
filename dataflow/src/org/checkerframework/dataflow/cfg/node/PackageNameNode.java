@@ -1,15 +1,12 @@
 package org.checkerframework.dataflow.cfg.node;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -27,7 +24,7 @@ public class PackageNameNode extends Node {
     protected final Element element;
 
     /** The parent name, if any. */
-    protected final /*@Nullable*/ PackageNameNode parent;
+    protected final @Nullable PackageNameNode parent;
 
     public PackageNameNode(IdentifierTree tree) {
         super(TreeUtils.typeOf(tree));

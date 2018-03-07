@@ -122,7 +122,7 @@
         -->
     </target>
 
-    <target name="build" depends="prep,build.check.uptodate"
+    <target name="build" depends="prep,build.check.uptodate,checker-qual-jar"
             unless="build.uptodate"
             description="Compile files.  Does not update any jars">
 
@@ -141,7 +141,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}:${checker.qual.lib}:"
               classname="com.sun.tools.javac.Main">
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->

@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.analysis;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
@@ -12,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -118,7 +115,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ A getValue(Node n) {
+    public @Nullable A getValue(Node n) {
         return nodeValues.get(n);
     }
 
@@ -126,7 +123,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ A getValue(Tree t) {
+    public @Nullable A getValue(Tree t) {
         Set<Node> nodes = treeLookup.get(t);
 
         if (nodes == null) {
@@ -152,22 +149,24 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Returns the {@code Node}s corresponding to a particular {@code Tree}. Multiple {@code Node}s
-     * can correspond to a single {@code Tree} because of two reasons:
+     * can correspond to a single {@code Tree} because of several reasons:
      *
      * <ol>
      *   <li>In a lambda expression such as {@code () -> 5} the {@code 5} is both an {@code
-     *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}. The caller of the method
-     *       needs to decide which {@code Node} they are interested in.
+     *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}.
+     *   <li>Narrowing and widening primitive conversions can result in {@code
+     *       NarrowingConversionNode} and {@code WideningConversionNode}.
+     *   <li>Automatic String conversion can result in a {@code StringConversionNode}.
      *   <li>Trees for {@code finally} blocks are cloned to achieve a precise CFG. Any {@code Tree}
      *       within a finally block can have multiple corresponding {@code Node}s attached to them.
      * </ol>
      *
      * Callers of this method should always iterate through the returned set, possibly ignoring all
-     * {@code LambdaResultExpressionNode}.
+     * {@code Node}s they are not interested in.
      *
      * @return the set of {@link Node}s for a given {@link Tree}.
      */
-    public /*@Nullable*/ Set<Node> getNodesForTree(Tree tree) {
+    public @Nullable Set<Node> getNodesForTree(Tree tree) {
         return treeLookup.get(tree);
     }
 
