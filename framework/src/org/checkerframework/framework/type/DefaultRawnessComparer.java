@@ -311,11 +311,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         // tests/all-systems/java8inference/Issue1815.java
         visited.add(subtype, supertype, currentTop, true);
 
-        // TODO: tests/all-systems/InferTypeArgsCondtionalExpression.java
-        // breaks with this:
         Boolean result = this.visit(subtypeUb, supertype, visited);
-        // it doesn't make sense to me to compare subtype and subtypeUB
-        //        Boolean result = this.visit(subtype, subtypeUb, visited);
         visited.add(subtype, supertype, currentTop, result);
         visited.add(subtypeUb, supertype, currentTop, result);
         return result;
