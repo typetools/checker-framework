@@ -46,8 +46,8 @@ The Nondeterminism type system uses the following annotations:
   \code{@OrderNonDet} is a supertype of \code{@Det}.
    It is the default qualifier.
 \item
-  \refqualclass{checker/nondeterminism/qual}{PolyDet and PolyDet2} are qualifiers that are
-  polymorphic over nondeterminism (see Section~\ref{qualifier-polymorphism}).
+  \refqualclass{checker/nondeterminism/qual}{PolyDet} is a
+  polymorphic qualifier over nondeterminism (see Section~\ref{qualifier-polymorphism}).
 \end{itemize}
 
 \section{Nondeterminism annotations for all other types\label{nondeterminism-annotations-elements}}
@@ -61,14 +61,15 @@ The Nondeterminism type system uses the following annotations:
   the value remains the same in any execution.
 \end{itemize}
 
-Note that non-collections may not be annotated as \code{@OrderNonDet}
+Note that non-collections may not be annotated as \code{@OrderNonDet}.
+Figure~\ref{fig-hierarchy} shows the relationship among these
+type qualifiers.
 
-\begin{figure}
+\begin{figure}[h]\caption{Type hierarchy}
 	\begin{center}
-		\includeimage{nondet-hierarchy}{5cm}
+		\includeimage{nondet-hierarchy}{8cm}
 	\end{center}
-	\caption{Type hierarchy}
-	\label{fig-ihierarchy}
+	\label{fig-hierarchy}
 \end{figure}
 
 \section{Valid annotations on Collections\label{type-validity}}
@@ -85,7 +86,8 @@ subtype of the annotation on the Collection itself. Here are a few examples illu
 
 \begin{figure}[h]\caption{Invalid types}
 	\begin{enumerate}
-		\item @Det Set<@ValueNonDetDet Integer> : The @Det annotation on Set means that iterating over its elements will produce the same elements in the exact same order across executions. But the @ValueNonDet annotation on Integer violates this guarantee. Therefore, this is an invalid type annotation.
+		\item @Det Set<@ValueNonDetDet Integer> : The @Det annotation on Set means that iterating over its elements will produce the same
+		elements in the exact same order across executions. But the @ValueNonDet annotation on Integer violates this guarantee. Therefore, this is an invalid type annotation.
 		\item @ValueNonDet List<@OrderNonDet String> - This is invalid because @OrderNonDet can be used only with Collections but it is used with a String here.
 	\end{enumerate}
 \end{figure}
@@ -127,19 +129,18 @@ Type outer\_type( Type tx )
 \section{Method annotations\label{method-annotations}}
 In addition to annotating the return type and the parameters of a method, users can supply the type annotations -
 @Ond2D or @Ond2Vnd on method declarations.
-If a return type is annotated as @Polydet, @Polydet gets resolved to @OrderNonDet, and the method declaration has a type annotation @Ond2D,
+If a return type is annotated as @Polydet and if this @Polydet gets resolved to @OrderNonDet, and if the method declaration has a type annotation @Ond2D,
 the checker replaces the return type from @OrderNonDet to @Det. Similarly, when the checker sees a type annotation @Ond2Vnd, it
 replaces @OrderNonDet with @ValueNonDet. The next section illustrates how these annotations are used.
 
 \section{Library Annotations\label{library-Annotations}}
 \subsection{Methods common to Lists and Sets\label{lib-methods}}
-In the type annotations that follow, @PolyDet and @PolyDet2 are polymorphic annotations.
 \begin{description}
-	\item[@Ond2D @PolyDet  boolean add (@PolyDet List <@PolyDet2 E> this, @PolyDet2 E e)] Suppose the List is of
-	type @OrderNonDet List<@Det Integer>, this annotation ensures that the element to be added (E e) must be @Det. This is
-	done with the help of @PolyDet2. The return type in this case will be annotated as @Det because of the @Ond2D annotation.
-	\item[@ond2D @PolyDet  boolean contains (@PolyDet List <@PolyDet2 E> this, @PolyDet2 E e)]
-	\item[@Ond2D @PolyDet int size (@PolyDet List <@PolyDet2 E> this)]
+	\item[@Ond2D @PolyDet  boolean add (@PolyDet List <E> this, E e)] Suppose the List is of
+	type @OrderNonDet List<@Det Integer>, the element to be added (E e) must be a subtype of @Det.
+	The return type in this case will be annotated as @Det because of the @Ond2D annotation.
+	\item[@Ond2D @PolyDet  boolean contains (@PolyDet List <E> this, E e)]
+	\item[@Ond2D @PolyDet int size (@PolyDet List <E> this)]
 \end{description}
 
 \section{Type system guarantess\label{type-system-guarantees}}
@@ -152,5 +153,5 @@ The underlying type system provides the following guarantees:
 \section{Checker guarantees\label{error-reporting}}
 In addition to its usual type mismatch errors, the Nondeterminism checker reports the following:
 \begin{enumerate}
-	\item A \code{print} statement if any of its arguments has the type annotation @ValueNonDet or @OrderNonDet.
+	\item A \code{print} statement flags an error if any of its arguments has the type annotation @ValueNonDet or @OrderNonDet.
 \end{enumerate}

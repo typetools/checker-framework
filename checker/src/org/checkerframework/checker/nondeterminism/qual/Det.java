@@ -8,6 +8,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
+/**
+ * Indicates that the value remains the same across executions
+ *
+ * @checker_framework.manual #nondeterminism-checker NonDeterminism Checker
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
