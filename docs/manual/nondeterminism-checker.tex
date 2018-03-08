@@ -1,33 +1,46 @@
 \htmlhr
 \chapter{Nondeterminism Checker\label{nondeterminism-checker}}
-When a program produces diverging outputs across executions on the same input, developers
-have a hard time debugging such programs.
-The non-determinism checker identifies locations in source code that might result in different execution outcomes.
-In particular, it checks for non-determinism that pertains to the use of Java Collections.
-Consider the following example:
-\begin{Verbatim}
-	Set<Integer> st = new HashSet<Integer>();
-	for(int i = 0 ; i < 10 ; i++)
-	    st.add(i);
-	Iterator<Integer> it = st.iterator();
-	while(iterator.hasNext())
-	    System.out.println(iterator.next());
 
+A nondeterministic program is one that may produce different output when
+run twice on the same input.  Nondeterministic programs are hard to debug
+(it may be difficult to reproduce an incorrect behavior), and it is hard to
+compare multiple outputs or logs.
+
+Even single-threaded programs are frequently nondeterministic.
+One cause is calls to Random, Date, and Time.
+Another cause is use of hash tables, whose iteration order is
+nondeterministic across runs.
+For example, even if the set contains the same values, the following code
+may produce output in different orders:
+
+\begin{Verbatim}
+  printSet(HashSet arg) {
+    for (Object x : arg) {
+      System.out.println(x);
+    }
+  }
 \end{Verbatim}
 
-The code above is non-deterministic because a HashSet is not ordered and its elements could be printed in different orders across executions.
-On the other hand, certain Set functions like 'contains' always return deterministic results.
+The Nondeterminism Checker enables a programmer to indicate which
+computations should be the same across runs of a single-threaded program,
+and then the Nondeterminism Checker verifies that property.
+
+Another common cause of nondeterminism is the operating system scheduler,
+for concurrent programs.  The Nondeterminism Checker does not address this
+cause of nondeterminism.  Also, the Nondeterminism Checker does not warn
+about the possibility that the file system contains different files or
+contents on different runs of a program.
 
 To run the Nondeterminism Checker, supply the
-\code{-processor NonDeterminismChecker}
+\code{-processor NondeterminismChecker}
 command-line option to javac.
 For example:
 
 \begin{alltt}
-	javac -processor NonDeterminismChecker inputFile.java
+	javac -processor NondeterminismChecker inputFile.java
 \end{alltt}
 
-%./bin/javac -cp NonDetTypeChecker/jsr308/checker-framework/checker/build -processor org.checkerframework.checker.nondeterminism.NonDeterminismChecker NDCheckerTest/src/TestListUnsafe2.java
+%./bin/javac -cp NonDetTypeChecker/jsr308/checker-framework/checker/build -processor org.checkerframework.checker.nondeterminism.NondeterminismChecker NDCheckerTest/src/TestListUnsafe2.java
 
 \section{Nondeterminism annotations for collections\label{nondeterminism-annotations-collections}}
 
@@ -155,3 +168,5 @@ In addition to its usual type mismatch errors, the Nondeterminism checker report
 \begin{enumerate}
 	\item A \code{print} statement flags an error if any of its arguments has the type annotation @ValueNonDet or @OrderNonDet.
 \end{enumerate}
+
+%%  LocalWords:  NondeterminismChecker

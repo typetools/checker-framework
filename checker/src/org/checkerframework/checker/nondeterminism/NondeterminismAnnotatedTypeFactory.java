@@ -19,7 +19,7 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
-public class NonDeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class NondeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET = AnnotationBuilder.fromClass(elements, PolyDet.class);
     public final AnnotationMirror POLYDET2 = AnnotationBuilder.fromClass(elements, PolyDet2.class);
     public final AnnotationMirror POLYDET3 = AnnotationBuilder.fromClass(elements, PolyDet3.class);
@@ -30,7 +30,7 @@ public class NonDeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     public final AnnotationMirror VALUENONDET =
             AnnotationBuilder.fromClass(elements, ValueNonDet.class);
 
-    public NonDeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
+    public NondeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
     }
@@ -55,12 +55,12 @@ public class NonDeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new NonDeterminismTreeAnnotator(this), super.createTreeAnnotator());
+                new NondeterminismTreeAnnotator(this), super.createTreeAnnotator());
     }
 
-    private class NonDeterminismTreeAnnotator extends TreeAnnotator {
+    private class NondeterminismTreeAnnotator extends TreeAnnotator {
 
-        public NonDeterminismTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+        public NondeterminismTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 

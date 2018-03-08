@@ -5,12 +5,12 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class NonDeterminismTest extends CheckerFrameworkPerDirectoryTest {
+public class NondeterminismTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NonDeterminismTest(List<File> testFiles) {
+    public NondeterminismTest(List<File> testFiles) {
         super(
                 testFiles,
-                org.checkerframework.checker.nondeterminism.NonDeterminismChecker.class,
+                org.checkerframework.checker.nondeterminism.NondeterminismChecker.class,
                 "nondeterminism",
                 "-Anomsgtext");
     }
