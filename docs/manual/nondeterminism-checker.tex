@@ -8,16 +8,14 @@ compare multiple outputs or logs.
 
 Even single-threaded programs are frequently nondeterministic.
 One cause is calls to Random, Date, and Time.
-Another cause is use of hash tables, whose iteration order is
-nondeterministic across runs.
+Another cause is use of hash tables (including \<HashSet>s and
+\<HashMap>s), whose iteration order is nondeterministic across runs.
 For example, even if the set contains the same values, the following code
 may produce output in different orders:
 
 \begin{Verbatim}
-  printSet(HashSet arg) {
-    for (Object x : arg) {
-      System.out.println(x);
-    }
+  for (Object x : mySet) {
+    System.out.println(x);
   }
 \end{Verbatim}
 
@@ -37,96 +35,81 @@ command-line option to javac.
 For example:
 
 \begin{alltt}
-	javac -processor NondeterminismChecker inputFile.java
+  javac -processor NondeterminismChecker inputFile.java
 \end{alltt}
 
 %./bin/javac -cp NonDetTypeChecker/jsr308/checker-framework/checker/build -processor org.checkerframework.checker.nondeterminism.NondeterminismChecker NDCheckerTest/src/TestListUnsafe2.java
 
-\section{Nondeterminism annotations for collections\label{nondeterminism-annotations-collections}}
 
-The Nondeterminism type system uses the following annotations:
-\begin{itemize}
-\item
-  \refqualclass{checker/nondeterminism/qual}{ValueNonDet} indicates
-  that the collection can have possibly different values in two different executions.
-\item
-  \refqualclass{checker/nondeterminism/qual}{OrderNonDet} indicates that
-  the collection will have the same elements, but in a possibly different order in two different executions.
+\section{Nondeterminism annotations\label{nondeterminism-annotations}}
+
+The Nondeterminism type system uses the following annotations (see Figure~\ref{fig-hierarchy}):
+\begin{description}
+\item[\refqualclass{checker/nondeterminism/qual}{ValueNonDet}] indicates
+  that the expression might have different values in two different executions.
+\item[\refqualclass{checker/nondeterminism/qual}{OrderNonDet}] applies only
+  to collections, and indicates that the collection will have the same
+  elements, but in a possibly different order, in two different executions.
   \code{@ValueNonDet} is a supertype of \code{@OrderNonDet}.
- \item
-  \refqualclass{checker/nondeterminism/qual}{Det} indicates that
-  the collection will have the same elements, in the same order across all executions.
-  \code{@OrderNonDet} is a supertype of \code{@Det}.
-   It is the default qualifier.
-\item
-  \refqualclass{checker/nondeterminism/qual}{PolyDet} is a
+\item[\refqualclass{checker/nondeterminism/qual}{Det}] indicates that
+  the expression evaluates to the same value (up to equality) on all executions.
+  This is the default qualifier.
+\item[\refqualclass{checker/nondeterminism/qual}{PolyDet}] is a
   polymorphic qualifier over nondeterminism (see Section~\ref{qualifier-polymorphism}).
-\end{itemize}
+\end{description}
 
-\section{Nondeterminism annotations for all other types\label{nondeterminism-annotations-elements}}
-
-\begin{itemize}
-\item
-  \refqualclass{checker/nondeterminism/qual}{ValueNonDet} indicates
-  that this type can possibly have different values across different executions.
- \item
-  \refqualclass{checker/nondeterminism/qual}{Det} indicates that
-  the value remains the same in any execution.
-\end{itemize}
-
-Note that non-collections may not be annotated as \code{@OrderNonDet}.
-Figure~\ref{fig-hierarchy} shows the relationship among these
-type qualifiers.
-
-\begin{figure}[h]\caption{Type hierarchy}
-	\begin{center}
-		\includeimage{nondet-hierarchy}{8cm}
-	\end{center}
-	\label{fig-hierarchy}
+\begin{figure}
+  \begin{center}
+    \includeimage{nondet}{4cm}
+  \end{center}
+\caption{Type hierarchy}
+\label{fig-hierarchy}
 \end{figure}
 
-\section{Valid annotations on Collections\label{type-validity}}
+
+\section{Declaring Collections\label{nondeterminism-type-validity}}
+
 The annotations on Collections must satisfy the constraint that the annotation on type parameter of a Collection must be a
 subtype of the annotation on the Collection itself. Here are a few examples illustrating this.
 
-\subsection{Examples\label{validity-examples}}
+\subsection{Examples\label{nondeterminism-validity-examples}}
 \begin{figure}[h]\caption{Valid types}
-	\begin{enumerate}
-		\item @Det List<@Det Integer>
-		\item @ValueNonDet List<@OrderNonDet Set<@Det String>>
-	\end{enumerate}
+  \begin{enumerate}
+    \item @Det List<@Det Integer>
+    \item @ValueNonDet List<@OrderNonDet Set<@Det String>>
+  \end{enumerate}
 \end{figure}
 
 \begin{figure}[h]\caption{Invalid types}
-	\begin{enumerate}
-		\item @Det Set<@ValueNonDetDet Integer> : The @Det annotation on Set means that iterating over its elements will produce the same
-		elements in the exact same order across executions. But the @ValueNonDet annotation on Integer violates this guarantee. Therefore, this is an invalid type annotation.
-		\item @ValueNonDet List<@OrderNonDet String> - This is invalid because @OrderNonDet can be used only with Collections but it is used with a String here.
-	\end{enumerate}
+  \begin{enumerate}
+    \item @Det Set<@ValueNonDetDet Integer> : The @Det annotation on Set means that iterating over its elements will produce the same
+    elements in the exact same order across executions. But the @ValueNonDet annotation on Integer violates this guarantee. Therefore, this is an invalid type annotation.
+    \item @ValueNonDet List<@OrderNonDet String> - This is invalid because @OrderNonDet can be used only with Collections but it is used with a String here.
+  \end{enumerate}
 \end{figure}
 
-Table~\ref{Tab:validity} shows the valid annotations on Collections and their type parameters.
+Figure~\ref{fig-nondeterminism-collections} shows the valid annotations on Collections and their type parameters.
 The Cells marked XXX are the invalid ones.
-\begin{table}[h]
-	\centering
-	\caption{Valid Collections}
-	\label{Tab:validity}
-	\begin{tabular}{|l|l|l|l|l|}
-		\hline
-		& 		\multicolumn{4}{l|}{Type Parameter}		                                                                   \\ \hline
-		&             & ValueNonDet                                     & OrderNonDet              & Det \\ \cline{2-5}
-		Collection    & ValueNonDet &                                                 &                          &     \\ \cline{2-5}
-		& OrderNonDet &   XXX  &                          &     \\ \cline{2-5}
-		& Det         &         XXX               &  	XXX	&     \\ \hline
-	\end{tabular}
+\begin{table}
+  \centering
+  \begin{tabular}{|l|l|l|l|l|}
+    \hline
+    &     \multicolumn{4}{l|}{Type Parameter}                                                                       \\ \hline
+    &             & ValueNonDet                                     & OrderNonDet              & Det \\ \cline{2-5}
+    Collection    & ValueNonDet &                                                 &                          &     \\ \cline{2-5}
+    & OrderNonDet &   XXX  &                          &     \\ \cline{2-5}
+    & Det         &         XXX               &    XXX  &     \\ \hline
+  \end{tabular}
+  \caption{Valid Collections}
+  \label{fig-nondeterminism-collections}
 \end{table}
 
 %Formally, the type validity rule is stated as follows:
 
 %\begin{prooftree}
-%	\AxiomC{is\_Collection\_Type(tc)}
-%	\AxiomC{outer\_type(tx) <= tc}
-%	\BinaryInfC{|- : tc<tx> }
+%  \AxiomC{is\_Collection\_Type(tc)}
+%  \AxiomC{outer\_type(tx) <= tc}
+%  \BinaryInfC{|- : tc<tx> }
 %\end{prooftree}
 
 \begin{verbatim}
@@ -139,34 +122,34 @@ Type outer\_type( Type tx )
 }
 \end{verbatim}
 
-\section{Method annotations\label{method-annotations}}
+\section{Method annotations\label{nondeterminism-method-annotations}}
 In addition to annotating the return type and the parameters of a method, users can supply the type annotations -
 @Ond2D or @Ond2Vnd on method declarations.
 If a return type is annotated as @Polydet and if this @Polydet gets resolved to @OrderNonDet, and if the method declaration has a type annotation @Ond2D,
 the checker replaces the return type from @OrderNonDet to @Det. Similarly, when the checker sees a type annotation @Ond2Vnd, it
 replaces @OrderNonDet with @ValueNonDet. The next section illustrates how these annotations are used.
 
-\section{Library Annotations\label{library-Annotations}}
+\section{Library Annotations\label{nondeterminism-library-annotations}}
 \subsection{Methods common to Lists and Sets\label{lib-methods}}
 \begin{description}
-	\item[@Ond2D @PolyDet  boolean add (@PolyDet List <E> this, E e)] Suppose the List is of
-	type @OrderNonDet List<@Det Integer>, the element to be added (E e) must be a subtype of @Det.
-	The return type in this case will be annotated as @Det because of the @Ond2D annotation.
-	\item[@Ond2D @PolyDet  boolean contains (@PolyDet List <E> this, E e)]
-	\item[@Ond2D @PolyDet int size (@PolyDet List <E> this)]
+  \item[@Ond2D @PolyDet  boolean add (@PolyDet List <E> this, E e)] Suppose the List is of
+  type @OrderNonDet List<@Det Integer>, the element to be added (E e) must be a subtype of @Det.
+  The return type in this case will be annotated as @Det because of the @Ond2D annotation.
+  \item[@Ond2D @PolyDet  boolean contains (@PolyDet List <E> this, E e)]
+  \item[@Ond2D @PolyDet int size (@PolyDet List <E> this)]
 \end{description}
 
-\section{Type system guarantess\label{type-system-guarantees}}
+\section{Type system guarantess\label{nondeterminism-type-system-guarantees}}
 The underlying type system provides the following guarantees:
 \begin{enumerate}
-	\item Assignment from a subtype to a supertype is flagged as an error.
-	\item The formal arguments to a method must be a subtypes of parameters in the declaration. Otherwise, the checker framework reports an error.
+  \item Assignment from a subtype to a supertype is flagged as an error.
+  \item The formal arguments to a method must be a subtypes of parameters in the declaration. Otherwise, the checker framework reports an error.
 \end{enumerate}
 
-\section{Checker guarantees\label{error-reporting}}
+\section{Checker guarantees\label{nondeterminism-error-reporting}}
 In addition to its usual type mismatch errors, the Nondeterminism checker reports the following:
 \begin{enumerate}
-	\item A \code{print} statement flags an error if any of its arguments has the type annotation @ValueNonDet or @OrderNonDet.
+  \item A \code{print} statement flags an error if any of its arguments has the type annotation @ValueNonDet or @OrderNonDet.
 \end{enumerate}
 
 %%  LocalWords:  NondeterminismChecker
