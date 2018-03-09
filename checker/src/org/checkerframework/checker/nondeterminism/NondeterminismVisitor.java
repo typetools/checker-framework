@@ -21,8 +21,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class NonDeterminismVisitor extends BaseTypeVisitor<NonDeterminismAnnotatedTypeFactory> {
-    public NonDeterminismVisitor(BaseTypeChecker checker) {
+public class NondeterminismVisitor extends BaseTypeVisitor<NondeterminismAnnotatedTypeFactory> {
+    public NondeterminismVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

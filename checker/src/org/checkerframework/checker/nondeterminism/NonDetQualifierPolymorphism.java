@@ -13,10 +13,10 @@ import org.checkerframework.javacutil.ErrorReporter;
 public class NonDetQualifierPolymorphism extends QualifierPolymorphism {
 
     ProcessingEnvironment env;
-    NonDeterminismAnnotatedTypeFactory factory;
+    NondeterminismAnnotatedTypeFactory factory;
 
     public NonDetQualifierPolymorphism(
-            ProcessingEnvironment env, NonDeterminismAnnotatedTypeFactory factory) {
+            ProcessingEnvironment env, NondeterminismAnnotatedTypeFactory factory) {
         super(env, factory, new HashMap<>());
         this.env = env;
         this.factory = factory;

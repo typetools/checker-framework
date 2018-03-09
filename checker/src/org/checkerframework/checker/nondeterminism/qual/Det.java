@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * Indicates that the value remains the same across executions
  *
- * @checker_framework.manual #nondeterminism-checker NonDeterminism Checker
+ * @checker_framework.manual #nondeterminism-checker Nondeterminism Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

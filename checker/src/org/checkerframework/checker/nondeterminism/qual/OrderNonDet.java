@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Indicates that the collection has the same elements in possibly different orders across
  * executions. Non-collections cannot be annotated with this type.
  *
- * @checker_framework.manual #nondeterminism-checker NonDeterminism Checker
+ * @checker_framework.manual #nondeterminism-checker Nondeterminism Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
