@@ -275,7 +275,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return the number of elements in this list
      */
-    public int size() {
+    @Ond2D @PolyDet public int size(@PolyDet ArrayList<E> this) {
         return size;
     }
 
@@ -284,7 +284,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return <tt>true</tt> if this list contains no elements
      */
-    public boolean isEmpty() {
+    @Ond2D @PolyDet public boolean isEmpty(@PolyDet ArrayList<E> this) {
         return size == 0;
     }
 
@@ -441,7 +441,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E set(int index, E element) {
+    public @Ond2Vnd @PolyDet E set(@PolyDet ArrayList<E> this, int index, E element) {
         rangeCheck(index);
 
         E oldValue = elementData(index);
@@ -831,7 +831,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return an iterator over the elements in this list in proper sequence
      */
-    public Iterator<E> iterator() {
+    public @PolyDet Iterator<E> iterator(@PolyDet ArrayList<E> this) {
         return new Itr();
     }
 

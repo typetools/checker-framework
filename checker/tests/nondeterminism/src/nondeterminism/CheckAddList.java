@@ -16,11 +16,19 @@ public class CheckAddList {
             @ValueNonDet ArrayList<@ValueNonDet ArrayList<@Det Integer>> lst,
             @OrderNonDet ArrayList<@Det Integer> i) {
         lst.add(i);
+        lst.iterator();
     }
 
     void addToList3(
             @Det ArrayList<@Det ArrayList<@Det Integer>> lst,
             @OrderNonDet ArrayList<@Det ArrayList<Integer>> i) {
         lst.addAll(i);
+    }
+    
+    void addToList4(
+            @ValueNonDet ArrayList<@Det Integer> lst,
+            @ValueNonDet int i) {
+        lst.add(i);
+        lst.iterator();
     }
 }
