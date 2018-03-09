@@ -83,9 +83,9 @@ For example, these types are valid:
     \item \code{@ValueNonDet List<@OrderNonDet Set<@Det String>}\code{>}
 \end{itemize}
 
-These types are invald:
+These types are invalid:
   \begin{itemize}
-    \item \code{@Det Set<@ValueNonDetDet Integer>}
+    \item \code{@Det Set<@ValueNonDet Integer>}
     \item \code{@OrderNonDet String}
   \end{itemize}
 
@@ -133,7 +133,7 @@ Collection    & OrderNonDet &   invalid  &                          &     \\ \cl
 \end{description}
 
 The Nondeterminism Checker makes
-several enhancements to standerd polymorphic qualifiers.
+several enhancements to standard polymorphic qualifiers.
 
 
 \subsection{Replacing @OrderNonDet\label{nondeterminism-polymorphism-ordernondet}}
@@ -238,4 +238,5 @@ printing methods, some of which can take nondeterministic inputs.  You can
 also override the JDK annotations by providing a stub file.
 
 
-%%  LocalWords:  NondeterminismChecker
+%%  LocalWords:  NondeterminismChecker HashSet InputFile ValueNonDet Det
+%%  LocalWords:  OrderNonDet PolyDet Ond2D Ond2Vnd UsePolyDet println
