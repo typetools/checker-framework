@@ -1,6 +1,5 @@
 // Test case for Issue 478:
 // https://github.com/typetools/checker-framework/issues/478
-// @below-java8-jdk-skip-test
 
 import java.io.Serializable;
 import java.util.Comparator;

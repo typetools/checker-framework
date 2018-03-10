@@ -9,12 +9,13 @@ manual-style.tex \
 introduction.tex \
 nullness-checker.tex \
 map-key-checker.tex \
+optional-checker.tex \
 interning-checker.tex \
 lock-checker.tex \
 index-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
-nondeterminism-checker.tex \
+determinism-checker.tex \
 regex-checker.tex \
 formatter-checker.tex \
 i18n-format-checker.tex \

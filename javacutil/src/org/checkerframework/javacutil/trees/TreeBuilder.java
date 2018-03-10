@@ -66,18 +66,6 @@ public class TreeBuilder {
     }
 
     /**
-     * Copy an AST Tree, including types and symbols in the tree.
-     *
-     * @param input a tree to be copied
-     * @return a copied tree
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends Tree> T copy(T input) {
-        T copied = (T) new FullyTreeCopier(maker).copy((JCTree) input);
-        return copied;
-    }
-
-    /**
      * Builds an AST Tree to access the iterator() method of some iterable expression.
      *
      * @param iterableExpr an expression whose type is a subtype of Iterable

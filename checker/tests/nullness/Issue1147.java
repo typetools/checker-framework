@@ -1,5 +1,4 @@
 // Issue 1147 https://github.com/typetools/checker-framework/issues/1147
-// @below-java8-jdk-skip-test
 
 import java.util.StringJoiner;
 

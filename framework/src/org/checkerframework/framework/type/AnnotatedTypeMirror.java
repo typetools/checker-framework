@@ -1,11 +1,5 @@
 package org.checkerframework.framework.type;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.interning.qual.*;
-*/
-
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -30,6 +24,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolyAll;
@@ -1106,7 +1102,7 @@ public abstract class AnnotatedTypeMirror {
          * @return the receiver type of this executable type; null for static methods and
          *     constructors of top-level classes
          */
-        public /*@Nullable*/ AnnotatedDeclaredType getReceiverType() {
+        public @Nullable AnnotatedDeclaredType getReceiverType() {
             if (receiverType == null
                     // Static methods don't have a receiver
                     && !ElementUtils.isStatic(getElement())
@@ -1213,11 +1209,11 @@ public abstract class AnnotatedTypeMirror {
             return shallowCopy(true);
         }
 
-        public /*@NonNull*/ ExecutableElement getElement() {
+        public @NonNull ExecutableElement getElement() {
             return element;
         }
 
-        public void setElement(/*@NonNull*/ ExecutableElement elem) {
+        public void setElement(@NonNull ExecutableElement elem) {
             this.element = elem;
         }
 

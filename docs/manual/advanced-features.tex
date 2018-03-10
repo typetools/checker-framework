@@ -184,6 +184,7 @@ references to be treated as if they had a default annotation.
 There are several defaulting mechanisms, for convenience and flexibility.
 When determining the default qualifier for a use of a type, the following
 rules are used in order, until one applies.
+(Some of these currently do not work in stub files.)
 \begin{itemize}
 \item
   Use the innermost user-written \code{@DefaultQualifier}, as explained in
@@ -743,6 +744,10 @@ Type systems that support a run-time test are:
 \item
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
+\item
+  \ahrefloc{optional-checker}{Optional Checker} for errors in using the
+  \sunjavadoc{java/util/Optional.html}{Optional} type (see
+  \chapterpageref{optional-checker})
 \item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})

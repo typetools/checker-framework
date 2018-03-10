@@ -295,7 +295,7 @@ class String{
     @StaticallyExecutable int indexOf(String str);
     @StaticallyExecutable int indexOf(String str, int fromIndex);
     @StaticallyExecutable @PolyValue String intern(@PolyValue String this);
-    @StaticallyExecutable boolean isEmpty();
+    @StaticallyExecutable @EnsuresMinLenIf(expression="this", result=false, targetValue=1) boolean isEmpty();
     @StaticallyExecutable int lastIndexOf(int ch);
     @StaticallyExecutable int lastIndexOf(int ch, int fromIndex);
     @StaticallyExecutable int lastIndexOf(String str);

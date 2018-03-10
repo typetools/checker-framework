@@ -21,6 +21,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -224,7 +225,7 @@ public abstract class CFAbstractTransfer<
     /** The initial store maps method formal parameters to their currently most refined type. */
     @Override
     public S initialStore(
-            UnderlyingAST underlyingAST, /*@Nullable */ List<LocalVariableNode> parameters) {
+            UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
         if (fixedInitialStore != null
                 && underlyingAST.getKind() != Kind.LAMBDA
                 && underlyingAST.getKind() != Kind.METHOD) {

@@ -1,12 +1,5 @@
 package org.checkerframework.framework.util;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-*/
-
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
