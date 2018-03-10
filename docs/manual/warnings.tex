@@ -726,8 +726,11 @@ is treated as if the programmer had written
 \end{Verbatim}
 
 \noindent
-because Android's \<@NonNull> annotation is a declaration annotation that
-is specified to apply to the top-level return type of the annotated method.
+because Android's \<@NonNull> annotation is a declaration annotation, which
+is understood to apply to the top-level return type of the annotated method.
+
+When possible, you should use type annotations rather than declaration
+annotations.
 
 
 \subsection{Annotations in comments\label{annotations-in-comments}}
