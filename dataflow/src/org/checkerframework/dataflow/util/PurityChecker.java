@@ -24,11 +24,6 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 /**
  * A visitor that determines the purity (as defined by {@link
  * org.checkerframework.dataflow.qual.SideEffectFree}, {@link

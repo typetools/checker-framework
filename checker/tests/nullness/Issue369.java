@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toSet;
 
 import java.util.stream.Stream;
 
-// @below-java8-jdk-skip-test
 public class Issue369 {
     static void test(Stream<Integer> stream) {
         stream.collect(toSet());

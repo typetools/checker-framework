@@ -1,9 +1,5 @@
 package org.checkerframework.framework.flow;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -14,6 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -181,7 +178,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * incomparable as determined by {@link QualifierHierarchy#isSubtype(AnnotationMirror,
      * AnnotationMirror)}, then the respective value from {@code backup} is used.
      */
-    public V mostSpecific(/*@Nullable*/ V other, /*@Nullable*/ V backup) {
+    public V mostSpecific(@Nullable V other, @Nullable V backup) {
         if (other == null) {
             @SuppressWarnings("unchecked")
             V v = (V) this;
@@ -314,15 +311,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    public V leastUpperBound(/*@Nullable*/ V other) {
+    public V leastUpperBound(@Nullable V other) {
         return upperBound(other, false);
     }
 
-    public V widenUpperBound(/*@Nullable*/ V other) {
+    public V widenUpperBound(@Nullable V other) {
         return upperBound(other, true);
     }
 
-    private V upperBound(/*@Nullable*/ V other, boolean shouldWiden) {
+    private V upperBound(@Nullable V other, boolean shouldWiden) {
         if (other == null) {
             @SuppressWarnings("unchecked")
             V v = (V) this;

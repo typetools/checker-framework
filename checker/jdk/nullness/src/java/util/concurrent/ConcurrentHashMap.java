@@ -29,7 +29,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      @SideEffectFree public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
      @SideEffectFree public Collection<V> values() { throw new RuntimeException("skeleton method"); }
      @SideEffectFree public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
-     @SideEffectFree public Enumeration<K> keys() { throw new RuntimeException("skeleton method"); }
+     @SideEffectFree public Enumeration<@KeyFor("this") K> keys() { throw new RuntimeException("skeleton method"); }
      @SideEffectFree public Enumeration<V> elements() { throw new RuntimeException("skeleton method"); }
      @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

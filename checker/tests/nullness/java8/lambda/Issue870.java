@@ -1,5 +1,4 @@
 // Test case for issue #870: https://github.com/typetools/checker-framework/issues/870
-// @below-java8-jdk-skip-test
 
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
