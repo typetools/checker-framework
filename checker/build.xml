@@ -807,6 +807,13 @@
         </antcall>
     </target>
 
+    <target name="determinism-tests" depends="jar,jdk.jar.exists,build-tests"
+            description="Run tests for the Determinism Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.DeterminismTest"/>
+        </antcall>
+    </target>
+
     <target name="fenum-tests" depends="jar,build-tests"
             description="Run tests for the Fenum Checker">
         <antcall target="-run-tests">

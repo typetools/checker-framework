@@ -4,7 +4,7 @@
 
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS =  nondeterminism
+CHECKER_DIRS =  determinism
 
 all: clean classes
 # Extracts unannotated .class files from $(CTSYM)
@@ -33,7 +33,7 @@ ANNOTATED_CLASSES = \
 	$(patsubst nullness/build/%.class,annotated/%.class, \
       $(patsubst lock/build/%.class,annotated/%.class, \
         $(patsubst index/build/%.class,annotated/%.class, \
-          $(patsubst nondeterminism/build/%.class,annotated/%.class, \
+          $(patsubst determinism/build/%.class,annotated/%.class, \
             $(ANNOTATED_CLASSES_BY_DIR)))))
 
 # Extract from $(CTSYM) an unannotated version of every file that will
