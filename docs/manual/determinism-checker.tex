@@ -2,9 +2,11 @@
 \chapter{Determinism Checker\label{determinism-checker}}
 
 A nondeterministic program is one that may produce different output when
-run twice on the same input.  Nondeterministic programs are hard to debug
-(it may be difficult to reproduce an incorrect behavior), and it is hard to
-compare multiple outputs or logs.
+run twice on the same input.  It is easier to test a deterministic program,
+because nondeterminism can lead to flaky tests that sometimes succeed and
+sometimes fail.  It is easier for a user or programmer to compare two
+deterministic executions than two nondeterministic executions.  It is
+easier to reproduce a bug in a deterministic program.
 Therefore, it is desirable for programs to be deterministic.
 The Determinism Checker helps you to achieve this goal.
 
@@ -149,30 +151,35 @@ several enhancements to standard polymorphic qualifiers.
 
 Ordinarily, every occurrence of \<@PolyDet> is instantiated at the same
 type.  Sometimes this does not capture the desired behavior.  For instance,
-there should be three versions of the \<List.add> routine:
+there should be three versions of the \<List.add> and \<List.hashCode> routines:
 
 \begin{Verbatim}
-   @NonDet boolean add(@NonDet List<E> this, E e)
-           @Det boolean add(@OrderNonDet List<E> this, E e)
-           @Det boolean add(        @Det List<E> this, E e)
+         @NonDet boolean add(      @NonDet List<E> this, E e)
+            @Det boolean add( @OrderNonDet List<E> this, E e)
+            @Det boolean add(         @Det List<E> this, E e)
+
+         @NonDet int hashCode(     @NonDet List<E> this)
+         @NonDet int hashCode(@OrderNonDet List<E> this)
+            @Det int hashCode(        @Det List<E> this)
 \end{Verbatim}
 
 A standard polymorphic annotation
 
 \begin{Verbatim}
-       @PolyDet boolean add(@PolyDet     List<E> this, E e)
+        @PolyDet boolean add(     @PolyDet List<E> this, E e)
+        @PolyDet int hashCode(    @PolyDet List<E> this)
 \end{Verbatim}
 
 \noindent
-can express the first and third versions, but not the second one.  With an
-\refqualclass{checker/determinism/qual}{Ond2D} annotation, it is
-possible to express all three:
+can express the first and third versions of each routine, but not the
+second one.  The \refqualclass{checker/determinism/qual}{Ond2D} and
+\refqualclass{checker/determinism/qual}{Ond2Nd} annotations enable
+expressing the method behavior:
 
 \begin{Verbatim}
-@Ond2D @PolyDet boolean add(@PolyDet     List<E> this, E e)
+ @Ond2D @PolyDet boolean add(     @PolyDet List<E> this, E e)
+@Ond2Nd @PolyDet int hashCode(    @PolyDet List<E> this)
 \end{Verbatim}
-
-There is also an \refqualclass{checker/determinism/qual}{Ond2Nd}.
 
 See the annotated JDK for more examples of the \<@Ond2D> and \<@Ond2Nd>
 annotations.
