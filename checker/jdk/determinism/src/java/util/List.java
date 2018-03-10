@@ -150,7 +150,7 @@ public interface List<E> extends Collection<E> {
      *
      * @return an iterator over the elements in this list in proper sequence
      */
-    @PolyDet Iterator<@PolyDet2 E> iterator(@PolyDet List<@PolyDet2 E> this);
+    @PolyDet Iterator<E> iterator(@PolyDet List<E> this);
 
     /**
      * Returns an array containing all of the elements in this list in proper
@@ -168,7 +168,7 @@ public interface List<E> extends Collection<E> {
      *         sequence
      * @see Arrays#asList(Object[])
      */
-    Object[] toArray();
+    @Ond2Vnd @PolyDet Object[] toArray(@PolyDet List<E> this);
 
     /**
      * Returns an array containing all of the elements in this list in
@@ -305,7 +305,7 @@ public interface List<E> extends Collection<E> {
      *         specified collection prevents it from being added to this list
      * @see #add(Object)
      */
-    boolean addAll(@PolyDet List<E> this, @PolyDet2 Collection<? extends E> c);
+    boolean addAll(List<E> this, Collection<? extends E> c);
 
     /**
      * Inserts all of the elements in the specified collection into this
@@ -354,7 +354,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    @Ond2D @PolyDet boolean removeAll(@PolyDet List<E> this, @PolyDet Collection<?> c);
 
     /**
      * Retains only the elements in this list that are contained in the
@@ -376,7 +376,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean retainAll(Collection<?> c);
+    @Ond2D @PolyDet boolean retainAll(@PolyDet List<E> this, @PolyDet Collection<?> c);
 
     /**
      * Replaces each element of this list with the result of applying the
@@ -529,8 +529,8 @@ public interface List<E> extends Collection<E> {
      * @see Object#equals(Object)
      * @see #equals(Object)
      */
-    @Ond2Nd @PolyDet int hashCode(@PolyDet List<@PolyDet2 E> this);
 
+    @Ond2Nd @PolyDet int hashCode(@PolyDet List<E> this);
 
     // Positional Access Operations
 
@@ -542,7 +542,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    @Ond2Nd @PolyDet E get(@PolyDet List<@PolyDet2 E> this, @PolyDet int index);
+    @Ond2Nd @PolyDet E get(@PolyDet List<@E> this, @PolyDet int index);
 
     /**
      * Replaces the element at the specified position in this list with the
@@ -562,7 +562,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    @Ond2Nd @PolyDet E set(@PolyDet List<@PolyDet2 E> this, @PolyDet int index, @PolyDet2 E element);
+    E set(List<@E> this, int index, E element);
 
     /**
      * Inserts the specified element at the specified position in this list
@@ -620,7 +620,7 @@ public interface List<E> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    @Ond2Nd @PolyDet int indexOf(@PolyDet List<@PolyDet2 E> this, @PolyDet Object o);
+    @Ond2Nd @PolyDet int indexOf(@PolyDet List<@E> this, @PolyDet Object o);
 
     /**
      * Returns the index of the last occurrence of the specified element
@@ -651,7 +651,7 @@ public interface List<E> extends Collection<E> {
      * @return a list iterator over the elements in this list (in proper
      *         sequence)
      */
-    ListIterator<E> listIterator();
+    @PolyDet ListIterator<E> listIterator(@PolyDet List<E> this);
 
     /**
      * Returns a list iterator over the elements in this list (in proper
