@@ -25,8 +25,7 @@
 
 package java.util;
 
-// TODO: reinstate
-// import java.util.function.Supplier;
+import java.util.function.Supplier;
 
 import org.checkerframework.checker.lock.qual.*;
 

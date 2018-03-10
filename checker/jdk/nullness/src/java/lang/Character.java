@@ -311,6 +311,8 @@ public final class Character implements java.io.Serializable, Comparable<Charact
      @Pure public static final UnicodeBlock forName(String blockName) { throw new RuntimeException("skeleton method"); }
   }
   public static enum UnicodeScript {
+     // At least one enum constant should be declared to avoid a syntax error.
+     COMMON;
      @Pure public static UnicodeScript of(int codePoint) { throw new RuntimeException("skeleton method"); }
      @Pure public static final UnicodeScript forName(String scriptName) { throw new RuntimeException("skeleton method"); }
   }

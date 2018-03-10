@@ -35,9 +35,8 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
-// import java.util.function.Supplier;
-// TODO ignore Java 8 annotation for now.
-// import sun.reflect.CallerSensitive;
+import java.util.function.Supplier;
+import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
