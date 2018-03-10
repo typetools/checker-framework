@@ -1,6 +1,5 @@
 // Test case for Issue 1312.
 // https://github.com/typetools/checker-framework/issues/1312
-// @below-java8-jdk-skip-test
 
 import java.util.*;
 import java.util.function.*;

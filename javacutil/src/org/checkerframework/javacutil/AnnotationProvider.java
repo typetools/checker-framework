@@ -15,7 +15,7 @@ public interface AnnotationProvider {
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
-    public AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
+    AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
 
     /**
      * Return the annotation on {@code tree} that has the class {@code target}. If no annotation for
@@ -24,5 +24,5 @@ public interface AnnotationProvider {
      * @param tree the tree of which the annotation is returned
      * @param target the class of the annotation
      */
-    public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target);
+    AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target);
 }

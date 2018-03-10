@@ -2,18 +2,13 @@
 
 package org.checkerframework.checker.regex;
 
-// Uses annotations in comments because it may be run on a Java 7 JVM
-// when called from user code.
-/*>>>
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.dataflow.qual.*;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
-*/
-
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Utility methods for regular expressions, most notably for testing whether a string is a regular
@@ -123,8 +118,8 @@ public final class RegexUtil {
          * @return the full detail message
          */
         @Override
-        /*@Pure*/
-        public String getMessage(/*>>>@GuardSatisfied CheckedPatternSyntaxException this*/) {
+        @Pure
+        public String getMessage(@GuardSatisfied CheckedPatternSyntaxException this) {
             return pse.getMessage();
         }
 
@@ -144,8 +139,8 @@ public final class RegexUtil {
      * @param s string to check for being a regular expression
      * @return true iff s is a regular expression
      */
-    /*@Pure*/
-    /*@EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)*/
+    @Pure
+    @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
     public static boolean isRegex(String s) {
         return isRegex(s, 0);
     }
@@ -159,10 +154,10 @@ public final class RegexUtil {
      * @return true iff s is a regular expression with {@code groups} groups
      */
     @SuppressWarnings({"regex", "deterministic"}) // RegexUtil; for purity, catches an exception
-    /*@Pure*/
+    @Pure
     // @EnsuresQualifierIf annotation is extraneous because this method is special-cased
     // in RegexTransfer.
-    /*@EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)*/
+    @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
     public static boolean isRegex(String s, int groups) {
         Pattern p;
         try {
@@ -183,8 +178,8 @@ public final class RegexUtil {
         "regex",
         "purity.not.deterministic.call"
     }) // RegexUtil; temp value used in pure method is equal up to equals but not up to ==
-    /*@Pure*/
-    /*@EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)*/
+    @Pure
+    @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
     public static boolean isRegex(final char c) {
         return isRegex(Character.toString(c));
     }
@@ -197,8 +192,8 @@ public final class RegexUtil {
      * @return null, or a string describing why the argument is not a regex
      */
     @SuppressWarnings("regex") // RegexUtil
-    /*@SideEffectFree*/
-    public static /*@Nullable*/ String regexError(String s) {
+    @SideEffectFree
+    public static @Nullable String regexError(String s) {
         return regexError(s, 0);
     }
 
@@ -212,8 +207,8 @@ public final class RegexUtil {
      * @return null, or a string describing why the argument is not a regex
      */
     @SuppressWarnings({"regex", "not.sef"}) // RegexUtil;
-    /*@SideEffectFree*/
-    public static /*@Nullable*/ String regexError(String s, int groups) {
+    @SideEffectFree
+    public static @Nullable String regexError(String s, int groups) {
         try {
             Pattern p = Pattern.compile(s);
             int actualGroups = getGroupCount(p);
@@ -234,8 +229,8 @@ public final class RegexUtil {
      * @return null, or a PatternSyntaxException describing why the argument is not a regex
      */
     @SuppressWarnings("regex") // RegexUtil
-    /*@SideEffectFree*/
-    public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
+    @SideEffectFree
+    public static @Nullable PatternSyntaxException regexException(String s) {
         return regexException(s, 0);
     }
 
@@ -249,8 +244,8 @@ public final class RegexUtil {
      * @return null, or a PatternSyntaxException describing why the argument is not a regex
      */
     @SuppressWarnings("regex") // RegexUtil
-    /*@SideEffectFree*/
-    public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
+    @SideEffectFree
+    public static @Nullable PatternSyntaxException regexException(String s, int groups) {
         try {
             Pattern p = Pattern.compile(s);
             int actualGroups = getGroupCount(p);
@@ -273,9 +268,9 @@ public final class RegexUtil {
      * @return its argument
      * @throws Error if argument is not a regex
      */
-    /*@SideEffectFree*/
+    @SideEffectFree
     // The return type annotation is a conservative bound.
-    public static /*@Regex*/ String asRegex(String s) {
+    public static @Regex String asRegex(String s) {
         return asRegex(s, 0);
     }
 
@@ -290,10 +285,10 @@ public final class RegexUtil {
      * @throws Error if argument is not a regex
      */
     @SuppressWarnings("regex") // RegexUtil
-    /*@SideEffectFree*/
+    @SideEffectFree
     // The return type annotation is irrelevant; it is special-cased by
     // RegexAnnotatedTypeFactory.
-    public static /*@Regex*/ String asRegex(String s, int groups) {
+    public static @Regex String asRegex(String s, int groups) {
         try {
             Pattern p = Pattern.compile(s);
             int actualGroups = getGroupCount(p);
@@ -313,7 +308,7 @@ public final class RegexUtil {
      * @return an error message for s when expectedGroups groups are needed, but s only has
      *     actualGroups groups
      */
-    /*@SideEffectFree*/
+    @SideEffectFree
     private static String regexErrorMessage(String s, int expectedGroups, int actualGroups) {
         return "regex \""
                 + s
@@ -331,7 +326,7 @@ public final class RegexUtil {
      * @return the count of groups in the argument
      */
     @SuppressWarnings("purity") // does not depend on object identity
-    /*@Pure*/
+    @Pure
     private static int getGroupCount(Pattern p) {
         return p.matcher("").groupCount();
     }

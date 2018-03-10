@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.cfg;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -19,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -78,8 +75,8 @@ public class DOTCFGVisualizer<
 
     /** {@inheritDoc} */
     @Override
-    public /*@Nullable*/ Map<String, Object> visualize(
-            ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis) {
+    public @Nullable Map<String, Object> visualize(
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
 
         String dotgraph = generateDotGraph(cfg, entry, analysis);
 
@@ -104,7 +101,7 @@ public class DOTCFGVisualizer<
 
     /** Generate the dot representation as String. */
     protected String generateDotGraph(
-            ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis) {
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
         this.sbDigraph.setLength(0);
         Set<Block> visited = new HashSet<>();
 
@@ -182,7 +179,7 @@ public class DOTCFGVisualizer<
     }
 
     protected void generateDotNodes(
-            Set<Block> visited, ControlFlowGraph cfg, /*@Nullable*/ Analysis<A, S, T> analysis) {
+            Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
         this.sbDigraph.append("    node [shape=rectangle];\n\n");
         // definition of all nodes including their labels
@@ -276,7 +273,7 @@ public class DOTCFGVisualizer<
      * @param bb basic block to visualize
      */
     @Override
-    public void visualizeBlock(Block bb, /*@Nullable*/ Analysis<A, S, T> analysis) {
+    public void visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis) {
 
         this.sbBlock.setLength(0);
 
@@ -399,7 +396,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
+    public void visualizeBlockNode(Node t, @Nullable Analysis<A, S, T> analysis) {
         this.sbBlock.append(prepareString(t.toString()) + "   [ " + prepareNodeType(t) + " ]");
         if (analysis != null) {
             A value = analysis.getValue(t);

@@ -1,6 +1,5 @@
 // Test case for Issue 596:
 // https://github.com/typetools/checker-framework/issues/596
-// @below-java8-jdk-skip-test
 
 import java.util.concurrent.atomic.AtomicReference;
 import org.checkerframework.checker.nullness.qual.*;

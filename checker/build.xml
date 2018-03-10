@@ -402,9 +402,9 @@
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-target"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <!-- To not get a warning about missing bootstrap
                  classpath for Java 7. -->
             <arg value="-Xlint:-options"/>
@@ -841,6 +841,13 @@
         </antcall>
     </target>
 
+    <target name="optional-tests" depends="jar,build-tests"
+            description="Run tests for the Optional Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.OptionalTest"/>
+        </antcall>
+    </target>
+
     <target name="interning-tests" depends="jar,build-tests"
             description="Run tests for the Interning Checker">
         <antcall target="-run-tests">
@@ -1249,45 +1256,17 @@
     <!-- depends on jar, needs classfile of the checker itself -->
     <target name="-run-checker" depends="jar"
             description="Run a checker on the Checker Framework">
-        <pathconvert pathsep=" " property="src.files">
-            <path>
-                <fileset dir="${src}">
-                    <include name="**/*.java"/>
-                </fileset>
-                <fileset dir="${javacutil.loc}/${src}">
-                    <include name="**/*.java"/>
-                    <!-- Exclude ManualTaglet to not depend on javadoc. -->
-                    <exclude name="**/javacutil/dist/**"/>
-                </fileset>
-
-                <!-- Do not check dataflow, it doesn't have all purity
-                     annotations. TODO: should be easy to fix. Or solved
-                     once we inherit those annotations.
-                <fileset dir="${dataflow.loc}/${src}">
-                    <include name="**/*.java"/>
-                </fileset>
-                -->
-                <fileset dir="${framework.loc}/${src}">
-                    <include name="**/*.java"/>
-                </fileset>
-                <!-- TODO: check-nullness doesn't properly work with this.
-                <fileset dir="${checker-jdk}" erroronmissingdir="false">
-                    <include name="**/*.java"/>
-                </fileset>
-                -->
-            </path>
-        </pathconvert>
-
         <condition property="maybeDebug" value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=${debugPort}" else="">
             <isset property="debugPort"/>
         </condition>
 
-        <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
+        <echo message="${files-to-check}" file="${tmpdir}/srcfiles-checker.txt"/>
 
         <echo message="Applying ${checker-name} to the Checker Framework sources."/>
         <!-- Use this if you want to see the file names:
-        <echo message="Applying ${checker-name} to: ${src.files}"/>
+        <echo message="Applying ${checker-name} to: ${files-to-check}"/>
         -->
+
         <java fork="true"
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
@@ -1309,9 +1288,38 @@
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
     </target>
 
+    <pathconvert pathsep=" " property="all-checkerframework-sources">
+        <path>
+            <fileset dir="${src}">
+                <include name="**/*.java"/>
+            </fileset>
+
+            <fileset dir="${javacutil.loc}/${src}">
+                <include name="**/*.java"/>
+                <!-- Exclude ManualTaglet to not depend on javadoc. -->
+                <exclude name="**/javacutil/dist/**"/>
+            </fileset>
+
+            <fileset dir="${dataflow.loc}/${src}">
+                <include name="**/*.java"/>
+            </fileset>
+
+            <fileset dir="${framework.loc}/${src}">
+                <include name="**/*.java"/>
+            </fileset>
+
+            <!-- TODO: check-nullness doesn't properly work with this.
+            <fileset dir="${checker-jdk}" erroronmissingdir="false">
+                <include name="**/*.java"/>
+            </fileset>
+            -->
+        </path>
+    </pathconvert>
+
     <target name="check-nullness"
             description="Run the Nullness Checker on the Checker Framework source code">
         <antcall target="-run-checker">
+            <param name="files-to-check" value="${all-checkerframework-sources}"/>
             <param name="checker-name" value="org.checkerframework.checker.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
             <param name="checker-args" value="-Awarns -Xmaxwarns 10000"/>
@@ -1328,6 +1336,7 @@
     <target name="check-compilermsgs"
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
+            <param name="files-to-check" value="${all-checkerframework-sources}"/>
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
             <param name="checker-args" value="-Apropfiles=${messages.properties.concatenated}"/>
         </antcall>
@@ -1336,8 +1345,43 @@
     <target name="check-purity"
             description="Run the Purity Checker on the Framework">
         <antcall target="-run-checker">
+            <param name="files-to-check" value="${all-checkerframework-sources}"/>
             <param name="checker-name" value="org.checkerframework.framework.util.PurityChecker"/>
             <param name="checker-args" value=""/>
+        </antcall>
+    </target>
+
+
+    <pathconvert pathsep=" " property="all-checkerframework-tests">
+        <path>
+            <fileset dir="${tests}">
+                <include name="**/*.java"/>
+                <exclude name="nullness-javac-errors/*.java"/>
+            </fileset>
+
+            <fileset dir="${framework.loc}/${tests}">
+                <include name="**/*.java"/>
+            </fileset>
+        </path>
+    </pathconvert>
+
+    <!-- Many tests, e.g. for complicated generics, are currently only
+         written for the Nullness Checker. The goal of this target is
+         to run all checkers on all available test files. Depending on
+         the type system, this will give errors. All type system
+         errors are suppressed. This target will only fail if one of
+         the checkers crashes. -->
+    <!-- TODO: this currently doesn't work because there are identical
+	 class names in different directories. How can we
+	 automatically split this up per directory? -->
+    <target name="check-all-checkers-on-all-tests"
+            description="Run all checkers on all testcases, only checking for crashes">
+        <antcall target="-run-checker">
+            <param name="files-to-check" value="${all-checkerframework-tests}"/>
+            <param name="checker-name" value="${checkers-to-run-on-all-tests}"/>
+            <!-- Note that the '.' is assumed to be contained in all
+		 error keys. -->
+            <param name="checker-args" value="-AsuppressWarnings=. "/>
         </antcall>
     </target>
 
@@ -1348,7 +1392,7 @@
           <ant dir="${docs.loc}/tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
-          <ant dir="${docs.loc}/tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/src/personalblog-demo" useNativeBasedir="true">
               <target name="clean"/>
           </ant>
     </target>
@@ -1406,7 +1450,7 @@
 
     <target name="download-jdk" description="Downloads jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
         <!-- See instructions for updating the jdk.jar at https://github.com/typetools/annotated-libraries/blob/master/README.jdk -->
-        <get src="https://github.com/typetools/annotated-libraries/raw/68d76a8675b13c0afafbaddaaafc061128bb642c/jdk8.jar" dest="jdk/jdk8.jar"
+        <get src="https://github.com/typetools/annotated-libraries/raw/1bfdb84f41f3f85756dba3c738ac3d27e17eae83/jdk8.jar" dest="jdk/jdk8.jar"
              usetimestamp="true"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->

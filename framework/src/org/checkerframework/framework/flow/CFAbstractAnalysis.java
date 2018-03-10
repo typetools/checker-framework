@@ -6,6 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.source.SourceChecker;
@@ -18,10 +19,6 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.*;
-*/
 
 /**
  * {@link CFAbstractAnalysis} is an extensible org.checkerframework.dataflow analysis for the
@@ -112,7 +109,7 @@ public abstract class CFAbstractAnalysis<
      *
      * @return an abstract value containing the given annotated {@code type}.
      */
-    public /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type) {
+    public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
         Set<AnnotationMirror> annos;
         if (type.getKind() == TypeKind.WILDCARD) {
             annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
@@ -126,7 +123,7 @@ public abstract class CFAbstractAnalysis<
      * @return an abstract value containing the given {@code annotations} and {@code
      *     underlyingType}.
      */
-    public abstract /*@Nullable*/ V createAbstractValue(
+    public abstract @Nullable V createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType);
 
     /** Default implementation for {@link #createAbstractValue(Set, TypeMirror)} */

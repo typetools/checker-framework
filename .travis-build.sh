@@ -147,7 +147,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
 
   # Code style and formatting
   ant -d check-style
-  release/checkPluginUtil.sh
 
   # Run error-prone
   ant check-errorprone

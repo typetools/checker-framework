@@ -1,8 +1,6 @@
 // Test case for issue #1032:
 // https://github.com/typetools/checker-framework/issues/1032
 
-// @below-java8-jdk-skip-test
-
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.*;
 

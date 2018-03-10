@@ -426,7 +426,7 @@ public class I18nFormatterTreeUtil {
         }
 
         public final Result<TypeMirror>[] getParamTypes() {
-            // One to make javac happy, the other to make Eclipse happy...
+            // One to suppress warning in javac, the other to suppress warning in Eclipse...
             @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
             for (int i = 0; i < res.length; ++i) {
