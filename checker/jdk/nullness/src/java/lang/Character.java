@@ -140,7 +140,7 @@ public final class Character implements java.io.Serializable, Comparable<Charact
     public final static Character.UnicodeBlock HIGH_SURROGATES = new UnicodeBlock();
     public final static Character.UnicodeBlock HIGH_PRIVATE_USE_SURROGATES = new UnicodeBlock();
     public final static Character.UnicodeBlock LOW_SURROGATES = new UnicodeBlock();
-    public static Character. @Nullable UnicodeBlock of(char a1) { throw new RuntimeException("skeleton method"); }
+    public static Character. @Nullable UnicodeBlock of(char ch) { throw new RuntimeException("skeleton method"); }
     public static Character. @Nullable UnicodeBlock of(int a1) { throw new RuntimeException("skeleton method"); }
     public final static Character.UnicodeBlock forName(String a1) { throw new RuntimeException("skeleton method"); }
 
@@ -211,82 +211,107 @@ public final class Character implements java.io.Serializable, Comparable<Charact
   public final static int MIN_CODE_POINT = 0;
   public final static int MAX_CODE_POINT = 1114111;
   public final static int SIZE = 16;
-  public Character(char a1) { throw new RuntimeException("skeleton method"); }
-  public static Character valueOf(char a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public Character(char ch) { throw new RuntimeException("skeleton method"); }
+  // Not @Pure: might return new value that is not == (but is equals() to previous results.
+  public static Character valueOf(char ch) { throw new RuntimeException("skeleton method"); }
   @Pure public char charValue() { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isValidCodePoint(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isSupplementaryCodePoint(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isHighSurrogate(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isLowSurrogate(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isSurrogatePair(char a1, char a2) { throw new RuntimeException("skeleton method"); }
-  public static int charCount(int a1) { throw new RuntimeException("skeleton method"); }
-  public static int toCodePoint(char a1, char a2) { throw new RuntimeException("skeleton method"); }
-  public static int codePointAt(CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static int codePointAt(char[] a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static int codePointAt(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static int codePointBefore(CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static int codePointBefore(char[] a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static int codePointBefore(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static int toChars(int a1, char[] a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static char[] toChars(int a1) { throw new RuntimeException("skeleton method"); }
-  public static int codePointCount(CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static int codePointCount(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static int offsetByCodePoints(CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static int offsetByCodePoints(char[] a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isLowerCase(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isLowerCase(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isUpperCase(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isUpperCase(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isTitleCase(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isTitleCase(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isDigit(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isDigit(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isDefined(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isDefined(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isLetter(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isLetter(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isLetterOrDigit(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isLetterOrDigit(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isJavaLetter(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isJavaLetterOrDigit(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isJavaIdentifierStart(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isJavaIdentifierStart(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isJavaIdentifierPart(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isJavaIdentifierPart(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isUnicodeIdentifierStart(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isUnicodeIdentifierStart(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isUnicodeIdentifierPart(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isUnicodeIdentifierPart(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isIdentifierIgnorable(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isIdentifierIgnorable(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static char toLowerCase(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int toLowerCase(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static char toUpperCase(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int toUpperCase(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static char toTitleCase(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int toTitleCase(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int digit(char a1, int a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int digit(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int getNumericValue(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int getNumericValue(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isSpace(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isSpaceChar(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isSpaceChar(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isWhitespace(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isWhitespace(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isISOControl(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isISOControl(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int getType(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int getType(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static char forDigit(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static byte getDirectionality(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static byte getDirectionality(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isMirrored(char a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean isMirrored(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int compareTo(Character a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static char reverseBytes(char a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isValidCodePoint(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isBmpCodePoint(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isSupplementaryCodePoint(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isHighSurrogate(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isLowSurrogate(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isSurrogate(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isSurrogatePair(char high, char low) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int charCount(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int toCodePoint(char high, char low) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointAt(CharSequence seq, int index) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointAt(char[] a, int index) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointAt(char[] a, int index, int limit) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointBefore(CharSequence seq, int index) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointBefore(char[] a, int index) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointBefore(char[] a, int index, int start) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char highSurrogate(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char lowSurrogate(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int toChars(int codePoint, char[] dst, int dstIndex) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char[] toChars(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointCount(CharSequence seq, int beginIndex, int endIndex) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int codePointCount(char[] a, int offset, int count) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int offsetByCodePoints(CharSequence seq, int index, int codePointOffset) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int offsetByCodePoints(char[] a, int start, int count, int index, int codePointOffset) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isLowerCase(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isLowerCase(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isUpperCase(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isUpperCase(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isTitleCase(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isTitleCase(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isDigit(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isDigit(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isDefined(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isDefined(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isLetter(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isLetter(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isLetterOrDigit(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isLetterOrDigit(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isJavaLetter(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isJavaLetterOrDigit(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isAlphabetic(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isIdeographic(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isJavaIdentifierStart(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isJavaIdentifierStart(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isJavaIdentifierPart(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isJavaIdentifierPart(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isUnicodeIdentifierStart(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isUnicodeIdentifierStart(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isUnicodeIdentifierPart(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isUnicodeIdentifierPart(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isIdentifierIgnorable(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isIdentifierIgnorable(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char toLowerCase(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int toLowerCase(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char toUpperCase(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int toUpperCase(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char toTitleCase(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int toTitleCase(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int digit(char ch, int radix) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int digit(int codePoint, int radix) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int getNumericValue(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int getNumericValue(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isSpace(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isSpaceChar(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isSpaceChar(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isWhitespace(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isWhitespace(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isISOControl(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isISOControl(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int getType(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int getType(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char forDigit(int digit, int radix) { throw new RuntimeException("skeleton method"); }
+  @Pure public static byte getDirectionality(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static byte getDirectionality(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isMirrored(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isMirrored(int codePoint) { throw new RuntimeException("skeleton method"); }
+  @Pure public int compareTo(Character anotherCharacter) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int compare(char x, char y) { throw new RuntimeException("skeleton method"); }
+  @Pure public static char reverseBytes(char ch) { throw new RuntimeException("skeleton method"); }
+  @Pure public static String getName(int codePoint) { throw new RuntimeException("skeleton method"); }
+
+  public static class Subset {
+     @Pure protected Subset(String name) { throw new RuntimeException("skeleton method"); }
+     @Pure public final boolean equals(Object obj) { throw new RuntimeException("skeleton method"); }
+     @Pure public final int hashCode() { throw new RuntimeException("skeleton method"); }
+     @SideEffectFree public final String toString() { throw new RuntimeException("skeleton method"); }
+  }
+  public static final class UnicodeBlock {
+     @Pure public static UnicodeBlock of(char c) { throw new RuntimeException("skeleton method"); }
+     @Pure public static UnicodeBlock of(int codePoint) { throw new RuntimeException("skeleton method"); }
+     @Pure public static final UnicodeBlock forName(String blockName) { throw new RuntimeException("skeleton method"); }
+  }
+  public static enum UnicodeScript {
+     @Pure public static UnicodeScript of(int codePoint) { throw new RuntimeException("skeleton method"); }
+     @Pure public static final UnicodeScript forName(String scriptName) { throw new RuntimeException("skeleton method"); }
+  }
 }

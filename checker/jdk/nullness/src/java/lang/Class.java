@@ -24,7 +24,7 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   @EnsuresNonNullIf(expression="#1", result=true)
   @Pure public native boolean isInstance(@Nullable Object a1);
   @Pure public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
-  public String getName() { throw new RuntimeException("skeleton method"); }
+  @Pure public String getName() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
@@ -45,8 +45,8 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public java.lang.reflect.Method[] getMethods() throws SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Constructor<?>[] getConstructors() throws SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Field getField(String a1) throws NoSuchFieldException, SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Method getMethod(String a1, Class<?> @Nullable ... a2) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Constructor<T> getConstructor(Class<?>... a1) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
+  @Pure public java.lang.reflect.Method getMethod(String a1, Class<?> @Nullable ... a2) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
+  @Pure public java.lang.reflect.Constructor<T> getConstructor(Class<?>... a1) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
   public Class<?>[] getDeclaredClasses() throws SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Field[] getDeclaredFields() throws SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException { throw new RuntimeException("skeleton method"); }

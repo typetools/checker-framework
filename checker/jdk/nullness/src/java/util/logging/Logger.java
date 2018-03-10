@@ -41,6 +41,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import sun.reflect.Reflection;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
@@ -195,6 +196,9 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *
  * @since 1.4
  */
+// These annotations Mark every void method as @SideEffectFree.
+// This is questionable, because a call could change the logger (say, if it caches messages, such as concatenating them into a string).
+// However, logging generally cannot affect any other part of the program, so it seems reasonable to write these annotations.
 public class Logger {
     private static final Handler emptyHandlers[] = new Handler[0];
     private static final int offValue = Level.OFF.intValue();
@@ -235,7 +239,8 @@ public class Logger {
      * @return global logger object
      * @since 1.7
      */
-    public static final Logger getGlobal() { throw new RuntimeException(); }
+    @Pure
+    public static final Logger getGlobal() { throw new RuntimeException("skeleton method"); }
 
     /**
      * The "global" Logger object is provided as a convenience to developers
@@ -278,24 +283,24 @@ public class Logger {
      * @throws MissingResourceException if the resourceBundleName is non-null and
      *             no corresponding resource can be found.
      */
-    protected Logger(@Nullable String name, @Nullable String resourceBundleName) { throw new RuntimeException(); }
+    protected Logger(@Nullable String name, @Nullable String resourceBundleName) { throw new RuntimeException("skeleton method"); }
 
-    Logger(@Nullable String name, @Nullable String resourceBundleName, @Nullable Class<?> caller) { throw new RuntimeException(); }
+    Logger(@Nullable String name, @Nullable String resourceBundleName, @Nullable Class<?> caller) { throw new RuntimeException("skeleton method"); }
 
-    private void setCallersClassLoaderRef(@Nullable Class<?> caller) { throw new RuntimeException(); }
+    private void setCallersClassLoaderRef(@Nullable Class<?> caller) { throw new RuntimeException("skeleton method"); }
 
-    private @Nullable ClassLoader getCallersClassLoader() { throw new RuntimeException(); }
+    private @Nullable ClassLoader getCallersClassLoader() { throw new RuntimeException("skeleton method"); }
 
     // This constructor is used only to create the global Logger.
     // It is needed to break a cyclic dependence between the LogManager
     // and Logger static initializers causing deadlocks.
-    private Logger(String name) { throw new RuntimeException(); }
+    private Logger(String name) { throw new RuntimeException("skeleton method"); }
 
     // It is called from the LogManager.<clinit> to complete
     // initialization of the global Logger.
-    void setLogManager(LogManager manager) { throw new RuntimeException(); }
+    void setLogManager(LogManager manager) { throw new RuntimeException("skeleton method"); }
 
-    private void checkPermission() throws SecurityException { throw new RuntimeException(); }
+    private void checkPermission() throws SecurityException { throw new RuntimeException("skeleton method"); }
 
     // Until all JDK code converted to call sun.util.logging.PlatformLogger
     // (see 7054233), we need to determine if Logger.getLogger is to add
@@ -307,10 +312,10 @@ public class Logger {
     // resource bundle name (rather than the default system resource bundle).
     private static class SystemLoggerHelper {
         static boolean disableCallerCheck = getBooleanProperty("sun.util.logging.disableCallerCheck");
-        private static boolean getBooleanProperty(final String key) { throw new RuntimeException(); }
+        private static boolean getBooleanProperty(final String key) { throw new RuntimeException("skeleton method"); }
     }
 
-    private static Logger demandLogger(String name, @Nullable String resourceBundleName, Class<?> caller) { throw new RuntimeException(); }
+    private static Logger demandLogger(String name, @Nullable String resourceBundleName, Class<?> caller) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Find or create a logger for a named subsystem.  If a logger has
@@ -343,7 +348,8 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new Logger object is handled by LogManager.addLogger().
     // @CallerSensitive
-    public static Logger getLogger(String name) { throw new RuntimeException(); }
+    @Pure
+    public static Logger getLogger(String name) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Find or create a logger for a named subsystem.  If a logger has
@@ -389,12 +395,13 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new Logger object is handled by LogManager.addLogger().
     // @CallerSensitive
-    public static Logger getLogger(String name, @Nullable String resourceBundleName) { throw new RuntimeException(); }
+    @Pure
+    public static Logger getLogger(String name, @Nullable String resourceBundleName) { throw new RuntimeException("skeleton method"); }
 
     // package-private
     // Add a platform logger to the system context.
     // i.e. caller of sun.util.logging.PlatformLogger.getLogger
-    static Logger getPlatformLogger(String name) { throw new RuntimeException(); }
+    static Logger getPlatformLogger(String name) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Create an anonymous Logger.  The newly created Logger is not
@@ -416,7 +423,8 @@ public class Logger {
      *
      * @return a newly created private Logger
      */
-    public static Logger getAnonymousLogger() { throw new RuntimeException(); }
+    @Pure
+    public static Logger getAnonymousLogger() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Create an anonymous Logger.  The newly created Logger is not
@@ -446,7 +454,8 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new anonymous Logger object is handled by doSetParent().
     // @CallerSensitive
-    public static Logger getAnonymousLogger(@Nullable String resourceBundleName) { throw new RuntimeException(); }
+    @Pure
+    public static Logger getAnonymousLogger(@Nullable String resourceBundleName) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Retrieve the localization resource bundle for this
@@ -456,7 +465,8 @@ public class Logger {
      *
      * @return localization bundle (may be null)
      */
-    public @Nullable ResourceBundle getResourceBundle() { throw new RuntimeException(); }
+    @Pure
+    public @Nullable ResourceBundle getResourceBundle() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Retrieve the localization resource bundle name for this
@@ -465,7 +475,8 @@ public class Logger {
      *
      * @return localization bundle name (may be null)
      */
-    public @Nullable String getResourceBundleName() { throw new RuntimeException(); }
+    @Pure
+    public @Nullable String getResourceBundleName() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Set a filter to control output on this Logger.
@@ -478,14 +489,15 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setFilter(@Nullable Filter newFilter) throws SecurityException { throw new RuntimeException(); }
+    public void setFilter(@Nullable Filter newFilter) throws SecurityException { throw new RuntimeException("skeleton method"); }
 
     /**
      * Get the current filter for this Logger.
      *
      * @return  a filter object (may be null)
      */
-    public @Nullable Filter getFilter() { throw new RuntimeException(); }
+    @Pure
+    public @Nullable Filter getFilter() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a LogRecord.
@@ -496,12 +508,14 @@ public class Logger {
      *
      * @param record the LogRecord to be published
      */
-    @SideEffectFree public void log(LogRecord record) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void log(LogRecord record) { throw new RuntimeException("skeleton method"); }
 
     // private support method for logging.
     // We fill in the logger name, resource bundle name, and
     // resource bundle and then call "void log(LogRecord)".
-    @SideEffectFree private void doLog(LogRecord lr) { throw new RuntimeException(); }
+    @SideEffectFree
+    private void doLog(LogRecord lr) { throw new RuntimeException("skeleton method"); }
 
 
     //================================================================
@@ -518,7 +532,8 @@ public class Logger {
      * @param   level   One of the message level identifiers, e.g., SEVERE
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void log(Level level, @Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void log(Level level, @Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, which is only to be constructed if the logging level
@@ -533,7 +548,7 @@ public class Logger {
      * @param   msgSupplier   A function, which when called, produces the
      *                        desired log message
      */
-//    @SideEffectFree public void log(Level level, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void log(Level level, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, with one object parameter.
@@ -546,7 +561,8 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   param1  parameter to the message
      */
-    @SideEffectFree public void log(Level level, @Nullable String msg, @Nullable Object param1) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void log(Level level, @Nullable String msg, @Nullable Object param1) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, with an array of object arguments.
@@ -559,7 +575,8 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  array of parameters to the message
      */
-    @SideEffectFree public void log(Level level, @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void log(Level level, @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, with associated Throwable information.
@@ -577,7 +594,8 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void log(Level level, @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void log(Level level, @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a lazily constructed message, with associated Throwable information.
@@ -598,7 +616,8 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void log(Level level, @Nullable Throwable thrown, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void log(Level level, @Nullable Throwable thrown, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     //================================================================
     // Start of convenience methods WITH className and methodName
@@ -617,7 +636,8 @@ public class Logger {
      * @param   sourceMethod   name of method that issued the logging request
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod, @Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod, @Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a lazily constructed message, specifying source class and method,
@@ -635,8 +655,9 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-//                     Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                     Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, specifying source class and method,
@@ -652,8 +673,9 @@ public class Logger {
      * @param   msg      The string message (or a key in the message catalog)
      * @param   param1    Parameter to the log message.
      */
-    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-                     @Nullable String msg, @Nullable Object param1) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                     @Nullable String msg, @Nullable Object param1) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, specifying source class and method,
@@ -669,8 +691,9 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  Array of parameters to the message
      */
-    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-                     @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                     @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, specifying source class and method,
@@ -691,8 +714,9 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-                     @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                     @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a lazily constructed message, specifying source class and method,
@@ -716,8 +740,9 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-//                     @Nullable Throwable thrown, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+   @SideEffectFree
+   public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                    @Nullable Throwable thrown, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
 
     //=========================================================================
@@ -727,7 +752,8 @@ public class Logger {
     // Private support method for logging for "logrb" methods.
     // We fill in the logger name, resource bundle name, and
     // resource bundle and then call "void log(LogRecord)".
-    @SideEffectFree private void doLog(LogRecord lr, @Nullable String rbname) { throw new RuntimeException(); }
+    @SideEffectFree
+    private void doLog(LogRecord lr, @Nullable String rbname) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name
@@ -748,8 +774,9 @@ public class Logger {
      *                         can be null
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-                      @Nullable String bundleName, @Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name,
@@ -771,8 +798,9 @@ public class Logger {
      * @param   msg      The string message (or a key in the message catalog)
      * @param   param1    Parameter to the log message.
      */
-    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-                      @Nullable String bundleName, @Nullable String msg, @Nullable Object param1) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg, @Nullable Object param1) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name,
@@ -794,8 +822,9 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  Array of parameters to the message
      */
-    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-                      @Nullable String bundleName, @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name,
@@ -822,8 +851,9 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
-                      @Nullable String bundleName, @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException("skeleton method"); }
 
 
     //======================================================================
@@ -840,7 +870,8 @@ public class Logger {
      * @param   sourceClass    name of class that issued the logging request
      * @param   sourceMethod   name of method that is being entered
      */
-    @SideEffectFree public void entering(@Nullable String sourceClass, @Nullable String sourceMethod) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void entering(@Nullable String sourceClass, @Nullable String sourceMethod) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a method entry, with one parameter.
@@ -854,7 +885,8 @@ public class Logger {
      * @param   sourceMethod   name of method that is being entered
      * @param   param1         parameter to the method being entered
      */
-    @SideEffectFree public void entering(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object param1) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void entering(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object param1) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a method entry, with an array of parameters.
@@ -869,7 +901,8 @@ public class Logger {
      * @param   sourceMethod   name of method that is being entered
      * @param   params         array of parameters to the method being entered
      */
-    @SideEffectFree public void entering(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void entering(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object params @Nullable []) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a method return.
@@ -881,7 +914,8 @@ public class Logger {
      * @param   sourceClass    name of class that issued the logging request
      * @param   sourceMethod   name of the method
      */
-    @SideEffectFree public void exiting(@Nullable String sourceClass, @Nullable String sourceMethod) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void exiting(@Nullable String sourceClass, @Nullable String sourceMethod) { throw new RuntimeException("skeleton method"); }
 
 
     /**
@@ -896,7 +930,8 @@ public class Logger {
      * @param   sourceMethod   name of the method
      * @param   result  Object that is being returned
      */
-    @SideEffectFree public void exiting(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object result) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void exiting(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object result) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log throwing an exception.
@@ -919,7 +954,8 @@ public class Logger {
      * @param   sourceMethod  name of the method.
      * @param   thrown  The Throwable that is being thrown.
      */
-    @SideEffectFree public void throwing(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void throwing(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Throwable thrown) { throw new RuntimeException("skeleton method"); }
 
     //=======================================================================
     // Start of simple convenience methods using level names as method names
@@ -934,7 +970,8 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void severe(@Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void severe(@Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a WARNING message.
@@ -945,7 +982,8 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void warning(@Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void warning(@Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log an INFO message.
@@ -956,7 +994,8 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void info(@Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void info(@Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a CONFIG message.
@@ -967,7 +1006,8 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void config(@Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void config(@Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a FINE message.
@@ -978,7 +1018,8 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void fine(@Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void fine(@Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a FINER message.
@@ -989,7 +1030,8 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void finer(@Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void finer(@Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a FINEST message.
@@ -1000,7 +1042,8 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void finest(@Nullable String msg) { throw new RuntimeException(); }
+    @SideEffectFree
+    public void finest(@Nullable String msg) { throw new RuntimeException("skeleton method"); }
 
     //=======================================================================
     // Start of simple convenience methods using level names as method names
@@ -1020,7 +1063,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void severe(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void severe(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a WARNING message, which is only to be constructed if the logging
@@ -1035,7 +1078,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void warning(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void warning(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a INFO message, which is only to be constructed if the logging
@@ -1050,7 +1093,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void info(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void info(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a CONFIG message, which is only to be constructed if the logging
@@ -1065,7 +1108,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void config(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void config(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a FINE message, which is only to be constructed if the logging
@@ -1080,7 +1123,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void fine(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void fine(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a FINER message, which is only to be constructed if the logging
@@ -1095,7 +1138,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void finer(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void finer(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Log a FINEST message, which is only to be constructed if the logging
@@ -1110,7 +1153,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void finest(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
+    @SideEffectFree public void finest(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException("skeleton method"); }
 
     //================================================================
     // End of convenience methods
@@ -1130,7 +1173,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setLevel(@Nullable Level newLevel) throws SecurityException { throw new RuntimeException(); }
+    public void setLevel(@Nullable Level newLevel) throws SecurityException { throw new RuntimeException("skeleton method"); }
 
     /**
      * Get the log Level that has been specified for this Logger.
@@ -1139,7 +1182,8 @@ public class Logger {
      *
      * @return  this Logger's level
      */
-    public @Nullable Level getLevel() { throw new RuntimeException(); }
+    @Pure
+    public @Nullable Level getLevel() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Check if a message of the given level would actually be logged
@@ -1149,13 +1193,15 @@ public class Logger {
      * @param   level   a message logging level
      * @return  true if the given message level is currently being logged.
      */
-    public boolean isLoggable(Level level) { throw new RuntimeException(); }
+    @Pure
+    public boolean isLoggable(Level level) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Get the name for this logger.
      * @return logger name.  Will be null for anonymous Loggers.
      */
-    public @Nullable String getName() { throw new RuntimeException(); }
+    @Pure
+    public @Nullable String getName() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Add a log Handler to receive logging messages.
@@ -1168,7 +1214,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void addHandler(Handler handler) throws SecurityException { throw new RuntimeException(); }
+    public void addHandler(Handler handler) throws SecurityException { throw new RuntimeException("skeleton method"); }
 
     /**
      * Remove a log Handler.
@@ -1179,14 +1225,15 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void removeHandler(@Nullable Handler handler) throws SecurityException { throw new RuntimeException(); }
+    public void removeHandler(@Nullable Handler handler) throws SecurityException { throw new RuntimeException("skeleton method"); }
 
     /**
      * Get the Handlers associated with this logger.
      * <p>
      * @return  an array of all registered Handlers
      */
-    public Handler[] getHandlers() { throw new RuntimeException(); }
+    @SideEffectFree
+    public Handler[] getHandlers() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Specify whether or not this logger should send its output
@@ -1199,7 +1246,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setUseParentHandlers(boolean useParentHandlers) { throw new RuntimeException(); }
+    public void setUseParentHandlers(boolean useParentHandlers) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Discover whether or not this logger is sending its output
@@ -1207,11 +1254,12 @@ public class Logger {
      *
      * @return  true if output is to be sent to the logger's parent
      */
-    public boolean getUseParentHandlers() { throw new RuntimeException(); }
+    @Pure
+    public boolean getUseParentHandlers() { throw new RuntimeException("skeleton method"); }
 
     static final String SYSTEM_LOGGER_RB_NAME = "sun.util.logging.resources.logging";
 
-    private static ResourceBundle findSystemResourceBundle(final Locale locale) { throw new RuntimeException(); }
+    private static ResourceBundle findSystemResourceBundle(final Locale locale) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Private utility method to map a resource bundle name to an
@@ -1225,7 +1273,7 @@ public class Logger {
      * @return ResourceBundle specified by name or null if not found
      */
     private synchronized @Nullable ResourceBundle findResourceBundle(@Nullable String name,
-                                                           boolean useCallersClassLoader) { throw new RuntimeException(); }
+                                                           boolean useCallersClassLoader) { throw new RuntimeException("skeleton method"); }
 
     // Private utility method to initialize our one entry
     // resource bundle name cache and the callers ClassLoader
@@ -1234,7 +1282,7 @@ public class Logger {
     // resourceBundleName field.
     // Synchronized to prevent races in setting the fields.
     private synchronized void setupResourceInfo(@Nullable String name,
-                                                @Nullable Class<?> callersClass) { throw new RuntimeException(); }
+                                                @Nullable Class<?> callersClass) { throw new RuntimeException("skeleton method"); }
 
     /**
      * Return the parent for this Logger.
@@ -1249,7 +1297,8 @@ public class Logger {
      *
      * @return nearest existing parent Logger
      */
-    public @Nullable Logger getParent() { throw new RuntimeException(); }
+    @Pure
+    public @Nullable Logger getParent() { throw new RuntimeException("skeleton method"); }
 
     /**
      * Set the parent for this Logger.  This method is used by
@@ -1261,27 +1310,27 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setParent(Logger parent) { throw new RuntimeException(); }
+    public void setParent(Logger parent) { throw new RuntimeException("skeleton method"); }
 
     // Private method to do the work for parenting a child
     // Logger onto a parent logger.
-    private void doSetParent(Logger newParent) { throw new RuntimeException(); }
+    private void doSetParent(Logger newParent) { throw new RuntimeException("skeleton method"); }
 
     // Package-level method.
     // Remove the weak reference for the specified child Logger from the
     // kid list. We should only be called from LoggerWeakRef.dispose().
-    final void removeChildLogger(LogManager.LoggerWeakRef child) { throw new RuntimeException(); }
+    final void removeChildLogger(LogManager.LoggerWeakRef child) { throw new RuntimeException("skeleton method"); }
 
     // Recalculate the effective level for this node and
     // recursively for our children.
 
-    private void updateEffectiveLevel() { throw new RuntimeException(); }
+    private void updateEffectiveLevel() { throw new RuntimeException("skeleton method"); }
 
 
     // Private method to get the potentially inherited
     // resource bundle name for this Logger.
     // May return null
-    //private String getEffectiveResourceBundleName() { throw new RuntimeException(); }
+    //private String getEffectiveResourceBundleName() { throw new RuntimeException("skeleton method"); }
 
 
 }
