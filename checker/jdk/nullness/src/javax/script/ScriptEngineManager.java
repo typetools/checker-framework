@@ -59,7 +59,7 @@ public class ScriptEngineManager  {
      *
      * @see java.lang.Thread#getContextClassLoader
      */
-    @SuppressWarnings("initialization")    // class fields initialzed with init method.
+    @SuppressWarnings("initialization")    // class fields initialized with init method.
     public ScriptEngineManager() {
         ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
         init(ctxtLoader);
@@ -75,7 +75,7 @@ public class ScriptEngineManager  {
      *
      * @param loader ClassLoader used to discover script engine factories.
      */
-    @SuppressWarnings("initialization")    // class fields initialzed with init method.
+    @SuppressWarnings("initialization")    // class fields initialized with init method.
     public ScriptEngineManager(ClassLoader loader) {
         init(loader);
     }

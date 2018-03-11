@@ -77,7 +77,7 @@ public class SimpleBindings implements Bindings {
      * @throws NullPointerException if the name is null.
      * @throws IllegalArgumentException if the name is empty.
      */
-    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it.     
+    @SuppressWarnings("nullness")    // @Nullable Object return type according to specifications, but type-checke to non-null type.
     public @Nullable Object put(String name, Object value) {
         checkKey(name);
         return map.put(name,value);
@@ -124,7 +124,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it.
+    @SuppressWarnings("nullness")    // @Nullable Object return type according to specifications, but type-checke to non-null type.
     public boolean containsKey(Object key) {
         checkKey(key);
         return map.containsKey(key);
@@ -136,7 +136,7 @@ public class SimpleBindings implements Bindings {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor")    // overidding method have different behaviour as per specifications. @KeyFor("this") pointed out is not required type.
+    @SuppressWarnings("keyfor")    // overidding method have different behaviour as per specifications. @KeyFor("this") type checked is not required type.
     public Set<Map.Entry<@KeyFor("map") String, Object>> entrySet() {
         return map.entrySet();
     }
@@ -162,7 +162,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it. 
+    @SuppressWarnings("nullness")    // @Nullable Object return type according to specifications, but type-checke to non-null type.
     public @Nullable Object get(Object key) {
         checkKey(key);
         return map.get(key);
@@ -174,7 +174,7 @@ public class SimpleBindings implements Bindings {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("keyfor")    // overidding method have different behaviour as per specifications. @KeyFor("this") pointed out is not required type.    
+    @SuppressWarnings("keyfor")    // overidding method have different behaviour as per specifications. @KeyFor("this") type checked is not required type.
     public Set<@KeyFor("map") String> keySet() {
         return map.keySet();
     }
@@ -201,7 +201,7 @@ public class SimpleBindings implements Bindings {
      * @throws ClassCastException if key is not String
      * @throws IllegalArgumentException if key is empty String
      */
-    @SuppressWarnings("nullness")    // @Nullable Object return type checked, but specifications forbids it. 
+    @SuppressWarnings("nullness")    // @Nullable Object return type according to specifications, but type-checke to non-null type.
     public @Nullable Object remove(Object key) {
         checkKey(key);
         return map.remove(key);
