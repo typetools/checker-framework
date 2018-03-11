@@ -1162,7 +1162,7 @@ automatically add that qualifier.
 In short, the types and trees can be
 specified via any combination of four fields in \refclass{framework/qual}{ImplicitFor}.
 
-For example, consider the definitions of the
+For example, consider these (partial) definitions of the
 \refqualclass{checker/nullness/qual}{Nullable} and
 \refqualclass{checker/nullness/qual}{NonNull}
 type qualifiers:
@@ -1177,15 +1177,13 @@ type qualifiers:
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Nullable { }
 
-  @SubtypeOf( { MonotonicNonNull.class } )
-  @ImplicitFor(types = { TypeKind.PACKAGE,
-                         TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
-                         TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
-                         TypeKind.SHORT, TypeKind.BYTE },
-      // All literals except NULL_LITERAL:
-      literals = { LiteralKind.STRING })
+  @SubtypeOf( { Nullable.class } )
+  @ImplicitFor(literals = { LiteralKind.STRING },
+               types = { TypeKind.PACKAGE, TypeKind.INT, TypeKind.BOOLEAN,
+                         TypeKind.CHAR, TypeKind.DOUBLE, TypeKind.FLOAT,
+                         TypeKind.LONG, TypeKind.SHORT, TypeKind.BYTE })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface NonNull {  }
+  public @interface NonNull {}
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
