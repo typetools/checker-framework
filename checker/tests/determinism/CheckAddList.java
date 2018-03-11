@@ -3,6 +3,7 @@ import org.checkerframework.checker.determinism.qual.*;
 
 public class CheckAddList {
     void addToList(@Det ArrayList<@Det Integer> lst, @NonDet int i) {
+        // :: error: (argument.type.incompatible)
         lst.add(i);
     }
 
@@ -23,7 +24,8 @@ public class CheckAddList {
         lst.addAll(i);
     }
 
-    void addToList4(@ValueNonDet ArrayList<@Det Integer> lst, @ValueNonDet int i) {
+    void addToList4(@NonDet ArrayList<@Det Integer> lst, @NonDet int i) {
+        // :: error: (argument.type.incompatible)
         lst.add(i);
         lst.iterator();
     }

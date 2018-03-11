@@ -33,10 +33,10 @@ public class DetQualifierPolymorphism extends QualifierPolymorphism {
         polyQuals.clear();
         polyQuals.put(factory.NONDET, factory.POLYDET);
         super.annotate(tree, type);
-        polyQuals.put(factory.NONDET, factory.POLYDET2);
-        super.annotate(tree, type);
-        polyQuals.put(factory.NONDET, factory.POLYDET3);
-        super.annotate(tree, type);
+        //polyQuals.put(factory.NONDET, factory.POLYDET2);
+        //super.annotate(tree, type);
+        //polyQuals.put(factory.NONDET, factory.POLYDET3);
+        //super.annotate(tree, type);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DetQualifierPolymorphism extends QualifierPolymorphism {
         polyQuals.put(factory.NONDET, factory.POLYDET);
 
         super.annotate(tree, type);
-        polyQuals.put(factory.NONDET, factory.POLYDET2);
-        super.annotate(tree, type);
+        //polyQuals.put(factory.NONDET, factory.POLYDET2);
+        //super.annotate(tree, type);
     }
 }

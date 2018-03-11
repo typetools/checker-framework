@@ -21,8 +21,8 @@ import org.checkerframework.javacutil.TreeUtils;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET = AnnotationBuilder.fromClass(elements, PolyDet.class);
-    public final AnnotationMirror POLYDET2 = AnnotationBuilder.fromClass(elements, PolyDet2.class);
-    public final AnnotationMirror POLYDET3 = AnnotationBuilder.fromClass(elements, PolyDet3.class);
+    //public final AnnotationMirror POLYDET2 = AnnotationBuilder.fromClass(elements, PolyDet2.class);
+    //public final AnnotationMirror POLYDET3 = AnnotationBuilder.fromClass(elements, PolyDet3.class);
     public final AnnotationMirror OND2D = AnnotationBuilder.fromClass(elements, Ond2D.class);
     public final AnnotationMirror OND2ND = AnnotationBuilder.fromClass(elements, Ond2Nd.class);
     public final AnnotationMirror ORDERNONDET =
@@ -38,12 +38,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
                 Arrays.asList(
-                        Det.class,
-                        OrderNonDet.class,
-                        NonDet.class,
-                        PolyDet.class,
-                        PolyDet2.class,
-                        PolyDet3.class));
+                        Det.class, OrderNonDet.class, NonDet.class, PolyDet.class
+                        /*PolyDet2.class,
+                        PolyDet3.class*/ ));
     }
 
     @Override

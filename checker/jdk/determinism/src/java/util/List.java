@@ -168,7 +168,7 @@ public interface List<E> extends Collection<E> {
      *         sequence
      * @see Arrays#asList(Object[])
      */
-    @Ond2Vnd @PolyDet Object[] toArray(@PolyDet List<E> this);
+    @Ond2Nd @PolyDet Object[] toArray(@PolyDet List<E> this);
 
     /**
      * Returns an array containing all of the elements in this list in
@@ -542,7 +542,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    @Ond2Nd @PolyDet E get(@PolyDet List<@E> this, @PolyDet int index);
+    @Ond2Nd @PolyDet E get(@PolyDet List<E> this, @PolyDet int index);
 
     /**
      * Replaces the element at the specified position in this list with the
@@ -562,7 +562,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E set(List<@E> this, int index, E element);
+    E set(List<E> this, int index, E element);
 
     /**
      * Inserts the specified element at the specified position in this list
@@ -620,7 +620,7 @@ public interface List<E> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    @Ond2Nd @PolyDet int indexOf(@PolyDet List<@E> this, @PolyDet Object o);
+    @Ond2Nd @PolyDet int indexOf(@PolyDet List<E> this, @PolyDet Object o);
 
     /**
      * Returns the index of the last occurrence of the specified element
@@ -706,7 +706,7 @@ public interface List<E> extends Collection<E> {
      *         (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
      *         fromIndex &gt; toIndex</tt>)
      */
-    @Ond2Nd @PolyDet List<@PolyDet2 E> subList(@PolyDet List<@PolyDet2 E> this, @PolyDet int fromIndex, @PolyDet int toIndex);
+    @Ond2Nd @PolyDet List<E> subList(@PolyDet List<E> this, @PolyDet int fromIndex, @PolyDet int toIndex);
 
     /**
      * Creates a {@link Spliterator} over the elements in this list.

@@ -308,7 +308,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    @Ond2Nd @PolyDet public int indexOf(@PolyDet ArrayList<@PolyDet2 E> this, @PolyDet Object o) {
+    @Ond2Nd @PolyDet public int indexOf(@PolyDet ArrayList<E> this, @PolyDet Object o) {
         if (o == null) {
             for (int i = 0; i < size; i++)
                 if (elementData[i]==null)
@@ -441,7 +441,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @Ond2Vnd @PolyDet E set(@PolyDet ArrayList<E> this, int index, E element) {
+    public @Ond2Nd @PolyDet E set(@PolyDet ArrayList<E> this, int index, E element) {
         rangeCheck(index);
 
         E oldValue = elementData(index);

@@ -8,11 +8,13 @@ public class CheckContainsList {
         for (int i = 0; i < 6; i++) {
             lst.add(i);
         }
+        // :: error: (argument.type.incompatible)
         System.out.println(lst.contains(o));
     }
 
     void CheckContains1(
             @OrderNonDet ArrayList<@Det Integer> lst1, @NonDet ArrayList<@Det Integer> o) {
+        // :: error: (argument.type.incompatible)
         System.out.println(lst1.contains(o));
     }
 

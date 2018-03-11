@@ -9,6 +9,7 @@ public class TestListUnsafe1 {
         for (int i = 0; i < 10; i++) {
             lst.add(i);
             @NonDet boolean z = lst.add(i);
+            // :: error: (assignment.type.incompatible)
             @Det boolean r = z;
         }
     }
