@@ -171,7 +171,7 @@ To create tests for a new checker, mimic some existing checker's tests:
    CheckerFrameworkPerDirectoryTest for more detailed information.)
  * include "all-systems" as a test directy by adding it to the array created
    in getTestDirs in the new test class.  See
-   checkerframework/framework/tests/all-systems/README for more details about
+   checker-framework/framework/tests/all-systems/README for more details about
    the all-systems tests.
  * change checker-framework/checker/build.xml to run those tests
 
