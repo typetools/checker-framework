@@ -3030,7 +3030,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         "Did not find stub file or files within directory: "
                                 + stubPath
                                 + " "
-                                + new File(stubPath).getAbsolutePath());
+                                + new File(stubPath).getAbsolutePath()
+                                + " "
+                                + stubPathFull);
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;

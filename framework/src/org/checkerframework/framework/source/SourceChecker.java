@@ -560,6 +560,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         if (options.containsKey(patternName)) {
             pattern = options.get(patternName);
+            if (pattern == null) {
+                message(
+                        Kind.WARNING,
+                        "The " + patternName + " property is empty; please fix your command line");
+                pattern = "";
+            }
         } else if (System.getProperty("checkers." + patternName) != null) {
             pattern = System.getProperty("checkers." + patternName);
         } else if (System.getenv(patternName) != null) {

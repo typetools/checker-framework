@@ -383,7 +383,7 @@ give unexpected results.
   one procedure at a time; it observes the specifications, but not the
   implementations, of other methods.
 
-  Alo see Section~\ref{handling-warnings}, which explains this same
+  Also see Section~\ref{handling-warnings}, which explains this same
   methodology in different words.
 
 \item
@@ -718,6 +718,8 @@ If you have a problem with any checker, or with the Checker Framework,
 please file a bug at
 \url{https://github.com/typetools/checker-framework/issues}.
 (First, check whether there is an existing bug report for that issue.)
+If the problem is with an incorrect or missing annotation on a library,
+including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
 
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
@@ -781,10 +783,39 @@ code.  We are sure that you can make up artificial code that stymies the
 type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
 
-Please do not file an issue to report that some library class is not
-annotated.  Instead, please write the annotations (see
-Chapter~\ref{annotating-libraries}) and then submit a
-\ahref{https://github.com/typetools/checker-framework/pulls}{pull request}.
+
+\subsection{How to report problems with annotated libraries\label{reporting-bugs-annotated-libraries}}
+
+Sometimes, a checker will report a warning because a library is not
+annotated or because the library contains incorrect annotations.
+
+If the library is annotated but has some incorrect or missing annotations,
+then please open a pull request that adds the annotations.  You
+can find the annotated JDK source in the
+\ahref{https://github.com/typetools/checker-framework}{Checker Framework
+  GitHub repository}, in directory
+\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}.
+You can find the annotated source for other libraries in
+\url{https://github.com/typetools/}.
+
+If the library is not annotated at all, you can fork it, add annotations,
+and propose that your annotated version be moved into
+\url{https://github.com/typetools/}.
+
+For either approach, please see \chapterpageref{annotating-libraries} for
+tips about writing library annotations.
+
+Thanks for your contribution to the annotated libraries!
+
+Please don't open an issue tracker issue just to report that some library
+class is not annotated.  Such issues will be closed, to avoid cluttering
+the issue tracker.
+
+An alternative to adding annotations to a library is to write stub files,
+as described in Section~\ref{stub}.  This is a quick and expedient way to
+add or chnage the annotations of an arbirary library.  Creating an
+annotated library is a bit more work, but it is less error-prone, easier to
+use, runs slightly faster, and it can help other users.
 
 
 \section{Building from source\label{build-source}}
@@ -973,7 +1004,7 @@ You do not need to add the Annotation File Utilities to the path, as
 the Checker Framework build finds it using relative paths.
 
 
-\subsection{Build the StubParser\label{stubparser-building}}
+\subsection{Build the Stub Parser\label{stubparser-building}}
 
 This is simply done by:
 
@@ -982,7 +1013,7 @@ This is simply done by:
   mvn package -Dmaven.test.skip=true
 \end{Verbatim}
 
-You do not need to add the StubParser to the path, as
+You do not need to add the Stub Parser to the path, as
 the Checker Framework build finds it using relative paths.
 
 
@@ -1088,7 +1119,7 @@ These instructions are relevant if you use Eclipse as your IDE\@.
 \item Follow the instructions earlier in Section~\ref{build-source} to
 clone and build all projects from their sources.
 \item Download Eclipse from
-the \href{https://www.eclipse.org/downloads}{official Eclipse website}
+the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
 and install it.
 \item Run Eclipse and set the
 workspace to the directory pointed to by \code{\$JSR308}.
