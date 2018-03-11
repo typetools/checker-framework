@@ -1177,15 +1177,13 @@ type qualifiers:
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Nullable { }
 
-  @SubtypeOf( { Nullable.class } )
+  @SubtypeOf( { MonotonicNonNull.class } )
   @ImplicitFor(types = { TypeKind.PACKAGE,
                          TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
                          TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
                          TypeKind.SHORT, TypeKind.BYTE },
       // All literals except NULL_LITERAL:
-      literals = { LiteralKind.BOOLEAN, LiteralKind.CHAR, LiteralKind.DOUBLE,
-                   LiteralKind.FLOAT, LiteralKind.INT, LiteralKind.LONG,
-                   LiteralKind.STRING })
+      literals = { LiteralKind.STRING })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface NonNull {  }
 \end{Verbatim}
