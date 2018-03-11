@@ -30,21 +30,26 @@ Sections~\ref{askipuses}--\ref{askipdefs}.)
 
 This section describes how to create an annotated library --- that is, how
 to add annotations to a library so that the Checker Framework can better
-type-check clients of the library.
+type-check clients of the library.  For annotating the JDK, see
+Section~\ref{annotating-jdk}.
 
 You can write annotations for a library, and make them known to a checker, in two ways.
 
 \begin{enumerate}
 \item
-  Write annotations in a copy of the library's source code.
+  Write annotations in a copy of the library's source code (for instance,
+  in a fork of the library's GitHub project).  In addition to writing
+  annotations, adjust the build system to run pluggable-type-checking when
+  compiling (see \chapterpageref{external-tools}).
 
-  Compile the library to create \<.class> and \<.jar> files that
-  contain the annotations.
-
-  Then, when doing pluggable \emph{type-checking},
-  put those files on the classpath.
-  When \emph{running} your code, you can use either version of the library:  the
-  one you created or the original distributed version.
+  Then, when doing pluggable type-checking,
+  put the annotated library's \<.jar> file on the classpath, as explained in
+  Section~\ref{annotated-libraries-using}.
+  %% You only need to do this if for some reason you don't trust the
+  %% artifacts on Maven Central; but don't cater to that level of paranoia
+  %% by mentioning it.
+  % When \emph{running} your code, you can use either version of the library:  the
+  % one you created or the original distributed version.
 
   %% There is no point to advertising this deprecated workflow.
   % You can insert annotations in the compiled \code{.class} files of the
@@ -58,7 +63,6 @@ You can write annotations for a library, and make them known to a checker, in tw
   validated ahead of time.  Thus, this compilation approach is less
   error-prone, and the type-checker runs faster.  You get
   correctness guarantees about the library in addition to your code.
-  Section~\ref{compiling-libraries} describes how to compile a library.
 
 \item
   Write annotations in a ``stub file'', if you do not have access to the
@@ -66,7 +70,8 @@ You can write annotations for a library, and make them known to a checker, in tw
   %% Leave out this complication.
   % This approach is possible with annotated source code.
 
-  Supply the ``stub file'' textually to the Checker Framework.
+  Then, when doing pluggable type-checking,
+  supply the ``stub file'' textually to the Checker Framework.
 
   This approach does not require you to compile the library source
   code.
@@ -86,7 +91,7 @@ developers so that your annotated library can be distributed with the
 Checker Framework.
 Sharing your annotations is useful even if the library is only partially
 annotated.
-However, as noted in Section~\ref{get-started-with-legacy-code}, you
+However, as noted in Sections~\ref{get-started-with-legacy-code} and~\ref{library-tips-fully-annotate}, you
 should annotate an entire class at a time.
 You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
 when getting started, but you should always examine their results.
@@ -97,39 +102,85 @@ when getting started, but you should always examine their results.
 % Nullness (Section~\ref{nullness-inference}) type system.
 
 
-\subsection{Tips for annotating a library\label{annotating-tips}}
+\section{Tips for annotating a library\label{library-tips}}
+
+Section~\ref{tips-about-writing-annotations} gives general tips for writing
+annotations.  This section gives tips that are specific to annotating a
+third-party library.
+
+
+\subsection{Don't change the code\label{library-tips-dont-change-the-code}}
 
 When you annotate a library, you should only add annotations and, when
 necessary, documentation of those annotations in a Java comment (\<//>
 or \</*...*/>).
 
-Do not change the library's code, including formatting and whitespace.
-Do not change publicly-visible documentation, such as Javadoc comments.
-Changes like these will increase the size of the diffs
-between upstream and your version.  Unnecessary diffs make it harder for
-others to understand what you have done, and they make it harder to pull
-changes from upstream into the annotated library.
-(The only time it is acceptable to comment out existing code in the library
-is if the regular Java compiler cannot compile the code; but this should be
-extremely rare.)
+Do not change the library's code, which will change its behavior and make
+the annotated version inconsistent with the unannotated version.
+(Sometimes it is acceptable to make a refactoring, such as extracting an
+expression into a new local variable in order to annotate its type or
+suppress a warning.)
+% (The only time it is acceptable to comment out existing code in the library
+% is if the regular Java compiler cannot compile the code; but this should be
+% extremely rare.)
 
-Your annotations should re-state facts that are in the Javadoc
-documentation.  Do not add requirements or guarantees beyond what the
-library author has already committed to.  Sometimes the Javadoc
-documentation omits some facts.  If a project's Javadoc says nothing about
-nullness, then you should not assume that the specification forbids null,
-nor that it permits it.  You need to get guidance from the library author.
-(If the project's Javadoc does sometimes explicitly permit/forbid null,
-then you can assume the opposite at places where the author omitted those
-statements.)  In some cases, you can infer some facts from the
+Do not change publicly-visible documentation, such as Javadoc comments.
+That also makes the annotated version inconsistent with the unannotated
+version.
+
+Do not change formatting and whitespace.
+
+All of these changes increase the difference between upstream (the original
+version) and your annotated version.  This makes it harder for others to
+understand what you have done, and they make it harder to pull changes from
+upstream into the annotated library.
+
+
+\subsection{Library annotations should reflect the specification, not the implementation\label{library-tips-specification}}
+
+Publicly-visible annotations (including those on public method formal
+parameters and return types) should be based on the
+documentation, typically the method's Javadoc.
+In other words, your annotations should re-state facts that are in the Javadoc
+documentation.
+
+Do not add requirements or guarantees beyond what the library author has
+already committed to.  If a project's Javadoc says nothing about nullness,
+then you should not assume that the specification forbids null, nor that it
+permits it.
+(If the project's Javadoc explicitly mentions null everywhere it is permitted,
+then you can assume it is forbidden elsewhere, where the author omitted those
+statements.)
+
+If a fact is not mentioned in the documentation, then it is usually an
+implementation detail.  Clients should not depend on implementation
+details, which are prone to change without notice.
+(In some cases, you can infer some facts from the
 implementation, such as that null is permitted for a method's parameter or
 return type if the implementation explicitly passes null to the method or
-the method implementation returns null.
+the method implementation returns null.)
+
+If there is a fact that you think should be in the library's documentation
+but was unintentionally omitted by its authors, then please submit a bug
+report asking them to update the documentation to reflect this fact.  After
+they do, you can also express the fact as an annotation.
+
+% If you wish to depend on your assumption that the behavior will never
+% change, then you can create a local stub file as a workaround while you
+% wait for the library documentation to be updated.
+
+
+\subsection{Report bugs upstream\label{library-tips-report-bugs}}
 
 While annotating the library, you may discover bugs or missing/wrong
 documentation.  If you have a documentation improvement or a bug fix, then
 open a pullrequest against the upstream version of the library.  This will
-benefit all users of the library.
+benefit all users of the library.  And, once the documentation is updated,
+you will be able to add annotations that are consistent with the
+documentation.
+
+
+\subsection{Fully annotate the library, or indicate which parts you did not\label{library-tips-fully-annotate}}
 
 If you do not annotate all the files in the library, then use
 \refqualclass{framework/qual}{AnnotatedFor} to indicate what files you have
@@ -141,8 +192,13 @@ documentation.  If you don't annotate the whole file, then other people
 won't know whether a particular method is unannotated because you didn't
 get to it yet or because you decided that it didn't need any annotations.
 
+
+\subsection{Verify your annotations\label{library-tips-verify}}
+
 Ideally, after you annotate a file, you should type-check the file to verify
-the correctness and completeness of your annotations.  An alternative is to
+the correctness and completeness of your annotations.
+
+An alternative is to
 only annotate method signatures.  The alternative is quicker but more
 error-prone, and there is no difference from the point of view of clients,
 who can only see annotations on public methods and fields.  When you
@@ -151,7 +207,7 @@ you supply \<-Awarns>, you don't have to suppress those warnings and the
 compiler will still produce \<.class> files.
 
 
-\subsection{Creating an annotated JDK\label{annotating-jdk}}
+\section{Creating an annotated JDK\label{annotating-jdk}}
 
 When you create a new checker, you need to also supply annotations for
 parts of the JDK, either as stub files or as source code that will be
@@ -193,7 +249,7 @@ directory
 the same directory structure as the JDK\@.
 
 Whenever you add a file, fully annotate it, as described in
-Section~\ref{annotating-tips}.
+Section~\ref{library-tips}.
 
 If you are only annotating fields and method signatures (but not
 ensuring that method bodies type-check), then you don't need to suppress
@@ -225,7 +281,7 @@ classes but not others.
 
 (There is another type of partial annotation, which is when you annotate
 method signatures but do not type-check the bodies.
-See Section~\ref{annotating-tips}.)
+See Section~\ref{library-tips}.)
 
 When compiling a partially-annotated library, the checker needs to use normal
 defaulting rules (Section~\ref{climb-to-top}) for code you have annotated and
@@ -637,26 +693,6 @@ in the version of the library you are using:
 StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
-
-
-\section{Library annotations should reflect the specification, not the implementation\label{libraries-specification}}
-
-Publicly-visible annotations (including those on public method formal
-parameters and return types) should be based on the
-documentation, typically the method's Javadoc.
-
-If a fact is not mentioned in the documentation, then it is an
-implementation detail.  Clients should not depend on such implementation
-details, which are prone to change without notice.
-
-If there is a fact that you think should be in the library's documentation
-but was unintentionally omitted by its authors, then please submit a bug
-report asking them to update the documentation to reflect this fact.  If
-they do, then you can also express the fact as an annotation.
-
-If you wish to depend on your assumption that the behavior will never
-change, then you can create a local stub file as a workaround while you
-wait for the library documentation to be updated.
 
 
 \section{Troubleshooting/debugging annotated libraries\label{libraries-troubleshooting}}
