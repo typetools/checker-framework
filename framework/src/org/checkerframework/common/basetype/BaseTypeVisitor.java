@@ -604,9 +604,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 msgPrefix = "purity.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
+                String reason = r.second;
                 @SuppressWarnings("CompilerMessages")
-                @CompilerMessageKey String msg = msgPrefix + r.second;
-                checker.report(Result.failure(msg), r.first);
+                @CompilerMessageKey String msg = msgPrefix + reason;
+                if (reason.equals("call")) {
+                    MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+                    checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+                } else {
+                    checker.report(Result.failure(msg), r.first);
+                }
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
