@@ -56,11 +56,12 @@ class StartsEndsWith {
         }
     }
 
-    void refineStartsConditional(String str, String prefix) {
-        if (prefix.length() > 10 && str.startsWith(prefix)) {
-            @MinLen(11) String s11 = str;
-        }
-    }
+    // Correctness depends on annotated JDK, which framework tests ignore.
+    // void refineStartsConditional(String str, String prefix) {
+    //     if (prefix.length() > 10 && str.startsWith(prefix)) {
+    //         @MinLen(11) String s11 = str;
+    //     }
+    // }
 }
 
 class StartsEndsWithExternal {
