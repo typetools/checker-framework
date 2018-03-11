@@ -1,17 +1,14 @@
 package org.checkerframework.dataflow.analysis;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -30,8 +27,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Abstract values of nodes. */
     protected final IdentityHashMap<Node, A> nodeValues;
 
-    /** Map from AST {@link Tree}s to {@link Node}s. */
-    protected final IdentityHashMap<Tree, Node> treeLookup;
+    /** Map from AST {@link Tree}s to sets of {@link Node}s. */
+    protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
     protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
@@ -41,9 +38,6 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** The stores before every method call. */
     protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
-
-    /** Map from AST {@link Tree}s to generated {@link Tree}s. */
-    protected final IdentityHashMap<Tree, List<Tree>> generatedTreesLookup;
 
     /**
      * Caches of the analysis results for each input for the block of the node and each node.
@@ -57,16 +51,14 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     public AnalysisResult(
             Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
-            IdentityHashMap<Tree, Node> treeLookup,
+            IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
-            HashMap<Element, A> finalLocalValues,
-            IdentityHashMap<Tree, List<Tree>> generatedTreesLookup) {
+            HashMap<Element, A> finalLocalValues) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.unaryAssignNodeLookup = new IdentityHashMap<>(unaryAssignNodeLookup);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
-        this.generatedTreesLookup = new IdentityHashMap<>(generatedTreesLookup);
         this.analysisCaches = new IdentityHashMap<>();
     }
 
@@ -77,7 +69,6 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         unaryAssignNodeLookup = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
-        generatedTreesLookup = new IdentityHashMap<>();
         analysisCaches = new IdentityHashMap<>();
     }
 
@@ -89,18 +80,30 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         this.unaryAssignNodeLookup = new IdentityHashMap<>();
         this.stores = new IdentityHashMap<>();
         this.finalLocalValues = new HashMap<>();
-        this.generatedTreesLookup = new IdentityHashMap<>();
         this.analysisCaches = analysisCaches;
     }
 
     /** Combine with another analysis result. */
     public void combine(AnalysisResult<A, S> other) {
         nodeValues.putAll(other.nodeValues);
-        treeLookup.putAll(other.treeLookup);
+        mergeTreeLookup(treeLookup, other.treeLookup);
         unaryAssignNodeLookup.putAll(other.unaryAssignNodeLookup);
         stores.putAll(other.stores);
         finalLocalValues.putAll(other.finalLocalValues);
-        generatedTreesLookup.putAll(other.generatedTreesLookup);
+    }
+
+    // Merge all entries from otherTreeLookup into treeLookup. Merge sets if already present.
+    private static void mergeTreeLookup(
+            IdentityHashMap<Tree, Set<Node>> treeLookup,
+            IdentityHashMap<Tree, Set<Node>> otherTreeLookup) {
+        for (Entry<Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
+            Set<Node> hit = treeLookup.get(entry.getKey());
+            if (hit == null) {
+                treeLookup.put(entry.getKey(), entry.getValue());
+            } else {
+                hit.addAll(entry.getValue());
+            }
+        }
     }
 
     /** @return the value of effectively final local variables */
@@ -112,7 +115,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ A getValue(Node n) {
+    public @Nullable A getValue(Node n) {
         return nodeValues.get(n);
     }
 
@@ -120,13 +123,50 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ A getValue(Tree t) {
-        A val = getValue(treeLookup.get(t));
-        return val;
+    public @Nullable A getValue(Tree t) {
+        Set<Node> nodes = treeLookup.get(t);
+
+        if (nodes == null) {
+            return null;
+        }
+        if (nodes.size() == 1) {
+            Node aNode = nodes.iterator().next();
+            A val = getValue(aNode);
+            return val;
+        } else {
+            A merged = null;
+            for (Node aNode : nodes) {
+                A a = getValue(aNode);
+                if (merged == null) {
+                    merged = a;
+                } else if (a != null) {
+                    merged = merged.leastUpperBound(a);
+                }
+            }
+            return merged;
+        }
     }
 
-    /** @return the {@link Node} for a given {@link Tree}. */
-    public /*@Nullable*/ Node getNodeForTree(Tree tree) {
+    /**
+     * Returns the {@code Node}s corresponding to a particular {@code Tree}. Multiple {@code Node}s
+     * can correspond to a single {@code Tree} because of several reasons:
+     *
+     * <ol>
+     *   <li>In a lambda expression such as {@code () -> 5} the {@code 5} is both an {@code
+     *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}.
+     *   <li>Narrowing and widening primitive conversions can result in {@code
+     *       NarrowingConversionNode} and {@code WideningConversionNode}.
+     *   <li>Automatic String conversion can result in a {@code StringConversionNode}.
+     *   <li>Trees for {@code finally} blocks are cloned to achieve a precise CFG. Any {@code Tree}
+     *       within a finally block can have multiple corresponding {@code Node}s attached to them.
+     * </ol>
+     *
+     * Callers of this method should always iterate through the returned set, possibly ignoring all
+     * {@code Node}s they are not interested in.
+     *
+     * @return the set of {@link Node}s for a given {@link Tree}.
+     */
+    public @Nullable Set<Node> getNodesForTree(Tree tree) {
         return treeLookup.get(tree);
     }
 
@@ -136,21 +176,25 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         return unaryAssignNodeLookup.get(tree);
     }
 
-    /** @return the generated {@link Tree}s for a given {@link Tree}. */
-    public List<Tree> getGeneratedTrees(Tree tree) {
-        if (generatedTreesLookup.containsKey(tree)) {
-            return generatedTreesLookup.get(tree);
-        }
-        return Collections.emptyList();
-    }
-
     /** @return the store immediately before a given {@link Tree}. */
     public S getStoreBefore(Tree tree) {
-        Node node = getNodeForTree(tree);
-        if (node == null) {
+        Set<Node> nodes = getNodesForTree(tree);
+        if (nodes == null) {
             return null;
         }
-        return getStoreBefore(node);
+        if (nodes.size() == 1) {
+            return getStoreBefore(nodes.iterator().next());
+        }
+        S merged = null;
+        for (Node node : nodes) {
+            S s = getStoreBefore(node);
+            if (merged == null) {
+                merged = s;
+            } else if (s != null) {
+                merged = merged.leastUpperBound(s);
+            }
+        }
+        return merged;
     }
 
     /** @return the store immediately before a given {@link Node}. */
@@ -160,11 +204,23 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** @return the store immediately after a given {@link Tree}. */
     public S getStoreAfter(Tree tree) {
-        Node node = getNodeForTree(tree);
-        if (node == null) {
+        Set<Node> nodes = getNodesForTree(tree);
+        if (nodes == null) {
             return null;
         }
-        return getStoreAfter(node);
+        if (nodes.size() == 1) {
+            return getStoreAfter(nodes.iterator().next());
+        }
+        S merged = null;
+        for (Node node : nodes) {
+            S s = getStoreAfter(node);
+            if (merged == null) {
+                merged = s;
+            } else if (s != null) {
+                merged = merged.leastUpperBound(s);
+            }
+        }
+        return merged;
     }
 
     /** @return the store immediately after a given {@link Node}. */

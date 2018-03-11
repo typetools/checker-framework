@@ -1,15 +1,12 @@
 package org.checkerframework.framework.source;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.*;
-*/
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.HashCodeUtils;
@@ -57,8 +54,7 @@ public final class Result {
      * @param args optional arguments to be included in the message
      * @return the failure result
      */
-    public static Result failure(
-            /*@CompilerMessageKey*/ String messageKey, /*@Nullable*/ Object... args) {
+    public static Result failure(@CompilerMessageKey String messageKey, @Nullable Object... args) {
         return new Result(Type.FAILURE, Collections.singleton(new DiagMessage(messageKey, args)));
     }
 
@@ -69,8 +65,7 @@ public final class Result {
      * @param args optional arguments to be included in the message
      * @return the warning result
      */
-    public static Result warning(
-            /*@CompilerMessageKey*/ String messageKey, /*@Nullable*/ Object... args) {
+    public static Result warning(@CompilerMessageKey String messageKey, @Nullable Object... args) {
         return new Result(Type.WARNING, Collections.singleton(new DiagMessage(messageKey, args)));
     }
 
@@ -80,7 +75,7 @@ public final class Result {
         if (messagePairs != null) {
             for (DiagMessage msg : messagePairs) {
                 String message = msg.getMessageKey();
-                /*@Nullable*/ Object[] args = msg.getArgs();
+                @Nullable Object[] args = msg.getArgs();
                 if (args != null) {
                     args = Arrays.copyOf(msg.getArgs(), args.length);
                 }
@@ -166,10 +161,10 @@ public final class Result {
      * <p>The optional arguments are possible custom strings for the error message.
      */
     public static class DiagMessage {
-        private final /*@CompilerMessageKey*/ String message;
+        private final @CompilerMessageKey String message;
         private Object[] args;
 
-        protected DiagMessage(/*@CompilerMessageKey*/ String message, Object[] args) {
+        protected DiagMessage(@CompilerMessageKey String message, Object[] args) {
             this.message = message;
             if (args == null) {
                 this.args = new Object[0]; /*null->nn*/
@@ -179,7 +174,7 @@ public final class Result {
         }
 
         /** @return the message key of this DiagMessage */
-        public /*@CompilerMessageKey*/ String getMessageKey() {
+        public @CompilerMessageKey String getMessageKey() {
             return this.message;
         }
 

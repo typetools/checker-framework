@@ -1,11 +1,8 @@
 package org.checkerframework.dataflow.analysis;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.Map;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * {@code TransferResult} is used as the result type of the individual transfer functions of a
@@ -25,16 +22,15 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
      * {@link org.checkerframework.dataflow.cfg.node.Node} does not throw any exceptions). Does not
      * necessarily contain a store for every exception, in which case the in-store will be used.
      */
-    protected final /*@Nullable*/ Map<TypeMirror, S> exceptionalStores;
+    protected final @Nullable Map<TypeMirror, S> exceptionalStores;
 
     /**
      * The abstract value of the {@link org.checkerframework.dataflow.cfg.node.Node} associated with
      * this {@link TransferResult}, or {@code null} if no value has been produced.
      */
-    protected /*@Nullable*/ A resultValue;
+    protected @Nullable A resultValue;
 
-    public TransferResult(
-            /*@Nullable*/ A resultValue, /*@Nullable*/ Map<TypeMirror, S> exceptionalStores) {
+    public TransferResult(@Nullable A resultValue, @Nullable Map<TypeMirror, S> exceptionalStores) {
         this.resultValue = resultValue;
         this.exceptionalStores = exceptionalStores;
     }
@@ -71,7 +67,7 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
      * @return the store that flows along the outgoing exceptional edge labeled with {@code
      *     exception} (or {@code null} if no special handling is required for exceptional edges).
      */
-    public /*@Nullable*/ S getExceptionalStore(TypeMirror exception) {
+    public @Nullable S getExceptionalStore(TypeMirror exception) {
         if (exceptionalStores == null) {
             return null;
         }

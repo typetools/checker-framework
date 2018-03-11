@@ -276,10 +276,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>If you have never made a release before, follow the instructions in the
   <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
-  <li>Download and install the lastest version of Eclipse.  Check that the Eclipse version
-      matches the version listed in
-      <a href="../eclipse/checker-framework-eclipse-update-site/manual/index.html#installation">the Eclipse plugin manual</a>.
-  </li>
   <li>
       <strong>Log into Buffalo</strong><br/>
       <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
@@ -289,13 +285,13 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <code>mkdir -p /scratch/$USER/jsr308-release<br/></code>
       <code>cd /scratch/$USER/jsr308-release<br/></code>
       <code>(cd checker-framework && git pull --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
-      <code>cd checker-framework/release<br/></code>
+      <code>cd checker-framework/docs/developer/release<br/></code>
   </li>
   <li><strong>Review the changelogs and documentation</strong><br/>
       Ensure that the changelogs and documentation for the Checker Framework, Type Annotations Compiler and
       AFU are complete.  First follow the instructions at <a href="#content_guidelines">content guidelines</a>.  Then,
       run release_build in a mode that reviews the documentation only:
-      <code>cd /scratch/$USER/jsr308-release/checker-framework/release<br/></code>
+      <code>cd /scratch/$USER/jsr308-release/checker-framework/docs/developer/release<br/></code>
       <code>python release_build.py all --review-manual</code><br/><br/>
       <strong>Note:</strong> This step can be performed in advance of the release day. It is recommended
       that this be done the work morning after Feature Freeze.
@@ -408,12 +404,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     </tr>
     <tr>
       <td>6.</td>
-      <td><strong>Complete the Eclipse plugin pre-build checklist</strong><br/>
-          Follow the instructions <a href="../eclipse/README-developers.html#pre_build_checklist">here</a>.
-      </td>
-    </tr>
-    <tr>
-      <td>7.</td>
       <td><strong>Get edit privileges for Checker Framework, JSR 308 compiler, Annotation Tools</strong><br/>
         Once a release has been completed, you will be prompted to update issues in the
         issue tracker for each project that has been released.
@@ -424,13 +414,13 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       </td>
     </tr>
     <tr>
-      <td>8.</td>
+      <td>7.</td>
       <td><strong>Ensure that you can see the status of all Travis relevant to the release</strong><br/>
         Ensure that the status of all the Travis projects listed <a href="#continuous-integration">here</a> is displayed correctly.
       </td>
     </tr>
     <tr>
-      <td>9.</td>
+      <td>8.</td>
       <td><strong>Read the Checker Framework Development Process document</strong><br/>
         A release person has responsibilities each month in addition to performing the release.
         The <a href="README-release-process.html">Checker Framework Release Process document</a>
@@ -440,7 +430,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       </td>
     </tr>
     <tr>
-      <td>10.</td>
+      <td>9.</td>
       <td><strong>Install html5validator</strong>
        If you are going to perform the release on buffalo, you may need to install
        html5validator.  If <code>html5validator --version</code> issues any errors, try running
@@ -448,7 +438,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       </td>
     </tr>
     <tr>
-      <td>11.</td>
+      <td>10.</td>
       <td><strong>Run release_build once</strong><br/>
         To save time on release day addressing potential configuration issues, before your first
         release day, ensure that <code>release_build</code> is working correctly
@@ -498,7 +488,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       </tr>
       <tr>
         <td></td>
-        <td colspan="2">checker-framework/release</td>
+        <td colspan="2">checker-framework/docs/developer/release</td>
         <td>The directory where the release scripts are run from.  Any changes made under this directory
           won't be automatically committed when the release is committed.
         </td>
@@ -586,9 +576,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
           is correct through scripts and manual steps.  When the user is satisfied the website
           is correct it deploys the website to the live website:
           <a href="https://checkerframework.org/">https://checkerframework.org/</a>.
-          It also pushes Maven artifacts to our checker-framework.com repo and Maven central.
-          Furthermore, there are a number of prompts to manually build the Eclipse plugin and
-          test various components.
+          It also pushes Maven artifacts to Maven central.
           This script is thoroughly documented in code comments located in its <code>main()</code> function.
         </td>
       </tr>
@@ -665,7 +653,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <li>To be consistent, write in the past tense (e.g. &quot;Added option for verbose error messages&quot;).</li>
       <li>Lines should not exceed 80 characters wide.</li>
       <li>Break the different programs into their own sections.  See notes on release 1.7.0 and 1.5.0 for an
-        example.  Tools like the Eclipse plugin should have their own section within the
+        example.  Tools should have their own section within the
         Checker Framework release notes (excluding issue fixes from the issue tracker).
       </li>
       <li>Be specific.  Don't write something like "added a few options to Eclipse plugin".  Do write "added
@@ -758,7 +746,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <h4 id="sanity-checks">Sanity Checks:</h4> <!-- omit from toc -->
     <ul>
       <li>Run tutorial sanity check automatically via command line.</li>
-      <li>Eclipse auto-sanity check see <a href="#fi_automate_eclipse_build">Automate the Eclipse Build.</a></li>
     </ul>
     <h3 id="fi_buffalo_integeration">Buffalo Integration</h3> <!-- omit from toc -->
     If we could have Buffalo run the release_build script nightly, we could head off broken links and other
@@ -817,21 +804,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <li>Provide a script to launch Python with these commands on its path.</li>
       <li>Update this README to document the new functionality.</li>
     </ul>
-  <section id="fi_automate_eclipse_build"> <!-- omit from toc -->
-    <h3>Automate the Eclipse Build</h3> <!-- omit from toc -->
-    The Checker Framework Eclipse plugin is the cause of the most burdensome manual steps in the release
-    process.  There exist ways to automate the plugin build and tests.  However, the process is complicated and
-    would take a while to perfect.  It may or may not be worth it.
-    <h4>Tasks:</h4> <!-- omit from toc -->
-    <ul>
-      <li>Use Ant or other methods to automate the Eclipse build.</li>
-      <li>Add to the release script targets for updating version numbers and other relevant fields
-        of the Eclipse plugin for the release.
-      </li>
-      <li>Add a step(s) to build/test the Eclipse plugin from the command line to the release script.</li>
-      <li>Update this README to include the new steps.</li>
-    </ul>
-  </section>
 </div>
 </div>
 </div>

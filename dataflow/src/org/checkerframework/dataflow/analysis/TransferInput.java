@@ -1,9 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
-/*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
@@ -31,7 +28,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
      * }</pre>
      */
-    protected final /*@Nullable*/ S store;
+    protected final @Nullable S store;
 
     /**
      * The 'then' result store (or {@code null} if none is present). The following invariant is
@@ -41,7 +38,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
      * }</pre>
      */
-    protected final /*@Nullable*/ S thenStore;
+    protected final @Nullable S thenStore;
 
     /**
      * The 'else' result store (or {@code null} if none is present). The following invariant is
@@ -51,7 +48,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
      * }</pre>
      */
-    protected final /*@Nullable*/ S elseStore;
+    protected final @Nullable S elseStore;
 
     /** The corresponding analysis class to get intermediate flow results. */
     protected final Analysis<A, S, ?> analysis;
@@ -134,7 +131,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      *     Furthermore, {@code n} cannot be a l-value node. Returns {@code null} if no value if
      *     available.
      */
-    public /*@Nullable*/ A getValueOfSubNode(Node n) {
+    public @Nullable A getValueOfSubNode(Node n) {
         return analysis.getValue(n);
     }
 

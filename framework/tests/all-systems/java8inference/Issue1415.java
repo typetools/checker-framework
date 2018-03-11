@@ -1,6 +1,5 @@
 // Test case for Issue 1415.
 // https://github.com/typetools/checker-framework/issues/1415
-// @below-java8-jdk-skip-test
 
 @SuppressWarnings("") // Check for crashes.
 class Issue1415 {

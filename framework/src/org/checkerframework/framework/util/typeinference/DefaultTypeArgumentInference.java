@@ -117,6 +117,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final List<AnnotatedTypeMirror> argTypes =
                 TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
         final TreePath pathToExpression = typeFactory.getPath(expressionTree);
+        assert pathToExpression != null;
         final AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 

@@ -88,7 +88,7 @@ transformation:
 * eliminate postInit method
 
 * load javac via a classloader rather than by starting a new process -- this
-  may avoid some problems with the Maven and Eclipse plugins?
+  may avoid some problems with the Maven plugin?
 
 
 * use a single Processor implementation and ensure checker writers never have

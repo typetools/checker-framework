@@ -4,10 +4,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.util.Name;
-
-/*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
-*/
 
 /**
  * A DetachedVarSymbol represents a variable that is not part of any AST Tree. DetachedVarSymbols
@@ -16,7 +13,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class DetachedVarSymbol extends Symbol.VarSymbol {
 
-    protected /*@Nullable*/ VariableTree decl;
+    protected @Nullable VariableTree decl;
 
     /** Construct a detached variable symbol, given its flags, name, type and owner. */
     public DetachedVarSymbol(long flags, Name name, Type type, Symbol owner) {
@@ -30,7 +27,7 @@ public class DetachedVarSymbol extends Symbol.VarSymbol {
     }
 
     /** Get the declaration tree for the variable. */
-    public /*@Nullable*/ VariableTree getDeclaration() {
+    public @Nullable VariableTree getDeclaration() {
         return decl;
     }
 }

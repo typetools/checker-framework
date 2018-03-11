@@ -1,8 +1,6 @@
 // Test case for issue #293: https://github.com/typetools/checker-framework/issues/293
 // Thanks to Ed Price for the test case.
 
-// @skip-test until issue is fixed
-
 // Design space:
 //  try
 //    ..

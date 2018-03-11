@@ -1,30 +1,26 @@
 package org.checkerframework.dataflow.cfg.node;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
-/*
- * This represents the start and end of synchronized code block.
- * If startOfBlock == true it is the node preceding a synchronized code block.
- * Otherwise it is the node immediately after a synchronized code block.
- */
-
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
+/**
+ * This represents the start and end of synchronized code block. If startOfBlock == true it is the
+ * node preceding a synchronized code block. Otherwise it is the node immediately after a
+ * synchronized code block.
+ */
 public class SynchronizedNode extends Node {
 
-    protected final /*@Nullable*/ Tree tree;
+    protected final @Nullable Tree tree;
     protected final Node expression;
     protected final boolean startOfBlock;
 
     public SynchronizedNode(
-            /*@Nullable*/ Tree tree, Node expression, boolean startOfBlock, Types types) {
+            @Nullable Tree tree, Node expression, boolean startOfBlock, Types types) {
         super(types.getNoType(TypeKind.NONE));
         this.tree = tree;
         this.expression = expression;

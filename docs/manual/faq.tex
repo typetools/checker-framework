@@ -74,6 +74,11 @@ fully-qualified type name?
 \\ \ref{faq-type-properties}: What properties can and cannot be handled by type-checking?
 \\ \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules?
 
+\faqtocpara{\ref{faq-tool-section}: Tool questions}
+\\ \ref{faq-pluggable-type-checking}: How does pluggable type-checking work?
+\\ \ref{faq-classpath-to-use-annotated-library}: What classpath is needed to use an annotated library?
+\\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
+
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
@@ -82,9 +87,6 @@ fully-qualified type name?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
 \\ \ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
 \\ \ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
-\\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
-\\ \ref{faq-pluggable-type-checking}: How does pluggable type-checking work?
-\\ \ref{faq-classpath-to-use-annotated-library}: What classpath is needed to use an annotated library?
 
 
 \section{Motivation for pluggable type-checking\label{faq-motivation-section}}
@@ -1333,6 +1335,104 @@ adequate syntax exists, then the Checker Framework can be extended to
 support it.
 
 
+\section{Tool questions\label{faq-tool-section}}
+
+
+\subsection{How does pluggable type-checking work?\label{faq-pluggable-type-checking}}
+
+The Checker Framework enables you to define a new type system.  It finds
+errors, or guarantees their absence, by performing type-checking that is
+similar to that already performed by the Java compiler.
+
+Type-checking examines each statement of your program in turn, one at a time.
+\begin{itemize}
+\item
+Expressions are processed bottom-up.  Given types for each sub-expression,
+the type-checker determines whether the types are legal for the
+expression's operator and determines the type of the expression.
+% For example, if \<x> has type \<@Positive> and \<y> has type \<@Positive>,
+% then the expression \<x + y> also has type @Positive.
+
+\item
+An assignment is legal if the type of the right-hand side is a subtype of
+the declared type of the left-hand side.
+
+\item
+ At a method call, the arguments are legal if they can be assigned to the
+ formal parameters (this is called a ``pseudo-assignment'' and it follows
+ the normal rules for assignment).  The type of the method call is the
+ declared type of the return type, where the method is declared.  If
+ the method declaration is not annotated, then a default annotation is
+ used.
+
+\item
+  Suppose that method \<Sub.m> overrides method \<Super.m>.
+  %
+  The return type of \<Sub.m> must be equal to or a subtype of the return
+  type of \<Super.m> (this is called ``covariance'').
+  %
+  The type of formal parameter $i$ of \<Sub.m> must be equal to or a
+  \emph{super}type of the type of formal parameter $i$ in \<Super.m> (this
+  is called ``contravariance'').
+
+\end{itemize}
+
+
+\subsection{What classpath is needed to use an annotated library?\label{faq-classpath-to-use-annotated-library}}
+
+Suppose that you distribute a library, which contains Checker Framework
+annotations such as \<@Nullable>.  This enables clients of the library to
+use the Checker Framework to type-check their programs.  To do so, they
+must have the Checker Framework annotations on their classpath, for
+instance by using the Checker Framework Compiler.
+
+Clients who do not wish to perform pluggable type-checking do not need to
+have the Checker Framework annotations (\<checker.jar> or
+\<checker-qual.jar>) in their classpath, either when compiling or running
+their programs.
+
+The JVM does not issue a link error if an annotation is not found when a
+class is loaded.  (By contrast, the JVM does issue a link error if a
+superclass, or a parameter/return/field type, is not found.)
+Likewise, there is no problem compiling against a library even if the
+library's annotations are not on the classpath.
+These are properties of Java, and are not specific to the Checker
+Framework's annotations.
+
+
+\subsection{Why do \<.class> files contain more annotations than the source code?\label{faq-classfile-annotations}}
+
+You may notice annotations such as \<@Pure> and \<@SideEffectFree> in
+compiled \<.class> files even though the source code containes no
+annotations.  These annotations are propagated from annotated libraries,
+such as the JDK, to your code.
+
+When an overridden method has a side effect annotation, the overriding
+method must have one too.  If you do not write one explicitly, the Checker
+Framework could issue a warning, or it could automatically add the missing
+annotation.  It does the latter, for annotations declared with the
+\refqualclass{framework/qual}{InheritedAnnotation} meta-annotation.
+
+In addition, defaulted and inferred type qualifiers are written into
+\<.class> files; see Section~\ref{effective-qualifier}.
+
+
+\subsection{Is there a type-checker for managing checked and unchecked exceptions?\label{faq-checked-exceptions}}
+
+It is possible to annotate exception types, and any type-checker built on the
+Checker Framework enforces that type annotations are consistent between
+\<throw> statements and \<catch> clauses that might catch them.
+
+The Java compiler already enforces that all checked exceptions are caught
+or are declared to be passed through, so you would use annotations to
+express other properties about exceptions.
+
+Checked exceptions are an example of a ``type and effect'' system, which is
+like a type system but also accounts for actions/behaviors such as side
+effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
+type-and-effect system that is distributed with the Checker Framework.
+
+
 \section{Relationship to other tools\label{faq-other-tools-section}}
 
 
@@ -1343,7 +1443,7 @@ given variety of bug.
 
 A bug detector like \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
 \href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
-\href{http://pmd.sourceforge.net/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
+\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
 of the most obvious bugs in your program.  It uses a lightweight analysis,
 then uses heuristics to discard some of its warnings.  Thus, even if the tool
 prints no warnings, your code might still have errors --- maybe the
@@ -1404,9 +1504,7 @@ see~\chapterpageref{introduction}) and is extensible to more properties.
 
 There are also some benefits to Eclipse's null analysis.
 It is faster than the Checker Framework, in part because it is less featureful.
-It is built into Eclipse, so you do not have to download and install a
-separate Eclipse plugin as you do for the Checker Framework (see
-Section~\ref{eclipse-plugin}).
+It is built into Eclipse, so you do not have to add it to your build scripts.
 Its IDE integration is tighter and slicker.
 
 (If you know of other differences, please let us know at
@@ -1539,85 +1637,6 @@ The Checker Framework makes use of Java SE 8's type annotation syntax, but
 the Checker Framework can
 be used with previous versions of the Java language via the
 annotations-in-comments feature (Section~\ref{annotations-in-comments}).
-
-
-\subsection{Is there a type-checker for managing checked and unchecked exceptions?\label{faq-checked-exceptions}}
-
-It is possible to annotate exception types, and any type-checker built on the
-Checker Framework enforces that type annotations are consistent between
-\<throw> statements and \<catch> clauses that might catch them.
-
-The Java compiler already enforces that all checked exceptions are caught
-or are declared to be passed through, so you would use annotations to
-express other properties about exceptions.
-
-Checked exceptions are an example of a ``type and effect'' system, which is
-like a type system but also accounts for actions/behaviors such as side
-effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
-type-and-effect system that is distributed with the Checker Framework.
-
-
-\subsection{How does pluggable type-checking work?\label{faq-pluggable-type-checking}}
-
-The Checker Framework enables you to define a new type system.  It finds
-errors, or guarantees their absence, by performing type-checking that is
-similar to that already performed by the Java compiler.
-
-Type-checking examines each statement of your program in turn, one at a time.
-\begin{itemize}
-\item
-Expressions are processed bottom-up.  Given types for each sub-expression,
-the type-checker determines whether the types are legal for the
-expression's operator and determines the type of the expression.
-% For example, if \<x> has type \<@Positive> and \<y> has type \<@Positive>,
-% then the expression \<x + y> also has type @Positive.
-
-\item
-An assignment is legal if the type of the right-hand side is a subtype of
-the declared type of the left-hand side.
-
-\item
- At a method call, the arguments are legal if they can be assigned to the
- formal parameters (this is called a ``pseudo-assignment'' and it follows
- the normal rules for assignment).  The type of the method call is the
- declared type of the return type, where the method is declared.  If
- the method declaration is not annotated, then a default annotation is
- used.
-
-\item
-  Suppose that method \<Sub.m> overrides method \<Super.m>.
-  %
-  The return type of \<Sub.m> must be equal to or a subtype of the return
-  type of \<Super.m> (this is called ``covariance'').
-  %
-  The type of formal parameter $i$ of \<Sub.m> must be equal to or a
-  \emph{super}type of the type of formal parameter $i$ in \<Super.m> (this
-  is called ``contravariance'').
-
-\end{itemize}
-
-
-\subsection{What classpath is needed to use an annotated library?\label{faq-classpath-to-use-annotated-library}}
-
-Suppose that you distribute a library, which contains Checker Framework
-annotations such as \<@Nullable>.  This enables clients of the library to
-use the Checker Framework to type-check their programs.  To do so, they
-must have the Checker Framework annotations on their classpath, for
-instance by using the Checker Framework Compiler.
-
-Clients who do not wish to perform pluggable type-checking do not need to
-have the Checker Framework annotations (\<checker.jar> or
-\<checker-qual.jar>) in their classpath, either when compiling or running
-their programs.
-
-The JVM does not issue a link error if an annotation is not found when a
-class is loaded.  (By contrast, the JVM does issue a link error if a
-superclass, or a parameter/return/field type, is not found.)
-Likewise, there is no problem compiling against a library even if the
-library's annotations are not on the classpath.
-These are properties of Java, and are not specific to the Checker
-Framework's annotations.
-
 
 
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil

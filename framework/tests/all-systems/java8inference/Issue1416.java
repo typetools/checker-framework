@@ -1,6 +1,5 @@
 // Test case for Issue 1416.
 // https://github.com/typetools/checker-framework/issues/1416
-// @below-java8-jdk-skip-test
 
 import java.util.Comparator;
 import java.util.stream.Stream;
