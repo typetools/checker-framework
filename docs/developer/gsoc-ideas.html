@@ -135,8 +135,9 @@
 
 <p>
 <b>Potential projects:</b>
-Most of this document lists potential summer projects.  The projects are grouped roughly
-from easiest to most challenging.
+Most of this document lists potential summer projects.  The projects are
+grouped roughly from easiest to most challenging.  Many of the projects are
+applicable beyond Google Summer of Code.
 <!--
 You can find more potential projects in the
 <a href="https://github.com/typetools/checker-framework/issues">issue
@@ -189,6 +190,7 @@ You can find more potential projects in the
     use <code>@SuppressWarnings</code>, then the annotations are correct,
     your program is correct, and you don't need feedback.  Congratulations!)
 
+    <p>
     Share the case study as soon
     as you finish it or as soon as you have a question that is not answered
     in the manual; don't wait until you submit your proposal.
@@ -199,13 +201,15 @@ You can find more potential projects in the
       <li>the exact command that runs the type-checker from the command
         line.
     </ul>
-    A good way to give all this information is a pointer to your GitHub
+    The best way to give all this information is a pointer to your GitHub
     fork of the library.  In your fork, the master branch will be unchanged
     from upstream.  You will create a new branch that contains the
     annotated version.  The only differences between the two branches
-    should be related to the annotations you wrote.  The annotated branch's
-    should say how to run the
-    type-checker (typically, just running the project's build file).
+    should be related to the annotations you wrote.  Building the annotated
+    branch should run the type-checker.
+    Please create a pull request from the annotated to the unannotated
+    branch; you won't merge it, but it enables others to view and
+    comment on your changes.
 </ol>
 
 <p>
