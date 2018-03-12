@@ -43,6 +43,8 @@
       <li><a href="#Make_programs_deterministic">Make programs deterministic</a></li>
       <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
       <li><a href="#Avoiding_exponential_blowup_when_processing_DAGs">Avoiding exponential blowup when processing DAGs</a></li>
+      <li><a href="#index-checker-overflow">Index Checker soundness with respect to overflow</a></li>
+      <li><a href="#index-checker-mutable-length">Index Checker support for mutable length data structures</a></li>
       <li><a href="#nullness-bug-detector">Nullness bug detector</a></li>
       <li><a href="#typestate">Stateful type systems</a></li>
       <li><a href="#your-own-new-type-system">Invent your own new type system</a></li>
@@ -1059,6 +1061,55 @@ developers to run each time they propose a code change.  The Bazel
 team is interested in collaborating by evaluating a tool.
 </p>
 
+<h2 id="index-checker-overflow">Index Checker soundness with respect to overflow</h2>
+
+<p>
+The Index Checker is currently unsound in the presence of integer overflow.
+For example, the Lower Bound Checker does not reason about the presence of overflow,
+so, for example, if an integer <code>i</code> is known to be <code>@Positive</code>, and 1 is added to it, then
+its type remains <code>@Positive</code>. If <code>i</code> was already <code>Integer.MAX_VALUE</code>,
+then this type would be false.
+</p>
+
+<p>
+This project involves removing this unsoundness by implementing a type system to track when an
+integer value might overflow. Implementing such a type system would permit the Index Checker
+to extend its guarantees even to programs that might overflow. We have noticed that this is
+important for some indexing bugs in practice (using the Index Checker, we found 5 bugs in Google
+Guava related to overflow). A key challenge will be keeping the number of false positives in this
+new type system low: previous attempts to build static analyses for integer overflows have either been
+unsound or had high false positive rates. Because we are using this analysis for a specialized
+purpose (i.e. only the types are only important when the Index Checker's analysis might become unsound),
+false positives may be less of a concern.
+</p>
+
+<h2 id="index-checker-mutable-length">Index Checker support for mutable length data structures</h2>
+
+<p>
+The Index Checker is currently restricted to fixed-size data structures.
+A fixed-size data structure is one whose length cannot be changed once it is created;
+examples of fixed-size data structures are arrays and Strings.
+This limitation prevents the Index Checker from verifying indexing operations on mutable-size data structures,
+like Lists, that have add or remove methods. Since these kind of collections are common
+in practice, this is a severe limitation for the Index Checker.
+</p>
+
+<p>
+The limitation is caused by the Index Checker's use of types that are dependent on the length of data structures,
+like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'s length could change,
+then the correctness of this type might change.
+</p>
+
+<p>
+A naïve solution would be to invalidate these types any time a method is called on <code>data_structure</code>.
+Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
+the information in the type when a method like add or remove is called on <code>data_structure</code>.
+A more complete solution might involve some special annotations on List that permit the information to be persisted.
+</p>
+
+<p>
+This project would involve designing and implementing a solution to this problem.
+</p>
 
 <h2 id="nullness-bug-detector">Nullness bug detector</h2>
 
