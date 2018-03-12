@@ -74,7 +74,6 @@ public class InitializationVisitor<
         super(checker);
         annoFormatter = new DefaultAnnotationFormatter();
         initializedFields = new ArrayList<>();
-        checkForAnnotatedJdk();
     }
 
     @Override

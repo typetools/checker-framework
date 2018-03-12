@@ -186,6 +186,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
+
+        checkForAnnotatedJdk();
     }
 
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
@@ -197,6 +199,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
+
+        checkForAnnotatedJdk();
     }
 
     /**

@@ -51,6 +51,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -427,6 +428,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // The processingEnvironment field will also be set by the superclass' init method.
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
+
+        double jreVersion = PluginUtil.getJreVersion();
+        if (jreVersion != 1.8) {
+            report(
+                    org.checkerframework.framework.source.Result.failure(
+                            "The Checker Framework must be run under JDK 1.8.  You are using version %f.",
+                            jreVersion),
+                    null);
+        }
     }
 
     /** @return the {@link ProcessingEnvironment} that was supplied to this checker */
