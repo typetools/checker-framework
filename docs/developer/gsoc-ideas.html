@@ -42,7 +42,7 @@
   <li><a href="#new-type-systems">New type systems</a>
     <ul>
       <li><a href="#Make_programs_deterministic">Make programs deterministic</a></li>
-      <li><a href="#Custom tainting checking">Custom tainting checking</a></li>
+      <li><a href="#custom-tainting-checking">Custom tainting checking</a></li>
       <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
       <li><a href="#lock-ordering">Lock ordering</a></li>
@@ -956,7 +956,7 @@ Checker.
 </p>
 
 
-<h2 id="Custom tainting checking">Custom tainting checking</h2>
+<h2 id="custom-tainting-checking">Custom tainting checking</h2>
 
 <p>
 The Checker Framework comes with
@@ -973,6 +973,7 @@ In order to be useful in a particular domain, a user must customize it:
     annotate libraries.
 </ul>
 
+<p>
 The first part of this project is to make this customization easier to do
 &mdash; preferably, a user does not have to change any code in the Checker
 Framework, as is currently the case for the
@@ -982,7 +983,10 @@ As part of making customization easier, a user should be able to specify
 multiple levels of taint &mdash; many information classification hierarchies
 have more than two levels (for example, the US government separates classified
 information into three categories: Confidential, Secret, and Top Secret).
-The second part is to provide several examples, and do case
+</p>
+
+<p>
+The second part of this project is to provide several examples, and do case
 studies showing the utility of compile-time taint checking.
 </p>
 
