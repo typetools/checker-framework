@@ -27,6 +27,7 @@
       <li><a href="#library-annotations">Library annotations</a></li>
       <li><a href="#case-study-signature">Signature strings</a></li>
       <li><a href="#case-study-index-out-of-bounds">Array indexing (index-out-of-bounds errors)</a></li>
+      <li><a href="#case-study-android-support">Android support annotations</a></li>
       <li><a href="#case-study-signedness">Signed and unsigned numbers</a></li>
       <li><a href="#optional-case-study">Java's Optional class</a></li>
       <li><a href="#case-study-nullness">Null pointer exceptions</a>
@@ -44,7 +45,8 @@
       <li><a href="#Custom tainting checking">Custom tainting checking</a></li>
       <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
-      <li><a href="#index-checker-mutable-length">Index Checker support for mutable length data structures</a></li>
+      <li><a href="#lock-ordering">Lock ordering</a></li>
+      <li><a href="#index-checker-mutable-length">Index checking for mutable length data structures</a></li>
       <li><a href="#nullness-bug-detector">Nullness bug detector</a></li>
       <li><a href="#typestate">Stateful type systems</a></li>
       <li><a href="#your-own-new-type-system">Invent your own new type system</a></li>
@@ -511,8 +513,8 @@ sections of the Checker Framework manual</a>.
 <h2 id="case-study-signature">Signature strings</h2>
 
 <p>
-Show that the BCEL tool properly handles signature strings (or find bugs in
-BCEL).
+Show that the ACM library, or the BCEL library, properly handles signature
+strings (or find bugs in them).
 </p>
 
 <p>
@@ -539,13 +541,13 @@ BCEL).
         and implemented.
   </li>
   <li>
-    BCEL defines its own new signature string formats (!), which need to be
+    ASM and BCEL define their own new signature string formats (!), which need to be
     defined.  If they are not defined, then warnings need to be suppressed
     and the guarantee is weaker.  (Defining them could be a second part of
     the case study.)
   </li>
   <li>
-    Some of BCEL's documentation is incorrect, and in other cases the
+    Some of ASM's and BCEL's documentation is incorrect, and in other cases the
     string format is not defined.
   </li>
   <li>
@@ -553,16 +555,6 @@ BCEL).
     annotations are 100% correct.
   </li>
 </ul>
-
-<p>
-  You could perform the same case study on ASM instead.
-</p>
-
-
-
-<p>Here are some concrete suggestions:
-
-
 
 
 <h2 id="case-study-index-out-of-bounds">Array indexing (index-out-of-bounds errors)</h2>
@@ -601,6 +593,18 @@ precise analysis very tricky.
 </p>
 
 
+<h2 id="case-study-android-support">Android support annotations</h2>
+
+<p>
+Implement support for
+<a href="https://medium.com/sebs-top-tips/annotations-to-support-your-contracts-609ff259d5df">Android
+  Studio support annotations</a>,
+  including <code>@NonNull</code>, <code>@IntRange</code>, <code>@IntDef</code>,
+  and others.  Then, do a case study to show the utility (or not) of
+  pluggable type-checking.
+</p>
+
+
 <h2 id="case-study-signedness">Signed and unsigned numbers</h2>
 
 <p>
@@ -633,10 +637,11 @@ precise analysis very tricky.
 <ul>
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
   <li><a href="https://github.com/bcgit/bc-java">bc-java</a></li>
+  <li>Project Nayuki: <a href="https://www.nayuki.io/page/forcing-a-files-crc-to-any-value">CRC</a>, <a href="https://www.nayuki.io/page/notepadcrypt-format-decryptor-java">crypt</a>, <a href="https://www.nayuki.io/page/native-hash-functions-for-java">hash</a>.
 </ul>
 
 <p>
-  These case studies will show the need for enhancements to the Signedness Checker.
+  Your case studies will show the need for enhancements to the Signedness Checker.
   For example, it does not currently handle boxed integers and BigInteger;
   these haven't yet come up in case studies but could be worthwhile enhancements.
 </p>
@@ -976,6 +981,30 @@ Checker</a>.  The second part is to provide several examples, and do case
 studies showing the utility of compile-time taint checking.
 </p>
 
+<p>
+  Possible examples include:
+</p>
+<ul>
+  <li>SQL injection
+  <li>OS command injection
+  <li>the <code>@PrivacySource</code> and <code>@PrivacySink</code>
+    annotations used by the Facebook <a href="http://fbinfer.com/">Infer
+    static analyzer</a>.
+  <li>information flow
+  <li>many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
+  dangerous software programming errors</a> (and the "on the cusp" ones too)
+  <!-- More details appear in these files:
+      ~/research/games/notes/notes
+      ~/prof/grants/2012-02-darpa-verigames/proposal/top25-as-types.pdf
+  -->
+</ul>
+
+<p>
+For some microbenchmarks, see the Juliette test suite for Java from CWE.
+</p>
+
+
+
 
 <h2 id="Bounded-size_strings">Bounded-size strings</h2>
 
@@ -1024,7 +1053,7 @@ or list of strings.
 <p>
 Overflow is when 32-bit arithmetic differs from ideal arithmetic.  For
 example, in Java the <code>int</code> computation 2,147,483,647 + 1 yields
-a negative number, -2,147,483,648.  The goal of this project is to detectd
+a negative number, -2,147,483,648.  The goal of this project is to detect
 and prevent problems such as these.
 </p>
 
@@ -1051,7 +1080,33 @@ false positives may be less of a concern.
 </p>
 
 
-<h2 id="index-checker-mutable-length">Index Checker support for mutable length data structures</h2>
+<h2 id="lock-ordering">Lock ordering</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#lock-checker">Lock
+Checker</a> prevents race conditions by ensuring that locks are held when
+they need to be.  It does not prevent deadlocks that can result from locks
+being acquired in the wrong order.  This project would extend the Lock
+Checker to address deadlocks, or create a new checker to do so.
+</p>
+
+<p>
+Suppose that a program contains two different locks.  Suppose that one
+thread tries to acquire lockA then lockB, and another thread tries to
+acquire lockB then lockA, and each thread acquires its first lock.  Then
+both locks will wait forever for the other lock to become available.  The
+program will not make any more progress and is said to
+be <a href="https://en.wikipedia.org/wiki/Deadlock">deadlocked</a>.
+</p>
+
+<p>
+If all threads acquire locks in the same order &mdash; in our example, say
+lockA then lockB &mdash; then deadlocks do not happen.  You will extend the
+Lock Checker to verify this property.
+</p>
+
+
+<h2 id="index-checker-mutable-length">Index checking for mutable length data structures</h2>
 
 <p>
 The <a href="https://checkerframework.org/manual/#index-checker">Index
@@ -1070,7 +1125,7 @@ then the correctness of this type might change.
 </p>
 
 <p>
-A naïve solution would be to invalidate these types any time a method is called on <code>data_structure</code>.
+A naive solution would be to invalidate these types any time a method is called on <code>data_structure</code>.
 Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
 the information in the type when a method like add or remove is called on <code>data_structure</code>.
 A more complete solution might involve some special annotations on List that permit the information to be persisted.
@@ -1634,5 +1689,7 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  timeline Uber's NullAway Uber coala BCEL mvn BCEL's AFU
  -->
-<!--  LocalWords:  Signedness Jake2 README Lookup
+<!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis
+ -->
+<!--  LocalWords:  BigInteger lockB lockA
  -->
