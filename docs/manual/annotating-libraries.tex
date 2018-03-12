@@ -282,16 +282,26 @@ classpath.  You get a guarantee that the library contains no errors.
 The rest of this section tells you how to compile a library if you
 \emph{partially} annotate it:  that is, you write annotations for some of its
 classes but not others.
-
 (There is another type of partial annotation, which is when you annotate
 method signatures but do not type-check the bodies.
 See Section~\ref{library-tips}.)
 
-When compiling a partially-annotated library, the checker needs to use normal
-defaulting rules (Section~\ref{climb-to-top}) for code you have annotated and
-conservative defaulting rules (Section~\ref{defaults-classfile}) for
-code you have not yet annotated.
-You use \<@AnnotatedFor> to indicate which classes you have annotated.
+There are two concerns:
+
+\begin{itemize}
+\item
+  Ignoring type-checking errors in unannotated parts of the library.
+  Use the \<-AskipDefs> or \<-AonlyDefs> command-line arguments; see
+  Section~\ref{askipdefs}.
+
+\item
+  Putting conservative annotations in unannotated parts of the library.
+  The checker needs to use normal defaulting rules
+  (Section~\ref{climb-to-top}) for code you have annotated and conservative
+  defaulting rules (Section~\ref{defaults-classfile}) for code you have not
+  yet annotated.  This section describes how to do this.  You use
+  \<@AnnotatedFor> to indicate which classes you have annotated.
+\end{itemize}
 
 
 
