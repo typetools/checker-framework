@@ -93,7 +93,7 @@ public class KeyForAnnotatedTypeFactory
         return new KeyForTypeHierarchy(
                 checker,
                 getQualifierHierarchy(),
-                checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
+                checker.getBooleanOption("ignoreRawTypeArguments"),
                 checker.hasOption("invariantArrays"));
     }
 

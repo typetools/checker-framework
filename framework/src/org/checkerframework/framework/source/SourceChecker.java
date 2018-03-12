@@ -1720,6 +1720,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
+     * Check whether the given option is provided.
+     *
+     * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
+     * returns true: this happens e.g. for {@code -Amyopt}
+     *
+     * @param name the option name to check
+     * @return true if the option name was provided, false otherwise
+     */
+    // TODO I would like to rename getLintOption to hasLintOption
+    @Override
+    public final boolean hasOption(String name) {
+        return getOptions().containsKey(name);
+    }
+
+    /**
      * Determines the value of the option with the given name.
      *
      * @see SourceChecker#getLintOption(String,boolean)
@@ -1727,6 +1742,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     @Override
     public final String getOption(String name) {
         return getOption(name, null);
+    }
+
+    /**
+     * Determines the boolean value of the option with the given name. Returns false if the option
+     * is not set.
+     *
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    public final boolean getBooleanOption(String name) {
+        return Boolean.valueOf(getOption(name, "true"));
     }
 
     /**
@@ -1740,21 +1765,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             activeOptions = createActiveOptions(processingEnv.getOptions());
         }
         return activeOptions;
-    }
-
-    /**
-     * Check whether the given option is provided.
-     *
-     * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
-     * returns true: this happens e.g. for {@code -Amyopt}
-     *
-     * @param name the option name to check
-     * @return true if the option name was provided, false otherwise
-     */
-    // TODO I would like to rename getLintOption to hasLintOption
-    @Override
-    public final boolean hasOption(String name) {
-        return getOptions().containsKey(name);
     }
 
     /**

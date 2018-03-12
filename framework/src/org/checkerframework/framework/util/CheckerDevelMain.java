@@ -22,9 +22,9 @@ public class CheckerDevelMain extends CheckerMain {
         final String runtimeCp = System.getProperty(RUNTIME_CP_PROP);
         final String compileBcp = System.getProperty(COMPILE_BCP_PROP);
         final String binDir = System.getProperty(BINARY_PROP);
-        final String verbose = System.getProperty(VERBOSE_PROP);
+        final boolean verbose = PluginUtil.getBooleanSystemProperty(VERBOSE_PROP);
 
-        if (verbose != null && verbose.equalsIgnoreCase("TRUE")) {
+        if (verbose) {
             System.out.print(
                     "CheckerDevelMain:\n"
                             + "Prepended to classpath:     "

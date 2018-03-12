@@ -425,11 +425,10 @@ public class TestUtilities {
     }
 
     public static boolean testBooleanProperty(String propName, boolean defaultValue) {
-        return System.getProperty(propName, String.valueOf(defaultValue)).equalsIgnoreCase("true");
+        return PluginUtil.getBooleanSystemProperty(propName, defaultValue);
     }
 
     public static boolean getShouldEmitDebugInfo() {
-        String emitDebug = System.getProperty("emit.test.debug");
-        return emitDebug != null && emitDebug.equalsIgnoreCase("true");
+        return PluginUtil.getBooleanSystemProperty("emit.test.debug");
     }
 }
