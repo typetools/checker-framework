@@ -13,5 +13,7 @@ public interface OptionConfiguration {
 
     String getOption(String name, String def);
 
+    boolean getBooleanOption(String name);
+
     Set<String> getSupportedOptions();
 }

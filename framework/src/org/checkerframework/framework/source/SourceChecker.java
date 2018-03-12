@@ -1750,6 +1750,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @see SourceChecker#getLintOption(String,boolean)
      */
+    @Override
     public final boolean getBooleanOption(String name) {
         return Boolean.valueOf(getOption(name, "true"));
     }
