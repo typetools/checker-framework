@@ -622,12 +622,25 @@ precise analysis very tricky.
 </p>
 
 <p>
-  Here are some possibilities:
+  Here are some possibilities (or, search for code that uses
+  signedness-sensitive routines in <code>Integer</code>
+  and <code>Long</code>, namely
+   <code>compareUnsigned</code>
+   <code>divideUnsigned</code>
+   <code>parseUnsignedInt</code>
+   <code>remainderUnsigned</code>, and
+   <code>toUnsignedLong</code>):
 </p>
 <ul>
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
   <li><a href="https://github.com/bcgit/bc-java">bc-java</a></li>
 </ul>
+
+<p>
+  These case studies will show the need for enhancements to the Signedness Checker.
+  For example, it does not currently handle boxed integers and BigInteger;
+  these haven't yet come up in case studies but could be worthwhile enhancements.
+</p>
 
 
 <h2 id="optional-case-study">Java's Optional class</h2>
