@@ -1740,6 +1740,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
+     * Determines the boolean value of the option with the given name. Returns false if the option
+     * is not set.
+     *
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    @Override
+    public final boolean getBooleanOption(String name) {
+        return Boolean.valueOf(getOption(name, "true"));
+    }
+
+    /**
      * Return all active options for this checker.
      *
      * @return all active options for this checker

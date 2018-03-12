@@ -430,6 +430,17 @@ public class TestUtilities {
 
     public static boolean getShouldEmitDebugInfo() {
         String emitDebug = System.getProperty("emit.test.debug");
-        return emitDebug != null && emitDebug.equalsIgnoreCase("true");
+        boolean result;
+        if (emitDebug == null) {
+            result = false;
+        } else if (emitDebug.equalsIgnoreCase("true")) {
+            result = true;
+        } else if (emitDebug.equalsIgnoreCase("false")) {
+            result = false;
+        } else {
+            throw new Error("bad value for property emit.test.debug: " + emitDebug);
+        }
+        System.out.println("getShouldEmitDebugInfo => " + result);
+        return result;
     }
 }
