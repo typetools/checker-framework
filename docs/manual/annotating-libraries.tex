@@ -25,14 +25,6 @@ codebase, by use of the
 \code{-AskipUses} or \code{-AonlyUses} command-line option; see
 Sections~\ref{askipuses}--\ref{askipdefs}.)
 
-
-\section{Creating an annotated library\label{annotated-libraries-creating}}
-
-This section describes how to create an annotated library --- that is, how
-to add annotations to a library so that the Checker Framework can better
-type-check clients of the library.  For annotating the JDK, see
-Section~\ref{annotating-jdk}.
-
 You can write annotations for a library, and make them known to a checker, in two ways.
 
 \begin{enumerate}
@@ -64,6 +56,8 @@ You can write annotations for a library, and make them known to a checker, in tw
   error-prone, and the type-checker runs faster.  You get
   correctness guarantees about the library in addition to your code.
 
+  For instructions, see Section~\ref{annotating-libraries-create}.
+
 \item
   Write annotations in a ``stub file'', if you do not have access to the
   source code.
@@ -77,11 +71,10 @@ You can write annotations for a library, and make them known to a checker, in tw
   code.
   A stub file is applicable to multiple versions of a library, so
   the stub file does not need to be updated when a new version of the
-  library is released.
+  library is released, unless the API has changed (such as defining a new
+  method).
 
-  When provided by the author of a checker, a stub file is used
-  automatically, with no need for the user to supply a command-line option.
-  Section~\ref{stub} describes how to create and use stub files.
+  For instructions, see Section~\ref{stub}.
 
 \end{enumerate}
 
@@ -205,6 +198,116 @@ who can only see annotations on public methods and fields.  When you
 compile the library, the type-checker will probably issue warnings, but if
 you supply \<-Awarns>, you don't have to suppress those warnings and the
 compiler will still produce \<.class> files.
+
+
+\section{Creating an annotated library\label{annotating-libraries-create}}
+
+This section describes how to create an annotated library.
+
+\begin{enumerate}
+\item See the
+  \ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
+  \<org.checkerframework.annotatedlib> group in the Central Repository}
+  to find out whether an annotated version of the library already exists.
+%% This adds clutter to the source code, so omit the step from these instructions.
+% \item Optionally, run a script that adds
+%     \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb\ttrcb)>
+%     to each class.  [[TODO: say where to find this script.]]
+%     This step has no semantic effect.  It only saves you the trouble of
+%     typing those 17 characters later.
+
+  If it exists, fork its repository in \url{https://github.com/typetools/},
+  tweak its buildfile to run an additional checker, and add annotations for
+  that checker.
+
+  If it does not already exist, fork the project (if its license permits
+  forking).  Add a note, perhaps in a README, indicating how to obtain the
+  corresponding upstream version (such as a git commit id); that will
+  enable others to see exactly what edits you have made.
+
+  Adjust the library's
+  build process, such as a Maven or Ant buildfile.
+  \begin{sloppypar}
+  \begin{enumerate}
+  \item
+    Every time the build system runs the compiler, it should:
+    \begin{itemize}
+    \item
+      passes the \<-AuseDefaultsForUncheckedCode=source,bytecode>
+      command-line option and
+    \item
+      runs every pluggable type-checker for which any
+      annotations exist, using \<-processor
+      \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
+    \end{itemize}
+  \item
+    When the build system creates a \<.jar> file, the resulting \<.jar>
+    file includes the contents of
+    \<checker-framework/checker/dist/checker-qual.jar>.
+  \end{enumerate}
+  \end{sloppypar}
+
+  You are not adding new build targets, but modifying existing targets.
+  The reason to run every type-checker is to verify
+  the annotations you wrote, and to use appropriate defaults for all
+  unannotated type uses.
+  The reason to include the contents of \<checker-qual.jar> is so that
+  the resulting \<.jar> file can be used whether or not the Checker Framework
+  is being run.
+
+\item Annotate some files.
+%  You can determine which files need to be annotated by using the
+%  \<-AprintUnannotatedMethods> command-line argument while type-checking a
+%  client of the library.
+
+  % This is a strong recomendation, but not a requirement.  @AnnotatedFor
+  % can be written on a method as well.
+  When you annotate a file, annotate the whole thing, not just a few of its
+  methods.  Once the file is fully annotated, add an
+  \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb"\emph{checkername}"\ttrcb)>
+  annotation to its class(es), or augment an existing \<@AnnotatedFor>
+  annotation.
+
+\item
+  Build the library.
+
+  Because of the changes that you made in step 1, this will run pluggable
+  type-checkers.  If there are any compiler warnings, fix them and re-compile.
+
+  Now you have a \<.jar> file that you can use while type-checking and at
+  run time.
+
+\item
+  Tell other people about your work so that they can benefit from it.
+
+  \begin{itemize}
+  \item
+    Please inform the Checker Framework developers
+    about your new annotated library by opening an issue.
+    This will let us add your annotations to a repository in
+    \url{https://github.com/typetools/} and upload a compiled artifact to
+    the Maven Central Repository.
+
+  \item
+    Encourage the library's maintainers to accept your annotations into its
+    main version control repository.  This will make the annotations easier
+    to maintain, the library will obtain the correctness guarantees of
+    pluggable type-checking, and there will be no need for the Checker
+    Framework to include an annotated version of the library.
+
+    You may want to write the annotations in comments, so that it
+    is still possible to compile the library without use of Java 8.
+
+    If the library maintainers do not accept the annotations, then
+    periodically, such as when a new version of the library is released,
+    pull changes from upstream (the library's main version control system)
+    into your fork, add annotations to any newly-added methods in classes
+    that are annotated with \<@AnnotatedFor>, rebuild to create an updated
+    \<.jar> file, and inform the Checker Framework developers by opening an
+    issue or issuing a pull request.
+  \end{itemize}
+
+\end{enumerate}
 
 
 \section{Creating an annotated JDK\label{annotating-jdk}}
@@ -343,118 +446,7 @@ is run.
 \end{sloppypar}
 
 
-\subsection{Workflow for creating or augmenting a partially-annotated library\label{compiling-libraries-workflow}}
-
-This section describes the typical workflow for creating a
-partially-annotated library.
-
-\begin{enumerate}
-\item See the
-  \ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
-  \<org.checkerframework.annotatedlib> group in the Central Repository}
-  to find out whether an annotated version of the library already exists.
-%% This adds clutter to the source code, so omit the step from these instructions.
-% \item Optionally, run a script that adds
-%     \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb\ttrcb)>
-%     to each class.  [[TODO: say where to find this script.]]
-%     This step has no semantic effect.  It only saves you the trouble of
-%     typing those 17 characters later.
-
-  If it exists, fork its repository in \url{https://github.com/typetools/},
-  tweak its buildfile to run an additional checker, and add annotations for
-  that checker.
-
-  If it does not already exist, fork the project (if its license permits
-  forking).  Add a note, perhaps in a README, indicating how to obtain the
-  corresponding upstream version; that will enable others to see exactly
-  what edits you have made.
-
-  Adjust the library's
-  build process, such as a Maven or Ant buildfile.
-  \begin{sloppypar}
-  \begin{enumerate}
-  \item
-    Every time the build system runs the compiler, it should:
-    \begin{itemize}
-    \item
-      passes the \<-AuseDefaultsForUncheckedCode=source,bytecode>
-      command-line option and
-    \item
-      runs every pluggable type-checker for which any
-      annotations exist, using \<-processor
-      \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
-    \end{itemize}
-  \item
-    When the build system creates a \<.jar> file, the resulting \<.jar>
-    file includes the contents of
-    \<checker-framework/checker/dist/checker-qual.jar>.
-  \end{enumerate}
-  \end{sloppypar}
-
-  You are not adding new build targets, but modifying existing targets.
-  The reason to run every type-checker is to verify
-  the annotations you wrote, and to use appropriate defaults for all
-  unannotated type uses.
-  The reason to include the contents of \<checker-qual.jar> is so that
-  the resulting \<.jar> file can be used whether or not the Checker Framework
-  is being run.
-
-\item Annotate some files.
-%  You can determine which files need to be annotated by using the
-%  \<-AprintUnannotatedMethods> command-line argument while type-checking a
-%  client of the library.
-
-  % This is a strong recomendation, but not a requirement.  @AnnotatedFor
-  % can be written on a method as well.
-  When you annotate a file, annotate the whole thing, not just a few of its
-  methods.  Once the file is fully annotated, add an
-  \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb"\emph{checkername}"\ttrcb)>
-  annotation to its class(es), or augment an existing \<@AnnotatedFor>
-  annotation.
-
-\item
-  Build the library.
-
-  Because of the changes that you made in step 1, this will run pluggable
-  type-checkers.  If there are any compiler warnings, fix them and re-compile.
-
-  Now you have a \<.jar> file that you can use while type-checking and at
-  run time.
-
-\item
-  Tell other people about your work so that they can benefit from it.
-
-  \begin{itemize}
-  \item
-    Please inform the Checker Framework developers
-    about your new annotated library by opening an issue.
-    This will let us add your annotations to a repository in
-    \url{https://github.com/typetools/} and upload a compiled artifact to
-    the Maven Central Repository.
-
-  \item
-    Encourage the library's maintainers to accept your annotations into its
-    main version control repository.  This will make the annotations easier
-    to maintain, the library will obtain the correctness guarantees of
-    pluggable type-checking, and there will be no need for the Checker
-    Framework to include an annotated version of the library.
-
-    You will probably want to write the annotations in comments, so that it
-    is still possible to compile the library without use of Java 8.
-
-    If the library maintainers do not accept the annotations, then
-    periodically, such as when a new version of the library is released,
-    pull changes from upstream (the library's main version control system)
-    into your fork, add annotations to any newly-added methods in classes
-    that are annotated with \<@AnnotatedFor>, rebuild to create an updated
-    \<.jar> file, and inform the Checker Framework developers by opening an
-    issue or issuing a pull request.
-  \end{itemize}
-
-\end{enumerate}
-
-
-\section{Using stub classes\label{stub}\label{stub-creating-and-using}}
+\section{Using stub classes\label{stub}}
 
 A stub file contains ``stub classes'' that contain annotated signatures,
 but no method bodies.  A
@@ -516,6 +508,9 @@ warning whenever a stub file overwrites bytecode annotations.
 
 A file being compiled takes precedence over a stub file.  If file \<A.java>
 is being compiled, then any stub for class \<A> is ignored.
+
+When a stub file is provided by the author of a checker, the stub file is used
+automatically, with no need for the user to supply a command-line option.
 
 
 \subsection{Stub file format\label{stub-format}}
