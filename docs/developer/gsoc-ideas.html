@@ -977,7 +977,12 @@ The first part of this project is to make this customization easier to do
 &mdash; preferably, a user does not have to change any code in the Checker
 Framework, as is currently the case for the
 <a href="https://checkerframework.org/manual/#subtyping-checker">Subtyping
-Checker</a>.  The second part is to provide several examples, and do case
+Checker</a>.
+As part of making customization easier, a user should be able to specify
+multiple levels of taint &mdash; many information classification hierarchies
+have more than two levels (for example, the US government separates classified
+information into three categories: Confidential, Secret, and Top Secret).
+The second part is to provide several examples, and do case
 studies showing the utility of compile-time taint checking.
 </p>
 
