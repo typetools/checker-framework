@@ -41,6 +41,7 @@
   <li><a href="#new-type-systems">New type systems</a>
     <ul>
       <li><a href="#Make_programs_deterministic">Make programs deterministic</a></li>
+      <li><a href="#Custom tainting checking">Custom tainting checking</a></li>
       <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
       <li><a href="#Avoiding_exponential_blowup_when_processing_DAGs">Avoiding exponential blowup when processing DAGs</a></li>
       <li><a href="#index-checker-overflow">Index Checker soundness with respect to overflow</a></li>
@@ -935,6 +936,32 @@ You can find
 a <a href="https://checkerframework.org/determinism-checker-manual/manual.html#determinism-checker">draft
     manual chapter</a> that documents a possible design for a Determinism
 Checker.
+</p>
+
+
+<h2 id="Custom tainting checking">Custom tainting checking</h2>
+
+<p>
+The Checker Framework comes with
+a <a href="https://checkerframework.org/manual/#tainting-checker">Tainting
+  Checker</a> that is so general that it is not good for much of anything.
+In order to be useful in a particular domain, a user must customize it:
+</p>
+<ul>
+  <li>
+    rename the <code>@Tainted</code> and <code>@Untainted</code> qualifiers
+    to something more specific (such as <code>@Private</code>
+    or <code>@PaymentDetails</code> or <code>@HtmlQuoted</code>), and
+  <li>
+    annotate libraries.
+</ul>
+
+The first part of this project is to make this customization easier to do
+&mdash; preferably, a user does not have to change any code in the Checker
+Framework, as is currently the case for the
+<a href="https://checkerframework.org/manual/#subtyping-checker">Subtyping
+Checker</a>.  The second part is to provide several examples, and do case
+studies showing the utility of compile-time taint checking.
 </p>
 
 
