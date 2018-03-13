@@ -431,7 +431,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         double jreVersion = PluginUtil.getJreVersion();
         if (jreVersion != 1.8) {
-            ErrorReporter.userErrorAbort(
+            userErrorAbort(
                     String.format(
                             "The Checker Framework must be run under JDK 1.8.  You are using version %f.",
                             jreVersion));
@@ -687,7 +687,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                     .equals(AbstractTypeProcessor.class.getCanonicalName()));
                     break;
                 default:
-                    ErrorReporter.errorAbort(
+                    userErrorAbort(
                             "Invalid option name: "
                                     + key
                                     + " At most one separator "
