@@ -9,40 +9,37 @@ How to run all the tests for the Checker Framework
 ==================================================
 
   # To run from the checker-framework directory:
-  # (warning: this may rebuild the JDK, which takes a long time)
-  ant -e -find build.xml tests
+  ./gradlew allTests
 
-  # To run from the checker directory
-  ant -e -find build.xml all-tests
-
-Other ant targets also exist to run a subset of the tests, without
-rebuilding the JDK; for example,
+Other Gradle tasks also exist to run a subset of the tests; for example,
   # Run from the checker directory:
-  ant -e -find build.xml nullness-tests
-  ant -e -find build.xml all-tests-nobuildjdk
+  ./gradlew NullnessFBCTests
+  ./gradlew allTests
 
+  # To see all tasks
+  ./gradlew tasks
 
 How to run just one test for the Checker Framework
 ==================================================
 
-To run an individual test (check one source code file) without rebuilding
-the JDK, do something like the following, assuming that the source code
+To run an individual test (check one source code file),
+do something like the following, assuming that the source code
 file to be checked is AssertNonNullTest.java in directory
 $CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
 org.checkerframework.checker.nullness.NullnessChecker.
 
   cd $CHECKERFRAMEWORK/checker/tests/nullness
-  (cd $CHECKERFRAMEWORK && ant -e build) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+  (cd $CHECKERFRAMEWORK && ./gradlew compileJava) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
 
-or (to build distribution files but not the JDK)
+or (to build distribution files)
 
   cd $CHECKERFRAMEWORK/checker/tests/nullness
-  (cd $CHECKERFRAMEWORK && ant -e dist-nobuildjdk) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+  (cd $CHECKERFRAMEWORK && ./gradlew assemble) && $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
 
 or, less commonly (to rebuild the JDK):
 
   cd $CHECKERFRAMEWORK/checker/tests/framework
-  (cd $CHECKERFRAMEWORK && ant -e dist) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor TestChecker -implicit:class GenericTest10.java
+  (cd $CHECKERFRAMEWORK && ./gradlew buildJdk assemble) && $CHECKERFRAMEWORK/checker/bin/javac -processor TestChecker -implicit:class GenericTest10.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
@@ -197,10 +194,8 @@ need runtime support or depends on Java 9 APIs.
 Tests that only exercise the static type annotation API do not need
 this marker.
 
-To disable all tests for a given type system, temporarily move away a file;
-for example,
-  mv $CHECKERFRAMEWORK/checker/tests/src/tests/RegexTest.java $CHECKERFRAMEWORK/checker/tests/src/tests/RegexTest.java-SAVE
-[Is there a better way?]
+To disable all tests for a given type system, annotated the Junit test class
+with @Ignore.
 
 
 Annotated JDK
@@ -216,5 +211,5 @@ To see the exact javac commands that the Checker Framework test framework
 runs, use
   -Demit.test.debug=true
 For example:
-  ant nullness-stubfile-tests -Demit.test.debug=true
+  ./gradlew NullnessStubfileTest -Demit.test.debug=true
 This may be helpful during debugging.

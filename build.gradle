@@ -360,6 +360,8 @@ subprojects {
                 dependsOn('copyJarsToDist')
                 systemProperties = [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
             }
+
+            // TODO: emit.test.debug
             testLogging {
                 // Always run the tests
                 outputs.upToDateWhen { false }
