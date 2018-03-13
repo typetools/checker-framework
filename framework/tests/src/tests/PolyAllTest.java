@@ -2,11 +2,11 @@ package tests;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** */
-public class PolyAllTest extends CheckerFrameworkPerDirectoryTest {
+public class PolyAllTest extends FrameworkPerDirectoryTest {
 
     public PolyAllTest(List<File> testFiles) {
         super(
