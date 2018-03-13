@@ -488,7 +488,7 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever).
      *
      * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
      */

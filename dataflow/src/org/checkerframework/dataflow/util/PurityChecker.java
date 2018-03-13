@@ -91,7 +91,7 @@ public class PurityChecker {
             return notSEFreeReasons;
         }
 
-        /** Add {@code reason} as a reason why the method is not side-effect free. */
+        /** Add {@code reason} as a reason why the method is not side-effect-free. */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
@@ -116,7 +116,7 @@ public class PurityChecker {
         }
 
         /**
-         * Add {@code reason} as a reason why the method is not both side-effect free and
+         * Add {@code reason} as a reason why the method is not both side-effect-free and
          * deterministic.
          */
         public void addNotBothReason(Tree t, String msgId) {

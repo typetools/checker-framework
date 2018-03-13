@@ -1265,7 +1265,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
         Receiver pseudoReceiver =
-                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingType);
+                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingType);
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
         Receiver self;
