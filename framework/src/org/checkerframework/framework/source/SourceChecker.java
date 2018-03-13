@@ -1751,9 +1751,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @see SourceChecker#getLintOption(String,boolean)
      */
     @Override
-    public final boolean getBooleanOption(String name) {
+    public final boolean getBooleanOption(String name, boolean defaultValue) {
+        return getBooleanOption(name, false);
+    }
+
+    /**
+     * Determines the boolean value of the option with the given name. Returns the given default
+     * value if the option is not set.
+     *
+     * @param name the name of the option to check
+     * @param defaultValue the default value to use if the option is not set
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    @Override
+    public final boolean getBooleanOption(String name, boolean defaultValue) {
         String value = getOption(name);
-        if (value == null || value.equals("false")) {
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.equals("false")) {
             return false;
         }
         if (value.equals("true")) {
@@ -1782,11 +1798,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Determines the value of the lint option with the given name and returns the default value if
      * nothing is specified.
      *
+     * @param name the name of the option to check
+     * @param defaultValue the default value to use if the option is not set
      * @see SourceChecker#getOption(String)
      * @see SourceChecker#getLintOption(String)
      */
     @Override
-    public final String getOption(String name, String def) {
+    public final String getOption(String name, String defaultValue) {
 
         if (!this.getSupportedOptions().contains(name)) {
             ErrorReporter.errorAbort("Illegal option: " + name);
@@ -1797,13 +1815,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (activeOptions.isEmpty()) {
-            return def;
+            return defaultValue;
         }
 
         if (activeOptions.containsKey(name)) {
             return activeOptions.get(name);
         } else {
-            return def;
+            return defaultValue;
         }
     }
 
