@@ -842,16 +842,12 @@ code.
 
 If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
-If the different nullness annotation is a type annotation, the Checker
-Framework treats it exactly as if you had written the corresponding annotation
-from the Nullness Checker, as described in
-Figure~\ref{fig-nullness-refactoring}.  If the different annotation is a
-declaration annotation, the Checker Framework converts them to type
-annotations, in a way that is consistent with their semantics.  This means that
-annotations on array and varargs declarations are treated inconsistenly with
-the Checker Framework annotations.  For example,
-\<@android.support.annotatoin.NonNull Object []> is treated as a ``non-null
-array of objects'', rather than as ``array of non-null objects''.
+It treats annotations from other tools
+as if you had written the corresponding annotation from the
+Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
+
 
 % These lists should be kept in sync with
 % ../../checker/src/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java

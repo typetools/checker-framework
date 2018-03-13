@@ -689,6 +689,11 @@ Chapter~\ref{suppressing-warnings} discusses suppressing warnings.
 
 \section{Backward compatibility with earlier versions of Java\label{backward-compatibility}}
 
+Java 5/6/7 does not support type annotations.
+
+Sometimes, your code uses declaration annotations, but you wish to use them
+in pluggable typechecking; see Section~\ref{declaration-annotations-moved}.
+
 Sometimes, your code needs to be \emph{compiled} by people who are using a
 Java 5/6/7 compiler, which does not support type annotations.
 You can handle this situation by writing annotations in comments (Sections~\ref{annotations-in-comments}--\ref{uncommenting-annotations}).
@@ -700,6 +705,37 @@ disadvantage is that this makes it more difficult for clients of your
 library to use pluggable type-checking to verify their own code against the
 \<.class> or \<.jar> files that you supply;
 Section~\ref{declaration-annotations-for-java7} gives a partial solution.
+
+
+\subsection{Declaration annotations\label{declaration-annotations-moved}}
+
+When a declaration annotation is an alias for a type annotation, then the
+Checker Framework may move the annotation before replacing it by the
+canonical version.
+
+For example,
+
+\begin{Verbatim}
+  import android.support.annotation.NonNull;
+  ...
+  @NonNull Object [] returnsArray();
+\end{Verbatim}
+
+\noindent
+is treated as if the programmer had written
+
+\begin{Verbatim}
+  import org.checkerframework.checker.nullness.qual.NonNull;
+  ...
+  Object @NonNull [] returnsArray();
+\end{Verbatim}
+
+\noindent
+because Android's \<@NonNull> annotation is a declaration annotation, which
+is understood to apply to the top-level return type of the annotated method.
+
+When possible, you should use type annotations rather than declaration
+annotations.
 
 
 \subsection{Annotations in comments\label{annotations-in-comments}}
