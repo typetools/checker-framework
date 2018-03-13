@@ -209,7 +209,7 @@ Seeing the javac commands that are run
 
 To see the exact javac commands that the Checker Framework test framework
 runs, use
-  -Demit.test.debug=true
+  -Pemit.test.debug=true
 For example:
-  ./gradlew NullnessStubfileTest -Demit.test.debug=true
+  ./gradlew NullnessStubfileTest -Pemit.test.debug=true
 This may be helpful during debugging.

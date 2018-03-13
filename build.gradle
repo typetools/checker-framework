@@ -346,7 +346,7 @@ subprojects {
         }
 
         // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-        sourceSets.test.allJava.filter { it.path.contains('tests/src/tests') }.forEach { file ->
+        sourceSets.test.allJava.filter { it.path.contains('s/src/tests') }.forEach { file ->
             String junitClassName = file.name.replaceAll(".java", "")
             tasks.create(name: "${junitClassName}", type: Test) {
                 description "Run ${junitClassName} tests."
@@ -358,11 +358,15 @@ subprojects {
         tasks.withType(Test) {
             if (project.name.is('checker')) {
                 dependsOn('copyJarsToDist')
-                systemProperties = [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
+                systemProperties += [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
             }
 
-            // TODO: emit.test.debug
+            if (project.hasProperty('emit.test.debug')) {
+                systemProperties += ["emit.test.debug": 'true']
+            }
+
             testLogging {
+                showStandardStreams = true
                 // Always run the tests
                 outputs.upToDateWhen { false }
 
@@ -492,6 +496,7 @@ task checkStyle(group: 'Format') {
                             (line.matches('^.* (else|finally|try)\\{}.*$')
                                     || line.matches('^.*}(catch|else|finally) .*$')
                                     || line.matches('^.* (catch|for|if|while)\\('))) {
+                        // This runs on non-java files, too.
                         println("Missing space: ${it.file.absolutePath}")
                         failed = true
                     }
