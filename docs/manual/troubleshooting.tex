@@ -382,7 +382,7 @@ give unexpected results.
   one procedure at a time; it observes the specifications, but not the
   implementations, of other methods.
 
-  Alo see Section~\ref{handling-warnings}, which explains this same
+  Also see Section~\ref{handling-warnings}, which explains this same
   methodology in different words.
 
 \item
@@ -717,6 +717,8 @@ If you have a problem with any checker, or with the Checker Framework,
 please file a bug at
 \url{https://github.com/typetools/checker-framework/issues}.
 (First, check whether there is an existing bug report for that issue.)
+If the problem is with an incorrect or missing annotation on a library,
+including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
 
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
@@ -780,10 +782,34 @@ code.  We are sure that you can make up artificial code that stymies the
 type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
 
-Please do not file an issue to report that some library class is not
-annotated.  Instead, please write the annotations (see
-Chapter~\ref{annotating-libraries}) and then submit a
-\ahref{https://github.com/typetools/checker-framework/pulls}{pull request}.
+
+\subsection{Problems with annotated libraries\label{reporting-bugs-annotated-libraries}}
+
+Sometimes, a checker will report a warning because a library is not
+annotated or because the library contains incorrect annotations.
+Please do not open GitHub issues for these.
+Instead, we appreciate pull requests to help us improve the annotations.
+Alternatively or in the interim, you can use stub files as described in
+Section~\ref{stub}.
+
+If the library is annotated but has some incorrect or missing annotations,
+then please open a pull request that adds the annotations.
+You can find the annotated source for non-JDK libraries in
+\url{https://github.com/typetools/}.
+You can find the annotated JDK source in the
+\ahref{https://github.com/typetools/checker-framework}{Checker Framework
+  GitHub repository}, either in subdirectories of
+\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
+or in files named \<jdk.astub> in the checker's implementation directory.
+
+If the library is not annotated at all, you can fork it, add annotations,
+and propose that your annotated version be moved into
+\url{https://github.com/typetools/}.
+
+For either approach, please see \chapterpageref{annotating-libraries} for
+tips about writing library annotations.
+
+Thanks for your contribution to the annotated libraries!
 
 
 \section{Building from source\label{build-source}}
@@ -876,6 +902,43 @@ git clone https://github.com/typetools/checker-framework.git checker-framework
 
 You might want to add the \<export JSR308=\$HOME/jsr308> line to your
 \<.bashrc> file.
+
+% Why is this necessary?  What goes wrong if it is not set?  Can I avoid
+% the need to set it?  It's used for:
+%  * the location of tools.jar, below.
+%  * the default location of RTJAR, in checker/jdk/Makefile.
+Set the \<JAVA\_HOME> environment variable to the location of your JDK
+8 installation (not the JRE installation, and not JDK 7 or earlier).
+This needs to be an Oracle JDK.
+(The \<JAVA\_HOME> environment
+variable might already be set, because it is needed for Ant to work.)
+
+\begin{description}
+\item[Ubuntu]
+If you use the bash shell, put the following command in your
+\code{.bashrc} file.  (This might not work if \<java> refers to an executable
+in the JRE rather than in the JDK, but you need the JDK installed to build
+the Checker Framework anyway.)
+% Can someone give a simpler command?
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item[Mac OSX 10.5 or later]
+  Add one of the following two commands in your \code{.bash\_profile} or
+  \code{.profile} file according to the version of your JDK.
+\begin{Verbatim}
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.9)
+\end{Verbatim}
+
+\end{description}
 
 \subsection{Build the Checker Framework\label{building}}
 
@@ -981,7 +1044,7 @@ These instructions are relevant if you use Eclipse as your IDE\@.
 \item Follow the instructions earlier in Section~\ref{build-source} to
 clone and build all projects from their sources.
 \item Download Eclipse from
-the \href{https://www.eclipse.org/downloads}{official Eclipse website}
+the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
 and install it.
 \item Run Eclipse and set the
 workspace to the directory pointed to by \code{\$JSR308}.

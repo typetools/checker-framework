@@ -1093,7 +1093,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.
         if (TreeUtils.isFieldAccess(tree)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
-            // If the parent is not a member select, or if it is, but the field is the expression,
+            // If the parent is not a member select, or if it is and the field is the expression,
             // then the field is accessed via an implicit this.
             if (parent.getKind() != Kind.MEMBER_SELECT
                     || ((MemberSelectTree) parent).getExpression() == tree) {
@@ -1200,7 +1200,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
         if (AnnotationUtils.areSameByClass(gbAnno, GuardedByUnknown.class)
                 || AnnotationUtils.areSameByClass(gbAnno, GuardedByBottom.class)) {
-            checker.report(Result.failure("lock.not.held", "unknown lock"), tree);
+            checker.report(Result.failure("lock.not.held", "unknown lock " + gbAnno), tree);
             return;
         } else if (AnnotationUtils.areSameByClass(gbAnno, GuardSatisfied.class)) {
             return;

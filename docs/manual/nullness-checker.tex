@@ -52,8 +52,7 @@ The checker issues a warning in these cases:
   As a special case of an of \refqualclass{checker/nullness/qual}{NonNull}
   type becoming null, the checker also warns whenever a field of
   \refqualclass{checker/nullness/qual}{NonNull} type is not initialized in a
-  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
-  command-line option below.
+  constructor.
 
 \end{enumerate}
 
@@ -81,7 +80,7 @@ command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
 
-\label{lint-nulltest-section}\label{lint-uninitialized-section}
+\label{lint-nulltest-section}
 \begin{enumerate}
 \item
   Options that control soundness:
@@ -109,19 +108,6 @@ command-line option.)
   unnecessary and might indicate a programmer error or misunderstanding.
   The lint option is disabled by default because sometimes such checks are
   part of ordinary defensive programming.
-
-\item
-  \label{lint-uninitialized-item}%
-  If you supply the \code{-Alint=uninitialized} command-line option, then
-  the checker warns if a constructor fails to initialize any field,
-  including \refqualclass{checker/nullness/qual}{Nullable} types and primitive
-  types.  Such a warning is unrelated to whether your code might throw a
-  null pointer exception.  However, you might want to enable this warning
-  because it is better code style to supply an explicit initializer, even
-  if there is a default value such as \code{0} or \code{false}.
-  This command-line option does not affect the Nullness Checker's tests
-  that fields of \refqualclass{checker/nullness/qual}{NonNull} type are
-  initialized --- such initialization is mandatory, not optional.
 \end{itemize}
 
 \end{enumerate}
@@ -1438,10 +1424,6 @@ your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
 \refqualclass{checker/nullness/qual}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
-It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
-to indicate that a primitive field has its value set in a helper method,
-which is relevant when you supply the \code{-Alint=uninitialized}
-command-line option (see Section~\ref{lint-uninitialized-section}).
 
 % TODO:
 % We need an
@@ -1957,13 +1939,6 @@ they are actually the same checker, rather than being two separate checkers
 that are aggregated together.)
 
 
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{initialization-checking-all-fields}}
-
-When the \code{-Alint=uninitialized} command-line option is provided, then
-an object is considered uninitialized until \emph{all} its fields are assigned, not
-just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
-
-
 \paragraph{Use of method annotations\label{initialization-checking-method-annotations}}
 
 A method with a non-initialized receiver may assume that a few fields (but not all
@@ -2242,10 +2217,6 @@ your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
 \refqualclass{checker/nullness/qual}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
-It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
-to indicate that a primitive field has its value set in a helper method,
-which is relevant when you supply the \code{-Alint=uninitialized}
-command-line option (see Section~\ref{lint-uninitialized-section}).
 
 % TODO:
 % We need an
@@ -2455,13 +2426,6 @@ You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("rawness")>.  Do not confuse this with the unrelated
 \<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!
 \end{sloppypar}
-
-
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{rawness-checking-checking-all-fields}}
-
-When the \code{-Alint=uninitialized} command-line option is provided, then
-an object is considered raw until \emph{all} its fields are assigned, not
-just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
 \paragraph{Use of method annotations\label{rawness-checking-method-annotations}}

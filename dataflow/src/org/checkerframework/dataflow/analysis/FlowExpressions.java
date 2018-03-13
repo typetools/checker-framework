@@ -304,7 +304,7 @@ public class FlowExpressions {
                 }
                 break;
             case MEMBER_SELECT:
-                receiver = internalRepOfMemberSelect(provider, (MemberSelectTree) receiverTree);
+                receiver = internalReprOfMemberSelect(provider, (MemberSelectTree) receiverTree);
                 break;
             case IDENTIFIER:
                 IdentifierTree identifierTree = (IdentifierTree) receiverTree;
@@ -392,7 +392,7 @@ public class FlowExpressions {
         }
     }
 
-    private static Receiver internalRepOfMemberSelect(
+    private static Receiver internalReprOfMemberSelect(
             AnnotationProvider provider, MemberSelectTree memberSelectTree) {
         TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
@@ -407,7 +407,8 @@ public class FlowExpressions {
             case ENUM:
             case INTERFACE: // o instanceof MyClass.InnerInterface
             case ANNOTATION_TYPE:
-                return new ClassName(expressionType);
+                TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+                return new ClassName(selectType);
             case ENUM_CONSTANT:
             case FIELD:
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
