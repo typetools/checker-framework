@@ -1756,7 +1756,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (value == null || value.equals("false")) {
             return false;
         }
-        if (value == true) {
+        if (value.equals("true")) {
             return false;
         }
         this.userErrorAbort(
