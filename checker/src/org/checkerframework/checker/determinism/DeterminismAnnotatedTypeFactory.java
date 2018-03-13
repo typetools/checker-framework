@@ -28,6 +28,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
+    public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -41,7 +42,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         Det.class, OrderNonDet.class, NonDet.class, PolyDet.class
                         /*PolyDet2.class,
                         PolyDet3.class*/ ));
-    }
+    }  
 
     @Override
     protected QualifierPolymorphism createQualifierPolymorphism() {
