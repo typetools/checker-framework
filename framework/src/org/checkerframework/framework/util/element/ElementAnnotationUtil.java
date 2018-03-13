@@ -79,8 +79,8 @@ public class ElementAnnotationUtil {
      * declaration annotations to Java 8 type annotations.
      *
      * <p>If the annotation is one of the Checker Framework compatibility annotations, for example
-     * {@link org.checkerframework.checker.nullness.compatqual.NonNullDecl}, the interpretation
-     * differs, in particular for arrays and inner types. See the manual for a discussion.
+     * {@link org.checkerframework.checker.nullness.compatqual.NonNullDecl}, then it is interpreted
+     * as a type annotation in the same location.
      *
      * @param type the type to annotate
      * @param annotations the annotations to add
