@@ -31,16 +31,17 @@ jar {
     }
 }
 
-task copyJarsToDist (dependsOn: shadowJar, group: 'Build') {
-    description 'Builds or downloads jars required by CheckerMain and puts them in dist.'
-    dependsOn ':jdk8:downloadJdk'
+task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
+    description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
-    description 'Copies jars the CheckerMain expects to be in checker/dist'
+    // Also moves jdk8.jar to checker/dist
+    dependsOn ':jdk8:downloadJdk'
     doLast {
         copy {
             from file(project(':checker-qual').tasks.getByName("jar").archivePath)
             into "${projectDir}/dist"
             rename { String fileName ->
+                // remove version number on checker-qual.jar
                 fileName.replace(fileName, "checker-qual.jar")
             }
         }
@@ -120,6 +121,7 @@ task checkDemos(dependsOn: copyJarsToDist, group: 'Verification') {
                 workingDir demosDir
                 executable 'git'
                 args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
+                ingoreExitValue = true
             }
         }
         ant.properties.put('checker.lib', "${projectDir}/dist/checker.jar")
