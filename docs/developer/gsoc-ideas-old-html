@@ -79,4 +79,3 @@ codebase to discover latent problems, or by providing it to the Bazel
 developers to run each time they propose a code change.  The Bazel
 team is interested in collaborating by evaluating a tool.
 </p>
-
