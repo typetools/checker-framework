@@ -7,8 +7,8 @@
 # This script loads the .class files found in the
 # build directory before it uses any jar files.
 # Thus, a user can just do
-#   ant build
-# to debug changes rather than creating .jar files with "ant dist-nobuildjdk".
+#  ./gradlew compileJava
+# to debug changes rather than creating .jar files with "./gradlew assemble".
 
 # When editing, keep this file in sync with javac-debug in this directory.
 
