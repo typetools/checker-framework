@@ -1211,7 +1211,7 @@ public class FlowExpressionParseUtil {
             FlowExpressions.Receiver receiver;
             if (receiverTree == null) {
                 receiver =
-                        FlowExpressions.internalRepOfImplicitReceiver(
+                        FlowExpressions.internalReprOfImplicitReceiver(
                                 TreeUtils.elementFromUse(methodInvocation));
             } else {
                 receiver =
@@ -1316,7 +1316,7 @@ public class FlowExpressionParseUtil {
                 || elt.getKind() == ElementKind.PARAMETER) {
             return new LocalVariable(elt);
         }
-        Receiver receiverF = FlowExpressions.internalRepOfImplicitReceiver(elt);
+        Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(elt);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         receiverF, null, provider.getContext());

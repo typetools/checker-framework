@@ -2642,7 +2642,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // For now, error on mismatch of class or method type arguments.
         boolean requiresInference = false;
         // If the function to which the member reference refers is generic, but the member
-        // reference does not provide method type arguments, then java 8 inference is required.
+        // reference does not provide method type arguments, then Java 8 inference is required.
         // Issue 979.
         if (invocationType.getTypeVariables().size() > 0
                 && (memberReferenceTree.getTypeArguments() == null
@@ -3109,10 +3109,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (!success) {
                     success = testTypevarContainment(overridingReturnType, overriddenReturnType);
 
-                    // sometimes when using a Java 8 compiler (not JSR308) the overridden return
+                    // Sometimes when using a Java 8 compiler (not JSR308) the overridden return
                     // type of a method reference becomes a captured type.  This leads to defaulting
                     // that often makes the overriding return type invalid.  We ignore these.  This
-                    // happens in Issue403/Issue404 when running without JSR308 Langtools.
+                    // happens in Issue403/Issue404 when running without the jsr308-langtools compiler.
                     if (!success && methodReference) {
 
                         boolean isCaptureConverted =

@@ -411,7 +411,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         // TODO: Report an error for polymorphic method bodies??? Until we fix the receiver
         // defaults, it won't really be correct
-        @SuppressWarnings("unused") // call has side-effects
+        @SuppressWarnings("unused") // call has side effects
         Effect.EffectRange range =
                 atypeFactory.findInheritedEffectRange(
                         ((TypeElement) methElt.getEnclosingElement()), methElt, true, node);

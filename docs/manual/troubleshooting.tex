@@ -784,19 +784,24 @@ type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
 
 
-\subsection{How to report problems with annotated libraries\label{reporting-bugs-annotated-libraries}}
+\subsection{Problems with annotated libraries\label{reporting-bugs-annotated-libraries}}
 
 Sometimes, a checker will report a warning because a library is not
 annotated or because the library contains incorrect annotations.
+Please do not open GitHub issues for these.
+Instead, we appreciate pull requests to help us improve the annotations.
+Alternatively or in the interim, you can use stub files as described in
+Section~\ref{stub}.
 
 If the library is annotated but has some incorrect or missing annotations,
-then please open a pull request that adds the annotations.  You
-can find the annotated JDK source in the
-\ahref{https://github.com/typetools/checker-framework}{Checker Framework
-  GitHub repository}, in directory
-\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}.
-You can find the annotated source for other libraries in
+then please open a pull request that adds the annotations.
+You can find the annotated source for non-JDK libraries in
 \url{https://github.com/typetools/}.
+You can find the annotated JDK source in the
+\ahref{https://github.com/typetools/checker-framework}{Checker Framework
+  GitHub repository}, either in subdirectories of
+\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
+or in files named \<jdk.astub> in the checker's implementation directory.
 
 If the library is not annotated at all, you can fork it, add annotations,
 and propose that your annotated version be moved into
@@ -806,16 +811,6 @@ For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
 
 Thanks for your contribution to the annotated libraries!
-
-Please don't open an issue tracker issue just to report that some library
-class is not annotated.  Such issues will be closed, to avoid cluttering
-the issue tracker.
-
-An alternative to adding annotations to a library is to write stub files,
-as described in Section~\ref{stub}.  This is a quick and expedient way to
-add or chnage the annotations of an arbirary library.  Creating an
-annotated library is a bit more work, but it is less error-prone, easier to
-use, runs slightly faster, and it can help other users.
 
 
 \section{Building from source\label{build-source}}

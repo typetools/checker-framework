@@ -294,7 +294,7 @@ public class FlowExpressions {
                         if (methodReceiverTree != null) {
                             methodReceiver = internalReprOf(provider, methodReceiverTree);
                         } else {
-                            methodReceiver = internalRepOfImplicitReceiver(invokedMethod);
+                            methodReceiver = internalReprOfImplicitReceiver(invokedMethod);
                         }
                     }
                     TypeMirror type = TreeUtils.typeOf(mn);
@@ -365,7 +365,7 @@ public class FlowExpressions {
      * @return either a new ClassName or a new ThisReference depending on whether ele is static or
      *     not
      */
-    public static Receiver internalRepOfImplicitReceiver(Element ele) {
+    public static Receiver internalReprOfImplicitReceiver(Element ele) {
         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
@@ -384,7 +384,7 @@ public class FlowExpressions {
      * @param enclosingType type of the enclosing type
      * @return a new ClassName or ThisReference that is a Receiver object for the enclosingType
      */
-    public static Receiver internalRepOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
+    public static Receiver internalReprOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
         if (TreeUtils.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
@@ -411,8 +411,9 @@ public class FlowExpressions {
                 return new ClassName(selectType);
             case ENUM_CONSTANT:
             case FIELD:
+                TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
-                return new FieldAccess(r, ElementUtils.getType(ele), (VariableElement) ele);
+                return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
                 ErrorReporter.errorAbort(
                         "Unexpected element kind: %s element: %s", ele.getKind(), ele);

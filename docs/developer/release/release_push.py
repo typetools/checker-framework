@@ -270,7 +270,7 @@ def main(argv):
     if test_mode:
         msg = ("You have chosen test_mode.\n" +
            "This means that this script will execute all build steps that " +
-           "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
+           "do not have side effects.  That is, this is a test run of the script.  All checks and user prompts "  +
            "will be shown but no steps will be executed that will cause the release to be deployed or partially " +
            "deployed.\n" +
            "If you meant to do an actual release, re-run this script with one argument, \"release\".")
