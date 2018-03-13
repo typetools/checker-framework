@@ -794,7 +794,7 @@ public abstract class GenericAnnotatedTypeFactory<
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
         FlowExpressions.Receiver r =
-                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
+                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         r,
