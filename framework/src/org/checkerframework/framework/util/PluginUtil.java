@@ -293,7 +293,7 @@ public class PluginUtil {
      * not set or is set to "false". Otherwise, errs.
      */
     public static boolean getBooleanSystemProperty(String key) {
-        return Boolean.valueOf(System.getProperty(key, "true"));
+        return Boolean.valueOf(System.getProperty(key, "false"));
     }
 
     /**
@@ -301,7 +301,17 @@ public class PluginUtil {
      * property is not set. Errs if the system property is set to a non-boolean value.
      */
     public static boolean getBooleanSystemProperty(String key, boolean defaultValue) {
-        return Boolean.valueOf(System.getProperty(key, Boolean.toString(defaultValue)));
+        String value = System.getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (key.equals("true")) {
+            return true;
+        }
+        if (key.equals("false")) {
+            return false;
+        }
+        throw new Error("BAD");
     }
 
     public static File writeTmpSrcFofn(

@@ -1728,7 +1728,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param name the option name to check
      * @return true if the option name was provided, false otherwise
      */
-    // TODO I would like to rename getLintOption to hasLintOption
     @Override
     public final boolean hasOption(String name) {
         return getOptions().containsKey(name);
@@ -1753,7 +1752,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public final boolean getBooleanOption(String name) {
-        return Boolean.valueOf(getOption(name, "false"));
+        String value = getOption(name);
+        if (value == null || value.equals("false")) {
+            return false;
+        }
+        if (value == true) {
+            return false;
+        }
+        this.userErrorAbort(
+                String.format(
+                        "Value of %s option should be a boolean, but is \"%s\".", name, value));
+        throw new Error("Dead code");
     }
 
     /**
