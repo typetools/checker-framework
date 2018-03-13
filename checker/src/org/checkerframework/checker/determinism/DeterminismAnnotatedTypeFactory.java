@@ -42,7 +42,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         Det.class, OrderNonDet.class, NonDet.class, PolyDet.class
                         /*PolyDet2.class,
                         PolyDet3.class*/ ));
-    }  
+    }
 
     @Override
     protected QualifierPolymorphism createQualifierPolymorphism() {

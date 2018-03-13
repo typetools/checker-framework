@@ -1,15 +1,11 @@
 package org.checkerframework.checker.determinism;
 
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Collections;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
@@ -31,11 +27,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-    	    Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
-    	    exceptionParam.add(atypeFactory.DET);
-    	    return exceptionParam;
+        Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
+        exceptionParam.add(atypeFactory.DET);
+        return exceptionParam;
     }
-    
+
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
