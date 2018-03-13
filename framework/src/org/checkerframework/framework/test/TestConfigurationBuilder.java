@@ -168,7 +168,7 @@ public class TestConfigurationBuilder {
         shouldEmitDebugInfo = false;
     }
 
-    /** Create a builder that has all of the optoins in initialConfig */
+    /** Create a builder that has all of the options in initialConfig */
     public TestConfigurationBuilder(TestConfiguration initialConfig) {
         this.diagnosticFiles = new ArrayList<>(initialConfig.getDiagnosticFiles());
         this.testSourceFiles = new ArrayList<>(initialConfig.getTestSourceFiles());

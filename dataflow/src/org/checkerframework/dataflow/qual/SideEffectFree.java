@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * A method is called <em>side-effect-free</em> if it has no visible side-effects, such as setting a
  * field of an object that existed before the method was called.
  *
- * <p>Only the visible side-effects are important. The method is allowed to cache the answer to a
+ * <p>Only the visible side effects are important. The method is allowed to cache the answer to a
  * computationally expensive query, for instance. It is also allowed to modify newly-created
  * objects, and a constructor is side-effect-free if it does not modify any objects that existed
  * before it was called.

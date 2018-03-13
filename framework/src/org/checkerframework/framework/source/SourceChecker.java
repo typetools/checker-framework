@@ -560,6 +560,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         if (options.containsKey(patternName)) {
             pattern = options.get(patternName);
+            if (pattern == null) {
+                message(
+                        Kind.WARNING,
+                        "The " + patternName + " property is empty; please fix your command line");
+                pattern = "";
+            }
         } else if (System.getProperty("checkers." + patternName) != null) {
             pattern = System.getProperty("checkers." + patternName);
         } else if (System.getenv(patternName) != null) {
@@ -1492,7 +1498,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Reports a result. By default, it prints it to the screen via the compiler's internal
-     * messenger if the result is non-success; otherwise, the method returns with no side-effects.
+     * messenger if the result is non-success; otherwise, the method returns with no side effects.
      *
      * @param r the result to report
      * @param src the position object associated with the result
