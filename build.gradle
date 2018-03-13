@@ -199,14 +199,14 @@ task getCodeFormatScripts() {
         exec {
             workingDir formatScriptsHome
             executable 'git'
-            args['pull', '-q']
+            args = ['pull', '-q']
             ignoreExitValue = true
         }
     } else {
         exec {
             workingDir "${formatScriptsHome}/../"
             executable 'git'
-            args['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+            args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
         }
     }
 }
