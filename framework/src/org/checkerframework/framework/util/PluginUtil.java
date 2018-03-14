@@ -314,6 +314,7 @@ public class PluginUtil {
         System.out.printf(
                 "Value for system property %s should be boolean, but is \"%s\".", key, value);
         System.exit(1);
+        return false; // unreachable
     }
 
     public static File writeTmpSrcFofn(
