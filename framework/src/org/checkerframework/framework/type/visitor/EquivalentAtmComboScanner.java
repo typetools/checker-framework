@@ -230,7 +230,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
                 final RETURN_TYPE ret) {
             Map<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
             if (recordFor1 == null) {
-                recordFor1 = new IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE>();
+                recordFor1 = new IdentityHashMap<>();
                 visits.put(type1, recordFor1);
             }
 

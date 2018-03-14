@@ -82,7 +82,7 @@ public class CheckerDevelMain extends CheckerMain {
 
     @Override
     protected List<String> createRuntimeClasspath(final List<String> argsList) {
-        return prependPathOpts(RUNTIME_CP_PROP, new ArrayList<String>());
+        return prependPathOpts(RUNTIME_CP_PROP, new ArrayList<>());
     }
 
     @Override
@@ -104,7 +104,7 @@ public class CheckerDevelMain extends CheckerMain {
             final String pathProp, final List<String> pathOpts, final String... otherPaths) {
         final String cp = System.getProperty(pathProp);
 
-        final List<String> newPathOpts = new ArrayList<String>();
+        final List<String> newPathOpts = new ArrayList<>();
 
         if (!cp.trim().isEmpty()) {
             newPathOpts.addAll(Arrays.asList(cp.split(File.pathSeparator)));

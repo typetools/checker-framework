@@ -135,7 +135,7 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
-        FlowExpressions.Receiver r = FlowExpressions.internalRepOfImplicitReceiver(classDecl);
+        FlowExpressions.Receiver r = FlowExpressions.internalReprOfImplicitReceiver(classDecl);
         FlowExpressionContext context = new FlowExpressionContext(r, null, factory.getContext());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocals(context, pathToUse, bound.getUpperBound());
@@ -187,7 +187,7 @@ public class DependentTypesHelper {
         FlowExpressions.Receiver receiver;
         if (receiverTree == null) {
             receiver =
-                    FlowExpressions.internalRepOfImplicitReceiver(TreeUtils.elementFromUse(tree));
+                    FlowExpressions.internalReprOfImplicitReceiver(TreeUtils.elementFromUse(tree));
         } else {
             receiver = FlowExpressions.internalReprOf(factory, receiverTree);
         }
@@ -227,7 +227,7 @@ public class DependentTypesHelper {
 
         TreePath path = factory.getPath(tree);
         FlowExpressions.Receiver r =
-                FlowExpressions.internalRepOfImplicitReceiver(TreeUtils.elementFromUse(tree));
+                FlowExpressions.internalReprOfImplicitReceiver(TreeUtils.elementFromUse(tree));
         FlowExpressionContext context =
                 new FlowExpressionContext(
                         r,
@@ -267,8 +267,7 @@ public class DependentTypesHelper {
                 Tree enclTree =
                         TreeUtils.enclosingOfKind(
                                 path,
-                                new HashSet<Kind>(
-                                        Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
+                                new HashSet<>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     // If the most enclosing tree is a method, the parameter is a method parameter
@@ -296,7 +295,7 @@ public class DependentTypesHelper {
             case EXCEPTION_PARAMETER:
                 TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                 FlowExpressions.Receiver receiver =
-                        FlowExpressions.internalRepOfPseudoReceiver(path, enclosingType);
+                        FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
                 List<Receiver> params =
                         FlowExpressions.getParametersOfEnclosingMethod(factory, path);
                 FlowExpressionContext localContext =
@@ -313,7 +312,7 @@ public class DependentTypesHelper {
                                     ? ((FlowExpressions.FieldAccess) r).getReceiver()
                                     : r;
                 } else {
-                    receiverF = FlowExpressions.internalRepOfImplicitReceiver(ele);
+                    receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
                 }
                 FlowExpressionContext fieldContext =
                         new FlowExpressionContext(receiverF, null, factory.getContext());
@@ -359,7 +358,7 @@ public class DependentTypesHelper {
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
 
         FlowExpressions.Receiver receiver =
-                FlowExpressions.internalRepOfPseudoReceiver(path, enclosingType);
+                FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
 
         FlowExpressionContext localContext =
                 new FlowExpressionContext(

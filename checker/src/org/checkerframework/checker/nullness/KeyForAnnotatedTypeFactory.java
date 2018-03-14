@@ -70,7 +70,7 @@ public class KeyForAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return new LinkedHashSet<Class<? extends Annotation>>(
+        return new LinkedHashSet<>(
                 Arrays.asList(
                         KeyFor.class,
                         UnknownKeyFor.class,
@@ -155,7 +155,7 @@ public class KeyForAnnotatedTypeFactory
      */
     public AnnotationMirror createKeyForAnnotationMirrorWithValue(String value) {
         // Create an ArrayList with the value
-        LinkedHashSet<String> values = new LinkedHashSet<String>();
+        LinkedHashSet<String> values = new LinkedHashSet<>();
         values.add(value);
         return createKeyForAnnotationMirrorWithValue(values);
     }
@@ -200,7 +200,7 @@ public class KeyForAnnotatedTypeFactory
 
             List<String> res;
             if (valMap.isEmpty()) {
-                res = new ArrayList<String>();
+                res = new ArrayList<>();
             } else {
                 res = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
             }

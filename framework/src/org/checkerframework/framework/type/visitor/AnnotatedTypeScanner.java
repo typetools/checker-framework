@@ -57,8 +57,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     // To prevent infinite loops
-    protected final Map<AnnotatedTypeMirror, R> visitedNodes =
-            new IdentityHashMap<AnnotatedTypeMirror, R>();
+    protected final Map<AnnotatedTypeMirror, R> visitedNodes = new IdentityHashMap<>();
 
     /**
      * Reset the scanner to allow reuse of the same instance. Subclasses should override this method

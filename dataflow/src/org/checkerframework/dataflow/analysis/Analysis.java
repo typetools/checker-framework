@@ -394,7 +394,7 @@ public class Analysis<
             // TODO: should the default behavior be to return either a regular
             // transfer result or a conditional transfer result (depending on
             // store.hasTwoStores()), or is the following correct?
-            return new RegularTransferResult<A, S>(null, store.getRegularStore());
+            return new RegularTransferResult<>(null, store.getRegularStore());
         }
         store.node = node;
         currentNode = node;
@@ -425,7 +425,7 @@ public class Analysis<
         this.cfg = cfg;
         thenStores = new IdentityHashMap<>();
         elseStores = new IdentityHashMap<>();
-        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<Block, Integer>();
+        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<>();
         inputs = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist(cfg);
@@ -597,7 +597,7 @@ public class Analysis<
                 depthFirstOrder.put(b, count++);
             }
 
-            queue = new PriorityQueue<Block>(11, new DFOComparator());
+            queue = new PriorityQueue<>(11, new DFOComparator());
         }
 
         public boolean isEmpty() {

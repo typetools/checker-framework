@@ -504,7 +504,7 @@
     <target name="whole-program-inference-tests" depends="jar,build-tests"
             description="Run tests for whole-program inference using .jaif files">
         <delete dir="build/whole-program-inference"/>
-        <!--Runs the checker on test files with the whole-program inference on
+        <!-- Runs the checker on test files with the whole-program inference on
              to generate .jaif files.-->
         <antcall target="-run-tests">
             <param name="param" value="tests.WholeProgramInferenceTest"/>
@@ -635,7 +635,7 @@
 
     <target name="jtreg-tests" depends="-jtreg.download,-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
-        <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
+        <!-- As of version 4.2-b02, a NullPointerException is thrown without making this dir -->
         <mkdir dir="${build}/jtreg/all/report/html"/>
         <mkdir dir="${build}/jtreg/all/report/text"/>
         <jtreg-tool2 name="all" tests="."/>

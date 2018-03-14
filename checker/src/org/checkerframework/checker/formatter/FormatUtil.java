@@ -74,7 +74,7 @@ public class FormatUtil {
         int maxindex = -1;
 
         Conversion[] cs = parse(format);
-        Map<Integer, ConversionCategory> conv = new HashMap<Integer, ConversionCategory>();
+        Map<Integer, ConversionCategory> conv = new HashMap<>();
 
         for (Conversion c : cs) {
             int index = c.index();
@@ -135,7 +135,7 @@ public class FormatUtil {
     }
 
     private static Conversion[] parse(String format) {
-        ArrayList<Conversion> cs = new ArrayList<Conversion>();
+        ArrayList<Conversion> cs = new ArrayList<>();
         Matcher m = fsPattern.matcher(format);
         while (m.find()) {
             char c = conversionCharFromFormat(m);

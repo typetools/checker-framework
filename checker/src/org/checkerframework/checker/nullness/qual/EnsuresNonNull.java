@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * It can also be used for a method that fails if a given expression is null:
  *
  * <pre><code>
- *  /** Throws an exception if the argument is not null. *&#47;
+ *  /** Throws an exception if the argument is null. *&#47;
  * {@literal @}EnsuresNonNull("#1")
  *  void assertNonNull(Object arg) { ... }
  * </code></pre>

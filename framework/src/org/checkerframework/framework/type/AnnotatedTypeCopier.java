@@ -86,7 +86,7 @@ public class AnnotatedTypeCopier
 
     @Override
     public AnnotatedTypeMirror visit(AnnotatedTypeMirror type) {
-        return type.accept(this, new IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>());
+        return type.accept(this, new IdentityHashMap<>());
     }
 
     @Override
@@ -151,8 +151,7 @@ public class AnnotatedTypeCopier
         originalToCopy.put(original, copy);
 
         if (original.supertypes != null) {
-            final List<AnnotatedDeclaredType> copySupertypes =
-                    new ArrayList<AnnotatedDeclaredType>();
+            final List<AnnotatedDeclaredType> copySupertypes = new ArrayList<>();
             for (final AnnotatedDeclaredType supertype : original.supertypes) {
                 copySupertypes.add((AnnotatedDeclaredType) visit(supertype, originalToCopy));
             }
@@ -180,8 +179,7 @@ public class AnnotatedTypeCopier
         originalToCopy.put(original, copy);
 
         if (original.alternatives != null) {
-            final List<AnnotatedDeclaredType> copyAlternatives =
-                    new ArrayList<AnnotatedDeclaredType>();
+            final List<AnnotatedDeclaredType> copyAlternatives = new ArrayList<>();
             for (final AnnotatedDeclaredType supertype : original.alternatives) {
                 copyAlternatives.add((AnnotatedDeclaredType) visit(supertype, originalToCopy));
             }
