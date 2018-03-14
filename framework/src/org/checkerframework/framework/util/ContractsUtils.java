@@ -330,7 +330,7 @@ public class ContractsUtils {
         if (requiresAnnotation == null) {
             return Collections.emptySet();
         }
-        Set<Precondition> result = new LinkedHashSet<Precondition>();
+        Set<Precondition> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
@@ -409,7 +409,7 @@ public class ContractsUtils {
      */
     public Set<ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
-        Set<ConditionalPostcondition> result = new LinkedHashSet<ConditionalPostcondition>();
+        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
         // Check for a single contract.
         AnnotationMirror ensuresQualifierIf =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifierIf.class);

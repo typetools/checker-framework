@@ -122,7 +122,7 @@ public class ArrayCreationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(dimensions.size() + initializers.size());
+        ArrayList<Node> list = new ArrayList<>(dimensions.size() + initializers.size());
         list.addAll(dimensions);
         list.addAll(initializers);
         return list;

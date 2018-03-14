@@ -37,7 +37,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
     public void addExceptionalSuccessor(BlockImpl b, TypeMirror cause) {
         Set<Block> blocks = exceptionalSuccessors.get(cause);
         if (blocks == null) {
-            blocks = new HashSet<Block>();
+            blocks = new HashSet<>();
             exceptionalSuccessors.put(cause, blocks);
         }
         blocks.add(b);
