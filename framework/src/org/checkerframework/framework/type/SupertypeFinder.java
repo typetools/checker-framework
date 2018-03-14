@@ -73,7 +73,7 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedTypeMirror> defaultAction(AnnotatedTypeMirror t, Void p) {
-            return new ArrayList<AnnotatedTypeMirror>();
+            return new ArrayList<>();
         }
 
         /**
@@ -96,7 +96,7 @@ class SupertypeFinder {
          */
         @Override
         public List<AnnotatedTypeMirror> visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
             Set<AnnotationMirror> annotations = type.getAnnotations();
 
             // Find Boxed type
@@ -141,7 +141,7 @@ class SupertypeFinder {
 
         @Override
         public List<AnnotatedDeclaredType> visitDeclared(AnnotatedDeclaredType type, Void p) {
-            List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
+            List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
             // Set<AnnotationMirror> annotations = type.getAnnotations();
 
             TypeElement typeElement = (TypeElement) type.getUnderlyingType().asElement();
@@ -203,7 +203,7 @@ class SupertypeFinder {
 
         private List<AnnotatedDeclaredType> supertypesFromElement(
                 AnnotatedDeclaredType type, TypeElement typeElement) {
-            List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
+            List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
             // Find the super types: Start with enums and superclass
             if (typeElement.getKind() == ElementKind.ENUM) {
                 DeclaredType dt = (DeclaredType) typeElement.getSuperclass();
@@ -211,7 +211,7 @@ class SupertypeFinder {
                         (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt, false);
 
                 List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
-                List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
+                List<AnnotatedTypeMirror> newtas = new ArrayList<>();
                 for (AnnotatedTypeMirror t : tas) {
                     // If the type argument of super is the same as the input type
                     if (atypeFactory.types.isSameType(
@@ -265,7 +265,7 @@ class SupertypeFinder {
 
         private List<AnnotatedDeclaredType> supertypesFromTree(
                 AnnotatedDeclaredType type, ClassTree classTree) {
-            List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
+            List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
             if (classTree.getExtendsClause() != null) {
                 AnnotatedDeclaredType adt =
                         (AnnotatedDeclaredType)
@@ -289,7 +289,7 @@ class SupertypeFinder {
                 AnnotatedDeclaredType adt =
                         (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt, false);
                 List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
-                List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
+                List<AnnotatedTypeMirror> newtas = new ArrayList<>();
                 for (AnnotatedTypeMirror t : tas) {
                     // If the type argument of super is the same as the input type
                     if (atypeFactory.types.isSameType(
@@ -324,7 +324,7 @@ class SupertypeFinder {
          */
         @Override
         public List<AnnotatedTypeMirror> visitArray(AnnotatedArrayType type, Void p) {
-            List<AnnotatedTypeMirror> superTypes = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
             Set<AnnotationMirror> annotations = type.getAnnotations();
             Elements elements = atypeFactory.elements;
             final AnnotatedTypeMirror objectType =
@@ -400,7 +400,7 @@ class SupertypeFinder {
                     scan(type.getEnclosingType(), mapping);
                 }
 
-                List<AnnotatedTypeMirror> args = new ArrayList<AnnotatedTypeMirror>();
+                List<AnnotatedTypeMirror> args = new ArrayList<>();
                 for (AnnotatedTypeMirror arg : type.getTypeArguments()) {
                     Element elem = types.asElement(arg.getUnderlyingType());
                     if ((elem != null)

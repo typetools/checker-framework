@@ -61,7 +61,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationStatistics extends SourceChecker {
 
-    final Map<Name, Integer> annotationCount = new HashMap<Name, Integer>();
+    final Map<Name, Integer> annotationCount = new HashMap<>();
 
     @Override
     public void typeProcessingOver() {

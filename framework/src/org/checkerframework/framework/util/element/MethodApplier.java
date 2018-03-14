@@ -164,7 +164,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
         Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnos = new LinkedHashMap<>();
         for (final AnnotatedTypeMirror thrownType : thrown) {
-            typeToAnnos.put(thrownType, new ArrayList<TypeCompound>());
+            typeToAnnos.put(thrownType, new ArrayList<>());
         }
 
         for (TypeCompound anno : annos) {

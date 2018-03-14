@@ -533,8 +533,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected final String getSortedQualifierNames() {
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
-        List<Class<? extends Annotation>> sortedSupportedQuals =
-                new ArrayList<Class<? extends Annotation>>();
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
         sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
         Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
 
@@ -1598,8 +1597,7 @@ public abstract class GenericAnnotatedTypeFactory<
             args.put("verbose", verbose);
             args.put("checkerName", getCheckerName());
 
-            CFGVisualizer<Value, Store, TransferFunction> res =
-                    new DOTCFGVisualizer<Value, Store, TransferFunction>();
+            CFGVisualizer<Value, Store, TransferFunction> res = new DOTCFGVisualizer<>();
             res.init(args);
             return res;
         } else if (checker.hasOption("cfgviz")) {

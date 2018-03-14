@@ -260,7 +260,7 @@ public class DOTCFGVisualizer<
         int count = 1;
         for (Block b : cfg.getDepthFirstOrderedBlocks()) {
             if (depthFirstOrder.get(b) == null) {
-                depthFirstOrder.put(b, new ArrayList<Integer>());
+                depthFirstOrder.put(b, new ArrayList<>());
             }
             depthFirstOrder.get(b).add(count++);
         }

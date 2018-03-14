@@ -65,7 +65,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * the elements, in order to prevent possible confusion between different Element
      * instantiations.
      */
-    private final Set<Name> elements = new HashSet<Name>();
+    private final Set<Name> elements = new HashSet<>();
 
     /**
      * Method {@link #typeProcessingStart()} must be invoked exactly once, before any invocation of

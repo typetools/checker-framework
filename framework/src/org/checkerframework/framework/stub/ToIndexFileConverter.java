@@ -105,7 +105,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         if (importDecls == null) {
             imports = Collections.emptyList();
         } else {
-            ArrayList<String> imps = new ArrayList<String>(importDecls.size());
+            ArrayList<String> imps = new ArrayList<>(importDecls.size());
             for (ImportDeclaration decl : importDecls) {
                 if (!decl.isStatic()) {
                     Matcher m = importPattern.matcher(decl.toString());
@@ -519,8 +519,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                      */
                     private InnerTypeLocation extendedTypePath(
                             InnerTypeLocation loc, int tag, int arg) {
-                        List<TypePathEntry> path =
-                                new ArrayList<TypePathEntry>(loc.location.size() + 1);
+                        List<TypePathEntry> path = new ArrayList<>(loc.location.size() + 1);
                         path.addAll(loc.location);
                         path.add(TypePathEntry.fromBinary(tag, arg));
                         return new InnerTypeLocation(path);

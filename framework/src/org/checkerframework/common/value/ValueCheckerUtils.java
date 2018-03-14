@@ -272,7 +272,7 @@ public class ValueCheckerUtils {
 
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         Set<T> set = new TreeSet<>(values);
-        return new ArrayList<T>(set);
+        return new ArrayList<>(set);
     }
 
     /**
@@ -282,7 +282,7 @@ public class ValueCheckerUtils {
      * @return list of unique lengths of strings in {@code values}
      */
     public static List<Integer> getLengthsForStringValues(List<String> values) {
-        List<Integer> lengths = new ArrayList<Integer>();
+        List<Integer> lengths = new ArrayList<>();
         for (String str : values) {
             lengths.add(str.length());
         }

@@ -33,7 +33,7 @@ public class ValueChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         // Don't call super otherwise MethodVal will be added as a subChecker
         // which creates a circular dependency.
-        return new LinkedHashSet<Class<? extends BaseTypeChecker>>();
+        return new LinkedHashSet<>();
     }
 
     @Override

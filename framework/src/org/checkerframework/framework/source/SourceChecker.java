@@ -450,7 +450,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     public List<String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {
-            upstreamCheckerNames = new ArrayList<String>();
+            upstreamCheckerNames = new ArrayList<>();
 
             SourceChecker checker = this;
 
@@ -527,7 +527,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         this.messages = new Properties();
-        ArrayDeque<Class<?>> checkers = new ArrayDeque<Class<?>>();
+        ArrayDeque<Class<?>> checkers = new ArrayDeque<>();
 
         Class<?> currClass = this.getClass();
         while (currClass != SourceChecker.class) {
@@ -618,7 +618,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return Collections.singleton("all");
         }
 
-        Set<String> activeLint = new HashSet<String>();
+        Set<String> activeLint = new HashSet<>();
         for (String s : lintString.split(",")) {
             if (!this.getSupportedLintOptions().contains(s)
                     && !(s.charAt(0) == '-'
@@ -649,7 +649,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return Collections.emptyMap();
         }
 
-        Map<String, String> activeOpts = new HashMap<String, String>();
+        Map<String, String> activeOpts = new HashMap<>();
 
         for (Map.Entry<String, String> opt : options.entrySet()) {
             String key = opt.getKey();
@@ -1637,7 +1637,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         TODO: assert that name doesn't start with '-'
         */
 
-        Set<String> newlints = new HashSet<String>();
+        Set<String> newlints = new HashSet<>();
         newlints.addAll(activeLints);
         if (val) {
             newlints.add(name);
@@ -1693,7 +1693,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         assert slValue != null; /*nninvariant*/
 
         @Nullable String[] lintArray = slValue;
-        Set<String> lintSet = new HashSet<String>(lintArray.length);
+        Set<String> lintSet = new HashSet<>(lintArray.length);
         for (String s : lintArray) {
             lintSet.add(s);
         }
@@ -1714,7 +1714,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * who needs to set the active options to the union of all subcheckers.
      */
     protected void addOptions(Map<String, String> moreopts) {
-        Map<String, String> activeOpts = new HashMap<String, String>(getOptions());
+        Map<String, String> activeOpts = new HashMap<>(getOptions());
         activeOpts.putAll(moreopts);
         activeOptions = Collections.unmodifiableMap(activeOpts);
     }
@@ -1792,7 +1792,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public Set<String> getSupportedOptions() {
-        Set<String> options = new HashSet<String>();
+        Set<String> options = new HashSet<>();
 
         // Support all options provided with the standard
         // {@link javax.annotation.processing.SupportedOptions}
