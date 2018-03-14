@@ -1205,7 +1205,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
                 if (typeArgMap.size() == declaredSubtype.getTypeArguments().size()) {
 
-                    List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<AnnotatedTypeMirror>();
+                    List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
 
                     List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
                     Collections.sort(

@@ -258,7 +258,7 @@ public class ElementUtils {
      */
     public static Set<VariableElement> findFieldsInType(
             TypeElement type, Collection<String> names) {
-        Set<VariableElement> results = new HashSet<VariableElement>();
+        Set<VariableElement> results = new HashSet<>();
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (names.contains(field.getSimpleName().toString())) {
                 results.add(field);
@@ -344,13 +344,13 @@ public class ElementUtils {
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
-        List<TypeElement> superelems = new ArrayList<TypeElement>();
+        List<TypeElement> superelems = new ArrayList<>();
         if (type == null) {
             return superelems;
         }
 
         // Set up a stack containing type, which is our starting point.
-        Deque<TypeElement> stack = new ArrayDeque<TypeElement>();
+        Deque<TypeElement> stack = new ArrayDeque<>();
         stack.push(type);
 
         while (!stack.isEmpty()) {
@@ -402,7 +402,7 @@ public class ElementUtils {
      * getSuperTypes?
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
-        List<VariableElement> fields = new ArrayList<VariableElement>();
+        List<VariableElement> fields = new ArrayList<>();
         fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
         List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
@@ -417,7 +417,7 @@ public class ElementUtils {
      * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
-        List<ExecutableElement> meths = new ArrayList<ExecutableElement>();
+        List<ExecutableElement> meths = new ArrayList<>();
         meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
 
         List<TypeElement> alltypes = getSuperTypes(type, elements);

@@ -27,6 +27,7 @@
       <li><a href="#library-annotations">Library annotations</a></li>
       <li><a href="#case-study-signature">Signature strings</a></li>
       <li><a href="#case-study-index-out-of-bounds">Array indexing (index-out-of-bounds errors)</a></li>
+      <li><a href="#case-study-android-support">Android support annotations</a></li>
       <li><a href="#case-study-signedness">Signed and unsigned numbers</a></li>
       <li><a href="#optional-case-study">Java's Optional class</a></li>
       <li><a href="#case-study-nullness">Null pointer exceptions</a>
@@ -41,8 +42,11 @@
   <li><a href="#new-type-systems">New type systems</a>
     <ul>
       <li><a href="#Make_programs_deterministic">Make programs deterministic</a></li>
+      <li><a href="#custom-tainting-checking">Custom tainting checking</a></li>
       <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
-      <li><a href="#Avoiding_exponential_blowup_when_processing_DAGs">Avoiding exponential blowup when processing DAGs</a></li>
+      <li><a href="#overflow">Overflow checking</a></li>
+      <li><a href="#lock-ordering">Lock ordering</a></li>
+      <li><a href="#index-checker-mutable-length">Index checking for mutable length data structures</a></li>
       <li><a href="#nullness-bug-detector">Nullness bug detector</a></li>
       <li><a href="#typestate">Stateful type systems</a></li>
       <li><a href="#your-own-new-type-system">Invent your own new type system</a></li>
@@ -135,8 +139,9 @@
 
 <p>
 <b>Potential projects:</b>
-Most of this document lists potential summer projects.  The projects are grouped roughly
-from easiest to most challenging.
+Most of this document lists potential summer projects.  The projects are
+grouped roughly from easiest to most challenging.  Many of the projects are
+applicable beyond Google Summer of Code.
 <!--
 You can find more potential projects in the
 <a href="https://github.com/typetools/checker-framework/issues">issue
@@ -189,6 +194,7 @@ You can find more potential projects in the
     use <code>@SuppressWarnings</code>, then the annotations are correct,
     your program is correct, and you don't need feedback.  Congratulations!)
 
+    <p>
     Share the case study as soon
     as you finish it or as soon as you have a question that is not answered
     in the manual; don't wait until you submit your proposal.
@@ -199,13 +205,15 @@ You can find more potential projects in the
       <li>the exact command that runs the type-checker from the command
         line.
     </ul>
-    A good way to give all this information is a pointer to your GitHub
+    The best way to give all this information is a pointer to your GitHub
     fork of the library.  In your fork, the master branch will be unchanged
     from upstream.  You will create a new branch that contains the
     annotated version.  The only differences between the two branches
-    should be related to the annotations you wrote.  The annotated branch's
-    should say how to run the
-    type-checker (typically, just running the project's build file).
+    should be related to the annotations you wrote.  Building the annotated
+    branch should run the type-checker.
+    Please create a pull request from the annotated to the unannotated
+    branch; you won't merge it, but it enables others to view and
+    comment on your changes.
 </ol>
 
 <p>
@@ -341,18 +349,21 @@ not happen until you have completed a case study on an open-source program.
     know enough to create one.
     </p>
 
-    <p>Don't literally cut-and-paste text that was not written by you, because
+    <p>Never literally cut-and-paste text that was not written by you, because
     that would be plagiarism.  If you quote from text written by someone
-    else, give proper credit.
-    If you want to do exactly what is already
-    listed on this page, then just say that (but be specific about which
-      one!),
-      and it will not hurt your
-    chances of being selected.  However, you might have specific ideas
+    else, give proper credit.</p>
+
+    <p>
+    If you want to do exactly what is already listed on this page, then
+    just say that (but be specific about which one!), and it will not hurt
+    your chances of being selected.  However, you might have specific ideas
     about extensions, about details that are not mentioned on this webpage,
     about implementation strategies, and so forth.  If you want to do a
-    case study, say what program you will do your case study on.
-
+    case study, say what program you will do your case study on.  Don't
+    submit a proposal that is just a rearrangement of ideas that already
+    appear on this page or in the Checker Framework manual, because it does
+    not help us to assess your likelihood of being successful.
+    </p>
   </li>
 
   <li>Your qualifications.  Please convince us that you
@@ -505,8 +516,8 @@ sections of the Checker Framework manual</a>.
 <h2 id="case-study-signature">Signature strings</h2>
 
 <p>
-Show that the BCEL tool properly handles signature strings (or find bugs in
-BCEL).
+Show that the ACM library, or the BCEL library, properly handles signature
+strings (or find bugs in them).
 </p>
 
 <p>
@@ -533,13 +544,13 @@ BCEL).
         and implemented.
   </li>
   <li>
-    BCEL defines its own new signature string formats (!), which need to be
+    ASM and BCEL define their own new signature string formats (!), which need to be
     defined.  If they are not defined, then warnings need to be suppressed
     and the guarantee is weaker.  (Defining them could be a second part of
     the case study.)
   </li>
   <li>
-    Some of BCEL's documentation is incorrect, and in other cases the
+    Some of ASM's and BCEL's documentation is incorrect, and in other cases the
     string format is not defined.
   </li>
   <li>
@@ -547,16 +558,6 @@ BCEL).
     annotations are 100% correct.
   </li>
 </ul>
-
-<p>
-  You could perform the same case study on ASM instead.
-</p>
-
-
-
-<p>Here are some concrete suggestions:
-
-
 
 
 <h2 id="case-study-index-out-of-bounds">Array indexing (index-out-of-bounds errors)</h2>
@@ -595,6 +596,18 @@ precise analysis very tricky.
 </p>
 
 
+<h2 id="case-study-android-support">Android support annotations</h2>
+
+<p>
+Implement support for
+<a href="https://medium.com/sebs-top-tips/annotations-to-support-your-contracts-609ff259d5df">Android
+  Studio support annotations</a>,
+  including <code>@NonNull</code>, <code>@IntRange</code>, <code>@IntDef</code>,
+  and others.  Then, do a case study to show the utility (or not) of
+  pluggable type-checking.
+</p>
+
+
 <h2 id="case-study-signedness">Signed and unsigned numbers</h2>
 
 <p>
@@ -615,12 +628,26 @@ precise analysis very tricky.
 </p>
 
 <p>
-  Here are some possibilities:
+  Here are some possibilities (or, search for code that uses
+  signedness-sensitive routines in <code>Integer</code>
+  and <code>Long</code>, namely
+   <code>compareUnsigned</code>
+   <code>divideUnsigned</code>
+   <code>parseUnsignedInt</code>
+   <code>remainderUnsigned</code>, and
+   <code>toUnsignedLong</code>):
 </p>
 <ul>
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
   <li><a href="https://github.com/bcgit/bc-java">bc-java</a></li>
+  <li>Project Nayuki: <a href="https://www.nayuki.io/page/forcing-a-files-crc-to-any-value">CRC</a>, <a href="https://www.nayuki.io/page/notepadcrypt-format-decryptor-java">crypt</a>, <a href="https://www.nayuki.io/page/native-hash-functions-for-java">hash</a>.
 </ul>
+
+<p>
+  Your case studies will show the need for enhancements to the Signedness Checker.
+  For example, it does not currently handle boxed integers and BigInteger;
+  these haven't yet come up in case studies but could be worthwhile enhancements.
+</p>
 
 
 <h2 id="optional-case-study">Java's Optional class</h2>
@@ -928,8 +955,68 @@ The standard library would have annotations for
 You can find
 a <a href="https://checkerframework.org/determinism-checker-manual/manual.html#determinism-checker">draft
     manual chapter</a> that documents a possible design for a Determinism
-Checker.
+Checker.  It differs slightly from the above proposal, for instance by
+having a single type hierarchy instead of two.
 </p>
+
+
+<h2 id="custom-tainting-checking">Custom tainting checking</h2>
+
+<p>
+The Checker Framework comes with
+a <a href="https://checkerframework.org/manual/#tainting-checker">Tainting
+  Checker</a> that is so general that it is not good for much of anything.
+In order to be useful in a particular domain, a user must customize it:
+</p>
+<ul>
+  <li>
+    rename the <code>@Tainted</code> and <code>@Untainted</code> qualifiers
+    to something more specific (such as <code>@Private</code>
+    or <code>@PaymentDetails</code> or <code>@HtmlQuoted</code>), and
+  <li>
+    annotate libraries.
+</ul>
+
+<p>
+The first part of this project is to make this customization easier to do
+&mdash; preferably, a user does not have to change any code in the Checker
+Framework, as is currently the case for the
+<a href="https://checkerframework.org/manual/#subtyping-checker">Subtyping
+Checker</a>.
+As part of making customization easier, a user should be able to specify
+multiple levels of taint &mdash; many information classification hierarchies
+have more than two levels (for example, the US government separates classified
+information into three categories: Confidential, Secret, and Top Secret).
+</p>
+
+<p>
+The second part of this project is to provide several examples, and do case
+studies showing the utility of compile-time taint checking.
+</p>
+
+<p>
+  Possible examples include:
+</p>
+<ul>
+  <li>SQL injection
+  <li>OS command injection
+  <li>the <code>@PrivacySource</code> and <code>@PrivacySink</code>
+    annotations used by the Facebook <a href="http://fbinfer.com/">Infer
+    static analyzer</a>.
+  <li>information flow
+  <li>many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
+  dangerous software programming errors</a> (and the "on the cusp" ones too)
+  <!-- More details appear in these files:
+      ~/research/games/notes/notes
+      ~/prof/grants/2012-02-darpa-verigames/proposal/top25-as-types.pdf
+  -->
+</ul>
+
+<p>
+For some microbenchmarks, see the Juliette test suite for Java from CWE.
+</p>
+
+
 
 
 <h2 id="Bounded-size_strings">Bounded-size strings</h2>
@@ -973,86 +1060,92 @@ of the maximums of its arguments, and likewise for concatenating an array
 or list of strings.
 </p>
 
-<h2 id="Avoiding_exponential_blowup_when_processing_DAGs">Avoiding exponential blowup when processing DAGs</h2>
 
-<!-- John Field of Google is interested in this. -->
+<h2 id="overflow">Overflow checking</h2>
 
 <p>
-Google's <a href="https://bazel.build/">Bazel</a> open-source project is a
-publicly-released version of their build system, Blaze.  Blaze builds every
-line of source code that is written by any Google programmer &mdash; all of
-that source code appears in a single repository!  Therefore, Bazel/Blaze needs to
-be fast.  Bazel represents all of the source code and its dependencies as a
-large DAG (a
-<a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">directed
-acyclic graph</a>).  It needs to manipulate these DAGs efficiently.
+Overflow is when 32-bit arithmetic differs from ideal arithmetic.  For
+example, in Java the <code>int</code> computation 2,147,483,647 + 1 yields
+a negative number, -2,147,483,648.  The goal of this project is to detect
+and prevent problems such as these.
 </p>
 
 <p>
-One of the biggest problems that the Bazel developers face is exponential
-blowup of DAG sizes and therefore of run time.  Periodically, one of the
-Bazel developers makes such a mistake, and Bazel becomes unusable until
-they can diagnose and fix the problem.
+As a concrete application,
+the <a href="https://checkerframework.org/manual/#index-checker">Index
+Checker</a> is currently unsound in the presence of integer overflow.  If
+an integer <code>i</code> is known to be <code>@Positive</code>, and 1 is
+added to it, then the Index Checker believes that its type
+remains <code>@Positive</code>. If <code>i</code> was
+already <code>Integer.MAX_VALUE</code>, then this type would be false.
 </p>
 
 <p>
-Here are two different ways to view the problem.
+This project involves removing this unsoundness by implementing a type system to track when an
+integer value might overflow. Implementing such a type system would permit the Index Checker
+to extend its guarantees even to programs that might overflow. We have noticed that this is
+important for some indexing bugs in practice (using the Index Checker, we found 5 bugs in Google
+Guava related to overflow). A key challenge will be keeping the number of false positives in this
+new type system low: previous attempts to build static analyses for integer overflows have either been
+unsound or had high false positive rates. Because we are using this analysis for a specialized
+purpose (i.e. only the types are only important when the Index Checker's analysis might become unsound),
+false positives may be less of a concern.
 </p>
 
-<ol>
-  <li>
-    In a DAG, multiple nodes may have the same child.  Traversing the DAG
-    naively would visit the child multiple times &mdash; in the worst case,
-    exponentially many times.  It is necessary to avoid doing so.
-  </li>
-  <li>
-    Bazel contains a function that takes a DAG as input and generates a DAG
-    as output (the output is an object graph).  The Bazel developers want to
-    ensure that the size of the output DAG is O(|input DAG|). The input DAG is
-    processed bottom-up (it ensures that each input node is visited once) and
-    Bazel stores the results of intermediate computations that construct the
-    output DAG with nodes of the input DAG. The key thing the Bazel developers
-    want to avoid is copying intermediate subgraphs that have unbounded size.
-  </li>
-</ol>
+
+<h2 id="lock-ordering">Lock ordering</h2>
 
 <p>
-More concretely, there is only one Java type for all DAGs, and there is a
-method <code>flatten()</code>.  It's a mistake to call
-<code>flatten()</code> on certain DAGs, because doing so may cause
-exponential blowup.
-</p>
-
-<!--
+The <a href="https://checkerframework.org/manual/#lock-checker">Lock
+Checker</a> prevents race conditions by ensuring that locks are held when
+they need to be.  It does not prevent deadlocks that can result from locks
+being acquired in the wrong order.  This project would extend the Lock
+Checker to address deadlocks, or create a new checker to do so.
 </p>
 
 <p>
-A pluggable type system can subdivide the Java type, using this type hierarchy:
+Suppose that a program contains two different locks.  Suppose that one
+thread tries to acquire lockA then lockB, and another thread tries to
+acquire lockB then lockA, and each thread acquires its first lock.  Then
+both locks will wait forever for the other lock to become available.  The
+program will not make any more progress and is said to
+be <a href="https://en.wikipedia.org/wiki/Deadlock">deadlocked</a>.
 </p>
 
 <p>
-  @PossbilyPropagatable
-          |
-  @NotPropagatable
+If all threads acquire locks in the same order &mdash; in our example, say
+lockA then lockB &mdash; then deadlocks do not happen.  You will extend the
+Lock Checker to verify this property.
+</p>
+
+
+<h2 id="index-checker-mutable-length">Index checking for mutable length data structures</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#index-checker">Index
+Checker</a> is currently restricted to fixed-size data structures.
+A fixed-size data structure is one whose length cannot be changed once it is created;
+examples of fixed-size data structures are arrays and Strings.
+This limitation prevents the Index Checker from verifying indexing operations on mutable-size data structures,
+like Lists, that have add or remove methods. Since these kind of collections are common
+in practice, this is a severe limitation for the Index Checker.
 </p>
 
 <p>
-A call to flatten() is permitted only if the receiver is known to be
-@NotPropagatable.
+The limitation is caused by the Index Checker's use of types that are dependent on the length of data structures,
+like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'s length could change,
+then the correctness of this type might change.
 </p>
 
 <p>
-This should be very easy to code up and evaluate, once we have more precise
-definitions.
--->
+A naive solution would be to invalidate these types any time a method is called on <code>data_structure</code>.
+Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
+the information in the type when a method like add or remove is called on <code>data_structure</code>.
+A more complete solution might involve some special annotations on List that permit the information to be persisted.
+</p>
 
 <p>
-The goal of this project would be to better understand the problem with
-Bazel, to formalize it, and to create a program analysis that solves
-the problem.  You would evaluate your work by running it on the Bazel
-codebase to discover latent problems, or by providing it to the Bazel
-developers to run each time they propose a code change.  The Bazel
-team is interested in collaborating by evaluating a tool.
+This project would involve designing and implementing a solution to this problem.
 </p>
 
 
@@ -1609,5 +1702,7 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  timeline Uber's NullAway Uber coala BCEL mvn BCEL's AFU
  -->
-<!--  LocalWords:  Signedness Jake2 README Lookup
+<!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis
+ -->
+<!--  LocalWords:  BigInteger lockB lockA
  -->

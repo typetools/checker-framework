@@ -195,7 +195,7 @@ public class NullnessAnnotatedTypeFactory
         AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;
         // if useFbc is true, then it is the NullnessChecker
         if (ckr.useFbc) {
-            return new LinkedHashSet<Class<? extends Annotation>>(
+            return new LinkedHashSet<>(
                     Arrays.asList(
                             Nullable.class,
                             MonotonicNonNull.class,
@@ -209,7 +209,7 @@ public class NullnessAnnotatedTypeFactory
         }
         // otherwise, it is the NullnessRawnessChecker
         else {
-            return new LinkedHashSet<Class<? extends Annotation>>(
+            return new LinkedHashSet<>(
                     Arrays.asList(
                             Nullable.class,
                             MonotonicNonNull.class,

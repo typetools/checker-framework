@@ -121,7 +121,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     private Set<String> buildLookupKeys() {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
 
         if (checker.hasOption("propfiles")) {
             result.addAll(keysOfPropertyFiles(checker.getOption("propfiles")));
@@ -141,7 +141,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.emptySet();
         }
 
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
 
         for (String name : namesArr) {
             try {
@@ -200,7 +200,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.emptySet();
         }
 
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
 
         for (String bundleName : namesArr) {
             ResourceBundle bundle = ResourceBundle.getBundle(bundleName);

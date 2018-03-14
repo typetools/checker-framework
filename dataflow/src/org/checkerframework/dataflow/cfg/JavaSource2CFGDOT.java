@@ -154,7 +154,7 @@ public class JavaSource2CFGDOT {
         args.put("outdir", outputDir);
         args.put("checkerName", "");
 
-        CFGVisualizer<A, S, T> viz = new DOTCFGVisualizer<A, S, T>();
+        CFGVisualizer<A, S, T> viz = new DOTCFGVisualizer<>();
         viz.init(args);
         Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
         viz.shutdown();

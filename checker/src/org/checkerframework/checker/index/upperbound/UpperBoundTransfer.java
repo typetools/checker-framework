@@ -527,7 +527,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
         List<String> sameLenSequences =
                 sameLenAnno == null
-                        ? new ArrayList<String>()
+                        ? new ArrayList<>()
                         : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno);
 
         if (!sameLenSequences.contains(sequenceRec.toString())) {

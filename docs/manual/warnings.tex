@@ -249,9 +249,17 @@ Whenever you write a \<@SuppressWarnings> annotation, you should also
 write, typically on the same line, a code comment
 explaining why the code is actually correct.  In some cases you might also
 justify why the code cannot be rewritten in a simpler way that would be
-amenable to type-checking.
+amenable to type-checking.  Also make it clear what error is being
+suppressed; this is particularly important when the \<@SuppressWarnings> is
+on a method declaration and the suppressed warning might be anywhere in the
+method body.
 
-Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib}:
+This documentation will help you and others to understand the reason for
+the \<@SuppressWarnings> annotation.  It will also help you audit your code
+to verify all the warning suppressions.  (The code is correct only if the
+checker issues no warnings \emph{and} each \<@SuppressWarnings> is correct.)
+
+Here are some terse examples from \href{https://mernst.github.io/plume-lib/}{plume-lib}:
 
 \begin{Verbatim}
 @SuppressWarnings("purity") // side effect to local state of type BitSet
@@ -262,9 +270,6 @@ Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib
 @SuppressWarnings("nullness") // oi.factory is a static method, so null first argument is OK
 \end{Verbatim}
 
-This documentation will help you and others to understand the reason for
-the \<@SuppressWarnings> annotation.  It will also help if you decide to
-audit your code to verify all the warning suppressions.
 
 
 \section{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
@@ -468,7 +473,8 @@ To suppress all errors and warnings related to multiple classes, you can use
 the regular expression alternative operator ``\code{|}'', as in
 ``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
 all warnings related to uses of classes belong to the \code{java.lang} or
-\code{java.util} packages.
+\code{java.util} packages.  (Depending on your shell or other tool, you
+might need to change or remove the quoting.)
 
 You can supply both \code{-AskipUses} and \code{-AonlyUses}, in which case
 the \code{-AskipUses} argument takes precedence, and \code{-AonlyUses} does

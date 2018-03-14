@@ -419,7 +419,7 @@
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
-        <!--Jar classes and source files-->
+        <!-- Jar classes and source files -->
         <jar destfile="${checker.qual7.lib}" basedir="${checker-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
@@ -495,7 +495,7 @@
             </fileset>
         </copy>
 
-        <!--Jar classes and source files-->
+        <!-- Jar classes and source files -->
         <jar destfile="${checker.qual.lib}" basedir="${checker-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
@@ -771,7 +771,7 @@
 
         <antcall target="command-line-tests"/>
 
-      <!--TODO: This breaks during the release process because the latest Maven artifacts haven't been created.
+      <!-- TODO: This breaks during the release process because the latest Maven artifacts haven't been created.
                 This target is called in .travis-build.sh -->
         <!--<antcall target="example-tests-nobuildjdk"/>-->
 
@@ -1208,7 +1208,7 @@
             <attribute name="jpda.jvmargs" default=""/>
 
             <sequential>
-                <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
+                <!-- As of version 4.2-b02, a NullPointerException is thrown without making this dir -->
                 <mkdir dir="${build}/jtreg/all/report/html"/>
                 <mkdir dir="${build}/jtreg/all/report/text"/>
 
@@ -1380,7 +1380,7 @@
 
 
     <target name="check-tutorial" description="Test that the tutorial is working as expected">
-    <!--The tutorial build file is written relative to its location,
+    <!-- The tutorial build file is written relative to its location,
         so useNativeBasedir is required. -->
           <ant dir="${docs.loc}/tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
@@ -1450,8 +1450,8 @@
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
 
 
-        <!--The implementation version listed in the Manifest is the hash of the commit of-->
-        <!--the Checker Framework that created the jdk.jar.  Show it here to help debugging.-->
+        <!-- The implementation version listed in the Manifest is the hash of the commit of -->
+        <!-- the Checker Framework that created the jdk.jar.  Show it here to help debugging. -->
         <loadfile property="message">
             <zipentry zipfile="jdk/jdk8.jar" name="META-INF/MANIFEST.MF"/>
         </loadfile>
@@ -1461,7 +1461,7 @@
 
     </target>
 
-    <!--This target is used during the release.  Currently, only jdk8.jar is built, so this target
+    <!-- This target is used during the release.  Currently, only jdk8.jar is built, so this target
      depends on the "jdk.jar" target.  When the Checker Framework can build jdk9.jar, the "depends"
      should be removed. -->
     <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 8)"  depends="jdk.jar">

@@ -115,7 +115,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        List<Node> list = new ArrayList<Node>(1 + arguments.size());
+        List<Node> list = new ArrayList<>(1 + arguments.size());
         list.add(target);
         list.addAll(arguments);
         return list;

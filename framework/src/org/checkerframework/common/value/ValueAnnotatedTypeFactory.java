@@ -107,7 +107,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final ValueMethodIdentifier methods;
 
     static {
-        Set<String> backingSet = new HashSet<String>(18);
+        Set<String> backingSet = new HashSet<>(18);
         backingSet.add("int");
         backingSet.add("java.lang.Integer");
         backingSet.add("double");
@@ -555,7 +555,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 List<Integer> otherLengths = getArrayLength(otherAnno);
 
-                ArrayList<String> result = new ArrayList<String>();
+                ArrayList<String> result = new ArrayList<>();
                 for (String s : values) {
                     if (otherLengths.contains(s.length())) {
                         result.add(s);
@@ -567,7 +567,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 Range otherRange = getRange(otherAnno);
 
-                ArrayList<String> result = new ArrayList<String>();
+                ArrayList<String> result = new ArrayList<>();
                 for (String s : values) {
                     if (otherRange.contains(s.length())) {
                         result.add(s);
@@ -963,7 +963,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Long> result;
         if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             List<Integer> intValues = getArrayLength(anno);
-            result = new ArrayList<Long>(intValues.size());
+            result = new ArrayList<>(intValues.size());
             for (Integer i : intValues) {
                 result.add(i.longValue());
             }
@@ -1315,7 +1315,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
                 if (arguments.size() > 0) {
-                    argValues = new ArrayList<List<?>>();
+                    argValues = new ArrayList<>();
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
@@ -1374,7 +1374,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
                 if (arguments.size() > 0) {
-                    argValues = new ArrayList<List<?>>();
+                    argValues = new ArrayList<>();
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
@@ -1458,7 +1458,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.areSameByClass(arrayAnno, ArrayLen.class)) {
             // array.length, where array : @ArrayLen(x)
             List<Integer> lengths = ValueAnnotatedTypeFactory.getArrayLength(arrayAnno);
-            return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
+            return createNumberAnnotationMirror(new ArrayList<>(lengths));
         }
         // Check for an ArrayLenRange annotation.
         if (AnnotationUtils.areSameByClass(arrayAnno, ArrayLenRange.class)) {
@@ -1470,7 +1470,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.areSameByClass(arrayAnno, StringVal.class)) {
             List<String> strings = ValueAnnotatedTypeFactory.getStringValues(arrayAnno);
             List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(strings);
-            return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
+            return createNumberAnnotationMirror(new ArrayList<>(lengths));
         }
 
         return createIntRangeAnnotation(0, Integer.MAX_VALUE);
@@ -1646,7 +1646,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Convert a {@code List&lt;Long&gt;} to a {@code List&lt;Double&gt;}. */
     private List<Double> convertLongListToDoubleList(List<Long> intValues) {
-        List<Double> doubleValues = new ArrayList<Double>(intValues.size());
+        List<Double> doubleValues = new ArrayList<>(intValues.size());
         for (Long intValue : intValues) {
             doubleValues.add(intValue.doubleValue());
         }
