@@ -62,10 +62,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private Map<String, UnitsRelations> unitsRel;
 
     private static final Map<String, Class<? extends Annotation>> externalQualsMap =
-            new HashMap<String, Class<? extends Annotation>>();
+            new HashMap<>();
 
-    private static final Map<String, AnnotationMirror> aliasMap =
-            new HashMap<String, AnnotationMirror>();
+    private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
 
     public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
         // use true to enable flow inference, false to disable it
@@ -143,7 +142,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected Map<String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
-            unitsRel = new HashMap<String, UnitsRelations>();
+            unitsRel = new HashMap<>();
             // Always add the default units relations, for the standard units.
             unitsRel.put(
                     UnitsRelationsDefault.class.getCanonicalName(),

@@ -123,7 +123,7 @@ public class ElementAnnotationUtil {
             TargetType... targetTypes) {
         final Map<TargetType, List<TypeCompound>> targetTypeToAnnos = new HashMap<>();
         for (TargetType targetType : targetTypes) {
-            targetTypeToAnnos.put(targetType, new ArrayList<TypeCompound>(10));
+            targetTypeToAnnos.put(targetType, new ArrayList<>(10));
         }
 
         for (final TypeCompound anno : annos) {

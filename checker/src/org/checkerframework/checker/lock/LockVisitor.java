@@ -594,7 +594,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             AnnotationMirror ensuresLockHeldAnno =
                     atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
-            List<String> expressions = new ArrayList<String>();
+            List<String> expressions = new ArrayList<>();
 
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
@@ -681,7 +681,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // Combine all of the actual parameters into one list of AnnotationMirrors
 
         ArrayList<AnnotationMirror> passedArgAnnotations =
-                new ArrayList<AnnotationMirror>(guardSatisfiedIndex.length);
+                new ArrayList<>(guardSatisfiedIndex.length);
         passedArgAnnotations.add(
                 methodCallReceiver == null
                         ? null
@@ -942,7 +942,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitAnnotation(AnnotationTree tree, Void p) {
-        ArrayList<AnnotationTree> annotationTreeList = new ArrayList<AnnotationTree>(1);
+        ArrayList<AnnotationTree> annotationTreeList = new ArrayList<>(1);
         annotationTreeList.add(tree);
         List<AnnotationMirror> amList =
                 TreeUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);

@@ -46,7 +46,7 @@ public class StringConcatenateAssignmentNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(2);
+        ArrayList<Node> list = new ArrayList<>(2);
         list.add(getLeftOperand());
         list.add(getRightOperand());
         return list;

@@ -210,7 +210,7 @@ public class StubParser {
 
     private Map<String, AnnotationMirror> createImportedAnnotationsMap(
             List<TypeElement> typeElements) {
-        Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
+        Map<String, AnnotationMirror> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
@@ -228,7 +228,7 @@ public class StubParser {
      * @return a list fully-qualified member names
      */
     private static List<String> getImportableMembers(TypeElement typeElement) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         List<VariableElement> memberElements =
                 ElementFilter.fieldsIn(typeElement.getEnclosedElements());
         for (VariableElement varElement : memberElements) {
@@ -251,7 +251,7 @@ public class StubParser {
      * @see #allStubAnnotations
      */
     private Map<String, AnnotationMirror> getAllStubAnnotations() {
-        Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
+        Map<String, AnnotationMirror> result = new HashMap<>();
 
         assert !stubUnit.getCompilationUnits().isEmpty();
         CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
@@ -1597,8 +1597,7 @@ public class StubParser {
      * Mapping of a name access expression that has already been encountered to the resolved
      * variable element.
      */
-    private final Map<NameExpr, VariableElement> findVariableElementNameCache =
-            new HashMap<NameExpr, VariableElement>();
+    private final Map<NameExpr, VariableElement> findVariableElementNameCache = new HashMap<>();
 
     private @Nullable VariableElement findVariableElement(NameExpr nexpr) {
         if (findVariableElementNameCache.containsKey(nexpr)) {
@@ -1643,7 +1642,7 @@ public class StubParser {
      * variable element.
      */
     private final Map<FieldAccessExpr, VariableElement> findVariableElementFieldCache =
-            new HashMap<FieldAccessExpr, VariableElement>();
+            new HashMap<>();
 
     private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
@@ -1738,7 +1737,7 @@ public class StubParser {
     ///
 
     // The warnings that have been issued so far.
-    private static final Set<String> warnings = new HashSet<String>();
+    private static final Set<String> warnings = new HashSet<>();
 
     /**
      * Issues the given warning about missing elements, only if it has not been previously issued

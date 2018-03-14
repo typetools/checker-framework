@@ -1222,7 +1222,7 @@ public final class TreeUtils {
 
     public static final List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
             List<? extends AnnotationTree> annos) {
-        List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>(annos.size());
+        List<AnnotationMirror> annotations = new ArrayList<>(annos.size());
         for (AnnotationTree anno : annos) {
             annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
         }

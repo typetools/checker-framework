@@ -765,7 +765,7 @@ public class AnnotatedTypes {
      * @return whether the type contains the modifier
      */
     public static boolean containsModifier(AnnotatedTypeMirror type, AnnotationMirror modifier) {
-        return containsModifierImpl(type, modifier, new ArrayList<AnnotatedTypeMirror>());
+        return containsModifierImpl(type, modifier, new ArrayList<>());
     }
 
     /*

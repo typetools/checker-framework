@@ -85,9 +85,9 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
      */
     public ImplicitsTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
-        this.treeKinds = new EnumMap<Kind, Set<AnnotationMirror>>(Kind.class);
-        this.treeClasses = new HashMap<Class<?>, Set<AnnotationMirror>>();
-        this.stringPatterns = new IdentityHashMap<Pattern, Set<AnnotationMirror>>();
+        this.treeKinds = new EnumMap<>(Kind.class);
+        this.treeClasses = new HashMap<>();
+        this.stringPatterns = new IdentityHashMap<>();
 
         this.qualHierarchy = atypeFactory.getQualifierHierarchy();
 

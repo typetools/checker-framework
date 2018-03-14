@@ -90,7 +90,7 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(1 + arguments.size());
+        ArrayList<Node> list = new ArrayList<>(1 + arguments.size());
         list.add(constructor);
         list.addAll(arguments);
         return list;

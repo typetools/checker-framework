@@ -18,7 +18,7 @@ public class Pair<V1, V2> {
     }
 
     public static <V1, V2> Pair<V1, V2> of(V1 v1, V2 v2) {
-        return new Pair<V1, V2>(v1, v2);
+        return new Pair<>(v1, v2);
     }
 
     @SideEffectFree
