@@ -680,7 +680,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new DefaultTypeHierarchy(
                 checker,
                 getQualifierHierarchy(),
-                checker.getBooleanOption("ignoreRawTypeArguments"),
+                checker.getBooleanOption("ignoreRawTypeArguments", true),
                 checker.hasOption("invariantArrays"));
     }
 
