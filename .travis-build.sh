@@ -102,7 +102,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew :checker:checkDemos
+    ./gradlew :checker:demosTests
   fi
   # sparta: 1 minute, but the command is "true"!
   # TODO: requires Android installation (and at one time, it caused weird
@@ -130,7 +130,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ./gradlew checkStyle
 
   # Run error-prone
-  ./gradlew checkErrorProne
+  ./gradlew runErrorProne
 
   # Documentation
   ./gradlew javadocPrivate

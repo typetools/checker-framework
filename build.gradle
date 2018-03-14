@@ -391,8 +391,8 @@ subprojects {
             }
         }
 
-        // Create a checkErrorProne task.
-        tasks.create(name: 'checkErrorProne', type: JavaCompile, group: 'Verification') {
+        // Create a runErrorProne task.
+        tasks.create(name: 'runErrorProne', type: JavaCompile, group: 'Verification') {
             description 'Run the error-prone compiler on the main sources'
             toolChain net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
             source = sourceSets.main.java.asFileTree
@@ -422,7 +422,7 @@ subprojects {
             }
 
             if (project.name.is('checker')) {
-                tasks += ['nullnessExtraTests', 'commandLineTests', 'checkTutorial', 'exampleTests']
+                tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests', 'exampleTests']
             }
         }
 

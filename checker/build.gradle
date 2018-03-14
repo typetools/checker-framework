@@ -90,7 +90,7 @@ task commandLineTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verificatio
     args = ['-C', 'tests/command-line/']
 }
 
-task checkTutorial(dependsOn: copyJarsToDist, group: 'Verification') {
+task tutorialTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the tutorial is working as expected.'
     doLast {
         ant.ant(dir: "${rootDir}/docs/tutorial/tests", useNativeBasedir: 'true', inheritAll: 'false') {
@@ -106,7 +106,7 @@ task exampleTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') 
     args = ['-C', '../docs/examples']
 }
 
-task checkDemos(dependsOn: copyJarsToDist, group: 'Verification') {
+task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
         File demosDir = new File(projectDir, '../../checker-framework-demos');
