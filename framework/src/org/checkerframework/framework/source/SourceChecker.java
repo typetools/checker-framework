@@ -1725,7 +1725,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
      * returns true: this happens e.g. for {@code -Amyopt}
      *
-     * @param name the option name to check
+     * @param name the name of the option to check
      * @return true if the option name was provided, false otherwise
      */
     @Override
@@ -1736,6 +1736,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Determines the value of the option with the given name.
      *
+     * @param name the name of the option to check
      * @see SourceChecker#getLintOption(String,boolean)
      */
     @Override
@@ -1751,7 +1752,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @see SourceChecker#getLintOption(String,boolean)
      */
     @Override
-    public final boolean getBooleanOption(String name, boolean defaultValue) {
+    public final boolean getBooleanOption(String name) {
         return getBooleanOption(name, false);
     }
 
