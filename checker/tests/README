@@ -161,21 +161,24 @@ Writing tests for a new checker or with different command-line arguments
 To create tests for a new checker, mimic some existing checker's tests:
  * create a top-level test directory, such as
    checker-framework/checker/tests/regex for the test cases
- * create a top-level JUnit test, such as:
-   checker-framework/checker/tests/src/tests/RegexTest.java
+ * create a top-level JUnit test in checker-framework/checker/tests/src/tests,
+   such as: RegexTest.java
    It is a subclass of CheckerFrameworkPerDirectoryTest, and its list of checker
    options must include "-Anomsgtext".  (See the API documentation for
    CheckerFrameworkPerDirectoryTest for more detailed information.)
- * include "all-systems" as a test directy by adding it to the array created
+ * include "all-systems" as a test directly by adding it to the array created
    in getTestDirs in the new test class.  See
    checkerframework/framework/tests/all-systems/README for more details about
    the all-systems tests.
- * change checker-framework/checker/build.xml to run those tests
 
 Different test cases may need to pass different command-line arguments
 (flags) to the checker -- for instance, to check an optional command-line
 argument that should not be enabled for every test.  Follow the same
 instructions as for writing tests for a new checker.
+
+A Gradle task is created for each Junit test class.  The task is named the same
+as the Junit test classname, for example, ./gradlew RegexTest runs the Regex
+Checker tests.
 
 
 Disabling a test case
