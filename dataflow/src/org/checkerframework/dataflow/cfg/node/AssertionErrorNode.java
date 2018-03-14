@@ -71,7 +71,7 @@ public class AssertionErrorNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(2);
+        ArrayList<Node> list = new ArrayList<>(2);
         list.add(getCondition());
         list.add(getDetail());
         return list;

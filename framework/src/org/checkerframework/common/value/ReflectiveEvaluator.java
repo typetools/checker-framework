@@ -60,7 +60,7 @@ public class ReflectiveEvaluator {
         List<Object[]> listOfArguments;
         if (allArgValues == null) {
             // Method does not have arguments
-            listOfArguments = new ArrayList<Object[]>();
+            listOfArguments = new ArrayList<>();
             listOfArguments.add(null);
         } else {
             // Find all possible argument sets
@@ -286,7 +286,7 @@ public class ReflectiveEvaluator {
         List<Object[]> listOfArguments;
         if (argValues == null) {
             // Method does not have arguments
-            listOfArguments = new ArrayList<Object[]>();
+            listOfArguments = new ArrayList<>();
             listOfArguments.add(null);
         } else {
             // Find all possible argument sets
