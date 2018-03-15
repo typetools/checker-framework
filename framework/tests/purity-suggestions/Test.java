@@ -6,7 +6,6 @@ import testlib.util.*;
 // various tests for the checker to automatically suggest pure methods (most methods have been
 // copied from Purity.java)
 
-// This warning is for the implicit constructor of class Test
 class Test {
 
     String f1, f2, f3;
