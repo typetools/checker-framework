@@ -1,5 +1,3 @@
-// @skip-test Depends on annotated JDK, which framework tests ignore
-
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.StringVal;

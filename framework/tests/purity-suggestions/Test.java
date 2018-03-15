@@ -7,7 +7,6 @@ import testlib.util.*;
 // copied from Purity.java)
 
 // This warning is for the implicit constructor of class Test
-// annotated JDK is not read?? // :: warning: (purity.more.sideeffectfree)
 class Test {
 
     String f1, f2, f3;
@@ -24,7 +23,6 @@ class Test {
 
     // class with a pure constructor
     private static class PureClass {
-        // annotated JDK is not read?? // :: warning: (purity.more.sideeffectfree)
         public PureClass() {}
     }
 
