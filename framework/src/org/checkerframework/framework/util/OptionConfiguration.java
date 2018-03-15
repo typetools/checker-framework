@@ -28,7 +28,7 @@ public interface OptionConfiguration {
      * if the option is not set.
      *
      * @param name the name of the option to check
-     * @param def the default value to return if the option is not set
+     * @param defaultValue the default value to return if the option is not set
      */
     String getOption(String name, String defaultValue);
 
@@ -46,7 +46,6 @@ public interface OptionConfiguration {
      *
      * @param name the name of the option to check
      * @param defaultValue the default value to use if the option is not set
-     * @see SourceChecker#getLintOption(String,boolean)
      */
     boolean getBooleanOption(String name, boolean defaultValue);
 
