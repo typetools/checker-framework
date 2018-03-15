@@ -305,10 +305,10 @@ public class PluginUtil {
         if (value == null) {
             return defaultValue;
         }
-        if (key.equals("true")) {
+        if (value.equals("true")) {
             return true;
         }
-        if (key.equals("false")) {
+        if (value.equals("false")) {
             return false;
         }
         throw new Error(
