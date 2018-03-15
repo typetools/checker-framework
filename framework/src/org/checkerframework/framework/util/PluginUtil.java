@@ -311,10 +311,10 @@ public class PluginUtil {
         if (key.equals("false")) {
             return false;
         }
-        System.out.printf(
-                "Value for system property %s should be boolean, but is \"%s\".", key, value);
-        System.exit(1);
-        return false; // unreachable
+        throw new Error(
+                String.format(
+                        "Value for system property %s should be boolean, but is \"%s\".",
+                        key, value));
     }
 
     public static File writeTmpSrcFofn(
