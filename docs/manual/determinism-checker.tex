@@ -139,15 +139,19 @@ The Determinism Checker makes
 several enhancements to standard polymorphic qualifiers.
 
 
-\subsection{Replacing @OrderNonDet\label{determinism-polymorphism-ordernondet}}
+\subsection{Avoiding @OrderNonDet\label{determinism-polymorphism-ordernondet}}
 
 \begin{description}
-\item[\refqualclass{checker/determinism/qual}{Ond2D}]
-  Applied to \<@PolyDet>,
-  changes an \<@OrderNonDet> instantiation into \<@Det>.
-\item[\refqualclass{checker/determinism/qual}{Ond2Nd}]
-  Applied to \<@PolyDet>,
-  changes an \<@OrderNonDet> instantiation into \<@NonDet>.
+\item[\refqualclass{checker/determinism/qual}{PolyDet}\<("down")>]
+  Acts like \<@Det> when the polymorphic qualifier is instantiated as
+  \<@OrderNonDet>.
+  ``\<down>'' refers to the direction in the qualifier hierarchy:
+  \<@OrderNonDet> is changed to a lower qualifer that is a subtype of it.
+\item[\refqualclass{checker/determinism/qual}{PolyDet}\<("up")>]
+  Acts like \<@NonDet> when the polymorphic qualifier is instantiated as
+  \<@OrderNonDet>.
+  ``\<up>'' refers to the direction in the qualifier hierarchy:
+  \<@OrderNonDet> is changed to a higher qualifer that is a supertype of it.
 \end{description}
 
 Ordinarily, every occurrence of \<@PolyDet> is instantiated at the same
@@ -178,18 +182,17 @@ second one.  The \refqualclass{checker/determinism/qual}{Ond2D} and
 expressing the method behavior:
 
 \begin{Verbatim}
- @Ond2D @PolyDet boolean add(     @PolyDet List<E> this, E e)
-@Ond2Nd @PolyDet int hashCode(    @PolyDet List<E> this)
+@PolyDet("down") boolean add(     @PolyDet List<E> this, E e)
+  @PolyDet("up") int hashCode(    @PolyDet List<E> this)
 \end{Verbatim}
 
-See the annotated JDK for more examples of the \<@Ond2D> and \<@Ond2Nd>
-annotations.
+See the annotated JDK for more examples of the annotations.
 
 
 \subsection{Distinguishing bindings and uses\label{determinism-polymorphism-binding}}
 
 \begin{description}
-\item[\refqualclass{checker/determinism/qual}{UsePolyDet}]
+\item[\refqualclass{checker/determinism/qual}{PolyDet}\<("use")>]
   Has the same type as any \<@PolyDet> annotations in the method
   declaration, but does not affect their instantiation.
 \end{description}
@@ -199,16 +202,16 @@ all of the \<@PolyDet> annotations in a method declaration are given the same
 instantiation, which is one that works for all of the actual arguments
 (their least upper bound).
 
-The \<@UsePolyDet> annotation is given the same instantiation as all of the
+The \<@PolyDet("use")> annotation is given the same instantiation as all of the
 \<@PolyDet> annotations, but does not affect the instantiation.
 
-As an example of the need for the \<@UsePolyDet> annotation, consider the
+As an example of the need for the \<@PolyDet("use")> annotation, consider the
 \<List.set> method.  There should be two versions of it (\<@OrderNonDet
 int> is not a valid type, so no \<@OrderNonDet> instantiation is created):
 
 \begin{Verbatim}
 E set(@NonDet List<E> this, @NonDet int index, E element)
-E set(        @Det List<E> this,         @Det int index, E element)
+E set(   @Det List<E> this,    @Det int index, E element)
 \end{Verbatim}
 
 \noindent
@@ -232,7 +235,7 @@ argument (the \<List> argument).  To have this effect, the library method
 annotation is annotated as:
 
 \begin{Verbatim}
-E set(    @PolyDet List<E> this,  @UsePolyDet int index, E element)
+E set(@PolyDet List<E> this, @PolyDet("use") int index, E element)
 \end{Verbatim}
 
 
