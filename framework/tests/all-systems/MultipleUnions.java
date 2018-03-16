@@ -1,3 +1,6 @@
+//@SuppressWarnings("determinism")
+import org.checkerframework.checker.determinism.qual.*;
+
 public class MultipleUnions {
     public static boolean flag = false;
 
@@ -30,9 +33,12 @@ public class MultipleUnions {
 
     interface MyInterface<T> {}
 
+    @Det
     class MyExceptionA extends Throwable implements Cloneable, MyInterface<String> {}
 
+    @Det
     class MyExceptionB extends Throwable implements Cloneable, MyInterface<String> {}
 
+    @Det
     class SubMyExceptionA extends MyExceptionA {}
 }
