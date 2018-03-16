@@ -1,3 +1,5 @@
+import org.checkerframework.checker.determinism.qual.*;
+
 public class Unions {
     void foo1(MyInterface<Throwable> param) throws Throwable {
         try {
@@ -39,11 +41,15 @@ public class Unions {
 
     interface MyInterface<T> {}
 
+    @Det
     class MyExceptionA extends Throwable implements Cloneable, MyInterface<String> {}
 
+    @Det
     class MyExceptionB extends Throwable implements Cloneable, MyInterface<String> {}
 
+    @Det
     class SubMyExceptionA extends MyExceptionA {}
 
+    @Det
     class SubMyExceptionA2 extends MyExceptionA {}
 }
