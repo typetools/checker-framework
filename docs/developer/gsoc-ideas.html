@@ -1310,22 +1310,50 @@ of the Checker Framework.
 
 
 <h2 id="analysis_diffs">Tool for analysis diffs</h2>
+<!--
+  This project idea is duplicated at
+  ~mernst/public_html/uw-only/research/potential-research-projects.html .
+-->
 
 <p>
-   Many program analyses are too verbose to
-   expect a person to read their entire output.  However, after a program
-   change (whether a refactoring, a bug fix, an enhancement, or addition of
-   new code), the difference is likely to be small between the analysis run on the old code and
-   the analysis run on the new code.  Showing
-   this to a developer may be useful, and in particular can help the
-   programmer to better understand the changes he or she has made.
+   Many program analyses are too verbose for a person to read their entire
+   output.  However, after a program change, the analysis results may
+   change only slightly.  An "analysis diff" tool could show the
+   difference between the analysis run on the old code and the analysis run
+   on the new code.
 </p>
+<ul>
+  <li>
+    The analysis diffs may help the programmer to better understand the
+    changes.
+  </li>
+  <li>
+    Bug detection tools. such
+    as <a href="http://findbugs.sourceforge.net/">FindBugs</a> or
+    the <a href="https://checkerframework.org/">Checker Framework</a>, have
+    extremely verbose output when first run on a program.  Programmers
+    could examine and fix only the warnings about code they have changed
+    (and that they are currently thinking about).
+  </li>
+  <li>
+    Tools that always have large output, such as inference tools, could
+    become manageable to users if output is shown in small doses.
+  </li>
+  <li>
+    You can probably think of other uses.
+  </li>
+</ul>
 
 <p>
   The analysis diff tool would take as input two analysis results (the
   previous and the current one).  It would output only the new parts of its
-  second input.  (Or, it could output a complete diff between two
+  second input.  (It could optionally output a complete diff between two
   analysis results.)
+</p>
+
+<p>
+  One challenge is dealing with changed line numbers and other analysis
+  output differences between runs.
 </p>
 
 <p>
@@ -1333,20 +1361,9 @@ of the Checker Framework.
   is <a href="https://github.com/plume-lib/checklink/blob/master/checklink-persistent-errors">checklink-persistent-errors</a>;
   see the documentation at the top of the file.  That tool only works for
   one particular analysis, the W3C Link Checker.
-  Something of this sort also appears to be built into FindBugs.
-</p>
-
-<p>
-   Analysis diff would be useful in other contexts.  One example is bug bug
-   detection tools. such as
-   <a href="http://findbugs.sourceforge.net/">FindBugs</a> or the
-   <a href="https://checkerframework.org/">Checker Framework</a>, whose
-   output can be extremely verbose when first run on a program.  Another
-   example is inference tools; for example,
-   <a href="https://plse.cs.washington.edu/daikon/download/doc/daikon.html#DynComp-for-Java">DynComp</a>
-   is an inference tool whose output could become manageable to users if
-   they were shown it in small doses.  You can probably think of other
-   examples.
+  An analysis diff tool also appears to be built into FindBugs.
+  The goal of this project is to build a general-purpose tool that is easy
+  to apply to new analyses.
 </p>
 
 
@@ -1476,9 +1493,10 @@ method bodies.  I'm not sure whether such a system already exists or we
 need to design a new one.
 </p>
 
-<!-- For design and implementation ideas, see:
- *  $qn/notes-purity and --
- *~/prof/grants/2011-09-darpa-apac/phase3-extension-proposal
+<!--
+For design and implementation ideas, see:
+ * $qn/notes-purity
+ * ~/prof/grants/2011-09-darpa-apac/phase3-extension-proposal
 -->
 
 
