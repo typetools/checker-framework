@@ -2,7 +2,7 @@
 
 Version 2.5.0, April 2, 2018
 
-Declaration annotations that are alaises for type annotations are now treated
+Declaration annotations that are aliases for type annotations are now treated
 as if they apply to the top-level type.  See "Declaration annotations" section
 in the "Warnings" chapter in the manual for more details.
 
