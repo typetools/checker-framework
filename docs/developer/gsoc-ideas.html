@@ -1357,6 +1357,21 @@ of the Checker Framework.
 </p>
 
 <p>
+It would be nice to integrate the tool with git pre-commit hooks or GitHub
+pull requests, to enable either of the following functionality (for either
+commits to master or for pull requests):
+</p>
+<ul>
+  <li>
+    Permit only those commits/pulls that do not add any new analysis warnings.
+  </li>
+  <li>
+    Permit only thase commits/pulls that are "clean" &mdash; the analysis
+    issues no warnings for any changed line.
+  </li>
+</ul>
+
+<p>
   A concrete example of an analysis diff tool
   is <a href="https://github.com/plume-lib/checklink/blob/master/checklink-persistent-errors">checklink-persistent-errors</a>;
   see the documentation at the top of the file.  That tool only works for
