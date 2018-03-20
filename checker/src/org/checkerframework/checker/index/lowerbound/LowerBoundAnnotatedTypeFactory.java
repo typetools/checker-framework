@@ -65,8 +65,28 @@ import org.checkerframework.javacutil.TreeUtils;
  *  </pre>
  *
  * In general, check whether the constant Value Checker can determine the value of a variable; if it
- * can, use that; if not, use more specific rules based on expression type. These rules are
- * documented on the functions implementing them.
+ * can, use that; if not, use more specific rules based on expression type. This class implements
+ * the following type rules:
+ *
+ * <ul>
+ *   <li>1. If the value checker type for any expression is &ge; 1, refine that expression's type to
+ *       positive.
+ *   <li>2. If the value checker type for any expression is &ge; 0 and case 1 did not apply, then
+ *       refine that expression's type to non-negative.
+ *   <li>3. If the value checker type for any expression is &ge; -1 and cases 1 and 2 did not apply,
+ *       then refine that expression's type to GTEN1.
+ *   <li>4. A unary prefix decrement shifts the type "down" in the hierarchy (i.e. <code>--i</code>
+ *       when <code>i</code> is non-negative implies that <code>i</code> will be GTEN1 afterwards).
+ *       Should this be 3 rules?
+ *   <li>5. A unary prefix increment shifts the type "up" in the hierarchy (i.e. <code>++i</code>
+ *       when <code>i</code> is non-negative implies that <code>i</code> will be positive
+ *       afterwards). Should this be 3 rules?
+ *   <li>6. Unary negation on a NegativeIndexFor from the SearchIndex type system results in a
+ *       non-negative.
+ *   <li>7. The result of a call to Math.max is the GLB of its arguments.
+ *   <li>8. If an array has a MinLen type &ge; 1 and its length is accessed, the length expression
+ *       is positive.
+ * </ul>
  */
 public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -142,6 +162,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Handles cases 1, 2, and 3. */
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
         super.addComputedTypeAnnotations(element, type);
@@ -152,6 +173,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Handles cases 1, 2, and 3. */
     @Override
     public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
@@ -265,7 +287,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Call increment and decrement helper functions. */
+        /** Call increment and decrement helper functions. Handles cases 4, 5 and 6. */
         @Override
         public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
             AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
@@ -310,7 +332,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Special handling for Math.max. The return is the GLB of the arguments. */
+        /** Special handling for Math.max. The return is the GLB of the arguments. Case 7. */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             if (imf.isMathMax(tree)) {
@@ -327,7 +349,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * For dealing with array length expressions. Looks for array length accesses specifically,
          * then dispatches to the MinLen checker to determine the length of the relevant array. If
-         * it's found, use it to give the expression a type.
+         * it's found, use it to give the expression a type. Case 8.
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
