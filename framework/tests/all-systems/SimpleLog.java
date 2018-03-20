@@ -1,4 +1,3 @@
-@SuppressWarnings("determinism")
 public class SimpleLog {
     public SimpleLog() {
         try {

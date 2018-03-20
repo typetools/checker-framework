@@ -5,7 +5,7 @@
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
 # CHECKER_DIRS = determinism index lock nullness optional
-CHECKER_DIRS =  determinism
+CHECKER_DIRS =  determinism index lock nullness optional
 
 all: clean classes
 # Extracts unannotated .class files from $(CTSYM)

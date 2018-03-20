@@ -10,6 +10,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.*;
 import org.checkerframework.framework.source.Result;
@@ -25,6 +26,10 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super(checker);
     }
 
+    private static final @CompilerMessageKey String INVALID_ANNOTATION = "invalid.annotation";
+    private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
+            "invalid.parameter.type";
+
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
         Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
@@ -39,8 +44,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
         if (useType.hasAnnotation(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
             if (!(isCollection(javaType.asElement().asType()))) {
-                checker.report(
-                        Result.failure("OrderNonDet - can only be used with collections"), tree);
+                checker.report(Result.failure(INVALID_ANNOTATION), tree);
                 return false;
             }
         }
@@ -56,10 +60,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 if (isAnnoSubType(baseAnnotation, paramAnnotation))
                     checker.report(
                             Result.failure(
-                                    " Cannot have a "
-                                            + baseAnnotation
-                                            + " collection of "
-                                            + paramAnnotation),
+                                    INVALID_ANNOTATION_SUBTYPE, paramAnnotation, baseAnnotation),
                             tree);
                 return false;
             }
@@ -136,18 +137,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         // TODO Auto-generated method stub
         Set<AnnotationMirror> annos = type.getAnnotations();
         if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class)))
-            checker.report(Result.failure("OrderNonDet - can only be used with collections"), tree);
+            checker.report(Result.failure(INVALID_ANNOTATION), tree);
         return super.isValidUse(type, tree);
-    }
-
-    @Override
-    protected void commonAssignmentCheck(
-            AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType,
-            Tree valueTree,
-            String errorKey) {
-        //System.out.println("Assignment: " + varType + " ==> " + valueType + " === " + valueTree);
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     @Override

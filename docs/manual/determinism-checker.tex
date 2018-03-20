@@ -55,6 +55,10 @@ The Determinism type system uses the following type qualifiers (see Figure~\ref{
   a collection will have the same elements in every execution, but in a
   possibly different order.  \<@OrderNonDet> may only be written on
   collections.
+\item[\refclass{checker/determinism/qual}{SortedDet}] May only be written on
+collections. Indicates that \textit{if sorted}, iteration returns the same values in the
+same order across executions. In other words, the collection is guaranteed to
+contain the same elements but in arbitrary order in different executions.
 \item[\refqualclass{checker/determinism/qual}{Det}] indicates that
   the expression evaluates to the same value (up to equality) on all
   executions; for a collection, iteration yields the values in the same
