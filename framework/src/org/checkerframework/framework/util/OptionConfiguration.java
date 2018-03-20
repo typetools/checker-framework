@@ -49,7 +49,5 @@ public interface OptionConfiguration {
      */
     boolean getBooleanOption(String name, boolean defaultValue);
 
-    boolean getBooleanOption(String name);
-
     Set<String> getSupportedOptions();
 }
