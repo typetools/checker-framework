@@ -15,8 +15,8 @@ import org.checkerframework.framework.flow.CFValue;
  * Implements 2 refinement rules:
  *
  * <ul>
- *   <li>1. if left &gt; right, right has type <code>@LessThan("left")</code>
- *   <li>2. if left &ge; right, right has type <code>@LessThan("left + 1")</code>
+ *   <li>1. if left &gt; right, right has type {@code @LessThan("left")}
+ *   <li>2. if left &ge; right, right has type {@code @LessThan("left + 1")}
  * </ul>
  *
  * These are implemented generally, so they also apply to e.g. &lt; and &le; comparisons.

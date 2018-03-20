@@ -75,12 +75,12 @@ import org.checkerframework.javacutil.TreeUtils;
  *       refine that expression's type to non-negative.
  *   <li>3. If the value checker type for any expression is &ge; -1 and cases 1 and 2 did not apply,
  *       then refine that expression's type to GTEN1.
- *   <li>4. A unary prefix decrement shifts the type "down" in the hierarchy (i.e. <code>--i</code>
- *       when <code>i</code> is non-negative implies that <code>i</code> will be GTEN1 afterwards).
- *       Should this be 3 rules?
- *   <li>5. A unary prefix increment shifts the type "up" in the hierarchy (i.e. <code>++i</code>
- *       when <code>i</code> is non-negative implies that <code>i</code> will be positive
- *       afterwards). Should this be 3 rules?
+ *   <li>4. A unary prefix decrement shifts the type "down" in the hierarchy (i.e. {@code --i} when
+ *       {@code i} is non-negative implies that {@code i} will be GTEN1 afterwards). Should this be
+ *       3 rules?
+ *   <li>5. A unary prefix increment shifts the type "up" in the hierarchy (i.e. {@code ++i} when
+ *       {@code i} is non-negative implies that {@code i} will be positive afterwards). Should this
+ *       be 3 rules?
  *   <li>6. Unary negation on a NegativeIndexFor from the SearchIndex type system results in a
  *       non-negative.
  *   <li>7. The result of a call to Math.max is the GLB of its arguments.

@@ -118,8 +118,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *   <li>5. The rule described above for ==
  *   <li>6. The rule described above for !=
  *   <li>7. A special refinement for != when the value being compared to is a compile-time constant
- *       with a value exactly equal to -1 or 0 (i.e. <code>x != -1</code> and x is GTEN1 implies x
- *       is non-negative). Maybe two rules?
+ *       with a value exactly equal to -1 or 0 (i.e. {@code x != -1} and x is GTEN1 implies x is
+ *       non-negative). Maybe two rules?
  *   <li>8. When a compile-time constant -2 is added to a positive, the result is GTEN1
  *   <li>9. When a compile-time constant 2 is added to a GTEN1, the result is positive
  *   <li>10. When a positive is added to a positive, the result is positive

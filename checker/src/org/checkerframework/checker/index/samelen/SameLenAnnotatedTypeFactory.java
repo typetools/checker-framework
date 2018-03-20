@@ -49,17 +49,16 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * <p>This annotated type factory refines types in X cases:
  *
  * <ul>
- *   <li>1. <code>@PolyAll</code> and <code>@PolyLength</code> are refined to <code>@PolySameLen
- *       </code>.
- *   <li>2. If a variable is declared with a user-written <code>@SameLen</code> annotation, then the
- *       type of the new variable is the union of the user-written arrays in the annotation and the
+ *   <li>1. {@code @PolyAll} and {@code @PolyLength} are refined to {@code @PolySameLen }.
+ *   <li>2. If a variable is declared with a user-written {@code @SameLen} annotation, then the type
+ *       of the new variable is the union of the user-written arrays in the annotation and the
  *       arrays listed in the SameLen types of each of those arrays.
  *   <li>3. The greatest lower bound of two SameLen annotations is the union of the two sets of
  *       arrays.
  *   <li>4. The least upper bound of two SameLen annotations is the intersection of the two sets of
  *       arrays.
- *   <li>5. The type of an expression of the form <code>new T[a.length]</code> is the union of the
- *       SameLen type of <code>a</code> and the arrays listed in <code>a</code>'s SameLen type.
+ *   <li>5. The type of an expression of the form {@code new T[a.length]} is the union of the
+ *       SameLen type of {@code a} and the arrays listed in {@code a}'s SameLen type.
  * </ul>
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {

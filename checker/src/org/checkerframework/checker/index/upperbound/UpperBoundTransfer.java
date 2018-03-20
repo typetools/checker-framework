@@ -45,12 +45,12 @@ import org.checkerframework.framework.type.QualifierHierarchy;
  *
  * <ul>
  *   <li>1. Refine the type of expressions used as an array dimension to be less than length of the
- *       array to which the new array is assigned. For example, in <code>
- *       int[] array = new int[expr];</code>, the type of expr is <code>@LTEqLength("array")</code>.
- *   <li>2. If <code>other * node</code> has type <code>typeOfMultiplication</code>, then if {@code
- *       other} is positive, then {@code node} is {@code typeOfMultiplication}.
- *   <li>3. If <code>other * node</code> has type <code>typeOfMultiplication</code>, if {@code
- *       other} is greater than 1, then {@code node} is {@code typeOfMultiplication} plus 1.
+ *       array to which the new array is assigned. For example, in {@code int[] array = new
+ *       int[expr];}, the type of expr is {@code @LTEqLength("array")}.
+ *   <li>2. If {@code other * node} has type {@code typeOfMultiplication}, then if {@code other} is
+ *       positive, then {@code node} is {@code typeOfMultiplication}.
+ *   <li>3. If {@code other * node} has type {@code typeOfMultiplication}, if {@code other} is
+ *       greater than 1, then {@code node} is {@code typeOfMultiplication} plus 1.
  *   <li>4. Given a subtraction node, {@code node}, that is known to have type {@code
  *       typeOfSubtraction}. An offset can be applied to the left node (i.e. the left node has the
  *       same type, but with an offset based on the right node).
@@ -74,27 +74,27 @@ import org.checkerframework.framework.type.QualifierHierarchy;
  *       sequence length (minus the offset), then refine the other node's type to less than the
  *       sequence length (minus the offset).
  *   <li>13. If some Node a is known to be less than the length of some array, x, then, the type of
- *       a + b, is <code>@LTLengthOf(value="x", offset="-b")</code>. If b is known to be less than
- *       the length of some other array, y, then the type of a + b is <code>
- *       @LTLengthOf(value={"x", "y"}, offset={"-b", "-a"})</code>.
+ *       a + b, is {@code @LTLengthOf(value="x", offset="-b")}. If b is known to be less than the
+ *       length of some other array, y, then the type of a + b is {@code @LTLengthOf(value={"x",
+ *       "y"}, offset={"-b", "-a"})}.
  *   <li>14. If a is known to be less than the length of x when some offset, o, is added to a (the
- *       type of a is <code>@LTLengthOf(value="x", offset="o"))</code>, then the type of a + b is
- *       <code>@LTLengthOf(value="x",offset="o - b")</code>. (Note, if "o - b" can be computed, then
- *       it is and the result is used in the annotation.)
- *   <li>15. If expression i has type <code>@LTLengthOf(value = "f2", offset = "f1.length")</code>
- *       int and expression j is less than or equal to the length of f1, then the type of i + j is
- *       <code>@LTLengthOf("f2")</code>.
+ *       type of a is {@code @LTLengthOf(value="x", offset="o"))}, then the type of a + b is
+ *       {@code @LTLengthOf(value="x",offset="o - b")}. (Note, if "o - b" can be computed, then it
+ *       is and the result is used in the annotation.)
+ *   <li>15. If expression i has type {@code @LTLengthOf(value = "f2", offset = "f1.length")} int
+ *       and expression j is less than or equal to the length of f1, then the type of i + j is
+ *       {@code @LTLengthOf("f2")}.
  *   <li>16. If some Node a is known to be less than the length of some sequence x, then the type of
- *       a - b is <code>@LTLengthOf(value="x", offset="b")</code>.
+ *       a - b is {@code @LTLengthOf(value="x", offset="b")}.
  *   <li>17. If some Node a is known to be less than the length of some sequence x, and if b is
  *       non-negative or positive, then a - b should keep the types of a.
- *   <li>18. The type of a sequence length access (i.e. array.length) is <code>
- *       @LTLength(value={"array"...}, offset="-1")</code> where "array"... is the set of all
+ *   <li>18. The type of a sequence length access (i.e. array.length) is
+ *       {@code @LTLength(value={"array"...}, offset="-1")} where "array"... is the set of all
  *       sequences that are the same length (via the SameLen checker) as "array"
- *   <li>19. If n is an array length field access, then the type of a.length is the glb of <code>
- *       @LTEqLengthOf("a")</code> and the value of a.length in the store.
+ *   <li>19. If n is an array length field access, then the type of a.length is the glb of
+ *       {@code @LTEqLengthOf("a")} and the value of a.length in the store.
  *   <li>20. If n is a String.length() method invocation, then the type of s.length() is the glb of
- *       <code>@LTEqLengthOf("s")</code> and the value of s.length() in the store.
+ *       {@code @LTEqLengthOf("s")} and the value of s.length() in the store.
  * </ul>
  */
 public class UpperBoundTransfer extends IndexAbstractTransfer {
