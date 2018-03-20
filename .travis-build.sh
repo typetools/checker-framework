@@ -95,7 +95,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && gradle dist && ant -f tests.xml run-tests)
+  (cd ../checker-framework-inference && ./gradlew dist && ./gradlew test)
 
   # plume-lib-typecheck: 30 minutes
   set +e
