@@ -1729,8 +1729,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
+     * Check whether the given option is provided.
+     *
+     * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
+     * returns true: this happens e.g. for {@code -Amyopt}
+     *
+     * @param name the name of the option to check
+     * @return true if the option name was provided, false otherwise
+     */
+    @Override
+    public final boolean hasOption(String name) {
+        return getOptions().containsKey(name);
+    }
+
+    /**
      * Determines the value of the option with the given name.
      *
+     * @param name the name of the option to check
      * @see SourceChecker#getLintOption(String,boolean)
      */
     @Override
@@ -1742,11 +1757,38 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Determines the boolean value of the option with the given name. Returns false if the option
      * is not set.
      *
+     * @param name the name of the option to check
      * @see SourceChecker#getLintOption(String,boolean)
      */
     @Override
     public final boolean getBooleanOption(String name) {
-        return Boolean.valueOf(getOption(name, "true"));
+        return getBooleanOption(name, false);
+    }
+
+    /**
+     * Determines the boolean value of the option with the given name. Returns the given default
+     * value if the option is not set.
+     *
+     * @param name the name of the option to check
+     * @param defaultValue the default value to use if the option is not set
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    @Override
+    public final boolean getBooleanOption(String name, boolean defaultValue) {
+        String value = getOption(name);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.equals("true")) {
+            return true;
+        }
+        if (value.equals("false")) {
+            return false;
+        }
+        this.userErrorAbort(
+                String.format(
+                        "Value of %s option should be a boolean, but is \"%s\".", name, value));
+        throw new Error("Dead code");
     }
 
     /**
@@ -1763,29 +1805,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Check whether the given option is provided.
-     *
-     * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
-     * returns true: this happens e.g. for {@code -Amyopt}
-     *
-     * @param name the option name to check
-     * @return true if the option name was provided, false otherwise
-     */
-    // TODO I would like to rename getLintOption to hasLintOption
-    @Override
-    public final boolean hasOption(String name) {
-        return getOptions().containsKey(name);
-    }
-
-    /**
      * Determines the value of the lint option with the given name and returns the default value if
      * nothing is specified.
      *
+     * @param name the name of the option to check
+     * @param defaultValue the default value to use if the option is not set
      * @see SourceChecker#getOption(String)
      * @see SourceChecker#getLintOption(String)
      */
     @Override
-    public final String getOption(String name, String def) {
+    public final String getOption(String name, String defaultValue) {
 
         if (!this.getSupportedOptions().contains(name)) {
             ErrorReporter.errorAbort("Illegal option: " + name);
@@ -1796,13 +1825,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (activeOptions.isEmpty()) {
-            return def;
+            return defaultValue;
         }
 
         if (activeOptions.containsKey(name)) {
             return activeOptions.get(name);
         } else {
-            return def;
+            return defaultValue;
         }
     }
 
