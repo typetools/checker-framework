@@ -183,7 +183,6 @@ public class RangeTest {
 
         public ValuesInRangeIterator(Range range) {
             this.range = range;
-            Range.IGNORE_OVERFLOW = false;
         }
 
         @Override
