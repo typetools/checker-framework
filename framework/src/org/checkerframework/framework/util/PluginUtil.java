@@ -194,6 +194,10 @@ public class PluginUtil {
         return out;
     }
 
+    /**
+     * If prop is in props, return a 1-element list containing tag. Otherwise, return a 0-element
+     * list.
+     */
     public static List<String> getBooleanProp(
             final Map<CheckerProp, Object> props, final CheckerProp prop, final String tag) {
         Boolean aSkip = (Boolean) props.get(prop);
@@ -282,6 +286,35 @@ public class PluginUtil {
         for (CheckerProp cp : CheckerProp.values()) {
             cmd.addAll(cp.getCmdLine(props));
         }
+    }
+
+    /**
+     * Return true if the system property is set to "true". Return false if the system property is
+     * not set or is set to "false". Otherwise, errs.
+     */
+    public static boolean getBooleanSystemProperty(String key) {
+        return Boolean.valueOf(System.getProperty(key, "false"));
+    }
+
+    /**
+     * Return its boolean value if the system property is set. Return defaultValue if the system
+     * property is not set. Errs if the system property is set to a non-boolean value.
+     */
+    public static boolean getBooleanSystemProperty(String key, boolean defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.equals("true")) {
+            return true;
+        }
+        if (value.equals("false")) {
+            return false;
+        }
+        throw new Error(
+                String.format(
+                        "Value for system property %s should be boolean, but is \"%s\".",
+                        key, value));
     }
 
     public static File writeTmpSrcFofn(
