@@ -8,7 +8,7 @@ import javax.annotation.processing.AbstractProcessor;
  * The same as {@link org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest} except
  * the annotated jdk is not required.
  */
-public class FrameworkPerDirectoryTest extends CheckerFrameworkPerDirectoryTest {
+public abstract class FrameworkPerDirectoryTest extends CheckerFrameworkPerDirectoryTest {
 
     /**
      * Creates a new framework test.
