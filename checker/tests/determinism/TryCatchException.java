@@ -5,10 +5,19 @@ public class TryCatchException {
         try {
 
         } catch (IndexOutOfBoundsException | NullPointerException ex) {
-            // :: error: (throw.type.invalid)
             throw ex;
         } catch (IllegalArgumentException e) {
             throw e;
+        }
+    }
+
+    void bar() {
+        try {
+            throw new Throwable();
+        } catch (RuntimeException ex) {
+            System.out.println(ex);
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 }

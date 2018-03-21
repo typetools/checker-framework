@@ -1,4 +1,3 @@
-@SuppressWarnings("determinism")
 public class MultipleUnions {
     public static boolean flag = false;
 

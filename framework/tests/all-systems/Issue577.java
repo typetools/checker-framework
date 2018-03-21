@@ -34,7 +34,6 @@ class IntersectionAsMemberOf {
     }
 }
 
-@SuppressWarnings("determinism")
 class UnionAsMemberOf {
     interface MyInterface<T> {
         T getT();

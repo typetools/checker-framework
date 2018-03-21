@@ -1,4 +1,3 @@
-@SuppressWarnings("determinism")
 public class Unions {
     void foo1(MyInterface<Throwable> param) throws Throwable {
         try {

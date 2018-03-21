@@ -1,8 +1,6 @@
 package determinism;
 
 //Test case for issue #775
-//https://github.com/typetools/checker-framework/issues/775
-import org.checkerframework.checker.determinism.qual.*;
 
 public class AllTestsUnionCrash {
     void foo(MyInterface<Throwable> param) throws Throwable {
@@ -24,12 +22,9 @@ public class AllTestsUnionCrash {
 
     interface MyInterface<T> {}
 
-    @Det
     class MyExceptionA extends Throwable implements Cloneable, MyInterface<String> {}
 
-    @Det
     class MyExceptionB extends Throwable implements Cloneable, MyInterface<String> {}
 
-    @Det
     class SubMyExceptionA extends MyExceptionA {}
 }

@@ -1,7 +1,5 @@
 package determinism;
 
-import org.checkerframework.checker.determinism.qual.Det;
-
 public class AllTestsMultipleUnions {
     public static boolean flag = false;
 
@@ -34,12 +32,9 @@ public class AllTestsMultipleUnions {
 
     interface MyInterface<T> {}
 
-    @Det
     class MyExceptionA extends Throwable implements Cloneable, MyInterface<String> {}
 
-    @Det
     class MyExceptionB extends Throwable implements Cloneable, MyInterface<String> {}
 
-    @Det
     class SubMyExceptionA extends MyExceptionA {}
 }

@@ -1,7 +1,5 @@
 package determinism;
 
-import org.checkerframework.checker.determinism.qual.Det;
-
 public class AllTestsUnions {
     void foo1(MyInterface<Throwable> param) throws Throwable {
         try {
@@ -43,15 +41,11 @@ public class AllTestsUnions {
 
     interface MyInterface<T> {}
 
-    @Det
     class MyExceptionA extends Throwable implements Cloneable, MyInterface<String> {}
 
-    @Det
     class MyExceptionB extends Throwable implements Cloneable, MyInterface<String> {}
 
-    @Det
     class SubMyExceptionA extends MyExceptionA {}
 
-    @Det
     class SubMyExceptionA2 extends MyExceptionA {}
 }
