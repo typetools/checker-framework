@@ -53,6 +53,7 @@
     </ul></li>
   <li><a href="#other">Other enhancements and tools</a>
     <ul>
+      <li><a href="#annotated-jdk">JDK annoattions</a></li>
       <li><a href="#flow-expression-parser">Flow expression parser</a></li>
       <li><a href="#asm">Upgrade to a newer version of ASM</a></li>
       <li><a href="#analysis_diffs">Tool for analysis diffs</a></li>
@@ -1273,6 +1274,27 @@ focus on what helps a software developer most!
 
 
 <h1 id="other">Other enhancements and tools</h1>
+
+
+<h2 id="annotated-jdk">JDK annoattions</h2>
+
+<p>
+The JDK is the most important library to annotate, and the Checker
+Framework ships with partial annotations for it.
+These are scattered in multiple locations:  in multiple subdirectories of
+<a href="https://github.com/typetools/checker-framework/tree/master/checker/jdk"><code>checker/jdk/</code></a>,
+and in files <code>jdk.astub</code> under
+<a href="https://github.com/typetools/checker-framework/tree/master/checker/src/org/checkerframework/checker"><code>checker/src/org/checkerframework/checker/</code></a>
+</p>
+
+<p>
+The goal of this project is to put the annotations in a single place:  a
+new clone of the JDK repository.  The effort can be partially annotated
+&mdash; say, by using
+the <a href="https://checkerframework.org/annotation-file-utilities/">Annotation
+File Utilities</a> to move annotations around, or enhancing the Annotation
+File Utilities if they are not up to the task) and partially done manually.
+</p>
 
 
 <h2 id="flow-expression-parser">Flow expression parser</h2>
