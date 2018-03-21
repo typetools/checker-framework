@@ -38,6 +38,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @SubtypeOf(MonotonicNonNull.class)
 @ImplicitFor(
+    literals = {LiteralKind.STRING},
     types = {
         TypeKind.PACKAGE,
         TypeKind.INT,
@@ -48,9 +49,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
         TypeKind.LONG,
         TypeKind.SHORT,
         TypeKind.BYTE
-    },
-    // All literals except NULL_LITERAL:
-    literals = {LiteralKind.STRING}
+    }
 )
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER})

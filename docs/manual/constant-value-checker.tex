@@ -134,8 +134,10 @@ public void foo(boolean b) {
 If your code is already annotated with a different constant value or range
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
-exactly as if you had written the corresponding annotation from the
+as if you had written the corresponding annotation from the
 Constant Value Checker, as described in Figure~\ref{fig-constant-value-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
 
 
 % These lists should be kept in sync with ValueAnnotatedTypeFactory.java .

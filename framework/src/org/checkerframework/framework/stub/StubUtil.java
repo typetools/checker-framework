@@ -332,7 +332,7 @@ public class StubUtil {
     }
 
     public static List<StubResource> allStubFiles(String stub) {
-        List<StubResource> resources = new ArrayList<StubResource>();
+        List<StubResource> resources = new ArrayList<>();
         File stubFile = new File(stub);
         if (stubFile.exists()) {
             allStubFiles(stubFile, resources);

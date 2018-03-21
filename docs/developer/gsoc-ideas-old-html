@@ -1,0 +1,81 @@
+<h2 id="Avoiding_exponential_blowup_when_processing_DAGs">Avoiding exponential blowup when processing DAGs</h2>
+
+<!-- John Field of Google is interested in this. -->
+
+<p>
+Google's <a href="https://bazel.build/">Bazel</a> open-source project is a
+publicly-released version of their build system, Blaze.  Blaze builds every
+line of source code that is written by any Google programmer &mdash; all of
+that source code appears in a single repository!  Therefore, Bazel/Blaze needs to
+be fast.  Bazel represents all of the source code and its dependencies as a
+large DAG (a
+<a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">directed
+acyclic graph</a>).  It needs to manipulate these DAGs efficiently.
+</p>
+
+<p>
+One of the biggest problems that the Bazel developers face is exponential
+blowup of DAG sizes and therefore of run time.  Periodically, one of the
+Bazel developers makes such a mistake, and Bazel becomes unusable until
+they can diagnose and fix the problem.
+</p>
+
+<p>
+Here are two different ways to view the problem.
+</p>
+
+<ol>
+  <li>
+    In a DAG, multiple nodes may have the same child.  Traversing the DAG
+    naively would visit the child multiple times &mdash; in the worst case,
+    exponentially many times.  It is necessary to avoid doing so.
+  </li>
+  <li>
+    Bazel contains a function that takes a DAG as input and generates a DAG
+    as output (the output is an object graph).  The Bazel developers want to
+    ensure that the size of the output DAG is O(|input DAG|). The input DAG is
+    processed bottom-up (it ensures that each input node is visited once) and
+    Bazel stores the results of intermediate computations that construct the
+    output DAG with nodes of the input DAG. The key thing the Bazel developers
+    want to avoid is copying intermediate subgraphs that have unbounded size.
+  </li>
+</ol>
+
+<p>
+More concretely, there is only one Java type for all DAGs, and there is a
+method <code>flatten()</code>.  It's a mistake to call
+<code>flatten()</code> on certain DAGs, because doing so may cause
+exponential blowup.
+</p>
+
+<!--
+</p>
+
+<p>
+A pluggable type system can subdivide the Java type, using this type hierarchy:
+</p>
+
+<p>
+  @PossbilyPropagatable
+          |
+  @NotPropagatable
+</p>
+
+<p>
+A call to flatten() is permitted only if the receiver is known to be
+@NotPropagatable.
+</p>
+
+<p>
+This should be very easy to code up and evaluate, once we have more precise
+definitions.
+-->
+
+<p>
+The goal of this project would be to better understand the problem with
+Bazel, to formalize it, and to create a program analysis that solves
+the problem.  You would evaluate your work by running it on the Bazel
+codebase to discover latent problems, or by providing it to the Bazel
+developers to run each time they propose a code change.  The Bazel
+team is interested in collaborating by evaluating a tool.
+</p>

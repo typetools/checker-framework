@@ -90,8 +90,6 @@ public class NullnessVisitor
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionToArray =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
-
-        checkForAnnotatedJdk();
     }
 
     @Override

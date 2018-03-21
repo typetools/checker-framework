@@ -34,7 +34,7 @@ public class UnitsChecker extends BaseTypeChecker {
      */
     @Override
     public Collection<String> getSuppressWarningsKeys() {
-        Set<String> swKeys = new HashSet<String>(super.getSuppressWarningsKeys());
+        Set<String> swKeys = new HashSet<>(super.getSuppressWarningsKeys());
         Set<Class<? extends Annotation>> annos =
                 ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
 

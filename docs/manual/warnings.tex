@@ -249,9 +249,17 @@ Whenever you write a \<@SuppressWarnings> annotation, you should also
 write, typically on the same line, a code comment
 explaining why the code is actually correct.  In some cases you might also
 justify why the code cannot be rewritten in a simpler way that would be
-amenable to type-checking.
+amenable to type-checking.  Also make it clear what error is being
+suppressed; this is particularly important when the \<@SuppressWarnings> is
+on a method declaration and the suppressed warning might be anywhere in the
+method body.
 
-Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib}:
+This documentation will help you and others to understand the reason for
+the \<@SuppressWarnings> annotation.  It will also help you audit your code
+to verify all the warning suppressions.  (The code is correct only if the
+checker issues no warnings \emph{and} each \<@SuppressWarnings> is correct.)
+
+Here are some terse examples from \href{https://mernst.github.io/plume-lib/}{plume-lib}:
 
 \begin{Verbatim}
 @SuppressWarnings("purity") // side effect to local state of type BitSet
@@ -262,9 +270,6 @@ Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib
 @SuppressWarnings("nullness") // oi.factory is a static method, so null first argument is OK
 \end{Verbatim}
 
-This documentation will help you and others to understand the reason for
-the \<@SuppressWarnings> annotation.  It will also help if you decide to
-audit your code to verify all the warning suppressions.
 
 
 \section{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
@@ -468,7 +473,8 @@ To suppress all errors and warnings related to multiple classes, you can use
 the regular expression alternative operator ``\code{|}'', as in
 ``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
 all warnings related to uses of classes belong to the \code{java.lang} or
-\code{java.util} packages.
+\code{java.util} packages.  (Depending on your shell or other tool, you
+might need to change or remove the quoting.)
 
 You can supply both \code{-AskipUses} and \code{-AonlyUses}, in which case
 the \code{-AskipUses} argument takes precedence, and \code{-AonlyUses} does
@@ -495,7 +501,7 @@ You can suppress all errors and warnings in the \emph{definition} of a given
 class, or suppress all errors and warnings except those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} or \code{-AonlyUses} command-line option,
-see~\ref{askipuses}).
+see~\ref{askipuses}.)
 
 Set the \code{-AskipDefs} command-line option to a
 regular expression that matches class names (not file names) in whose definition warnings and errors
@@ -684,6 +690,11 @@ Chapter~\ref{suppressing-warnings} discusses suppressing warnings.
 
 \section{Backward compatibility with earlier versions of Java\label{backward-compatibility}}
 
+Java 5/6/7 does not support type annotations.
+
+Sometimes, your code uses declaration annotations, but you wish to use them
+in pluggable typechecking; see Section~\ref{declaration-annotations-moved}.
+
 Sometimes, your code needs to be \emph{compiled} by people who are using a
 Java 5/6/7 compiler, which does not support type annotations.
 You can handle this situation by writing annotations in comments (Sections~\ref{annotations-in-comments}--\ref{uncommenting-annotations}).
@@ -695,6 +706,38 @@ disadvantage is that this makes it more difficult for clients of your
 library to use pluggable type-checking to verify their own code against the
 \<.class> or \<.jar> files that you supply;
 Section~\ref{declaration-annotations-for-java7} gives a partial solution.
+
+
+\subsection{Declaration annotations\label{declaration-annotations-moved}}
+
+When a declaration annotation is an alias for a type annotation, then the
+Checker Framework may move the annotation before replacing it by the
+canonical version. (If the declaration annotation is in an org.checkerframework
+package, it is not moved.)
+
+For example,
+
+\begin{Verbatim}
+  import android.support.annotation.NonNull;
+  ...
+  @NonNull Object [] returnsArray();
+\end{Verbatim}
+
+\noindent
+is treated as if the programmer had written
+
+\begin{Verbatim}
+  import org.checkerframework.checker.nullness.qual.NonNull;
+  ...
+  Object @NonNull [] returnsArray();
+\end{Verbatim}
+
+\noindent
+because Android's \<@NonNull> annotation is a declaration annotation, which
+is understood to apply to the top-level return type of the annotated method.
+
+When possible, you should use type annotations rather than declaration
+annotations.
 
 
 \subsection{Annotations in comments\label{annotations-in-comments}}
