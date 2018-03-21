@@ -57,6 +57,7 @@
        <echo level="warning">
 ****************************************************************************************************
 *********** Ant build files are deprecated and will be removed soon. Use Gradle instead. ***********
+*********** See docs/developer/developer-manual.html for an overview of Gradle tasks.    ***********
 ****************************************************************************************************
         </echo>
         <java fork="true"
