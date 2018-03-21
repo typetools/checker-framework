@@ -712,7 +712,8 @@ Section~\ref{declaration-annotations-for-java7} gives a partial solution.
 
 When a declaration annotation is an alias for a type annotation, then the
 Checker Framework may move the annotation before replacing it by the
-canonical version.
+canonical version. (If the declaration annotation is in an org.checkerframework
+package, it is not moved.)
 
 For example,
 
