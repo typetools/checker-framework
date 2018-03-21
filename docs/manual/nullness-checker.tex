@@ -843,8 +843,10 @@ code.
 If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
-exactly as if you had written the corresponding annotation from the
+as if you had written the corresponding annotation from the
 Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
 
 
 % These lists should be kept in sync with
@@ -950,14 +952,6 @@ example, if you use both \<android.annotation.NonNull> and
 \<lombok.NonNull> in your source code, then you must write at least one of
 them in fully-qualified form, as \<@android.annotation.NonNull> rather than
 as \<@NonNull>.
-
-Note that some older tools interpret array and varargs declarations
-inconsistently with the Java specification.  For example, they might
-interpret \<@NonNull Object []> as ``non-null array of objects'', rather
-than as ``array of non-null objects'' which is the correct Java
-interpretation.  Such an interpretation is unfortunate and confusing.  See
-Section~\ref{faq-array-syntax-meaning} for some more details about this
-issue.
 
 
 \subsection{Which tool is right for you?\label{choosing-nullness-tool}}

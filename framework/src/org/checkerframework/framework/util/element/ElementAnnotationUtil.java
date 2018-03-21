@@ -74,12 +74,12 @@ public class ElementAnnotationUtil {
     }
 
     /**
-     * For backwards-compatibility: treat declaration annotations as type annotations, if we now
-     * understand them as type annotations. In particular, this allows the transition from Java 5
-     * declaration annotations to Java 8 type annotations.
+     * When a declaration annotation is an alias for a type annotation, then the Checker Framework
+     * may move the annotation before replacing it by the canonical version.
      *
-     * <p>There are some caveats to this: the interpretation for declaration and type annotations
-     * differs, in particular for arrays and inner types. See the manual for a discussion.
+     * <p>If the annotation is one of the Checker Framework compatibility annotations, for example
+     * {@link org.checkerframework.checker.nullness.compatqual.NonNullDecl}, then it is interpreted
+     * as a type annotation in the same location.
      *
      * @param type the type to annotate
      * @param annotations the annotations to add
@@ -87,7 +87,17 @@ public class ElementAnnotationUtil {
     static void addAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
-        innerType.addAnnotations(annotations);
+        if (innerType != type) {
+            for (AnnotationMirror annotation : annotations) {
+                if (AnnotationUtils.annotationName(annotation).startsWith("org.checkerframework")) {
+                    innerType.addAnnotation(annotation);
+                } else {
+                    type.addAnnotation(annotation);
+                }
+            }
+        } else {
+            type.addAnnotations(annotations);
+        }
     }
 
     /**

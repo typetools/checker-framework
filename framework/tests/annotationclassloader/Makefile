@@ -38,6 +38,7 @@ demo1:
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -AprintErrorStack \
+	  -Anocheckjdk \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java
 
@@ -49,6 +50,7 @@ demo2:
 	  -classpath $(PROJECTDIR):${CHECKERQUALJAR} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
+	  -Anocheckjdk \
 	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java
@@ -65,6 +67,7 @@ load-from-dir-test:
 	  -Anomsgtext \
 	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
+	  -Anocheckjdk \
 	  LoaderTest.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt -I 'Note'
 	rm -f Out.txt
@@ -76,6 +79,7 @@ load-from-jar-test:
 	  -classpath $(PROJECTDIR):${CHECKERQUALJAR} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
+	  -Anocheckjdk \
 	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java > Out.txt 2>&1 || true

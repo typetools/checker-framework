@@ -2,7 +2,7 @@ package tests;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.util.FlowTestChecker;
 
@@ -11,7 +11,7 @@ import testlib.util.FlowTestChecker;
  * FlowTest} and have been written when the org.checkerframework.dataflow analysis has been
  * completely rewritten.
  */
-public class Flow2Test extends CheckerFrameworkPerDirectoryTest {
+public class Flow2Test extends FrameworkPerDirectoryTest {
 
     public Flow2Test(List<File> testFiles) {
         super(testFiles, FlowTestChecker.class, "flow", "-Anomsgtext", "-AcheckPurityAnnotations");

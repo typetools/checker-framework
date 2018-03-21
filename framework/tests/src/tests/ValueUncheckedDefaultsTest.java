@@ -3,11 +3,11 @@ package tests;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** Tests unchecked code defaults for the constant value propagation type system. */
-public class ValueUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest {
+public class ValueUncheckedDefaultsTest extends FrameworkPerDirectoryTest {
 
     public ValueUncheckedDefaultsTest(List<File> testFiles) {
         super(
