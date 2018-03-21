@@ -72,10 +72,9 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   else
     CFISLUGOWNER=${SLUGOWNER}
   fi
-  CFISLUGOWNER=smillst
   set -e
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  (cd .. && git clone --depth 1 -b gradle https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone -b gradle --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
+  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
