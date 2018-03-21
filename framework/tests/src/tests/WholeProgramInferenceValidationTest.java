@@ -21,6 +21,8 @@ public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTe
 
     @Override
     public void run() {
+        // Only run if annotated files have been created.
+        // See wholeProgramInferenceTests task.
         if (new File("tests/whole-program-inference/annotated/").exists()) {
             super.run();
         }
