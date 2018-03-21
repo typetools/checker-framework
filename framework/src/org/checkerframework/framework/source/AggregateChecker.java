@@ -42,7 +42,7 @@ public abstract class AggregateChecker extends SourceChecker {
     public AggregateChecker() {
         Collection<Class<? extends SourceChecker>> checkerClasses = getSupportedCheckers();
 
-        checkers = new ArrayList<SourceChecker>(checkerClasses.size());
+        checkers = new ArrayList<>(checkerClasses.size());
         for (Class<? extends SourceChecker> checkerClass : checkerClasses) {
             try {
                 SourceChecker instance = checkerClass.getDeclaredConstructor().newInstance();
@@ -127,7 +127,7 @@ public abstract class AggregateChecker extends SourceChecker {
 
     @Override
     public final Set<String> getSupportedOptions() {
-        Set<String> options = new HashSet<String>();
+        Set<String> options = new HashSet<>();
         for (SourceChecker checker : checkers) {
             options.addAll(checker.getSupportedOptions());
         }
@@ -138,7 +138,7 @@ public abstract class AggregateChecker extends SourceChecker {
 
     @Override
     public final Map<String, String> getOptions() {
-        Map<String, String> options = new HashMap<String, String>(super.getOptions());
+        Map<String, String> options = new HashMap<>(super.getOptions());
         for (SourceChecker checker : checkers) {
             options.putAll(checker.getOptions());
         }
@@ -147,7 +147,7 @@ public abstract class AggregateChecker extends SourceChecker {
 
     @Override
     public final Set<String> getSupportedLintOptions() {
-        Set<String> lints = new HashSet<String>();
+        Set<String> lints = new HashSet<>();
         for (SourceChecker checker : checkers) {
             lints.addAll(checker.getSupportedLintOptions());
         }

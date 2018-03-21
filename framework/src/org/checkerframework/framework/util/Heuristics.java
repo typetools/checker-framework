@@ -42,7 +42,7 @@ public class Heuristics {
         TreePath parentPath = path.getParentPath();
         boolean result = true;
 
-        ArrayDeque<Tree.Kind> queue = new ArrayDeque<Tree.Kind>(Arrays.asList(kinds));
+        ArrayDeque<Tree.Kind> queue = new ArrayDeque<>(Arrays.asList(kinds));
 
         Tree tree;
         while ((tree = parentPath.getLeaf()) != null) {

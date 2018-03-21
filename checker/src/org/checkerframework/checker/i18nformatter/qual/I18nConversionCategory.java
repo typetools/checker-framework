@@ -86,7 +86,7 @@ public enum I18nConversionCategory {
     }
 
     private static <E> Set<E> arrayToSet(E[] a) {
-        return new HashSet<E>(Arrays.asList(a));
+        return new HashSet<>(Arrays.asList(a));
     }
 
     /** @return true if a is a subset of b */

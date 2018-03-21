@@ -473,7 +473,8 @@ To suppress all errors and warnings related to multiple classes, you can use
 the regular expression alternative operator ``\code{|}'', as in
 ``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
 all warnings related to uses of classes belong to the \code{java.lang} or
-\code{java.util} packages.
+\code{java.util} packages.  (Depending on your shell or other tool, you
+might need to change or remove the quoting.)
 
 You can supply both \code{-AskipUses} and \code{-AonlyUses}, in which case
 the \code{-AskipUses} argument takes precedence, and \code{-AonlyUses} does
@@ -500,7 +501,7 @@ You can suppress all errors and warnings in the \emph{definition} of a given
 class, or suppress all errors and warnings except those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} or \code{-AonlyUses} command-line option,
-see~\ref{askipuses}).
+see~\ref{askipuses}.)
 
 Set the \code{-AskipDefs} command-line option to a
 regular expression that matches class names (not file names) in whose definition warnings and errors

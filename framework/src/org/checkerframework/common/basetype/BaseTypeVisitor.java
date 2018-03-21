@@ -578,7 +578,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
 
             // check well-formedness of pre/postcondition
-            List<String> formalParamNames = new ArrayList<String>();
+            List<String> formalParamNames = new ArrayList<>();
             for (VariableTree param : node.getParameters()) {
                 formalParamNames.add(param.getName().toString());
             }
@@ -1312,7 +1312,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Tree enclosing =
                     TreeUtils.enclosingOfKind(
                             getCurrentPath(),
-                            new HashSet<Tree.Kind>(
+                            new HashSet<>(
                                     Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
 
             AnnotatedTypeMirror ret = null;
@@ -1368,7 +1368,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // Mapping from argument simple name to its annotated type.
-        Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<String, AnnotatedTypeMirror>();
+        Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<>();
         for (Element encl : ElementFilter.methodsIn(anno.getEnclosedElements())) {
             AnnotatedExecutableType exeatm =
                     (AnnotatedExecutableType) atypeFactory.getAnnotatedType(encl);
@@ -2769,11 +2769,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // check purity annotations
             Set<Pure.Kind> superPurity =
-                    new HashSet<Pure.Kind>(
+                    new HashSet<>(
                             PurityUtils.getPurityKinds(atypeFactory, overridden.getElement()));
             Set<Pure.Kind> subPurity =
-                    new HashSet<Pure.Kind>(
-                            PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
+                    new HashSet<>(PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
             if (!subPurity.containsAll(superPurity)) {
                 checker.report(
                         Result.failure(

@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.TargetType;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -151,7 +150,7 @@ abstract class TargetedElementAnnotationApplier {
         final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
                 new EnumMap<>(TargetClass.class);
         for (TargetClass targetClass : TargetClass.values()) {
-            targetClassToCompound.put(targetClass, new ArrayList<TypeCompound>());
+            targetClassToCompound.put(targetClass, new ArrayList<>());
         }
 
         for (final Attribute.TypeCompound typeCompound : typeCompounds) {

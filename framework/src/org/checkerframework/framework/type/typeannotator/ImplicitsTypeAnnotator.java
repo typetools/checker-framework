@@ -52,9 +52,8 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
      */
     public ImplicitsTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
-        this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
-        this.typeClasses =
-                new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
+        this.typeKinds = new EnumMap<>(TypeKind.class);
+        this.typeClasses = new HashMap<>();
         this.typeNames = new HashMap<>();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();

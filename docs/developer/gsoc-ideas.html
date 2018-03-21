@@ -18,7 +18,7 @@
 <ul>
   <li><a href="#introduction">Introduction</a>
     <ul>
-      <li><a href="#get-started">How to get started</a></li>
+      <li><a href="#get-started">How to get started: do a case study</a></li>
       <li><a href="#ask-questions">How to get help and ask questions</a></li>
       <li><a href="#apply">How to apply</a></li>
     </ul></li>
@@ -151,7 +151,7 @@ You can find more potential projects in the
 
 
 
-<h2 id="get-started">How to get started</h2>
+<h2 id="get-started">How to get started: do a case study</h2>
 
 <p>
   To <b>get started</b>, first do a case study of using the Checker
@@ -174,7 +174,8 @@ You can find more potential projects in the
     relatively small, or choose a small part of a larger program.
     <!-- Choose a program that the checker has never been run on in the past. -->
     A program that you have written, such as for your coursework, is a good
-    first choice.
+    first choice. (After verifying it, you'll want to move on to a bigger
+    program.)
     Another good choice is a library that is not already annotated; see
     the project <a href="#library-annotations">library annotations</a> below.
     Don't choose part of the JDK as your first case study.
@@ -192,12 +193,15 @@ You can find more potential projects in the
     we can evaluate it and give you feedback.  (If the code compiles
     without type-checking warnings, and you didn't
     use <code>@SuppressWarnings</code>, then the annotations are correct,
-    your program is correct, and you don't need feedback.  Congratulations!)
+    your program is correct, and you don't need feedback.  Congratulations!
+    You can try a more significant case study.)
 
     <p>
     Share the case study as soon
     as you finish it or as soon as you have a question that is not answered
     in the manual; don't wait until you submit your proposal.
+    The subject line should be descriptive (not just "Case study", but
+    "Nullness case study of Apache Commons Exec library").
     You should give us access to
     <ul>
       <li>the original (unannotated) version of the program,
@@ -211,9 +215,9 @@ You can find more potential projects in the
     annotated version.  The only differences between the two branches
     should be related to the annotations you wrote.  Building the annotated
     branch should run the type-checker.
-    Please create a pull request from the annotated to the unannotated
-    branch; you won't merge it, but it enables others to view and
-    comment on your changes.
+    It is helpful to create a pull request from the annotated to the
+    unannotated branch in your fork; you won't merge this pull request, but
+    it enables you and others to view and comment on your changes.
 </ol>
 
 <p>
@@ -255,8 +259,8 @@ bugs, designing a new type system, or making other changes to the Checker
 Framework?
 Before you can contribute to any project, you must
 understand the tool from a user point of view, including its strengths,
-weaknesses, and how to use it.  Therefore, you need to complete your case
-study first.
+weaknesses, and how to use it.  Therefore, you need to complete a
+substantive case study first.
 </p>
 
 
@@ -1306,43 +1310,75 @@ of the Checker Framework.
 
 
 <h2 id="analysis_diffs">Tool for analysis diffs</h2>
+<!--
+  This project idea is duplicated at
+  ~mernst/public_html/uw-only/research/potential-research-projects.html .
+-->
 
 <p>
-   Many program analyses are too verbose to
-   expect a person to read their entire output.  However, after a program
-   change (whether a refactoring, a bug fix, an enhancement, or addition of
-   new code), the difference is likely to be small between the analysis run on the old code and
-   the analysis run on the new code.  Showing
-   this to a developer may be useful, and in particular can help the
-   programmer to better understand the changes he or she has made.
+   Many program analyses are too verbose for a person to read their entire
+   output.  However, after a program change, the analysis results may
+   change only slightly.  An "analysis diff" tool could show the
+   difference between the analysis run on the old code and the analysis run
+   on the new code.
 </p>
+<ul>
+  <li>
+    The analysis diffs may help the programmer to better understand the
+    changes.
+  </li>
+  <li>
+    Bug detection tools. such
+    as <a href="http://findbugs.sourceforge.net/">FindBugs</a> or
+    the <a href="https://checkerframework.org/">Checker Framework</a>, have
+    extremely verbose output when first run on a program.  Programmers
+    could examine and fix only the warnings about code they have changed
+    (and that they are currently thinking about).
+  </li>
+  <li>
+    Tools that always have large output, such as inference tools, could
+    become manageable to users if output is shown in small doses.
+  </li>
+  <li>
+    You can probably think of other uses.
+  </li>
+</ul>
 
 <p>
   The analysis diff tool would take as input two analysis results (the
   previous and the current one).  It would output only the new parts of its
-  second input.  (Or, it could output a complete diff between two
+  second input.  (It could optionally output a complete diff between two
   analysis results.)
 </p>
+
+<p>
+  One challenge is dealing with changed line numbers and other analysis
+  output differences between runs.
+</p>
+
+<p>
+It would be nice to integrate the tool with git pre-commit hooks or GitHub
+pull requests, to enable either of the following functionality (for either
+commits to master or for pull requests):
+</p>
+<ul>
+  <li>
+    Permit only those commits/pulls that do not add any new analysis warnings.
+  </li>
+  <li>
+    Permit only thase commits/pulls that are "clean" &mdash; the analysis
+    issues no warnings for any changed line.
+  </li>
+</ul>
 
 <p>
   A concrete example of an analysis diff tool
   is <a href="https://github.com/plume-lib/checklink/blob/master/checklink-persistent-errors">checklink-persistent-errors</a>;
   see the documentation at the top of the file.  That tool only works for
   one particular analysis, the W3C Link Checker.
-  Something of this sort also appears to be built into FindBugs.
-</p>
-
-<p>
-   Analysis diff would be useful in other contexts.  One example is bug bug
-   detection tools. such as
-   <a href="http://findbugs.sourceforge.net/">FindBugs</a> or the
-   <a href="https://checkerframework.org/">Checker Framework</a>, whose
-   output can be extremely verbose when first run on a program.  Another
-   example is inference tools; for example,
-   <a href="https://plse.cs.washington.edu/daikon/download/doc/daikon.html#DynComp-for-Java">DynComp</a>
-   is an inference tool whose output could become manageable to users if
-   they were shown it in small doses.  You can probably think of other
-   examples.
+  An analysis diff tool also appears to be built into FindBugs.
+  The goal of this project is to build a general-purpose tool that is easy
+  to apply to new analyses.
 </p>
 
 
@@ -1472,7 +1508,11 @@ method bodies.  I'm not sure whether such a system already exists or we
 need to design a new one.
 </p>
 
-<!-- For design and implementation ideas, see $qn/notes-purity. -->
+<!--
+For design and implementation ideas, see:
+ * $qn/notes-purity
+ * ~/prof/grants/2011-09-darpa-apac/phase3-extension-proposal
+-->
 
 
 <h2 id="javadoc">Javadoc support</h2>
@@ -1702,7 +1742,9 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  timeline Uber's NullAway Uber coala BCEL mvn BCEL's AFU
  -->
-<!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis
+<!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis CWE
  -->
-<!--  LocalWords:  BigInteger lockB lockA
+<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks
+ -->
+<!--  LocalWords:  checklink
  -->

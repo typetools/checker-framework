@@ -27,7 +27,7 @@ public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T>
                 return true;
             case SINGLETON:
                 state = State.ANY;
-                set = new ArrayList<T>();
+                set = new ArrayList<>();
                 set.add(value);
                 value = null;
                 // fallthrough

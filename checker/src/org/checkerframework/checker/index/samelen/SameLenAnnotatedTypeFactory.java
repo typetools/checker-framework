@@ -127,7 +127,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
 
-        HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
+        HashSet<String> newValues = new HashSet<>(a1Names.size() + a2Names.size());
 
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
@@ -164,7 +164,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
 
         assert receivers.size() == annos.size();
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (int i = 0; i < receivers.size(); i++) {
             Receiver rec = receivers.get(i);
             AnnotationMirror anno = annos.get(i);
@@ -175,7 +175,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 values.addAll(getValueOfAnnotationWithStringArgument(anno));
             }
         }
-        AnnotationMirror res = getCombinedSameLen(values, new ArrayList<String>());
+        AnnotationMirror res = getCombinedSameLen(values, new ArrayList<>());
         return res;
     }
 

@@ -240,7 +240,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Map from the fully-qualified names of the aliased annotations, to the annotations in the
      * Checker Framework that will be used in its place.
      */
-    private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
+    private final Map<String, AnnotationMirror> aliases = new HashMap<>();
 
     /**
      * A set that contains the fully-qualified class names of the aliased annotations whose elements
@@ -361,7 +361,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
-        this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
+        this.cacheDeclAnnos = new HashMap<>();
 
         this.shouldCache = !checker.hasOption("atfDoNotCache");
         if (shouldCache) {
@@ -680,7 +680,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new DefaultTypeHierarchy(
                 checker,
                 getQualifierHierarchy(),
-                checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
+                checker.getBooleanOption("ignoreRawTypeArguments", true),
                 checker.hasOption("invariantArrays"));
     }
 
@@ -1641,8 +1641,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return super.visitDeclared(type, p);
         }
 
-        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited =
-                new HashMap<TypeParameterElement, AnnotatedTypeVariable>();
+        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited = new HashMap<>();
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
@@ -2139,7 +2138,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
                 && isSyntheticArgument(tree.getArguments().get(0))) {
             // happens for anonymous constructors of inner classes
-            List<AnnotatedTypeMirror> actualParams = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> actualParams = new ArrayList<>();
             actualParams.add(getAnnotatedType(tree.getArguments().get(0)));
             actualParams.addAll(con.getParameterTypes());
             con.setParameterTypes(actualParams);
@@ -2930,10 +2929,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.parseStubFiles called more than once");
         }
 
-        Map<Element, AnnotatedTypeMirror> typesFromStubFiles =
-                new HashMap<Element, AnnotatedTypeMirror>();
-        Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles =
-                new HashMap<String, Set<AnnotationMirror>>();
+        Map<Element, AnnotatedTypeMirror> typesFromStubFiles = new HashMap<>();
+        Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles = new HashMap<>();
 
         // 1. jdk.astub
         if (!checker.hasOption("ignorejdkastub")) {

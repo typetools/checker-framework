@@ -43,7 +43,7 @@ public class AddAnnotatedFor {
 
     static {
         Class<?> annotatedFor = org.checkerframework.framework.qual.AnnotatedFor.class;
-        Set<Annotation> annotatedForMetaAnnotations = new HashSet<Annotation>();
+        Set<Annotation> annotatedForMetaAnnotations = new HashSet<>();
         annotatedForMetaAnnotations.add(Annotations.aRetentionSource);
         annotatedForMetaAnnotations.add(
                 Annotations.createValueAnnotation(
@@ -72,14 +72,14 @@ public class AddAnnotatedFor {
     }
 
     public static void addAnnotatedFor(AScene scene) {
-        for (AClass clazz : new HashSet<AClass>(scene.classes.values())) {
-            Set<String> annotatedFor = new HashSet<String>();
+        for (AClass clazz : new HashSet<>(scene.classes.values())) {
+            Set<String> annotatedFor = new HashSet<>();
             clazz.accept(annotatedForVisitor, annotatedFor);
             if (!annotatedFor.isEmpty()) {
                 // Set eliminates duplicates, but it must be converted to List;
                 // for whatever reason, IndexFileWriter recognizes array
                 // arguments only in List form.
-                List<String> annotatedForList = new ArrayList<String>(annotatedFor);
+                List<String> annotatedForList = new ArrayList<>(annotatedFor);
                 clazz.tlAnnotationsHere.add(
                         new Annotation(
                                 adAnnotatedFor, Annotations.valueFieldOnly(annotatedForList)));

@@ -78,7 +78,7 @@ public class AnnotationBuilder {
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
-        this.elementValues = new LinkedHashMap<ExecutableElement, AnnotationValue>();
+        this.elementValues = new LinkedHashMap<>();
     }
 
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
@@ -88,7 +88,7 @@ public class AnnotationBuilder {
         this.annotationType = annotation.getAnnotationType();
         this.annotationElt = (TypeElement) annotationType.asElement();
 
-        this.elementValues = new LinkedHashMap<ExecutableElement, AnnotationValue>();
+        this.elementValues = new LinkedHashMap<>();
         // AnnotationValues are immutable so putAll should suffice
         this.elementValues.putAll(annotation.getElementValues());
     }
@@ -208,7 +208,7 @@ public class AnnotationBuilder {
 
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> value = new ArrayList<AnnotationValue>(values.size());
+        List<AnnotationValue> value = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -359,7 +359,7 @@ public class AnnotationBuilder {
             return null; // dead code
         }
 
-        List<AnnotationValue> res = new ArrayList<AnnotationValue>(values.length);
+        List<AnnotationValue> res = new ArrayList<>(values.length);
         for (Enum<?> ev : values) {
             checkSubtype(expectedType, ev);
             enumElt = findEnumElement(ev);
@@ -401,7 +401,7 @@ public class AnnotationBuilder {
             return null; // dead code
         }
 
-        List<AnnotationValue> res = new ArrayList<AnnotationValue>(values.length);
+        List<AnnotationValue> res = new ArrayList<>(values.length);
         for (VariableElement ev : values) {
             checkSubtype(expectedType, ev);
             // Is there a better way to distinguish between enums and

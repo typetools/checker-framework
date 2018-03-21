@@ -49,8 +49,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         if (debugSpew) {
             System.err.println("Running GuiEffectVisitor");
         }
-        effStack = new ArrayDeque<Effect>();
-        currentMethods = new ArrayDeque<MethodTree>();
+        effStack = new ArrayDeque<>();
+        currentMethods = new ArrayDeque<>();
     }
 
     @Override

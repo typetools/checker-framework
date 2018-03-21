@@ -450,7 +450,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     public List<String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {
-            upstreamCheckerNames = new ArrayList<String>();
+            upstreamCheckerNames = new ArrayList<>();
 
             SourceChecker checker = this;
 
@@ -527,7 +527,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         this.messages = new Properties();
-        ArrayDeque<Class<?>> checkers = new ArrayDeque<Class<?>>();
+        ArrayDeque<Class<?>> checkers = new ArrayDeque<>();
 
         Class<?> currClass = this.getClass();
         while (currClass != SourceChecker.class) {
@@ -618,7 +618,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return Collections.singleton("all");
         }
 
-        Set<String> activeLint = new HashSet<String>();
+        Set<String> activeLint = new HashSet<>();
         for (String s : lintString.split(",")) {
             if (!this.getSupportedLintOptions().contains(s)
                     && !(s.charAt(0) == '-'
@@ -649,7 +649,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return Collections.emptyMap();
         }
 
-        Map<String, String> activeOpts = new HashMap<String, String>();
+        Map<String, String> activeOpts = new HashMap<>();
 
         for (Map.Entry<String, String> opt : options.entrySet()) {
             String key = opt.getKey();
@@ -1637,7 +1637,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         TODO: assert that name doesn't start with '-'
         */
 
-        Set<String> newlints = new HashSet<String>();
+        Set<String> newlints = new HashSet<>();
         newlints.addAll(activeLints);
         if (val) {
             newlints.add(name);
@@ -1693,7 +1693,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         assert slValue != null; /*nninvariant*/
 
         @Nullable String[] lintArray = slValue;
-        Set<String> lintSet = new HashSet<String>(lintArray.length);
+        Set<String> lintSet = new HashSet<>(lintArray.length);
         for (String s : lintArray) {
             lintSet.add(s);
         }
@@ -1714,19 +1714,72 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * who needs to set the active options to the union of all subcheckers.
      */
     protected void addOptions(Map<String, String> moreopts) {
-        Map<String, String> activeOpts = new HashMap<String, String>(getOptions());
+        Map<String, String> activeOpts = new HashMap<>(getOptions());
         activeOpts.putAll(moreopts);
         activeOptions = Collections.unmodifiableMap(activeOpts);
     }
 
     /**
+     * Check whether the given option is provided.
+     *
+     * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
+     * returns true: this happens e.g. for {@code -Amyopt}
+     *
+     * @param name the name of the option to check
+     * @return true if the option name was provided, false otherwise
+     */
+    @Override
+    public final boolean hasOption(String name) {
+        return getOptions().containsKey(name);
+    }
+
+    /**
      * Determines the value of the option with the given name.
      *
+     * @param name the name of the option to check
      * @see SourceChecker#getLintOption(String,boolean)
      */
     @Override
     public final String getOption(String name) {
         return getOption(name, null);
+    }
+
+    /**
+     * Determines the boolean value of the option with the given name. Returns false if the option
+     * is not set.
+     *
+     * @param name the name of the option to check
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    @Override
+    public final boolean getBooleanOption(String name) {
+        return getBooleanOption(name, false);
+    }
+
+    /**
+     * Determines the boolean value of the option with the given name. Returns the given default
+     * value if the option is not set.
+     *
+     * @param name the name of the option to check
+     * @param defaultValue the default value to use if the option is not set
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    @Override
+    public final boolean getBooleanOption(String name, boolean defaultValue) {
+        String value = getOption(name);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.equals("true")) {
+            return true;
+        }
+        if (value.equals("false")) {
+            return false;
+        }
+        this.userErrorAbort(
+                String.format(
+                        "Value of %s option should be a boolean, but is \"%s\".", name, value));
+        throw new Error("Dead code");
     }
 
     /**
@@ -1743,29 +1796,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Check whether the given option is provided.
-     *
-     * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
-     * returns true: this happens e.g. for {@code -Amyopt}
-     *
-     * @param name the option name to check
-     * @return true if the option name was provided, false otherwise
-     */
-    // TODO I would like to rename getLintOption to hasLintOption
-    @Override
-    public final boolean hasOption(String name) {
-        return getOptions().containsKey(name);
-    }
-
-    /**
      * Determines the value of the lint option with the given name and returns the default value if
      * nothing is specified.
      *
+     * @param name the name of the option to check
+     * @param defaultValue the default value to use if the option is not set
      * @see SourceChecker#getOption(String)
      * @see SourceChecker#getLintOption(String)
      */
     @Override
-    public final String getOption(String name, String def) {
+    public final String getOption(String name, String defaultValue) {
 
         if (!this.getSupportedOptions().contains(name)) {
             ErrorReporter.errorAbort("Illegal option: " + name);
@@ -1776,13 +1816,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (activeOptions.isEmpty()) {
-            return def;
+            return defaultValue;
         }
 
         if (activeOptions.containsKey(name)) {
             return activeOptions.get(name);
         } else {
-            return def;
+            return defaultValue;
         }
     }
 
@@ -1792,7 +1832,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public Set<String> getSupportedOptions() {
-        Set<String> options = new HashSet<String>();
+        Set<String> options = new HashSet<>();
 
         // Support all options provided with the standard
         // {@link javax.annotation.processing.SupportedOptions}

@@ -267,8 +267,7 @@ public class DependentTypesHelper {
                 Tree enclTree =
                         TreeUtils.enclosingOfKind(
                                 path,
-                                new HashSet<Kind>(
-                                        Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
+                                new HashSet<>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
 
                 if (enclTree.getKind() == Kind.METHOD) {
                     // If the most enclosing tree is a method, the parameter is a method parameter
