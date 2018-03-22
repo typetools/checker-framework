@@ -15,6 +15,9 @@ import java.lang.annotation.Target;
  * <p>If a checker is not annotated with this annotation, then the checker's qualifiers may appear
  * on any type.
  *
+ * <p>This is orthogonal to Java's {@code @Target} annotation; each enforces a different type of
+ * restriction on what can be written in source code.
+ *
  * @checker_framework.manual #creating-relevant-java-types Relevant Java types
  */
 @Documented
