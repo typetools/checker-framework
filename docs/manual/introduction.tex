@@ -996,6 +996,20 @@ Section~\ref{library-tips} gives additional tips that are
 specific to annotating a third-party library.
 
 
+\subsection{Write annotations before you run a checker\label{annotate-before-checking}}
+
+Before you run a checker, annotate the code, based on its documentation.
+Then, run the checker to uncover bugs in the code or the documentation.
+
+Don't do the opposite, which is to run the checker and then add annotations
+according to the warnings issued.  This approach is less systematic, so you
+may overlook some annotations.  It often leads to confusion and poor
+results.  It leads users to make changes not for any principled reason, but
+to ``make the type-checker happy'', even when the changes are in conflict
+with the documentation or the code.  Also see ``Annotations
+are a specification'', below.
+
+
 \subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
 
 Annotating an entire existing program may seem like a daunting task.  But,
