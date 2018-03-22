@@ -3,7 +3,7 @@
  * @summary Ensure that the Java Compiler API can be used multiple times
  *   to execute the Checker Framework.
  *
- * @compile -source 7 -target 7 Main.java
+ * @compile Main.java
  * @run main Main
  */
 /*

@@ -3,8 +3,9 @@ Java files in this directory are allowed to contain Java errors
 This is an exception to the rules in ../../../checker/tests/README .
 
 To run the tests, do
-  ant -e -find build.xml framework-tests
+  cd $CHECKERFRAMEWORK/framework
+  ../gradlew FrameworkTest
 
 To run a single test, do something like:
   cd $CHECKERFRAMEWORK/framework/tests/framework
-  (cd $CHECKERFRAMEWORK && ant -e dist) && (cd $CHECKERFRAMEWORK/framework && ant build-tests) && javac -processor TestChecker -classpath $CHECKERFRAMEWORK/framework/tests/build GenericTest10.java
+  (cd $CHECKERFRAMEWORK && ./gradle assemble :framework:compileTestJava) && javacheck -processor testlib.util.TestChecker -cp $CHECKERFRAMEWORK/framework/build/classes/java/test/
