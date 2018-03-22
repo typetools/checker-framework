@@ -46,31 +46,35 @@ The repository also contains the following directories:
  maven-artifacts  artifacts to be uploaded to Maven Central
 </pre>
 
+
 <h2> Gradle build scripts</h2>
+
 <p>
-You should use <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">the Gradle wrapper</a>
-rather than installing gradle locally. Use <code>gradlew</code> in the
-checker-framework directory.  </p>
+Don't run the <code>gradle</code> command, which would use your local installation of gradle.
+Instead, use
+the <code>gradlew</code> script in the <code>checker-framework</code> directory.
+</p>
+
+<p>
+Frequently-used tasks:
+</p>
+<ul>
+  <li> <code>assemble</code>: builds all jars except <code>jdk8.jar</code>, including javadoc jars and fat jars that contain all dependencies.
+  <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
+  <li> <code>buildJdk</code>: builds <code>jdk8.jar</code>.
+  <li> <code>allTests</code>: runs all tests.
+  <li> <code>reformat</code>: reformats Java files.
+  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessFbcTest</code>.
+  <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
+</ul>
 
 <p>
 If you run a task from the main directory, then it will run that task in all
 subprojects with a task by that name. So, if you run <code>./gradlew
-reformat</code> that reformats all Java files in everywhere. But <code>(cd
-framework &amp;&amp; ../gradlew reformat)</code> only reformats Java files in
-framework. Alternatively, calling <code>:framework:reformat</code> from the
+allTests</code> that runs all tests everywhere. But <code>(cd
+framework &amp;&amp; ../gradlew allTests)</code> only runs tests in
+framework. Alternatively, calling <code>:framework:allTests</code> from the
 main directory or any subproject has the same effect.  </p>
-
-Frequently used tasks:
-<ul>
-  <li> <code>assemble</code>: builds all jars except jdk8.jar, including javadoc jars and jars contain all dependencies.
-  <li> <code>build</code>: everything assemble does plus runs all JUnit tests.
-  <li> <code>buildJdk</code>: builds jdk8.jar.
-  <li> <code>allTests</code>: runs all tests.
-  <li> <code>:framework</code>:allTests: runs all framework tests, as does <code>(cd framework &amp;&amp; ../gradlew allTests)</code>
-  <li> <code>reformat</code>: reformats Java files. If it is run in a subproject, then it will only reformat the java files in that project.
-  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name NullnessFbcTest for example.
-  <li> <code>task</code>: lists task, use --all to see all tasks.
-</ul>
 
 
 <h2>Coding style</h2>
@@ -92,7 +96,7 @@ will format all files such that <code>ant check-format</code> succeeds.
 
 <p>
 We don't use <code>@author</code> Javadoc tags in code files.
-Doing so clutters the code, and is misleading because once that individual
+Doing so clutters the code, and is misleading once that individual
 is no longer maintaining the code.
 Authorship (and who has made changes recently) can be obtained from the
 version control system.
