@@ -21,6 +21,7 @@ ext {
     assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
 
     jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
+    jsr308 = file(jsr308).absolutePath
 
     annotationTools = "${jsr308}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
