@@ -10,7 +10,7 @@ javac.bat - Is the equivalent of the javac script for Windows systems.
 
 
 The directory "checker/dist/" houses all jars built for the binary distribution.
-To build these jars, run "ant clean dist" from the "checker" directory.
+To build these jars, run "./gradlew assemble".
 Afterward, the directory will contain all jars needed to run the
 Checker Framework.
 
