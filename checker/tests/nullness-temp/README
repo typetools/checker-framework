@@ -13,4 +13,4 @@ For more details, see
   ../README
 
 To run the tests, do
-  ant -e -find build.xml nullness-temp-tests
+  (cd $CHECKERFRAMEWORK && ./gradlew NullnessTempTest)
