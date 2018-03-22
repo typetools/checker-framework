@@ -45,9 +45,15 @@ allprojects {
         annotationTools = "${jsr308}/annotation-tools"
         afu = "${annotationTools}/annotation-file-utilities"
         afuJar = "${afu}/annotation-file-utilities.jar"
+        if (!file(afuJar).exists()) {
+            println "${afuJar} does not exist"
+        }
 
         stubparser = "${jsr308}/stubparser"
         stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
+        if (!file(stubparserJar).exists()) {
+            println "${stubparserJar} does not exist"
+        }
 
         jtregHome = "${jsr308}/jtreg"
         formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
