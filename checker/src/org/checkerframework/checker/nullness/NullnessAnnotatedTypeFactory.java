@@ -76,6 +76,7 @@ public class NullnessAnnotatedTypeFactory
     /** Cache for the nullness annotations */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
+    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
     /** Aliases for {@code @Nonnull}. */
     private static final List<String> NONNULL_ALIASES =
             Arrays.asList(
@@ -104,6 +105,7 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
                     "org.springframework.lang.NonNull");
 
+    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
     /** Aliases for {@code @Nullable}. */
     private static final List<String> NULLABLE_ALIASES =
             Arrays.asList(
@@ -156,7 +158,6 @@ public class NullnessAnnotatedTypeFactory
         tempNullnessAnnos.add(PolyAll.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
-        // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
         NONNULL_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NONNULL));
         NULLABLE_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NULLABLE));
 
