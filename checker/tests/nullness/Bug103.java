@@ -20,7 +20,7 @@ public class Bug103 extends HR {
         IG.C, IG.C, IG.C, IG.D, IG.E, IG.F, IG.G
     };
 
-    // Crazy: remove arg u ant it compiles
+    // Crazy: remove arg u and it compiles
     // Crazy: remove any line of m1 and it compiles
     // Crazy: replace two o args by null and it compiles
     void m1(CC o, Object u) {
