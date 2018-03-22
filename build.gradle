@@ -14,6 +14,34 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    release = false
+    // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
+    toolsJar = Jvm.current().toolsJar.path
+    assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
+
+    jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
+    jsr308 = file(jsr308).absolutePath
+
+    annotationTools = "${jsr308}/annotation-tools"
+    afu = "${annotationTools}/annotation-file-utilities"
+    afuJar = "${afu}/annotation-file-utilities.jar"
+    if (!file(afuJar).exists()) {
+        println "${afuJar} does not exist"
+    }
+
+    stubparser = "${jsr308}/stubparser"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
+    if (!file(stubparserJar).exists()) {
+        println "${stubparserJar} does not exist"
+    }
+
+    jtregHome = "${jsr308}/jtreg"
+    formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
+
+    javadocMemberLevel = JavadocMemberLevel.PROTECTED
+}
+
 task installGitHooks(type: Copy) {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
@@ -32,33 +60,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-    }
-
-    ext {
-        release = false
-        // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
-        toolsJar = Jvm.current().toolsJar.path
-        assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
-
-        jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
-
-        annotationTools = "${jsr308}/annotation-tools"
-        afu = "${annotationTools}/annotation-file-utilities"
-        afuJar = "${afu}/annotation-file-utilities.jar"
-        if (!file(afuJar).exists()) {
-            println "${afuJar} does not exist"
-        }
-
-        stubparser = "${jsr308}/stubparser"
-        stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
-        if (!file(stubparserJar).exists()) {
-            println "${stubparserJar} does not exist"
-        }
-
-        jtregHome = "${jsr308}/jtreg"
-        formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
-
-        javadocMemberLevel = JavadocMemberLevel.PROTECTED
     }
 
     // After all the tasks have been created, modify some of them.
