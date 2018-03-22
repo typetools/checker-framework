@@ -80,10 +80,10 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 # Two options: rebuild the JDK or download a prebuilt JDK.
 if [[ "${BUILDJDK}" == "buildjdk" ]]; then
   echo "running \"ant dist\" for checker-framework"
-  ant dist
+   ./gradlew assemble buildJdk
 fi
 
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"ant dist-downloadjdk\" for checker-framework"
-  (cd checker && ant dist-downloadjdk)
+  ./gradlew assemble
 fi

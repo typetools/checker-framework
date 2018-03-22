@@ -2,7 +2,7 @@
 // See the comments at GenericNull for some tips about what might be wrong.
 
 /**
- * This test came from running the ant check-compilermsgs in the checker-framework/checker directory
+ * This test came from running the compilermsgs checker in the checker-framework/checker directory
  * It's to test the result of type argument inference. We used to have the following
  * return.type.incompatible found: FlowAnalysis[ extends @UnknownPropertyKey
  * CFAbstractAnalysis<Value[ extends @UnknownPropertyKey CFAbstractValue<Value[

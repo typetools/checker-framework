@@ -1726,8 +1726,6 @@ repository, then you can copy the testing infrastructure used by some
 existing type system.  Here are some of the tasks you will perform:
 
 \begin{itemize}
-\item Add a \code{\emph{mychecker}-tests} build target in file
-  \<checker-framework/checker/build.xml> and ensure all tests pass.
 
 \item Make sure \code{all-tests} tests the new checker.
 \end{itemize}
@@ -2225,9 +2223,6 @@ To integrate a new checker with the Checker Framework release, perform
 the following:
 
 \begin{itemize}
-
-\item Create Ant targets for testing, as described in
-  Section~\ref{creating-testing-framework}.
 
 \item Make sure \code{check-compilermsgs} and \code{check-purity} run
 without warnings or errors.

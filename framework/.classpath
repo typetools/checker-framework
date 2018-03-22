@@ -13,5 +13,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/annotation-file-utilities"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/scene-lib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/stubparser"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/checker-qual"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

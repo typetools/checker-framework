@@ -19,6 +19,15 @@ public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTe
         super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
     }
 
+    @Override
+    public void run() {
+        // Only run if annotated files have been created.
+        // See wholeProgramInferenceTests task.
+        if (new File("tests/whole-program-inference/annotated/").exists()) {
+            super.run();
+        }
+    }
+
     @Parameters
     public static String[] getTestDirs() {
         return new String[] {"whole-program-inference/annotated/"};
