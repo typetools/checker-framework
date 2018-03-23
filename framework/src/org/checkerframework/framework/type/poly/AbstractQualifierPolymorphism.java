@@ -49,9 +49,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * The polymorphic qualifiers: mapping from the top of a qualifier hierarchy to the polymorphic
-     * qualifier of that hierarchy. Field always non-null but might be an empty mapping. The "null"
-     * key, if present, always maps to PolyAll.
+     * The polymorphic qualifiers: mapping from a polymorphic of a qualifier hierarchy to the top
+     * qualifier of that hierarchy. Field always non-null but might be an empty mapping.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals;
 
@@ -247,8 +246,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void p) {
             for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : polyQuals.entrySet()) {
-                AnnotationMirror top = pqentry.getKey();
-                AnnotationMirror poly = pqentry.getValue();
+                AnnotationMirror top = pqentry.getValue();
+                AnnotationMirror poly = pqentry.getKey();
 
                 if (type.hasAnnotation(poly)) {
                     type.removeAnnotation(poly);
@@ -396,8 +395,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             AnnotationMirrorMap<AnnotationMirrorSet> result = new AnnotationMirrorMap<>();
 
             for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
-                AnnotationMirror top = kv.getKey();
-                AnnotationMirror poly = kv.getValue();
+                AnnotationMirror top = kv.getValue();
+                AnnotationMirror poly = kv.getKey();
 
                 if (top == null && actualType.hasAnnotation(POLYALL)) {
                     // PolyAll qualifier

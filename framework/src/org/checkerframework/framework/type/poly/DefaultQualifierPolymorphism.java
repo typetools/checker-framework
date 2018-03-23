@@ -45,6 +45,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                 polys.put(null, aam);
                 continue;
             }
+            AnnotationMirrorSet topsSeen = new AnnotationMirrorSet();
             for (AnnotationMirror aa : aam.getAnnotationType().asElement().getAnnotationMirrors()) {
                 if (aa.getAnnotationType()
                         .toString()
@@ -62,14 +63,15 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                         AnnotationMirror ttree = AnnotationBuilder.fromName(elements, plval);
                         ttreetop = qualhierarchy.getTopAnnotation(ttree);
                     }
-                    if (polys.containsKey(ttreetop)) {
+                    if (topsSeen.contains(ttreetop)) {
                         ErrorReporter.errorAbort(
                                 "DefaultQualifierPolymorphism: checker has multiple polymorphic qualifiers: "
                                         + polys.get(ttreetop)
                                         + " and "
                                         + aam);
                     }
-                    polys.put(ttreetop, aam);
+                    topsSeen.add(ttreetop);
+                    polys.put(aam, ttreetop);
                 }
             }
         }
