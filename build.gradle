@@ -275,6 +275,12 @@ subprojects {
         archives shadowJar
     }
 
+    task tags(type: Exec) {
+        description 'Create Emacs TAGS table'
+        executable 'ctags'
+        args += "-e -f TAGS `find . \\( -name jdk \\) -prune -o -name '*.java' -print | sort-directory-order`"
+    }
+
     // Things in this block reference definitions in the subproject that do not exist,
     // until the project is evaluated.
     afterEvaluate {
