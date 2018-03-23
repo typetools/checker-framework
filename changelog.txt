@@ -6,6 +6,10 @@ Declaration annotations that are aliases for type annotations are now treated
 as if they apply to the top-level type.  See "Declaration annotations" section
 in the "Warnings" chapter in the manual for more details.
 
+Ended support for annotations in comments.  See "Migrating away from
+annotations in comments" section in the "Handling legacy code" chapter in the
+manual for instructions on how to remove annotations from comments.
+
 ---------------------------------------------------------------------------
 
 Version 2.4.0, March 1, 2018

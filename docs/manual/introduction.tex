@@ -441,15 +441,6 @@ You only need to write annotations on method signatures and fields.
 Annotations within method bodies are inferred for you; for more details,
 see  Section~\ref{type-refinement}.
 
-You may write the annotations within comments, as in
-\code{List</*@NonNull*/ String>}.  The Checker Framework compiler, which is
-distributed with the Checker Framework, will still process
-the annotations.
-However, your code will remain compilable by people who are not yet using
-Java 8.  For more details, see
-Section~\ref{annotations-in-comments}.
-
-
 \section{Running a checker\label{running}}
 
 To run a checker plugin, run the compiler \code{javac} as usual,
@@ -563,41 +554,18 @@ Checker Framework users.
 
 \subsection{Distributing your annotated project\label{distributing}}
 
-You have two main options for distributing your compiled code (\<.jar>
-files).
-
-\begin{itemize}
-\item
-  Option 1: no annotations appear in the \<.jar> files.  There is no
-  run-time dependence on the Checker Framework, and the distributed \<.jar>
-  files are not useful for pluggable type-checking of client code.
-
-  Write annotations in comments (see
-  Section~\ref{annotations-in-comments}).
-  Developers perform pluggable type-checking in-house to detect errors and
-  verify their absence.
-  To create the distributed \<.jar> files, use a normal Java compiler,
-  which ignores the annotations.
-\item
-  Option 2: annotations appear in the \<.jar> files.  The distributed
+  The distributed
   \<.jar> files can be used for pluggable type-checking of client code.
   The \<.jar> files are only compatible with a Java 8
   % or later
-  JVM, unless you
-  do extra work (see Section~\ref{declaration-annotations-for-java7}).
-
-  Write annotations in comments or not in comments (it doesn't matter which).
+  JVM.
   Developers perform pluggable type-checking in-house to detect errors and
   verify their absence.
-  When you create \<.class> files, use the Checker Framework compiler
-  (Section~\ref{external-tools}) and running each relevant type system.
+  When you create \<.class> files, run each relevant type system.
   Create the distributed \<.jar> files from those \<.class> files, and also
   include the contents of
   \code{checker-framework/checker/dist/checker-qual.jar} from the Checker
   Framework distribution, to define the annotations.
-
-\end{itemize}
-
 
 \subsection{Summary of command-line options\label{checker-options}}
 
@@ -803,11 +771,6 @@ checker is an ``annotation processor''.
   Section~\ref{checker-auto-discovery}
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
-\item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
-  to turn off parsing annotation comments and
-  to turn on parsing annotation comments even when they
-  contain spaces; applicable only to the Checker Framework compiler;
-  see Section~\ref{annotations-in-comments}
 \item \<-J> Supply an argument to the JVM that is running javac;
   for example, \<-J-Xmx2500m> to increase its maximum heap size
 \item \<-doe> To ``dump on error'', that is, output a stack trace

@@ -295,9 +295,6 @@ This section describes how to create an annotated library.
     pluggable type-checking, and there will be no need for the Checker
     Framework to include an annotated version of the library.
 
-    You may want to write the annotations in comments, so that it
-    is still possible to compile the library without use of Java 8.
-
     If the library maintainers do not accept the annotations, then
     periodically, such as when a new version of the library is released,
     pull changes from upstream (the library's main version control system)
@@ -530,8 +527,6 @@ As an illustration, a stub file for the Interning type system
     @Interned String intern();
   }
 \end{Verbatim}
-
-Note, annotations in comments are ignored.
 
 The stub file format is allowed to differ from Java source code in the
 following ways:

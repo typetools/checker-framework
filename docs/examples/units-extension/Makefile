@@ -3,7 +3,7 @@ FILES=qual/Frequency.java \
   qual/Hz.java \
   qual/kHz.java
 
-JAVAOPTS=-source 7 -target 7 -classpath .:../../../checker/dist/checker.jar
+JAVAOPTS= -classpath .:../../../checker/dist/checker.jar
 
 JAVAC?=../../../checker/bin/javac
 
