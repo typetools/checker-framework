@@ -39,6 +39,64 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 
+/**
+ * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
+ * This class implements the following refinement rules:
+ *
+ * <ul>
+ *   <li>1. Refine the type of expressions used as an array dimension to be less than length of the
+ *       array to which the new array is assigned. For example, in {@code int[] array = new
+ *       int[expr];}, the type of expr is {@code @LTEqLength("array")}.
+ *   <li>2. If {@code other * node} has type {@code typeOfMultiplication}, then if {@code other} is
+ *       positive, then {@code node} is {@code typeOfMultiplication}.
+ *   <li>3. If {@code other * node} has type {@code typeOfMultiplication}, if {@code other} is
+ *       greater than 1, then {@code node} is {@code typeOfMultiplication} plus 1.
+ *   <li>4. Given a subtraction node, {@code node}, that is known to have type {@code
+ *       typeOfSubtraction}. An offset can be applied to the left node (i.e. the left node has the
+ *       same type, but with an offset based on the right node).
+ *   <li>5. In an addition expression, refine the two operands based on the type of the whole
+ *       expression with appropriate offsets.
+ *   <li>6. If an addition expression has a type that is less than length of an array, and one of
+ *       the operands is non-negative, then the other is less than or equal to the length of the
+ *       array.
+ *   <li>7. If an addition expression has a type that is less than length of an array, and one of
+ *       the operands is positive, then the other is also less than the length of the array.
+ *   <li>8. if x &lt; y, and y has a type that is related to the length of an array, then x has the
+ *       same type, with an offset that is one less.
+ *   <li>9. if x &le; y, and y has a type that is related to the length of an array, then x has the
+ *       same type.
+ *   <li>10. refine the subtrahend in a subtraction which is greater than or equal to a certain
+ *       offset. The type of the subtrahend is refined to the type of the minuend with the offset
+ *       added.
+ *   <li>11. if two variables are equal, they have the same type
+ *   <li>12. If one node in a != expression is an sequence length field or method access (optionally
+ *       with a constant offset subtracted) and the other node is less than or equal to that
+ *       sequence length (minus the offset), then refine the other node's type to less than the
+ *       sequence length (minus the offset).
+ *   <li>13. If some Node a is known to be less than the length of some array, x, then, the type of
+ *       a + b, is {@code @LTLengthOf(value="x", offset="-b")}. If b is known to be less than the
+ *       length of some other array, y, then the type of a + b is {@code @LTLengthOf(value={"x",
+ *       "y"}, offset={"-b", "-a"})}.
+ *   <li>14. If a is known to be less than the length of x when some offset, o, is added to a (the
+ *       type of a is {@code @LTLengthOf(value="x", offset="o"))}, then the type of a + b is
+ *       {@code @LTLengthOf(value="x",offset="o - b")}. (Note, if "o - b" can be computed, then it
+ *       is and the result is used in the annotation.)
+ *   <li>15. If expression i has type {@code @LTLengthOf(value = "f2", offset = "f1.length")} int
+ *       and expression j is less than or equal to the length of f1, then the type of i + j is
+ *       {@code @LTLengthOf("f2")}.
+ *   <li>16. If some Node a is known to be less than the length of some sequence x, then the type of
+ *       a - b is {@code @LTLengthOf(value="x", offset="b")}.
+ *   <li>17. If some Node a is known to be less than the length of some sequence x, and if b is
+ *       non-negative or positive, then a - b should keep the types of a.
+ *   <li>18. The type of a sequence length access (i.e. array.length) is
+ *       {@code @LTLength(value={"array"...}, offset="-1")} where "array"... is the set of all
+ *       sequences that are the same length (via the SameLen checker) as "array"
+ *   <li>19. If n is an array length field access, then the type of a.length is the glb of
+ *       {@code @LTEqLengthOf("a")} and the value of a.length in the store.
+ *   <li>20. If n is a String.length() method invocation, then the type of s.length() is the glb of
+ *       {@code @LTEqLengthOf("s")} and the value of s.length() in the store.
+ * </ul>
+ */
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     private UpperBoundAnnotatedTypeFactory atypeFactory;
@@ -48,9 +106,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
-    // Refine the type of expressions used as an array dimension to be
-    // less than length of the array to which the new array is assigned.
-    // For example, in "int[] array = new int[expr];", the type of expr is @LTEqLength("array").
+    /**
+     * Case 1: Refine the type of expressions used as an array dimension to be less than length of
+     * the array to which the new array is assigned. For example, in "int[] array = new int[expr];",
+     * the type of expr is @LTEqLength("array").
+     */
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
@@ -127,7 +187,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      *
      * <p>This implies that if {@code other} is positive, then {@code node} is {@code
      * typeOfMultiplication}. If {@code other} is greater than 1, then {@code node} is {@code
-     * typeOfMultiplication} plus 1.
+     * typeOfMultiplication} plus 1. These are cases 2 and 3, respectively.
      */
     private void propagateToMultiplicationOperand(
             LessThanLengthOf typeOfMultiplication,
@@ -156,7 +216,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * right node is subtracted from the left node. Note that unlike {@link
      * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)} and {@link
      * #propagateToMultiplicationOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)},
-     * this method takes the NumericalSubtractionNode instead of the two operand nodes.
+     * this method takes the NumericalSubtractionNode instead of the two operand nodes. This
+     * implements case 4.
      *
      * @param typeOfSubtraction type of node
      * @param node subtraction node that has typeOfSubtraction
@@ -180,7 +241,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * Refines the type of {@code operand} to {@code typeOfAddition} plus {@code other}. If {@code
      * other} is non-negative, then {@code operand} also less than the length of the arrays in
      * {@code typeOfAddition}. If {@code other} is positive, then {@code operand} also less than the
-     * length of the arrays in {@code typeOfAddition} plus 1.
+     * length of the arrays in {@code typeOfAddition} plus 1. These are cases 5, 6, and 7.
      *
      * @param typeOfAddition type of {@code operand + other}
      * @param operand the Node to refine
@@ -207,6 +268,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         store.insertValue(operandRec, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
 
+    /**
+     * Case 8: if x &lt; y, and y has a type that is related to the length of an array, then x has
+     * the same type, with an offset that is one less.
+     */
     @Override
     protected void refineGT(
             Node larger,
@@ -233,11 +298,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * This method refines the type of the right expression to the glb the previous type of right
-     * and the type of left.
-     *
-     * <p>Also, if the left expression is an array access, then the types of sub expressions of the
-     * right are refined.
+     * Case 9: if x &le; y, and y has a type that is related to the length of an array, then x has
+     * the same type.
      */
     @Override
     protected void refineGTE(
@@ -263,7 +325,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     /**
      * Refines the subtrahend in a subtraction which is greater than or equal to a certain offset.
-     * The type of the subtrahend is refined to the type of the minuend with the offset added.
+     * The type of the subtrahend is refined to the type of the minuend with the offset added. This
+     * is case 10.
      *
      * <p>This is based on the fact that if {@code (minuend - subtrahend) >= offset}, and {@code
      * minuend + o < l}, then {@code subtrahend + o + offset < l}.
@@ -300,6 +363,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
     }
 
+    /** Implements case 11. */
     @Override
     protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
             TransferResult<CFValue, CFStore> res,
@@ -354,8 +418,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     /**
      * If lengthAccess node is an sequence length field or method access (optionally with a constant
      * offset subtracted) and the other node is less than or equal to that sequence length (minus
-     * the offset), then refine the other nodes type to less than the sequence length (minus the
-     * offset).
+     * the offset), then refine the other node's type to less than the sequence length (minus the
+     * offset). This is case 12.
      */
     private void refineNeqSequenceLength(
             Node lengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
@@ -426,6 +490,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * <p>In addition, If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int
      * and expression j is less than or equal to the length of f1, then the type of i + j is
      * .@LTLengthOf("f2").
+     *
+     * <p>These three cases correspond to cases 13-15.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalAddition(
@@ -495,7 +561,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * If some Node a is known to be less than the length of some sequence x, then the type of a - b
      * is @LTLengthOf(value="x", offset="b"). If b is known to be less than the length of some other
      * sequence, this doesn't add any information about the type of a - b. But, if b is non-negative
-     * or positive, then a - b should keep the types of a.
+     * or positive, then a - b should keep the types of a. This corresponds to cases 16 and 17.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
@@ -514,7 +580,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Computes a type of a sequence length access.
+     * Computes a type of a sequence length access. This is case 18.
      *
      * @param n sequence length access node
      */
@@ -550,7 +616,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     /**
      * If n is an array length field access, then the type of a.length is the glb
-     * of @LTEqLengthOf("a") and the value of a.length in the store.
+     * of @LTEqLengthOf("a") and the value of a.length in the store. This is case 19.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitFieldAccess(
@@ -568,8 +634,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If n is an String.length() method invocation, then the type of s.length() is the glb
-     * of @LTEqLengthOf("s") and the value of s.length() in the store.
+     * If n is a String.length() method invocation, then the type of s.length() is the glb
+     * of @LTEqLengthOf("s") and the value of s.length() in the store. This is case 20.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
