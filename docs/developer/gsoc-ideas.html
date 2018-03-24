@@ -582,23 +582,23 @@ error and to prevent users from suffering the bad consequences.
 </p>
 
 <p>
-We have recently created a static analysis tool that prevents illegal index
-array exceptions in Java programs.  We have not released it because we
-don't yet know how effective this tool is.  Does it scale up to big,
+This project will be a substantial case study with
+the <a href="https://checkerframework.org/manual/#index-checker">Index
+Checker</a>.  The first goal is to identify its merits and limitations.
+Does it scale up to big,
 interesting programs?  Are there common, important code patterns that it
 fails to handle?  Does it produce too many false positive warnings?  Does
 it place too heavy a burden on the user, either in terms of annotations or
 in terms of complexity of the error messages?  Worst of all, are there
 unknown unsoundnesses in the tool?
+The second goal is to improve its precision enough to make it usable by
+real-world programmers.
 </p>
 
 <p>
-This project will be a substantial case study with
-the <a href="https://checkerframework.org/manual/#index-checker">Index
-Checker</a>.  The first goal is to identify its merits and limitations.
-The second goal is to improve its precision enough to make it usable by
-real-world programmers.  A stretch goal is to extend it to handle
-collections such as
+A <a href="#index-checker-mutable-length">related project</a> is to extend
+the Index Checker to handle
+mutable collections such as
 <code>List</code>s, where the <code>remove()</code> method makes sound,
 precise analysis very tricky.
 </p>
