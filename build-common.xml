@@ -62,6 +62,7 @@
               outputproperty="compiler.version"
               classpath="${javac.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-version"/>
         </java>
 
