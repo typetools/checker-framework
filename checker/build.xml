@@ -1561,6 +1561,8 @@
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
+        <copy tofile="dist/javac-jdk.jar" file="${javac.jdk.lib}"
+              overwrite="true" failonerror="true" />
     </target>
 
     <target name="jdk.jar.exists"
