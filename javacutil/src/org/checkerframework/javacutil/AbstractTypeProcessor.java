@@ -58,9 +58,6 @@ import javax.lang.model.util.ElementFilter;
  * javax.annotation.processing.Processor Processor} contract is obeyed, with one notable exception.
  * {@link #process(Set, RoundEnvironment)} may not be overridden, as it is called during the
  * declaration annotation phase before classes are analyzed.
- *
- * @author Mahmood Ali
- * @author Werner Dietl
  */
 public abstract class AbstractTypeProcessor extends AbstractProcessor {
     /**
@@ -68,7 +65,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * the elements, in order to prevent possible confusion between different Element
      * instantiations.
      */
-    private final Set<Name> elements = new HashSet<Name>();
+    private final Set<Name> elements = new HashSet<>();
 
     /**
      * Method {@link #typeProcessingStart()} must be invoked exactly once, before any invocation of

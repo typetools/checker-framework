@@ -7,6 +7,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +20,8 @@ import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
+import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
+import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
@@ -29,10 +32,8 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
@@ -50,12 +51,17 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -64,9 +70,29 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Implements the introduction rules for the Upper Bound Checker. Works primarily by way of querying
- * the MinLen Checker and comparing the min lengths of arrays to the known values of variables as
- * supplied by the Value Checker.
+ * Implements the introduction rules for the Upper Bound Checker.
+ *
+ * <p>Rules implemented by this class:
+ *
+ * <ul>
+ *   <li>1. Math.min has unusual semantics that combines annotations for the UBC.
+ *   <li>2. The return type of Random.nextInt depends on the argument, but is not equal to it, so a
+ *       polymorhpic qualifier is insufficient.
+ *   <li>3. Unary negation on a NegativeIndexFor (from the SearchIndex Checker) results in a
+ *       LTLengthOf for the same arrays.
+ *   <li>4. Right shifting by a constant between 0 and 30 preserves the type of the left side
+ *       expression.
+ *   <li>5. If either argument to a bitwise and expression is non-negative, the and expression
+ *       retains that argument's upperbound type. If both are non-negative, the result of the
+ *       expression is the GLB of the two.
+ *   <li>6. if numerator &ge; 0, then numerator % divisor &le; numerator
+ *   <li>7. if divisor &ge; 0, then numerator % divisor &lt; divisor
+ *   <li>8. If the numerator is an array length access of an array with non-zero length, and the
+ *       divisor is greater than one, glb the result with an LTL of the array.
+ *   <li>9. if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
+ *       length of some sequence, then (a + b) / divisor is less than the length of that sequence.
+ *   <li>10. Special handling for Math.random: Math.random() * array.length is LTL array.
+ * </ul>
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -89,7 +115,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
-        imf = new IndexMethodIdentifier(processingEnv);
+        imf = new IndexMethodIdentifier(this);
 
         this.postInit();
     }
@@ -154,6 +180,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
     }
 
+    /** Returns the LessThan Checker's annotated type factory. */
+    public LessThanAnnotatedTypeFactory getLessThanAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(LessThanChecker.class);
+    }
+
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
         super.addComputedTypeAnnotations(element, type);
@@ -204,7 +235,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // Wrapper methods for accessing the IndexMethodIdentifier.
 
     public boolean isMathMin(Tree methodTree) {
-        return imf.isMathMin(methodTree, processingEnv);
+        return imf.isMathMin(methodTree);
     }
 
     public boolean isRandomNextInt(Tree methodTree) {
@@ -322,7 +353,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * This exists for Math.min and Random.nextInt, which must be special-cased.
+         * This exists for Math.min and Random.nextInt, which must be special-cased. These are cases
+         * 1 and 2.
          *
          * <ul>
          *   <li>Math.min has unusual semantics that combines annotations for the UBC.
@@ -354,6 +386,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(tree, type);
         }
 
+        /* Handles case 3. */
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             // Dataflow refines this type if possible
@@ -433,8 +466,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
                     break;
+                case REMAINDER:
+                    addAnnotationForRemainder(left, right, type);
+                    break;
                 case AND:
                     addAnnotationForAnd(left, right, type);
+                    break;
+                case RIGHT_SHIFT:
+                case UNSIGNED_RIGHT_SHIFT:
+                    addAnnotationForRightShift(left, right, type);
                     break;
                 default:
                     break;
@@ -442,23 +482,50 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitBinary(tree, type);
         }
 
+        /**
+         * Infers upper-bound annotation for {@code left >> right} and {@code left >>> right} (case
+         * 4)
+         */
+        private void addAnnotationForRightShift(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
+            if (lowerBoundATF.isNonNegative(left)) {
+                AnnotationMirror annotation =
+                        getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
+                // For non-negative numbers, right shift is equivalent to division by a power of two
+                // The range of the shift amount is limited to 0..30 to avoid overflows and int/long differences
+                Long shiftAmount = IndexUtil.getExactValue(right, getValueAnnotatedTypeFactory());
+                if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
+                    int divisor = 1 << shiftAmount;
+                    // Support average by shift just like for division
+                    UBQualifier plusDivQualifier = plusTreeDivideByVal(divisor, left);
+                    if (!plusDivQualifier.isUnknown()) {
+                        UBQualifier qualifier = UBQualifier.createUBQualifier(annotation);
+                        qualifier = qualifier.glb(plusDivQualifier);
+                        annotation = convertUBQualifierToAnnotation(qualifier);
+                    }
+                }
+                type.addAnnotation(annotation);
+            }
+        }
+
+        /**
+         * If either argument is non-negative, the and expression retains that argument's upperbound
+         * type. If both are non-negative, the result of the expression is the GLB of the two (case
+         * 5).
+         */
         private void addAnnotationForAnd(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
             AnnotatedTypeMirror leftType = getAnnotatedType(left);
-            AnnotatedTypeMirror leftLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
             AnnotationMirror leftResultType = UNKNOWN;
-            if (leftLBType.hasAnnotation(NonNegative.class)
-                    || leftLBType.hasAnnotation(Positive.class)) {
+            if (lowerBoundATF.isNonNegative(left)) {
                 leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(right);
-            AnnotatedTypeMirror rightLBType =
-                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
             AnnotationMirror rightResultType = UNKNOWN;
-            if (rightLBType.hasAnnotation(NonNegative.class)
-                    || rightLBType.hasAnnotation(Positive.class)) {
+            if (lowerBoundATF.isNonNegative(right)) {
                 rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
             }
 
@@ -470,6 +537,45 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return IndexUtil.getLengthSequenceTree(lengthTree, imf, processingEnv);
         }
 
+        /**
+         * Infers upper-bound annotation for {@code numerator % divisor}. There are two cases where
+         * an upperbound type is inferred:
+         *
+         * <ul>
+         *   <li>6. if numerator &ge; 0, then numerator % divisor &le; numerator
+         *   <li>7. if divisor &ge; 0, then numerator % divisor &lt; divisor
+         * </ul>
+         */
+        private void addAnnotationForRemainder(
+                ExpressionTree numeratorTree,
+                ExpressionTree divisorTree,
+                AnnotatedTypeMirror resultType) {
+            LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
+            UBQualifier result = UpperBoundUnknownQualifier.UNKNOWN;
+            // if numerator >= 0, then numerator%divisor <= numerator
+            if (lowerBoundATF.isNonNegative(numeratorTree)) {
+                result = UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
+            }
+            // if divisor >= 0, then numerator%divisor < divisor
+            if (lowerBoundATF.isNonNegative(divisorTree)) {
+                UBQualifier divisor =
+                        UBQualifier.createUBQualifier(getAnnotatedType(divisorTree), UNKNOWN);
+                result = result.glb(divisor.plusOffset(1));
+            }
+            resultType.addAnnotation(convertUBQualifierToAnnotation(result));
+        }
+
+        /**
+         * Implements two cases (8 and 9):
+         *
+         * <ul>
+         *   <li>8. If the numerator is an array length access of an array with non-zero length, and
+         *       the divisor is greater than one, glb the result with an LTL of the array.
+         *   <li>9. if numeratorTree is a + b and divisor greater than 1, and a and b are less than
+         *       the length of some sequence, then (a + b) / divisor is less than the length of that
+         *       sequence.
+         * </ul>
+         */
         private void addAnnotationForDivide(
                 ExpressionTree numeratorTree,
                 ExpressionTree divisorTree,
@@ -540,6 +646,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
 
+        /**
+         * Special handling for Math.random: Math.random() * array.length is LTL array. Same for
+         * Random.nextDouble. Case 10.
+         */
         private boolean checkForMathRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree seqLenTree, AnnotatedTypeMirror type) {
 
@@ -588,5 +698,58 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;
         return ltlQualifier.convertToAnnotation(processingEnv);
+    }
+
+    UBQualifier fromLessThan(ExpressionTree tree, TreePath treePath) {
+        List<String> lessThanExpressions =
+                getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
+        if (lessThanExpressions == null) {
+            return null;
+        }
+        UBQualifier ubQualifier = fromLessThanOrEqual(tree, treePath, lessThanExpressions);
+        if (ubQualifier != null) {
+            return ubQualifier.plusOffset(1);
+        }
+        return null;
+    }
+
+    UBQualifier fromLessThanOrEqual(ExpressionTree tree, TreePath treePath) {
+        List<String> lessThanExpressions =
+                getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
+        if (lessThanExpressions == null) {
+            return null;
+        }
+        UBQualifier ubQualifier = fromLessThanOrEqual(tree, treePath, lessThanExpressions);
+        return ubQualifier;
+    }
+
+    private UBQualifier fromLessThanOrEqual(
+            Tree tree, TreePath treePath, List<String> lessThanExpressions) {
+        UBQualifier ubQualifier = null;
+        for (String expression : lessThanExpressions) {
+            FlowExpressions.Receiver receiver;
+            try {
+                receiver = getReceiverFromJavaExpressionString(expression, treePath);
+            } catch (FlowExpressionParseException e) {
+                receiver = null;
+            }
+            if (receiver == null || !CFAbstractStore.canInsertReceiver(receiver)) {
+                continue;
+            }
+            CFStore store = getStoreBefore(tree);
+            if (store != null) {
+                CFValue value = store.getValue(receiver);
+                if (value != null && value.getAnnotations().size() == 1) {
+                    UBQualifier newUBQ =
+                            UBQualifier.createUBQualifier(value.getAnnotations().iterator().next());
+                    if (ubQualifier == null) {
+                        ubQualifier = newUBQ;
+                    } else {
+                        ubQualifier = ubQualifier.glb(newUBQ);
+                    }
+                }
+            }
+        }
+        return ubQualifier;
     }
 }

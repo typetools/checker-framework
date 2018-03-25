@@ -2,7 +2,7 @@
 
 # This file will be used as ../../.git/hooks/pre-commit.
 # However, it should be edited as checker/bin-devel/git.pre-commit.
-# You can install it by running: (cd .. && ant prep)
+# You can install it by running: (cd .. && ./gradlew installGitHooks)
 
 # Fail if any command fails
 set -e
@@ -12,13 +12,13 @@ set -e
 # Need to keep checked files in sync with formatted.java.files in
 # build.xml. Otherwise `ant reformat` might not reformat a file that this
 # hook complains about.
-CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/eclipse/' | grep -v '/BadCast1.java$' | grep -v '/BadCast2.java$' ` || true
+CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/BadCast1.java$' | grep -v '/BadCast2.java$' ` || true
 # echo CHANGED_JAVA_FILES "'"${CHANGED_JAVA_FILES}"'"
 if [ ! -z "$CHANGED_JAVA_FILES" ]; then
-    ant -silent update-run-google-java-format
+    ./gradlew -q  getCodeFormatScripts
     ## For debugging:
     # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
-    python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running:  ant reformat" && /bin/false)
+    python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running: ./gradew reformat" && /bin/false)
 fi
 
 # This is to handle non-.java files, since the above already handled .java files.
@@ -32,7 +32,3 @@ if [ ! -z "$CHANGED_FILES" ]; then
         echo "Some files have trailing whitespace: ${FILES_WITH_TRAILING_SPACES}" && exit 1
     fi
 fi
-
-
-# TODO: should do this only if some file named PluginUtil.java has changed.
-release/checkPluginUtil.sh

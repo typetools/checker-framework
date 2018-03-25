@@ -54,8 +54,6 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>Pure method calls (e.g., <em>o.m()</em>)
  *   <li>Unknown other expressions to mark that something else was present.
  * </ul>
- *
- * @author Stefan Heule
  */
 public class FlowExpressions {
 
@@ -292,7 +290,12 @@ public class FlowExpressions {
                     if (ElementUtils.isStatic(invokedMethod)) {
                         methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
                     } else {
-                        methodReceiver = internalReprOf(provider, mn.getMethodSelect());
+                        ExpressionTree methodReceiverTree = TreeUtils.getReceiverTree(mn);
+                        if (methodReceiverTree != null) {
+                            methodReceiver = internalReprOf(provider, methodReceiverTree);
+                        } else {
+                            methodReceiver = internalReprOfImplicitReceiver(invokedMethod);
+                        }
                     }
                     TypeMirror type = TreeUtils.typeOf(mn);
                     receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
@@ -301,7 +304,7 @@ public class FlowExpressions {
                 }
                 break;
             case MEMBER_SELECT:
-                receiver = internalRepOfMemberSelect(provider, (MemberSelectTree) receiverTree);
+                receiver = internalReprOfMemberSelect(provider, (MemberSelectTree) receiverTree);
                 break;
             case IDENTIFIER:
                 IdentifierTree identifierTree = (IdentifierTree) receiverTree;
@@ -362,7 +365,7 @@ public class FlowExpressions {
      * @return either a new ClassName or a new ThisReference depending on whether ele is static or
      *     not
      */
-    public static Receiver internalRepOfImplicitReceiver(Element ele) {
+    public static Receiver internalReprOfImplicitReceiver(Element ele) {
         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
@@ -381,7 +384,7 @@ public class FlowExpressions {
      * @param enclosingType type of the enclosing type
      * @return a new ClassName or ThisReference that is a Receiver object for the enclosingType
      */
-    public static Receiver internalRepOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
+    public static Receiver internalReprOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
         if (TreeUtils.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
@@ -389,7 +392,7 @@ public class FlowExpressions {
         }
     }
 
-    private static Receiver internalRepOfMemberSelect(
+    private static Receiver internalReprOfMemberSelect(
             AnnotationProvider provider, MemberSelectTree memberSelectTree) {
         TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
@@ -404,11 +407,13 @@ public class FlowExpressions {
             case ENUM:
             case INTERFACE: // o instanceof MyClass.InnerInterface
             case ANNOTATION_TYPE:
-                return new ClassName(expressionType);
+                TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+                return new ClassName(selectType);
             case ENUM_CONSTANT:
             case FIELD:
+                TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
-                return new FieldAccess(r, ElementUtils.getType(ele), (VariableElement) ele);
+                return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
                 ErrorReporter.errorAbort(
                         "Unexpected element kind: %s element: %s", ele.getKind(), ele);

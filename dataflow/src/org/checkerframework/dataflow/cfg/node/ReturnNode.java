@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.cfg.node;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
@@ -12,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.LambdaReturnContext;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnContext;
 import org.checkerframework.dataflow.util.HashCodeUtils;
@@ -23,15 +20,13 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  *   return
  *   return <em>expression</em>
  * </pre>
- *
- * @author Stefan Heule
  */
 public class ReturnNode extends Node {
 
     protected final ReturnTree tree;
-    protected final /*@Nullable*/ Node result;
+    protected final @Nullable Node result;
 
-    public ReturnNode(ReturnTree t, /*@Nullable*/ Node result, Types types, MethodTree methodTree) {
+    public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
         super(types.getNoType(TypeKind.NONE));
         this.result = result;
         tree = t;
@@ -40,7 +35,7 @@ public class ReturnNode extends Node {
 
     public ReturnNode(
             ReturnTree t,
-            /*@Nullable*/ Node result,
+            @Nullable Node result,
             Types types,
             LambdaExpressionTree lambda,
             MethodSymbol methodSymbol) {

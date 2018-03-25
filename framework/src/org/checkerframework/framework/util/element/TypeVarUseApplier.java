@@ -151,8 +151,7 @@ public class TypeVarUseApplier {
     private List<Attribute.TypeCompound> removeComponentAnnotations(
             final AnnotatedArrayType arrayType, final List<Attribute.TypeCompound> annotations) {
 
-        final List<Attribute.TypeCompound> componentAnnotations =
-                new ArrayList<Attribute.TypeCompound>();
+        final List<Attribute.TypeCompound> componentAnnotations = new ArrayList<>();
 
         if (arrayType != null) {
             for (int i = 0; i < annotations.size(); ) {
@@ -219,7 +218,7 @@ public class TypeVarUseApplier {
     /** @return annotations on an element that apply to variable declarations */
     private static List<Attribute.TypeCompound> getVariableAnnos(final Element variableElem) {
         final VarSymbol varSymbol = (VarSymbol) variableElem;
-        final List<Attribute.TypeCompound> annotations = new ArrayList<Attribute.TypeCompound>();
+        final List<Attribute.TypeCompound> annotations = new ArrayList<>();
 
         for (Attribute.TypeCompound anno : varSymbol.getRawTypeAttributes()) {
 
@@ -259,12 +258,21 @@ public class TypeVarUseApplier {
                             + enclosingElement);
         }
 
-        final MethodSymbol enclosingMethod = (MethodSymbol) paramElem.getEnclosingElement();
+        final MethodSymbol enclosingMethod = (MethodSymbol) enclosingElement;
 
-        final List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
+        final List<Attribute.TypeCompound> result = new ArrayList<>();
+        if (enclosingMethod.getKind() != ElementKind.CONSTRUCTOR
+                && enclosingMethod.getKind() != ElementKind.METHOD) {
+            // Initializer blocks don't have parameters, so there is nothing to do.
+            return result;
+        }
+
+        // TODO: for the parameter in a lambda expression, the enclosingMethod isn't
+        // the lambda expression. Does this read the correct annotations?
+
         final int paramIndex = enclosingMethod.getParameters().indexOf(paramElem);
+        final List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
 
-        final List<Attribute.TypeCompound> result = new ArrayList<Attribute.TypeCompound>();
         for (final Attribute.TypeCompound typeAnno : annotations) {
             if (typeAnno.position.type == TargetType.METHOD_FORMAL_PARAMETER) {
                 if (typeAnno.position.parameter_index == paramIndex) {
@@ -286,7 +294,7 @@ public class TypeVarUseApplier {
         final MethodSymbol enclosingMethod = (MethodSymbol) methodElem;
 
         final List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
-        final List<Attribute.TypeCompound> result = new ArrayList<Attribute.TypeCompound>();
+        final List<Attribute.TypeCompound> result = new ArrayList<>();
         for (final Attribute.TypeCompound typeAnno : annotations) {
             if (typeAnno.position.type == TargetType.METHOD_RETURN) {
                 result.add(typeAnno);

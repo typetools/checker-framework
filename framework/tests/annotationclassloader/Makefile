@@ -2,7 +2,7 @@
 # Tt uses the aliasing checker as it is one of the framework checkers that has a
 # qual directory with qualifiers that must be loaded using the loader.
 
-# When called by the ant tests, JAVAC is defined as $JAVA_HOME/bin/javac, which
+# When called by the gradle tests, JAVAC is defined as $JAVA_HOME/bin/javac, which
 # could be jdk8 or jdk7. When executed as a demo, we'll use openjdk 8 located in
 # the following directory (change to your setup):
 JAVAC ?= /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
@@ -23,11 +23,14 @@ STUBPARSERJAR := $(PROJECTDIR)/../../../../stubparser/javaparser-core/target/stu
 JAVACJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/cfmake/javac.jar
 JAVACJDKJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/cfmake/javac-jdk.jar
 
+CHECKERQUALJAR := $(PROJECTDIR)/../../../checker/dist/checker-qual.jar
 
 # build directories
-DATAFLOWBUILD := $(PROJECTDIR)/../../../dataflow/build/
-JAVACUTILBUILD := $(PROJECTDIR)/../../../javacutil/build/
-FRAMEWORKBUILD := $(PROJECTDIR)/../../build/
+DATAFLOWBUILD := $(PROJECTDIR)/../../../dataflow/build/classes/main
+JAVACUTILBUILD := $(PROJECTDIR)/../../../javacutil/build/classes/main
+FRAMEWORKBUILD := $(PROJECTDIR)/../../build/classes/main
+CHECKERQUALBUILD := $(PROJECTDIR)/../../../checker-qual/build/classes/main
+
 
 all: load-from-dir-test load-from-jar-test
 
@@ -37,11 +40,13 @@ all: load-from-dir-test load-from-jar-test
 demo1:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
-	  -classpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR) \
+	  -processorpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(FRAMEWORKBUILD):$(JAVACJAR):${STUBPARSERJAR} \
+	  -classpath $(PROJECTDIR):${CHECKERQUALBUILD} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -AprintErrorStack \
+	  -Anocheckjdk \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java
 
@@ -49,36 +54,43 @@ demo1:
 demo2:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
-	  -classpath :$(FRAMEWORKJAR):$(STUBPARSERJAR):$(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR) \
+	  -processorpath $(FRAMEWORKJAR) \
+	  -classpath $(PROJECTDIR):${CHECKERQUALJAR} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
+	  -Anocheckjdk \
 	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java
 
 # ======================================================
-# ant test usage:
+# gradle test usage:
 # loads from build directories
 load-from-dir-test:
+	echo ${STUBPARSERJAR}
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
-	  -classpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR) \
+	  -processorpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(FRAMEWORKBUILD):$(JAVACJAR):${STUBPARSERJAR} \
+	  -classpath $(PROJECTDIR):${CHECKERQUALBUILD} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
+	  -Anocheckjdk \
 	  LoaderTest.java > Out.txt 2>&1 || true
-	diff -u Expected.txt Out.txt
+	diff -u Expected.txt Out.txt -I 'Note'
 	rm -f Out.txt
 
 # loads from framework.jar
 load-from-jar-test:
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
-	  -classpath $(FRAMEWORKJAR):$(STUBPARSERJAR):$(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR) \
+	  -processorpath $(FRAMEWORKJAR) \
+	  -classpath $(PROJECTDIR):${CHECKERQUALJAR} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
+	  -Anocheckjdk \
 	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java > Out.txt 2>&1 || true

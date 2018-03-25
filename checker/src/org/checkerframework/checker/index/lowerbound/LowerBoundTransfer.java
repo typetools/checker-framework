@@ -13,6 +13,7 @@ import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -106,6 +107,48 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *                                   y_refined = GLB(x_orig, y_orig)
  *
  * </pre>
+ *
+ * Dividing these rules up by cases, this class implements:
+ *
+ * <ul>
+ *   <li>1. The rule described above for &gt;
+ *   <li>2. The rule described above for &ge;
+ *   <li>3. The rule described above for &lt;
+ *   <li>4. The rule described above for &le;
+ *   <li>5. The rule described above for ==
+ *   <li>6. The rule described above for !=
+ *   <li>7. A special refinement for != when the value being compared to is a compile-time constant
+ *       with a value exactly equal to -1 or 0 (i.e. {@code x != -1} and x is GTEN1 implies x is
+ *       non-negative). Maybe two rules?
+ *   <li>8. When a compile-time constant -2 is added to a positive, the result is GTEN1
+ *   <li>9. When a compile-time constant 2 is added to a GTEN1, the result is positive
+ *   <li>10. When a positive is added to a positive, the result is positive
+ *   <li>11. When a non-negative is added to any other type, the result is that other type
+ *   <li>12. When a GTEN1 is added to a positive, the result is non-negative
+ *   <li>13. When the left side of a subtraction expression is &gt; the right side according to the
+ *       LessThanChecker, the result of the subtraction expression is positive
+ *   <li>14. When the left side of a subtraction expression is &ge; the right side according to the
+ *       LessThanChecker, the result of the subtraction expression is non-negative
+ *   <li>15. special handling for when the left side is the length of an array or String that's
+ *       stored as a field, and the right side is a compile time constant. Do we need this?
+ *   <li>16. Multiplying any value by a compile time constant of 1 preserves its type
+ *   <li>17. Multiplying two positives produces a positive
+ *   <li>18. Multiplying a positive and a non-negative produces a non-negative
+ *   <li>19. Multiplying two non-negatives produces a non-negative
+ *   <li>20. When the result of Math.random is multiplied by an array length, the result is
+ *       NonNegative.
+ *   <li>21. literal 0 divided by anything is non-negative
+ *   <li>22. anything divided by literal zero is bottom
+ *   <li>23. literal 1 divided by a positive or non-negative is non-negative
+ *   <li>24. literal 1 divided by anything else is GTEN1
+ *   <li>25. anything divided by literal 1 is itself
+ *   <li>26. a positive or non-negative divided by a positive or non-negative is non-negative
+ *   <li>27. anything modded by literal 1 or -1 is non-negative
+ *   <li>28. a positive or non-negative modded by anything is non-negative
+ *   <li>29. a GTEN1 modded by anything is GTEN1
+ *   <li>30. anything right-shifted by a non-negative is non-negative
+ *   <li>31. anything bitwise-anded by a non-negative is non-negative
+ * </ul>
  */
 public class LowerBoundTransfer extends IndexAbstractTransfer {
 
@@ -133,6 +176,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     /**
      * Refines GTEN1 to NN if it is not equal to -1, and NN to Pos if it is not equal to 0.
+     * Implements case 7.
      *
      * @param mLiteral a potential literal
      * @param otherNode the node on the other side of the ==/!=
@@ -168,7 +212,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         }
     }
 
-    /** Implements the transfer rules for both equal nodes and not-equals nodes. */
+    /**
+     * Implements the transfer rules for both equal nodes and not-equals nodes (i.e. cases 5 and 6).
+     */
     @Override
     protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
             TransferResult<CFValue, CFStore> result,
@@ -202,6 +248,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
      * greater one) to one closer to bottom than the type of right. Can't call the promote function
      * from the ATF directly because a new expression isn't introduced here - the modifications have
      * to be made to an existing one.
+     *
+     * <p>This implements parts of cases 1, 2, 3, and 4 using the decomposition strategy described
+     * in the Javadoc of this class.
      */
     @Override
     protected void refineGT(
@@ -236,6 +285,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
      * Refines left to exactly the level of right, since in the worst case they're equal. Modifies
      * an existing type in the store, but has to be careful not to overwrite a more precise existing
      * type.
+     *
+     * <p>This implements parts of cases 1, 2, 3, and 4 using the decomposition strategy described
+     * in this class's Javadoc.
      */
     @Override
     protected void refineGTE(
@@ -283,7 +335,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Helper method for getAnnotationForPlus. Handles addition of constants.
+     * Helper method for getAnnotationForPlus. Handles addition of constants (cases 8 and 9).
      *
      * @param val the integer value of the constant
      * @param nonLiteralType the type of the side of the expression that isn't a constant
@@ -309,18 +361,18 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * getAnnotationForPlus handles the following cases:
+     * getAnnotationForPlus handles the following cases (cases 10-12 above):
      *
      * <pre>
-     *      lit -2 + pos &rarr; gte-1
+     *      8. lit -2 + pos &rarr; gte-1
      *      lit -1 + * &rarr; call demote
      *      lit 0 + * &rarr; *
      *      lit 1 + * &rarr; call promote
-     *      lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
+     *      9. lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
      *      let all other lits, including sets, fall through:
-     *      pos + pos &rarr; pos
-     *      nn + * &rarr; *
-     *      pos + gte-1 &rarr; nn
+     *      10. pos + pos &rarr; pos
+     *      11. nn + * &rarr; *
+     *      12. pos + gte-1 &rarr; nn
      *      * + * &rarr; lbu
      *  </pre>
      */
@@ -379,6 +431,12 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
      * <pre>
      *      * - lit &rarr; call plus(*, -1 * the value of the lit)
      *      * - * &rarr; lbu
+     *      13. if the LessThan type checker can establish that the left side of the expression is &gt; the right side,
+     *      returns POS.
+     *      14. if the LessThan type checker can establish that the left side of the expression is &ge; the right side,
+     *      returns NN.
+     *      15. special handling for when the left side is the length of an array or String that's stored as a field,
+     *      and the right side is a compile time constant. Do we need this?
      *  </pre>
      */
     private AnnotationMirror getAnnotationForMinus(
@@ -415,6 +473,23 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             return result;
         }
 
+        OffsetEquation leftExpression =
+                OffsetEquation.createOffsetFromNode(minusNode.getLeftOperand(), aTypeFactory, '+');
+        if (leftExpression != null) {
+            if (aTypeFactory
+                    .getLessThanAnnotatedTypeFactory()
+                    .isLessThan(minusNode.getRightOperand().getTree(), leftExpression.toString())) {
+                return POS;
+            }
+
+            if (aTypeFactory
+                    .getLessThanAnnotatedTypeFactory()
+                    .isLessThanOrEqual(
+                            minusNode.getRightOperand().getTree(), leftExpression.toString())) {
+                return NN;
+            }
+        }
+
         // The checker can't reason about arbitrary (i.e. non-literal)
         // things that are being subtracted, so it gives up.
         return UNKNOWN;
@@ -445,12 +520,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
      *
      * <pre>
      *        * * lit 0 &rarr; nn (=0)
-     *        * * lit 1 &rarr; *
-     *        pos * pos &rarr; pos
-     *        pos * nn &rarr; nn
-     *        nn * nn &rarr; nn
+     *        16. * * lit 1 &rarr; *
+     *        17. pos * pos &rarr; pos
+     *        18. pos * nn &rarr; nn
+     *        19. nn * nn &rarr; nn
      *        * * * &rarr; lbu
      *  </pre>
+     *
+     * Also handles a special case involving Math.random (case 20).
      */
     private AnnotationMirror getAnnotationForMultiply(
             NumericalMultiplicationNode node, TransferInput<CFValue, CFStore> p) {
@@ -532,10 +609,10 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * getAnnotationForDivide handles these cases:
+     * getAnnotationForDivide handles these cases (21-26):
      *
      * <pre>
-     * lit 0 / * &rarr; nn (=0)
+     *      lit 0 / * &rarr; nn (=0)
      *      * / lit 0 &rarr; pos
      *      lit 1 / {pos, nn} &rarr; nn
      *      lit 1 / * &rarr; gten1
@@ -594,8 +671,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * getAnnotationForRemainder handles these cases: * % 1/-1 &rarr; nn pos/nn % * &rarr; nn gten1
-     * % * &rarr; gten1 * % * &rarr; lbu
+     * getAnnotationForRemainder handles these cases:
+     *
+     * <pre>
+     *      27. * % 1/-1 &rarr; nn
+     *      28. pos/nn % * &rarr; nn
+     *      29. gten1 % * &rarr; gten1
+     *      * % * &rarr; lbu
+     * </pre>
      */
     public AnnotationMirror getAnnotationForRemainder(
             IntegerRemainderNode node, TransferInput<CFValue, CFStore> p) {
@@ -626,7 +709,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         return UNKNOWN;
     }
 
-    /** Handles shifts. * &gt;&gt; NonNegative &rarr; NonNegative */
+    /** Handles shifts (case 30). * &gt;&gt; NonNegative &rarr; NonNegative */
     private AnnotationMirror getAnnotationForRightShift(
             BinaryOperationNode node, TransferInput<CFValue, CFStore> p) {
         AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
@@ -641,8 +724,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Handles masking. Particularly, handles the following cases: * &amp; NonNegative &rarr;
-     * NonNegative
+     * Handles masking (case 31). Particularly, handles the following cases: * &amp; NonNegative
+     * &rarr; NonNegative
      */
     private AnnotationMirror getAnnotationForAnd(
             BitwiseAndNode node, TransferInput<CFValue, CFStore> p) {

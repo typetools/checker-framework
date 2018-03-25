@@ -1,5 +1,58 @@
 ---------------------------------------------------------------------------
 
+Version 2.5.0, April 2, 2018
+
+Declaration annotations that are aliases for type annotations are now treated
+as if they apply to the top-level type.  See "Declaration annotations" section
+in the "Warnings" chapter in the manual for more details.
+
+---------------------------------------------------------------------------
+
+Version 2.4.0, March 1, 2018
+
+Added the Index Checker, which eliminates ArrayIndexOutOfBoundsException.
+
+Added the Optional Checker, which verifies uses of Java 8's Optional class.
+
+Removed the Linear Checker, whose implementation was inconsistent with its
+documentation.
+
+Added a @QualifierArgument annotation to be used on pre- and postcondition
+  annotations created by @PreconditionAnnotation, @PostconditionAnnotation,
+  and @ConditionalPostconditionAnnotation. This allows qualifiers with
+  arguments to be used in pre- and postconditions.
+
+Added new type @InternalFormForNonArray to the Signature Checker
+
+Moved annotated libraries from checker/lib/*.jar to the Central Repository:
+https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
+
+Moved the Javadoc stub file from checker/lib/javadoc.astub to
+checker/resources/javadoc.astub.
+
+Simplified the instructions for running the Checker Framework with Gradle.
+
+The Checker Framework Eclipse plugin is no longer released nor supported.
+
+Closed issues:
+
+65, 66, 100, 108, 175, 184, 190, 194, 209, 239, 260, 270, 274, 293, 302, 303,
+306, 321, 325, 341, 356, 360, 361, 371, 383, 385, 391, 397, 398, 410, 423, 424,
+431, 430, 432, 548, 1131, 1148, 1213, 1455, 1504, 1642, 1685, 1770, 1796, 1797,
+1801, 1809, 1810, 1815, 1817, 1818, 1823, 1831, 1837, 1839, 1850, 1851, 1852,
+1861.
+
+---------------------------------------------------------------------------
+
+Version 2.3.2, February 1, 2018
+
+Closed issues:
+
+946, 1133, 1232, 1319, 1625, 1633, 1696, 1709, 1712, 1734, 1738, 1749, 1754,
+1760, 1761, 1768, 1769, 1781.
+
+---------------------------------------------------------------------------
+
 Version 2.3.1, January 2, 2018
 
 Closed issues:

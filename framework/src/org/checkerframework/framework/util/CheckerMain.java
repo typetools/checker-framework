@@ -97,10 +97,15 @@ public class CheckerMain {
 
         this.checkerJar = checkerJar;
         final File searchPath = checkerJar.getParentFile();
-        this.checkerQualJar = new File(searchPath, "checker-qual.jar");
 
         replaceShorthandProcessor(args);
         argListFiles = collectArgFiles(args);
+
+        this.checkerQualJar =
+                extractFileArg(
+                        PluginUtil.CHECKER_QUAL_PATH_OPT,
+                        new File(searchPath, "checker-qual.jar"),
+                        args);
 
         this.javacJar =
                 extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
@@ -141,7 +146,7 @@ public class CheckerMain {
     }
 
     protected List<String> createRuntimeClasspath(final List<String> argsList) {
-        return new ArrayList<String>(Arrays.asList(javacJar.getAbsolutePath()));
+        return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
     protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
@@ -181,7 +186,7 @@ public class CheckerMain {
      * @return a List of files representing all arguments that started with @
      */
     protected List<File> collectArgFiles(final List<String> args) {
-        final List<File> argListFiles = new ArrayList<File>();
+        final List<File> argListFiles = new ArrayList<>();
         for (final String arg : args) {
             if (arg.startsWith("@")) {
                 argListFiles.add(new File(arg.substring(1)));
@@ -247,7 +252,7 @@ public class CheckerMain {
      */
     protected static List<String> extractOptWithPattern(
             final Pattern pattern, boolean allowEmpties, final List<String> args) {
-        final List<String> matchedArgs = new ArrayList<String>();
+        final List<String> matchedArgs = new ArrayList<>();
 
         int i = 0;
         while (i < args.size()) {
@@ -312,7 +317,7 @@ public class CheckerMain {
      * @return the arguments that should be put on the classpath when calling javac.jar
      */
     protected static List<String> extractCpOpts(final List<String> args) {
-        List<String> actualArgs = new ArrayList<String>();
+        List<String> actualArgs = new ArrayList<>();
 
         String path = null;
 
@@ -351,7 +356,7 @@ public class CheckerMain {
      * @return the arguments that should be put on the processorpath when calling javac.jar
      */
     protected static List<String> extractPpOpts(final List<String> args) {
-        List<String> actualArgs = new ArrayList<String>();
+        List<String> actualArgs = new ArrayList<>();
 
         String path = null;
 
@@ -380,8 +385,7 @@ public class CheckerMain {
      * classpath
      */
     public List<String> getExecArguments() {
-        List<String> args =
-                new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
+        List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
@@ -538,7 +542,7 @@ public class CheckerMain {
      * @return a list of all the lines in all the files
      */
     protected static List<String> expandArgFiles(final List<File> files) {
-        final List<String> content = new ArrayList<String>();
+        final List<String> content = new ArrayList<>();
         for (final File file : files) {
             try {
                 content.addAll(PluginUtil.readFile(file));
@@ -612,7 +616,7 @@ public class CheckerMain {
      * @param expectedFiles files that must exist
      */
     private static void assertFilesExist(final List<File> expectedFiles) {
-        final List<File> missingFiles = new ArrayList<File>();
+        final List<File> missingFiles = new ArrayList<>();
         for (final File file : expectedFiles) {
             if (file == null) {
                 throw new RuntimeException("Null passed to assertFilesExist");
@@ -623,7 +627,7 @@ public class CheckerMain {
         }
 
         if (!missingFiles.isEmpty()) {
-            List<String> missingAbsoluteFilenames = new ArrayList<String>(missingFiles.size());
+            List<String> missingAbsoluteFilenames = new ArrayList<>(missingFiles.size());
             for (File missingFile : missingFiles) {
                 missingAbsoluteFilenames.add(missingFile.getAbsolutePath());
             }
@@ -707,7 +711,7 @@ public class CheckerMain {
      * the name ending in "Checker" to be used as a subchecker.
      */
     private List<String> getAllCheckerClassNames() {
-        ArrayList<String> checkerClassNames = new ArrayList<String>();
+        ArrayList<String> checkerClassNames = new ArrayList<>();
         try {
             final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkerJar));
             ZipEntry entry;

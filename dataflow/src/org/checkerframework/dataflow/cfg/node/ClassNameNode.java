@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.cfg.node;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -12,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -19,9 +16,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * A node representing a class name used in an expression such as a static method invocation.
  *
  * <p>parent.<em>class</em> .forName(...)
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ClassNameNode extends Node {
 
@@ -30,7 +24,7 @@ public class ClassNameNode extends Node {
     protected final Element element;
 
     /** The parent name, if any. */
-    protected final /*@Nullable*/ Node parent;
+    protected final @Nullable Node parent;
 
     public ClassNameNode(IdentifierTree tree) {
         super(TreeUtils.typeOf(tree));

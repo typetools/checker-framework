@@ -22,7 +22,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * string verification.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotatedTypeFactory> {
 
@@ -31,15 +30,17 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
     }
 
     @Override
-    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        MethodInvocationNode nodeNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+        MethodInvocationNode nodeNode =
+                atypeFactory.getFirstNodeOfKindForTree(tree, MethodInvocationNode.class);
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
-        I18nFormatCall fc = tu.createFormatForCall(node, nodeNode, atypeFactory);
+        I18nFormatCall fc = tu.createFormatForCall(tree, nodeNode, atypeFactory);
         if (fc != null) {
             checkInvocationFormatFor(fc);
             return p;
+        } else {
+            return super.visitMethodInvocation(tree, p);
         }
-        return super.visitMethodInvocation(node, p);
     }
 
     private void checkInvocationFormatFor(I18nFormatCall fc) {

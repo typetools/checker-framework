@@ -100,8 +100,9 @@ package org.checkerframework.checker.nullness.qual does not exist
 
 If the error is
 
+% Don't remove the apostrophe here
 \begin{Verbatim}
-package org.checkerframework.checker.nullness.qual does not exist
+package 'org.checkerframework.checker.nullness.qual does not exist
 \end{Verbatim}
 
 \begin{sloppypar}
@@ -231,8 +232,7 @@ Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  cd checker
-  ant jdk.jar bindist
+  ./gradlew  buildJdk assemble
 \end{Verbatim}
 
 \noindent
@@ -353,21 +353,44 @@ give unexpected results.
 \begin{itemize}
 \item
   If the Checker Framework is unable to verify a property that you know is
-  true, then it is helpful to formulate an argument about why the property
-  is true.  Recall that the Checker Framework does modular verification,
+  true, then you should formulate a proof about why the property is true.
+  Your proof depends on some set of facts about the program and its
+  operation.  State them completely; for example, don't write ``the field
+  \<f> cannot be null when execution reaches line 22'', but justify
+  \emph{why} the field cannot be null.
+
+  Once you have written down your proof, translate each fact into a Java
+  annotation.
+
+  If you are unable to express some aspect of your proof as an annotation,
+  then the type system is not capable of reproducing your proof.  You might
+  need to find a different proof, or extend the type system to be more
+  expressive, or suppress the warning.
+
+  If you are able to express your entire proof as annotations, then look at
+  the Checker Framework error messages.  One possibility is that the errors
+  indicate that your proof was incomplete or incorrect.  Maybe your proof
+  implicitly depended on some fact you didn't write down, such as ``method
+  \<m> has no side effects.''  In this case, you should revise your proof
+  and add more annotations to your Java code.  Another possibility is that
+  your proof is incorrect, and the errors indicate where.  Another
+  possibility is that there is a bug in the type-checker.  In this case,
+  you should report it to the maintainers, giving your proof and explaining
+  why the type-checker should be able to make the same inferences that you did.
+
+  Recall that the Checker Framework does modular verification,
   one procedure at a time; it observes the specifications, but not the
   implementations, of other methods.
 
-  If any aspects of your argument are not expressed as annotations, then
-  you may need to write more annotations.  If any aspects of your argument
-  are not expressible as annotations, then you may need to extend the
-  type-checker.
+  Also see Section~\ref{handling-warnings}, which explains this same
+  methodology in different words.
 
 \item
 If a checker seems to be ignoring the annotation on a method, then it is
 possible that the checker is reading the method's signature from its
-\code{.class} file, but the \code{.class} file was not created by the JSR
-308 compiler.  You can check whether the annotations actually appear in the
+\code{.class} file, but the \code{.class} file was not created by a Java 8
+or later compiler.
+You can check whether the annotations actually appear in the
 \code{.class} file by using the \code{javap} tool.
 
 If the annotations do not appear in the \code{.class} file, here are two
@@ -694,6 +717,8 @@ If you have a problem with any checker, or with the Checker Framework,
 please file a bug at
 \url{https://github.com/typetools/checker-framework/issues}.
 (First, check whether there is an existing bug report for that issue.)
+If the problem is with an incorrect or missing annotation on a library,
+including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
 
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
@@ -723,8 +748,8 @@ helpful if you:
   possibly other files as well.  Please attach the files, rather than
   pasting their contents into the body of your bug report or email message,
   because some mailers mangle formatting of pasted text.  If you
-  encountered a problem while using tool integration such as the Eclipse
-  plugin or Maven integration, then try to reproduce the problem from the
+  encountered a problem while using tool integration such as
+  Maven integration, then try to reproduce the problem from the
   command line as well --- this will indicate whether the problem is with
   the checker itself or with the tool integration.
 \item
@@ -756,6 +781,35 @@ When reporting bugs, please focus on realistic scenarios and well-written
 code.  We are sure that you can make up artificial code that stymies the
 type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
+
+
+\subsection{Problems with annotated libraries\label{reporting-bugs-annotated-libraries}}
+
+Sometimes, a checker will report a warning because a library is not
+annotated or because the library contains incorrect annotations.
+Please do not open GitHub issues for these.
+Instead, we appreciate pull requests to help us improve the annotations.
+Alternatively or in the interim, you can use stub files as described in
+Section~\ref{stub}.
+
+If the library is annotated but has some incorrect or missing annotations,
+then please open a pull request that adds the annotations.
+You can find the annotated source for non-JDK libraries in
+\url{https://github.com/typetools/}.
+You can find the annotated JDK source in the
+\ahref{https://github.com/typetools/checker-framework}{Checker Framework
+  GitHub repository}, either in subdirectories of
+\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
+or in files named \<jdk.astub> in the checker's implementation directory.
+
+If the library is not annotated at all, you can fork it, add annotations,
+and propose that your annotated version be moved into
+\url{https://github.com/typetools/}.
+
+For either approach, please see \chapterpageref{annotating-libraries} for
+tips about writing library annotations.
+
+Thanks for your contribution to the annotated libraries!
 
 
 \section{Building from source\label{build-source}}
@@ -842,28 +896,13 @@ Obtain the latest source code from the version control repository:
 export JSR308=$HOME/jsr308
 mkdir -p $JSR308
 cd $JSR308
-hg clone https://bitbucket.org/typetools/jsr308-langtools jsr308-langtools
 git clone https://github.com/typetools/checker-framework.git checker-framework
-git clone https://github.com/typetools/annotation-tools.git annotation-tools
-git clone https://github.com/typetools/stubparser.git stubparser
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
 You might want to add the \<export JSR308=\$HOME/jsr308> line to your
 \<.bashrc> file.
 
-
-\subsection{Build the Type Annotations compiler\label{building-compiler}}
-
-The Checker Framework compiler is built upon a compiler called the Type
-Annotations compiler.  The Type Annotations compiler is a variant of the
-OpenJDK javac that supports annotations in comments.  The Checker Framework
-compiler is a small wrapper around the Type Annotations compiler, which
-adds annotated JDKs and the Checker Framework jars to the classpath.
-
-
-\begin{enumerate}
-\item
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
@@ -901,62 +940,6 @@ the Checker Framework anyway.)
 
 \end{description}
 
-\item
-Compile the Type Annotations tools:
-
-\begin{Verbatim}
-  cd $JSR308/jsr308-langtools/make
-  ant clean-and-build-all-tools
-\end{Verbatim}
-% $ to unconfuse Emacs LaTeX mode
-
-\item
- Add the \<jsr308-langtools/dist/bin> directory to the front of your PATH environment variable.
-  Example command:
-
-\begin{Verbatim}
-  export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
-\end{Verbatim}
-
-\end{enumerate}
-
-% Java 8 extends the Java language to permit annotations to appear on types,
-% as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
-% This change will be part of the Java 8 language.  We recommend that you
-% write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
-% Section~\ref{annotations-in-comments}).  The Checker Framework compiler still reads
-% such annotations, but this syntax permits you to use a compiler other than
-% the Checker Framework compiler.  For example, you can compile your code with a Java 5
-% compiler, and you can use a checker as an external tool in an IDE.
-
-
-
-\subsection{Build the Annotation File Utilities\label{afu-building}}
-
-This is simply done by:
-
-\begin{Verbatim}
-  cd $JSR308/annotation-tools
-  ant
-\end{Verbatim}
-
-You do not need to add the Annotation File Utilities to the path, as
-the Checker Framework build finds it using relative paths.
-
-
-\subsection{Build the StubParser\label{stubparser-building}}
-
-This is simply done by:
-
-\begin{Verbatim}
-  cd $JSR308/stubparser
-  mvn package -Dmaven.test.skip=true
-\end{Verbatim}
-
-You do not need to add the StubParser to the path, as
-the Checker Framework build finds it using relative paths.
-
-
 \subsection{Build the Checker Framework\label{building}}
 
 % Building (compiling) the checkers and framework from source creates the
@@ -967,20 +950,22 @@ the Checker Framework build finds it using relative paths.
 % use the pre-compiled version.
 
 \begin{enumerate}
-% \item
-% Edit \code{checker/build.properties} file so that the
-% \code{compiler.lib} property specifies the location of the Checker
-% Framework
-% \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
-% source, and you made the \code{checker-framework} and \code{jsr308-langtools} directories
-% siblings, then you don't need to edit \code{checker/build.properties}.)
 
 \item
-Run \code{ant} to build the Checker Framework:
+Run \code{./gradlew cloneAndBuildDependencies} to build the Checker Framework dependencies:
 
 \begin{Verbatim}
-  cd $JSR308/checker-framework/checker
-  ant
+  cd $JSR308/checker-framework
+  ./gradlew cloneAndBuildDependencies
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+
+\item
+Run \code{./gradlew assemble} to build the Checker Framework:
+
+\begin{Verbatim}
+  cd $JSR308/checker-framework
+  ./gradlew assemble
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -1024,10 +1009,10 @@ an IDE such as Eclipse.
 
   \begin{itemize}
 
-  \item Run \code{ant all-tests} in the \code{checker} directory:
+  \item Run \code{./gradlew allTests}:
 \begin{Verbatim}
-  cd $JSR308/checker-framework/checker
-  ant all-tests
+  cd $JSR308/checker-framework
+  ./gradlew allTests
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -1049,6 +1034,31 @@ instructions.
 \item
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
+
+
+\subsection{Configure Eclipse to edit the Checker Framework\label{building-eclipse}}
+
+These instructions are relevant if you use Eclipse as your IDE\@.
+
+\begin{enumerate}
+\item Follow the instructions earlier in Section~\ref{build-source} to
+clone and build all projects from their sources.
+\item Download Eclipse from
+the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
+and install it.
+\item Run Eclipse and set the
+workspace to the directory pointed to by \code{\$JSR308}.
+\item Enter the main Eclipse working screen and in the ``File'' menu,
+select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
+Projects into workspace''.
+\item After the ``Import Projects'' window appears, select ``Select
+Root Directory'', and select the directory pointed to by \code{\$JSR308}.
+\item Select all the projects in the folder except for the ones
+related to ``Eclipse'', ``encryption'', ``tutorial'', and ``demo''.
+\end{enumerate}
+Eclipse should successfully build all the imported projects.
+If Eclipse reports any errors, ensure you followed the instructions
+in Section~\ref{build-source}.
 
 
 \subsection{Enable Travis continuous integration builds\label{building-travis}}
@@ -1276,7 +1286,7 @@ is a verification tool that prevents or detects all errors of a given variety.  
 alternate approach is to use a bug detector such as
 \href{http://findbugs.sourceforge.net/}{FindBugs},
 \href{http://jlint.sourceforge.net/}{Jlint}, or
-\href{http://pmd.sourceforge.net/}{PMD}.
+\href{https://pmd.github.io}{PMD}.
 
 A pluggable type-checker or verifier
 differs from a bug detector in several ways:

@@ -38,6 +38,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
+import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -64,10 +66,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.*;
-*/
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
@@ -109,7 +109,7 @@ public final class TreeUtils {
     }
 
     protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
-        /*@Nullable*/ ExpressionTree mst = tree.getMethodSelect();
+        @Nullable ExpressionTree mst = tree.getMethodSelect();
         assert mst != null; /*nninvariant*/
 
         if (mst.getKind() == Tree.Kind.IDENTIFIER) {
@@ -288,7 +288,7 @@ public final class TreeUtils {
      * @return the enclosing class (or interface) as given by the path, or null if one does not
      *     exist
      */
-    public static /*@Nullable*/ ClassTree enclosingClass(final /*@Nullable*/ TreePath path) {
+    public static @Nullable ClassTree enclosingClass(final @Nullable TreePath path) {
         return (ClassTree) enclosingOfKind(path, classTreeKinds());
     }
 
@@ -310,7 +310,7 @@ public final class TreeUtils {
      * @param path the path defining the tree node
      * @return the enclosing method as given by the path, or null if one does not exist
      */
-    public static /*@Nullable*/ MethodTree enclosingMethod(final /*@Nullable*/ TreePath path) {
+    public static @Nullable MethodTree enclosingMethod(final @Nullable TreePath path) {
         return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
     }
 
@@ -322,11 +322,11 @@ public final class TreeUtils {
      * @param path the path defining the tree node
      * @return the enclosing method or lambda as given by the path, or null if one does not exist
      */
-    public static /*@Nullable*/ Tree enclosingMethodOrLambda(final /*@Nullable*/ TreePath path) {
+    public static @Nullable Tree enclosingMethodOrLambda(final @Nullable TreePath path) {
         return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
     }
 
-    public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
+    public static @Nullable BlockTree enclosingTopLevelBlock(TreePath path) {
         TreePath parpath = path.getParentPath();
         while (parpath != null && !classTreeKinds.contains(parpath.getLeaf().getKind())) {
             path = parpath;
@@ -428,7 +428,7 @@ public final class TreeUtils {
      *     tree (JCTree)
      * @return the {@link Symbol} for the given tree, or null if one could not be found
      */
-    public static /*@Nullable*/ Element elementFromTree(Tree tree) {
+    public static @Nullable Element elementFromTree(Tree tree) {
         if (tree == null) {
             ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
             return null; // dead code
@@ -1208,12 +1208,12 @@ public final class TreeUtils {
      * @return true if the given path points to an anonymous constructor, false if it does not
      */
     public static boolean isAnonymousConstructor(final MethodTree method) {
-        /*@Nullable*/ Element e = elementFromTree(method);
+        @Nullable Element e = elementFromTree(method);
         if (e == null || !(e instanceof Symbol)) {
             return false;
         }
 
-        if ((((/*@NonNull*/ Symbol) e).flags() & Flags.ANONCONSTR) != 0) {
+        if ((((@NonNull Symbol) e).flags() & Flags.ANONCONSTR) != 0) {
             return true;
         }
 
@@ -1222,7 +1222,7 @@ public final class TreeUtils {
 
     public static final List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
             List<? extends AnnotationTree> annos) {
-        List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>(annos.size());
+        List<AnnotationMirror> annotations = new ArrayList<>(annos.size());
         for (AnnotationTree anno : annos) {
             annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
         }
@@ -1278,5 +1278,19 @@ public final class TreeUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         Types javacTypes = Types.instance(ctx);
         return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
+    }
+
+    /**
+     * Returns true if {@code tree} is an implicitly typed lambda.
+     *
+     * <p>A lambda expression whose formal type parameters have inferred types is an implicitly
+     * typed lambda. (See JLS 15.27.1)
+     *
+     * @param tree any kind of tree
+     * @return true iff {@code tree} is an implicitly typed lambda.
+     */
+    public static boolean isImplicitlyTypedLambda(Tree tree) {
+        return tree.getKind() == Kind.LAMBDA_EXPRESSION
+                && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
     }
 }

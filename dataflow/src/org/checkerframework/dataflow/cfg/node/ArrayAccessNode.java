@@ -15,9 +15,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * We allow array accesses without corresponding AST {@link Tree}s.
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ArrayAccessNode extends Node {
 
@@ -73,7 +70,7 @@ public class ArrayAccessNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(2);
+        ArrayList<Node> list = new ArrayList<>(2);
         list.add(getArray());
         list.add(getIndex());
         return list;

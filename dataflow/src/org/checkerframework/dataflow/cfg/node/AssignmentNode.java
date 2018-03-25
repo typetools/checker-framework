@@ -21,8 +21,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * We allow assignments without corresponding AST {@link Tree}s.
- *
- * @author Stefan Heule
  */
 public class AssignmentNode extends Node {
 
@@ -85,7 +83,7 @@ public class AssignmentNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(2);
+        ArrayList<Node> list = new ArrayList<>(2);
         list.add(getTarget());
         list.add(getExpression());
         return list;

@@ -28,9 +28,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * The transfer function for the SameLen checker. Contains three cases:
  *
  * <ol>
- *   <li>"b = new T[a.length]" implies that b is the same length as a.
- *   <li>after "if (a.length == b.length)", a and b have the same length.
- *   <li>after "if (a == b)", a and b have the same length, if they are arrays or strings.
+ *   <li>1. "b = new T[a.length]" implies that b is the same length as a.
+ *   <li>2. after "if (a.length == b.length)", a and b have the same length.
+ *   <li>3. after "if (a == b)", a and b have the same length, if they are arrays or strings.
  * </ol>
  */
 public class SameLenTransfer extends CFTransfer {
@@ -55,7 +55,7 @@ public class SameLenTransfer extends CFTransfer {
             // lengthNode is a.length
             FieldAccessNode lengthFieldAccessNode = (FieldAccessNode) lengthNode;
             return lengthFieldAccessNode.getReceiver();
-        } else if (aTypeFactory.getMethodIdentifier().isStringLengthInvocation(lengthNode)) {
+        } else if (aTypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthNode)) {
             // lengthNode is s.length()
             MethodInvocationNode lengthMethodInvocationNode = (MethodInvocationNode) lengthNode;
             return lengthMethodInvocationNode.getTarget().getReceiver();
@@ -64,6 +64,7 @@ public class SameLenTransfer extends CFTransfer {
         return null;
     }
 
+    /** Handles case 1 */
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
@@ -168,8 +169,8 @@ public class SameLenTransfer extends CFTransfer {
                 && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
     }
     /**
-     * Handles refinement of equality comparisons. After "a.length == b.length" evaluates to true, a
-     * and b have SameLen of each other in the store.
+     * Handles refinement of equality comparisons (cases 2 and 3). After "a.length == b.length"
+     * evaluates to true, a and b have SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
         List<Receiver> receivers = new ArrayList<>();

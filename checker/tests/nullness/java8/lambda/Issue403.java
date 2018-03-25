@@ -1,8 +1,6 @@
 // Test case for Issue 403:
 // https://github.com/typetools/checker-framework/issues/403
 
-// @below-java8-jdk-skip-test
-
 import java.util.Comparator;
 
 class Issue403 {

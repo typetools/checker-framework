@@ -184,6 +184,7 @@ references to be treated as if they had a default annotation.
 There are several defaulting mechanisms, for convenience and flexibility.
 When determining the default qualifier for a use of a type, the following
 rules are used in order, until one applies.
+(Some of these currently do not work in stub files.)
 \begin{itemize}
 \item
   Use the innermost user-written \code{@DefaultQualifier}, as explained in
@@ -744,11 +745,15 @@ Type systems that support a run-time test are:
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
 \item
+  \ahrefloc{optional-checker}{Optional Checker} for errors in using the
+  \sunjavadoc{java/util/Optional.html}{Optional} type (see
+  \chapterpageref{optional-checker})
+\item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
-%\item
-%  \ahrefloc{index-checker}{Index Checker} for array accesses
-%  (see \chapterpageref{index-checker})
+\item
+  \ahrefloc{index-checker}{Index Checker} for array accesses
+  (see \chapterpageref{index-checker})
 \item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
@@ -820,9 +825,6 @@ Type systems that cannot support a run-time test are:
 \item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
-  \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
-  re-use (see \chapterpageref{linear-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})

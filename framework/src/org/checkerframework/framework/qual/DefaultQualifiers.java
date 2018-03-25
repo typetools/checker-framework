@@ -30,7 +30,10 @@ import java.lang.annotation.Target;
  * &nbsp; })
  * </pre>
  *
+ * This annotation currently has no effect in stub files.
+ *
  * @see DefaultQualifier
+ * @checker_framework.manual #defaults Default qualifier for unannotated types
  */
 // TODO: use repeating annotations (will make source depend on Java 8).
 @Documented

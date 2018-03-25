@@ -12,8 +12,6 @@ import java.util.Collections;
  *   <em>true</em>
  *   <em>false</em>
  * </pre>
- *
- * @author Stefan Heule
  */
 public class BooleanLiteralNode extends ValueLiteralNode {
 

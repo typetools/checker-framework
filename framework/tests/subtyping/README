@@ -2,8 +2,5 @@ To add a new file to the test suite, see
   ../README
 
 To run the tests, do
-  ant -e -find build.xml subtyping-tests
+  (cd $CHECKERFRAMEWORK && ./gradlew SubtypingEncryptedTest)
 
-Target "subtyping-tests" in file ../../build.xml indicates which type systems
-are tested -- currently SubtypingEncryptedTest (from
-../src/tests/SubtypingEncryptedTest.java).

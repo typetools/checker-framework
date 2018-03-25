@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -18,6 +19,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -246,6 +248,66 @@ public class OffsetEquation {
     }
 
     /**
+     * Evaluates an offset term. If the term is an integer constant, returns its value. Otherwise,
+     * returns null.
+     */
+    private Integer evalConstantTerm(Receiver termReceiver) {
+        if (termReceiver instanceof FlowExpressions.ValueLiteral) {
+            // Integer literal
+            Object value = ((FlowExpressions.ValueLiteral) termReceiver).getValue();
+            if (value instanceof Integer) {
+                return (Integer) value;
+            }
+        } else if (termReceiver instanceof FlowExpressions.MethodCall) {
+            // TODO: generalize
+            // Length of string literal
+            FlowExpressions.MethodCall call = (FlowExpressions.MethodCall) termReceiver;
+            if (call.getElement().getSimpleName().toString().equals("length")) {
+                Receiver callReceiver = call.getReceiver();
+                if (callReceiver instanceof FlowExpressions.ValueLiteral) {
+                    Object value = ((FlowExpressions.ValueLiteral) callReceiver).getValue();
+                    if (value instanceof String) {
+                        return ((String) value).length();
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Standardizes and viewpoint-adapts string terms in the list based on the supplied context.
+     * Terms that evaluate to a integer constant are removed from the list, and the constants are
+     * added to or subtracted from the intValue field.
+     */
+    private void standardizeAndViewpointAdaptExpressions(
+            List<String> terms,
+            boolean subtract,
+            FlowExpressionContext context,
+            TreePath scope,
+            boolean useLocalScope)
+            throws FlowExpressionParseException {
+        // Standardize all terms and remove constants
+        int length = terms.size(), j = 0;
+        for (int i = 0; i < length; ++i) {
+            String term = terms.get(i);
+            Receiver receiver = FlowExpressionParseUtil.parse(term, context, scope, useLocalScope);
+            Integer termConstant = evalConstantTerm(receiver);
+            if (termConstant == null) {
+                terms.set(j, receiver.toString());
+                ++j;
+            } else if (subtract) {
+                intValue -= termConstant;
+            } else {
+                intValue += termConstant;
+            }
+        }
+        // Remove remaining elements from the end of the list
+        terms.subList(j, length).clear();
+    }
+
+    /**
      * Standardizes and viewpoint-adapts the string terms based us the supplied context.
      *
      * @param context FlowExpressionContext
@@ -257,24 +319,10 @@ public class OffsetEquation {
     public void standardizeAndViewpointAdaptExpressions(
             FlowExpressionContext context, TreePath scope, boolean useLocalScope)
             throws FlowExpressionParseException {
-        List<String> newAddterms = new ArrayList<>();
-        for (String term : addedTerms) {
-            String standardizedTerm =
-                    FlowExpressionParseUtil.parse(term, context, scope, useLocalScope).toString();
-            newAddterms.add(standardizedTerm);
-        }
 
-        List<String> newSubTerms = new ArrayList<>();
-        for (String term : subtractedTerms) {
-            String standardizedTerm =
-                    FlowExpressionParseUtil.parse(term, context, scope, useLocalScope).toString();
-            newSubTerms.add(standardizedTerm);
-        }
-
-        addedTerms.clear();
-        addedTerms.addAll(newAddterms);
-        subtractedTerms.clear();
-        subtractedTerms.addAll(newSubTerms);
+        standardizeAndViewpointAdaptExpressions(addedTerms, false, context, scope, useLocalScope);
+        standardizeAndViewpointAdaptExpressions(
+                subtractedTerms, true, context, scope, useLocalScope);
     }
 
     /**
@@ -425,11 +473,10 @@ public class OffsetEquation {
      * @return an offset equation from value of known or null if the value isn't known
      */
     public static OffsetEquation createOffsetFromNodesValue(
-            Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+            Node node, ValueAnnotatedTypeFactory factory, char op) {
         assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Long i =
-                    IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
+            Long i = IndexUtil.getExactValue(node.getTree(), factory);
             if (i != null) {
                 if (op == '-') {
                     i = -i;
@@ -459,7 +506,7 @@ public class OffsetEquation {
      * @return an offset equation from the Node
      */
     public static OffsetEquation createOffsetFromNode(
-            Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+            Node node, AnnotationProvider factory, char op) {
         assert op == '+' || op == '-';
         OffsetEquation eq = new OffsetEquation();
         createOffsetFromNode(node, factory, eq, op);
@@ -467,7 +514,7 @@ public class OffsetEquation {
     }
 
     private static void createOffsetFromNode(
-            Node node, UpperBoundAnnotatedTypeFactory factory, OffsetEquation eq, char op) {
+            Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
         Receiver r = FlowExpressions.internalReprOf(factory, node);
         if (r instanceof Unknown || r == null) {
             if (node instanceof NumericalAdditionNode) {

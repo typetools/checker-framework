@@ -1,12 +1,9 @@
 package org.checkerframework.framework.util;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -34,6 +31,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -61,8 +59,6 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 /**
  * A collection of helper methods to parse a string that represents a restricted Java expression.
  * Such expressions can be found in annotations (e.g., to specify a pre- or postcondition).
- *
- * @author Stefan Heule
  */
 public class FlowExpressionParseUtil {
 
@@ -874,8 +870,6 @@ public class FlowExpressionParseUtil {
     /**
      * A very simple parser for parameter lists, i.e. strings of the form {@code a, b, c} for some
      * expressions {@code a}, {@code b} and {@code c}.
-     *
-     * @author Stefan Heule
      */
     private static class ParameterListParser {
 
@@ -1207,6 +1201,36 @@ public class FlowExpressionParseUtil {
         }
 
         /**
+         * @return a {@link FlowExpressionContext} for the method {@code methodInvocation}
+         *     (represented as a {@link MethodInvocationTree} as seen at the method use (i.e., at a
+         *     method call site).
+         */
+        public static FlowExpressionContext buildContextForMethodUse(
+                MethodInvocationTree methodInvocation, BaseContext checkerContext) {
+            ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocation);
+            FlowExpressions.Receiver receiver;
+            if (receiverTree == null) {
+                receiver =
+                        FlowExpressions.internalReprOfImplicitReceiver(
+                                TreeUtils.elementFromUse(methodInvocation));
+            } else {
+                receiver =
+                        FlowExpressions.internalReprOf(
+                                checkerContext.getAnnotationProvider(), receiverTree);
+            }
+
+            List<? extends ExpressionTree> args = methodInvocation.getArguments();
+            List<FlowExpressions.Receiver> argReceivers = new ArrayList<>(args.size());
+            for (ExpressionTree argTree : args) {
+                argReceivers.add(
+                        FlowExpressions.internalReprOf(
+                                checkerContext.getAnnotationProvider(), argTree));
+            }
+
+            return new FlowExpressionContext(receiver, argReceivers, checkerContext);
+        }
+
+        /**
          * @return a {@link FlowExpressionContext} for the constructor {@code n} (represented as a
          *     {@link Node} as seen at the method use (i.e., at a method call site).
          */
@@ -1292,7 +1316,7 @@ public class FlowExpressionParseUtil {
                 || elt.getKind() == ElementKind.PARAMETER) {
             return new LocalVariable(elt);
         }
-        Receiver receiverF = FlowExpressions.internalRepOfImplicitReceiver(elt);
+        Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(elt);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         receiverF, null, provider.getContext());
@@ -1310,16 +1334,15 @@ public class FlowExpressionParseUtil {
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
-        private /*@CompilerMessageKey*/ String errorKey;
+        private @CompilerMessageKey String errorKey;
         public final Object[] args;
 
-        public FlowExpressionParseException(
-                /*@CompilerMessageKey*/ String errorKey, Object... args) {
+        public FlowExpressionParseException(@CompilerMessageKey String errorKey, Object... args) {
             this(null, errorKey, args);
         }
 
         public FlowExpressionParseException(
-                Throwable cause, /*@CompilerMessageKey*/ String errorKey, Object... args) {
+                Throwable cause, @CompilerMessageKey String errorKey, Object... args) {
             super(cause);
             this.errorKey = errorKey;
             this.args = args;

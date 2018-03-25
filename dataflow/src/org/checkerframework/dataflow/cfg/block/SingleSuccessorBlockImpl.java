@@ -1,20 +1,13 @@
 package org.checkerframework.dataflow.cfg.block;
 
-/*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import org.checkerframework.dataflow.analysis.Store;
 
-/**
- * Implementation of a non-special basic block.
- *
- * @author Stefan Heule
- */
+/** Implementation of a non-special basic block. */
 public abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock {
 
     /** Internal representation of the successor. */
-    protected /*@Nullable*/ BlockImpl successor;
+    protected @Nullable BlockImpl successor;
 
     /**
      * The rule below say that EACH store at the end of a single successor block flow to the
@@ -27,7 +20,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
     }
 
     @Override
-    public /*@Nullable*/ Block getSuccessor() {
+    public @Nullable Block getSuccessor() {
         return successor;
     }
 

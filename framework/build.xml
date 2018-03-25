@@ -16,7 +16,6 @@
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
     <property name="javadoc.private" value="false"/>
-    <property name="lib" value="../checker/lib"/>
 
 
     <!-- Dependendencies on other projects (such as dataflow)
@@ -123,7 +122,7 @@
         -->
     </target>
 
-    <target name="build" depends="prep,build.check.uptodate"
+    <target name="build" depends="prep,build.check.uptodate,checker-qual-jar"
             unless="build.uptodate"
             description="Compile files.  Does not update any jars">
 
@@ -142,7 +141,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}:${checker.qual.lib}:"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
@@ -516,7 +515,7 @@
     <target name="whole-program-inference-tests" depends="jar,build-tests"
             description="Run tests for whole-program inference using .jaif files">
         <delete dir="build/whole-program-inference"/>
-        <!--Runs the checker on test files with the whole-program inference on
+        <!-- Runs the checker on test files with the whole-program inference on
              to generate .jaif files.-->
         <antcall target="-run-tests">
             <param name="param" value="tests.WholeProgramInferenceTest"/>
@@ -646,7 +645,7 @@
 
     <target name="jtreg-tests" depends="-jtreg.download,-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
-        <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
+        <!-- As of version 4.2-b02, a NullPointerException is thrown without making this dir -->
         <mkdir dir="${build}/jtreg/all/report/html"/>
         <mkdir dir="${build}/jtreg/all/report/text"/>
         <jtreg-tool2 name="all" tests="."/>
@@ -826,6 +825,13 @@
             <param name="checker-name" value="org.checkerframework.framework.util.PurityChecker"/>
             <param name="checker-args" value="-Awarns -AprintErrorStack"/>
         </antcall>
+    </target>
+
+    <target name="reformat"
+          description="Reformat Java code">
+        <ant dir="..">
+            <target name="reformat"/>
+        </ant>
     </target>
 
 

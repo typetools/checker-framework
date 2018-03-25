@@ -202,15 +202,12 @@ public class QualifierDefaults {
         return false;
     }
 
-    /**
-     * Add standard unchecked defaults that do not conflict with previously added defaults.
-     *
-     * @param tops AnnotationMirrors that are top
-     * @param bottoms AnnotationMirrors that are bottom
-     */
-    public void addUncheckedStandardDefaults(
-            Iterable<? extends AnnotationMirror> tops,
-            Iterable<? extends AnnotationMirror> bottoms) {
+    /** Add standard unchecked defaults that do not conflict with previously added defaults. */
+    public void addUncheckedStandardDefaults() {
+        QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+        Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+        Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
+
         for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
             for (AnnotationMirror top : tops) {
@@ -230,15 +227,12 @@ public class QualifierDefaults {
         }
     }
 
-    /**
-     * Add standard CLIMB defaults that do not conflict with previously added defaults.
-     *
-     * @param tops AnnotationMirrors that are top
-     * @param bottoms AnnotationMirrors that are bottom
-     */
-    public void addClimbStandardDefaults(
-            Iterable<? extends AnnotationMirror> tops,
-            Iterable<? extends AnnotationMirror> bottoms) {
+    /** Add standard CLIMB defaults that do not conflict with previously added defaults. */
+    public void addClimbStandardDefaults() {
+        QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+        Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+        Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
+
         for (TypeUseLocation loc : standardClimbDefaultsTop) {
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
@@ -699,7 +693,7 @@ public class QualifierDefaults {
             final Element annotationScope, final AnnotatedTypeMirror type) {
         DefaultSet defaults = defaultsAt(annotationScope);
         DefaultApplierElement applier =
-                new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
+                createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
         for (Default def : defaults) {
             applier.applyDefault(def);
@@ -716,18 +710,26 @@ public class QualifierDefaults {
         }
     }
 
+    protected DefaultApplierElement createDefaultApplierElement(
+            AnnotatedTypeFactory atypeFactory,
+            Element annotationScope,
+            AnnotatedTypeMirror type,
+            boolean applyToTypeVar) {
+        return new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
+    }
+
     public static class DefaultApplierElement {
 
-        private final AnnotatedTypeFactory atypeFactory;
-        private final Element scope;
-        private final AnnotatedTypeMirror type;
+        protected final AnnotatedTypeFactory atypeFactory;
+        protected final Element scope;
+        protected final AnnotatedTypeMirror type;
 
         /**
          * Location to which to apply the default. (Should only be set by the applyDefault method.)
          */
-        private TypeUseLocation location;
+        protected TypeUseLocation location;
 
-        private final DefaultApplierElementImpl impl;
+        protected final DefaultApplierElementImpl impl;
 
         /*Local type variables are defaulted to top when flow is turned on
           We only want to default the top level type variable (and not type variables that are nested
@@ -770,7 +772,7 @@ public class QualifierDefaults {
          * @param type type to which qual would be applied
          * @return true if this application should proceed
          */
-        private static boolean shouldBeAnnotated(
+        protected boolean shouldBeAnnotated(
                 final AnnotatedTypeMirror type, final boolean applyToTypeVar) {
 
             return !(type == null
@@ -790,7 +792,7 @@ public class QualifierDefaults {
          * @param type type to add qual
          * @param qual annotation to add
          */
-        private static void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
+        protected void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
             // Add the default annotation, but only if no other
             // annotation is present.
             if (!type.isAnnotatedInHierarchy(qual) && type.getKind() != TypeKind.EXECUTABLE) {
@@ -813,7 +815,7 @@ public class QualifierDefaults {
             }
         }
 
-        private class DefaultApplierElementImpl
+        protected class DefaultApplierElementImpl
                 extends AnnotatedTypeScanner<Void, AnnotationMirror> {
 
             @Override

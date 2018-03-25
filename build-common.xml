@@ -58,6 +58,12 @@
 
     <target name="prep-all"
             description="Perform preparation useful for all projects">
+       <echo level="warning">
+********************************************************************************
+* Ant build files are deprecated and will be removed soon. Use Gradle instead. *
+* See docs/developer/developer-manual.html for an overview of Gradle tasks.    *
+********************************************************************************
+        </echo>
         <java fork="true"
               outputproperty="compiler.version"
               classpath="${javac.lib}"
@@ -140,5 +146,16 @@ points to version ${build.version} of the 'javac.jar' library."/>
             <arg value="ctags -e -f TAGS `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
         </exec>
     </target>
+
+  <target name="-check-for-checker-qual-jar" description="Check if checker-qual.jar exists.">
+    <available file="${checker.qual.lib}" property="checker-qual-exists"/>
+  </target>
+
+  <target name="checker-qual-jar" description="Build checker-qual-jar" depends="-check-for-checker-qual-jar"
+       unless="checker-qual-exists">
+    <ant dir="../checker">
+      <target name="checker-qual-jar"/>
+    </ant>
+  </target>
 
 </project>

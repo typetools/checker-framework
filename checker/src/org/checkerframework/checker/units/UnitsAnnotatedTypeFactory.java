@@ -7,7 +7,6 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -23,6 +22,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -62,10 +62,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private Map<String, UnitsRelations> unitsRel;
 
     private static final Map<String, Class<? extends Annotation>> externalQualsMap =
-            new HashMap<String, Class<? extends Annotation>>();
+            new HashMap<>();
 
-    private static final Map<String, AnnotationMirror> aliasMap =
-            new HashMap<String, AnnotationMirror>();
+    private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
 
     public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
         // use true to enable flow inference, false to disable it
@@ -143,7 +142,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected Map<String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
-            unitsRel = new HashMap<String, UnitsRelations>();
+            unitsRel = new HashMap<>();
             // Always add the default units relations, for the standard units.
             unitsRel.put(
                     UnitsRelationsDefault.class.getCanonicalName(),
@@ -153,13 +152,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // Use the Units Annotated Type Loader instead of the default one
-        loader = new UnitsAnnotationClassLoader(checker);
+    protected AnnotationClassLoader createAnnotationClassLoader() {
+        // Use the UnitsAnnotationClassLoader instead of the default one
+        return new UnitsAnnotationClassLoader(checker);
+    }
 
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // get all the loaded annotations
-        Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
-        qualSet.addAll(getBundledTypeQualifiersWithPolyAll());
+        Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiersWithPolyAll();
 
         // load all the external units
         loadAllExternalUnits();
@@ -190,9 +191,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Loads and processes a single external units qualifier. */
     private void loadExternalUnit(String annoName) {
-        Class<? extends Annotation> annoClass = loader.loadExternalAnnotationClass(annoName);
-
-        addUnitToExternalQualMap(annoClass);
+        // loadExternalAnnotationClass() returns null for alias units
+        Class<? extends Annotation> loadedClass = loader.loadExternalAnnotationClass(annoName);
+        if (loadedClass != null) {
+            addUnitToExternalQualMap(loadedClass);
+        }
     }
 
     /** Loads and processes the units qualifiers from a single external directory. */

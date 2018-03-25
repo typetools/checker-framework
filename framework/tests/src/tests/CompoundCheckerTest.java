@@ -2,16 +2,12 @@ package tests;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.compound.CompoundChecker;
 
-/**
- * Tests for the compound checker design pattern
- *
- * @author smillst
- */
-public class CompoundCheckerTest extends CheckerFrameworkPerDirectoryTest {
+/** Tests for the compound checker design pattern */
+public class CompoundCheckerTest extends FrameworkPerDirectoryTest {
 
     public CompoundCheckerTest(List<File> testFiles) {
         super(testFiles, CompoundChecker.class, "compound-checker", "-Anomsgtext");

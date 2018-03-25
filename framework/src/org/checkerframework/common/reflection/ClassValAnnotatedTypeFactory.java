@@ -53,7 +53,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return new HashSet<Class<? extends Annotation>>(
+        return new HashSet<>(
                 Arrays.asList(
                         UnknownClass.class,
                         ClassVal.class,
@@ -119,7 +119,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
                 List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-                Set<String> lubClassNames = new TreeSet<String>();
+                Set<String> lubClassNames = new TreeSet<>();
                 lubClassNames.addAll(a1ClassNames);
                 lubClassNames.addAll(a2ClassNames);
 
@@ -145,7 +145,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
                 List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-                Set<String> glbClassNames = new TreeSet<String>();
+                Set<String> glbClassNames = new TreeSet<>();
                 glbClassNames.addAll(a1ClassNames);
                 glbClassNames.retainAll(a2ClassNames);
 
@@ -329,6 +329,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return float.class.getCanonicalName();
                 case BOOLEAN:
                     return boolean.class.getCanonicalName();
+                case VOID:
+                    return "void";
                 default:
                     checker.errorAbort(
                             "ClassValAnnotatedTypeFactory.getClassname: did not expect "

@@ -40,8 +40,6 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * This class provides a collection of utilities to ease working with syntax trees that have
  * something to do with Formatters.
- *
- * @author Konstantin Weitz
  */
 public class FormatterTreeUtil {
     public final BaseTypeChecker checker;
@@ -151,8 +149,7 @@ public class FormatterTreeUtil {
 
     public Result<ConversionCategory[]> asFormatCallCategories(MethodInvocationNode node) {
         // TODO make sure the method signature looks good
-        return new Result<ConversionCategory[]>(
-                asFormatCallCategoriesLowLevel(node), node.getTree());
+        return new Result<>(asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
     /** Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}. */
@@ -206,7 +203,7 @@ public class FormatterTreeUtil {
                 if (inv != null) {
                     msg = invalidFormatAnnotationToErrorMessage(inv);
                 }
-                return new Result<String>(msg, formatArg);
+                return new Result<>(msg, formatArg);
             }
             return null;
         }
@@ -277,7 +274,7 @@ public class FormatterTreeUtil {
             if (type != InvocationType.VARARG && args.size() > 0) {
                 loc = args.get(0);
             }
-            return new Result<InvocationType>(type, loc);
+            return new Result<>(type, loc);
         }
 
         /**
@@ -296,13 +293,13 @@ public class FormatterTreeUtil {
          * #isParameterNull(TypeMirror) isParameterNull} to work with the result.
          */
         public final Result<TypeMirror>[] getParamTypes() {
-            // One to make javac happy, the other to make Eclipse happy...
+            // One to suppress warning in javac, the other to suppress warning in Eclipse...
             @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
                 TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
-                res[i] = new Result<TypeMirror>(argType, arg);
+                res[i] = new Result<>(argType, arg);
             }
             return res;
         }

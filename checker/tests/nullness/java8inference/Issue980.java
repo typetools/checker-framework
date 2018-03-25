@@ -1,8 +1,6 @@
 // Test case that was submitted in Issue 402, but was combined with Issue 979
 // https://github.com/typetools/checker-framework/issues/979
 
-// @below-java8-jdk-skip-test
-
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

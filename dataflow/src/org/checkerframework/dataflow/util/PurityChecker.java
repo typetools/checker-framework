@@ -24,11 +24,6 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 /**
  * A visitor that determines the purity (as defined by {@link
  * org.checkerframework.dataflow.qual.SideEffectFree}, {@link
@@ -39,7 +34,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
- * @author Stefan Heule
  */
 public class PurityChecker {
 
@@ -97,7 +91,7 @@ public class PurityChecker {
             return notSEFreeReasons;
         }
 
-        /** Add {@code reason} as a reason why the method is not side-effect free. */
+        /** Add {@code reason} as a reason why the method is not side-effect-free. */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
@@ -122,7 +116,7 @@ public class PurityChecker {
         }
 
         /**
-         * Add {@code reason} as a reason why the method is not both side-effect free and
+         * Add {@code reason} as a reason why the method is not both side-effect-free and
          * deterministic.
          */
         public void addNotBothReason(Tree t, String msgId) {

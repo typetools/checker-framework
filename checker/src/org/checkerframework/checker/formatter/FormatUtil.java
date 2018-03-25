@@ -11,11 +11,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
 
-/**
- * This class provides a collection of utilities to ease working with format strings.
- *
- * @author Konstantin Weitz
- */
+/** This class provides a collection of utilities to ease working with format strings. */
 public class FormatUtil {
     private static class Conversion {
         private final int index;
@@ -78,7 +74,7 @@ public class FormatUtil {
         int maxindex = -1;
 
         Conversion[] cs = parse(format);
-        Map<Integer, ConversionCategory> conv = new HashMap<Integer, ConversionCategory>();
+        Map<Integer, ConversionCategory> conv = new HashMap<>();
 
         for (Conversion c : cs) {
             int index = c.index();
@@ -139,7 +135,7 @@ public class FormatUtil {
     }
 
     private static Conversion[] parse(String format) {
-        ArrayList<Conversion> cs = new ArrayList<Conversion>();
+        ArrayList<Conversion> cs = new ArrayList<>();
         Matcher m = fsPattern.matcher(format);
         while (m.find()) {
             char c = conversionCharFromFormat(m);
@@ -195,6 +191,8 @@ public class FormatUtil {
         /**
          * Constructs an instance of this class with the mismatched conversion and the expected one.
          */
+        // TODO: Warning started happening when annotated jdk is used.
+        @SuppressWarnings("compilermessages:conditional.type.incompatible")
         public IllegalFormatConversionCategoryException(
                 ConversionCategory expected, ConversionCategory found) {
             super(

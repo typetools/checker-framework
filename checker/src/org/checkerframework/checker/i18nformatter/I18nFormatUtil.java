@@ -19,7 +19,6 @@ import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
  * This class provides a collection of utilities to ease working with i18n format strings.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
- * @author Siwakorn Srisakaokul
  */
 public class I18nFormatUtil {
 
@@ -39,7 +38,7 @@ public class I18nFormatUtil {
         I18nConversion[] cs = MessageFormatParser.parse(format);
 
         int max_index = -1;
-        Map<Integer, I18nConversionCategory> conv = new HashMap<Integer, I18nConversionCategory>();
+        Map<Integer, I18nConversionCategory> conv = new HashMap<>();
 
         for (I18nConversion c : cs) {
             int index = c.index;
@@ -155,8 +154,8 @@ public class I18nFormatUtil {
         };
 
         public static I18nConversion[] parse(String pattern) {
-            MessageFormatParser.categories = new ArrayList<I18nConversionCategory>();
-            MessageFormatParser.argumentIndices = new ArrayList<Integer>();
+            MessageFormatParser.categories = new ArrayList<>();
+            MessageFormatParser.argumentIndices = new ArrayList<>();
             MessageFormatParser.locale = Locale.getDefault(Locale.Category.FORMAT);
             applyPattern(pattern);
 

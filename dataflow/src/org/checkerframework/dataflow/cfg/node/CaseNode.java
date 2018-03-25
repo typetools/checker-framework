@@ -15,9 +15,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * <pre>
  *   case <em>constant</em>:
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class CaseNode extends Node {
 
@@ -73,7 +70,7 @@ public class CaseNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(2);
+        ArrayList<Node> list = new ArrayList<>(2);
         list.add(getSwitchOperand());
         list.add(getCaseOperand());
         return list;

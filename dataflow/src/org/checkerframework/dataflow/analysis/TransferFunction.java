@@ -1,10 +1,7 @@
 package org.checkerframework.dataflow.analysis;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -27,7 +24,6 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  * (and modify) the stores contained in the argument passed; the ownership is transfered from the
  * caller to that function.
  *
- * @author Stefan Heule
  * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>>
@@ -37,5 +33,5 @@ public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>
      * @return the initial store to be used by the org.checkerframework.dataflow analysis. {@code
      *     parameters} is only set if the underlying AST is a method.
      */
-    S initialStore(UnderlyingAST underlyingAST, /*@Nullable*/ List<LocalVariableNode> parameters);
+    S initialStore(UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters);
 }

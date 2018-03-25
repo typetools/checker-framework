@@ -45,6 +45,21 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * The SameLen Checker is used to determine whether there are multiple fixed-length sequences (such
  * as arrays or strings) in a program that share the same length. It is part of the Index Checker,
  * and is used as a subchecker by the Index Checker's components.
+ *
+ * <p>This annotated type factory refines types in X cases:
+ *
+ * <ul>
+ *   <li>1. {@code @PolyAll} and {@code @PolyLength} are refined to {@code @PolySameLen }.
+ *   <li>2. If a variable is declared with a user-written {@code @SameLen} annotation, then the type
+ *       of the new variable is the union of the user-written arrays in the annotation and the
+ *       arrays listed in the SameLen types of each of those arrays.
+ *   <li>3. The greatest lower bound of two SameLen annotations is the union of the two sets of
+ *       arrays.
+ *   <li>4. The least upper bound of two SameLen annotations is the intersection of the two sets of
+ *       arrays.
+ *   <li>5. The type of an expression of the form {@code new T[a.length]} is the union of the
+ *       SameLen type of {@code a} and the arrays listed in {@code a}'s SameLen type.
+ * </ul>
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -54,6 +69,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final IndexMethodIdentifier imf;
 
+    /** Handles case 1. */
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
@@ -62,7 +78,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
 
-        imf = new IndexMethodIdentifier(processingEnv);
+        imf = new IndexMethodIdentifier(this);
 
         this.postInit();
     }
@@ -88,6 +104,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new SameLenQualifierHierarchy(factory);
     }
 
+    /** Handles case 2. */
     @Override
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
@@ -127,7 +144,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
 
-        HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
+        HashSet<String> newValues = new HashSet<>(a1Names.size() + a2Names.size());
 
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
@@ -164,7 +181,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
 
         assert receivers.size() == annos.size();
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (int i = 0; i < receivers.size(); i++) {
             Receiver rec = receivers.get(i);
             AnnotationMirror anno = annos.get(i);
@@ -175,7 +192,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 values.addAll(getValueOfAnnotationWithStringArgument(anno));
             }
         }
-        AnnotationMirror res = getCombinedSameLen(values, new ArrayList<String>());
+        AnnotationMirror res = getCombinedSameLen(values, new ArrayList<>());
         return res;
     }
 
@@ -208,6 +225,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         }
 
+        /** Case 3. */
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
@@ -233,6 +251,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        /** Case 4. */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
@@ -302,6 +321,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory);
         }
 
+        /** Case 5. */
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
             if (node.getDimensions().size() == 1) {

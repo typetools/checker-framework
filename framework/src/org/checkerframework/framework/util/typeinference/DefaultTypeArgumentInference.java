@@ -26,7 +26,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -115,16 +114,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             ExecutableElement methodElem,
             AnnotatedExecutableType methodType) {
 
-        // TODO: REMOVE THIS HACK WHEN YOU CAN CALL getTopAnnotations on GeneralAnnotatedTypeFactory
-        // TODO: currently this will only affect inferring METHOD type arguments on constructor
-        // TODO: invocations for the Nullness type system
-        if (typeFactory instanceof GeneralAnnotatedTypeFactory) {
-            return new HashMap<>();
-        }
-
         final List<AnnotatedTypeMirror> argTypes =
                 TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
         final TreePath pathToExpression = typeFactory.getPath(expressionTree);
+        assert pathToExpression != null;
         final AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 

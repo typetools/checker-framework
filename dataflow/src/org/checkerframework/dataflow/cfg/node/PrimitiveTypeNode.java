@@ -11,9 +11,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * A node representing a primitive type used in an expression such as a field access
  *
  * <p><em>type</em> .class
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class PrimitiveTypeNode extends Node {
 

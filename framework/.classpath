@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="tests/src"/>
+	<classpathentry excluding="testannotations/" kind="src" path="tests/src"/>
 	<classpathentry kind="src" path="tests/test-lubglb"/>
 	<classpathentry kind="src" path="tests/test-polyall"/>
 	<classpathentry exported="true" kind="lib" path="tests/junit-4.12.jar"/>
@@ -13,5 +13,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/annotation-file-utilities"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/scene-lib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/stubparser"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/checker-qual"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

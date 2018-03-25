@@ -2,9 +2,7 @@ To add a new file to the test suite, see
   ../README
 
 To run the tests, do
-  ant -e -find build.xml stringpattern-tests
-
-See target "stringpattern-tests" in file ../../build.xml for details.
+  (cd $CHECKERFRAMEWORK && ./gradlew SubtypingStringPatternsFullTest)
 
 These cannot be in the same directory as subtyping-tests because some of the
 expected errors in that directory are specific to the Encrypted type system.

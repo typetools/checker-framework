@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.cfg;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePathScanner;
@@ -23,6 +19,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.xml.ws.Holder;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
@@ -30,11 +27,7 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * Class to generate the DOT representation of the control flow graph of a given method.
- *
- * @author Stefan Heule
- */
+/** Class to generate the DOT representation of the control flow graph of a given method. */
 public class JavaSource2CFGDOT {
 
     /** Main method. */
@@ -127,7 +120,7 @@ public class JavaSource2CFGDOT {
                     String method,
                     String clas,
                     boolean pdf,
-                    /*@Nullable*/ Analysis<A, S, T> analysis) {
+                    @Nullable Analysis<A, S, T> analysis) {
         Entry<MethodTree, CompilationUnitTree> m =
                 getMethodTreeAndCompilationUnit(inputFile, method, clas);
         generateDOTofCFG(
@@ -141,7 +134,7 @@ public class JavaSource2CFGDOT {
                     String method,
                     String clas,
                     boolean pdf,
-                    /*@Nullable*/ Analysis<A, S, T> analysis,
+                    @Nullable Analysis<A, S, T> analysis,
                     MethodTree m,
                     CompilationUnitTree r) {
         String fileName = (new File(inputFile)).getName();
@@ -161,7 +154,7 @@ public class JavaSource2CFGDOT {
         args.put("outdir", outputDir);
         args.put("checkerName", "");
 
-        CFGVisualizer<A, S, T> viz = new DOTCFGVisualizer<A, S, T>();
+        CFGVisualizer<A, S, T> viz = new DOTCFGVisualizer<>();
         viz.init(args);
         Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
         viz.shutdown();
@@ -187,7 +180,7 @@ public class JavaSource2CFGDOT {
      * @return the AST of a specific method in a specific class in a specific file (or null if no
      *     such method exists)
      */
-    public static /*@Nullable*/ MethodTree getMethodTree(
+    public static @Nullable MethodTree getMethodTree(
             String file, final String method, String clas) {
         return getMethodTreeAndCompilationUnit(file, method, clas).getKey();
     }
@@ -196,7 +189,7 @@ public class JavaSource2CFGDOT {
      * @return the AST of a specific method in a specific class as well as the {@link
      *     CompilationUnitTree} in a specific file (or null they do not exist).
      */
-    public static Entry</*@Nullable*/ MethodTree, /*@Nullable*/ CompilationUnitTree>
+    public static Entry<@Nullable MethodTree, @Nullable CompilationUnitTree>
             getMethodTreeAndCompilationUnit(String file, final String method, String clas) {
         final Holder<MethodTree> m = new Holder<>();
         final Holder<CompilationUnitTree> c = new Holder<>();

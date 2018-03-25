@@ -3,6 +3,7 @@ package org.checkerframework.common.value;
 import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
@@ -16,7 +17,6 @@ import org.checkerframework.framework.source.SupportedOptions;
  * code containing {@code Positive} annotations, then the Index Checker also needs to be run to
  * guarantee soundness.
  *
- * @author plvines
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @StubFiles("statically-executable.astub")
@@ -34,7 +34,7 @@ public class ValueChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         // Don't call super otherwise MethodVal will be added as a subChecker
         // which creates a circular dependency.
-        return new LinkedHashSet<Class<? extends BaseTypeChecker>>();
+        return new LinkedHashSet<>();
     }
 
     @Override
@@ -42,5 +42,12 @@ public class ValueChecker extends BaseTypeChecker {
         // Because this checker is a subchecker of MethodVal,
         // reflection can't be resolved.
         return false;
+    }
+
+    @Override
+    public void typeProcessingOver() {
+        // Reset ignore overflow.
+        Range.IGNORE_OVERFLOW = false;
+        super.typeProcessingOver();
     }
 }

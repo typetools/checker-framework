@@ -51,7 +51,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return new HashSet<Class<? extends Annotation>>(
+        return new HashSet<>(
                 Arrays.asList(MethodVal.class, MethodValBottom.class, UnknownMethod.class));
     }
 
@@ -168,7 +168,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
                 List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
 
-                Set<MethodSignature> lubSigs = new HashSet<MethodSignature>(a1Sigs);
+                Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
                 lubSigs.addAll(a2Sigs);
 
                 AnnotationMirror result = createMethodVal(lubSigs);
@@ -348,8 +348,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 /**
  * An object that represents a the tuple that identifies a method signature: (fully qualified class
  * name, method name, number of parameters)
- *
- * @author smillst
  */
 class MethodSignature {
     String className;

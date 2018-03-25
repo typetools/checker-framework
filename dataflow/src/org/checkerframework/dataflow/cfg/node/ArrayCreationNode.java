@@ -1,15 +1,12 @@
 package org.checkerframework.dataflow.cfg.node;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
@@ -19,14 +16,11 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  *   <em>new type [1][2]</em>
  *   <em>new type [] = { expr1, expr2, ... }</em>
  * </pre>
- *
- * @author Stefan Heule
- * @author Charlie Garrett
  */
 public class ArrayCreationNode extends Node {
 
     /** The tree is null when an array is created for variable arity method calls. */
-    protected final /*@Nullable*/ NewArrayTree tree;
+    protected final @Nullable NewArrayTree tree;
     /**
      * The length of this list is the number of dimensions in the array. Each element is the size of
      * the given dimension.
@@ -36,7 +30,7 @@ public class ArrayCreationNode extends Node {
     protected final List<Node> initializers;
 
     public ArrayCreationNode(
-            /*@Nullable*/ NewArrayTree tree,
+            @Nullable NewArrayTree tree,
             TypeMirror type,
             List<Node> dimensions,
             List<Node> initializers) {
@@ -128,7 +122,7 @@ public class ArrayCreationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(dimensions.size() + initializers.size());
+        ArrayList<Node> list = new ArrayList<>(dimensions.size() + initializers.size());
         list.addAll(dimensions);
         list.addAll(initializers);
         return list;

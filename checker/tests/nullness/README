@@ -3,4 +3,4 @@ For more details, see
   ../README
 
 To run the tests, do
-  ant -e -find build.xml nullness-tests
+  (cd $CHECKERFRAMEWORK && ./gradlew NullnessFBCTest)

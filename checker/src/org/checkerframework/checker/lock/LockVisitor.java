@@ -48,9 +48,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
-import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -85,8 +83,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
-
-        checkForAnnotatedJdk();
     }
 
     @Override
@@ -132,9 +128,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         variableTree.getModifiers().getAnnotations());
         for (AnnotationMirror anno : annos) {
             if (AnnotationUtils.areSameByClass(anno, GuardedBy.class)
-                    || AnnotationUtils.areSameByClass(anno, net.jcip.annotations.GuardedBy.class)
-                    || AnnotationUtils.areSameByClass(
-                            anno, javax.annotation.concurrent.GuardedBy.class)) {
+                    || AnnotationUtils.areSameByName(anno, "net.jcip.annotations.GuardedBy")
+                    || AnnotationUtils.areSameByName(
+                            anno, "javax.annotation.concurrent.GuardedBy")) {
                 guardedByAnnotationCount++;
                 if (guardedByAnnotationCount > 1) {
                     checker.report(Result.failure("multiple.guardedby.annotations"), variableTree);
@@ -232,16 +228,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             lockPreconditionAnnotationCount++;
         }
 
-        if (atypeFactory.getDeclAnnotation(methodElement, net.jcip.annotations.GuardedBy.class)
-                != null) {
-            lockPreconditionAnnotationCount++;
-        }
+        try {
+            if (atypeFactory.jcip_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcip_GuardedBy)
+                            != null) {
+                lockPreconditionAnnotationCount++;
+            }
 
-        if (lockPreconditionAnnotationCount < 2
-                && atypeFactory.getDeclAnnotation(
-                                methodElement, javax.annotation.concurrent.GuardedBy.class)
-                        != null) {
-            lockPreconditionAnnotationCount++;
+            if (lockPreconditionAnnotationCount < 2
+                    && atypeFactory.javax_GuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javax_GuardedBy)
+                            != null) {
+                lockPreconditionAnnotationCount++;
+            }
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
         }
 
         if (lockPreconditionAnnotationCount > 1) {
@@ -295,7 +296,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotationMirror guardSatisfied =
                     AnnotationUtils.getAnnotationByClass(annos, checkerGuardSatisfiedClass);
             if (guardSatisfied != null) {
-                Tree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
+                ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
                 if (receiverTree == null) {
                     checkLockOfImplicitThis(methodInvocationTree, effectiveGb);
                 } else {
@@ -419,7 +420,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
-        if (atypeFactory.getNodeForTree(tree) instanceof FieldAccessNode) {
+        if (TreeUtils.isFieldAccess(tree)) {
             AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
             // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
             // it.
@@ -591,7 +592,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             AnnotationMirror ensuresLockHeldAnno =
                     atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
-            List<String> expressions = new ArrayList<String>();
+            List<String> expressions = new ArrayList<>();
 
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
@@ -678,7 +679,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // Combine all of the actual parameters into one list of AnnotationMirrors
 
         ArrayList<AnnotationMirror> passedArgAnnotations =
-                new ArrayList<AnnotationMirror>(guardSatisfiedIndex.length);
+                new ArrayList<>(guardSatisfiedIndex.length);
         passedArgAnnotations.add(
                 methodCallReceiver == null
                         ? null
@@ -939,7 +940,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitAnnotation(AnnotationTree tree, Void p) {
-        ArrayList<AnnotationTree> annotationTreeList = new ArrayList<AnnotationTree>(1);
+        ArrayList<AnnotationTree> annotationTreeList = new ArrayList<>(1);
         annotationTreeList.add(tree);
         List<AnnotationMirror> amList =
                 TreeUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);
@@ -1086,11 +1087,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-        Node node = atypeFactory.getNodeForTree(tree);
-        if (node instanceof FieldAccessNode) {
-            Node receiverNode = ((FieldAccessNode) node).getReceiver();
-            if (receiverNode instanceof ImplicitThisLiteralNode) {
-                // All other field access are handle via visitMemberSelect
+        // If the identifier is a field accessed via an implicit this,
+        // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.
+        if (TreeUtils.isFieldAccess(tree)) {
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            // If the parent is not a member select, or if it is and the field is the expression,
+            // then the field is accessed via an implicit this.
+            if (parent.getKind() != Kind.MEMBER_SELECT
+                    || ((MemberSelectTree) parent).getExpression() == tree) {
                 AnnotationMirror guardedBy =
                         atypeFactory
                                 .getSelfType(tree)
@@ -1129,8 +1133,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     @Override
     public Void visitBinary(BinaryTree binaryTree, Void p) {
         if (TreeUtils.isStringConcatenation(binaryTree)) {
-            Tree leftTree = binaryTree.getLeftOperand();
-            Tree rightTree = binaryTree.getRightOperand();
+            ExpressionTree leftTree = binaryTree.getLeftOperand();
+            ExpressionTree rightTree = binaryTree.getRightOperand();
 
             boolean lhsIsString = TypesUtils.isString(TreeUtils.typeOf(leftTree));
             boolean rhsIsString = TypesUtils.isString(TreeUtils.typeOf(rightTree));
@@ -1172,7 +1176,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // in contracts.precondition.not.satisfied errors being issued instead of
     // contracts.precondition.not.satisfied.field, so it would be clear that
     // the error refers to an implicit method call, not a dereference (field access).
-    private void checkPreconditionsForImplicitToStringCall(Tree tree) {
+    private void checkPreconditionsForImplicitToStringCall(ExpressionTree tree) {
         AnnotationMirror gbAnno =
                 atypeFactory
                         .getAnnotatedType(tree)
@@ -1194,20 +1198,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
         if (AnnotationUtils.areSameByClass(gbAnno, GuardedByUnknown.class)
                 || AnnotationUtils.areSameByClass(gbAnno, GuardedByBottom.class)) {
-            checker.report(Result.failure("lock.not.held", "unknown lock"), tree);
+            checker.report(Result.failure("lock.not.held", "unknown lock " + gbAnno), tree);
             return;
         } else if (AnnotationUtils.areSameByClass(gbAnno, GuardSatisfied.class)) {
             return;
         }
 
-        Node node = atypeFactory.getNodeForTree(tree);
-
-        List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, node);
+        List<LockExpression> expressions = getLockExpressions(implicitThis, gbAnno, tree);
         if (expressions.isEmpty()) {
             return;
         }
 
-        LockStore store = atypeFactory.getStoreBefore(node);
+        LockStore store = atypeFactory.getStoreBefore(tree);
         for (LockExpression expression : expressions) {
             if (expression.error != null) {
                 checker.report(
@@ -1248,7 +1250,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     private List<LockExpression> getLockExpressions(
-            boolean implicitThis, AnnotationMirror gbAnno, Node node) {
+            boolean implicitThis, AnnotationMirror gbAnno, Tree tree) {
 
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(gbAnno, "value", String.class, true);
@@ -1263,12 +1265,17 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
         Receiver pseudoReceiver =
-                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingType);
+                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingType);
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
-
-        Receiver self =
-                implicitThis ? pseudoReceiver : FlowExpressions.internalReprOf(atypeFactory, node);
+        Receiver self;
+        if (implicitThis) {
+            self = pseudoReceiver;
+        } else if (TreeUtils.isExpressionTree(tree)) {
+            self = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) tree);
+        } else {
+            self = new Unknown(TreeUtils.typeOf(tree));
+        }
 
         List<LockExpression> lockExpressions = new ArrayList<>();
         for (String expression : expressions) {

@@ -56,7 +56,10 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.StructuralEqualityComparer;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -74,12 +77,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * AnnotatedTypeFactory for the Value type system.
- *
- * @author plvines
- * @author smillst
- */
+/** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The maximum number of values allowed in an annotation's array */
@@ -109,7 +107,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final ValueMethodIdentifier methods;
 
     static {
-        Set<String> backingSet = new HashSet<String>(18);
+        Set<String> backingSet = new HashSet<>(18);
         backingSet.add("int");
         backingSet.add("java.lang.Integer");
         backingSet.add("double");
@@ -142,7 +140,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         addAliasedAnnotation(
-                android.support.annotation.IntRange.class,
+                "android.support.annotation.IntRange",
                 AnnotationBuilder.fromClass(elements, IntRange.class),
                 true);
 
@@ -199,12 +197,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
-            Integer from = getMinLenValue(anno);
-            if (from != null && from >= 0) {
-                return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
-            } else {
-                return createArrayLenRangeAnnotation(0, Integer.MAX_VALUE);
-            }
+            int from = getMinLenValue(anno);
+            return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
         }
 
         return super.aliasedAnnotation(anno);
@@ -241,6 +235,39 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
+    }
+
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        // This is a lot of code to replace annotations so that annotations that are equivalent qualifers
+        // are the same annotation.
+        return new DefaultTypeHierarchy(
+                checker,
+                getQualifierHierarchy(),
+                checker.getBooleanOption("ignoreRawTypeArguments", true),
+                checker.hasOption("invariantArrays")) {
+            @Override
+            public StructuralEqualityComparer createEqualityComparer() {
+                return new StructuralEqualityComparer(rawnessComparer) {
+                    @Override
+                    protected boolean arePrimeAnnosEqual(
+                            AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+                        type1.replaceAnnotation(
+                                convertSpecialIntRangeToStandardIntRange(
+                                        type1.getAnnotationInHierarchy(UNKNOWNVAL)));
+                        type2.replaceAnnotation(
+                                convertSpecialIntRangeToStandardIntRange(
+                                        type2.getAnnotationInHierarchy(UNKNOWNVAL)));
+                        type1.replaceAnnotation(
+                                convertToUnknown(type1.getAnnotationInHierarchy(UNKNOWNVAL)));
+                        type2.replaceAnnotation(
+                                convertToUnknown(type2.getAnnotationInHierarchy(UNKNOWNVAL)));
+
+                        return super.arePrimeAnnosEqual(type1, type2);
+                    }
+                };
+            }
+        };
     }
 
     @Override
@@ -528,7 +555,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 List<Integer> otherLengths = getArrayLength(otherAnno);
 
-                ArrayList<String> result = new ArrayList<String>();
+                ArrayList<String> result = new ArrayList<>();
                 for (String s : values) {
                     if (otherLengths.contains(s.length())) {
                         result.add(s);
@@ -540,7 +567,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 Range otherRange = getRange(otherAnno);
 
-                ArrayList<String> result = new ArrayList<String>();
+                ArrayList<String> result = new ArrayList<>();
                 for (String s : values) {
                     if (otherRange.contains(s.length())) {
                         result.add(s);
@@ -646,21 +673,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 return Range.EVERYTHING;
             }
-        }
-
-        private AnnotationMirror convertSpecialIntRangeToStandardIntRange(AnnotationMirror anm) {
-            if (AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class)) {
-                return createIntRangeAnnotation(1, Integer.MAX_VALUE);
-            }
-
-            if (AnnotationUtils.areSameByClass(anm, IntRangeFromNonNegative.class)) {
-                return createIntRangeAnnotation(0, Integer.MAX_VALUE);
-            }
-
-            if (AnnotationUtils.areSameByClass(anm, IntRangeFromGTENegativeOne.class)) {
-                return createIntRangeAnnotation(-1, Integer.MAX_VALUE);
-            }
-            return anm;
         }
 
         /**
@@ -827,24 +839,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWNVAL;
         }
 
-        private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
-            if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
-                Range range = getRange(anno);
-                if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
-                    return UNKNOWNVAL;
-                }
-                return anno;
-            } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-                Range range = getRange(anno);
-                if (range.isLongEverything()) {
-                    return UNKNOWNVAL;
-                }
-                return anno;
-            } else {
-                return anno;
-            }
-        }
-
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno
@@ -969,7 +963,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Long> result;
         if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             List<Integer> intValues = getArrayLength(anno);
-            result = new ArrayList<Long>(intValues.size());
+            result = new ArrayList<>(intValues.size());
             for (Integer i : intValues) {
                 result.add(i.longValue());
             }
@@ -997,6 +991,47 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 };
         return new ListTreeAnnotator(
                 new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
+    }
+
+    /**
+     * @return the int range annotation is that equalient to {@code anm} or {@code anm} if one
+     *     doesn't exist
+     */
+    private AnnotationMirror convertSpecialIntRangeToStandardIntRange(AnnotationMirror anm) {
+        if (AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class)) {
+            return createIntRangeAnnotation(1, Integer.MAX_VALUE);
+        }
+
+        if (AnnotationUtils.areSameByClass(anm, IntRangeFromNonNegative.class)) {
+            return createIntRangeAnnotation(0, Integer.MAX_VALUE);
+        }
+
+        if (AnnotationUtils.areSameByClass(anm, IntRangeFromGTENegativeOne.class)) {
+            return createIntRangeAnnotation(-1, Integer.MAX_VALUE);
+        }
+        return anm;
+    }
+
+    /**
+     * If {@code anno} is equalient to UnknownVal, return UnknownVal; otherwise, return {@code
+     * anno}.
+     */
+    private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+            Range range = getRange(anno);
+            if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
+                return UNKNOWNVAL;
+            }
+            return anno;
+        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+            Range range = getRange(anno);
+            if (range.isLongEverything()) {
+                return UNKNOWNVAL;
+            }
+            return anno;
+        } else {
+            return anno;
+        }
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
@@ -1280,7 +1315,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
                 if (arguments.size() > 0) {
-                    argValues = new ArrayList<List<?>>();
+                    argValues = new ArrayList<>();
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
@@ -1339,7 +1374,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
                 if (arguments.size() > 0) {
-                    argValues = new ArrayList<List<?>>();
+                    argValues = new ArrayList<>();
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
@@ -1423,7 +1458,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.areSameByClass(arrayAnno, ArrayLen.class)) {
             // array.length, where array : @ArrayLen(x)
             List<Integer> lengths = ValueAnnotatedTypeFactory.getArrayLength(arrayAnno);
-            return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
+            return createNumberAnnotationMirror(new ArrayList<>(lengths));
         }
         // Check for an ArrayLenRange annotation.
         if (AnnotationUtils.areSameByClass(arrayAnno, ArrayLenRange.class)) {
@@ -1435,7 +1470,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.areSameByClass(arrayAnno, StringVal.class)) {
             List<String> strings = ValueAnnotatedTypeFactory.getStringValues(arrayAnno);
             List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(strings);
-            return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
+            return createNumberAnnotationMirror(new ArrayList<>(lengths));
         }
 
         return createIntRangeAnnotation(0, Integer.MAX_VALUE);
@@ -1611,7 +1646,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Convert a {@code List&lt;Long&gt;} to a {@code List&lt;Double&gt;}. */
     private List<Double> convertLongListToDoubleList(List<Long> intValues) {
-        List<Double> doubleValues = new ArrayList<Double>(intValues.size());
+        List<Double> doubleValues = new ArrayList<>(intValues.size());
         for (Long intValue : intValues) {
             doubleValues.add(intValue.doubleValue());
         }
@@ -2054,7 +2089,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 || AnnotationUtils.areSameByClass(anm, IntRangeFromGTENegativeOne.class);
     }
 
-    public Integer getMinLenValue(AnnotatedTypeMirror atm) {
+    public int getMinLenValue(AnnotatedTypeMirror atm) {
         return getMinLenValue(atm.getAnnotationInHierarchy(UNKNOWNVAL));
     }
 
@@ -2079,14 +2114,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Used to find the minimum length of an array, which is useful for array bounds checking.
-     * Returns null if there is no minimum length known, or if the passed annotation is null.
+     * Finds a minimum length of an array specified by the provided annotation. Returns null if
+     * there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
      * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
      * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
-    public Integer getMinLenValue(AnnotationMirror annotation) {
+    private Integer getSpecifiedMinLenValue(AnnotationMirror annotation) {
         if (annotation == null) {
             return null;
         }
@@ -2101,6 +2136,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Used to find the minimum length of an array, which is useful for array bounds checking.
+     * Returns 0 if there is no minimum length known, or if the passed annotation is null.
+     *
+     * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
+     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
+     */
+    public int getMinLenValue(AnnotationMirror annotation) {
+        Integer minLen = getSpecifiedMinLenValue(annotation);
+        if (minLen == null || minLen < 0) {
+            return 0;
+        } else {
+            return minLen;
         }
     }
 
@@ -2159,7 +2211,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return 0;
         }
 
-        Integer minLenValue = getMinLenValue(lengthAnno);
-        return minLenValue == null ? 0 : minLenValue;
+        return getMinLenValue(lengthAnno);
     }
 }

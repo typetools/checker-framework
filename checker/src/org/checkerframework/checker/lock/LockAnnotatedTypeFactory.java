@@ -89,6 +89,11 @@ public class LockAnnotatedTypeFactory
             GUARDEDBYBOTTOM,
             GUARDSATISFIED;
 
+    protected final Class<? extends Annotation> jcip_GuardedBy;
+
+    protected final Class<? extends Annotation> javax_GuardedBy;
+
+    @SuppressWarnings("unchecked") // cast to generic type
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
@@ -109,6 +114,27 @@ public class LockAnnotatedTypeFactory
         // not truly side-effect-free even as far as the Lock Checker is concerned,
         // so there is additional handling of this annotation in the Lock Checker.
         addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class, SIDEEFFECTFREE);
+
+        Class<? extends Annotation> testLoad;
+        try {
+            testLoad =
+                    (Class<? extends Annotation>) Class.forName("net.jcip.annotations.GuardedBy");
+
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
+            testLoad = null;
+        }
+        jcip_GuardedBy = testLoad;
+
+        try {
+            testLoad =
+                    (Class<? extends Annotation>)
+                            Class.forName("javax.annotation.concurrent.GuardedBy");
+        } catch (Exception e) {
+            // Ignore exceptions from Class.forName
+            testLoad = null;
+        }
+        javax_GuardedBy = testLoad;
 
         postInit();
     }
@@ -215,7 +241,7 @@ public class LockAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return new LinkedHashSet<Class<? extends Annotation>>(
+        return new LinkedHashSet<>(
                 Arrays.asList(
                         LockHeld.class,
                         LockPossiblyHeld.class,
@@ -683,10 +709,14 @@ public class LockAnnotatedTypeFactory
             return;
         }
 
-        AnnotationMirror anno = getDeclAnnotation(element, net.jcip.annotations.GuardedBy.class);
+        AnnotationMirror anno = null;
 
-        if (anno == null) {
-            anno = getDeclAnnotation(element, javax.annotation.concurrent.GuardedBy.class);
+        if (jcip_GuardedBy != null) {
+            anno = getDeclAnnotation(element, jcip_GuardedBy);
+        }
+
+        if (anno == null && javax_GuardedBy != null) {
+            anno = getDeclAnnotation(element, javax_GuardedBy);
         }
 
         if (anno == null) {

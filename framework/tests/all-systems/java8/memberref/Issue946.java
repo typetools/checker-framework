@@ -1,8 +1,6 @@
 // Test case for Issue 946
 // https://github.com/typetools/checker-framework/issues/946
-// @below-java8-jdk-skip-test
 
-// @skip-test
 interface Supply946<R> {
     R supply();
 }
@@ -17,13 +15,27 @@ class Issue946 {
             Supply946<MethodRefInnerB> constructorReference = MethodRefInnerB::new;
         }
 
-        void M() {
+        void method() {
             // and so does this line
             Supply946<MethodRefInnerB> constructorReference = MethodRefInnerB::new;
+        }
+
+        class MethodRefInnerAInner {
+            void method() {
+                Supply946<MethodRefInnerB> constructorReference = MethodRefInnerB::new;
+            }
         }
     }
 
     class MethodRefInnerB {
         MethodRefInnerB(Issue946 Issue946.this) {}
+
+        void method() {
+            Supply946<MethodRefInnerB> constructorReference = MethodRefInnerB::new;
+        }
+    }
+
+    void method() {
+        Supply946<MethodRefInnerB> constructorReference = MethodRefInnerB::new;
     }
 }

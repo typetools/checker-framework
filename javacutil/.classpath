@@ -3,5 +3,6 @@
 	<classpathentry excluding="org/checkerframework/javacutil/dist/ManualTaglet.java" kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jsr308-langtools"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/checker-qual"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
