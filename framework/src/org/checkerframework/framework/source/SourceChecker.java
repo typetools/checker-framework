@@ -429,8 +429,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
 
-        double jreVersion = PluginUtil.getJreVersion();
-        if (jreVersion != 1.8) {
+        int jreVersion = PluginUtil.getJreVersion();
+        if (jreVersion != 8) {
             userErrorAbort(
                     String.format(
                             "The Checker Framework must be run under JDK 1.8.  You are using version %f.",
