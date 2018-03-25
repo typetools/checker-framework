@@ -37,6 +37,7 @@
           <li><a href="#case-study-nullness-guava">Guava library</a></li>
         </ul></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
+      <li><a href="#index-erros">Improving error messages</a></li>
       <li><a href="#compare-other-tools">Comparison to other tools</a></li>
     </ul></li>
   <li><a href="#new-type-systems">New type systems</a>
@@ -806,6 +807,61 @@ tooling?
   limitations of the Nullness Checker.
 </p>
 
+<h2 id="index-errors">Improving error messages</h2>
+
+<p>
+Compiler writers have come to realize that clarity of error
+messages is as important as the speed of the executable
+(<a href="http://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
+<a href="http://se.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>
+<a href="http://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
+</p>
+
+<p>
+The goal of this project is to improve a compiler's error messages.  One
+example (not the only possible one) is the Checker Framework.  Here are
+some distinct challenges:
+</p>
+<ul>
+  <li>
+    Some type errors can be more concisely or clearly expressed than the
+    standard "found type A, expected type B" message.
+  </li>
+  <li>
+    Some types are complex.  The error message could explain them, or link
+    to the manual, or give suggested fixes.
+  </li>
+  <li>
+    Compiler messages currently show
+    the <a href="https://checkerframework.org/manual/#effective-qualifier">effective
+    type</a>, which may be different than what the user wrote due to
+    defaulting, inference, and syntactic sugar.  For example, a user-written
+    <code>@IndexFor("a")</code> annotation is syntactic sugar for
+    <code>@NonNegative @LTLengthOf("a")</code>, and those types are
+    the ones that currently appear in error messages.
+    It would be good to show simpler types or ones that the user wrote.
+  </li>
+  <li>
+    Some checkers combine multiple cooperating type systems;
+    the <a href="https://checkerframework.org/manual/#nullness-checker">Nullness
+    Checker</a> and
+    the <a href="https://checkerframework.org/manual/#index-checker">Index
+    Checker</a> are examples.  If there is a problem with a variable's
+    lower bound type, then its upper bound type should not be shown in the
+    error message.  This will make the message shorter and more specific,
+    and avoid distracting the user with irrelevant information.
+  </li>
+  <li>
+    When a checker has multiple type systems, a type error or the lack of one may depend on facts from multiple type systems, and this should be expressed to the user.
+  </li>
+</ul>
+
+<p>
+It would be reasonable to start by improving the
+<a href="https://checkerframework.org/manual/#index-checker">Index
+  Checker</a>'s error messages, which frequently stymie users.  Then,
+  generalize the results to other type systems.
+</p>
 
 <h2 id="sound-by-default">Sound checking by default</h2>
 
