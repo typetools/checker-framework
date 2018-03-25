@@ -20,7 +20,9 @@ STUBPARSERJAR := $(PROJECTDIR)/../../../../stubparser/javaparser-core/target/stu
 # When executed as a demo, we'll use javac.jar located in a directory structure
 # which assumes that the jsr308-langtools project is located in the same
 # directory as checker-framework (change to your setup):
-JAVACJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/dist/lib/javac.jar
+JAVACJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/cfmake/javac.jar
+JAVACJDKJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/cfmake/javac-jdk.jar
+
 
 # build directories
 DATAFLOWBUILD := $(PROJECTDIR)/../../../dataflow/build/
@@ -35,8 +37,8 @@ all: load-from-dir-test load-from-jar-test
 demo1:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(JAVACJAR) \
-	  -classpath $(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
+	  -classpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -AprintErrorStack \
@@ -47,8 +49,8 @@ demo1:
 demo2:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(STUBPARSERJAR):$(JAVACJAR) \
-	  -classpath :$(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
+	  -classpath :$(FRAMEWORKJAR):$(STUBPARSERJAR):$(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -AprintErrorStack \
@@ -60,8 +62,8 @@ demo2:
 # loads from build directories
 load-from-dir-test:
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(JAVACJAR) \
-	  -classpath $(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
+	  -classpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -AprintErrorStack \
@@ -73,8 +75,8 @@ load-from-dir-test:
 # loads from framework.jar
 load-from-jar-test:
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(STUBPARSERJAR):$(JAVACJAR) \
-	  -classpath $(PROJECTDIR) \
+	  -J-Xbootclasspath/p:$(JAVACJDKJAR):$(JAVACJAR) \
+	  -classpath $(FRAMEWORKJAR):$(STUBPARSERJAR):$(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -AprintErrorStack \
