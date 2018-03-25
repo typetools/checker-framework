@@ -3,6 +3,7 @@ package tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -22,7 +23,10 @@ public class AnnotationBuilderTest {
     private final ProcessingEnvironment env;
 
     public AnnotationBuilderTest() {
-        env = JavacProcessingEnvironment.instance(new Context());
+        Context context = new Context();
+        env = JavacProcessingEnvironment.instance(context);
+        JavaCompiler javac = JavaCompiler.instance(context);
+        javac.enterDone();
         ErrorReporter.setHandler(new TestChecker());
     }
 
