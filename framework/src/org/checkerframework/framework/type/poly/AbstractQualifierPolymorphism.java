@@ -75,8 +75,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     private final AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
 
     /**
-     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the given checker for
-     * querying type qualifiers and the given factory for getting annotated types.
+     * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
+     * querying type qualifiers and the given factory for getting annotated types. Subclass need to
+     * add polymorphic qualifiers to {@code polyQual}.
      *
      * @param env the processing environment
      * @param factory the factory for the current checker
