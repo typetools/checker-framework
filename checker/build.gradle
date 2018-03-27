@@ -121,7 +121,7 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
                 workingDir demosDir
                 executable 'git'
                 args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
-                ingoreExitValue = true
+                ignoreExitValue = true
             }
         }
         ant.properties.put('checker.lib', "${projectDir}/dist/checker.jar")
