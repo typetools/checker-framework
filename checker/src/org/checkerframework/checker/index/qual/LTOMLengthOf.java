@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * a.length-1} and {@code b.length-1}. The sequences {@code a} and {@code b} might have different
  * lengths.
  *
- * <p>In the annotation's name, "LTOM" sndands for "less than one minus".
+ * <p>In the annotation's name, "LTOM" stands for "less than one minus".
  *
  * @checker_framework.manual #index-checker Index Checker
  */
