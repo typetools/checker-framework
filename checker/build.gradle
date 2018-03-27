@@ -47,9 +47,11 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
         }
 
         copy {
-            // TODO: Remove this when support for annotations in comments is removed.
-            from file("${jsr308}/jsr308-langtools/dist/lib/javac.jar")
+            from configurations.javacJar
             into "${projectDir}/dist"
+            rename { String fileName ->
+                fileName.replace(fileName, "javac.jar")
+            }
         }
     }
 }
@@ -124,7 +126,7 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
                 ignoreExitValue = true
             }
         }
-        ant.properties.put('checker.lib', "${projectDir}/dist/checker.jar")
+        ant.properties.put('checker.lib', file("${projectDir}/dist/checker.jar").absolutePath)
         ant.ant(dir: demosDir.toString())
     }
 }

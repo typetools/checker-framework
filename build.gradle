@@ -16,8 +16,6 @@ repositories {
 
 ext {
     release = false
-    // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
-    toolsJar = Jvm.current().toolsJar.path
     assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
 
     jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
@@ -60,6 +58,17 @@ allprojects {
 
     repositories {
         mavenCentral()
+    }
+
+    configurations {
+        javacJar
+        toolsJar
+    }
+
+    dependencies {
+        javacJar 'org.checkerframework:compiler:2.4.0'
+        // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
+        toolsJar files(Jvm.current().toolsJar)
     }
 
     // After all the tasks have been created, modify some of them.
