@@ -167,6 +167,7 @@ def createCheckTypeTask(projectName, checker, shortName) {
 List<String> getJavaFilesToFormat(projectName) {
     List<File> javaFiles = new ArrayList<>();
     javaFiles.addAll(project(':' + projectName).sourceSets.main.java.files)
+    javaFiles.addAll(project(':' + projectName).sourceSets.test.java.files)
     // Collect all java files in tests directory
     fileTree("${projectDir}/tests").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
