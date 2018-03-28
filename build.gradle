@@ -458,7 +458,7 @@ subprojects {
             }
 
             if (project.name.is('checker')) {
-                tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests', 'exampleTests']
+                tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests']
             }
         }
 
