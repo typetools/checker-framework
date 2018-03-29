@@ -27,6 +27,15 @@
         </license>
     </licenses>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version><!-- checker-framework-version -->2.4.0<!-- /checker-framework-version --></version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
     <version><!-- checker-framework-version -->2.4.0<!-- /checker-framework-version --></version>
