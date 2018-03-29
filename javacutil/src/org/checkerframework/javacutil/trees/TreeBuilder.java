@@ -114,6 +114,7 @@ public class TreeBuilder {
                 iteratorType =
                         modelTypes.getDeclaredType(
                                 (TypeElement) modelTypes.asElement(iteratorType), elementType);
+            }
         }
 
         // Replace the iterator method's generic return type with
