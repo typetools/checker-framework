@@ -101,17 +101,20 @@ public class TreeBuilder {
                 (DeclaredType)
                         javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
-        assert iteratorType.getTypeArguments().size() == 1
-                : "expected exactly one type argument for Iterator";
+        int numIterTypeArgs = iteratorType.getTypeArguments().size();
+        assert numIterTypeArgs <= 1
+                : "expected at most one type argument for Iterator";
 
-        TypeMirror elementType = iteratorType.getTypeArguments().get(0);
-        // Remove captured type from a wildcard.
-        if (elementType instanceof Type.CapturedType) {
-            elementType = ((Type.CapturedType) elementType).wildcard;
+        if (numIterTypeArgs == 1) {
+            TypeMirror elementType = iteratorType.getTypeArguments().get(0);
+            // Remove captured type from a wildcard.
+            if (elementType instanceof Type.CapturedType) {
+                elementType = ((Type.CapturedType) elementType).wildcard;
 
-            iteratorType =
-                    modelTypes.getDeclaredType(
-                            (TypeElement) modelTypes.asElement(iteratorType), elementType);
+                iteratorType =
+                        modelTypes.getDeclaredType(
+                                (TypeElement) modelTypes.asElement(iteratorType), elementType);
+            }
         }
 
         // Replace the iterator method's generic return type with
