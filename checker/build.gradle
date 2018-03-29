@@ -1,3 +1,14 @@
+sourceSets {
+    main {
+        resources {
+            // Stub files, message.properties, etc.
+            srcDirs = ['src/main/java']
+            exclude '**/*.java'
+        }
+    }
+    testannotations
+}
+
 dependencies {
     compile project(':framework')
     compile project(':dataflow')
@@ -5,24 +16,10 @@ dependencies {
     compile project(':checker-qual')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    testCompile project(':util')
+    testCompile sourceSets.testannotations.output
 
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src']
-        }
-        resources {
-            // Stub files, message.properties, etc.
-            srcDirs = ['src']
-            exclude '**/*.java'
-        }
-    }
-    test {
-        java {
-            srcDirs = ['tests/src', '../framework/src/org/checkerframework/framework/test']
-        }
-    }
+    testannotationsCompile project(':checker-qual')
 }
 
 jar {

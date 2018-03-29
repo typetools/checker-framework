@@ -32,12 +32,11 @@ task downloadJdk() {
 task buildJdk(type: Jar, group: 'Build') {
     description 'Builds jdk8.jar'
     dependsOn(':checker:copyJarsToDist')
-    dependsOn(':javacutil:tagletClasses')
 
-    if (System.getenv('JAVA_HOME') == null) {
-        throw new GradleException("Environment variable JAVA_HOME is not set.")
-    }
     doLast {
+        if (System.getenv('JAVA_HOME') == null) {
+            throw new GradleException("Environment variable JAVA_HOME is not set.")
+        }
         exec {
             executable 'make'
             environment CHECKERFRAMEWORK: "${projectDir}/..",
