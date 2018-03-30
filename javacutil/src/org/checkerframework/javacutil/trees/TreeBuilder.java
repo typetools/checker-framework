@@ -102,8 +102,7 @@ public class TreeBuilder {
                         javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
         int numIterTypeArgs = iteratorType.getTypeArguments().size();
-        assert numIterTypeArgs <= 1
-                : "expected at most one type argument for Iterator";
+        assert numIterTypeArgs <= 1 : "expected at most one type argument for Iterator";
 
         if (numIterTypeArgs == 1) {
             TypeMirror elementType = iteratorType.getTypeArguments().get(0);
