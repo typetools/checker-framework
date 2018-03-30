@@ -352,6 +352,8 @@ annotated as
 
 The MinLen type qualifier is implemented in practice by the Constant Value Checker,
 using \<@ArrayLenRange> annotations (see \chapterpageref{constant-value-checker}).
+This means that errors related to the minimum lengths of arrays must be suppressed using
+the "value" argument to \<@SuppressWarnings>.
 \refqualclass{common/value/qual}{ArrayLenRange} and \refqualclass{common/value/qual}{ArrayLen}
 annotations can also be used to establish the minimum length of a sequence, if a
 more precise estimate of length is known. For example,

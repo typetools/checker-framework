@@ -28,7 +28,7 @@ public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
                 return true;
             case SINGLETON:
                 state = State.ANY;
-                set = new HashSet<T>();
+                set = new HashSet<>();
                 set.add(value);
                 value = null;
                 // fallthrough

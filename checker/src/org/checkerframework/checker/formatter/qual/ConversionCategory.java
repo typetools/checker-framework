@@ -137,7 +137,7 @@ public enum ConversionCategory {
     }
 
     private static <E> Set<E> arrayToSet(E[] a) {
-        return new HashSet<E>(Arrays.asList(a));
+        return new HashSet<>(Arrays.asList(a));
     }
 
     public static boolean isSubsetOf(ConversionCategory a, ConversionCategory b) {

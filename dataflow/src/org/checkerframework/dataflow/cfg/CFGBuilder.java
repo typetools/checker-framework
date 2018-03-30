@@ -1343,9 +1343,7 @@ public class CFGBuilder {
                                 Integer target = bindings.get(label);
                                 // TODO: This is sometimes null; is this a problem?
                                 // assert target != null;
-                                missingExceptionalEdges.add(
-                                        new Tuple<ExceptionBlockImpl, Integer, TypeMirror>(
-                                                e, target, cause));
+                                missingExceptionalEdges.add(new Tuple<>(e, target, cause));
                             }
                         }
                         break;
@@ -1693,7 +1691,7 @@ public class CFGBuilder {
                 Set<Node> exp = treeLookupMap.get(enclosingParens);
                 if (exp == null) {
                     treeLookupMap.put(enclosingParens, new IdentityMostlySingleton<>(node));
-                } else if (!existing.contains(node)) {
+                } else if (!exp.contains(node)) {
                     exp.add(node);
                 }
                 enclosingParens = parenMapping.get(enclosingParens);
@@ -2319,7 +2317,7 @@ public class CFGBuilder {
             // and then iterates over the actual arguments.
             List<? extends VariableElement> formals = method.getParameters();
 
-            ArrayList<Node> convertedNodes = new ArrayList<Node>();
+            ArrayList<Node> convertedNodes = new ArrayList<>();
 
             int numFormals = formals.size();
             int numActuals = actualExprs.size();
@@ -2353,7 +2351,7 @@ public class CFGBuilder {
                                 methodInvocationConvert(actualVal, formals.get(i).asType()));
                     }
 
-                    List<ExpressionTree> inits = new ArrayList<ExpressionTree>();
+                    List<ExpressionTree> inits = new ArrayList<>();
                     TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
                     for (int i = lastArgIndex; i < numActuals; i++) {
                         inits.add(actualExprs.get(i));
@@ -4090,14 +4088,14 @@ public class CFGBuilder {
             List<? extends ExpressionTree> dimensions = tree.getDimensions();
             List<? extends ExpressionTree> initializers = tree.getInitializers();
 
-            List<Node> dimensionNodes = new ArrayList<Node>();
+            List<Node> dimensionNodes = new ArrayList<>();
             if (dimensions != null) {
                 for (ExpressionTree dim : dimensions) {
                     dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
                 }
             }
 
-            List<Node> initializerNodes = new ArrayList<Node>();
+            List<Node> initializerNodes = new ArrayList<>();
             if (initializers != null) {
                 for (ExpressionTree init : initializers) {
                     initializerNodes.add(assignConvert(scan(init, p), elemType));
@@ -4175,8 +4173,7 @@ public class CFGBuilder {
                 Tree enclosing =
                         TreeUtils.enclosingOfKind(
                                 getCurrentPath(),
-                                new HashSet<Kind>(
-                                        Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
+                                new HashSet<>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
                 if (enclosing.getKind() == Kind.LAMBDA_EXPRESSION) {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
                     TreePath lambdaTreePath =

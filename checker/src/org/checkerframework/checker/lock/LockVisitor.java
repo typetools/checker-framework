@@ -83,8 +83,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
-
-        checkForAnnotatedJdk();
     }
 
     @Override
@@ -594,7 +592,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             AnnotationMirror ensuresLockHeldAnno =
                     atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
-            List<String> expressions = new ArrayList<String>();
+            List<String> expressions = new ArrayList<>();
 
             if (ensuresLockHeldAnno != null) {
                 expressions.addAll(
@@ -681,7 +679,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // Combine all of the actual parameters into one list of AnnotationMirrors
 
         ArrayList<AnnotationMirror> passedArgAnnotations =
-                new ArrayList<AnnotationMirror>(guardSatisfiedIndex.length);
+                new ArrayList<>(guardSatisfiedIndex.length);
         passedArgAnnotations.add(
                 methodCallReceiver == null
                         ? null
@@ -942,7 +940,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitAnnotation(AnnotationTree tree, Void p) {
-        ArrayList<AnnotationTree> annotationTreeList = new ArrayList<AnnotationTree>(1);
+        ArrayList<AnnotationTree> annotationTreeList = new ArrayList<>(1);
         annotationTreeList.add(tree);
         List<AnnotationMirror> amList =
                 TreeUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);
@@ -1093,7 +1091,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.
         if (TreeUtils.isFieldAccess(tree)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
-            // If the parent is not a member select, or if it is, but the field is the expression,
+            // If the parent is not a member select, or if it is and the field is the expression,
             // then the field is accessed via an implicit this.
             if (parent.getKind() != Kind.MEMBER_SELECT
                     || ((MemberSelectTree) parent).getExpression() == tree) {
@@ -1200,7 +1198,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
         if (AnnotationUtils.areSameByClass(gbAnno, GuardedByUnknown.class)
                 || AnnotationUtils.areSameByClass(gbAnno, GuardedByBottom.class)) {
-            checker.report(Result.failure("lock.not.held", "unknown lock"), tree);
+            checker.report(Result.failure("lock.not.held", "unknown lock " + gbAnno), tree);
             return;
         } else if (AnnotationUtils.areSameByClass(gbAnno, GuardSatisfied.class)) {
             return;
@@ -1267,7 +1265,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
         Receiver pseudoReceiver =
-                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingType);
+                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingType);
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
         Receiver self;

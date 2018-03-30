@@ -77,7 +77,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     }
 
     private Map<String, String> buildLookup() {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
 
         if (checker.hasOption("propfiles")) {
             String names = checker.getOption("propfiles");

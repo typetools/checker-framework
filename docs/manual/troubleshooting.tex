@@ -232,8 +232,7 @@ Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  cd checker
-  ant jdk.jar bindist
+  ./gradlew  buildJdk assemble
 \end{Verbatim}
 
 \noindent
@@ -383,7 +382,7 @@ give unexpected results.
   one procedure at a time; it observes the specifications, but not the
   implementations, of other methods.
 
-  Alo see Section~\ref{handling-warnings}, which explains this same
+  Also see Section~\ref{handling-warnings}, which explains this same
   methodology in different words.
 
 \item
@@ -718,6 +717,8 @@ If you have a problem with any checker, or with the Checker Framework,
 please file a bug at
 \url{https://github.com/typetools/checker-framework/issues}.
 (First, check whether there is an existing bug report for that issue.)
+If the problem is with an incorrect or missing annotation on a library,
+including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
 
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
@@ -781,10 +782,34 @@ code.  We are sure that you can make up artificial code that stymies the
 type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
 
-Please do not file an issue to report that some library class is not
-annotated.  Instead, please write the annotations (see
-Chapter~\ref{annotating-libraries}) and then submit a
-\ahref{https://github.com/typetools/checker-framework/pulls}{pull request}.
+
+\subsection{Problems with annotated libraries\label{reporting-bugs-annotated-libraries}}
+
+Sometimes, a checker will report a warning because a library is not
+annotated or because the library contains incorrect annotations.
+Please do not open GitHub issues for these.
+Instead, we appreciate pull requests to help us improve the annotations.
+Alternatively or in the interim, you can use stub files as described in
+Section~\ref{stub}.
+
+If the library is annotated but has some incorrect or missing annotations,
+then please open a pull request that adds the annotations.
+You can find the annotated source for non-JDK libraries in
+\url{https://github.com/typetools/}.
+You can find the annotated JDK source in the
+\ahref{https://github.com/typetools/checker-framework}{Checker Framework
+  GitHub repository}, either in subdirectories of
+\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
+or in files named \<jdk.astub> in the checker's implementation directory.
+
+If the library is not annotated at all, you can fork it, add annotations,
+and propose that your annotated version be moved into
+\url{https://github.com/typetools/}.
+
+For either approach, please see \chapterpageref{annotating-libraries} for
+tips about writing library annotations.
+
+Thanks for your contribution to the annotated libraries!
 
 
 \section{Building from source\label{build-source}}
@@ -871,28 +896,13 @@ Obtain the latest source code from the version control repository:
 export JSR308=$HOME/jsr308
 mkdir -p $JSR308
 cd $JSR308
-hg clone https://bitbucket.org/typetools/jsr308-langtools jsr308-langtools
 git clone https://github.com/typetools/checker-framework.git checker-framework
-git clone https://github.com/typetools/annotation-tools.git annotation-tools
-git clone https://github.com/typetools/stubparser.git stubparser
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
 You might want to add the \<export JSR308=\$HOME/jsr308> line to your
 \<.bashrc> file.
 
-
-\subsection{Build the Type Annotations compiler\label{building-compiler}}
-
-The Checker Framework compiler is built upon a compiler called the Type
-Annotations compiler.  The Type Annotations compiler is a variant of the
-OpenJDK javac that supports annotations in comments.  The Checker Framework
-compiler is a small wrapper around the Type Annotations compiler, which
-adds annotated JDKs and the Checker Framework jars to the classpath.
-
-
-\begin{enumerate}
-\item
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
@@ -930,62 +940,6 @@ the Checker Framework anyway.)
 
 \end{description}
 
-\item
-Compile the Type Annotations tools:
-
-\begin{Verbatim}
-  cd $JSR308/jsr308-langtools/make
-  ant clean-and-build-all-tools
-\end{Verbatim}
-% $ to unconfuse Emacs LaTeX mode
-
-\item
- Add the \<jsr308-langtools/dist/bin> directory to the front of your PATH environment variable.
-  Example command:
-
-\begin{Verbatim}
-  export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
-\end{Verbatim}
-
-\end{enumerate}
-
-% Java 8 extends the Java language to permit annotations to appear on types,
-% as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
-% This change will be part of the Java 8 language.  We recommend that you
-% write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
-% Section~\ref{annotations-in-comments}).  The Checker Framework compiler still reads
-% such annotations, but this syntax permits you to use a compiler other than
-% the Checker Framework compiler.  For example, you can compile your code with a Java 5
-% compiler, and you can use a checker as an external tool in an IDE.
-
-
-
-\subsection{Build the Annotation File Utilities\label{afu-building}}
-
-This is simply done by:
-
-\begin{Verbatim}
-  cd $JSR308/annotation-tools
-  ant
-\end{Verbatim}
-
-You do not need to add the Annotation File Utilities to the path, as
-the Checker Framework build finds it using relative paths.
-
-
-\subsection{Build the StubParser\label{stubparser-building}}
-
-This is simply done by:
-
-\begin{Verbatim}
-  cd $JSR308/stubparser
-  mvn package -Dmaven.test.skip=true
-\end{Verbatim}
-
-You do not need to add the StubParser to the path, as
-the Checker Framework build finds it using relative paths.
-
-
 \subsection{Build the Checker Framework\label{building}}
 
 % Building (compiling) the checkers and framework from source creates the
@@ -996,20 +950,22 @@ the Checker Framework build finds it using relative paths.
 % use the pre-compiled version.
 
 \begin{enumerate}
-% \item
-% Edit \code{checker/build.properties} file so that the
-% \code{compiler.lib} property specifies the location of the Checker
-% Framework
-% \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
-% source, and you made the \code{checker-framework} and \code{jsr308-langtools} directories
-% siblings, then you don't need to edit \code{checker/build.properties}.)
 
 \item
-Run \code{ant} to build the Checker Framework:
+Run \code{./gradlew cloneAndBuildDependencies} to build the Checker Framework dependencies:
 
 \begin{Verbatim}
-  cd $JSR308/checker-framework/checker
-  ant
+  cd $JSR308/checker-framework
+  ./gradlew cloneAndBuildDependencies
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+
+\item
+Run \code{./gradlew assemble} to build the Checker Framework:
+
+\begin{Verbatim}
+  cd $JSR308/checker-framework
+  ./gradlew assemble
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -1053,10 +1009,10 @@ an IDE such as Eclipse.
 
   \begin{itemize}
 
-  \item Run \code{ant all-tests} in the \code{checker} directory:
+  \item Run \code{./gradlew allTests}:
 \begin{Verbatim}
-  cd $JSR308/checker-framework/checker
-  ant all-tests
+  cd $JSR308/checker-framework
+  ./gradlew allTests
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -1088,7 +1044,7 @@ These instructions are relevant if you use Eclipse as your IDE\@.
 \item Follow the instructions earlier in Section~\ref{build-source} to
 clone and build all projects from their sources.
 \item Download Eclipse from
-the \href{https://www.eclipse.org/downloads}{official Eclipse website}
+the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
 and install it.
 \item Run Eclipse and set the
 workspace to the directory pointed to by \code{\$JSR308}.

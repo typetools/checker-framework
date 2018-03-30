@@ -330,7 +330,7 @@ public class AnnotationUtils {
      * @return a new map with {@link AnnotationMirror} as key
      */
     public static <V> Map<AnnotationMirror, V> createAnnotationMap() {
-        return new TreeMap<AnnotationMirror, V>(annotationOrdering());
+        return new TreeMap<>(annotationOrdering());
     }
 
     /**
@@ -342,7 +342,7 @@ public class AnnotationUtils {
      * @return a new set to store {@link AnnotationMirror} as element
      */
     public static Set<AnnotationMirror> createAnnotationSet() {
-        return new TreeSet<AnnotationMirror>(annotationOrdering());
+        return new TreeSet<>(annotationOrdering());
     }
 
     /** Returns true if the given annotation has a @Inherited meta-annotation. */
@@ -423,8 +423,7 @@ public class AnnotationUtils {
      */
     public static Map<? extends ExecutableElement, ? extends AnnotationValue>
             getElementValuesWithDefaults(AnnotationMirror ad) {
-        Map<ExecutableElement, AnnotationValue> valMap =
-                new HashMap<ExecutableElement, AnnotationValue>();
+        Map<ExecutableElement, AnnotationValue> valMap = new HashMap<>();
         if (ad.getElementValues() != null) {
             valMap.putAll(ad.getElementValues());
         }
@@ -600,7 +599,7 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence name, Class<T> expectedType, boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, name, List.class, useDefaults);
-        List<T> result = new ArrayList<T>(la.size());
+        List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
             result.add(expectedType.cast(a.getValue()));
         }
@@ -617,7 +616,7 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence name, Class<T> t, boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, name, List.class, useDefaults);
-        List<T> result = new ArrayList<T>(la.size());
+        List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
             T value = Enum.valueOf(t, a.getValue().toString());
             result.add(value);

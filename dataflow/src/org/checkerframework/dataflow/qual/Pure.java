@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 public @interface Pure {
     /** The type of purity. */
     public static enum Kind {
-        /** The method has no visible side-effects. */
+        /** The method has no visible side effects. */
         SIDE_EFFECT_FREE,
 
         /** The method returns exactly the same value when called in the same environment. */

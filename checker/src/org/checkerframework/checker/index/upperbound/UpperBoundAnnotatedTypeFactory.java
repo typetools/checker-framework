@@ -70,9 +70,29 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Implements the introduction rules for the Upper Bound Checker. Works primarily by way of querying
- * the MinLen Checker and comparing the min lengths of arrays to the known values of variables as
- * supplied by the Value Checker.
+ * Implements the introduction rules for the Upper Bound Checker.
+ *
+ * <p>Rules implemented by this class:
+ *
+ * <ul>
+ *   <li>1. Math.min has unusual semantics that combines annotations for the UBC.
+ *   <li>2. The return type of Random.nextInt depends on the argument, but is not equal to it, so a
+ *       polymorhpic qualifier is insufficient.
+ *   <li>3. Unary negation on a NegativeIndexFor (from the SearchIndex Checker) results in a
+ *       LTLengthOf for the same arrays.
+ *   <li>4. Right shifting by a constant between 0 and 30 preserves the type of the left side
+ *       expression.
+ *   <li>5. If either argument to a bitwise and expression is non-negative, the and expression
+ *       retains that argument's upperbound type. If both are non-negative, the result of the
+ *       expression is the GLB of the two.
+ *   <li>6. if numerator &ge; 0, then numerator % divisor &le; numerator
+ *   <li>7. if divisor &ge; 0, then numerator % divisor &lt; divisor
+ *   <li>8. If the numerator is an array length access of an array with non-zero length, and the
+ *       divisor is greater than one, glb the result with an LTL of the array.
+ *   <li>9. if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
+ *       length of some sequence, then (a + b) / divisor is less than the length of that sequence.
+ *   <li>10. Special handling for Math.random: Math.random() * array.length is LTL array.
+ * </ul>
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -333,7 +353,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * This exists for Math.min and Random.nextInt, which must be special-cased.
+         * This exists for Math.min and Random.nextInt, which must be special-cased. These are cases
+         * 1 and 2.
          *
          * <ul>
          *   <li>Math.min has unusual semantics that combines annotations for the UBC.
@@ -365,6 +386,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(tree, type);
         }
 
+        /* Handles case 3. */
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             // Dataflow refines this type if possible
@@ -460,7 +482,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitBinary(tree, type);
         }
 
-        /** Infers upper-bound annotation for {@code left >> right} and {@code left >>> right} */
+        /**
+         * Infers upper-bound annotation for {@code left >> right} and {@code left >>> right} (case
+         * 4)
+         */
         private void addAnnotationForRightShift(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
@@ -484,6 +509,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        /**
+         * If either argument is non-negative, the and expression retains that argument's upperbound
+         * type. If both are non-negative, the result of the expression is the GLB of the two (case
+         * 5).
+         */
         private void addAnnotationForAnd(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
@@ -507,7 +537,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return IndexUtil.getLengthSequenceTree(lengthTree, imf, processingEnv);
         }
 
-        /** Infers upper-bound annotation for {@code numerator % divisor}. */
+        /**
+         * Infers upper-bound annotation for {@code numerator % divisor}. There are two cases where
+         * an upperbound type is inferred:
+         *
+         * <ul>
+         *   <li>6. if numerator &ge; 0, then numerator % divisor &le; numerator
+         *   <li>7. if divisor &ge; 0, then numerator % divisor &lt; divisor
+         * </ul>
+         */
         private void addAnnotationForRemainder(
                 ExpressionTree numeratorTree,
                 ExpressionTree divisorTree,
@@ -527,6 +565,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             resultType.addAnnotation(convertUBQualifierToAnnotation(result));
         }
 
+        /**
+         * Implements two cases (8 and 9):
+         *
+         * <ul>
+         *   <li>8. If the numerator is an array length access of an array with non-zero length, and
+         *       the divisor is greater than one, glb the result with an LTL of the array.
+         *   <li>9. if numeratorTree is a + b and divisor greater than 1, and a and b are less than
+         *       the length of some sequence, then (a + b) / divisor is less than the length of that
+         *       sequence.
+         * </ul>
+         */
         private void addAnnotationForDivide(
                 ExpressionTree numeratorTree,
                 ExpressionTree divisorTree,
@@ -597,6 +646,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
 
+        /**
+         * Special handling for Math.random: Math.random() * array.length is LTL array. Same for
+         * Random.nextDouble. Case 10.
+         */
         private boolean checkForMathRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree seqLenTree, AnnotatedTypeMirror type) {
 

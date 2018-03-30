@@ -71,7 +71,7 @@ public final class Result {
 
     private Result(Type type, Collection<DiagMessage> messagePairs) {
         this.type = type;
-        this.messages = new ArrayList<DiagMessage>();
+        this.messages = new ArrayList<>();
         if (messagePairs != null) {
             for (DiagMessage msg : messagePairs) {
                 String message = msg.getMessageKey();
@@ -101,8 +101,7 @@ public final class Result {
             return SUCCESS;
         }
 
-        List<DiagMessage> messages =
-                new ArrayList<DiagMessage>(this.messages.size() + r.messages.size());
+        List<DiagMessage> messages = new ArrayList<>(this.messages.size() + r.messages.size());
         messages.addAll(this.messages);
         messages.addAll(r.messages);
         return new Result(Type.merge(r.type, this.type), messages);
@@ -125,7 +124,7 @@ public final class Result {
 
     /** @return the message keys associated with the result */
     public List<String> getMessageKeys() {
-        List<String> msgKeys = new ArrayList<String>(getDiagMessages().size());
+        List<String> msgKeys = new ArrayList<>(getDiagMessages().size());
         for (DiagMessage msg : getDiagMessages()) {
             msgKeys.add(msg.getMessageKey());
         }

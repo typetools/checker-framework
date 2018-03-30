@@ -1,0 +1,7 @@
+rootProject.name = 'checker-framework'
+include 'checker'
+include 'javacutil'
+include 'dataflow'
+include 'framework'
+include 'checker-qual'
+include 'jdk8'

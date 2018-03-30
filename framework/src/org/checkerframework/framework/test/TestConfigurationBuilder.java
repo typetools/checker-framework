@@ -168,7 +168,7 @@ public class TestConfigurationBuilder {
         shouldEmitDebugInfo = false;
     }
 
-    /** Create a builder that has all of the optoins in initialConfig */
+    /** Create a builder that has all of the options in initialConfig */
     public TestConfigurationBuilder(TestConfiguration initialConfig) {
         this.diagnosticFiles = new ArrayList<>(initialConfig.getDiagnosticFiles());
         this.testSourceFiles = new ArrayList<>(initialConfig.getTestSourceFiles());
@@ -404,15 +404,7 @@ public class TestConfigurationBuilder {
         String classpath =
                 System.getProperty("tests.classpath", "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
-        return "build"
-                + File.pathSeparator
-                + "junit-4.12.jar"
-                + File.pathSeparator
-                + "hamcrest-core-1.3.jar"
-                + File.pathSeparator
-                + classpath
-                + File.pathSeparator
-                + globalclasspath;
+        return classpath + File.pathSeparator + globalclasspath;
     }
 
     /** Uses the system property "JDK_JAR" to find the annotated JDK */
