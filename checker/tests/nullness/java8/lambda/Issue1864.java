@@ -4,7 +4,7 @@
 import java.util.List;
 import java.util.function.Supplier;
 
-abstract class T {
+abstract class Issue1864 {
     interface A {}
 
     abstract <T extends A> List<T> g();
