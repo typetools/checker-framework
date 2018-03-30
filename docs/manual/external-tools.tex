@@ -7,15 +7,15 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 % Keep this list up to date with the sections of this chapter and with TWO
 % copies of the list in file introduction.tex .
 \begin{itemize}
-\item javac (Section~\ref{javac-installation})
-\item Ant (Section~\ref{ant-task})
-\item Maven (Section~\ref{maven})
-\item Gradle (Section~\ref{gradle})
 \item Android Gradle Plugin (Section~\ref{android-gradle})
-\item IntelliJ IDEA (Section~\ref{intellij})
+\item Ant (Section~\ref{ant-task})
 \item Eclipse (Section~\ref{eclipse})
-\item tIDE (Section~\ref{tide})
+\item Gradle (Section~\ref{gradle})
+\item IntelliJ IDEA (Section~\ref{intellij})
+\item javac (Section~\ref{javac-installation})
+\item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
+\item tIDE (Section~\ref{tide})
 \end{itemize}
 
 If your build system or IDE is not listed above, you should customize how
@@ -31,6 +31,379 @@ we can add it to this manual.
 
 All examples in this chapter are in the public domain, with no copyright nor
 licensing restrictions.
+
+
+\section{Android Studio 3.0 and the Android Gradle Plugin 3.0\label{android-gradle}}
+
+Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
+annotations.  (See
+\url{https://developer.android.com/studio/write/java8-support.html}
+for more details.)  This section explains how to configure your Andriod
+project to use the Checker Framework.  All the changes should be made to
+the module's \<build.gradle> file --- not the app's \<build.gradle> file.
+
+\begin{enumerate}
+
+\item In your module's \<build.gradle> file, set the source and target
+  compatiblity to \<JavaVersion.VERSION\_1\_8>
+
+\begin{Verbatim}
+android {
+    ...
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+\end{Verbatim}
+
+\item Add a build variant for running checkers.
+
+ \begin{Verbatim}
+ android {
+    ...
+      buildTypes {
+      ...
+        checkTypes {
+            javaCompileOptions.annotationProcessorOptions.
+                    classNames.add("org.checkerframework.checker.nullness.NullnessChecker")
+            // You can pass options like so:
+            // javaCompileOptions.annotationProcessorOptions.arguments.put("warns", "")
+        }
+    }
+}
+\end{Verbatim}
+
+\item Add a dependency configuration for the annotated JDK:
+
+\begin{mysmall}
+\begin{Verbatim}
+configurations {
+    checkerFrameworkAnnotatedJDK {
+        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+}
+
+\end{Verbatim}
+\end{mysmall}
+
+\item Declare the Checker Framework dependencies:
+
+\begin{mysmall}
+\begin{Verbatim}
+dependencies {
+    ... existing dependencies...
+    ext.checkerFrameworkVersion = '2.4.0'
+    implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+    annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
+    checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Direct all tasks of type \<JavaCompile> used by the CheckTypes build variant to use the annotated JDK.
+\begin{mysmall}
+\begin{Verbatim}
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile).all { compile ->
+        if (compile.name.contains("CheckTypes")) {
+            compile.options.compilerArgs += [
+                    "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+            ]
+        }
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item To run the checkers, build using the checkTypes variant.
+\begin{Verbatim}
+gradlew checkTypes
+\end{Verbatim}
+
+\end{enumerate}
+
+
+\section{Ant task\label{ant-task}}
+
+If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
+your software, then you can add an Ant task that runs a checker.  We assume
+that your Ant file already contains a compilation target that uses the
+\code{javac} task.
+
+\begin{enumerate}
+\item
+Set the \code{jsr308javac} property:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <property environment="env"/>
+
+  <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
+
+  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
+  <condition property="cfJavac" value="javac.bat" else="javac">
+      <os family="windows" />
+  </condition>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
+      <!-- JSR-308-related compiler arguments -->
+      <compilerarg value="-version"/>
+      <compilerarg value="-implicit:class"/>
+    </javac>
+  </presetdef>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
+indicated in this example:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <target name="check-nullness"
+          description="Check for null pointer dereferences"
+          depends="clean,...">
+    <!-- use jsr308.javac instead of javac -->
+    <jsr308.javac ... >
+      <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
+      <!-- optional, to not check uses of library methods:
+        <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/>
+      -->
+      <compilerarg line="-Xmaxerrs 10000"/>
+      ...
+    </jsr308.javac>
+  </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+Fill in each ellipsis (\ldots) from the original compilation target.
+
+In the example, the target is named \code{check-nullness}, but you can
+name it whatever you like.
+\end{enumerate}
+
+\subsection{Explanation\label{ant-task-explanation}}
+
+This section explains each part of the Ant task.
+
+\begin{enumerate}
+\item Definition of \code{jsr308.javac}:
+
+The \code{fork} field of the \code{javac} task
+ensures that an external javac program is called.  Otherwise, Ant will run
+javac via a Java method call, and there is no guarantee that it will get
+the Checker Framework compiler that is distributed with the Checker Framework.
+
+The \code{-version} compiler argument is just for debugging; you may omit
+it.
+
+The \code{-implicit:class} compiler argument causes annotation processing
+to be performed on implicitly compiled files.  (An implicitly compiled file
+is one that was not specified on the command line, but for which the source
+code is newer than the \code{.class} file.)  This is the default, but
+supplying the argument explicitly suppresses a compiler warning.
+
+%% -Awarns was removed above without removing it here.
+% The \code{-Awarns} compiler argument is optional, and causes the checker to
+% treat errors as warnings so that compilation does not fail even if
+% pluggable type-checking fails; see Section~\ref{checker-options}.
+
+\item The \code{check-nullness} target:
+
+The target assumes the existence of a \code{clean} target that removes all
+\code{.class} files.  That is necessary because Ant's \code{javac} target
+doesn't re-compile \code{.java} files for which a \code{.class} file
+already exists.
+
+The \code{-processor ...} compiler argument indicates which checker to
+run.  You can supply additional arguments to the checker as well.
+
+\end{enumerate}
+
+
+\section{Eclipse\label{eclipse}}
+
+% Eclipse supports type annotations.
+% Eclipse does not directly support running the Checker Framework,
+% nor is Eclipse necessary for running the Checker Framework.
+
+You
+need to run the Checker Framework via Ant or via another build tool, rather
+than by supplying the \<-processor> command-line option to the ejc
+compiler, which is also known as eclipsec.
+The reason is that the Checker Framework is built upon javac,
+and ejc represents the Java program differently.  (If both javac and ejc
+implemented JSR 198~\cite{JSR198}, then it would be possible to build
+a type-checking plug-in that works with both compilers.)
+
+
+\subsection{Using an Ant task\label{eclipse-ant}}
+
+Add an Ant target as described in Section~\ref{ant-task}.  You can
+run the Ant target by executing the following steps
+(instructions copied from {\codesize\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
+
+\begin{enumerate}
+
+\item
+  Select \code{build.xml} in one of the navigation views and choose
+  {\bf Run As $>$ Ant Build...} from its context menu.
+
+\item
+  A launch configuration dialog is opened on a launch configuration
+  for this Ant buildfile.
+
+\item
+  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
+
+\item
+  Click {\bf Run}.
+
+\item
+  The Ant buildfile is run, and the output is sent to the Console view.
+
+\end{enumerate}
+
+
+\subsection{Troubleshooting Eclipse\label{eclipse-troubleshooting}}
+
+Eclipse issues an ``Unhandled Token in @SuppressWarnings'' warning if you
+write a \<@SuppressWarnings> annotation containing a string that does not
+know about.  Unfortunately, Eclipse
+\href{https://bugs.eclipse.org/bugs/show_bug.cgi?id=122475}{hard-codes}
+this list.
+
+To eliminate the warnings, you have two options:
+
+\begin{enumerate}
+\item
+Write \<@SuppressWarnings> annotations related to the Checker Framework in
+comments (see Section~\ref{annotations-in-comments}).
+\item
+  Disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
+  Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$ Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings', and set it to ignore.
+\end{enumerate}
+
+
+\section{Gradle\label{gradle}}
+
+This section describes how to run a checker
+on a project that uses the \href{https://gradle.org/}{Gradle} build system.
+
+\begin{enumerate}
+\item
+  Copy the file
+  \href{https://raw.githubusercontent.com/typetools/checker-framework/master/docs/manual/checkerframework.gradle}{\<checkerframework.gradle>}
+  to your project.
+
+\item
+  Customize the file, such as setting which type-checkers are run.
+
+\item
+  In your main buildfile, add the lines
+\begin{Verbatim}
+// Checker Framework pluggable type-checking
+apply from: "checkerframework.gradle"
+\end{Verbatim}
+
+\end{enumerate}
+
+
+\textbf{Note}: Gradle 3.4 has a bug where it does not run annotation processors,
+even if the \<-processor> flag is passed.
+% The gradle maintainers claim at
+% https://github.com/gradle/gradle/issues/1471#issuecomment-283001380 that
+% gradle is right and javac is wrong, because the file
+% META-INF/services/javax.annotation.processing.Processor must be present.
+% In fact, the javac documentation they link to is clear that -processor
+% overrides the need for that file; the gradle maintainers misread it.
+To work around this, install a later version of gradle.  Or, run
+\<gradle wrapper --gradle-version 4.5> (or any version 3.5 or later) and
+then always use \<./gradlew> where you would have used \<gradle>.
+
+
+
+
+\section{IntelliJ IDEA\label{intellij}}
+
+% The following method has been tested with IntelliJ IDEA 2017.3.4 Community Edition
+
+To run a checker within IntelliJ:
+
+\begin{enumerate}
+
+Note: Keymaps references are for Mac OS, to find your default keymaps,
+follow~\href{https://resources.jetbrains.com/storage/products/intellij-idea/docs/IntelliJIDEA_ReferenceCard.pdf}{IntelliJ IDEA Default Keymap}
+\item
+  Set the language level for your project to 8.
+  To do so, go to the ``Project Structure'' menu via (File > Project Structure) or
+  (COMMAND-;), navigate to ``Project" sub-menu( under ``Project Settings"),
+  set the “Project SDK” to Java 8 and set the ``Project language level'' field in the
+  ``Project'' sub-menu to ``8- Lambdas, type annotations etc.". Click ``Apply" to save changes.
+
+
+\item
+  Add the Checker Framework libraries.\\
+  In this same ``Project Structure'' menu, navigate to the ``Libraries'' sub-menu via ( File ).
+  Click on the ``+'' that appears in this menu, select ``Java'' in the resulting pop-down menu,
+  select \<\${HOME}/checker/dist/checker.jar> in the resulting menu,
+  and click ``OK''. Repeat this step for
+  \<\${HOME}/checker/dist/javac.jar>.
+  Click ``Apply" to save changes.
+
+\item
+  Add the annotated JDK library.\\
+  Go to the ``Preferences'' menu via (IntelliJ>Settings) or (COMMAND-,) and
+  navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
+  Deployment>Compiler>Java Compiler). Set ``Use compiler:" to "Javac"  Add the following to the field
+  ``Additional command line parameters'': \\
+  \<-Xbootclasspath/p:"\${HOME}/checker/dist/jdk8.jar">
+  Click ``Apply" to save changes.
+
+\item\label{adding-annotatedjdk}
+  Create an annotation profile and specify which checkers to run.\\
+  Directly under the ``Java Compiler'' sub-menu is the ``Annotation
+  Processors'' sub-menu. Navigate here and click on the ``+'' or (COMMAND-N) to create
+  a new Annotation Processor profile.  Give this profile a unique name of your
+  choosing that does not contain special characters or spaces.
+
+  Now select the profile and check the ``Enable annotation processing''
+  option. Select the ``Processor path'' radio button and enter
+  \<\${HOME}/checker/dist/checker.jar> into the field to the right
+  of it. To add a checker to be run during compilation, click on the
+  ``+'' in the ``Processor FQ Name'' section and write that checker's
+  fully-qualified name in
+  the resulting text field, and click ``Apply" to save changes.
+  % Without the ``Apply", the settings won't be saved.
+  (The fully-qualified name is usually an instantiation of
+  \<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>,
+  replacing \emph{CHECKER} by the checker you
+  want to run; an example would be
+  \<org.checkerframework.checker.nullness.NullnessChecker> or \<org.checkerframework.checker.index.IndexChecker>)
+
+\item
+  Link annotation profile to modules.\\
+  Select the modules you would like to use checkers with from under the ``Default'' profile,
+  click on the button directly right of the ``-'' button,
+  select the new profile in the resulting pop-down menu to move modules into. Click ``Apply" to save changes.
+
+\end{enumerate}
+
+Now, when you compile your code, the checker will be run.
+
+It is necessary to manually inform the IDE via a plugin if an annotation
+system adds any dependencies beyond those that normally exist in Java.
+For information about the extension points, see
+\url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
 
 
 \section{Javac compiler\label{javac-installation}}
@@ -198,118 +571,23 @@ The output should be:
 % \end{itemize}
 
 
-
-\section{Ant task\label{ant-task}}
-
-If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
-your software, then you can add an Ant task that runs a checker.  We assume
-that your Ant file already contains a compilation target that uses the
-\code{javac} task.
-
-\begin{enumerate}
-\item
-Set the \code{jsr308javac} property:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  <property environment="env"/>
-
-  <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
-
-  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
-  <condition property="cfJavac" value="javac.bat" else="javac">
-      <os family="windows" />
-  </condition>
-
-  <presetdef name="jsr308.javac">
-    <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
-      <!-- JSR-308-related compiler arguments -->
-      <compilerarg value="-version"/>
-      <compilerarg value="-implicit:class"/>
-    </javac>
-  </presetdef>
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
-indicated in this example:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  <target name="check-nullness"
-          description="Check for null pointer dereferences"
-          depends="clean,...">
-    <!-- use jsr308.javac instead of javac -->
-    <jsr308.javac ... >
-      <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
-      <!-- optional, to not check uses of library methods:
-        <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/>
-      -->
-      <compilerarg line="-Xmaxerrs 10000"/>
-      ...
-    </jsr308.javac>
-  </target>
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-Fill in each ellipsis (\ldots) from the original compilation target.
-
-In the example, the target is named \code{check-nullness}, but you can
-name it whatever you like.
-\end{enumerate}
-
-\subsection{Explanation\label{ant-task-explanation}}
-
-This section explains each part of the Ant task.
-
-\begin{enumerate}
-\item Definition of \code{jsr308.javac}:
-
-The \code{fork} field of the \code{javac} task
-ensures that an external javac program is called.  Otherwise, Ant will run
-javac via a Java method call, and there is no guarantee that it will get
-the Checker Framework compiler that is distributed with the Checker Framework.
-
-The \code{-version} compiler argument is just for debugging; you may omit
-it.
-
-The \code{-implicit:class} compiler argument causes annotation processing
-to be performed on implicitly compiled files.  (An implicitly compiled file
-is one that was not specified on the command line, but for which the source
-code is newer than the \code{.class} file.)  This is the default, but
-supplying the argument explicitly suppresses a compiler warning.
-
-%% -Awarns was removed above without removing it here.
-% The \code{-Awarns} compiler argument is optional, and causes the checker to
-% treat errors as warnings so that compilation does not fail even if
-% pluggable type-checking fails; see Section~\ref{checker-options}.
-
-\item The \code{check-nullness} target:
-
-The target assumes the existence of a \code{clean} target that removes all
-\code{.class} files.  That is necessary because Ant's \code{javac} target
-doesn't re-compile \code{.java} files for which a \code{.class} file
-already exists.
-
-The \code{-processor ...} compiler argument indicates which checker to
-run.  You can supply additional arguments to the checker as well.
-
-\end{enumerate}
-
-
 \section{Maven\label{maven}}
 
+
+\subsection{Troubleshooting IntelliJ\label{intellij-troubleshooting}}
+If certain expected warnings are ignored when build with IntelliJ( such as str.charAt(i)
+does not resolve in warnings of index expression i), follow the instructions to build using command line,
+if expected warnings are ignored as well, then there’s a bug in Index Checker, if not,
+make sure annotated JDK library is added to IntelliJ according to step~\ref{adding-annotatedjdk)
+
+
+
+\section{Eclipse\label{eclipse}}
+=======
 If you use the \href{http://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
 instructions below.
+
 
 See the directory \code{docs/examples/MavenExample/} for examples of the use of
 Maven build files that run a checker.  These examples can be used to verify that
@@ -521,287 +799,6 @@ profile, so that the checkers run only if the profile was enabled.
 \end{enumerate}
 
 
-\section{Gradle\label{gradle}}
-
-This section describes how to run a checker
-on a project that uses the \href{https://gradle.org/}{Gradle} build system.
-
-\begin{enumerate}
-\item
-  Copy the file
-  \href{https://raw.githubusercontent.com/typetools/checker-framework/master/docs/manual/checkerframework.gradle}{\<checkerframework.gradle>}
-  to your project.
-
-\item
-  Customize the file, such as setting which type-checkers are run.
-
-\item
-  In your main buildfile, add the lines
-\begin{Verbatim}
-// Checker Framework pluggable type-checking
-apply from: "checkerframework.gradle"
-\end{Verbatim}
-
-\end{enumerate}
-
-
-\textbf{Note}: Gradle 3.4 has a bug where it does not run annotation processors,
-even if the \<-processor> flag is passed.
-% The gradle maintainers claim at
-% https://github.com/gradle/gradle/issues/1471#issuecomment-283001380 that
-% gradle is right and javac is wrong, because the file
-% META-INF/services/javax.annotation.processing.Processor must be present.
-% In fact, the javac documentation they link to is clear that -processor
-% overrides the need for that file; the gradle maintainers misread it.
-To work around this, install a later version of gradle.  Or, run
-\<gradle wrapper --gradle-version 4.5> (or any version 3.5 or later) and
-then always use \<./gradlew> where you would have used \<gradle>.
-
-
-
-
-\section{Android Studio 3.0 and the Android Gradle Plugin 3.0\label{android-gradle}}
-
-Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
-annotations.  (See
-\url{https://developer.android.com/studio/write/java8-support.html}
-for more details.)  This section explains how to configure your Andriod
-project to use the Checker Framework.  All the changes should be made to
-the module's \<build.gradle> file --- not the app's \<build.gradle> file.
-
-\begin{enumerate}
-
-\item In your module's \<build.gradle> file, set the source and target
-  compatiblity to \<JavaVersion.VERSION\_1\_8>
-
-\begin{Verbatim}
-android {
-    ...
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-}
-\end{Verbatim}
-
-\item Add a build variant for running checkers.
-
- \begin{Verbatim}
- android {
-    ...
-      buildTypes {
-      ...
-        checkTypes {
-            javaCompileOptions.annotationProcessorOptions.
-                    classNames.add("org.checkerframework.checker.nullness.NullnessChecker")
-            // You can pass options like so:
-            // javaCompileOptions.annotationProcessorOptions.arguments.put("warns", "")
-        }
-    }
-}
-\end{Verbatim}
-
-\item Add a dependency configuration for the annotated JDK:
-
-\begin{mysmall}
-\begin{Verbatim}
-configurations {
-    checkerFrameworkAnnotatedJDK {
-        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
-    }
-}
-
-\end{Verbatim}
-\end{mysmall}
-
-\item Declare the Checker Framework dependencies:
-
-\begin{mysmall}
-\begin{Verbatim}
-dependencies {
-    ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.4.0'
-    implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-    annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
-    checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
-}
-\end{Verbatim}
-\end{mysmall}
-
-\item Direct all tasks of type \<JavaCompile> used by the CheckTypes build variant to use the annotated JDK.
-\begin{mysmall}
-\begin{Verbatim}
-gradle.projectsEvaluated {
-    tasks.withType(JavaCompile).all { compile ->
-        if (compile.name.contains("CheckTypes")) {
-            compile.options.compilerArgs += [
-                    "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
-            ]
-        }
-    }
-}
-\end{Verbatim}
-\end{mysmall}
-
-\item To run the checkers, build using the checkTypes variant.
-\begin{Verbatim}
-gradlew checkTypes
-\end{Verbatim}
-
-\end{enumerate}
-
-\section{IntelliJ IDEA\label{intellij}}
-
-% The following method has been tested with IntelliJ IDEA 2017.3.4 Community Edition
-
-To run a checker within IntelliJ:
-
-\begin{enumerate}
-
-Note: Keymaps references are for Mac OS, to find your default keymaps,
-follow~\href{https://resources.jetbrains.com/storage/products/intellij-idea/docs/IntelliJIDEA_ReferenceCard.pdf}{IntelliJ IDEA Default Keymap}
-\item
-  Set the language level for your project to 8.
-  To do so, go to the ``Project Structure'' menu via (File > Project Structure) or
-  (COMMAND-;), navigate to ``Project" sub-menu( under ``Project Settings"),
-  set the “Project SDK” to Java 8 and set the ``Project language level'' field in the
-  ``Project'' sub-menu to ``8- Lambdas, type annotations etc.". Click ``Apply" to save changes.
-
-
-\item
-  Add the Checker Framework libraries.\\
-  In this same ``Project Structure'' menu, navigate to the ``Libraries'' sub-menu via ( File ).
-  Click on the ``+'' that appears in this menu, select ``Java'' in the resulting pop-down menu,
-  select \<\${HOME}/checker/dist/checker.jar> in the resulting menu,
-  and click ``OK''. Repeat this step for
-  \<\${HOME}/checker/dist/javac.jar>.
-  Click ``Apply" to save changes.
-
-\item
-  Add the annotated JDK library.\\
-  Go to the ``Preferences'' menu via (IntelliJ>Settings) or (COMMAND-,) and
-  navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
-  Deployment>Compiler>Java Compiler). Set ``Use compiler:" to "Javac"  Add the following to the field
-  ``Additional command line parameters'': \\
-  \<-Xbootclasspath/p:"\${HOME}/checker/dist/jdk8.jar">
-  Click ``Apply" to save changes.
-
-\item\label{adding-annotatedjdk}
-  Create an annotation profile and specify which checkers to run.\\
-  Directly under the ``Java Compiler'' sub-menu is the ``Annotation
-  Processors'' sub-menu. Navigate here and click on the ``+'' or (COMMAND-N) to create
-  a new Annotation Processor profile.  Give this profile a unique name of your
-  choosing that does not contain special characters or spaces.
-
-  Now select the profile and check the ``Enable annotation processing''
-  option. Select the ``Processor path'' radio button and enter
-  \<\${HOME}/checker/dist/checker.jar> into the field to the right
-  of it. To add a checker to be run during compilation, click on the
-  ``+'' in the ``Processor FQ Name'' section and write that checker's
-  fully-qualified name in
-  the resulting text field, and click ``Apply" to save changes.
-  % Without the ``Apply", the settings won't be saved.
-  (The fully-qualified name is usually an instantiation of
-  \<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>,
-  replacing \emph{CHECKER} by the checker you
-  want to run; an example would be
-  \<org.checkerframework.checker.nullness.NullnessChecker> or \<org.checkerframework.checker.index.IndexChecker>)
-
-\item
-  Link annotation profile to modules.\\
-  Select the modules you would like to use checkers with from under the ``Default'' profile,
-  click on the button directly right of the ``-'' button,
-  select the new profile in the resulting pop-down menu to move modules into. Click ``Apply" to save changes.
-
-\end{enumerate}
-
-Now, when you compile your code, the checker will be run.
-
-It is necessary to manually inform the IDE via a plugin if an annotation
-system adds any dependencies beyond those that normally exist in Java.
-For information about the extension points, see
-\url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
-
-\subsection{Troubleshooting IntelliJ\label{intellij-troubleshooting}}
-If certain expected warnings are ignored when build with IntelliJ( such as str.charAt(i)
-does not resolve in warnings of index expression i), follow the instructions to build using command line,
-if expected warnings are ignored as well, then there’s a bug in Index Checker, if not,
-make sure annotated JDK library is added to IntelliJ according to step~\ref{adding-annotatedjdk)
-
-
-
-\section{Eclipse\label{eclipse}}
-
-% Eclipse supports type annotations.
-% Eclipse does not directly support running the Checker Framework,
-% nor is Eclipse necessary for running the Checker Framework.
-
-You
-need to run the Checker Framework via Ant or via another build tool, rather
-than by supplying the \<-processor> command-line option to the ejc
-compiler, which is also known as eclipsec.
-The reason is that the Checker Framework is built upon javac,
-and ejc represents the Java program differently.  (If both javac and ejc
-implemented JSR 198~\cite{JSR198}, then it would be possible to build
-a type-checking plug-in that works with both compilers.)
-
-
-\subsection{Using an Ant task\label{eclipse-ant}}
-
-Add an Ant target as described in Section~\ref{ant-task}.  You can
-run the Ant target by executing the following steps
-(instructions copied from {\codesize\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
-
-\begin{enumerate}
-
-\item
-  Select \code{build.xml} in one of the navigation views and choose
-  {\bf Run As $>$ Ant Build...} from its context menu.
-
-\item
-  A launch configuration dialog is opened on a launch configuration
-  for this Ant buildfile.
-
-\item
-  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
-
-\item
-  Click {\bf Run}.
-
-\item
-  The Ant buildfile is run, and the output is sent to the Console view.
-
-\end{enumerate}
-
-
-\subsection{Troubleshooting Eclipse\label{eclipse-troubleshooting}}
-
-Eclipse issues an ``Unhandled Token in @SuppressWarnings'' warning if you
-write a \<@SuppressWarnings> annotation containing a string that does not
-know about.  Unfortunately, Eclipse
-\href{https://bugs.eclipse.org/bugs/show_bug.cgi?id=122475}{hard-codes}
-this list.
-
-To eliminate the warnings, you have two options:
-
-\begin{enumerate}
-\item
-Write \<@SuppressWarnings> annotations related to the Checker Framework in
-comments (see Section~\ref{annotations-in-comments}).
-\item
-  Disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
-  Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$ Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings', and set it to ignore.
-\end{enumerate}
-
-
-\section{tIDE\label{tide}}
-
-\begin{sloppypar}
-tIDE, an open-source Java IDE, supports the Checker Framework.
-You can download it from \myurl{https://sourceforge.net/projects/tide/}.
-\end{sloppypar}
-
-
 \section{NetBeans\label{netbeans}}
 
 There are two approaches to running a checker in NetBeans:  via modifying the
@@ -967,6 +964,14 @@ will not appear in the editor.
 \end{enumerate}
 
 
+\section{tIDE\label{tide}}
+
+\begin{sloppypar}
+tIDE, an open-source Java IDE, supports the Checker Framework.
+You can download it from \myurl{https://sourceforge.net/projects/tide/}.
+\end{sloppypar}
+
+
 \section{Type inference tools\label{type-inference-varieties}}
 
 There are two different tasks that are commonly called ``type inference''.
@@ -1053,6 +1058,7 @@ The programmer still has to
 put in some effort, but much less than without inference:  typically, a
 programmer does not have to write any qualifiers
 inside the body of a method.
+
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle

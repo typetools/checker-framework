@@ -30,6 +30,12 @@
     <dependencies>
         <dependency>
             <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version><!-- checker-framework-version -->2.4.0<!-- /checker-framework-version --></version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
             <artifactId>javacutil</artifactId>
             <version><!-- checker-framework-version -->2.4.0<!-- /checker-framework-version --></version>
             <type>jar</type>

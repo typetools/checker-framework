@@ -16,6 +16,8 @@ import org.checkerframework.framework.flow.CFValue;
 /**
  * The transfer function for the SearchIndexFor checker. Allows {@link SearchIndexFor} to be refined
  * to {@link NegativeIndexFor}.
+ *
+ * <p>Contains 1 refinement rule: SearchIndexFor &rarr; NegativeIndexFor when compared against zero.
  */
 public class SearchIndexTransfer extends IndexAbstractTransfer {
 

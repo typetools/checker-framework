@@ -226,17 +226,17 @@ This section describes how to create an annotated library.
   enable others to see exactly what edits you have made.
 
   Adjust the library's
-  build process, such as a Maven or Ant buildfile.
+  build process, such as an Ant, Gradle, or Maven buildfile.
   \begin{sloppypar}
   \begin{enumerate}
   \item
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
-      passes the \<-AuseDefaultsForUncheckedCode=source,bytecode>
+      pass the \<-AuseDefaultsForUncheckedCode=source,bytecode>
       command-line option and
     \item
-      runs every pluggable type-checker for which any
+      run every pluggable type-checker for which any
       annotations exist, using \<-processor
       \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
     \end{itemize}
@@ -365,7 +365,7 @@ option.
 
 \item
 Build the annotated JDK:
-	run \<ant> in \<\$JSR308/checker-framework/checker>
+	run \<./gradlew buildJdk>
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively
