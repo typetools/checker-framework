@@ -1,7 +1,7 @@
 FILES=qual/Encrypted.java \
   qual/PossiblyUnencrypted.java
 
-JAVAOPTS=-source 7 -target 7
+JAVAOPTS=
 
 JAVAC?=../../../checker/bin/javac
 
