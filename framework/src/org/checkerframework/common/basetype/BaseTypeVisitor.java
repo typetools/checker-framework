@@ -186,6 +186,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
+
+        checkForAnnotatedJdk();
     }
 
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
@@ -197,6 +199,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
+
+        checkForAnnotatedJdk();
     }
 
     /**
@@ -3610,11 +3614,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     checker.message(
                             Kind.WARNING,
-                            "You do not seem to be using the distributed annotated JDK.  To fix the"
-                                    + System.getProperty("line.separator")
-                                    + "problem, supply this argument (first, fill in the \"...\") when you run javac:"
-                                    + System.getProperty("line.separator")
-                                    + "  -Xbootclasspath/p:.../checker/dist/"
+                            "You do not seem to be using the distributed annotated JDK.  To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ .  Currently using: "
                                     + jdkJarName);
                 }
             }

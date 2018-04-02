@@ -177,8 +177,7 @@ Framework.
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
-You can use JDK 8 at run time, or compile
-with a Java 6 or 7 compiler that will ignore the annotations in comments.
+You can use JDK 8 at run time.
 
 \item
 A ``class file for \ldots\ not found'' error, especially for an inner class
@@ -232,8 +231,7 @@ Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  cd checker
-  ant jdk.jar bindist
+  ./gradlew  buildJdk assemble
 \end{Verbatim}
 
 \noindent
@@ -537,8 +535,6 @@ Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
 fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
-Alternately, if you wish to continue using the legacy annotations in
-declaration locations, see Section~\ref{declaration-annotations-for-java7}.
 
 
 \item
@@ -554,15 +550,7 @@ references an enum constant that is only defined in the Java 8 JDK.  The
 problem might be that your code uses a library that references the enum
 constant.  In particular, the type annotations shipped with the Checker
 Framework reference
-\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
-Framework, but still compile and run your code in a Java 6 or 7 JVM, by
-following the instructions in Section~\ref{backward-compatibility}.
-
-If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
-
-\begin{Verbatim}
-  java.lang.ArrayStoreException: sun.reflect.annotation.EnumConstantNotPresentExceptionProxy
-\end{Verbatim}
+\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.
 
 
 \item
@@ -663,54 +651,6 @@ statically-imported enum, is caused by a javac bug, unrelated to the
 Checker Framework.  See
 \url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
 % Also see https://github.com/typetools/checker-framework/issues/1304
-
-
-\subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
-
-An error like this
-
-\begin{Verbatim}
-Unsupported major.minor version 52.0
-\end{Verbatim}
-
-\noindent
-means that you have compiled some files into the Java 8 format (version
-52.0), but you are trying to run them with Java 7 or earlier.
-Likewise, ``Unsupported major.minor version 51.0''
-means that you have compiled some files into the Java 7 format (version
-51.0), but you are trying to run them with Java 6 or earlier.
-Here are ways to solve the problem:
-
-\begin{itemize}
-\item
-Use a newer JVM (run \<java -version> to
-determine the version you are using)
-\item
-Use the Checker Framework to type-check your code, then afterward produce a
-classfile that targets an earlier JVM by supplying arguments such as
-\<javac -source 7 -target 7 ...>.
-\end{itemize}
-
-
-\subsection{Classfile version warning\label{common-problems-classfile-version}}
-
-The following warning is innocuous and you can ignore it, or you can
-suppress it using the \<-Xlint:-classfile> command-line argument to javac:
-
-\begin{myxsmall}
-\begin{Verbatim}
-warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in version 52.0 class files is ignored in version 51.0 class files
-\end{Verbatim}
-\end{myxsmall}
-
-This warning results when you compile a library using the Checker Framework
-compiler, then use a normal Java compiler to compile client code that uses
-the library.
-The Checker Framework compiler puts type annotations even in Java 7
-classfiles, for the benefit of modular type-checking.  The Checker Framework
-compiler reads these annotations in Java 7, and other compilers ignore them
-(but some compilers print a warning that they are ignoring them).
-
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
 
@@ -897,28 +837,13 @@ Obtain the latest source code from the version control repository:
 export JSR308=$HOME/jsr308
 mkdir -p $JSR308
 cd $JSR308
-hg clone https://bitbucket.org/typetools/jsr308-langtools jsr308-langtools
 git clone https://github.com/typetools/checker-framework.git checker-framework
-git clone https://github.com/typetools/annotation-tools.git annotation-tools
-git clone https://github.com/typetools/stubparser.git stubparser
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
 You might want to add the \<export JSR308=\$HOME/jsr308> line to your
 \<.bashrc> file.
 
-
-\subsection{Build the Type Annotations compiler\label{building-compiler}}
-
-The Checker Framework compiler is built upon a compiler called the Type
-Annotations compiler.  The Type Annotations compiler is a variant of the
-OpenJDK javac that supports annotations in comments.  The Checker Framework
-compiler is a small wrapper around the Type Annotations compiler, which
-adds annotated JDKs and the Checker Framework jars to the classpath.
-
-
-\begin{enumerate}
-\item
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
@@ -956,62 +881,6 @@ the Checker Framework anyway.)
 
 \end{description}
 
-\item
-Compile the Type Annotations tools:
-
-\begin{Verbatim}
-  cd $JSR308/jsr308-langtools/make
-  ant clean-and-build-all-tools
-\end{Verbatim}
-% $ to unconfuse Emacs LaTeX mode
-
-\item
- Add the \<jsr308-langtools/dist/bin> directory to the front of your PATH environment variable.
-  Example command:
-
-\begin{Verbatim}
-  export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
-\end{Verbatim}
-
-\end{enumerate}
-
-% Java 8 extends the Java language to permit annotations to appear on types,
-% as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
-% This change will be part of the Java 8 language.  We recommend that you
-% write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
-% Section~\ref{annotations-in-comments}).  The Checker Framework compiler still reads
-% such annotations, but this syntax permits you to use a compiler other than
-% the Checker Framework compiler.  For example, you can compile your code with a Java 5
-% compiler, and you can use a checker as an external tool in an IDE.
-
-
-
-\subsection{Build the Annotation File Utilities\label{afu-building}}
-
-This is simply done by:
-
-\begin{Verbatim}
-  cd $JSR308/annotation-tools
-  ant
-\end{Verbatim}
-
-You do not need to add the Annotation File Utilities to the path, as
-the Checker Framework build finds it using relative paths.
-
-
-\subsection{Build the Stub Parser\label{stubparser-building}}
-
-This is simply done by:
-
-\begin{Verbatim}
-  cd $JSR308/stubparser
-  mvn package -Dmaven.test.skip=true
-\end{Verbatim}
-
-You do not need to add the Stub Parser to the path, as
-the Checker Framework build finds it using relative paths.
-
-
 \subsection{Build the Checker Framework\label{building}}
 
 % Building (compiling) the checkers and framework from source creates the
@@ -1022,20 +891,22 @@ the Checker Framework build finds it using relative paths.
 % use the pre-compiled version.
 
 \begin{enumerate}
-% \item
-% Edit \code{checker/build.properties} file so that the
-% \code{compiler.lib} property specifies the location of the Checker
-% Framework
-% \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
-% source, and you made the \code{checker-framework} and \code{jsr308-langtools} directories
-% siblings, then you don't need to edit \code{checker/build.properties}.)
 
 \item
-Run \code{ant} to build the Checker Framework:
+Run \code{./gradlew cloneAndBuildDependencies} to build the Checker Framework dependencies:
 
 \begin{Verbatim}
-  cd $JSR308/checker-framework/checker
-  ant
+  cd $JSR308/checker-framework
+  ./gradlew cloneAndBuildDependencies
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+
+\item
+Run \code{./gradlew assemble} to build the Checker Framework:
+
+\begin{Verbatim}
+  cd $JSR308/checker-framework
+  ./gradlew assemble
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -1079,10 +950,10 @@ an IDE such as Eclipse.
 
   \begin{itemize}
 
-  \item Run \code{ant all-tests} in the \code{checker} directory:
+  \item Run \code{./gradlew allTests}:
 \begin{Verbatim}
-  cd $JSR308/checker-framework/checker
-  ant all-tests
+  cd $JSR308/checker-framework
+  ./gradlew allTests
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 

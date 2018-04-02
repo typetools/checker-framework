@@ -1,0 +1,100 @@
+sourceSets {
+    main {
+        java {
+            srcDirs = ['generated-src/main']
+        }
+    }
+
+    compatQual {
+        java {
+            srcDirs = ['generated-src/compat']
+        }
+    }
+}
+
+task copySources(type: Copy) {
+    description 'Copy checker-qual source from other projects.'
+    includeEmptyDirs = false
+    doFirst {
+        // Delete the directory in case a previously copied file should no longer be in checker-qual
+        delete file('generated-src/main/')
+    }
+
+    from files('../checker/src', '../dataflow/src', '../framework/src')
+    include "**/FormatUtil.java"
+    include "**/NullnessUtil.java"
+    include "**/RegexUtil.java"
+    include "**/UnitsTools.java"
+    include "**/SignednessUtil.java"
+    include "**/I18nFormatUtil.java"
+    include '**/org/checkerframework/**/qual/*.java'
+    include '**/Opt.java'
+    // TODO: Should we move this into a qual directory?
+    include '**/PurityUnqualified.java'
+
+    // Make files read only.
+    fileMode(0444)
+
+    into file('generated-src/main/')
+}
+
+compileJava {
+    dependsOn copySources
+}
+
+task copyCompatQual(type: Copy) {
+    description 'Copy checker-compat-qual source from other projects.'
+    includeEmptyDirs = false
+    doFirst {
+        // Delete the directory in case a previously copied file should no longer be in checker-qual
+        delete file('generated-src/compat/')
+    }
+
+    from files('../checker/src', '../framework/src')
+    include "**/compatqual/*.java"
+    // Make files read only.
+    fileMode(0444)
+
+    into file('generated-src/compat')
+}
+
+compileCompatQualJava {
+    dependsOn copyCompatQual
+    doLast {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+    }
+}
+
+task compatQualJavadoc(type: Javadoc) {
+    source = sourceSets.compatQual.java
+}
+
+task compatQualJar(type: Jar, dependsOn: compileCompatQualJava) {
+    baseName = 'checker-compat-qual'
+    from compileCompatQualJava.outputs
+}
+
+task compatQualSourcesJar(type: Jar) {
+    description 'Creates compat-qual sources jar.'
+    classifier = 'source'
+    baseName = 'checker-compat-qual'
+    from sourceSets.compatQual.java
+}
+
+// Create a javadocJar task for each subproject
+task compatQualJavadocJar(type: Jar, dependsOn: compatQualJavadoc) {
+    description 'Creates compat-qual javadoc jar.'
+    classifier = 'javadoc'
+    baseName = 'checker-compat-qual'
+    from compatQualJavadoc.destinationDir
+}
+
+
+artifacts {
+    archives compatQualJar
+}
+
+clean {
+    delete file('generated-src/')
+}

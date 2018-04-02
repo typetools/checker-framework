@@ -5,6 +5,5 @@ To add a new file to the test suite, just add it to this directory.
 For more details, see
   ../README
 
-To run the tests, do either of these:
-  ant -e -find build.xml nullness-skipdefs-tests
-  ant -e -find build.xml nullness-tests
+To run the tests, do this:
+  (cd $CHECKERFRAMEWORK && ./gradlew NullnessSkipDefsTest)

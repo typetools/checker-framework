@@ -109,6 +109,9 @@ checker/tests/nullness-temp/*.class
 
 checker/jtreg/multipleexecutions/Main.class
 
+# Source is copied from elsewhere.
+checker-qual/generated-src
+
 framework/tests/whole-program-inference/annotated/
 
 docs/tutorial/eclipse-projects.zip

@@ -11,7 +11,6 @@ checkerDist="${mydir}/../../checker/dist"
 javacutilDist="${mydir}/../../javacutil/dist"
 dataflowDist="${mydir}/../../dataflow/dist"
 
-eval "mvn install:install-file -DpomFile=${mydir}/checkerQual7Pom.xml -Dfile=${checkerDist}/checker-qual7.jar"
 eval "mvn install:install-file -DpomFile=${mydir}/checkerQualPom.xml -Dfile=${checkerDist}/checker-qual.jar"
 eval "mvn install:install-file -DpomFile=${mydir}/checkerPom.xml -Dfile=${checkerDist}/checker.jar"
 eval "mvn install:install-file -DpomFile=${mydir}/compilerPom.xml -Dfile=${checkerDist}/javac.jar"

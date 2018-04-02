@@ -335,10 +335,10 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <ol>
      *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
-     *       RelevantJavaTypes} annotation on the checker
-     *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
+     *       RelevantJavaTypes} annotation on the checker.
+     *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
      *   <li>{@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
-     *       meta-annotations
+     *       meta-annotations.
      * </ol>
      *
      * @return a type annotator
@@ -348,12 +348,11 @@ public abstract class GenericAnnotatedTypeFactory<
         RelevantJavaTypes relevantJavaTypes =
                 checker.getClass().getAnnotation(RelevantJavaTypes.class);
         if (relevantJavaTypes != null) {
-            Class<?>[] classes = relevantJavaTypes.value();
-            // Must be first in order to annotated all irrelevant types that are not explicilty
-            // annotated.
+            Class<?>[] relevantClasses = relevantJavaTypes.value();
+            // Must be first in order to annotate all irrelevant types.
             typeAnnotators.add(
                     new IrrelevantTypeAnnotator(
-                            this, getQualifierHierarchy().getTopAnnotations(), classes));
+                            this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
         implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
