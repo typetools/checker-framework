@@ -337,56 +337,52 @@ follow~\href{https://resources.jetbrains.com/storage/products/intellij-idea/docs
 
 \begin{enumerate}
 \item
-Set the language level for your project to 8.
-To do so, go to the ``Project Structure'' menu via (File > Project Structure) or
-(COMMAND-;), navigate to ``Project" sub-menu( under ``Project Settings"),
-set the ``Project SDK'' to Java 8 and set the ``Project language level'' field in the
-``Project'' sub-menu to ``8- Lambdas, type annotations etc.". Click ``Apply" to save changes.
+  Set the language level for your project to 8. To do so, go to the
+  ``Project Structure'' menu via (File > Project Structure) or
+  (COMMAND-;), navigate to ``Project" sub-menu( under ``Project Settings"),
+  set the ``Project SDK'' to Java 8 and set the ``Project language level'' field in the
+  ``Project'' sub-menu to ``8- Lambdas, type annotations etc.". Click ``Apply" to save changes.
 
 \item
-Add the Checker Framework libraries.
-In this same ``Project Structure'' menu, navigate to the ``Libraries'' sub-menu via ( File ).
-Click on the ``+'' that appears in this menu, select ``Java'' in the resulting pop-down menu,
-select \<\${HOME}/checker/dist/checker.jar> in the resulting menu,
-and click ``OK''. Repeat this step for
-\<\${HOME}/checker/dist/javac.jar>.
-Click ``Apply" to save changes.
-
-\item
-Add the annotated JDK library.
-Go to the ``Preferences'' menu via (IntelliJ>Settings) or (COMMAND-,) and
-navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
-Deployment>Compiler>Java Compiler). Set ``Use compiler:" to "Javac"  Add the following to the field
-``Additional command line parameters'':
-\<-Xbootclasspath/p:"\${HOME}/checker/dist/jdk8.jar">
-Click ``Apply" to save changes.
+  Add the Checker Framework libraries. In this same ``Project Structure'' menu,
+  navigate to the ``Libraries'' sub-menu, Click on the ``+'' that
+  appears in this menu, select ``Java'' in the resulting pop-down menu,
+  select \<\${HOME}/checker/dist/checker.jar> in the resulting menu,
+  and click ``OK''. Repeat this step for
+  \<\${HOME}/checker/dist/javac.jar>.
 
 \item\label{adding-annotatedjdk}
-Create an annotation profile and specify which checkers to run.
-Directly under the ``Java Compiler'' sub-menu is the ``Annotation
-Processors'' sub-menu. Navigate here and click on the ``+'' or (COMMAND-N) to create
-a new Annotation Processor profile.  Give this profile a unique name of your
-choosing that does not contain special characters or spaces.
-
-Now select the profile and check the ``Enable annotation processing''
-option. Select the ``Processor path'' radio button and enter
-\<\${HOME}/checker/dist/checker.jar> into the field to the right
-of it. To add a checker to be run during compilation, click on the
-``+'' in the ``Processor FQ Name'' section and write that checker's
-fully-qualified name in
-the resulting text field, and click ``Apply" to save changes.
-% Without the ``Apply", the settings won't be saved.
-(The fully-qualified name is usually an instantiation of
-\<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>,
-replacing \emph{CHECKER} by the checker you
-want to run; an example would be
-\<org.checkerframework.checker.nullness.NullnessChecker> or \<org.checkerframework.checker.index.IndexChecker>)
+  Add the annotated JDK library.
+  Go to the ``Preferences'' menu via (IntelliJ>Settings) or (COMMAND-,) and
+  navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
+  Deployment>Compiler>Java Compiler). Set ``Use compiler:" to "Javac"  Add the following to the field
+  ``Additional command line parameters'':
+  \<-Xbootclasspath/p:"\${HOME}/checker/dist/jdk8.jar">
 
 \item
-Link annotation profile to modules.
-Select the modules you would like to use checkers with from under the ``Default'' profile,
-click on the button directly right of the ``-'' button,
-select the new profile in the resulting pop-down menu to move modules into. Click ``Apply" to save changes.
+  Create an annotation profile and specify which checkers to run.
+  Directly under the ``Java Compiler'' sub-menu is the ``Annotation
+  Processors'' sub-menu. Navigate here and click on the ``+'' or (COMMAND-N) to create
+  a new Annotation Processor profile.  Give this profile a unique name of your
+  choosing that does not contain special characters or spaces.
+
+  Now select your new profile and check the ``Enable annotation processing''
+  option. Select the ``Processor path'' radio button and enter
+  \<\${HOME}/checker/dist/checker.jar> into the field to the right
+  of it. To add a checker to be run during compilation, click on the
+  ``+'' in the ``Processor FQ Name'' section and write that checker's
+  fully-qualified name in the resulting text field, and click ``Apply" to save changes.
+  % Without the ``Apply", the settings won't be saved.
+  (The fully-qualified name is usually an instantiation of
+  \<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>,
+  replacing \emph{CHECKER} by the checker you
+  want to run; an example would be
+  \<org.checkerframework.checker.nullness.NullnessChecker> or \<org.checkerframework.checker.index.IndexChecker>)
+
+\item
+  Link annotation profile to modules. Select the modules you would like to use
+  checkers with from under the ``Default'' profile, click on the button directly right of the ``-'' button,
+  select the new profile in the resulting pop-down menu to move modules into. Click ``Apply" to save changes.
 
 \end{enumerate}
 
@@ -402,10 +398,10 @@ For information about the extension points, see
 
 \begin{enumerate}
 \item
-If certain expected warnings are ignored when build with IntelliJ( such as str.charAt(i)
-does not resolve in warnings of index expression i), follow the instructions to build using command line,
-if expected warnings are ignored as well, then there is a bug in Index Checker, if not,
-make sure annotated JDK library is added to IntelliJ according to (Section~\ref{adding-annotatedjdk})
+  If certain expected warnings are ignored when build with IntelliJ( such as str.charAt(i)
+  does not resolve in warnings of index expression i), follow the instructions to build using command line,
+  if expected warnings are ignored as well, then there is a bug in Index Checker, if not,
+  make sure annotated JDK library is added to IntelliJ according to (Section~\ref{adding-annotatedjdk})
 \end{enumerate}
 
 
