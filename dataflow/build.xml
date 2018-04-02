@@ -128,9 +128,6 @@
         <delete file="${build}/.timestamp"/>
     </target>
 
-    <!-- TODO: add a type-checking target that doesn't use
-         -XDTA:noannotations in comments. -->
-
     <target name="manual" depends="prep" description="Create PDF manual">
         <exec executable="make" dir="manual" failonerror="true">
         </exec>

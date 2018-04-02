@@ -96,9 +96,6 @@
         <delete file="${build}/.timestamp"/>
     </target>
 
-    <!-- TODO: add a type-checking target that doesn't use
-         -XDTA:noannotations in comments. -->
-
     <target name="dist" depends="build" description="Create jar file">
         <mkdir dir="dist" />
         <jar destfile="${javacutil.lib}" basedir="${build}"/>

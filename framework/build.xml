@@ -175,9 +175,6 @@
         <delete file="${build}/.timestamp"/>
     </target>
 
-    <!-- TODO: add a type-checking target that doesn't use
-         -XDTA:noannotations in comments. -->
-
     <target name="javadoc" depends="prep,prep-ManualTaglet,build.check.uptodate" description="Create Javadoc documentation">
 
         <ant dir="${javacutil.loc}">

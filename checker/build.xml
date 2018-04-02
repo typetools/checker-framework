@@ -256,9 +256,6 @@
         <delete file="${build}/.timestamp"/>
     </target>
 
-    <!-- TODO: add a type-checking target that doesn't use
-         -XDTA:noannotations in comments. -->
-
     <!-- Dependendencies on other projects (such as dataflow)
          mirrors javadoc dependencies. If changing project
          dependencies, change the Javadoc dependencies to keep
@@ -451,19 +448,6 @@
             </path>
         </pathconvert>
         <echo message="${qual.src8.files.spaceseparated}" append="true" file="${tmpdir}/srcfiles-checker.txt"/>
-
-
-        <!-- Remove annotations in comments-->
-        <replaceregexp match="\/\*@([^*]+)\*\/" replace="@\1" flags="g">
-            <fileset dir="${checker-qual-sources-tmp}">
-                <include name="**/*.java"/>
-            </fileset>
-        </replaceregexp>
-        <replaceregexp match="\/\*>>>([^*]+)\*\/" replace="\1" flags="g">
-            <fileset dir="${checker-qual-sources-tmp}">
-                <include name="**/*.java"/>
-            </fileset>
-        </replaceregexp>
 
         <java fork="true"
               failonerror="true"
