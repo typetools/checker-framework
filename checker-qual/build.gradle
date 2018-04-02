@@ -77,7 +77,7 @@ task compatQualJar(type: Jar, dependsOn: compileCompatQualJava) {
 
 task compatQualSourcesJar(type: Jar) {
     description 'Creates compat-qual sources jar.'
-    classifier = 'sources'
+    classifier = 'source'
     baseName = 'checker-compat-qual'
     from sourceSets.compatQual.java
 }
@@ -92,7 +92,7 @@ task compatQualJavadocJar(type: Jar, dependsOn: compatQualJavadoc) {
 
 
 artifacts {
-    compatQualJar
+    archives compatQualJar
 }
 
 clean {

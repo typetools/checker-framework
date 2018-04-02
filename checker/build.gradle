@@ -62,6 +62,9 @@ shadowJar {
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker.jar"
 }
+artifacts {
+    archives shadowJar
+}
 
 clean {
     delete "${projectDir}/dist"
