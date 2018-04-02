@@ -6,6 +6,11 @@ Declaration annotations that are aliases for type annotations are now treated
 as if they apply to the top-level type.  See "Declaration annotations" section
 in the "Warnings" chapter in the manual for more details.
 
+Closed issues:
+
+515, 1667, 1739, 1776, 1819, 1863, 1864, 1865, 1866, 1867, 1870, 1876, 1879,
+1882, 1898, 1903, 1905, 1906, 1910, 1914, 1915, 1920.
+
 ---------------------------------------------------------------------------
 
 Version 2.4.0, March 1, 2018
