@@ -1203,12 +1203,6 @@ helper routine that is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
-\end{Verbatim}
-
 % Most readers can
 % skip this section on first reading; you can return to it once you have
 % mastered the rest of the Nullness Checker.
@@ -1830,15 +1824,6 @@ class MyClass {
 \end{Verbatim}
 
 \noindent
-If you are using annotations in comments, you would write:
-
-\begin{Verbatim}
-class MyClass {
-  void initHelper(/*>>>@UnknownInitialization MyClass this,*/ String param1) { ... }
-}
-\end{Verbatim}
-
-\noindent
 You are likely to want to annotate \<initHelper()> with
 \refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
@@ -2036,12 +2021,6 @@ is called by constructor.  For example:
       field3 = new Object();
     }
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>> @Raw MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can

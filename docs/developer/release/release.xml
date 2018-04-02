@@ -159,15 +159,6 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <!-- jsr308 compiler -->
-        <update file="${checker.binary.poms}/compilerPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/compilerReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
         <!-- jdk8 -->
         <update file="${checker.binary.poms}/jdk8Pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"

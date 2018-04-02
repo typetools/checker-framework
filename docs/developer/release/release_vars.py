@@ -160,7 +160,6 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
-JAVAC_BINARY = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
@@ -187,7 +186,6 @@ CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_QUAL7_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQual7Pom.xml')
 CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
 
-JAVAC_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml')
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
 MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')

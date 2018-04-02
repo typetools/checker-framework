@@ -211,8 +211,7 @@ You can place your checker's source files wherever you like.
 \item
   \begin{sloppypar}
   If you put your checker elsewhere, then when you compile your checker,
-  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>
-  and \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
   \end{sloppypar}
 \end{itemize}
 
@@ -1899,9 +1898,7 @@ docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
 
 \begin{sloppypar}
 You can use any standard debugger to observe the execution of your checker.
-Set the execution main class to \code{com.sun.tools.javac.Main}, and insert
-the Checker Framework javac.jar (resides in
-\code{\$CHECKERFRAMEWORK/checker/dist/javac.jar}).  If using an IDE, it is
+If using an IDE, it is
 recommended that you add \code{.../jsr308-langtools} as a project, so you
 can step into its source code if needed.
 \end{sloppypar}

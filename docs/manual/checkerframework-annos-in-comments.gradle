@@ -22,18 +22,18 @@ configurations {
 
 // Checker Framework from Maven Central
 dependencies {
-  ext.checkerFrameworkVersion = '2.4.0'
+  ext.checkerFrameworkVersion = '2.5.0'
   checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
   checkerFrameworkJavac "org.checkerframework:compiler:2.4.0"
   checkerFrameworkCheckerJar "org.checkerframework:checker:${checkerFrameworkVersion}"
-  implementation "org.checkerframework:checker-qual7:${checkerFrameworkVersion}"
+  implementation "org.checkerframework:checker-qual7:2.4.0"
 }
 
 // Checker Framework from local build
 // dependencies {
 //   ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
 //   checkerFrameworkAnnotatedJDK fileTree(dir: "${ext.checkerframeworkdist}", include: "jdk8.jar")
-//   checkerFrameworkJavac fileTree(dir: "${ext.checkerframeworkdist}", include: "javac.jar")
+//   checkerFrameworkJavac "org.checkerframework:compiler:2.4.0"
 //   checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
 //   compile fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
 // }
