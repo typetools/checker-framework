@@ -14,6 +14,38 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * Indicates that the given expressions evaluate to an integer whose value is less than the lengths
  * of all the given sequences, if the method returns the given result (either true or false).
  *
+ * <p>As an example, consider the following method:
+ *
+ * <pre>
+ *
+ *      &#64;EnsuresLTLengthOfIf(
+ *          expression = "end",
+ *          result = true,
+ *          targetValue = "array",
+ *          offset = "#1 - 1"
+ *      )
+ *      public boolean tryShiftIndex(&#64;NonNegative int x) {
+ *          int newEnd = end - x;
+ *          if (newEnd &#60; 0) return false;
+ *          end = newEnd;
+ *          return true;
+ *      }
+ * </pre>
+ *
+ * Calling this function ensures that the field {@code end} of the {@code this} object is of type
+ * {@code @LTLengthOf(value = "array", offset = "x - 1")}, for the value {@code x} that is passed as
+ * the argument. This allows the Index Checker to verify that {@code end + x} is an index into
+ * {@code array} in the following code:
+ *
+ * <pre>
+ *
+ *      public void useTryShiftIndex(&#64;NonNegative int x) {
+ *          if (tryShiftIndex(x)) {
+ *              Arrays.fill(array, end, end + x, null);
+ *          }
+ *      }
+ * </pre>
+ *
  * @see LTLengthOf
  * @see EnsuresLTLengthOf
  * @see org.checkerframework.checker.index.IndexChecker

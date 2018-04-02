@@ -226,17 +226,17 @@ This section describes how to create an annotated library.
   enable others to see exactly what edits you have made.
 
   Adjust the library's
-  build process, such as a Maven or Ant buildfile.
+  build process, such as an Ant, Gradle, or Maven buildfile.
   \begin{sloppypar}
   \begin{enumerate}
   \item
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
-      passes the \<-AuseDefaultsForUncheckedCode=source,bytecode>
+      pass the \<-AuseDefaultsForUncheckedCode=source,bytecode>
       command-line option and
     \item
-      runs every pluggable type-checker for which any
+      run every pluggable type-checker for which any
       annotations exist, using \<-processor
       \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
     \end{itemize}
@@ -294,9 +294,6 @@ This section describes how to create an annotated library.
     to maintain, the library will obtain the correctness guarantees of
     pluggable type-checking, and there will be no need for the Checker
     Framework to include an annotated version of the library.
-
-    You may want to write the annotations in comments, so that it
-    is still possible to compile the library without use of Java 8.
 
     If the library maintainers do not accept the annotations, then
     periodically, such as when a new version of the library is released,
@@ -365,7 +362,7 @@ option.
 
 \item
 Build the annotated JDK:
-	run \<ant> in \<\$JSR308/checker-framework/checker>
+	run \<./gradlew buildJdk>
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively
@@ -530,8 +527,6 @@ As an illustration, a stub file for the Interning type system
     @Interned String intern();
   }
 \end{Verbatim}
-
-Note, annotations in comments are ignored.
 
 The stub file format is allowed to differ from Java source code in the
 following ways:

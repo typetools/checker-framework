@@ -18,7 +18,6 @@ import java.util.Map.Entry;
 import javax.lang.model.element.ExecutableElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.xml.ws.Holder;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -191,20 +190,20 @@ public class JavaSource2CFGDOT {
      */
     public static Entry<@Nullable MethodTree, @Nullable CompilationUnitTree>
             getMethodTreeAndCompilationUnit(String file, final String method, String clas) {
-        final Holder<MethodTree> m = new Holder<>();
-        final Holder<CompilationUnitTree> c = new Holder<>();
+        final MethodTree[] m = {null};
+        final CompilationUnitTree[] c = {null};
         BasicTypeProcessor typeProcessor =
                 new BasicTypeProcessor() {
                     @Override
                     protected TreePathScanner<?, ?> createTreePathScanner(
                             CompilationUnitTree root) {
-                        c.value = root;
+                        c[0] = root;
                         return new TreePathScanner<Void, Void>() {
                             @Override
                             public Void visitMethod(MethodTree node, Void p) {
                                 ExecutableElement el = TreeUtils.elementFromDeclaration(node);
                                 if (el.getSimpleName().contentEquals(method)) {
-                                    m.value = node;
+                                    m[0] = node;
                                     // stop execution by throwing an exception. this
                                     // makes sure that compilation does not proceed, and
                                     // thus the AST is not modified by further phases of
@@ -250,12 +249,12 @@ public class JavaSource2CFGDOT {
 
             @Override
             public CompilationUnitTree getValue() {
-                return c.value;
+                return c[0];
             }
 
             @Override
             public MethodTree getKey() {
-                return m.value;
+                return m[0];
             }
         };
     }

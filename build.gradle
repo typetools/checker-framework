@@ -14,6 +14,32 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    release = false
+    assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
+
+    jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
+    jsr308 = file(jsr308).absolutePath
+
+    annotationTools = "${jsr308}/annotation-tools"
+    afu = "${annotationTools}/annotation-file-utilities"
+    afuJar = "${afu}/annotation-file-utilities.jar"
+    if (!file(afuJar).exists()) {
+        println "${afuJar} does not exist"
+    }
+
+    stubparser = "${jsr308}/stubparser"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
+    if (!file(stubparserJar).exists()) {
+        println "${stubparserJar} does not exist"
+    }
+
+    jtregHome = "${jsr308}/jtreg"
+    formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
+
+    javadocMemberLevel = JavadocMemberLevel.PROTECTED
+}
+
 task installGitHooks(type: Copy) {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
@@ -28,31 +54,25 @@ allprojects {
     apply plugin: 'net.ltgt.errorprone-base'
 
     group 'org.checkerframework'
-    version '2.5.0-SNAPSHOT'
+    // Increment the minor version rather than just the patch level if:
+    //   * any new checkers have been added,\n")
+    //   * the patch level is 9 (keep the patch level as a single digit), or\n")
+    //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
+    version '2.5.0'
 
     repositories {
         mavenCentral()
     }
 
-    ext {
-        release = false
+    configurations {
+        javacJar
+        toolsJar
+    }
+
+    dependencies {
+        javacJar 'org.checkerframework:compiler:2.4.0'
         // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
-        toolsJar = Jvm.current().toolsJar.path
-        assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
-
-        jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
-
-        annotationTools = "${jsr308}/annotation-tools"
-        afu = "${annotationTools}/annotation-file-utilities"
-        afuJar = "${afu}/annotation-file-utilities.jar"
-
-        stubparser = "${jsr308}/stubparser"
-        stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
-
-        jtregHome = "${jsr308}/jtreg"
-        formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
-
-        javadocMemberLevel = JavadocMemberLevel.PROTECTED
+        toolsJar files(Jvm.current().toolsJar)
     }
 
     // After all the tasks have been created, modify some of them.
@@ -72,6 +92,9 @@ allprojects {
                     options.tagletPath(project(':javacutil').sourceSets.taglet.output as File[])
                 }
                 options.links = ['http://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
+                // This file is looked for by Javadoc.
+                file("${destinationDir}/resources/fonts/").mkdirs()
+                ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
             }
         }
 
@@ -99,6 +122,12 @@ task cloneAndBuildDependencies(type: Exec) {
     args = ['downloadjdk']
 }
 
+task version() {
+    description 'Print checker-framework version'
+    doLast {
+        println version
+    }
+}
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
  * "check${shortName}".
@@ -122,6 +151,7 @@ def createCheckTypeTask(projectName, checker, shortName) {
                 '-proc:only',
                 '-Xlint:-processing',
                 '-AprintErrorStack',
+                "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar"
         ]
     }
 }
@@ -137,6 +167,7 @@ def createCheckTypeTask(projectName, checker, shortName) {
 List<String> getJavaFilesToFormat(projectName) {
     List<File> javaFiles = new ArrayList<>();
     javaFiles.addAll(project(':' + projectName).sourceSets.main.java.files)
+    javaFiles.addAll(project(':' + projectName).sourceSets.test.java.files)
     // Collect all java files in tests directory
     fileTree("${projectDir}/tests").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
@@ -166,8 +197,9 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
     dependsOn(':javacutil:tagletClasses')
+    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
-    source subprojects.collect { it.sourceSets.main.allJava }
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
     destinationDir = file("${projectDir}/docs/api")
     doLast {
@@ -263,8 +295,12 @@ subprojects {
         relocate 'com.google', 'org.checkerframework.com.google'
         relocate 'plume', 'org.checkerframework.plume'
     }
-    artifacts {
-        archives shadowJar
+
+    if (!project.name.is('checker-qual') && !project.name.is('jdk8')) {
+        task tags(type: Exec) {
+            description 'Create Emacs TAGS table'
+            commandLine "bash", "-c", "find . \\( -name jdk \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+        }
     }
 
     // Things in this block reference definitions in the subproject that do not exist,
@@ -273,7 +309,7 @@ subprojects {
         // Create a sourcesJar task for each subproject
         tasks.create(name: 'sourcesJar', type: Jar) {
             description 'Creates sources jar.'
-            classifier = 'sources'
+            classifier = 'source'
             baseName = project.name
             from sourceSets.main.java
         }
@@ -282,7 +318,7 @@ subprojects {
         tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
             description 'Creates javadoc jar.'
             classifier = 'javadoc'
-            baseName = name
+            baseName = project.name
             from tasks.javadoc.destinationDir
         }
 
@@ -422,7 +458,7 @@ subprojects {
             }
 
             if (project.name.is('checker')) {
-                tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests', 'exampleTests']
+                tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests']
             }
         }
 
@@ -535,4 +571,20 @@ task checkStyle(group: 'Format') {
             throw new GradleException("Files do not meet basic style guidelines.")
         }
     }
+}
+
+task release(type: GradleBuild) {
+    description 'Build everything required for a release'
+    doFirst {
+        release = true
+    }
+    // This download rather than builds the jdk8.jar because that's what is used in all the Travis tests.
+    tasks = ['assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
+}
+task releaseAndTest(type: GradleBuild, dependsOn: 'release') {
+    description 'Build everything required for a release and runn allTests'
+    doFirst {
+        release = true
+    }
+    tasks = ['allTests']
 }

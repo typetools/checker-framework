@@ -702,34 +702,6 @@ The
 \href{http://plse.cs.washington.edu/daikon/}{Daikon invariant detector}.
 Run the command \code{make check-nullness}.
 
-% \item
-% The annotation scene library.
-% To run the Nullness Checker on the annotation scene library,
-% % TODO: how does one do this?
-% first download the scene library suite (which includes build
-% dependencies for the scene library as well as its source code) and extract it
-% into your Checker Framework installation. The checker can then be run on the annotation
-% scene library with Apache Ant using the following commands:
-%
-% \begin{Verbatim}
-%   cd checkers
-%   ant -f scene-lib-test.xml
-% \end{Verbatim}
-%
-% % \noindent
-% % where \code{checkers} is the location of the Checker Framework installation.
-%
-% You can view the annotated source code, which contains \refqualclass{checker/nullness/qual}{NonNull} annotations, in
-% the
-% %BEGIN LATEX
-% \begin{smaller}
-% %END LATEX
-% \code{checkers/scene-lib-test/src/annotations/}
-% %BEGIN LATEX
-% \end{smaller}
-% %END LATEX
-% directory.
-
 \end{itemize}
 
 
@@ -1229,12 +1201,6 @@ helper routine that is called by constructor.  For example:
 
 
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can
@@ -1858,15 +1824,6 @@ class MyClass {
 \end{Verbatim}
 
 \noindent
-If you are using annotations in comments, you would write:
-
-\begin{Verbatim}
-class MyClass {
-  void initHelper(/*>>>@UnknownInitialization MyClass this,*/ String param1) { ... }
-}
-\end{Verbatim}
-
-\noindent
 You are likely to want to annotate \<initHelper()> with
 \refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
@@ -2064,12 +2021,6 @@ is called by constructor.  For example:
       field3 = new Object();
     }
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>> @Raw MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can

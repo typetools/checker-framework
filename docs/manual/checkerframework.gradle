@@ -21,7 +21,7 @@ dependencies {
   ext.checkerFrameworkVersion = '2.4.0'
   checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
   checkerFrameworkCheckerJar "org.checkerframework:checker:${checkerFrameworkVersion}"
-  compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+  implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
 }
 
 // Checker Framework from local build
