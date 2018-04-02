@@ -46,6 +46,7 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
@@ -833,6 +834,12 @@ public abstract class CFAbstractTransfer<
                             analysis.getTypeFactory());
         }
         return super.visitReturn(n, p);
+    }
+
+    @Override
+    public TransferResult<V, S> visitLambdaResultExpression(
+            LambdaResultExpressionNode n, TransferInput<V, S> in) {
+        return n.getResult().accept(this, in);
     }
 
     @Override

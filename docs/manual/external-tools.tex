@@ -282,16 +282,9 @@ know about.  Unfortunately, Eclipse
 \href{https://bugs.eclipse.org/bugs/show_bug.cgi?id=122475}{hard-codes}
 this list.
 
-To eliminate the warnings, you have two options:
-
-\begin{enumerate}
-\item
-Write \<@SuppressWarnings> annotations related to the Checker Framework in
-comments (see Section~\ref{annotations-in-comments}).
-\item
-  Disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
-  Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$ Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings', and set it to ignore.
-\end{enumerate}
+To eliminate the warnings:
+disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
+Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$ Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings', and set it to ignore.
 
 
 \section{Gradle\label{gradle}}
@@ -446,9 +439,8 @@ use the last one.
 
     Now, whenever you run \code{javac}, you will use the ``Checker
     Framework compiler''.  It is exactly the same as the OpenJDK compiler,
-    with two small differences:  it includes the Checker Framework jar file
-    on its classpath, and it recognizes type annotations in comments (see
-    Section~\ref{annotations-in-comments}).
+    with one small differences:  it includes the Checker Framework jar file
+    on its classpath.
 
   \item
     \begin{sloppypar}
@@ -465,21 +457,6 @@ use the last one.
 \begin{Verbatim}
   export CHECKERFRAMEWORK=${HOME}/checker-framework-2.4.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
-\end{Verbatim}
-
-    If you wish to compile files that can be run on a Java 7 JVM, then add
-    command-line arguments to so indicate:
-
-\begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.4.0
-  alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
-\end{Verbatim}
-
-   If you do not add the \<-source 7 -target 7> command-line arguments, you
-   may get the following error when running a class that was compiled by
-   javacheck:
-\begin{Verbatim}
-  UnsupportedClassVersionError: ... : Unsupported major.minor version 52.0
 \end{Verbatim}
 
    \item
@@ -505,28 +482,12 @@ use the last one.
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
-   \noindent
-   and add \<-source 7 -target 7> if you wish to produce .class files that
-   can be run on a Java 7 JVM.
-
    (Explanation for advanced users:  More generally, anywhere that you would use \<javac.jar>, you can substitute
    \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>;
    the result is to use the Checker
    Framework compiler instead of the regular \<javac>.)
 
 \end{itemize}
-
-
-To ensure that you are using the Checker Framework compiler, run
-\<javac -version> (possibly using the
-full pathname to \<javac> or the alias, if you did not add the Checker
-Framework \<javac> to your path).
-The output should be:
-
-\begin{Verbatim}
-  javac 1.8.0-jsr308-2.4.0
-\end{Verbatim}
-
 
 
 
@@ -594,16 +555,6 @@ Maven is correctly downloading the Checker Framework from
 \href{http://search.maven.org/#search|ga|1|org.checkerframework}{Maven
   Central Repository} and executing it.
 
-There are two general ways you can configure your Maven buildfile,
-corresponding to the two ways to run the Checker Framework:
-\begin{itemize}
-\item
-  Use the Type Annotations compiler.  You need to use this if you write
-  annotations in comments (see Section~\ref{annotations-in-comments}).
-\item
-  Use the standard Java 8 compiler.
-\end{itemize}
-
 Please note that the \<-AoutputArgsToFile> command-line option
 (see Section~\ref{creating-debugging-options-output-args}) and shorthands for built-in checkers
 (see Section~\ref{shorthand-for-checkers}) are not available when
@@ -632,16 +583,8 @@ checker as an annotation processor directly.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-       <!-- Use checker-qual7 if targeting Java 7 -->
-       <!-- <artifactId>checker-qual7</artifactId> -->
       <version>\ReleaseVersion{}</version>
     </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
-    <!-- <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>compiler</artifactId>
-      <version>\ReleaseVersion{}</version>
-    </dependency> -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
@@ -679,14 +622,6 @@ latest bug fixes and new features:
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
     </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
-    <!-- <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>compiler</artifactId>
-      <version>\ReleaseVersion{}</version>
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/javac.jar</systemPath>
-    </dependency> -->
     <!-- The annotated JDK to use. -->
     <dependency>
       <groupId>org.checkerframework</groupId>
@@ -707,17 +642,15 @@ latest bug fixes and new features:
 
 
 \item Use Maven properties to hold the locations of the
-  annotated JDK and (if using annotations in comments), the Type Annotations compiler.  Both were declared as Maven dependencies above.
-To set the value of these properties automatically, you will use the Maven Dependency plugin.
+  annotated JDK.  It was declared as Maven dependencies above.
+To set the value of this property automatically, you will use the Maven Dependency plugin.
 
-First, create the properties in the \code{properties} section of the POM:
+First, create the property in the \code{properties} section of the POM:
 
 \begin{alltt}
 <properties>
   <!-- These properties will be set by the Maven Dependency plugin -->
   <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-  <!-- Uncomment to use the Type Annotations compiler. -->
-  <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
 </properties>
 \end{alltt}
 
@@ -752,11 +685,8 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.6.1</version>
     <configuration>
-      <!-- Change source and target to 1.7 to create .class files that can be run on a Java 7 JVM -->
       <source>1.8</source>
       <target>1.8</target>
-      <!-- Uncomment the following line to use the type annotations compiler. -->
-      <!-- <fork>true</fork> -->
       <compilerArguments>
         <Xmaxerrs>10000</Xmaxerrs>
         <Xmaxwarns>10000</Xmaxwarns>
@@ -776,8 +706,6 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <arg>-AprintErrorStack</arg>
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-        <!-- Uncomment the following line to use the type annotations compiler. -->
-        <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
         <!-- Uncomment the following line to turn type-checking warnings into errors. -->
         <!-- <arg>-Awarns</arg> -->
       </compilerArgs>
