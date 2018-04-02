@@ -186,7 +186,6 @@ CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_QUAL7_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQual7Pom.xml')
 CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
 
-JAVAC_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml')
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
 MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
