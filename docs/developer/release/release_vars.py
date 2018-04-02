@@ -160,7 +160,6 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
-JAVAC_BINARY = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
