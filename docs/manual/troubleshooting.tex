@@ -859,15 +859,16 @@ brew update
 brew install git ant hevea maven mercurial librsvg unzip make
 brew cask install java
 brew cask install mactex
-\begin{Verbatim}
+\end{Verbatim}
 
 Make latex directory and copy hevea.sty file into it.
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
-Note: If copy permission denied, try sudo.
 \end{Verbatim}
+
+Note: If copy permission denied, try sudo.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
