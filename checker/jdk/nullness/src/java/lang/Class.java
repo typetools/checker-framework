@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.Covariant;
@@ -13,7 +14,7 @@ import org.checkerframework.framework.qual.Covariant;
 // meaning, but are unrelated by the Java type hierarchy.
 // @Covariant makes Class<@NonNull String> a subtype of Class<@Nullable String>.
 @Covariant(0)
-public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
+public final class Class<@UnknownKeyFor T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
