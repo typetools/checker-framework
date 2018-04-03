@@ -25,12 +25,11 @@
 
 package java.util;
 
-// TODO: reinstate
-// import java.util.function.Supplier;
+import java.util.function.Supplier;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class consists of {@code static} utility methods for operating
@@ -230,27 +229,26 @@ public final class Objects {
      */
     @Pure public static boolean nonNull(@Nullable Object obj) { throw new RuntimeException(); }
 
-// TODO: reinstate
-//     /**
-//      * Checks that the specified object reference is not {@code null} and
-//      * throws a customized {@link NullPointerException} if it is.
-//      *
-//      * <p>Unlike the method {@link #requireNonNull(Object, String)},
-//      * this method allows creation of the message to be deferred until
-//      * after the null check is made. While this may confer a
-//      * performance advantage in the non-null case, when deciding to
-//      * call this method care should be taken that the costs of
-//      * creating the message supplier are less than the cost of just
-//      * creating the string message directly.
-//      *
-//      * @param obj     the object reference to check for nullity
-//      * @param messageSupplier supplier of the detail message to be
-//      * used in the event that a {@code NullPointerException} is thrown
-//      * @param <T> the type of the reference
-//      * @return {@code obj} if not {@code null}
-//      * @throws NullPointerException if {@code obj} is {@code null}
-//      * @since 1.8
-//      */
-//     // TODO: treat like other nullness assertion methods in the Checker Framework.
-//     @Pure public static <T> T requireNonNull(@Nullable T obj, Supplier<String> messageSupplier) { throw new RuntimeException(); }
+    /**
+     * Checks that the specified object reference is not {@code null} and
+     * throws a customized {@link NullPointerException} if it is.
+     *
+     * <p>Unlike the method {@link #requireNonNull(Object, String)},
+     * this method allows creation of the message to be deferred until
+     * after the null check is made. While this may confer a
+     * performance advantage in the non-null case, when deciding to
+     * call this method care should be taken that the costs of
+     * creating the message supplier are less than the cost of just
+     * creating the string message directly.
+     *
+     * @param obj     the object reference to check for nullity
+     * @param messageSupplier supplier of the detail message to be
+     * used in the event that a {@code NullPointerException} is thrown
+     * @param <T> the type of the reference
+     * @return {@code obj} if not {@code null}
+     * @throws NullPointerException if {@code obj} is {@code null}
+     * @since 1.8
+     */
+    // TODO: treat like other nullness assertion methods in the Checker Framework.
+    @Pure public static <T> T requireNonNull(@Nullable T obj, Supplier<String> messageSupplier) { throw new RuntimeException(); }
 }

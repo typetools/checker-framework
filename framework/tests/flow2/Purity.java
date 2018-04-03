@@ -16,13 +16,14 @@ class Purity {
     // class with a pure constructor
     private static class PureClass {
         @Pure
-        // :: warning: (purity.deterministic.constructor)
+        // :: warning: (purity.deterministic.constructor) :: error: (purity.not.deterministic.not.sideeffectfree.call)
         public PureClass() {}
     }
 
     // class with a side-effect-free constructor
     private static class SEClass {
         @SideEffectFree
+        // :: error: (purity.not.sideeffectfree.call)
         public SEClass() {}
     }
 
