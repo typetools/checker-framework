@@ -2,7 +2,7 @@
  * @test
  * @summary Test that defaulted types are stored in bytecode.
  *
- * @compile -source 7 -target 7 ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
+ * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
  * @run main Driver Fields
  */
 

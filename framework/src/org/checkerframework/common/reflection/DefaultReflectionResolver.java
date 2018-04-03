@@ -142,7 +142,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                                 + resolvedTree.toString());
                 // Calling methodFromUse on these sorts of trees will cause an
                 // assertion to fail
-                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                // in AbstractQualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolvedResult =
@@ -273,7 +273,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                                 + resolvedTree.toString());
                 // Calling methodFromUse on these sorts of trees will cause an
                 // assertion to fail
-                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                // in AbstractQualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolvedResult =

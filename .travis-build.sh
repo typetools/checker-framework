@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, junit, nonjunit, all-tests, jdk.jar, demos, downstream, misc
+#   all, all-tests, jdk.jar, downstream, misc
 # If it is omitted, this script does everything.
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "demos" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, all-tests, jdk.jar, demos, downstream, misc."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc."
   exit 1
 fi
 
@@ -35,8 +35,6 @@ set -e
 set -o verbose
 # Output expanded lines of this script as they are executed.
 set -o xtrace
-# Don't use "-d" to debug ant, because that results in a log so long
-# that Travis truncates the log and terminates the job.
 
 export SHELLOPTS
 
@@ -51,25 +49,11 @@ fi
 
 set -e
 
-# Subsumed by "all-tests" group.
-if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
-  (cd checker && ant junit-tests-nojtreg-nobuild)
-fi
-
-# Subsumed by "all-tests" group.
-if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
-  (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
-fi
-
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  (cd checker && ant all-tests-nobuildjdk)
+  ./gradlew allTests
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
-  (cd checker && ant example-tests-nobuildjdk)
-  # If the above command ever exceeds the time limit on Travis, it can be split
-  # using the following commands:
-  # (cd checker && ant junit-tests-nojtreg-nobuild)
-  # (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
+  ./gradlew :checker:exampleTests
 fi
 
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
@@ -95,7 +79,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist && ./gradlew test)
+  (cd ../checker-framework-inference && ./gradlew dist test)
 
   # plume-lib-typecheck: 30 minutes
   set +e
@@ -117,7 +101,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
-    (cd checker && ant check-demos)
+    ./gradlew :checker:demosTests
   fi
   # sparta: 1 minute, but the command is "true"!
   # TODO: requires Android installation (and at one time, it caused weird
@@ -127,15 +111,11 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
 fi
 
-if [[ "${GROUP}" == "demos" || "${GROUP}" == "all" ]]; then
-  (cd checker && ant check-demos)
-fi
-
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
-  cd checker
-  ant jdk.jar
+  ./gradlew :jdk8:buildJdk
+
   ## Run the tests for the type systems that use the annotated JDK
-  ant index-tests lock-tests nullness-tests-nobuildjdk
+  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -146,13 +126,13 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ant -d check-style
+  ./gradlew checkStyle
 
   # Run error-prone
-  ant check-errorprone
+  ./gradlew runErrorProne
 
   # Documentation
-  ant javadoc-private
+  ./gradlew javadocPrivate
   make -C docs/manual all
 
   # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
@@ -162,6 +142,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   make -C ../jsr308-langtools/doc pdf
 
   # HTML legality
-  ant html-validate
+  ./gradlew htmlValidate
 
 fi

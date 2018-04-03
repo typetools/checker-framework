@@ -15,7 +15,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -41,12 +40,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Arrays.asList(
                         Det.class, OrderNonDet.class, NonDet.class, PolyDet.class
                         /*PolyDet2.class,
-                        PolyDet3.class*/ ));
-    }
-
-    @Override
-    protected QualifierPolymorphism createQualifierPolymorphism() {
-        return new DetQualifierPolymorphism(processingEnv, this);
+                        PolyDet3.class*/));
     }
 
     @Override

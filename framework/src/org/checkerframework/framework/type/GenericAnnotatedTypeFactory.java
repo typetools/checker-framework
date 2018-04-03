@@ -80,6 +80,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -92,7 +94,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -335,10 +336,10 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <ol>
      *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
-     *       RelevantJavaTypes} annotation on the checker
-     *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
+     *       RelevantJavaTypes} annotation on the checker.
+     *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
      *   <li>{@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
-     *       meta-annotations
+     *       meta-annotations.
      * </ol>
      *
      * @return a type annotator
@@ -348,12 +349,11 @@ public abstract class GenericAnnotatedTypeFactory<
         RelevantJavaTypes relevantJavaTypes =
                 checker.getClass().getAnnotation(RelevantJavaTypes.class);
         if (relevantJavaTypes != null) {
-            Class<?>[] classes = relevantJavaTypes.value();
-            // Must be first in order to annotated all irrelevant types that are not explicilty
-            // annotated.
+            Class<?>[] relevantClasses = relevantJavaTypes.value();
+            // Must be first in order to annotate all irrelevant types.
             typeAnnotators.add(
                     new IrrelevantTypeAnnotator(
-                            this, getQualifierHierarchy().getTopAnnotations(), classes));
+                            this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
         implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
@@ -678,8 +678,8 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return the QualifierPolymorphism class
      */
-    protected QualifierPolymorphism createQualifierPolymorphism() {
-        return new QualifierPolymorphism(processingEnv, this);
+    public QualifierPolymorphism createQualifierPolymorphism() {
+        return new DefaultQualifierPolymorphism(processingEnv, this);
     }
 
     // **********************************************************************

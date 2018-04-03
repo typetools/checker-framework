@@ -1,0 +1,135 @@
+dependencies {
+    compile project(':framework')
+    compile project(':dataflow')
+    compile project(':javacutil')
+    compile project(':checker-qual')
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            // Stub files, message.properties, etc.
+            srcDirs = ['src']
+            exclude '**/*.java'
+        }
+    }
+    test {
+        java {
+            srcDirs = ['tests/src', '../framework/src/org/checkerframework/framework/test']
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
+    }
+}
+
+task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
+    description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
+    dependsOn project(':checker-qual').tasks.jar
+    // Also moves jdk8.jar to checker/dist
+    dependsOn ':jdk8:downloadJdk'
+    doLast {
+        copy {
+            from file(project(':checker-qual').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                // remove version number on checker-qual.jar
+                fileName.replace(fileName, "checker-qual.jar")
+            }
+        }
+
+        copy {
+            // TODO: Remove this when support for annotations in comments is removed.
+            from file("${jsr308}/jsr308-langtools/dist/lib/javac.jar")
+            into "${projectDir}/dist"
+        }
+    }
+}
+assemble.dependsOn copyJarsToDist
+
+shadowJar {
+    description 'Creates the "fat" checker.jar in dist.'
+    destinationDir = file("${projectDir}/dist")
+    archiveName = "checker.jar"
+}
+
+clean {
+    delete "${projectDir}/dist"
+}
+
+// Add non-junit tests
+createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")
+checkCompilerMessages {
+    doFirst {
+        options.compilerArgs += [
+                '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + ":"
+                        + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+        ]
+    }
+}
+
+task nullnessExtraTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') {
+    description 'Run extra tests for the Nullness Checker.'
+    executable 'make'
+    environment JAVAC: "${projectDir}/bin/javac", JAVAP: 'javap'
+    args = ['-C', 'tests/nullness-extra/']
+}
+
+task commandLineTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') {
+    description 'Run tests that need a special command line.'
+    executable 'make'
+    environment JAVAC: "${projectDir}/bin/javac"
+    args = ['-C', 'tests/command-line/']
+}
+
+task tutorialTests(dependsOn: copyJarsToDist, group: 'Verification') {
+    description 'Test that the tutorial is working as expected.'
+    doLast {
+        ant.ant(dir: "${rootDir}/docs/tutorial/tests", useNativeBasedir: 'true', inheritAll: 'false') {
+            target(name: 'check-tutorial')
+        }
+    }
+}
+
+task exampleTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') {
+    description 'Run tests for the example programs.'
+    executable 'make'
+    environment JAVAC: "${projectDir}/bin/javac"
+    args = ['-C', '../docs/examples']
+}
+
+task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
+    description 'Test that the demos are working as expected.'
+    doLast {
+        File demosDir = new File(projectDir, '../../checker-framework-demos');
+        if (!demosDir.exists()) {
+            exec {
+                workingDir file(demosDir.toString() + '/../')
+                executable 'git'
+                args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+            }
+        } else {
+            exec {
+                workingDir demosDir
+                executable 'git'
+                args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
+                ingoreExitValue = true
+            }
+        }
+        ant.properties.put('checker.lib', "${projectDir}/dist/checker.jar")
+        ant.ant(dir: demosDir.toString())
+    }
+}
+
+task allNullnessTests(type: Test, group: 'Verification') {
+    description 'Run all Junit tests for the Nullness Checker.'
+    include '**/Nullness*.class'
+}
