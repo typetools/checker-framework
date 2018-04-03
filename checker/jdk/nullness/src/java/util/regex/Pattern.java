@@ -26,5 +26,6 @@ public final class Pattern implements java.io.Serializable{
   public static boolean matches(String a1, CharSequence a2) { throw new RuntimeException("skeleton method"); }
   public String[] split(CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
   public String[] split(CharSequence a1) { throw new RuntimeException("skeleton method"); }
+  @Pure  // pure wrt equals() but not ==
   public static String quote(String a1) { throw new RuntimeException("skeleton method"); }
 }
