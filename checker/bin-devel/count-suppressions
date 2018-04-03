@@ -9,9 +9,10 @@
 # the text before the colon, under the assumption that the initial text
 # is a category name.
 
-# You can use this to determine the most frequent reasons for warning
-# suppressions.  However, use common.util.count.AnnotationStatistics (not
-# this script) to count the total number of warning suppressions.
+# This script is useful to determine the most frequent reasons for warning
+# suppressions.  However, use common.util.count.AnnotationStatistics to
+# count the total number of warning suppressions, because this script gives
+# only an approximate count.
 
 debug=0
 

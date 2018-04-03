@@ -718,58 +718,16 @@ is understood to apply to the top-level return type of the annotated method.
 When possible, you should use type annotations rather than declaration
 annotations.
 
-\subsection{Migrating away from annotations in comments\label{uncommenting-annotations}}
-
-Suppose that your codebase currently uses annotations in comments, but you
-wish to remove the comment characters around your annotations, because in
-the future you will use only compilers that support type annotations and
-your code will only run on Java 8 or later JVMs.
-To remove
-the comment characters, for all Java files in the current
-working directory or any subdirectory, run the following two Unix commands.
-
-\begin{Verbatim}
-   find . -type f -name '*.java' -print \
-     | xargs grep -l -E '/\*\s*@([^*/]+)\s*\*/' \
-     | xargs perl -pi.bak -e 's|/\*\s*@([^*/]+)\s*\*/|@\1|g'
-   find . -type f -name '*.java' -print \
-     | xargs grep -l -E '/\*>>>' \
-     | xargs perl -pi.bak -00 -e 's|/\*>>>([^*]+)\*/|\1|g'
-\end{Verbatim}
-
-The first command handles ordinary annotations in comments.
-You can customize this command:
-\begin{itemize}
-\item
-To process comments with embedded spaces and asterisks, change
-two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
-\item
-To ignore comments with leading or trailing spaces, remove the four
-instances of ``\verb|\s*|''.
-\item
-  To not make backups, remove ``\verb|.bak|''.
-\item
-  To remove all commented annotations, remove ``\verb|@\1|''.
-\end{itemize}
-
-The second command handles \code{/*>>>...*/} comments.
-You can customize this command:
-\begin{itemize}
-\item
-  To not make backups, remove ``\verb|.bak|''.
-\item
-  To remove all \code{/*>>>...*/} comments, remove ``\verb|\1|''.
-\end{itemize}
 
 % LocalWords:  quals skipUses un AskipUses Alint annotationname javac's Awarns
-% LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
+% LocalWords:  Xlint dotequals castNonNull XDTA Formatter jsr
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
 % LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr
 %  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
 %  LocalWords:  ing warningkey redundantNullComparison qual proc Decl
-%  LocalWords:  noannotationsincomments lastsinglesuppression classfiles
+%  LocalWords:  lastsinglesuppression classfiles
 %%  LocalWords:  AshowSuppressWarningKeys NullableType NonNullType JUnit's
 %%  LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
 %%  LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl

@@ -573,18 +573,16 @@ task checkStyle(group: 'Format') {
     }
 }
 
-task release(type: GradleBuild) {
+task releaseBuild(type: GradleBuild) {
     description 'Build everything required for a release'
-    doFirst {
-        release = true
-    }
+    startParameter = new StartParameter()
+    startParameter.setProjectProperties(release: true)
     // This download rather than builds the jdk8.jar because that's what is used in all the Travis tests.
-    tasks = ['assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
+    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
 }
-task releaseAndTest(type: GradleBuild, dependsOn: 'release') {
+task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and runn allTests'
-    doFirst {
-        release = true
-    }
+    startParameter = new StartParameter()
+    startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
 }

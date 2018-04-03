@@ -749,9 +749,9 @@ corresponding annotation:
   argument type):
   change the argument type to \<@Nullable Object>; for \<remove>, also change
   the return type to \<@Nullable Object>.
-% Emacs code for the argument types:
-% ;;NOT: (tags-query-replace " apply(Object " " apply(/*@Nullable*/ Object ")
-% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(/*@Nullable*/ Object ")
+% Emacs code that adds annotations to the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(@Nullable Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(@Nullable Object ")
 
 \end{itemize}
 
