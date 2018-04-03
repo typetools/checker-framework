@@ -186,10 +186,6 @@ Disabling a test case
 
 Write @skip-test anywhere in a test file to disable that test.
 
-Write @non-308-skip-test anywhere in a test file to disable that test if
-the jsr308-langtools compiler is not used. (This is useful for tests that
-depend on annotations-in-comments that would fail with the stock compiler.)
-
 Write @below-java9-jdk-skip-test anywhere in a test file to disable that
 test if the executing JDK version is lower than 9.
 This is useful when the test depends on Java 9 language features that

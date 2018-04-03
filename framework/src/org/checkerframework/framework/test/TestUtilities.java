@@ -26,14 +26,12 @@ import org.junit.Assert;
 
 public class TestUtilities {
 
-    public static final boolean isJSR308Compiler;
     public static final boolean isAtLeast9Jvm;
 
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        isJSR308Compiler = err.toString().contains("jsr308");
         isAtLeast9Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 1.9d;
     }
 
@@ -183,7 +181,6 @@ public class TestUtilities {
         while (in.hasNext()) {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test")
-                    || (!isJSR308Compiler && nextLine.contains("@non-308-skip-test"))
                     || (!isAtLeast9Jvm && nextLine.contains("@below-java9-jdk-skip-test"))) {
                 in.close();
                 return false;
