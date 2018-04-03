@@ -300,7 +300,7 @@ subprojects {
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
-        relocate 'sun', 'org.checkerframework.sun'
+//        relocate 'sun', 'org.checkerframework.sun'
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
         relocate 'com.google', 'org.checkerframework.com.google'
         relocate 'plume', 'org.checkerframework.plume'
