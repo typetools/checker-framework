@@ -203,10 +203,6 @@
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
                 </fileset>
-                <!-- Recompile dependent projects with annotations-in-comments
-                     enabled, in order to get classes with qualified types. -->
-                <fileset dir="${javacutil.loc}/${src}">
-                    <include name="**/*.java"/>
                 <!-- Exclude ManualTaglet to not depend on javadoc. -->
                     <exclude name="**/javacutil/dist/**"/>
                 </fileset>
