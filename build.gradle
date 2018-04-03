@@ -256,9 +256,10 @@ subprojects {
         description 'Check whether the source code is properly formatted'
         // jdk8 and checker-qual have no source, so skip
         onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
-        executable "${formatScriptsHome}/check-google-java-format.py"
+        executable 'python'
 
         doFirst {
+            args+= "${formatScriptsHome}/check-google-java-format.py"
             args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
@@ -274,8 +275,9 @@ subprojects {
         description 'Format the Java source code'
         // jdk8 and checker-qual have no source, so skip
         onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
-        executable "${formatScriptsHome}/run-google-java-format.py"
+        executable 'python'
         doFirst {
+            args += "${formatScriptsHome}/run-google-java-format.py"
             args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
