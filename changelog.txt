@@ -2298,7 +2298,7 @@ Framework
 
 Manual
   Rewrote several manual sections, most notably:
-    o2.1.1  Writing annotations in comments for backward compatibility
+    2.1.1  Writing annotations in comments for backward compatibility
       (note new -Xspacesincomments argument to javac)
     2.3  Checking partially-annotated programs: handling unannotated code
     2.6  Default qualifier for unannotated types
