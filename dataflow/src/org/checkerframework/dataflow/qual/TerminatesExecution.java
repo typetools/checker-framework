@@ -8,7 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * {@code TerminatesExecution} is a method annotation that indicates that a method terminates the
- * execution of the program. This can be used to annotate methods such as {@code System.exit()}.
+ * execution of the program. This can be used to annotate methods such as {@code System.exit()}, or
+ * methods that unconditionally throw an exception.
  *
  * <p>The annotation enables flow-sensitive type refinement to be more precise. For example, after
  *

@@ -1,8 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-// Uses annotations in comments because it may be run on a Java 7 JVM
-// when called from user code.
-
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

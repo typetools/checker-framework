@@ -47,9 +47,11 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
         }
 
         copy {
-            // TODO: Remove this when support for annotations in comments is removed.
-            from file("${jsr308}/jsr308-langtools/dist/lib/javac.jar")
+            from configurations.javacJar
             into "${projectDir}/dist"
+            rename { String fileName ->
+                fileName.replace(fileName, "javac.jar")
+            }
         }
     }
 }
@@ -59,6 +61,9 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist.'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker.jar"
+}
+artifacts {
+    archives shadowJar
 }
 
 clean {
@@ -121,10 +126,10 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
                 workingDir demosDir
                 executable 'git'
                 args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
-                ingoreExitValue = true
+                ignoreExitValue = true
             }
         }
-        ant.properties.put('checker.lib', "${projectDir}/dist/checker.jar")
+        ant.properties.put('checker.lib', file("${projectDir}/dist/checker.jar").absolutePath)
         ant.ant(dir: demosDir.toString())
     }
 }
