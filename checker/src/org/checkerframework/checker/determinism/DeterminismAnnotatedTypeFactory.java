@@ -40,7 +40,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Arrays.asList(
                         Det.class, OrderNonDet.class, NonDet.class, PolyDet.class
                         /*PolyDet2.class,
-                        PolyDet3.class*/));
+                        PolyDet3.class*/ ));
     }
 
     @Override
