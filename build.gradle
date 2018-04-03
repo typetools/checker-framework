@@ -292,9 +292,9 @@ subprojects {
             }
         }
         // javac.jar
-        relocate 'com.sun', 'org.checkeframework.com.sun'
-        relocate 'javax','org.checkerframework.javax'
-        relocate 'jdk', 'org.checkerframework.jdk'
+//        relocate 'com.sun', 'org.checkeframework.com.sun'
+//        relocate 'javax','org.checkerframework.javax'
+//        relocate 'jdk', 'org.checkerframework.jdk'
 
         // These appear in annotation-file-utilities.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
