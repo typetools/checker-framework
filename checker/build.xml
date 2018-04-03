@@ -203,10 +203,6 @@
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
                 </fileset>
-                <!-- Recompile dependent projects with annotations-in-comments
-                     enabled, in order to get classes with qualified types. -->
-                <fileset dir="${javacutil.loc}/${src}">
-                    <include name="**/*.java"/>
                 <!-- Exclude ManualTaglet to not depend on javadoc. -->
                     <exclude name="**/javacutil/dist/**"/>
                 </fileset>
@@ -255,9 +251,6 @@
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
     </target>
-
-    <!-- TODO: add a type-checking target that doesn't use
-         -XDTA:noannotations in comments. -->
 
     <!-- Dependendencies on other projects (such as dataflow)
          mirrors javadoc dependencies. If changing project
@@ -451,19 +444,6 @@
             </path>
         </pathconvert>
         <echo message="${qual.src8.files.spaceseparated}" append="true" file="${tmpdir}/srcfiles-checker.txt"/>
-
-
-        <!-- Remove annotations in comments-->
-        <replaceregexp match="\/\*@([^*]+)\*\/" replace="@\1" flags="g">
-            <fileset dir="${checker-qual-sources-tmp}">
-                <include name="**/*.java"/>
-            </fileset>
-        </replaceregexp>
-        <replaceregexp match="\/\*>>>([^*]+)\*\/" replace="\1" flags="g">
-            <fileset dir="${checker-qual-sources-tmp}">
-                <include name="**/*.java"/>
-            </fileset>
-        </replaceregexp>
 
         <java fork="true"
               failonerror="true"

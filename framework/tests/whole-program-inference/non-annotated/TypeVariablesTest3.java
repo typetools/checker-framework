@@ -1,7 +1,7 @@
 import testlib.wholeprograminference.qual.*;
 import testlib.wholeprograminference.qual.Sibling2;
 
-class Generic<@Sibling1 T extends /*@Sibling1*/ Object> {
+class Generic<@Sibling1 T extends @Sibling1 Object> {
     public @Sibling2 T sibling2;
     public @Sibling1 T sibling1;
 

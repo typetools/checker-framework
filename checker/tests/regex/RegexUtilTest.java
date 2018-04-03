@@ -1,7 +1,6 @@
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
-// @non-308-skip-test
 public class RegexUtilTest {
     void fullyQualifiedRegexUtil(String s) {
         if (org.checkerframework.checker.regex.RegexUtil.isRegex(s, 2)) {
