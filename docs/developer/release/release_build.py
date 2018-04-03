@@ -206,7 +206,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     if not manual_only:
         # build the checker framework binaries and documents, run checker framework tests
         if notest:
-            ant_cmd = "./gradlew release"
+            ant_cmd = "./gradlew releaseBuild"
         else:
             ant_cmd = "./gradlew releaseAndTest"
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
