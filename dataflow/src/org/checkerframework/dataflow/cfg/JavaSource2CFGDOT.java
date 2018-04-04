@@ -144,7 +144,7 @@ public class JavaSource2CFGDOT {
             System.exit(1);
         }
 
-        ControlFlowGraph cfg = CFGBuilder.build(r, null, m, null);
+        ControlFlowGraph cfg = CFGBuilder.build(r, m, null, null);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
         }

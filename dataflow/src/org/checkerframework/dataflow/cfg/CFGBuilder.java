@@ -207,47 +207,28 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class CFGBuilder {
 
-    /** Can assertions be assumed to be disabled? */
-    protected final boolean assumeAssertionsDisabled;
-
-    /** Can assertions be assumed to be enabled? */
-    protected final boolean assumeAssertionsEnabled;
-
-    public CFGBuilder(boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
-        assert !(assumeAssertionsDisabled && assumeAssertionsEnabled);
-        this.assumeAssertionsEnabled = assumeAssertionsEnabled;
-        this.assumeAssertionsDisabled = assumeAssertionsDisabled;
-    }
-
-    /**
-     * Class declarations that have been encountered when building the control-flow graph for a
-     * method.
-     */
-    protected final List<ClassTree> declaredClasses = new ArrayList<>();
-
-    public List<ClassTree> getDeclaredClasses() {
-        return declaredClasses;
-    }
-
-    /**
-     * Lambdas encountered when building the control-flow graph for a method, variable initializer,
-     * or initializer.
-     */
-    protected final List<LambdaExpressionTree> declaredLambdas = new ArrayList<>();
-
-    public List<LambdaExpressionTree> getDeclaredLambdas() {
-        return declaredLambdas;
-    }
+    protected CFGBuilder() {}
 
     /** Build the control flow graph of some code. */
     public static ControlFlowGraph build(
             CompilationUnitTree root,
-            ProcessingEnvironment env,
             UnderlyingAST underlyingAST,
             boolean assumeAssertionsEnabled,
-            boolean assumeAssertionsDisabled) {
-        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled)
-                .run(root, env, underlyingAST);
+            boolean assumeAssertionsDisabled,
+            ProcessingEnvironment env) {
+        TreeBuilder builder = new TreeBuilder(env);
+        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
+        PhaseOneResult phase1result =
+                new CFGTranslationPhaseOne(
+                                builder,
+                                annotationProvider,
+                                assumeAssertionsEnabled,
+                                assumeAssertionsDisabled,
+                                env)
+                        .process(root, underlyingAST);
+        ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
+        ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
+        return phase3result;
     }
 
     /**
@@ -256,105 +237,40 @@ public class CFGBuilder {
      */
     public static ControlFlowGraph build(
             TreePath bodyPath,
-            ProcessingEnvironment env,
             UnderlyingAST underlyingAST,
             boolean assumeAssertionsEnabled,
-            boolean assumeAssertionsDisabled) {
-        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled)
-                .run(bodyPath, env, underlyingAST);
+            boolean assumeAssertionsDisabled,
+            ProcessingEnvironment env) {
+        TreeBuilder builder = new TreeBuilder(env);
+        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
+        PhaseOneResult phase1result =
+                new CFGTranslationPhaseOne(
+                                builder,
+                                annotationProvider,
+                                assumeAssertionsEnabled,
+                                assumeAssertionsDisabled,
+                                env)
+                        .process(bodyPath, underlyingAST);
+        ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
+        ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
+        return phase3result;
+    }
+
+    /** Build the control flow graph of some code. */
+    public static ControlFlowGraph build(
+            CompilationUnitTree root, UnderlyingAST underlyingAST, ProcessingEnvironment env) {
+        return build(root, underlyingAST, false, false, env);
     }
 
     /** Build the control flow graph of a method. */
     public static ControlFlowGraph build(
             CompilationUnitTree root,
-            ProcessingEnvironment env,
             MethodTree tree,
             ClassTree classTree,
-            boolean assumeAssertionsEnabled,
-            boolean assumeAssertionsDisabled) {
-        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled)
-                .run(root, env, tree, classTree);
-    }
-
-    /** Build the control flow graph of some code. */
-    public static ControlFlowGraph build(
-            CompilationUnitTree root, ProcessingEnvironment env, UnderlyingAST underlyingAST) {
-        return new CFGBuilder(false, false).run(root, env, underlyingAST);
-    }
-
-    /** Build the control flow graph of a method. */
-    public static ControlFlowGraph build(
-            CompilationUnitTree root,
-            ProcessingEnvironment env,
-            MethodTree tree,
-            ClassTree classTree) {
-        return new CFGBuilder(false, false).run(root, env, tree, classTree);
-    }
-
-    /** Build the control flow graph of some code. */
-    public ControlFlowGraph run(
-            CompilationUnitTree root, ProcessingEnvironment env, UnderlyingAST underlyingAST) {
-        declaredClasses.clear();
-        declaredLambdas.clear();
-
-        TreeBuilder builder = new TreeBuilder(env);
-        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
-        PhaseOneResult phase1result =
-                new CFGTranslationPhaseOne()
-                        .process(
-                                root,
-                                env,
-                                underlyingAST,
-                                exceptionalExitLabel,
-                                builder,
-                                annotationProvider);
-        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo().process(phase1result);
-        ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
-        return phase3result;
-    }
-
-    /**
-     * Build the control flow graph of some code (method, initializer block, ...). bodyPath is the
-     * TreePath to the body of that code.
-     */
-    public ControlFlowGraph run(
-            TreePath bodyPath, ProcessingEnvironment env, UnderlyingAST underlyingAST) {
-        declaredClasses.clear();
-        TreeBuilder builder = new TreeBuilder(env);
-        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
-        PhaseOneResult phase1result =
-                new CFGTranslationPhaseOne()
-                        .process(
-                                bodyPath,
-                                env,
-                                underlyingAST,
-                                exceptionalExitLabel,
-                                builder,
-                                annotationProvider);
-        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo().process(phase1result);
-        ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
-        return phase3result;
-    }
-
-    /** Build the control flow graph of a method. */
-    public ControlFlowGraph run(
-            CompilationUnitTree root,
-            ProcessingEnvironment env,
-            MethodTree tree,
-            ClassTree classTree) {
+            ProcessingEnvironment env) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
-        return run(root, env, underlyingAST);
+        return build(root, underlyingAST, false, false, env);
     }
-
-    /* --------------------------------------------------------- */
-    /* Extended Node Types and Labels */
-    /* --------------------------------------------------------- */
-
-    /** Special label to identify the exceptional exit. */
-    protected final Label exceptionalExitLabel = new Label();
-
-    /** Special label to identify the regular exit. */
-    protected final Label regularExitLabel = new Label();
 
     /**
      * An extended node can be one of several things (depending on its {@code type}):
@@ -887,7 +803,7 @@ public class CFGBuilder {
      * Eliminating the second type of degenerate cases might introduce cases of the third problem.
      * These are also removed.
      */
-    public static class CFGTranslationPhaseThree {
+    protected static class CFGTranslationPhaseThree {
 
         /**
          * A simple wrapper object that holds a basic block and allows to set one of its successors.
@@ -1196,9 +1112,9 @@ public class CFGBuilder {
     }
 
     /** Class that performs phase two of the translation process. */
-    public class CFGTranslationPhaseTwo {
+    protected static class CFGTranslationPhaseTwo {
 
-        public CFGTranslationPhaseTwo() {}
+        private CFGTranslationPhaseTwo() {}
 
         /**
          * Perform phase two of the translation.
@@ -1208,7 +1124,7 @@ public class CFGBuilder {
          *     empty regular basic blocks or conditional blocks with the same block as 'then' and
          *     'else' successor)
          */
-        public ControlFlowGraph process(PhaseOneResult in) {
+        public static ControlFlowGraph process(PhaseOneResult in) {
 
             Map<Label, Integer> bindings = in.bindings;
             ArrayList<ExtendedNode> nodeList = in.nodeList;
@@ -1308,9 +1224,9 @@ public class CFGBuilder {
                             block = b;
                         }
                         node.setBlock(block);
-                        if (node.getLabel() == regularExitLabel) {
+                        if (node.getLabel() == in.regularExitLabel) {
                             block.setSuccessor(regularExitBlock);
-                        } else if (node.getLabel() == exceptionalExitLabel) {
+                        } else if (node.getLabel() == in.exceptionalExitLabel) {
                             block.setSuccessor(exceptionalExitBlock);
                         } else {
                             Integer target = bindings.get(node.getLabel());
@@ -1385,7 +1301,9 @@ public class CFGBuilder {
                     in.treeLookupMap,
                     in.convertedTreeLookupMap,
                     in.unaryAssignNodeLookupMap,
-                    in.returnNodes);
+                    in.returnNodes,
+                    in.declaredClasses,
+                    in.declaredLambdas);
         }
     }
 
@@ -1407,6 +1325,10 @@ public class CFGBuilder {
         private final ArrayList<ExtendedNode> nodeList;
         private final Set<Integer> leaders;
         private final List<ReturnNode> returnNodes;
+        private final Label regularExitLabel;
+        private final Label exceptionalExitLabel;
+        private final List<ClassTree> declaredClasses;
+        private final List<LambdaExpressionTree> declaredLambdas;
 
         public PhaseOneResult(
                 UnderlyingAST underlyingAST,
@@ -1416,7 +1338,11 @@ public class CFGBuilder {
                 ArrayList<ExtendedNode> nodeList,
                 Map<Label, Integer> bindings,
                 Set<Integer> leaders,
-                List<ReturnNode> returnNodes) {
+                List<ReturnNode> returnNodes,
+                Label regularExitLabel,
+                Label exceptionalExitLabel,
+                List<ClassTree> declaredClasses,
+                List<LambdaExpressionTree> declaredLambdas) {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.convertedTreeLookupMap = convertedTreeLookupMap;
@@ -1425,6 +1351,10 @@ public class CFGBuilder {
             this.bindings = bindings;
             this.leaders = leaders;
             this.returnNodes = returnNodes;
+            this.regularExitLabel = regularExitLabel;
+            this.exceptionalExitLabel = exceptionalExitLabel;
+            this.declaredClasses = declaredClasses;
+            this.declaredLambdas = declaredLambdas;
         }
 
         @Override
@@ -1481,18 +1411,32 @@ public class CFGBuilder {
      * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of
      * nodes (which might only be a jump).
      */
-    public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
-
-        public CFGTranslationPhaseOne() {}
+    protected static class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         /** Annotation processing environment and its associated type and tree utilities. */
-        protected ProcessingEnvironment env;
+        protected final ProcessingEnvironment env;
 
-        protected Elements elements;
-        protected Types types;
-        protected Trees trees;
-        protected TreeBuilder treeBuilder;
-        protected AnnotationProvider annotationProvider;
+        protected final Elements elements;
+        protected final Types types;
+        protected final Trees trees;
+        protected final TreeBuilder treeBuilder;
+        protected final AnnotationProvider annotationProvider;
+
+        /** Can assertions be assumed to be disabled? */
+        protected final boolean assumeAssertionsDisabled;
+
+        /** Can assertions be assumed to be enabled? */
+        protected final boolean assumeAssertionsEnabled;
+
+        /* --------------------------------------------------------- */
+        /* Extended Node Types and Labels */
+        /* --------------------------------------------------------- */
+
+        /** Special label to identify the regular exit. */
+        protected final Label regularExitLabel;
+
+        /** Special label to identify the exceptional exit. */
+        protected final Label exceptionalExitLabel;
 
         /**
          * Current {@link TryFinallyScopeCell} to which a return statement should jump, or null if
@@ -1524,6 +1468,9 @@ public class CFGBuilder {
          */
         protected Map<Name, Label> continueLabels;
 
+        /** Nested scopes of try-catch blocks in force at the current program point. */
+        private TryStack tryStack;
+
         /**
          * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value
          * will have at least one corresponding Node. Trees that undergo conversions, such as boxing
@@ -1531,31 +1478,40 @@ public class CFGBuilder {
          * stored in the treeLookupMap, while the Node for the post-conversion value is stored in
          * the convertedTreeLookupMap.
          */
-        protected IdentityHashMap<Tree, Set<Node>> treeLookupMap;
+        protected final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
 
         /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-        protected IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
+        protected final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
 
         /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-        protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
+        protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
 
         /** The list of extended nodes. */
-        protected ArrayList<ExtendedNode> nodeList;
+        protected final ArrayList<ExtendedNode> nodeList;
 
         /** The bindings of labels to positions (i.e., indices) in the {@code nodeList}. */
-        protected Map<Label, Integer> bindings;
+        protected final Map<Label, Integer> bindings;
 
         /** The set of leaders (represented as indices into {@code nodeList}). */
-        protected Set<Integer> leaders;
+        protected final Set<Integer> leaders;
 
         /**
          * All return nodes (if any) encountered. Only includes return statements that actually
          * return something
          */
-        private List<ReturnNode> returnNodes;
+        private final List<ReturnNode> returnNodes;
 
-        /** Nested scopes of try-catch blocks in force at the current program point. */
-        private TryStack tryStack;
+        /**
+         * Class declarations that have been encountered when building the control-flow graph for a
+         * method.
+         */
+        protected final List<ClassTree> declaredClasses;
+
+        /**
+         * Lambdas encountered when building the control-flow graph for a method, variable
+         * initializer, or initializer.
+         */
+        protected final List<LambdaExpressionTree> declaredLambdas;
 
         /**
          * Performs the actual work of phase one.
@@ -1568,21 +1524,23 @@ public class CFGBuilder {
          * @param annotationProvider extracts annotations from AST nodes
          * @return the result of phase one
          */
-        public PhaseOneResult process(
-                TreePath bodyPath,
-                ProcessingEnvironment env,
-                UnderlyingAST underlyingAST,
-                Label exceptionalExitLabel,
+        public CFGTranslationPhaseOne(
                 TreeBuilder treeBuilder,
-                AnnotationProvider annotationProvider) {
+                AnnotationProvider annotationProvider,
+                boolean assumeAssertionsEnabled,
+                boolean assumeAssertionsDisabled,
+                ProcessingEnvironment env) {
             this.env = env;
             this.treeBuilder = treeBuilder;
             this.annotationProvider = annotationProvider;
+
+            assert !(assumeAssertionsDisabled && assumeAssertionsEnabled);
+            this.assumeAssertionsEnabled = assumeAssertionsEnabled;
+            this.assumeAssertionsDisabled = assumeAssertionsDisabled;
+
             elements = env.getElementUtils();
             types = env.getTypeUtils();
-            if (trees == null) {
-                trees = Trees.instance(env);
-            }
+            trees = Trees.instance(env);
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
@@ -1592,12 +1550,18 @@ public class CFGBuilder {
             bindings = new HashMap<>();
             leaders = new HashSet<>();
 
+            regularExitLabel = new Label();
+            exceptionalExitLabel = new Label();
             tryStack = new TryStack(exceptionalExitLabel);
             returnTargetL = new TryFinallyScopeCell(regularExitLabel);
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
             returnNodes = new ArrayList<>();
+            declaredClasses = new ArrayList<>();
+            declaredLambdas = new ArrayList<>();
+        }
 
+        public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
             // traverse AST of the method body
             Node finalNode = scan(bodyPath, null);
 
@@ -1632,27 +1596,18 @@ public class CFGBuilder {
                     nodeList,
                     bindings,
                     leaders,
-                    returnNodes);
+                    returnNodes,
+                    regularExitLabel,
+                    exceptionalExitLabel,
+                    declaredClasses,
+                    declaredLambdas);
         }
 
-        public PhaseOneResult process(
-                CompilationUnitTree root,
-                ProcessingEnvironment env,
-                UnderlyingAST underlyingAST,
-                Label exceptionalExitLabel,
-                TreeBuilder treeBuilder,
-                AnnotationProvider annotationProvider) {
-            trees = Trees.instance(env);
+        public PhaseOneResult process(CompilationUnitTree root, UnderlyingAST underlyingAST) {
             // TODO: Isn't this costly? Is there no cache we can reuse?
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
             assert bodyPath != null;
-            return process(
-                    bodyPath,
-                    env,
-                    underlyingAST,
-                    exceptionalExitLabel,
-                    treeBuilder,
-                    annotationProvider);
+            return process(bodyPath, underlyingAST);
         }
 
         /**
@@ -1691,7 +1646,7 @@ public class CFGBuilder {
                 Set<Node> exp = treeLookupMap.get(enclosingParens);
                 if (exp == null) {
                     treeLookupMap.put(enclosingParens, new IdentityMostlySingleton<>(node));
-                } else if (!exp.contains(node)) {
+                } else if (!existing.contains(node)) {
                     exp.add(node);
                 }
                 enclosingParens = parenMapping.get(enclosingParens);
@@ -1859,15 +1814,15 @@ public class CFGBuilder {
                     }
                 }
                 // update leaders
-                Set<Integer> newLeaders = new HashSet<>();
-                for (Integer l : leaders) {
+                Set<Integer> oldLeaders = new HashSet<>(leaders);
+                leaders.clear();
+                for (Integer l : oldLeaders) {
                     if (l >= index + 1) {
-                        newLeaders.add(l + 1);
+                        leaders.add(l + 1);
                     } else {
-                        newLeaders.add(l);
+                        leaders.add(l);
                     }
                 }
-                leaders = newLeaders;
             } else {
                 nodeList.add(n);
             }
