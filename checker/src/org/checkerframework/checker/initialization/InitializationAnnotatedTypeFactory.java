@@ -492,7 +492,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 // Does this field need to satisfy the invariant?
                 if (hasFieldInvariantAnnotation(field)) {
                     // Has the field been initialized?
-                    if (!store.isFieldInitialized(fieldElem)) {
+                    if (store != null && !store.isFieldInitialized(fieldElem)) {
                         violatingFields.add(field);
                     }
                 }
