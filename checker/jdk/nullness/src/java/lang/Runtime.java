@@ -1,11 +1,13 @@
 package java.lang;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.TerminatesExecution;
 
 
 public class Runtime{
   protected Runtime() {}
   public static Runtime getRuntime() { throw new RuntimeException("skeleton method"); }
+  @TerminatesExecution
   public void exit(int a1) { throw new RuntimeException("skeleton method"); }
   public void addShutdownHook(Thread a1) { throw new RuntimeException("skeleton method"); }
   public boolean removeShutdownHook(Thread a1) { throw new RuntimeException("skeleton method"); }

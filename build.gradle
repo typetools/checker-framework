@@ -169,7 +169,7 @@ List<String> getJavaFilesToFormat(projectName) {
     javaFiles.addAll(project(':' + projectName).sourceSets.main.java.files)
     javaFiles.addAll(project(':' + projectName).sourceSets.test.java.files)
     // Collect all java files in tests directory
-    fileTree("${projectDir}/tests").visit { details ->
+    fileTree("${project(projectName).projectDir}/tests").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
             javaFiles.add(details.file)
         }
@@ -256,9 +256,10 @@ subprojects {
         description 'Check whether the source code is properly formatted'
         // jdk8 and checker-qual have no source, so skip
         onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
-        executable "${formatScriptsHome}/check-google-java-format.py"
+        executable 'python'
 
         doFirst {
+            args+= "${formatScriptsHome}/check-google-java-format.py"
             args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
@@ -274,8 +275,9 @@ subprojects {
         description 'Format the Java source code'
         // jdk8 and checker-qual have no source, so skip
         onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
-        executable "${formatScriptsHome}/run-google-java-format.py"
+        executable 'python'
         doFirst {
+            args += "${formatScriptsHome}/run-google-java-format.py"
             args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
@@ -573,18 +575,16 @@ task checkStyle(group: 'Format') {
     }
 }
 
-task release(type: GradleBuild) {
+task releaseBuild(type: GradleBuild) {
     description 'Build everything required for a release'
-    doFirst {
-        release = true
-    }
+    startParameter = new StartParameter()
+    startParameter.setProjectProperties(release: true)
     // This download rather than builds the jdk8.jar because that's what is used in all the Travis tests.
-    tasks = ['assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
+    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
 }
-task releaseAndTest(type: GradleBuild, dependsOn: 'release') {
+task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and runn allTests'
-    doFirst {
-        release = true
-    }
+    startParameter = new StartParameter()
+    startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
 }
