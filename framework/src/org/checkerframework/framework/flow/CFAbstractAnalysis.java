@@ -9,6 +9,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -65,13 +66,14 @@ public abstract class CFAbstractAnalysis<
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues,
             int maxCountBeforeWidening) {
-        super(checker.getProcessingEnvironment(), null, maxCountBeforeWidening);
+        super(null, maxCountBeforeWidening, checker.getProcessingEnvironment());
         qualifierHierarchy = factory.getQualifierHierarchy();
         typeHierarchy = factory.getTypeHierarchy();
         dependentTypesHelper = factory.getDependentTypesHelper();
         this.atypeFactory = factory;
         this.checker = checker;
         this.transferFunction = createTransferFunction();
+        // TODO: remove parameter and set to empty list.
         this.fieldValues = fieldValues;
     }
 
@@ -84,6 +86,12 @@ public abstract class CFAbstractAnalysis<
                 factory,
                 fieldValues,
                 factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
+    }
+
+    public void performAnalysis(ControlFlowGraph cfg, List<Pair<VariableElement, V>> fieldValues) {
+        this.fieldValues.clear();
+        this.fieldValues.addAll(fieldValues);
+        super.performAnalysis(cfg);
     }
 
     public List<Pair<VariableElement, V>> getFieldValues() {
@@ -163,12 +171,5 @@ public abstract class CFAbstractAnalysis<
         annos.remove(f);
         annos.add(anno);
         return createAbstractValue(annos, underlyingType);
-    }
-
-    /** @see GenericAnnotatedTypeFactory#getTypeFactoryOfSubchecker(Class) */
-    @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-    public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
-            W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
-        return atypeFactory.getTypeFactoryOfSubchecker(checkerClass);
     }
 }
