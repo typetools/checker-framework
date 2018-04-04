@@ -162,52 +162,51 @@ public class InitializationVisitor<
         // also use the information about initialized fields to check contracts
         final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
-        if (atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)) {
-            if (expr instanceof FieldAccess) {
-                FieldAccess fa = (FieldAccess) expr;
-                if (fa.getReceiver() instanceof ThisReference
-                        || fa.getReceiver() instanceof ClassName) {
-                    @SuppressWarnings("unchecked")
-                    Store s = (Store) store;
-                    if (s.isFieldInitialized(fa.getField())) {
-                        AnnotatedTypeMirror fieldType =
-                                atypeFactory.getAnnotatedType(fa.getField());
-                        // is this an invariant-field?
-                        if (AnnotationUtils.containsSame(
-                                fieldType.getAnnotations(), invariantAnno)) {
-                            return true;
-                        }
-                    }
-                } else {
-                    Set<AnnotationMirror> recvAnnoSet;
-                    @SuppressWarnings("unchecked")
-                    Value value = (Value) store.getValue(fa.getReceiver());
-                    if (value != null) {
-                        recvAnnoSet = value.getAnnotations();
-                    } else if (fa.getReceiver() instanceof LocalVariable) {
-                        Element elem = ((LocalVariable) fa.getReceiver()).getElement();
-                        AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
-                        recvAnnoSet = recvType.getAnnotations();
-                    } else {
-                        // Is there anything better we could do?
-                        return false;
-                    }
-                    boolean isRecvCommitted = false;
-                    for (AnnotationMirror anno : recvAnnoSet) {
-                        if (atypeFactory.isCommitted(anno)) {
-                            isRecvCommitted = true;
-                        }
-                    }
+        if (!atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)
+                || !(expr instanceof FieldAccess)) {
+            return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
+        }
 
-                    AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
-                    // The receiver is fully initialized and the field type
-                    // has the invariant type.
-                    if (isRecvCommitted
-                            && AnnotationUtils.containsSame(
-                                    fieldType.getAnnotations(), invariantAnno)) {
-                        return true;
-                    }
+        FieldAccess fa = (FieldAccess) expr;
+        if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {
+            @SuppressWarnings("unchecked")
+            Store s = (Store) store;
+            if (s.isFieldInitialized(fa.getField())) {
+                AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
+                // is this an invariant-field?
+                if (AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
+                    return true;
                 }
+            }
+        } else {
+            Set<AnnotationMirror> recvAnnoSet;
+            @SuppressWarnings("unchecked")
+            Value value = (Value) store.getValue(fa.getReceiver());
+
+            if (value != null) {
+                recvAnnoSet = value.getAnnotations();
+            } else if (fa.getReceiver() instanceof LocalVariable) {
+                Element elem = ((LocalVariable) fa.getReceiver()).getElement();
+                AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
+                recvAnnoSet = recvType.getAnnotations();
+            } else {
+                // Is there anything better we could do?
+                return false;
+            }
+
+            boolean isRecvCommitted = false;
+            for (AnnotationMirror anno : recvAnnoSet) {
+                if (atypeFactory.isCommitted(anno)) {
+                    isRecvCommitted = true;
+                }
+            }
+
+            AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
+            // The receiver is fully initialized and the field type
+            // has the invariant type.
+            if (isRecvCommitted
+                    && AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
+                return true;
             }
         }
         return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
@@ -413,44 +412,46 @@ public class InitializationVisitor<
             List<? extends AnnotationMirror> receiverAnnotations) {
         // If the store is null, then the constructor cannot terminate
         // successfully
-        if (store != null) {
-            List<VariableTree> violatingFields =
-                    atypeFactory.getUninitializedInvariantFields(
-                            store, getCurrentPath(), staticFields, receiverAnnotations);
+        if (store == null) {
+            return;
+        }
 
-            if (staticFields) {
-                // TODO: Why is nothing done for static fields?
-                // Do we need the following?
-                // violatingFields.removeAll(store.initializedFields);
-            } else {
-                // remove fields that have already been initialized by an
-                // initializer block
-                violatingFields.removeAll(initializedFields);
+        List<VariableTree> violatingFields =
+                atypeFactory.getUninitializedInvariantFields(
+                        store, getCurrentPath(), staticFields, receiverAnnotations);
+
+        if (staticFields) {
+            // TODO: Why is nothing done for static fields?
+            // Do we need the following?
+            // violatingFields.removeAll(store.initializedFields);
+        } else {
+            // remove fields that have already been initialized by an
+            // initializer block
+            violatingFields.removeAll(initializedFields);
+        }
+
+        // Remove fields with a relevant @SuppressWarnings annotation.
+        Iterator<VariableTree> itor = violatingFields.iterator();
+        while (itor.hasNext()) {
+            VariableTree f = itor.next();
+            Element e = TreeUtils.elementFromTree(f);
+            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
+                itor.remove();
             }
+        }
 
-            // Remove fields with a relevant @SuppressWarnings annotation.
-            Iterator<VariableTree> itor = violatingFields.iterator();
-            while (itor.hasNext()) {
-                VariableTree f = itor.next();
-                Element e = TreeUtils.elementFromTree(f);
-                if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
-                    itor.remove();
+        if (!violatingFields.isEmpty()) {
+            StringBuilder fieldsString = new StringBuilder();
+            boolean first = true;
+            for (VariableTree f : violatingFields) {
+                if (!first) {
+                    fieldsString.append(", ");
                 }
+                first = false;
+                fieldsString.append(f.getName());
             }
-
-            if (!violatingFields.isEmpty()) {
-                StringBuilder fieldsString = new StringBuilder();
-                boolean first = true;
-                for (VariableTree f : violatingFields) {
-                    if (!first) {
-                        fieldsString.append(", ");
-                    }
-                    first = false;
-                    fieldsString.append(f.getName());
-                }
-                checker.report(
-                        Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString), blockNode);
-            }
+            checker.report(
+                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString), blockNode);
         }
     }
 }
