@@ -31,37 +31,33 @@ import org.checkerframework.javacutil.TreeUtils;
  * annotations and their representation as {@link AnnotatedTypeMirror}s.
  */
 public class CFCFGBuilder extends CFGBuilder {
+    protected CFCFGBuilder() {}
 
-    /** The associated checker. */
-    protected final BaseTypeChecker checker;
-
-    /** Type factory to provide types used during CFG building. */
-    protected final AnnotatedTypeFactory factory;
-
-    public CFCFGBuilder(BaseTypeChecker checker, AnnotatedTypeFactory factory) {
-        super(
-                checker.hasOption("assumeAssertionsAreEnabled"),
-                checker.hasOption("assumeAssertionsAreDisabled"));
+    /** Build the control flow graph of some code. */
+    public static ControlFlowGraph build(
+            CompilationUnitTree root,
+            UnderlyingAST underlyingAST,
+            BaseTypeChecker checker,
+            AnnotatedTypeFactory factory,
+            ProcessingEnvironment env) {
+        boolean assumeAssertionsEnabled = checker.hasOption("assumeAssertionsAreEnabled");
+        boolean assumeAssertionsDisabled = checker.hasOption("assumeAssertionsAreDisabled");
         if (assumeAssertionsEnabled && assumeAssertionsDisabled) {
             ErrorReporter.errorAbort(
                     "Assertions cannot be assumed to be enabled and disabled at the same time.");
         }
-        this.checker = checker;
-        this.factory = factory;
-    }
-
-    /** Build the control flow graph of some code. */
-    @Override
-    public ControlFlowGraph run(
-            CompilationUnitTree root, ProcessingEnvironment env, UnderlyingAST underlyingAST) {
-        declaredClasses.clear();
-        declaredLambdas.clear();
 
         CFTreeBuilder builder = new CFTreeBuilder(env);
         PhaseOneResult phase1result =
-                new CFCFGTranslationPhaseOne()
-                        .process(root, env, underlyingAST, exceptionalExitLabel, builder, factory);
-        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo().process(phase1result);
+                new CFCFGTranslationPhaseOne(
+                                builder,
+                                checker,
+                                factory,
+                                assumeAssertionsEnabled,
+                                assumeAssertionsDisabled,
+                                env)
+                        .process(root, underlyingAST);
+        ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
         return phase3result;
     }
@@ -87,7 +83,24 @@ public class CFCFGBuilder extends CFGBuilder {
         return false;
     }
 
-    public class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
+    protected static class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
+        /** The associated checker. */
+        protected final BaseTypeChecker checker;
+
+        /** Type factory to provide types used during CFG building. */
+        protected final AnnotatedTypeFactory factory;
+
+        public CFCFGTranslationPhaseOne(
+                CFTreeBuilder builder,
+                BaseTypeChecker checker,
+                AnnotatedTypeFactory factory,
+                boolean assumeAssertionsEnabled,
+                boolean assumeAssertionsDisabled,
+                ProcessingEnvironment env) {
+            super(builder, factory, assumeAssertionsEnabled, assumeAssertionsDisabled, env);
+            this.checker = checker;
+            this.factory = factory;
+        }
 
         @Override
         protected boolean assumeAssertionsEnabledFor(AssertTree tree) {

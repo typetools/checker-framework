@@ -11,12 +11,23 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 
+/**
+ * Implements 2 refinement rules:
+ *
+ * <ul>
+ *   <li>1. if left &gt; right, right has type {@code @LessThan("left")}
+ *   <li>2. if left &ge; right, right has type {@code @LessThan("left + 1")}
+ * </ul>
+ *
+ * These are implemented generally, so they also apply to e.g. &lt; and &le; comparisons.
+ */
 public class LessThanTransfer extends IndexAbstractTransfer {
 
     public LessThanTransfer(CFAnalysis analysis) {
         super(analysis);
     }
 
+    /** Case 1. */
     @Override
     protected void refineGT(
             Node left,
@@ -43,6 +54,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         }
     }
 
+    /** Case 2. */
     @Override
     protected void refineGTE(
             Node left,

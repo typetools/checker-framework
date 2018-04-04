@@ -25,7 +25,7 @@ from release_vars  import *
 def match_arg(arg):
     """Check if the given command-line argument matches one of the following
     strings, and returns the matching project if it does:
-    langtools, annotation-file-utilities, checker-framework, lt, afu, cf"""
+    annotation-file-utilities, checker-framework, afu, cf"""
     matched_project = None
     for project in PROJECTS_TO_SHORTNAMES:
         if arg == project[0] or arg == project[1]:
@@ -34,13 +34,12 @@ def match_arg(arg):
 
 def read_projects(argv, error_call_back):
     """Returns a map from project-name to boolean.
-    Determine which of the jsr308-langtools, AFU and Checker Framework
+    Determine which of the AFU and Checker Framework
     projects to build based on the command-line arguments to release_build.
     \"all\" indicates that all 3 projects are to be built. If the arguments
     are incorrect, the error_call_back function is called and  the script
     execution is terminated."""
     matched_projects = {
-        LT_OPT  : False,
         AFU_OPT : False,
         CF_OPT  : False
     }
@@ -77,16 +76,9 @@ def read_projects(argv, error_call_back):
 def add_project_dependencies(matched_projects):
     """Given the projects the user indicated need to be build, ensure that any
     projects it depends on are also built. That is:
-    If building the Checker Framework release, ensure that the AFU and
-    jsr308-langtools are also built.
-    If building the AFU, ensure that jsr308-langtools is also built."""
+    If building the Checker Framework release, ensure that the AFU is also built."""
     if matched_projects[CF_OPT]:
         matched_projects[AFU_OPT] = True
-        matched_projects[LT_OPT] = True
-    else:
-        if matched_projects[AFU_OPT]:
-            matched_projects[LT_OPT] = True
-
 
 def print_projects(indent_level, indent_size):
     "Print the projects that can be built by release_build."
@@ -126,30 +118,6 @@ def read_command_line_option(argv, argument):
 
 #=========================================================================================
 # Command utils
-
-def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
-    """Execute the given command.
-If capture_output is true, then return the output (and ignore the halt_if_fail argument).
-If capture_output is not true, return the return code of the subprocess call."""
-
-    if working_dir != None:
-        print "Executing in %s: %s" % (working_dir, command_args)
-    else:
-        print "Executing: %s" % (command_args)
-    import shlex
-    args = shlex.split(command_args) if isinstance(command_args, str) else command_args
-
-    if capture_output:
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=working_dir)
-        out = process.communicate()[0]
-        process.wait()
-        return out
-
-    else:
-        result = subprocess.call(args, cwd=working_dir)
-        if halt_if_fail and result:
-            raise Exception('Error %s while executing %s' % (result, args))
-        return result
 
 def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
     """Execute the given command, capturing the output to the given file."""

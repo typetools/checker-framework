@@ -59,11 +59,10 @@ export JSR308=`[ -d "${CHECKERFRAMEWORK}" ] && cd "${CHECKERFRAMEWORK}/.." && pw
 export AFU="${JSR308}/annotation-tools"
 export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities.jar"
 export CFJAR="${CHECKERFRAMEWORK}/checker/dist/checker.jar"
-export LTJAR="${JSR308}/jsr308-langtools/dist/lib/javac.jar"
 export JDJAR="${JSR308}/jsr308-langtools/dist/lib/javadoc.jar"
 export JAVAC="java -jar ${CHECKERFRAMEWORK}/checker/dist/checker.jar"
-export JFLAGS="-Xbootclasspath/p:${CLASSPATH}/checker/dist/javac.jar -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 -source 8 -target 8 -encoding ascii"
-export CLASSPATH=".:${JDK}/build/classes:${LTJAR}:${JDJAR}:${CFJAR}:${AFUJAR}:${CLASSPATH}"
+export JFLAGS=" -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 -source 8 -target 8 -encoding ascii"
+export CLASSPATH=".:${JDK}/build/classes:${JDJAR}:${CFJAR}:${AFUJAR}:${CLASSPATH}"
 
 # return value
 export RET=0

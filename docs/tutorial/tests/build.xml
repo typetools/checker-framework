@@ -4,6 +4,9 @@
     <import file="ant.xml"/>
 
     <target name="check-pblog">
+      <ant >
+         <target name="clean"/>
+      </ant>
       <check-demo-common target="check-tainting" step="0" dir="../../tests/testdemo"/>
       <check-demo-common target="check-tainting" step="1" dir="../../tests/testdemo"/>
       <check-demo-common target="check-tainting" step="2" dir="../../tests/testdemo"/>

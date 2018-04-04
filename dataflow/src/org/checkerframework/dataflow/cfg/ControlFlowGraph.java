@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.cfg;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -38,7 +39,7 @@ public class ControlFlowGraph {
     protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
-    protected UnderlyingAST underlyingAST;
+    protected final UnderlyingAST underlyingAST;
 
     /**
      * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
@@ -46,19 +47,31 @@ public class ControlFlowGraph {
      * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
      * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
      */
-    protected IdentityHashMap<Tree, Set<Node>> treeLookup;
+    protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
     /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-    protected IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
+    protected final IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
-    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
+    protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
 
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
      * something
      */
     protected final List<ReturnNode> returnNodes;
+
+    /**
+     * Class declarations that have been encountered when building the control-flow graph for a
+     * method.
+     */
+    protected final List<ClassTree> declaredClasses;
+
+    /**
+     * Lambdas encountered when building the control-flow graph for a method, variable initializer,
+     * or initializer.
+     */
+    protected final List<LambdaExpressionTree> declaredLambdas;
 
     public ControlFlowGraph(
             SpecialBlock entryBlock,
@@ -68,7 +81,9 @@ public class ControlFlowGraph {
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<Tree, Set<Node>> convertedTreeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
-            List<ReturnNode> returnNodes) {
+            List<ReturnNode> returnNodes,
+            List<ClassTree> declaredClasses,
+            List<LambdaExpressionTree> declaredLambdas) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
@@ -78,6 +93,8 @@ public class ControlFlowGraph {
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
         this.returnNodes = returnNodes;
+        this.declaredClasses = declaredClasses;
+        this.declaredLambdas = declaredLambdas;
     }
 
     /** @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. */
@@ -248,5 +265,13 @@ public class ControlFlowGraph {
             }
         }
         return null;
+    }
+
+    public List<ClassTree> getDeclaredClasses() {
+        return declaredClasses;
+    }
+
+    public List<LambdaExpressionTree> getDeclaredLambdas() {
+        return declaredLambdas;
     }
 }

@@ -702,34 +702,6 @@ The
 \href{http://plse.cs.washington.edu/daikon/}{Daikon invariant detector}.
 Run the command \code{make check-nullness}.
 
-% \item
-% The annotation scene library.
-% To run the Nullness Checker on the annotation scene library,
-% % TODO: how does one do this?
-% first download the scene library suite (which includes build
-% dependencies for the scene library as well as its source code) and extract it
-% into your Checker Framework installation. The checker can then be run on the annotation
-% scene library with Apache Ant using the following commands:
-%
-% \begin{Verbatim}
-%   cd checkers
-%   ant -f scene-lib-test.xml
-% \end{Verbatim}
-%
-% % \noindent
-% % where \code{checkers} is the location of the Checker Framework installation.
-%
-% You can view the annotated source code, which contains \refqualclass{checker/nullness/qual}{NonNull} annotations, in
-% the
-% %BEGIN LATEX
-% \begin{smaller}
-% %END LATEX
-% \code{checkers/scene-lib-test/src/annotations/}
-% %BEGIN LATEX
-% \end{smaller}
-% %END LATEX
-% directory.
-
 \end{itemize}
 
 
@@ -777,9 +749,9 @@ corresponding annotation:
   argument type):
   change the argument type to \<@Nullable Object>; for \<remove>, also change
   the return type to \<@Nullable Object>.
-% Emacs code for the argument types:
-% ;;NOT: (tags-query-replace " apply(Object " " apply(/*@Nullable*/ Object ")
-% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(/*@Nullable*/ Object ")
+% Emacs code that adds annotations to the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(@Nullable Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(@Nullable Object ")
 
 \end{itemize}
 
@@ -843,8 +815,10 @@ code.
 If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
-exactly as if you had written the corresponding annotation from the
+as if you had written the corresponding annotation from the
 Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
 
 
 % These lists should be kept in sync with
@@ -950,14 +924,6 @@ example, if you use both \<android.annotation.NonNull> and
 \<lombok.NonNull> in your source code, then you must write at least one of
 them in fully-qualified form, as \<@android.annotation.NonNull> rather than
 as \<@NonNull>.
-
-Note that some older tools interpret array and varargs declarations
-inconsistently with the Java specification.  For example, they might
-interpret \<@NonNull Object []> as ``non-null array of objects'', rather
-than as ``array of non-null objects'' which is the correct Java
-interpretation.  Such an interpretation is unfortunate and confusing.  See
-Section~\ref{faq-array-syntax-meaning} for some more details about this
-issue.
 
 
 \subsection{Which tool is right for you?\label{choosing-nullness-tool}}
@@ -1235,12 +1201,6 @@ helper routine that is called by constructor.  For example:
 
 
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can
@@ -1864,15 +1824,6 @@ class MyClass {
 \end{Verbatim}
 
 \noindent
-If you are using annotations in comments, you would write:
-
-\begin{Verbatim}
-class MyClass {
-  void initHelper(/*>>>@UnknownInitialization MyClass this,*/ String param1) { ... }
-}
-\end{Verbatim}
-
-\noindent
 You are likely to want to annotate \<initHelper()> with
 \refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
@@ -2070,12 +2021,6 @@ is called by constructor.  For example:
       field3 = new Object();
     }
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>> @Raw MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can

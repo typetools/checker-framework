@@ -162,8 +162,7 @@ pseudo-typedef antipattern~\cite{Goetz2006:typedef}.  Even if compatibility
 is not a concern, a code change may introduce bugs, whereas adding
 annotations does not change the run-time behavior.  It is possible to add
 annotations to existing code, including code you do not maintain or cannot
-change.  For code that strictly cannot be changed, you can add
-annotations in comments (see Section~\ref{annotations-in-comments}), or you
+change.  For code that strictly cannot be changed, you
 can write library annotations (see Chapter~\ref{annotating-libraries}).
 
 \item[Broader applicability]
@@ -1019,17 +1018,11 @@ Similarly,
 \<@Nullable Object @NonNull []> is a non-null array of possibly-null
 objects.
 
-
-Some older tools interpret a declaration like \<@NonEmpty String[] var> as
-``non-empty array of strings''.  This is in conflict with the Java type
-annotations specification, which defines it as meaning ``array of
-non-empty strings''.
-% (and has since October 2007)
-If you use one of these
-older tools, you will find this incompatibility confusing.
-You will have to live with it until the older
-tool is updated to conform to the Java specification, or until you
-transition to a newer tool that conforms to the Java specification.
+Some older tools have inconsistent semantics for annotations on array and
+varargs elements.  Their semantics is unfortunate and confusing; developers
+should convert their code to use type annotations instead.
+Section~\ref{declaration-annotations-moved} explains how the Checker
+Framework handles declaration annotations in the meanwhile.
 
 
 \subsection{What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?\label{faq-varargs-syntax-meaning}}
@@ -1632,11 +1625,6 @@ Java language.
 JSR 308 does not define any type annotations such as \<@NonNull>, and it does
 not specify the semantics of any annotations.  Those tasks are left to
 third-party tools.  The Checker Framework is one such tool.
-
-The Checker Framework makes use of Java SE 8's type annotation syntax, but
-the Checker Framework can
-be used with previous versions of the Java language via the
-annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 
 
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil
