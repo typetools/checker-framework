@@ -105,8 +105,8 @@ public class StubParser {
     /**
      * The name of the stub file being processed; used only for diagnostic messages.
      *
-     * <p>TODO: filename is "jdk.astub" and "flow.astub" for those pre-defined files, but is the
-     * full path in other situations. Make this consistent.
+     * <p>TODO: filename is "jdk.astub" for that pre-defined file, but is the full path in other
+     * situations. Make this consistent.
      */
     private final String filename;
 
@@ -765,11 +765,9 @@ public class StubParser {
     @SuppressWarnings("unused") // for disabled warning message
     private void clearAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
         Set<AnnotationMirror> annos = atype.getAnnotations();
-        // TODO: instead of comparison against flow.astub, this should
-        // check whether the stub file is @AnnotatedFor the current type system.
-        // flow.astub isn't annotated for any particular type system, and
+        // TODO: This should check whether the stub file is @AnnotatedFor the current type system.
         // @AnnotatedFor isn't integrated in stub files yet.
-        if (annos != null && !annos.isEmpty() && !"flow.astub".equals(filename)) {
+        if (annos != null && !annos.isEmpty()) {
             // TODO: only produce output if the removed annotation
             // isn't the top and default annotation in the type hierarchy.
             if (false) {

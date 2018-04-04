@@ -183,7 +183,6 @@ def build_and_locally_deploy_maven(version):
     # Deploy jsr308 and checker-qual jars to maven repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
-    mvn_deploy(JAVAC_BINARY, JAVAC_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)
 
     return
@@ -207,7 +206,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     if not manual_only:
         # build the checker framework binaries and documents, run checker framework tests
         if notest:
-            ant_cmd = "./gradlew release"
+            ant_cmd = "./gradlew releaseBuild"
         else:
             ant_cmd = "./gradlew releaseAndTest"
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)

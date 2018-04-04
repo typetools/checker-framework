@@ -47,7 +47,7 @@ public class CheckerDevelMain extends CheckerMain {
         assert (binDir != null)
                 : BINARY_PROP
                         + " must specify a binary directory in which "
-                        + "checker.jar, javac.jar, etc... are usually built";
+                        + "checker.jar, etc... are usually built";
 
         assert (cp != null) : CP_PROP + " must specify a path entry to prepend to the CLASSPATH";
         assert (pp != null)

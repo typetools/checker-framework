@@ -90,5 +90,6 @@ public final class String implements java.io.Serializable, Comparable<String>, C
   @SideEffectFree public static String valueOf(long a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String valueOf(float a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String valueOf(double a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public native String intern();
+  // Effectively pure:  pure so long as the identical argument contisues to exist
+  @Pure public native String intern();
 }

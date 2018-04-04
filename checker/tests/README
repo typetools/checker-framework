@@ -168,7 +168,7 @@ To create tests for a new checker, mimic some existing checker's tests:
    CheckerFrameworkPerDirectoryTest for more detailed information.)
  * include "all-systems" as a test directly by adding it to the array created
    in getTestDirs in the new test class.  See
-   checkerframework/framework/tests/all-systems/README for more details about
+   checker-framework/framework/tests/all-systems/README for more details about
    the all-systems tests.
 
 Different test cases may need to pass different command-line arguments
@@ -185,10 +185,6 @@ Disabling a test case
 =====================
 
 Write @skip-test anywhere in a test file to disable that test.
-
-Write @non-308-skip-test anywhere in a test file to disable that test if
-the jsr308-langtools compiler is not used. (This is useful for tests that
-depend on annotations-in-comments that would fail with the stock compiler.)
 
 Write @below-java9-jdk-skip-test anywhere in a test file to disable that
 test if the executing JDK version is lower than 9.

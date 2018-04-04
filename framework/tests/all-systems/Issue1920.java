@@ -21,6 +21,7 @@ class Issue1920 {
             };
         }
     }
+
     static void testErasedIterator(Foo foo) {
         for (Object x : foo) {
             x.hashCode();
