@@ -17,9 +17,8 @@ Checker Framework.
 checker-qual.jar - Contains the annotations used by the checkers built into the
 Checker Framework
 
-checker.jar - Contains all the Checker Framework classes including the
-framework itself, all built-in checkers.  References the annotations found
-in checker-qual.jar.
+checker.jar - Contains all the Checker Framework classes including the framework
+itself, all built-in checkers, and the annotations found in checker-qual.jar.
 
 javac.jar - Contains the Type Annotations Compiler
 (see https://checkerframework.org/README-jsr308.html)
