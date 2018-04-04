@@ -1,4 +1,4 @@
-package org.checkerframework.javacutil.dist;
+package org.checkerframework.taglet;
 
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
