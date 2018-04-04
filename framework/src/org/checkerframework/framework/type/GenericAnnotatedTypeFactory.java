@@ -8,7 +8,6 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -164,7 +162,20 @@ public abstract class GenericAnnotatedTypeFactory<
     private boolean shouldDefaultTypeVarLocals;
 
     /** An empty store. */
-    private Store emptyStore;
+    // Set in postInit only
+    protected Store emptyStore;
+
+    // Set in postInit only
+    protected FlowAnalysis analysis;
+
+    // Set in postInit only
+    protected TransferFunction transfer;
+
+    // Maintain for every class the store that is used when we analyze initialization code
+    protected Store initializationStore;
+
+    // Maintain for every class the store that is used when we analyze static initialization code
+    protected Store initializationStaticStore;
 
     /**
      * Caches for {@link AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, Map)}. This
@@ -191,7 +202,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.everUseFlow = useFlow;
         this.shouldDefaultTypeVarLocals = useFlow;
         this.useFlow = useFlow;
-        this.analyses = new ArrayDeque<>();
+
         this.scannedClasses = new HashMap<>();
         this.flowResult = null;
         this.regularExitStores = null;
@@ -229,14 +240,18 @@ public abstract class GenericAnnotatedTypeFactory<
 
         this.poly = createQualifierPolymorphism();
 
+        this.analysis = createFlowAnalysis(new ArrayList<>());
+        this.transfer = analysis.getTransferFunction();
+        this.emptyStore = analysis.createEmptyStore(transfer.usesSequentialSemantics());
+
         this.parseStubFiles();
     }
 
     /**
-     * Preforms flow-sensitive type refinement on {@code classTree} if this type factory is
+     * Performs flow-sensitive type refinement on {@code classTree} if this type factory is
      * configured to do so.
      *
-     * @param classTree tree on which to preform flow-sensitive type refinement
+     * @param classTree tree on which to perform flow-sensitive type refinement
      */
     @Override
     public void preProcessClassTree(ClassTree classTree) {
@@ -258,7 +273,6 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public void setRoot(@Nullable CompilationUnitTree root) {
         super.setRoot(root);
-        this.analyses.clear();
         this.scannedClasses.clear();
         this.flowResult = null;
         this.regularExitStores = null;
@@ -761,12 +775,10 @@ public abstract class GenericAnnotatedTypeFactory<
         AnnotationMirror annotationMirror = null;
         if (CFAbstractStore.canInsertReceiver(receiver)) {
             Store store = getStoreBefore(tree);
-            if (store != null) {
-                Value value = store.getValue(receiver);
-                if (value != null) {
-                    annotationMirror =
-                            AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
-                }
+            Value value = store.getValue(receiver);
+            if (value != null) {
+                annotationMirror =
+                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         if (annotationMirror == null) {
@@ -862,25 +874,19 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** @return the store immediately before a given {@link Tree}. */
     public Store getStoreBefore(Tree tree) {
-        if (analyses.isEmpty()) {
+        if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(tree);
         }
-        FlowAnalysis analysis = analyses.getFirst();
         Set<Node> nodes = analysis.getNodesForTree(tree);
-        if (nodes == null) {
-            // TODO: is there something better we can do? Check for
-            // lambda expressions. This fixes Issue 448, but might not
-            // be the best possible.
-            return null;
+        if (nodes != null) {
+            return getStoreBefore(nodes);
+        } else {
+            return flowResult.getStoreBefore(tree);
         }
-        return getStoreBefore(nodes);
     }
 
     /** @return the store immediately before a given Set of {@link Node}s. */
     public Store getStoreBefore(Set<Node> nodes) {
-        if (nodes.size() == 1) {
-            return getStoreBefore(nodes.iterator().next());
-        }
         Store merge = null;
         for (Node aNode : nodes) {
             Store s = getStoreBefore(aNode);
@@ -895,10 +901,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** @return the store immediately before a given {@link Node}. */
     public Store getStoreBefore(Node node) {
-        if (analyses.isEmpty()) {
+        if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(node);
         }
-        FlowAnalysis analysis = analyses.getFirst();
         TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
         if (prevStore == null) {
             return null;
@@ -910,10 +915,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** @return the store immediately after a given {@link Tree}. */
     public Store getStoreAfter(Tree tree) {
-        if (analyses.isEmpty()) {
+        if (!analysis.isRunning()) {
             return flowResult.getStoreAfter(tree);
         }
-        FlowAnalysis analysis = analyses.getFirst();
         Set<Node> nodes = analysis.getNodesForTree(tree);
         return getStoreAfter(nodes);
     }
@@ -934,7 +938,6 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** @return the store immediately after a given {@link Node}. */
     public Store getStoreAfter(Node node) {
-        FlowAnalysis analysis = analyses.getFirst();
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node, false, analysis.getInput(node.getBlock()), flowResultAnalysisCaches);
@@ -1027,13 +1030,10 @@ public abstract class GenericAnnotatedTypeFactory<
                             MethodTree mt = (MethodTree) m;
 
                             // Skip abstract and native methods because they have no body.
-                            ModifiersTree modifiers = mt.getModifiers();
-                            if (modifiers != null) {
-                                Set<Modifier> flags = modifiers.getFlags();
-                                if (flags.contains(Modifier.ABSTRACT)
-                                        || flags.contains(Modifier.NATIVE)) {
-                                    break;
-                                }
+                            Set<Modifier> flags = mt.getModifiers().getFlags();
+                            if (flags.contains(Modifier.ABSTRACT)
+                                    || flags.contains(Modifier.NATIVE)) {
+                                break;
                             }
                             // Abstract methods in an interface have a null body but do not have an
                             // ABSTRACT flag.
@@ -1063,7 +1063,8 @@ public abstract class GenericAnnotatedTypeFactory<
                                         true,
                                         isStatic);
                                 Value value = flowResult.getValue(initializer);
-                                if (value != null) {
+                                if (vt.getModifiers().getFlags().contains(Modifier.FINAL)
+                                        && value != null) {
                                     // Store the abstract value for the field.
                                     VariableElement element = TreeUtils.elementFromDeclaration(vt);
                                     fieldValues.add(Pair.of(element, value));
@@ -1144,13 +1145,6 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    // Maintain a deque of analyses to accommodate nested classes.
-    protected final Deque<FlowAnalysis> analyses;
-    // Maintain for every class the store that is used when we analyze initialization code
-    protected Store initializationStore;
-    // Maintain for every class the store that is used when we analyze static initialization code
-    protected Store initializationStaticStore;
-
     /**
      * Analyze the AST {@code ast} and store the result.
      *
@@ -1193,27 +1187,26 @@ public abstract class GenericAnnotatedTypeFactory<
             Store lambdaStore) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
-        FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
-        TransferFunction transfer = newAnalysis.getTransferFunction();
-        if (emptyStore == null) {
-            emptyStore = newAnalysis.createEmptyStore(transfer.usesSequentialSemantics());
-        }
-        analyses.addFirst(newAnalysis);
+
         if (lambdaStore != null) {
             transfer.setFixedInitialStore(lambdaStore);
         } else {
-            Store initStore = !isStatic ? initializationStore : initializationStaticStore;
             if (isInitializationCode) {
+                Store initStore = !isStatic ? initializationStore : initializationStaticStore;
                 if (initStore != null) {
                     // we have already seen initialization code and analyzed it, and
                     // the analysis ended with the store initStore.
                     // use it to start the next analysis.
                     transfer.setFixedInitialStore(initStore);
+                } else {
+                    transfer.setFixedInitialStore(null);
                 }
+            } else {
+                transfer.setFixedInitialStore(null);
             }
         }
-        analyses.getFirst().performAnalysis(cfg);
-        AnalysisResult<Value, Store> result = analyses.getFirst().getResult();
+        analysis.performAnalysis(cfg, fieldValues);
+        AnalysisResult<Value, Store> result = analysis.getResult();
 
         // store result
         flowResult.combine(result);
@@ -1221,14 +1214,14 @@ public abstract class GenericAnnotatedTypeFactory<
             // store exit store (for checking postconditions)
             CFGMethod mast = (CFGMethod) ast;
             MethodTree method = mast.getMethod();
-            Store regularExitStore = analyses.getFirst().getRegularExitStore();
+            Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
-            returnStatementStores.put(method, analyses.getFirst().getReturnStatementStores());
+            returnStatementStores.put(method, analysis.getReturnStatementStores());
         } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement block = (CFGStatement) ast;
-            Store regularExitStore = analyses.getFirst().getRegularExitStore();
+            Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
             }
@@ -1236,14 +1229,14 @@ public abstract class GenericAnnotatedTypeFactory<
             // TODO: Postconditions?
 
             CFGLambda block = (CFGLambda) ast;
-            Store regularExitStore = analyses.getFirst().getRegularExitStore();
+            Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
             }
         }
 
         if (isInitializationCode && updateInitializationStore) {
-            Store newInitStore = analyses.getFirst().getRegularExitStore();
+            Store newInitStore = analysis.getRegularExitStore();
             if (!isStatic) {
                 initializationStore = newInitStore;
             } else {
@@ -1254,8 +1247,6 @@ public abstract class GenericAnnotatedTypeFactory<
         if (checker.hasOption("flowdotdir") || checker.hasOption("cfgviz")) {
             handleCFGViz();
         }
-
-        analyses.removeFirst();
 
         // add classes declared in method
         queue.addAll(builder.getDeclaredClasses());
@@ -1269,7 +1260,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * This method gets invoked in {@code analyze} if on of the visualization options is provided.
      */
     protected void handleCFGViz() {
-        analyses.getFirst().visualizeCFG();
+        analysis.visualizeCFG();
     }
 
     /**
@@ -1488,16 +1479,9 @@ public abstract class GenericAnnotatedTypeFactory<
                     "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
             return null; // dead code
         }
-        Value as = null;
-        if (!analyses.isEmpty()) {
-            as = analyses.getFirst().getValue(tree);
-        }
-        if (as == null
-                &&
-                // TODO: this comparison shouldn't be needed, but
-                // Daikon check-nullness started failing without it.
-                flowResult != null) {
-            as = flowResult.getValue(tree);
+        Value as = flowResult.getValue(tree);
+        if (as == null) {
+            as = analysis.getValue(tree);
         }
         return as;
     }
