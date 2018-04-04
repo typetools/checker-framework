@@ -419,16 +419,14 @@ public abstract class InitializationAnnotatedTypeFactory<
         // there might still be subclasses that need initialization.
         if (areAllFieldsCommittedOnly(enclosingClass)) {
             Store store = getStoreBefore(tree);
-            if (store != null) {
-                List<AnnotationMirror> annos = Collections.emptyList();
-                if (getUninitializedInvariantFields(store, path, false, annos).size() == 0) {
-                    if (classType.isFinal()) {
-                        annotation = COMMITTED;
-                    } else if (useFbc) {
-                        annotation = createFreeAnnotation(classType);
-                    } else {
-                        annotation = createUnclassifiedAnnotation(classType);
-                    }
+            List<AnnotationMirror> annos = Collections.emptyList();
+            if (getUninitializedInvariantFields(store, path, false, annos).size() == 0) {
+                if (classType.isFinal()) {
+                    annotation = COMMITTED;
+                } else if (useFbc) {
+                    annotation = createFreeAnnotation(classType);
+                } else {
+                    annotation = createUnclassifiedAnnotation(classType);
                 }
             }
         }
