@@ -1090,32 +1090,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
 
+            FlowExpressions.Receiver expr;
             try {
-                FlowExpressions.Receiver expr =
+                expr =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
-
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
-
-                CFAbstractValue<?> value = store.getValue(expr);
-
-                AnnotationMirror inferredAnno = null;
-                if (value != null) {
-                    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-                    Set<AnnotationMirror> annos = value.getAnnotations();
-                    inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
-                }
-                if (!checkContract(expr, anno, inferredAnno, store)) {
-                    checker.report(
-                            Result.failure(
-                                    "contracts.precondition.not.satisfied",
-                                    tree.toString(),
-                                    expr == null ? expression : expr.toString()),
-                            tree);
-                }
             } catch (FlowExpressionParseException e) {
                 // report errors here
                 checker.report(e.getResult(), tree);
+                return;
+            }
+
+            CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
+            CFAbstractValue<?> value = store.getValue(expr);
+
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
+            }
+            if (!checkContract(expr, anno, inferredAnno, store)) {
+                checker.report(
+                        Result.failure(
+                                "contracts.precondition.not.satisfied",
+                                tree.toString(),
+                                expr == null ? expression : expr.toString()),
+                        tree);
             }
         }
     }
