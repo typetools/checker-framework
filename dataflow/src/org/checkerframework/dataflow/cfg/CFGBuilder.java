@@ -256,18 +256,6 @@ public class CFGBuilder {
         return phase3result;
     }
 
-    // NullAway uses this entry point.
-    @Deprecated
-    public static ControlFlowGraph build(
-            TreePath bodyPath,
-            ProcessingEnvironment env,
-            UnderlyingAST underlyingAST,
-            boolean assumeAssertionsEnabled,
-            boolean assumeAssertionsDisabled) {
-        return build(
-                bodyPath, underlyingAST, assumeAssertionsEnabled, assumeAssertionsDisabled, env);
-    }
-
     /** Build the control flow graph of some code. */
     public static ControlFlowGraph build(
             CompilationUnitTree root, UnderlyingAST underlyingAST, ProcessingEnvironment env) {
