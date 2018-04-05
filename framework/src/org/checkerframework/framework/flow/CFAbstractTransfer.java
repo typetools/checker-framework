@@ -1037,15 +1037,6 @@ public abstract class CFAbstractTransfer<
                 FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
-                if (r instanceof FieldAccess) {
-                    // TODO: if the receiver expression is a field access, some property
-                    // might have to hold for that receiver.
-                    // In Nullness, for a post-condition like "x.f.g", x, f, and g need
-                    // to be non-null.
-                    // This is for a different problem.
-                    FieldAccess fa = (FieldAccess) r;
-                    thenStore.insertValue(fa.getReceiver(), anno);
-                }
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
                         thenStore.insertValue(r, anno);
