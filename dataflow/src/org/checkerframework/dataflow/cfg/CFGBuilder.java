@@ -1514,15 +1514,11 @@ public class CFGBuilder {
         protected final List<LambdaExpressionTree> declaredLambdas;
 
         /**
-         * Performs the actual work of phase one.
-         *
-         * @param bodyPath path to the body of the underlying AST's method
-         * @param env annotation processing environment containing type utilities
-         * @param underlyingAST the AST for which the CFG is to be built
-         * @param exceptionalExitLabel the label for exceptional exits from the CFG
          * @param treeBuilder builder for new AST nodes
          * @param annotationProvider extracts annotations from AST nodes
-         * @return the result of phase one
+         * @param assumeAssertionsDisabled can assertions be assumed to be disabled?
+         * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
+         * @param env annotation processing environment containing type utilities
          */
         public CFGTranslationPhaseOne(
                 TreeBuilder treeBuilder,
@@ -1561,6 +1557,13 @@ public class CFGBuilder {
             declaredLambdas = new ArrayList<>();
         }
 
+        /**
+         * Performs the actual work of phase one.
+         *
+         * @param bodyPath path to the body of the underlying AST's method
+         * @param underlyingAST the AST for which the CFG is to be built
+         * @return the result of phase one
+         */
         public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
             // traverse AST of the method body
             Node finalNode = scan(bodyPath, null);
