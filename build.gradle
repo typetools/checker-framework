@@ -52,7 +52,6 @@ allprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: "de.undercouch.download"
     apply plugin: 'net.ltgt.errorprone-base'
-    apply plugin: 'eclipse'
 
     group 'org.checkerframework'
     // Increment the minor version rather than just the patch level if:
