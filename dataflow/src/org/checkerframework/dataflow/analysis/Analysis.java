@@ -433,7 +433,7 @@ public class Analysis<
         }
         inputs.clear();
         storesAtReturnStatements.clear();
-        nodeValues.clear();
+        //        nodeValues.clear();
         finalLocalValues.clear();
 
         this.cfg = cfg;
