@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.typeinference8.resolution;
+package org.checkerframework.framework.util.typeinference8;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

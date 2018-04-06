@@ -35,7 +35,6 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint.
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.resolution.Resolution;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
