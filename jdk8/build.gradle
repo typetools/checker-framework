@@ -9,7 +9,7 @@ task downloadJdk() {
     String shaHash = '57057e276d1c2933b485c400012effdc36a96bcf'
     File jdk = new File(buildDir, "jdk8-${shaHash}.jar");
     onlyIf {
-        !(new File('"../checker/dist/jdk8.jar').exists())
+        !jdk.exists() || !(new File('"../checker/dist/jdk8.jar').exists())
     }
 
     doLast {
@@ -21,11 +21,10 @@ task downloadJdk() {
             }
         }
         copy {
-            from '../checker/jdk/jdk.jar'
-            rename { String fileName ->
-                fileName.replace(fileName, "jdk8.jar")
+            from(jdk) {
+                rename jdk.name, 'jdk8.jar'
             }
-            into '../checker/dist'
+            into "../checker/dist"
         }
     }
 }
