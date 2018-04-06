@@ -46,7 +46,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.DOTCFGVisualizer;
@@ -1191,8 +1190,7 @@ public abstract class GenericAnnotatedTypeFactory<
             boolean updateInitializationStore,
             boolean isStatic,
             Store lambdaStore) {
-        CFGBuilder builder = new CFCFGBuilder(checker, this);
-        ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
+        ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
         FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
         TransferFunction transfer = newAnalysis.getTransferFunction();
         if (emptyStore == null) {
@@ -1258,8 +1256,8 @@ public abstract class GenericAnnotatedTypeFactory<
         analyses.removeFirst();
 
         // add classes declared in method
-        queue.addAll(builder.getDeclaredClasses());
-        for (LambdaExpressionTree lambda : builder.getDeclaredLambdas()) {
+        queue.addAll(cfg.getDeclaredClasses());
+        for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
             lambdaQueue.add(Pair.of(lambda, getStoreBefore(lambda)));
         }
     }

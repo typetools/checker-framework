@@ -129,22 +129,16 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (nodes == null) {
             return null;
         }
-        if (nodes.size() == 1) {
-            Node aNode = nodes.iterator().next();
-            A val = getValue(aNode);
-            return val;
-        } else {
-            A merged = null;
-            for (Node aNode : nodes) {
-                A a = getValue(aNode);
-                if (merged == null) {
-                    merged = a;
-                } else if (a != null) {
-                    merged = merged.leastUpperBound(a);
-                }
+        A merged = null;
+        for (Node aNode : nodes) {
+            A a = getValue(aNode);
+            if (merged == null) {
+                merged = a;
+            } else if (a != null) {
+                merged = merged.leastUpperBound(a);
             }
-            return merged;
         }
+        return merged;
     }
 
     /**
@@ -182,9 +176,6 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (nodes == null) {
             return null;
         }
-        if (nodes.size() == 1) {
-            return getStoreBefore(nodes.iterator().next());
-        }
         S merged = null;
         for (Node node : nodes) {
             S s = getStoreBefore(node);
@@ -207,9 +198,6 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         Set<Node> nodes = getNodesForTree(tree);
         if (nodes == null) {
             return null;
-        }
-        if (nodes.size() == 1) {
-            return getStoreAfter(nodes.iterator().next());
         }
         S merged = null;
         for (Node node : nodes) {
