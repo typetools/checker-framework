@@ -43,9 +43,38 @@ The repository also contains the following directories:
 </p>
 <pre>
  docs          documentation: manual, tutorial, examples, developer docs
- eclipse       the Checker Framework Eclipse plug-in
  maven-artifacts  artifacts to be uploaded to Maven Central
 </pre>
+
+
+<h2> Gradle build scripts</h2>
+
+<p>
+Don't run the <code>gradle</code> command, which would use your local installation of gradle.
+Instead, use
+the <code>gradlew</code> script in the <code>checker-framework</code> directory.
+</p>
+
+<p>
+Frequently-used tasks:
+</p>
+<ul>
+  <li> <code>assemble</code>: builds all jars except <code>jdk8.jar</code>, including javadoc jars and fat jars that contain all dependencies.
+  <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
+  <li> <code>buildJdk</code>: builds <code>jdk8.jar</code>.
+  <li> <code>allTests</code>: runs all tests.
+  <li> <code>reformat</code>: reformats Java files.
+  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessFbcTest</code>.
+  <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
+</ul>
+
+<p>
+If you run a task from the main directory, then it will run that task in all
+subprojects with a task by that name. So, if you run <code>./gradlew
+allTests</code> that runs all tests everywhere. But <code>(cd
+framework &amp;&amp; ../gradlew allTests)</code> only runs tests in
+framework. Alternatively, calling <code>:framework:allTests</code> from the
+main directory or any subproject has the same effect.  </p>
 
 
 <h2>Coding style</h2>
@@ -60,14 +89,14 @@ Java code conventions</a>.
 
 <p>
 The codebase conforms to a consistent indentation style, which is enforced
-by a git pre-commit hook. The pre-commit hook runs <code>ant
-check-format</code> in the top level directory. <code>ant reformat</code>
-will format all files such that <code>ant check-format</code> succeeds.
+by a git pre-commit hook. The pre-commit hook runs <code>./gradlew
+checkFormat</code> in the top level directory. <code>./gradlew reformat</code>
+will format all files such that <code>./gradlew checkFormat</code> succeeds.
 </p>
 
 <p>
 We don't use <code>@author</code> Javadoc tags in code files.
-Doing so clutters the code, and is misleading because once that individual
+Doing so clutters the code, and is misleading once that individual
 is no longer maintaining the code.
 Authorship (and who has made changes recently) can be obtained from the
 version control system.
@@ -120,6 +149,15 @@ too busy to do so, you should recognize that and move on.
 Also
 see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
     Ernst's advice about creating GitHub pull requests</a>.
+</p>
+
+
+<h2>Changelog</h2>
+
+<p>
+Don't forget to update the changelog if you make changes that are worthy of
+telling developers about.  This makes it much easier for someone to make a
+release.
 </p>
 
 

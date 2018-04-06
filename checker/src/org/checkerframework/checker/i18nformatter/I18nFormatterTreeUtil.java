@@ -174,25 +174,21 @@ public class I18nFormatterTreeUtil {
     }
 
     public Result<I18nConversionCategory[]> getHasFormatCallCategories(MethodInvocationNode node) {
-        return new Result<I18nConversionCategory[]>(
-                asFormatCallCategoriesLowLevel(node), node.getTree());
+        return new Result<>(asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
     public Result<I18nConversionCategory[]> makeFormatCallCategories(
             MethodInvocationNode node, I18nFormatterAnnotatedTypeFactory atypeFactory) {
         Map<String, String> translations = atypeFactory.translations;
         Node firstParam = node.getArgument(0);
-        Result<I18nConversionCategory[]> ret =
-                new Result<I18nConversionCategory[]>(null, node.getTree());
+        Result<I18nConversionCategory[]> ret = new Result<>(null, node.getTree());
 
         // Now only work with a literal string
         if (firstParam != null && (firstParam instanceof StringLiteralNode)) {
             String s = ((StringLiteralNode) firstParam).getValue();
             if (translations.containsKey(s)) {
                 String value = translations.get(s);
-                ret =
-                        new Result<I18nConversionCategory[]>(
-                                I18nFormatUtil.formatParameterCategories(value), node.getTree());
+                ret = new Result<>(I18nFormatUtil.formatParameterCategories(value), node.getTree());
             }
         }
         return ret;
@@ -330,7 +326,7 @@ public class I18nFormatterTreeUtil {
                 // and we can't do anything else
                 type = FormatType.I18NFORMATFOR;
             }
-            return new Result<FormatType>(type, formatArg);
+            return new Result<>(type, formatArg);
         }
 
         public final String getInvalidError() {
@@ -408,11 +404,11 @@ public class I18nFormatterTreeUtil {
             if (type != InvocationType.VARARG && args.size() > 0) {
                 loc = args.get(0);
             }
-            return new Result<InvocationType>(type, loc);
+            return new Result<>(type, loc);
         }
 
         public Result<FormatType> getInvalidInvocationType() {
-            return new Result<FormatType>(FormatType.I18NFORMATFOR, formatArg);
+            return new Result<>(FormatType.I18NFORMATFOR, formatArg);
         }
 
         /**
@@ -426,13 +422,13 @@ public class I18nFormatterTreeUtil {
         }
 
         public final Result<TypeMirror>[] getParamTypes() {
-            // One to make javac happy, the other to make Eclipse happy...
+            // One to suppress warning in javac, the other to suppress warning in Eclipse...
             @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
                 TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
-                res[i] = new Result<TypeMirror>(argType, arg);
+                res[i] = new Result<>(argType, arg);
             }
             return res;
         }

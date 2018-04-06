@@ -211,8 +211,7 @@ You can place your checker's source files wherever you like.
 \item
   \begin{sloppypar}
   If you put your checker elsewhere, then when you compile your checker,
-  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>
-  and \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
   \end{sloppypar}
 \end{itemize}
 
@@ -500,6 +499,9 @@ In most cases, the bottom qualifier should be meta-annotated with
 You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
+
+The Javadoc of every type qualifier should include an example use of the
+qualifier.
 
 
 \subsection{Declaratively defining the qualifier hierarchy\label{creating-declarative-hierarchy}}
@@ -1162,7 +1164,7 @@ automatically add that qualifier.
 In short, the types and trees can be
 specified via any combination of four fields in \refclass{framework/qual}{ImplicitFor}.
 
-For example, consider the definitions of the
+For example, consider these (partial) definitions of the
 \refqualclass{checker/nullness/qual}{Nullable} and
 \refqualclass{checker/nullness/qual}{NonNull}
 type qualifiers:
@@ -1178,16 +1180,12 @@ type qualifiers:
   public @interface Nullable { }
 
   @SubtypeOf( { Nullable.class } )
-  @ImplicitFor(types = { TypeKind.PACKAGE,
-                         TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
-                         TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
-                         TypeKind.SHORT, TypeKind.BYTE },
-      // All literals except NULL_LITERAL:
-      literals = { LiteralKind.BOOLEAN, LiteralKind.CHAR, LiteralKind.DOUBLE,
-                   LiteralKind.FLOAT, LiteralKind.INT, LiteralKind.LONG,
-                   LiteralKind.STRING })
+  @ImplicitFor(literals = { LiteralKind.STRING },
+               types = { TypeKind.PACKAGE, TypeKind.INT, TypeKind.BOOLEAN,
+                         TypeKind.CHAR, TypeKind.DOUBLE, TypeKind.FLOAT,
+                         TypeKind.LONG, TypeKind.SHORT, TypeKind.BYTE })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface NonNull {  }
+  public @interface NonNull {}
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -1698,7 +1696,7 @@ following two lines at the beginning of the constructor for your subtype of
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
-uses the JDK.  As described in Section~\ref{annotated-libraries-creating},
+uses the JDK.  As described in Section~\ref{annotating-libraries},
 there are two general ways to supply an annotated library:  in Java files
 that will be compiled to \<.class> files, or as stub files (partial Java source files).
 
@@ -1730,8 +1728,6 @@ repository, then you can copy the testing infrastructure used by some
 existing type system.  Here are some of the tasks you will perform:
 
 \begin{itemize}
-\item Add a \code{\emph{mychecker}-tests} build target in file
-  \<checker-framework/checker/build.xml> and ensure all tests pass.
 
 \item Make sure \code{all-tests} tests the new checker.
 \end{itemize}
@@ -1902,9 +1898,7 @@ docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
 
 \begin{sloppypar}
 You can use any standard debugger to observe the execution of your checker.
-Set the execution main class to \code{com.sun.tools.javac.Main}, and insert
-the Checker Framework javac.jar (resides in
-\code{\$CHECKERFRAMEWORK/checker/dist/javac.jar}).  If using an IDE, it is
+If using an IDE, it is
 recommended that you add \code{.../jsr308-langtools} as a project, so you
 can step into its source code if needed.
 \end{sloppypar}
@@ -2058,7 +2052,9 @@ figures.
 
 Don't forget to write Javadoc for any annotations that the checker uses.
 That is part of the documentation and is the first thing that many users
-may see.  Also ensure that the Javadoc links back to the manual, using the
+may see.  The documentation for any annotation should include an example
+use of the annotation.
+Also ensure that the Javadoc links back to the manual, using the
 \<@checker\_framework.manual> custom Javadoc tag.
 
 \section{javac implementation survival guide\label{creating-javac-tips}}
@@ -2230,15 +2226,8 @@ the following:
 
 \begin{itemize}
 
-\item Create Ant targets for testing, as described in
-  Section~\ref{creating-testing-framework}.
-
 \item Make sure \code{check-compilermsgs} and \code{check-purity} run
 without warnings or errors.
-
-\item
-  Integrate your new checker with the Eclipse plugin.
-  See \<\$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker> for instructions.
 
 \end{itemize}
 

@@ -160,7 +160,7 @@ public class StubGenerator {
 
     /** helper method that outputs the index for the provided class. */
     private void printClass(TypeElement typeElement, String outerClass) {
-        List<TypeElement> innerClass = new ArrayList<TypeElement>();
+        List<TypeElement> innerClass = new ArrayList<>();
 
         indent();
         if (typeElement.getKind() == ElementKind.INTERFACE) {

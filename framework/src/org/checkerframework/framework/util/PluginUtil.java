@@ -18,15 +18,6 @@ import java.util.regex.Pattern;
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
  * {@code CheckerMain}.
- *
- * <p>NOTE: There are multiple copies of this file:
- *
- * <pre>
- * eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java
- * framework/src/org/checkerframework/framework/util/PluginUtil.java
- * </pre>
- *
- * These files MUST be IDENTICAL after the package descriptor.
  */
 public class PluginUtil {
 
@@ -49,7 +40,7 @@ public class PluginUtil {
     public static final String JDK_PATH_OPT = "-jdkJar";
 
     public static List<File> toFiles(final List<String> fileNames) {
-        final List<File> files = new ArrayList<File>(fileNames.size());
+        final List<File> files = new ArrayList<>(fileNames.size());
         for (final String fn : fileNames) {
             files.add(new File(fn));
         }
@@ -147,7 +138,7 @@ public class PluginUtil {
         final BufferedReader br = new BufferedReader(new FileReader(argFile));
         String line;
 
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         while ((line = br.readLine()) != null) {
             lines.add(line);
         }
@@ -191,7 +182,7 @@ public class PluginUtil {
             final CheckerProp prop,
             final String tag,
             final String... extras) {
-        final List<String> out = new ArrayList<String>();
+        final List<String> out = new ArrayList<>();
         final String strProp = (String) props.get(prop);
         if (strProp != null && !strProp.isEmpty()) {
             out.add(tag + strProp);
@@ -203,13 +194,17 @@ public class PluginUtil {
         return out;
     }
 
+    /**
+     * If prop is in props, return a 1-element list containing tag. Otherwise, return a 0-element
+     * list.
+     */
     public static List<String> getBooleanProp(
             final Map<CheckerProp, Object> props, final CheckerProp prop, final String tag) {
         Boolean aSkip = (Boolean) props.get(prop);
         if (aSkip != null && aSkip) {
             return Arrays.asList(tag);
         }
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     public enum CheckerProp {
@@ -227,9 +222,9 @@ public class PluginUtil {
                 List<String> miscOpts = (List<String>) props.get(this);
 
                 if (miscOpts != null && !miscOpts.isEmpty()) {
-                    return new ArrayList<String>(miscOpts);
+                    return new ArrayList<>(miscOpts);
                 }
-                return new ArrayList<String>();
+                return new ArrayList<>();
             }
         },
 
@@ -293,6 +288,35 @@ public class PluginUtil {
         }
     }
 
+    /**
+     * Return true if the system property is set to "true". Return false if the system property is
+     * not set or is set to "false". Otherwise, errs.
+     */
+    public static boolean getBooleanSystemProperty(String key) {
+        return Boolean.valueOf(System.getProperty(key, "false"));
+    }
+
+    /**
+     * Return its boolean value if the system property is set. Return defaultValue if the system
+     * property is not set. Errs if the system property is set to a non-boolean value.
+     */
+    public static boolean getBooleanSystemProperty(String key, boolean defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.equals("true")) {
+            return true;
+        }
+        if (value.equals("false")) {
+            return false;
+        }
+        throw new Error(
+                String.format(
+                        "Value for system property %s should be boolean, but is \"%s\".",
+                        key, value));
+    }
+
     public static File writeTmpSrcFofn(
             final String prefix, final boolean deleteOnExit, final List<File> files)
             throws IOException {
@@ -322,7 +346,7 @@ public class PluginUtil {
     }
 
     public static String escapeQuotesAndSlashes(final String toEscape) {
-        final Map<String, String> replacements = new HashMap<String, String>();
+        final Map<String, String> replacements = new HashMap<>();
         replacements.put("\\\\", "\\\\\\\\");
         replacements.put("\"", "\\\\\"");
 
@@ -379,7 +403,7 @@ public class PluginUtil {
             final boolean procOnly,
             final String outputDirectory) {
 
-        final List<String> cmd = new ArrayList<String>();
+        final List<String> cmd = new ArrayList<>();
 
         final String java = (executable != null) ? executable : getJavaCommand(javaHome, out);
 
@@ -424,7 +448,7 @@ public class PluginUtil {
     }
 
     public static List<String> toJavaOpts(final List<String> opts) {
-        final List<String> outOpts = new ArrayList<String>(opts.size());
+        final List<String> outOpts = new ArrayList<>(opts.size());
         for (final String opt : opts) {
             outOpts.add("-J" + opt);
         }
@@ -497,7 +521,7 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever).
      *
      * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
      */

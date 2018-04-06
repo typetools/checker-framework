@@ -1,9 +1,12 @@
-<project name="personalblog" basedir="../eclipse-projects/personalblog-demo/" default="check-tutorial">
+<project name="personalblog" basedir="../src/personalblog-demo/" default="check-tutorial">
 
     <property file="../../../build-common.properties"/>
     <import file="ant.xml"/>
 
     <target name="check-pblog">
+      <ant >
+         <target name="clean"/>
+      </ant>
       <check-demo-common target="check-tainting" step="0" dir="../../tests/testdemo"/>
       <check-demo-common target="check-tainting" step="1" dir="../../tests/testdemo"/>
       <check-demo-common target="check-tainting" step="2" dir="../../tests/testdemo"/>

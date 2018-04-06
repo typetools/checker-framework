@@ -29,11 +29,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-/*>>>
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.interning.qual.Interned;
-*/
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -81,7 +78,7 @@ public class AnnotationBuilder {
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
-        this.elementValues = new LinkedHashMap<ExecutableElement, AnnotationValue>();
+        this.elementValues = new LinkedHashMap<>();
     }
 
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
@@ -91,7 +88,7 @@ public class AnnotationBuilder {
         this.annotationType = annotation.getAnnotationType();
         this.annotationElt = (TypeElement) annotationType.asElement();
 
-        this.elementValues = new LinkedHashMap<ExecutableElement, AnnotationValue>();
+        this.elementValues = new LinkedHashMap<>();
         // AnnotationValues are immutable so putAll should suffice
         this.elementValues.putAll(annotation.getElementValues());
     }
@@ -211,7 +208,7 @@ public class AnnotationBuilder {
 
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> value = new ArrayList<AnnotationValue>(values.size());
+        List<AnnotationValue> value = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -362,7 +359,7 @@ public class AnnotationBuilder {
             return null; // dead code
         }
 
-        List<AnnotationValue> res = new ArrayList<AnnotationValue>(values.length);
+        List<AnnotationValue> res = new ArrayList<>(values.length);
         for (Enum<?> ev : values) {
             checkSubtype(expectedType, ev);
             enumElt = findEnumElement(ev);
@@ -404,7 +401,7 @@ public class AnnotationBuilder {
             return null; // dead code
         }
 
-        List<AnnotationValue> res = new ArrayList<AnnotationValue>(values.length);
+        List<AnnotationValue> res = new ArrayList<>(values.length);
         for (VariableElement ev : values) {
             checkSubtype(expectedType, ev);
             // Is there a better way to distinguish between enums and
@@ -521,12 +518,12 @@ public class AnnotationBuilder {
     /* default visibility to allow access from within package. */
     static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
 
-        private /*@Interned*/ String toStringVal;
+        private @Interned String toStringVal;
         private final DeclaredType annotationType;
         private final Map<ExecutableElement, AnnotationValue> elementValues;
 
         // default visibility to allow access from within package.
-        final /*@Interned*/ String annotationName;
+        final @Interned String annotationName;
 
         CheckerFrameworkAnnotationMirror(
                 DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
@@ -546,7 +543,7 @@ public class AnnotationBuilder {
             return Collections.unmodifiableMap(elementValues);
         }
 
-        /*@SideEffectFree*/
+        @SideEffectFree
         @Override
         public String toString() {
             if (toStringVal != null) {
@@ -584,7 +581,7 @@ public class AnnotationBuilder {
 
     private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
         private final Object value;
-        private /*@Interned*/ String toStringVal;
+        private @Interned String toStringVal;
 
         CheckerFrameworkAnnotationValue(Object obj) {
             this.value = obj;
@@ -595,7 +592,7 @@ public class AnnotationBuilder {
             return value;
         }
 
-        /*@SideEffectFree*/
+        @SideEffectFree
         @Override
         public String toString() {
             if (toStringVal != null) {

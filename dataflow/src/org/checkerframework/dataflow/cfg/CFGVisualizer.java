@@ -1,10 +1,7 @@
 package org.checkerframework.dataflow.cfg;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -43,8 +40,8 @@ public interface CFGVisualizer<
      *     Can also be {@code null} to indicate that this information should not be output.
      * @return possible analysis results, e.g. generated file names.
      */
-    /*@Nullable*/ Map<String, Object> visualize(
-            ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis);
+    @Nullable Map<String, Object> visualize(
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis);
 
     /**
      * Delegate the visualization responsibility to the passed {@link Store} instance, which will
@@ -137,7 +134,7 @@ public interface CFGVisualizer<
      * @param bb the block
      * @param analysis the current analysis
      */
-    void visualizeBlock(Block bb, /*@Nullable*/ Analysis<A, S, T> analysis);
+    void visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis);
 
     /**
      * Visualize a SpecialBlock.
@@ -160,7 +157,7 @@ public interface CFGVisualizer<
      * @param t the node
      * @param analysis the current analysis
      */
-    void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis);
+    void visualizeBlockNode(Node t, @Nullable Analysis<A, S, T> analysis);
 
     /** Shutdown method called once from the shutdown hook of the {@code BaseTypeChecker}. */
     void shutdown();

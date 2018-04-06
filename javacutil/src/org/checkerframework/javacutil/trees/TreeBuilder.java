@@ -66,18 +66,6 @@ public class TreeBuilder {
     }
 
     /**
-     * Copy an AST Tree, including types and symbols in the tree.
-     *
-     * @param input a tree to be copied
-     * @return a copied tree
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends Tree> T copy(T input) {
-        T copied = (T) new FullyTreeCopier(maker).copy((JCTree) input);
-        return copied;
-    }
-
-    /**
      * Builds an AST Tree to access the iterator() method of some iterable expression.
      *
      * @param iterableExpr an expression whose type is a subtype of Iterable
@@ -113,17 +101,19 @@ public class TreeBuilder {
                 (DeclaredType)
                         javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
-        assert iteratorType.getTypeArguments().size() == 1
-                : "expected exactly one type argument for Iterator";
+        int numIterTypeArgs = iteratorType.getTypeArguments().size();
+        assert numIterTypeArgs <= 1 : "expected at most one type argument for Iterator";
 
-        TypeMirror elementType = iteratorType.getTypeArguments().get(0);
-        // Remove captured type from a wildcard.
-        if (elementType instanceof Type.CapturedType) {
-            elementType = ((Type.CapturedType) elementType).wildcard;
+        if (numIterTypeArgs == 1) {
+            TypeMirror elementType = iteratorType.getTypeArguments().get(0);
+            // Remove captured type from a wildcard.
+            if (elementType instanceof Type.CapturedType) {
+                elementType = ((Type.CapturedType) elementType).wildcard;
 
-            iteratorType =
-                    modelTypes.getDeclaredType(
-                            (TypeElement) modelTypes.asElement(iteratorType), elementType);
+                iteratorType =
+                        modelTypes.getDeclaredType(
+                                (TypeElement) modelTypes.asElement(iteratorType), elementType);
+            }
         }
 
         // Replace the iterator method's generic return type with

@@ -3,12 +3,9 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.LiteralTree;
 import java.util.Collection;
 import java.util.Collections;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
 
 /**
  * A node for a literals that have some form of value:
@@ -29,7 +26,7 @@ public abstract class ValueLiteralNode extends Node {
     protected final LiteralTree tree;
 
     /** @return the value of the literal */
-    public abstract /*@Nullable*/ Object getValue();
+    public abstract @Nullable Object getValue();
 
     public ValueLiteralNode(LiteralTree tree) {
         super(TreeUtils.typeOf(tree));

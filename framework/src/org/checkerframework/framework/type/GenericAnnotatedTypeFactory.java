@@ -1,9 +1,5 @@
 package org.checkerframework.framework.type;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -42,6 +38,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -49,7 +46,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.DOTCFGVisualizer;
@@ -259,7 +255,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
+    public void setRoot(@Nullable CompilationUnitTree root) {
         super.setRoot(root);
         this.analyses.clear();
         this.scannedClasses.clear();
@@ -338,10 +334,10 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <ol>
      *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
-     *       RelevantJavaTypes} annotation on the checker
-     *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
+     *       RelevantJavaTypes} annotation on the checker.
+     *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
      *   <li>{@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
-     *       meta-annotations
+     *       meta-annotations.
      * </ol>
      *
      * @return a type annotator
@@ -351,12 +347,11 @@ public abstract class GenericAnnotatedTypeFactory<
         RelevantJavaTypes relevantJavaTypes =
                 checker.getClass().getAnnotation(RelevantJavaTypes.class);
         if (relevantJavaTypes != null) {
-            Class<?>[] classes = relevantJavaTypes.value();
-            // Must be first in order to annotated all irrelevant types that are not explicilty
-            // annotated.
+            Class<?>[] relevantClasses = relevantJavaTypes.value();
+            // Must be first in order to annotate all irrelevant types.
             typeAnnotators.add(
                     new IrrelevantTypeAnnotator(
-                            this, getQualifierHierarchy().getTopAnnotations(), classes));
+                            this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
         implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
@@ -536,8 +531,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected final String getSortedQualifierNames() {
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
-        List<Class<? extends Annotation>> sortedSupportedQuals =
-                new ArrayList<Class<? extends Annotation>>();
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
         sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
         Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
 
@@ -797,7 +791,7 @@ public abstract class GenericAnnotatedTypeFactory<
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
         FlowExpressions.Receiver r =
-                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
+                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         r,
@@ -853,7 +847,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block).
      */
-    public /*@Nullable*/ Store getRegularExitStore(Tree t) {
+    public @Nullable Store getRegularExitStore(Tree t) {
         return regularExitStores.get(t);
     }
 
@@ -870,14 +864,31 @@ public abstract class GenericAnnotatedTypeFactory<
             return flowResult.getStoreBefore(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
-        Node node = analysis.getNodeForTree(tree);
-        if (node == null) {
+        Set<Node> nodes = analysis.getNodesForTree(tree);
+        if (nodes == null) {
             // TODO: is there something better we can do? Check for
             // lambda expressions. This fixes Issue 448, but might not
             // be the best possible.
             return null;
         }
-        return getStoreBefore(node);
+        return getStoreBefore(nodes);
+    }
+
+    /** @return the store immediately before a given Set of {@link Node}s. */
+    public Store getStoreBefore(Set<Node> nodes) {
+        if (nodes.size() == 1) {
+            return getStoreBefore(nodes.iterator().next());
+        }
+        Store merge = null;
+        for (Node aNode : nodes) {
+            Store s = getStoreBefore(aNode);
+            if (merge == null) {
+                merge = s;
+            } else if (s != null) {
+                merge = merge.leastUpperBound(s);
+            }
+        }
+        return merge;
     }
 
     /** @return the store immediately before a given {@link Node}. */
@@ -901,24 +912,63 @@ public abstract class GenericAnnotatedTypeFactory<
             return flowResult.getStoreAfter(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
-        Node node = analysis.getNodeForTree(tree);
-        Store store =
+        Set<Node> nodes = analysis.getNodesForTree(tree);
+        return getStoreAfter(nodes);
+    }
+
+    /** @return the store immediately after a given set of {@link Node}s. */
+    public Store getStoreAfter(Set<Node> nodes) {
+        Store merge = null;
+        for (Node node : nodes) {
+            Store s = getStoreAfter(node);
+            if (merge == null) {
+                merge = s;
+            } else if (s != null) {
+                merge = merge.leastUpperBound(s);
+            }
+        }
+        return merge;
+    }
+
+    /** @return the store immediately after a given {@link Node}. */
+    public Store getStoreAfter(Node node) {
+        FlowAnalysis analysis = analyses.getFirst();
+        Store res =
                 AnalysisResult.runAnalysisFor(
                         node, false, analysis.getInput(node.getBlock()), flowResultAnalysisCaches);
-        return store;
+        return res;
     }
 
-    /** @return the {@link Node} for a given {@link Tree}. */
-    public Node getNodeForTree(Tree tree) {
-        return flowResult.getNodeForTree(tree);
+    /**
+     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
+     * @return the {@link Node}s for a given {@link Tree}.
+     */
+    public Set<Node> getNodesForTree(Tree tree) {
+        return flowResult.getNodesForTree(tree);
     }
 
-    /** @return the generated {@link Tree}s for a given {@link Tree}. */
-    public List<Tree> getGeneratedTrees(Tree tree) {
-        if (!useFlow) {
-            return Collections.emptyList();
+    /**
+     * Return the first {@link Node} for a given {@link Tree} that has class {@code kind}.
+     *
+     * <p>You probably don't want to use this function: iterate over the result of {@link
+     * #getNodesForTree(Tree)} yourself or ask for a conservative approximation of the store using
+     * {@link #getStoreBefore(Tree)} or {@link #getStoreAfter(Tree)}. This method is for code that
+     * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
+     * a {@link Node} at all.
+     *
+     * @see #getNodesForTree(Tree)
+     * @see #getStoreBefore(Tree)
+     * @see #getStoreAfter(Tree)
+     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
+     */
+    public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
+        Set<Node> nodes = getNodesForTree(tree);
+        for (Node node : nodes) {
+            if (node.getClass().equals(kind)) {
+                return kind.cast(node);
+            }
         }
-        return flowResult.getGeneratedTrees(tree);
+        return null;
     }
 
     /** @return the value of effectively final local variables */
@@ -1058,7 +1108,7 @@ public abstract class GenericAnnotatedTypeFactory<
                             false);
                 }
 
-                while (lambdaQueue.size() > 0) {
+                while (!lambdaQueue.isEmpty()) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(
                             queue,
@@ -1139,8 +1189,7 @@ public abstract class GenericAnnotatedTypeFactory<
             boolean updateInitializationStore,
             boolean isStatic,
             Store lambdaStore) {
-        CFGBuilder builder = new CFCFGBuilder(checker, this);
-        ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
+        ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
         FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
         TransferFunction transfer = newAnalysis.getTransferFunction();
         if (emptyStore == null) {
@@ -1206,8 +1255,8 @@ public abstract class GenericAnnotatedTypeFactory<
         analyses.removeFirst();
 
         // add classes declared in method
-        queue.addAll(builder.getDeclaredClasses());
-        for (LambdaExpressionTree lambda : builder.getDeclaredLambdas()) {
+        queue.addAll(cfg.getDeclaredClasses());
+        for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
             lambdaQueue.add(Pair.of(lambda, getStoreBefore(lambda)));
         }
     }
@@ -1298,16 +1347,13 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
 
-        Node node;
         List<Node> args;
         switch (tree.getKind()) {
             case METHOD_INVOCATION:
-                node = getNodeForTree(tree);
-                args = ((MethodInvocationNode) node).getArguments();
+                args = getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
                 break;
             case NEW_CLASS:
-                node = getNodeForTree(tree);
-                args = ((ObjectCreationNode) node).getArguments();
+                args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
                 break;
             default:
                 throw new AssertionError("Unexpected kind of tree: " + tree);
@@ -1315,7 +1361,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         assert !args.isEmpty() : "Arguments are empty";
         Node varargsArray = args.get(args.size() - 1);
-        return getAnnotatedType(varargsArray.getTree());
+        AnnotatedTypeMirror varargtype = getAnnotatedType(varargsArray.getTree());
+        return varargtype;
     }
 
     /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
@@ -1547,8 +1594,7 @@ public abstract class GenericAnnotatedTypeFactory<
             args.put("verbose", verbose);
             args.put("checkerName", getCheckerName());
 
-            CFGVisualizer<Value, Store, TransferFunction> res =
-                    new DOTCFGVisualizer<Value, Store, TransferFunction>();
+            CFGVisualizer<Value, Store, TransferFunction> res = new DOTCFGVisualizer<>();
             res.init(args);
             return res;
         } else if (checker.hasOption("cfgviz")) {

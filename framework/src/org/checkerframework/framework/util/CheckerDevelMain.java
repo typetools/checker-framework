@@ -22,9 +22,9 @@ public class CheckerDevelMain extends CheckerMain {
         final String runtimeCp = System.getProperty(RUNTIME_CP_PROP);
         final String compileBcp = System.getProperty(COMPILE_BCP_PROP);
         final String binDir = System.getProperty(BINARY_PROP);
-        final String verbose = System.getProperty(VERBOSE_PROP);
+        final boolean verbose = PluginUtil.getBooleanSystemProperty(VERBOSE_PROP);
 
-        if (verbose != null && verbose.equalsIgnoreCase("TRUE")) {
+        if (verbose) {
             System.out.print(
                     "CheckerDevelMain:\n"
                             + "Prepended to classpath:     "
@@ -46,7 +46,7 @@ public class CheckerDevelMain extends CheckerMain {
         assert (binDir != null)
                 : BINARY_PROP
                         + " must specify a binary directory in which "
-                        + "checker.jar, javac.jar, etc... are usually built";
+                        + "checker.jar, etc... are usually built";
 
         assert (cp != null) : CP_PROP + " must specify a path entry to prepend to the CLASSPATH";
         assert (pp != null)
@@ -82,7 +82,7 @@ public class CheckerDevelMain extends CheckerMain {
 
     @Override
     protected List<String> createRuntimeClasspath(final List<String> argsList) {
-        return prependPathOpts(RUNTIME_CP_PROP, new ArrayList<String>());
+        return prependPathOpts(RUNTIME_CP_PROP, new ArrayList<>());
     }
 
     @Override
@@ -104,7 +104,7 @@ public class CheckerDevelMain extends CheckerMain {
             final String pathProp, final List<String> pathOpts, final String... otherPaths) {
         final String cp = System.getProperty(pathProp);
 
-        final List<String> newPathOpts = new ArrayList<String>();
+        final List<String> newPathOpts = new ArrayList<>();
 
         if (!cp.trim().isEmpty()) {
             newPathOpts.addAll(Arrays.asList(cp.split(File.pathSeparator)));

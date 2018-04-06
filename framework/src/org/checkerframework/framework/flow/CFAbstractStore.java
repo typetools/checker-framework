@@ -1,9 +1,5 @@
 package org.checkerframework.framework.flow;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +10,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -35,6 +32,7 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -124,7 +122,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * not remove any other knowledge). Any previous information is erased; this method should only
      * be used to initialize the abstract value.
      */
-    public void initializeMethodParameter(LocalVariableNode p, /*@Nullable*/ V value) {
+    public void initializeMethodParameter(LocalVariableNode p, @Nullable V value) {
         if (value != null) {
             localVariableValues.put(new FlowExpressions.LocalVariable(p.getElement()), value);
         }
@@ -279,7 +277,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * if the store already contains information about a hierarchy for which {@code value} does not
      * contain information, then that information is preserved.
      */
-    public void insertValue(FlowExpressions.Receiver r, /*@Nullable*/ V value) {
+    public void insertValue(FlowExpressions.Receiver r, @Nullable V value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
@@ -405,7 +403,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <p>This method does not take care of removing other information that might be influenced by
      * changes to certain parts of the state.
      */
-    public void replaceValue(FlowExpressions.Receiver r, /*@Nullable*/ V value) {
+    public void replaceValue(FlowExpressions.Receiver r, @Nullable V value) {
         clearValue(r);
         insertValue(r, value);
     }
@@ -443,7 +441,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return current abstract value of a flow expression, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ V getValue(FlowExpressions.Receiver expr) {
+    public @Nullable V getValue(FlowExpressions.Receiver expr) {
         if (expr instanceof FlowExpressions.LocalVariable) {
             FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) expr;
             return localVariableValues.get(localVar);
@@ -462,7 +460,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.ClassName c = (FlowExpressions.ClassName) expr;
             return classValues.get(c);
         } else {
-            assert false;
+            ErrorReporter.errorAbort(
+                    "Unexpected FlowExpression: " + expr + " (" + expr.getClass() + ")");
             return null;
         }
     }
@@ -471,7 +470,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return current abstract value of a field access, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ V getValue(FieldAccessNode n) {
+    public @Nullable V getValue(FieldAccessNode n) {
         FlowExpressions.FieldAccess fieldAccess =
                 FlowExpressions.internalReprOfFieldAccess(analysis.getTypeFactory(), n);
         return fieldValues.get(fieldAccess);
@@ -481,7 +480,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return current abstract value of a method call, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ V getValue(MethodInvocationNode n) {
+    public @Nullable V getValue(MethodInvocationNode n) {
         Receiver method = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n, true);
         if (method == null) {
             return null;
@@ -493,14 +492,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return current abstract value of a field access, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ V getValue(ArrayAccessNode n) {
+    public @Nullable V getValue(ArrayAccessNode n) {
         FlowExpressions.ArrayAccess arrayAccess =
                 FlowExpressions.internalReprOfArrayAccess(analysis.getTypeFactory(), n);
         return arrayValues.get(arrayAccess);
     }
 
     /** Update the information in the store by considering an assignment with target {@code n}. */
-    public void updateForAssignment(Node n, /*@Nullable*/ V val) {
+    public void updateForAssignment(Node n, @Nullable V val) {
         Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
         if (receiver instanceof ArrayAccess) {
             updateForArrayAssignment((ArrayAccess) receiver, val);
@@ -509,7 +508,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (receiver instanceof LocalVariable) {
             updateForLocalVariableAssignment((LocalVariable) receiver, val);
         } else {
-            assert false : "Unexpected receiver of class " + receiver.getClass();
+            ErrorReporter.errorAbort("Unexpected receiver of class " + receiver.getClass());
         }
     }
 
@@ -520,7 +519,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
-    protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, /*@Nullable*/ V val) {
+    protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, @Nullable V val) {
         removeConflicting(fieldAccess, val);
         if (!fieldAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
@@ -539,7 +538,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <p>See {@link #removeConflicting(FlowExpressions.ArrayAccess,CFAbstractValue)}, as it is
      * called first by this method.
      */
-    protected void updateForArrayAssignment(ArrayAccess arrayAccess, /*@Nullable*/ V val) {
+    protected void updateForArrayAssignment(ArrayAccess arrayAccess, @Nullable V val) {
         removeConflicting(arrayAccess, val);
         if (!arrayAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
@@ -557,7 +556,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
-    protected void updateForLocalVariableAssignment(LocalVariable receiver, /*@Nullable*/ V val) {
+    protected void updateForLocalVariableAssignment(LocalVariable receiver, @Nullable V val) {
         removeConflicting(receiver);
         if (val != null) {
             localVariableValues.put(receiver, val);
@@ -586,7 +585,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
-    protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess, /*@Nullable*/ V val) {
+    protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess, @Nullable V val) {
         Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
         for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
@@ -649,7 +648,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
-    protected void removeConflicting(FlowExpressions.ArrayAccess arrayAccess, /*@Nullable*/ V val) {
+    protected void removeConflicting(FlowExpressions.ArrayAccess arrayAccess, @Nullable V val) {
         Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
         for (Entry<FlowExpressions.ArrayAccess, V> e : arrayValues.entrySet()) {
             FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
@@ -757,7 +756,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return current abstract value of a local variable, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ V getValue(LocalVariableNode n) {
+    public @Nullable V getValue(LocalVariableNode n) {
         Element el = n.getElement();
         return localVariableValues.get(new FlowExpressions.LocalVariable(el));
     }
@@ -770,7 +769,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return current abstract value of the current object, or {@code null} if no information is
      *     available.
      */
-    public /*@Nullable*/ V getValue(ThisLiteralNode n) {
+    public @Nullable V getValue(ThisLiteralNode n) {
         return thisValue;
     }
 

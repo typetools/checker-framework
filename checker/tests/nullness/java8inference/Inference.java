@@ -1,8 +1,6 @@
 // Test case for Issue 979:
 // https://github.com/typetools/checker-framework/issues/979
 
-// @below-java8-jdk-skip-test
-
 class MyStream<T> {
     @SuppressWarnings("nullness")
     <R, A> R collect(MyCollector<? super T, A, R> collector) {

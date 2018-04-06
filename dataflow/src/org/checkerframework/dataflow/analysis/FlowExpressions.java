@@ -290,7 +290,12 @@ public class FlowExpressions {
                     if (ElementUtils.isStatic(invokedMethod)) {
                         methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
                     } else {
-                        methodReceiver = internalReprOf(provider, mn.getMethodSelect());
+                        ExpressionTree methodReceiverTree = TreeUtils.getReceiverTree(mn);
+                        if (methodReceiverTree != null) {
+                            methodReceiver = internalReprOf(provider, methodReceiverTree);
+                        } else {
+                            methodReceiver = internalReprOfImplicitReceiver(invokedMethod);
+                        }
                     }
                     TypeMirror type = TreeUtils.typeOf(mn);
                     receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
@@ -299,7 +304,7 @@ public class FlowExpressions {
                 }
                 break;
             case MEMBER_SELECT:
-                receiver = internalRepOfMemberSelect(provider, (MemberSelectTree) receiverTree);
+                receiver = internalReprOfMemberSelect(provider, (MemberSelectTree) receiverTree);
                 break;
             case IDENTIFIER:
                 IdentifierTree identifierTree = (IdentifierTree) receiverTree;
@@ -360,7 +365,7 @@ public class FlowExpressions {
      * @return either a new ClassName or a new ThisReference depending on whether ele is static or
      *     not
      */
-    public static Receiver internalRepOfImplicitReceiver(Element ele) {
+    public static Receiver internalReprOfImplicitReceiver(Element ele) {
         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
@@ -379,7 +384,7 @@ public class FlowExpressions {
      * @param enclosingType type of the enclosing type
      * @return a new ClassName or ThisReference that is a Receiver object for the enclosingType
      */
-    public static Receiver internalRepOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
+    public static Receiver internalReprOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
         if (TreeUtils.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
@@ -387,7 +392,7 @@ public class FlowExpressions {
         }
     }
 
-    private static Receiver internalRepOfMemberSelect(
+    private static Receiver internalReprOfMemberSelect(
             AnnotationProvider provider, MemberSelectTree memberSelectTree) {
         TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
@@ -402,11 +407,13 @@ public class FlowExpressions {
             case ENUM:
             case INTERFACE: // o instanceof MyClass.InnerInterface
             case ANNOTATION_TYPE:
-                return new ClassName(expressionType);
+                TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+                return new ClassName(selectType);
             case ENUM_CONSTANT:
             case FIELD:
+                TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
-                return new FieldAccess(r, ElementUtils.getType(ele), (VariableElement) ele);
+                return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
                 ErrorReporter.errorAbort(
                         "Unexpected element kind: %s element: %s", ele.getKind(), ele);
@@ -721,17 +728,16 @@ public class FlowExpressions {
             if (obj == null || !(obj instanceof LocalVariable)) {
                 return false;
             }
+
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of
-            // Types.isSameType(...) because Types requires a processing environment, and
-            // FlowExpressions is designed to be independent of processing environment.  See also
-            // calls to getType().toString() in FlowExpressions.
-            return vsother.name.contentEquals(vs.name)
-                    && TypeAnnotationUtils.unannotatedType(vsother.type)
-                            .toString()
-                            .equals(TypeAnnotationUtils.unannotatedType(vs.type).toString())
+            // The code below isn't just return vs.equals(vsother) because an element might be different
+            // between subcheckers.  The owner of a lambda parameter is the enclosing method, so
+            // a local variable and a lambda parameter might have the same name and the same owner.
+            // pos is used to differentiate this case.
+            return vs.pos == vsother.pos
+                    && vsother.name.contentEquals(vs.name)
                     && vsother.owner.toString().equals(vs.owner.toString());
         }
 

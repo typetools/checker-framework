@@ -21,6 +21,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -45,6 +46,7 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
@@ -224,7 +226,7 @@ public abstract class CFAbstractTransfer<
     /** The initial store maps method formal parameters to their currently most refined type. */
     @Override
     public S initialStore(
-            UnderlyingAST underlyingAST, /*@Nullable */ List<LocalVariableNode> parameters) {
+            UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
         if (fixedInitialStore != null
                 && underlyingAST.getKind() != Kind.LAMBDA
                 && underlyingAST.getKind() != Kind.METHOD) {
@@ -832,6 +834,12 @@ public abstract class CFAbstractTransfer<
                             analysis.getTypeFactory());
         }
         return super.visitReturn(n, p);
+    }
+
+    @Override
+    public TransferResult<V, S> visitLambdaResultExpression(
+            LambdaResultExpressionNode n, TransferInput<V, S> in) {
+        return n.getResult().accept(this, in);
     }
 
     @Override

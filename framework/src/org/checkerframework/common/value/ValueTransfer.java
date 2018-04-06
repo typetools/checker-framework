@@ -66,7 +66,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
-    ValueAnnotatedTypeFactory atypefactory;
+    protected final ValueAnnotatedTypeFactory atypefactory;
 
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
@@ -146,7 +146,7 @@ public class ValueTransfer extends CFTransfer {
 
         // @BottomVal
         if (AnnotationUtils.containsSameByClass(value.getAnnotations(), BottomVal.class)) {
-            return new ArrayList<Integer>();
+            return new ArrayList<>();
         }
 
         TypeKind subNodeTypeKind = subNode.getType().getKind();
@@ -195,7 +195,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror bottomAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (bottomAnno != null) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
 
         // @IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
@@ -218,7 +218,7 @@ public class ValueTransfer extends CFTransfer {
         if (values == null) {
             return null;
         }
-        List<String> stringValues = new ArrayList<String>();
+        List<String> stringValues = new ArrayList<>();
         for (Object o : values) {
             stringValues.add(o.toString());
         }
@@ -254,7 +254,7 @@ public class ValueTransfer extends CFTransfer {
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
-        return new ArrayList<Character>();
+        return new ArrayList<>();
     }
 
     private AnnotationMirror getValueAnnotation(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -508,7 +508,7 @@ public class ValueTransfer extends CFTransfer {
      */
     private List<Integer> calculateLengthAddition(
             List<Integer> leftLengths, List<Integer> rightLengths) {
-        ArrayList<Integer> result = new ArrayList<Integer>();
+        ArrayList<Integer> result = new ArrayList<>();
 
         for (int left : leftLengths) {
             for (int right : rightLengths) {

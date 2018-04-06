@@ -1,42 +1,42 @@
 package org.checkerframework.dataflow.util;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Set;
 
-/** A set that is more efficient than HashSet for 0 and 1 elements. */
-public final class MostlySingleton<T> implements Set<T> {
-    private enum State {
-        EMPTY,
-        SINGLETON,
-        ANY
+/**
+ * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
+ * object comparison and a {@link HashSet} for backing storage.
+ */
+public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
+
+    public MostlySingleton() {
+        this.state = State.EMPTY;
     }
 
-    private State state = State.EMPTY;
-    private T value;
-    private HashSet<T> set;
+    public MostlySingleton(T value) {
+        this.state = State.SINGLETON;
+        this.value = value;
+    }
 
     @Override
-    public int size() {
+    @SuppressWarnings("fallthrough")
+    public boolean add(T e) {
         switch (state) {
             case EMPTY:
-                return 0;
+                state = State.SINGLETON;
+                value = e;
+                return true;
             case SINGLETON:
-                return 1;
+                state = State.ANY;
+                set = new HashSet<>();
+                set.add(value);
+                value = null;
+                // fallthrough
             case ANY:
-                return set.size();
+                return set.add(e);
             default:
                 throw new AssertionError();
         }
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return size() == 0;
     }
 
     @Override
@@ -51,101 +51,5 @@ public final class MostlySingleton<T> implements Set<T> {
             default:
                 throw new AssertionError();
         }
-    }
-
-    @Override
-    @SuppressWarnings("fallthrough")
-    public boolean add(T e) {
-        switch (state) {
-            case EMPTY:
-                state = State.SINGLETON;
-                value = e;
-                return true;
-            case SINGLETON:
-                state = State.ANY;
-                set = new HashSet<T>();
-                set.add(value);
-                value = null;
-                // fallthrough
-            case ANY:
-                return set.add(e);
-            default:
-                throw new AssertionError();
-        }
-    }
-
-    @Override
-    public Iterator<T> iterator() {
-        switch (state) {
-            case EMPTY:
-                return Collections.emptyIterator();
-            case SINGLETON:
-                return new Iterator<T>() {
-                    private boolean hasNext = true;
-
-                    @Override
-                    public boolean hasNext() {
-                        return hasNext;
-                    }
-
-                    @Override
-                    public T next() {
-                        if (hasNext) {
-                            hasNext = false;
-                            return value;
-                        }
-                        throw new NoSuchElementException();
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
-            case ANY:
-                return set.iterator();
-            default:
-                throw new AssertionError();
-        }
-    }
-
-    @Override
-    public Object[] toArray() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <S> S[] toArray(S[] a) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void clear() {
-        throw new UnsupportedOperationException();
     }
 }

@@ -1,11 +1,5 @@
 package org.checkerframework.framework.type;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.interning.qual.*;
-*/
-
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -30,6 +24,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolyAll;
@@ -1010,13 +1006,11 @@ public abstract class AnnotatedTypeMirror {
             super(type, factory);
         }
 
-        protected final List<AnnotatedTypeMirror> paramTypes = new ArrayList<AnnotatedTypeMirror>();
+        protected final List<AnnotatedTypeMirror> paramTypes = new ArrayList<>();
         protected AnnotatedDeclaredType receiverType;
         protected AnnotatedTypeMirror returnType;
-        protected final List<AnnotatedTypeMirror> throwsTypes =
-                new ArrayList<AnnotatedTypeMirror>();
-        protected final List<AnnotatedTypeVariable> typeVarTypes =
-                new ArrayList<AnnotatedTypeVariable>();
+        protected final List<AnnotatedTypeMirror> throwsTypes = new ArrayList<>();
+        protected final List<AnnotatedTypeVariable> typeVarTypes = new ArrayList<>();
 
         /** @return true if this type represents a varargs method */
         public boolean isVarArgs() {
@@ -1106,7 +1100,7 @@ public abstract class AnnotatedTypeMirror {
          * @return the receiver type of this executable type; null for static methods and
          *     constructors of top-level classes
          */
-        public /*@Nullable*/ AnnotatedDeclaredType getReceiverType() {
+        public @Nullable AnnotatedDeclaredType getReceiverType() {
             if (receiverType == null
                     // Static methods don't have a receiver
                     && !ElementUtils.isStatic(getElement())
@@ -1213,11 +1207,11 @@ public abstract class AnnotatedTypeMirror {
             return shallowCopy(true);
         }
 
-        public /*@NonNull*/ ExecutableElement getElement() {
+        public @NonNull ExecutableElement getElement() {
             return element;
         }
 
-        public void setElement(/*@NonNull*/ ExecutableElement elem) {
+        public void setElement(@NonNull ExecutableElement elem) {
             this.element = elem;
         }
 
@@ -1241,7 +1235,7 @@ public abstract class AnnotatedTypeMirror {
         }
 
         private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-            List<AnnotatedTypeMirror> erased = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> erased = new ArrayList<>();
             for (AnnotatedTypeMirror t : lst) {
                 erased.add(t.getErased());
             }
@@ -2015,8 +2009,7 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedDeclaredType> directSuperTypes() {
             if (supertypes == null) {
                 List<? extends TypeMirror> ubounds = ((IntersectionType) actualType).getBounds();
-                List<AnnotatedDeclaredType> res =
-                        new ArrayList<AnnotatedDeclaredType>(ubounds.size());
+                List<AnnotatedDeclaredType> res = new ArrayList<>(ubounds.size());
                 for (TypeMirror bnd : ubounds) {
                     res.add((AnnotatedDeclaredType) createType(bnd, atypeFactory, false));
                 }
@@ -2030,7 +2023,7 @@ public abstract class AnnotatedTypeMirror {
         }
 
         void setDirectSuperTypes(List<AnnotatedDeclaredType> supertypes) {
-            this.supertypes = new ArrayList<AnnotatedDeclaredType>(supertypes);
+            this.supertypes = new ArrayList<>(supertypes);
         }
     }
 
@@ -2083,8 +2076,7 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedDeclaredType> getAlternatives() {
             if (alternatives == null) {
                 List<? extends TypeMirror> ualts = ((UnionType) actualType).getAlternatives();
-                List<AnnotatedDeclaredType> res =
-                        new ArrayList<AnnotatedDeclaredType>(ualts.size());
+                List<AnnotatedDeclaredType> res = new ArrayList<>(ualts.size());
                 for (TypeMirror alt : ualts) {
                     res.add((AnnotatedDeclaredType) createType(alt, atypeFactory, false));
                 }

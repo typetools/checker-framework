@@ -155,10 +155,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         if (shouldResolveReflection()) {
-            return new LinkedHashSet<Class<? extends BaseTypeChecker>>(
-                    Collections.singleton(MethodValChecker.class));
+            return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
         }
-        return new LinkedHashSet<Class<? extends BaseTypeChecker>>();
+        return new LinkedHashSet<>();
     }
 
     /** Returns whether or not reflection should be resolved */
@@ -216,7 +215,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     /** Specify supported lint options for all type-checkers. */
     @Override
     public Set<String> getSupportedLintOptions() {
-        Set<String> lintSet = new HashSet<String>(super.getSupportedLintOptions());
+        Set<String> lintSet = new HashSet<>(super.getSupportedLintOptions());
         lintSet.add("cast");
         lintSet.add("cast:redundant");
         lintSet.add("cast:unsafe");
@@ -377,7 +376,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     alreadyInitializedSubcheckerMap) {
         LinkedHashSet<Class<? extends BaseTypeChecker>> classesOfImmediateSubcheckers =
                 getImmediateSubcheckerClasses();
-        ArrayList<BaseTypeChecker> immediateSubcheckers = new ArrayList<BaseTypeChecker>();
+        ArrayList<BaseTypeChecker> immediateSubcheckers = new ArrayList<>();
 
         for (Class<? extends BaseTypeChecker> subcheckerClass : classesOfImmediateSubcheckers) {
             BaseTypeChecker subchecker = alreadyInitializedSubcheckerMap.get(subcheckerClass);
@@ -418,13 +417,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (subcheckers == null) {
             // Instantiate the checkers this one depends on, if any.
             LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker> checkerMap =
-                    new LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker>();
+                    new LinkedHashMap<>();
 
             immediateSubcheckers = instantiateSubcheckers(checkerMap);
 
-            subcheckers =
-                    Collections.unmodifiableList(
-                            new ArrayList<BaseTypeChecker>(checkerMap.values()));
+            subcheckers = Collections.unmodifiableList(new ArrayList<>(checkerMap.values()));
         }
 
         return subcheckers;
@@ -628,7 +625,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @Override
     public Set<String> getSupportedOptions() {
         if (supportedOptions == null) {
-            Set<String> options = new HashSet<String>();
+            Set<String> options = new HashSet<>();
             options.addAll(super.getSupportedOptions());
 
             for (BaseTypeChecker checker : getSubcheckers()) {
@@ -646,7 +643,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     @Override
     public Map<String, String> getOptions() {
-        Map<String, String> options = new HashMap<String, String>(super.getOptions());
+        Map<String, String> options = new HashMap<>(super.getOptions());
 
         for (BaseTypeChecker checker : getSubcheckers()) {
             options.putAll(checker.getOptions());

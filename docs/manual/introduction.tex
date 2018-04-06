@@ -23,6 +23,10 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
 \item
+  \ahrefloc{optional-checker}{Optional Checker} for errors in using the
+  \sunjavadoc{java/util/Optional.html}{Optional} type (see
+  \chapterpageref{optional-checker})
+\item
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
@@ -179,9 +183,6 @@ synonyms.
 
 \begin{sloppypar}
 This section describes how to install the Checker Framework.
-(If you wish to use the Checker Framework from Eclipse, see the Checker
-Framework Eclipse Plugin webpage instead:
-\url{https://checkerframework.org/eclipse/}.)
 (If you wish to try the Checker Framework without installing it, use the
 \href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.)
 \end{sloppypar}
@@ -207,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.3.2.zip}
+  \url{https://checkerframework.org/checker-framework-2.5.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -216,17 +217,7 @@ optional step.
   \label{installation-configure-step}%
   Configure your IDE, build system, or command shell to include the Checker
   Framework on the classpath.  Choose the appropriate section of
-  Chapter~\ref{external-tools} for
-% Keep this list up to date with the list at the beginning
-% of file external-tools.tex .
-javac (Section~\ref{javac-installation}),
-Ant (Section~\ref{ant-task}),
-Maven (Section~\ref{maven}),
-Gradle (Section~\ref{gradle}),
-IntelliJ IDEA (Section~\ref{intellij}),
-Eclipse (Section~\ref{eclipse}),
-or
-tIDE (Section~\ref{tide}).
+  Chapter~\ref{external-tools}.
 
 
 \end{enumerate}
@@ -236,7 +227,7 @@ That's all there is to it!  Now you are ready to start using the checkers.
 We recommend that you work through the
 \ahreforurl{https://checkerframework.org/tutorial/}{Checker
 Framework tutorial}, which walks you through how to use the Checker
-Framework in Eclipse or on
+Framework on
 the command line.
 There is also a
 \ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker
@@ -251,8 +242,8 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
 This section gives a very simple example of running the Checker Framework.
 There is also a \ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
-that gives more extensive instructions for using the Checker Framework in
-Eclipse or on the command line,
+that gives more extensive instructions for using the Checker Framework
+on the command line,
 and a
 \ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker
 tutorial} by David B\"urgin.
@@ -405,7 +396,7 @@ Additional topics that apply to all checkers are covered later in the manual:
 
 Finally, there is a
 \ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
-that walks you through using the Checker Framework in Eclipse or on the
+that walks you through using the Checker Framework on the
 command line, and a separate
 \ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness
   Checker tutorial} by David B\"urgin.
@@ -449,15 +440,6 @@ them.  Here are a few examples of type annotations:
 You only need to write annotations on method signatures and fields.
 Annotations within method bodies are inferred for you; for more details,
 see  Section~\ref{type-refinement}.
-
-You may write the annotations within comments, as in
-\code{List</*@NonNull*/ String>}.  The Checker Framework compiler, which is
-distributed with the Checker Framework, will still process
-the annotations.
-However, your code will remain compilable by people who are not yet using
-Java 8.  For more details, see
-Section~\ref{annotations-in-comments}.
-
 
 \section{Running a checker\label{running}}
 
@@ -523,7 +505,7 @@ running your code, you can use either the annotated library or the regular
 distributed version of the library --- they behave identically.
 
 The annotated libraries appear in
-\ahref{https://search.maven.org/#search\%7Cga\%7C1\%7Cg\%3A\%22org.checkerframework.annotatedlib\%22}{the
+\ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
 
 \begin{itemize}
@@ -572,41 +554,18 @@ Checker Framework users.
 
 \subsection{Distributing your annotated project\label{distributing}}
 
-You have two main options for distributing your compiled code (\<.jar>
-files).
-
-\begin{itemize}
-\item
-  Option 1: no annotations appear in the \<.jar> files.  There is no
-  run-time dependence on the Checker Framework, and the distributed \<.jar>
-  files are not useful for pluggable type-checking of client code.
-
-  Write annotations in comments (see
-  Section~\ref{annotations-in-comments}).
-  Developers perform pluggable type-checking in-house to detect errors and
-  verify their absence.
-  To create the distributed \<.jar> files, use a normal Java compiler,
-  which ignores the annotations.
-\item
-  Option 2: annotations appear in the \<.jar> files.  The distributed
+  The distributed
   \<.jar> files can be used for pluggable type-checking of client code.
   The \<.jar> files are only compatible with a Java 8
   % or later
-  JVM, unless you
-  do extra work (see Section~\ref{declaration-annotations-for-java7}).
-
-  Write annotations in comments or not in comments (it doesn't matter which).
+  JVM.
   Developers perform pluggable type-checking in-house to detect errors and
   verify their absence.
-  When you create \<.class> files, use the Checker Framework compiler
-  (Section~\ref{external-tools}) and running each relevant type system.
+  When you create \<.class> files, run each relevant type system.
   Create the distributed \<.jar> files from those \<.class> files, and also
   include the contents of
   \code{checker-framework/checker/dist/checker-qual.jar} from the Checker
   Framework distribution, to define the annotations.
-
-\end{itemize}
-
 
 \subsection{Summary of command-line options\label{checker-options}}
 
@@ -812,11 +771,6 @@ checker is an ``annotation processor''.
   Section~\ref{checker-auto-discovery}
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
-\item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
-  to turn off parsing annotation comments and
-  to turn on parsing annotation comments even when they
-  contain spaces; applicable only to the Checker Framework compiler;
-  see Section~\ref{annotations-in-comments}
 \item \<-J> Supply an argument to the JVM that is running javac;
   for example, \<-J-Xmx2500m> to increase its maximum heap size
 \item \<-doe> To ``dump on error'', that is, output a stack trace
@@ -991,6 +945,23 @@ should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 \section{Tips about writing annotations\label{tips-about-writing-annotations}}
 
+Section~\ref{library-tips} gives additional tips that are
+specific to annotating a third-party library.
+
+
+\subsection{Write annotations before you run a checker\label{annotate-before-checking}}
+
+Before you run a checker, annotate the code, based on its documentation.
+Then, run the checker to uncover bugs in the code or the documentation.
+
+Don't do the opposite, which is to run the checker and then add annotations
+according to the warnings issued.  This approach is less systematic, so you
+may overlook some annotations.  It often leads to confusion and poor
+results.  It leads users to make changes not for any principled reason, but
+to ``make the type-checker happy'', even when the changes are in conflict
+with the documentation or the code.  Also see ``Annotations
+are a specification'', below.
+
 
 \subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
 
@@ -1022,8 +993,10 @@ You may find it helpful to start annotating the leaves of the call tree ---
 that is,
 start with methods/classes/packages that have few dependencies on other
 code or, equivalently, start with code that a lot of your other code
-depends on.  The reason for this is that it is
-easiest to annotate a class if the code it calls has already been
+depends on.  For example, within a package annotate supertypes before you
+annotated classes that extend or implement them.
+The reason for this rule is that it is
+easiest to annotate a class if the code it depends on has already been
 annotated.
 
 Don't overuse pluggable type-checking.  If the regular Java type system can
@@ -1434,12 +1407,12 @@ same methodology in different words.
 % LocalWords:  nonnull langtools sourcepath classpath OpenJDK pre jsr lst
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
-% LocalWords:  Nullness Xspacesincomments unselect checkbox unsetting PolyNull
+% LocalWords:  Nullness unselect checkbox unsetting PolyNull
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
-% LocalWords:  int XDTA spacesincomments newdir Awarns signedness urgin
+% LocalWords:  int XDTA newdir Awarns signedness urgin
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
@@ -1451,7 +1424,7 @@ same methodology in different words.
 %  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
 %  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AprintErrorStack
 %  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
-%  LocalWords:  AresourceStats noannotationsincomments jls r78 JDKs i18n
+%  LocalWords:  AresourceStats jls r78 JDKs i18n
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
 %  LocalWords:  typedef guieffect Gradle jdk7 jdk8 javadoc MyFile argfiles
 %%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker

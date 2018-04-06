@@ -1,12 +1,5 @@
 package org.checkerframework.framework.util;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-*/
-
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,7 +69,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         public MultiGraphFactory(AnnotatedTypeFactory atypeFactory) {
             this.supertypes = AnnotationUtils.createAnnotationMap();
-            this.polyQualifiers = new HashMap<AnnotationMirror, AnnotationMirror>();
+            this.polyQualifiers = new HashMap<>();
             this.atypeFactory = atypeFactory;
         }
 
@@ -679,8 +672,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     private Map<AnnotationPair, AnnotationMirror> calculateLubs() {
-        Map<AnnotationPair, AnnotationMirror> newlubs =
-                new HashMap<AnnotationPair, AnnotationMirror>();
+        Map<AnnotationPair, AnnotationMirror> newlubs = new HashMap<>();
         for (AnnotationMirror a1 : typeQualifiers) {
             for (AnnotationMirror a2 : typeQualifiers) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
@@ -832,8 +824,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     /** Returns a map from each possible pair of annotations to their glb. */
     private Map<AnnotationPair, AnnotationMirror> calculateGlbs() {
-        Map<AnnotationPair, AnnotationMirror> newglbs =
-                new HashMap<AnnotationPair, AnnotationMirror>();
+        Map<AnnotationPair, AnnotationMirror> newglbs = new HashMap<>();
         for (AnnotationMirror a1 : typeQualifiers) {
             for (AnnotationMirror a2 : typeQualifiers) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {

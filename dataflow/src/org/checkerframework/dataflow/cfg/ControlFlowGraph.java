@@ -1,10 +1,7 @@
 package org.checkerframework.dataflow.cfg;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -17,6 +14,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -41,21 +39,21 @@ public class ControlFlowGraph {
     protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
-    protected UnderlyingAST underlyingAST;
+    protected final UnderlyingAST underlyingAST;
 
     /**
-     * Maps from AST {@link Tree}s to {@link Node}s. Every Tree that produces a value will have at
-     * least one corresponding Node. Trees that undergo conversions, such as boxing or unboxing, can
-     * map to two distinct Nodes. The Node for the pre-conversion value is stored in treeLookup,
-     * while the Node for the post-conversion value is stored in convertedTreeLookup.
+     * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
+     * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
+     * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
+     * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
      */
-    protected IdentityHashMap<Tree, Node> treeLookup;
+    protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
-    /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
-    protected IdentityHashMap<Tree, Node> convertedTreeLookup;
+    /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
+    protected final IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
-    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
+    protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
 
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
@@ -63,19 +61,29 @@ public class ControlFlowGraph {
      */
     protected final List<ReturnNode> returnNodes;
 
-    /** Map from AST {@link Tree}s to generated {@link Tree}s. */
-    protected final IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
+    /**
+     * Class declarations that have been encountered when building the control-flow graph for a
+     * method.
+     */
+    protected final List<ClassTree> declaredClasses;
+
+    /**
+     * Lambdas encountered when building the control-flow graph for a method, variable initializer,
+     * or initializer.
+     */
+    protected final List<LambdaExpressionTree> declaredLambdas;
 
     public ControlFlowGraph(
             SpecialBlock entryBlock,
             SpecialBlockImpl regularExitBlock,
             SpecialBlockImpl exceptionalExitBlock,
             UnderlyingAST underlyingAST,
-            IdentityHashMap<Tree, Node> treeLookup,
-            IdentityHashMap<Tree, Node> convertedTreeLookup,
+            IdentityHashMap<Tree, Set<Node>> treeLookup,
+            IdentityHashMap<Tree, Set<Node>> convertedTreeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
             List<ReturnNode> returnNodes,
-            IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap) {
+            List<ClassTree> declaredClasses,
+            List<LambdaExpressionTree> declaredLambdas) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
@@ -85,11 +93,12 @@ public class ControlFlowGraph {
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
         this.returnNodes = returnNodes;
-        this.generatedTreesLookupMap = generatedTreesLookupMap;
+        this.declaredClasses = declaredClasses;
+        this.declaredLambdas = declaredLambdas;
     }
 
-    /** @return the {@link Node} to which the {@link Tree} {@code t} corresponds. */
-    public Node getNodeCorrespondingToTree(Tree t) {
+    /** @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. */
+    public Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
             return convertedTreeLookup.get(t);
         } else {
@@ -221,7 +230,7 @@ public class ControlFlowGraph {
     }
 
     /** @return the copied tree-lookup map */
-    public IdentityHashMap<Tree, Node> getTreeLookup() {
+    public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
     }
 
@@ -230,16 +239,11 @@ public class ControlFlowGraph {
         return new IdentityHashMap<>(unaryAssignNodeLookup);
     }
 
-    /** @return the copied map to lookup generated {@link Tree}s from {@link Tree} */
-    public IdentityHashMap<Tree, List<Tree>> getGeneratedTreesLookup() {
-        return new IdentityHashMap<>(generatedTreesLookupMap);
-    }
-
     /**
      * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
      * the CFG or null otherwise.
      */
-    public /*@Nullable*/ MethodTree getContainingMethod(Tree t) {
+    public @Nullable MethodTree getContainingMethod(Tree t) {
         if (treeLookup.containsKey(t)) {
             if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
                 UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
@@ -253,7 +257,7 @@ public class ControlFlowGraph {
      * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
      * the CFG or null otherwise.
      */
-    public /*@Nullable*/ ClassTree getContainingClass(Tree t) {
+    public @Nullable ClassTree getContainingClass(Tree t) {
         if (treeLookup.containsKey(t)) {
             if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
                 UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
@@ -261,5 +265,13 @@ public class ControlFlowGraph {
             }
         }
         return null;
+    }
+
+    public List<ClassTree> getDeclaredClasses() {
+        return declaredClasses;
+    }
+
+    public List<LambdaExpressionTree> getDeclaredLambdas() {
+        return declaredLambdas;
     }
 }

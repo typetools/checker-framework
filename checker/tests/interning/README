@@ -1,5 +1,0 @@
-To add a new file to the test suite, see
-  ../README
-
-To run the tests, do
-  ant -e -find build.xml interning-tests

@@ -24,11 +24,6 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 /**
  * A visitor that determines the purity (as defined by {@link
  * org.checkerframework.dataflow.qual.SideEffectFree}, {@link
@@ -91,39 +86,34 @@ public class PurityChecker {
             return types.containsAll(kinds);
         }
 
-        /** Get the {@code reason}s why the method is not side-effect-free. */
+        /** Get the reasons why the method is not side-effect-free. */
         public List<Pair<Tree, String>> getNotSEFreeReasons() {
             return notSEFreeReasons;
         }
 
-        /** Add {@code reason} as a reason why the method is not side-effect free. */
+        /** Add a reason why the method is not side-effect-free. */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
-        /** Get the {@code reason}s why the method is not deterministic. */
+        /** Get the reasons why the method is not deterministic. */
         public List<Pair<Tree, String>> getNotDetReasons() {
             return notDetReasons;
         }
 
-        /** Add {@code reason} as a reason why the method is not deterministic. */
+        /** Add a reason why the method is not deterministic. */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
             types.remove(Kind.DETERMINISTIC);
         }
 
-        /**
-         * Get the {@code reason}s why the method is not both side-effect-free and deterministic.
-         */
+        /** Get the reasons why the method is not both side-effect-free and deterministic. */
         public List<Pair<Tree, String>> getNotBothReasons() {
             return notBothReasons;
         }
 
-        /**
-         * Add {@code reason} as a reason why the method is not both side-effect free and
-         * deterministic.
-         */
+        /** Add a reason why the method is not both side-effect-free and deterministic. */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
             types.remove(Kind.DETERMINISTIC);
@@ -161,19 +151,18 @@ public class PurityChecker {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
             Element elt = TreeUtils.elementFromUse(node);
-            String reason = "call";
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
-                purityResult.addNotBothReason(node, reason);
+                purityResult.addNotBothReason(node, "call");
             } else {
                 boolean det = PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree =
                         (assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt));
                 if (!det && !seFree) {
-                    purityResult.addNotBothReason(node, reason);
+                    purityResult.addNotBothReason(node, "call");
                 } else if (!det) {
-                    purityResult.addNotDetReason(node, reason);
+                    purityResult.addNotDetReason(node, "call");
                 } else if (!seFree) {
-                    purityResult.addNotSEFreeReason(node, reason);
+                    purityResult.addNotSEFreeReason(node, "call");
                 }
             }
             return super.visitMethodInvocation(node, ignore);

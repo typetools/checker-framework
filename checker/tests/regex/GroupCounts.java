@@ -3,11 +3,6 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.regex.qual.Regex;
 
-/*
- * Note that this test case will fail in Eclipse, because the annotations
- * in comments used by RegexUtil are ignored.
- */
-// @non-308-skip-test
 public class GroupCounts {
     void testGroupCount() {
         @Regex(0) String s1 = "abc";

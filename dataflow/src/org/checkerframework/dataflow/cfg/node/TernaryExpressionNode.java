@@ -82,7 +82,7 @@ public class TernaryExpressionNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<Node>(3);
+        ArrayList<Node> list = new ArrayList<>(3);
         list.add(getConditionOperand());
         list.add(getThenOperand());
         list.add(getElseOperand());

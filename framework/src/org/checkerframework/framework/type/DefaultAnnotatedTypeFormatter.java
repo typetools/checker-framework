@@ -174,9 +174,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @SideEffectFree
         @Override
         public String visit(AnnotatedTypeMirror type) {
-            return type.accept(
-                    this,
-                    Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>()));
+            return type.accept(this, Collections.newSetFromMap(new IdentityHashMap<>()));
         }
 
         @Override

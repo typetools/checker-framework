@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.analysis;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -24,6 +20,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
@@ -202,7 +199,7 @@ public class Analysis<
                             currentInput = new TransferInput<>(n, this, transferResult);
                             lastNode = n;
                         }
-                        // loop will run at least one, making transferResult non-null
+                        // loop will run at least once, making transferResult non-null
 
                         // propagate store to successors
                         Block succ = rb.getSuccessor();
@@ -397,7 +394,7 @@ public class Analysis<
             // TODO: should the default behavior be to return either a regular
             // transfer result or a conditional transfer result (depending on
             // store.hasTwoStores()), or is the following correct?
-            return new RegularTransferResult<A, S>(null, store.getRegularStore());
+            return new RegularTransferResult<>(null, store.getRegularStore());
         }
         store.node = node;
         currentNode = node;
@@ -428,7 +425,7 @@ public class Analysis<
         this.cfg = cfg;
         thenStores = new IdentityHashMap<>();
         elseStores = new IdentityHashMap<>();
-        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<Block, Integer>();
+        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<>();
         inputs = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist(cfg);
@@ -600,7 +597,7 @@ public class Analysis<
                 depthFirstOrder.put(b, count++);
             }
 
-            queue = new PriorityQueue<Block>(11, new DFOComparator());
+            queue = new PriorityQueue<>(11, new DFOComparator());
         }
 
         public boolean isEmpty() {
@@ -629,7 +626,7 @@ public class Analysis<
      * Read the {@link TransferInput} for a particular basic block (or {@code null} if none exists
      * yet).
      */
-    public /*@Nullable*/ TransferInput<A, S> getInput(Block b) {
+    public @Nullable TransferInput<A, S> getInput(Block b) {
         return getInputBefore(b);
     }
 
@@ -637,12 +634,12 @@ public class Analysis<
      * @return the transfer input corresponding to the location right before the basic block {@code
      *     b}.
      */
-    protected /*@Nullable*/ TransferInput<A, S> getInputBefore(Block b) {
+    protected @Nullable TransferInput<A, S> getInputBefore(Block b) {
         return inputs.get(b);
     }
 
     /** @return the store corresponding to the location right before the basic block {@code b}. */
-    protected /*@Nullable*/ S getStoreBefore(Block b, Store.Kind kind) {
+    protected @Nullable S getStoreBefore(Block b, Store.Kind kind) {
         switch (kind) {
             case THEN:
                 return readFromStore(thenStores, b);
@@ -658,7 +655,7 @@ public class Analysis<
      * Read the {@link Store} for a particular basic block from a map of stores (or {@code null} if
      * none exists yet).
      */
-    protected static <S> /*@Nullable*/ S readFromStore(Map<Block, S> stores, Block b) {
+    protected static <S> @Nullable S readFromStore(Map<Block, S> stores, Block b) {
         return stores.get(b);
     }
 
@@ -672,7 +669,7 @@ public class Analysis<
      *     available. Note that if the analysis has not finished yet, this value might not represent
      *     the final value for this node.
      */
-    public /*@Nullable*/ A getValue(Node n) {
+    public @Nullable A getValue(Node n) {
         if (isRunning) {
             // we do not yet have a org.checkerframework.dataflow fact about the current node
             if (currentNode == null
@@ -698,28 +695,40 @@ public class Analysis<
      *     available. Note that if the analysis has not finished yet, this value might not represent
      *     the final value for this node.
      */
-    public /*@Nullable*/ A getValue(Tree t) {
+    public @Nullable A getValue(Tree t) {
         // we do not yet have a org.checkerframework.dataflow fact about the current node
         if (t == currentTree) {
             return null;
         }
-        Node nodeCorrespondingToTree = getNodeForTree(t);
-        if (nodeCorrespondingToTree == null || nodeCorrespondingToTree.isLValue()) {
+        Set<Node> nodesCorrespondingToTree = getNodesForTree(t);
+        if (nodesCorrespondingToTree == null) {
             return null;
         }
-        return getValue(nodeCorrespondingToTree);
+        A merged = null;
+        for (Node aNode : nodesCorrespondingToTree) {
+            if (aNode.isLValue()) {
+                return null;
+            }
+            A a = getValue(aNode);
+            if (merged == null) {
+                merged = a;
+            } else if (a != null) {
+                merged = merged.leastUpperBound(a);
+            }
+        }
+        return merged;
     }
 
-    /** Get the {@link Node} for a given {@link Tree}. */
-    public Node getNodeForTree(Tree t) {
-        return cfg.getNodeCorrespondingToTree(t);
+    /** Get the set of {@link Node}s for a given {@link Tree}. */
+    public Set<Node> getNodesForTree(Tree t) {
+        return cfg.getNodesCorrespondingToTree(t);
     }
 
     /**
      * Get the {@link MethodTree} of the current CFG if the argument {@link Tree} maps to a {@link
      * Node} in the CFG or null otherwise.
      */
-    public /*@Nullable*/ MethodTree getContainingMethod(Tree t) {
+    public @Nullable MethodTree getContainingMethod(Tree t) {
         return cfg.getContainingMethod(t);
     }
 
@@ -727,7 +736,7 @@ public class Analysis<
      * Get the {@link ClassTree} of the current CFG if the argument {@link Tree} maps to a {@link
      * Node} in the CFG or null otherwise.
      */
-    public /*@Nullable*/ ClassTree getContainingClass(Tree t) {
+    public @Nullable ClassTree getContainingClass(Tree t) {
         return cfg.getContainingClass(t);
     }
 
@@ -742,24 +751,18 @@ public class Analysis<
 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
-        IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
+        IdentityHashMap<Tree, Set<Node>> treeLookup = cfg.getTreeLookup();
         IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup =
                 cfg.getUnaryAssignNodeLookup();
-        IdentityHashMap<Tree, List<Tree>> generatedTreesLookup = cfg.getGeneratedTreesLookup();
         return new AnalysisResult<>(
-                nodeValues,
-                inputs,
-                treeLookup,
-                unaryAssignNodeLookup,
-                finalLocalValues,
-                generatedTreesLookup);
+                nodeValues, inputs, treeLookup, unaryAssignNodeLookup, finalLocalValues);
     }
 
     /**
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block).
      */
-    public /*@Nullable*/ S getRegularExitStore() {
+    public @Nullable S getRegularExitStore() {
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
         if (inputs.containsKey(regularExitBlock)) {
             S regularExitStore = inputs.get(regularExitBlock).getRegularStore();

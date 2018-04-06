@@ -1,8 +1,6 @@
 // Test case for Issue 1006:
 // https://github.com/typetools/checker-framework/issues/1006
 
-// @below-java8-jdk-skip-test
-
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;

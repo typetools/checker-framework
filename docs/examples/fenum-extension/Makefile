@@ -1,6 +1,6 @@
 FILES=qual/MyFenum.java
 
-JAVAOPTS=-source 7 -target 7
+JAVAOPTS=
 
 JAVAC?=../../../checker/bin/javac
 

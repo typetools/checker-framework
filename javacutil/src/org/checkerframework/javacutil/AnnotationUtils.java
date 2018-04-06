@@ -1,10 +1,5 @@
 package org.checkerframework.javacutil;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.interning.qual.Interned;
-*/
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -36,6 +31,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -88,8 +84,7 @@ public class AnnotationUtils {
      *
      * @return true iff a1 and a2 are the same annotation
      */
-    public static boolean areSame(
-            /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+    public static boolean areSame(@Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
@@ -114,7 +109,7 @@ public class AnnotationUtils {
      * @return true iff a1 and a2 have the same annotation type
      */
     public static boolean areSameIgnoringValues(
-            /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+            @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
@@ -335,7 +330,7 @@ public class AnnotationUtils {
      * @return a new map with {@link AnnotationMirror} as key
      */
     public static <V> Map<AnnotationMirror, V> createAnnotationMap() {
-        return new TreeMap<AnnotationMirror, V>(annotationOrdering());
+        return new TreeMap<>(annotationOrdering());
     }
 
     /**
@@ -347,7 +342,7 @@ public class AnnotationUtils {
      * @return a new set to store {@link AnnotationMirror} as element
      */
     public static Set<AnnotationMirror> createAnnotationSet() {
-        return new TreeSet<AnnotationMirror>(annotationOrdering());
+        return new TreeSet<>(annotationOrdering());
     }
 
     /** Returns true if the given annotation has a @Inherited meta-annotation. */
@@ -358,7 +353,7 @@ public class AnnotationUtils {
     /**
      * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
      */
-    public static EnumSet<ElementKind> getElementKindsForTarget(/*@Nullable*/ Target target) {
+    public static EnumSet<ElementKind> getElementKindsForTarget(@Nullable Target target) {
         if (target == null) {
             // A missing @Target implies that the annotation can be written everywhere.
             return EnumSet.allOf(ElementKind.class);
@@ -428,8 +423,7 @@ public class AnnotationUtils {
      */
     public static Map<? extends ExecutableElement, ? extends AnnotationValue>
             getElementValuesWithDefaults(AnnotationMirror ad) {
-        Map<ExecutableElement, AnnotationValue> valMap =
-                new HashMap<ExecutableElement, AnnotationValue>();
+        Map<ExecutableElement, AnnotationValue> valMap = new HashMap<>();
         if (ad.getElementValues() != null) {
             valMap.putAll(ad.getElementValues());
         }
@@ -605,7 +599,7 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence name, Class<T> expectedType, boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, name, List.class, useDefaults);
-        List<T> result = new ArrayList<T>(la.size());
+        List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
             result.add(expectedType.cast(a.getValue()));
         }
@@ -622,7 +616,7 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence name, Class<T> t, boolean useDefaults) {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> la = getElementValue(anno, name, List.class, useDefaults);
-        List<T> result = new ArrayList<T>(la.size());
+        List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
             T value = Enum.valueOf(t, a.getValue().toString());
             result.add(value);

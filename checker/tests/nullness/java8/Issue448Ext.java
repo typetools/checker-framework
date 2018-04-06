@@ -1,6 +1,5 @@
 // Test case for issue 448:
 // https://github.com/typetools/checker-framework/issues/448
-// @below-java8-jdk-skip-test
 
 import java.util.Arrays;
 import java.util.function.IntPredicate;

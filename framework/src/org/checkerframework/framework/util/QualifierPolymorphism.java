@@ -90,8 +90,7 @@ public class QualifierPolymorphism {
         POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
         this.qualhierarchy = factory.getQualifierHierarchy();
 
-        Map<AnnotationMirror, AnnotationMirror> polys =
-                new HashMap<AnnotationMirror, AnnotationMirror>();
+        Map<AnnotationMirror, AnnotationMirror> polys = new HashMap<>();
         for (AnnotationMirror aam : qualhierarchy.getTypeQualifiers()) {
             if (isPolyAll(aam)) {
                 polys.put(null, aam);
@@ -353,8 +352,7 @@ public class QualifierPolymorphism {
                 return r1;
             }
 
-            Map<AnnotationMirror, Set<? extends AnnotationMirror>> res =
-                    new HashMap<AnnotationMirror, Set<? extends AnnotationMirror>>(r1.size());
+            Map<AnnotationMirror, Set<? extends AnnotationMirror>> res = new HashMap<>(r1.size());
             // Ensure that all qualifiers from r1 and r2 are visited.
             Set<AnnotationMirror> r2remain = AnnotationUtils.createAnnotationSet();
             r2remain.addAll(r2.keySet());
@@ -380,8 +378,7 @@ public class QualifierPolymorphism {
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visit(
                 Iterable<? extends AnnotatedTypeMirror> types,
                 Iterable<? extends AnnotatedTypeMirror> actualTypes) {
-            Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
-                    new HashMap<AnnotationMirror, Set<? extends AnnotationMirror>>();
+            Map<AnnotationMirror, Set<? extends AnnotationMirror>> result = new HashMap<>();
 
             Iterator<? extends AnnotatedTypeMirror> itert = types.iterator();
             Iterator<? extends AnnotatedTypeMirror> itera = actualTypes.iterator();
@@ -549,7 +546,7 @@ public class QualifierPolymorphism {
             return result;
         }
 
-        private final Set<TypeMirror> visited = new HashSet<TypeMirror>();
+        private final Set<TypeMirror> visited = new HashSet<>();
 
         @Override
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitTypeVariable(
@@ -630,7 +627,7 @@ public class QualifierPolymorphism {
             } else if (type.getSuperBound() != null && wcType.getSuperBound() != null) {
                 result = visit(type.getSuperBound(), wcType.getSuperBound());
             } else {
-                result = new HashMap<AnnotationMirror, Set<? extends AnnotationMirror>>();
+                result = new HashMap<>();
             }
 
             visited.remove(type.getUnderlyingType());

@@ -1,9 +1,5 @@
 package org.checkerframework.framework.stub;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.*;
-*/
-
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
@@ -66,6 +62,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -108,8 +105,8 @@ public class StubParser {
     /**
      * The name of the stub file being processed; used only for diagnostic messages.
      *
-     * <p>TODO: filename is "jdk.astub" and "flow.astub" for those pre-defined files, but is the
-     * full path in other situations. Make this consistent.
+     * <p>TODO: filename is "jdk.astub" for that pre-defined file, but is the full path in other
+     * situations. Make this consistent.
      */
     private final String filename;
 
@@ -213,7 +210,7 @@ public class StubParser {
 
     private Map<String, AnnotationMirror> createImportedAnnotationsMap(
             List<TypeElement> typeElements) {
-        Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
+        Map<String, AnnotationMirror> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
@@ -231,7 +228,7 @@ public class StubParser {
      * @return a list fully-qualified member names
      */
     private static List<String> getImportableMembers(TypeElement typeElement) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         List<VariableElement> memberElements =
                 ElementFilter.fieldsIn(typeElement.getEnclosedElements());
         for (VariableElement varElement : memberElements) {
@@ -254,7 +251,7 @@ public class StubParser {
      * @see #allStubAnnotations
      */
     private Map<String, AnnotationMirror> getAllStubAnnotations() {
-        Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
+        Map<String, AnnotationMirror> result = new HashMap<>();
 
         assert !stubUnit.getCompilationUnits().isEmpty();
         CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
@@ -768,11 +765,9 @@ public class StubParser {
     @SuppressWarnings("unused") // for disabled warning message
     private void clearAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
         Set<AnnotationMirror> annos = atype.getAnnotations();
-        // TODO: instead of comparison against flow.astub, this should
-        // check whether the stub file is @AnnotatedFor the current type system.
-        // flow.astub isn't annotated for any particular type system, and
+        // TODO: This should check whether the stub file is @AnnotatedFor the current type system.
         // @AnnotatedFor isn't integrated in stub files yet.
-        if (annos != null && !annos.isEmpty() && !"flow.astub".equals(filename)) {
+        if (annos != null && !annos.isEmpty()) {
             // TODO: only produce output if the removed annotation
             // isn't the top and default annotation in the type hierarchy.
             if (false) {
@@ -1457,7 +1452,7 @@ public class StubParser {
      * @param name classname (simple, or Outer.Inner, or fully-qualified)
      * @return the TypeElement for {@code name}, or null if not found
      */
-    private /*@Nullable*/ TypeElement findTypeOfName(String name) {
+    private @Nullable TypeElement findTypeOfName(String name) {
         String packageName = parseState.packageName;
         String packagePrefix = (packageName == null) ? "" : packageName + ".";
 
@@ -1602,10 +1597,9 @@ public class StubParser {
      * Mapping of a name access expression that has already been encountered to the resolved
      * variable element.
      */
-    private final Map<NameExpr, VariableElement> findVariableElementNameCache =
-            new HashMap<NameExpr, VariableElement>();
+    private final Map<NameExpr, VariableElement> findVariableElementNameCache = new HashMap<>();
 
-    private /*@Nullable*/ VariableElement findVariableElement(NameExpr nexpr) {
+    private @Nullable VariableElement findVariableElement(NameExpr nexpr) {
         if (findVariableElementNameCache.containsKey(nexpr)) {
             return findVariableElementNameCache.get(nexpr);
         }
@@ -1648,9 +1642,9 @@ public class StubParser {
      * variable element.
      */
     private final Map<FieldAccessExpr, VariableElement> findVariableElementFieldCache =
-            new HashMap<FieldAccessExpr, VariableElement>();
+            new HashMap<>();
 
-    private /*@Nullable*/ VariableElement findVariableElement(FieldAccessExpr faexpr) {
+    private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
             return findVariableElementFieldCache.get(faexpr);
         }
@@ -1743,7 +1737,7 @@ public class StubParser {
     ///
 
     // The warnings that have been issued so far.
-    private static final Set<String> warnings = new HashSet<String>();
+    private static final Set<String> warnings = new HashSet<>();
 
     /**
      * Issues the given warning about missing elements, only if it has not been previously issued

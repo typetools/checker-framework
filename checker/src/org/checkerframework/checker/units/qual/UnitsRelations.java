@@ -18,6 +18,6 @@ public @interface UnitsRelations {
     // The more precise type is Class<? extends org.checkerframework.checker.units.UnitsRelations>,
     // but org.checkerframework.checker.units.UnitsRelations is not in checker-qual.jar, nor can
     // it be since it uses AnnotatedTypeMirrors.  So use a less precise type and check that it
-    // is a sub class in UnitsAnnotatedTypeFactory
+    // is a subclass in UnitsAnnotatedTypeFactory.
     Class<?> value();
 }

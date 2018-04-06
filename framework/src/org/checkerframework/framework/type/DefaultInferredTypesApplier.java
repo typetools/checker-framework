@@ -45,9 +45,17 @@ public class DefaultInferredTypesApplier {
     public void applyInferredType(
             final AnnotatedTypeMirror type,
             final Set<AnnotationMirror> inferredSet,
-            final TypeMirror inferredTypeMirror) {
+            TypeMirror inferredTypeMirror) {
         if (inferredSet == null) {
             return;
+        }
+        if (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
+            // Dataflow might infer a wildcard that extends a type variable for types that are
+            // actually type variables.  Use the type variable instead.
+            while (inferredTypeMirror.getKind() == TypeKind.WILDCARD
+                    && (((WildcardType) inferredTypeMirror).getExtendsBound() != null)) {
+                inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
+            }
         }
         for (final AnnotationMirror top : hierarchy.getTopAnnotations()) {
             AnnotationMirror inferred = hierarchy.findAnnotationInHierarchy(inferredSet, top);
@@ -61,9 +69,9 @@ public class DefaultInferredTypesApplier {
             AnnotationMirror inferred,
             TypeMirror inferredTypeMirror,
             AnnotationMirror top) {
-
         AnnotationMirror primary = type.getAnnotationInHierarchy(top);
         if (inferred == null) {
+
             if (primary == null) {
                 // Type doesn't have a primary either, nothing to remove
             } else if (type.getKind() == TypeKind.TYPEVAR) {
@@ -112,13 +120,6 @@ public class DefaultInferredTypesApplier {
             TypeMirror inferredTypeMirror,
             AnnotationMirror top,
             AnnotationMirror previousAnnotation) {
-        if (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
-            // Dataflow might infer a wildcard that extends a type variable for types that are
-            // actually type variables.  Use the type variable instead.
-            while (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
-                inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
-            }
-        }
         if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
             ErrorReporter.errorAbort("Missing annos");
             return;

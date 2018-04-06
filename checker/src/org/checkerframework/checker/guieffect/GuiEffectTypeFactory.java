@@ -53,7 +53,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * getInferedEffectForLambdaExpression} uses this set and the type annotations of the functional
      * interface of the lambda to figure out if it can affect the UI or not.
      */
-    protected final Set<LambdaExpressionTree> uiLambdas = new HashSet<LambdaExpressionTree>();
+    protected final Set<LambdaExpressionTree> uiLambdas = new HashSet<>();
 
     public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
         // use true to enable flow inference, false to disable it

@@ -1,9 +1,5 @@
 package org.checkerframework.javacutil;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import static com.sun.tools.javac.code.Flags.ABSTRACT;
 import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
 import static com.sun.tools.javac.code.Flags.FINAL;
@@ -31,6 +27,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A Utility class for analyzing {@code Element}s. */
 public class ElementUtils {
@@ -49,7 +46,7 @@ public class ElementUtils {
     public static TypeElement enclosingClass(final Element elem) {
         Element result = elem;
         while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
-            /*@Nullable*/ Element encl = result.getEnclosingElement();
+            @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
         return (TypeElement) result;
@@ -66,7 +63,7 @@ public class ElementUtils {
     public static PackageElement enclosingPackage(final Element elem) {
         Element result = elem;
         while (result != null && result.getKind() != ElementKind.PACKAGE) {
-            /*@Nullable*/ Element encl = result.getEnclosingElement();
+            @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
         return (PackageElement) result;
@@ -153,7 +150,7 @@ public class ElementUtils {
      * @param element an element enclosed by a class, or a {@code TypeElement}
      * @return the qualified {@code Name} of the innermost class enclosing the element
      */
-    public static /*@Nullable*/ Name getQualifiedClassName(Element element) {
+    public static @Nullable Name getQualifiedClassName(Element element) {
         if (element.getKind() == ElementKind.PACKAGE) {
             PackageElement elem = (PackageElement) element;
             return elem.getQualifiedName();
@@ -261,7 +258,7 @@ public class ElementUtils {
      */
     public static Set<VariableElement> findFieldsInType(
             TypeElement type, Collection<String> names) {
-        Set<VariableElement> results = new HashSet<VariableElement>();
+        Set<VariableElement> results = new HashSet<>();
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (names.contains(field.getSimpleName().toString())) {
                 results.add(field);
@@ -347,13 +344,13 @@ public class ElementUtils {
      */
     public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
 
-        List<TypeElement> superelems = new ArrayList<TypeElement>();
+        List<TypeElement> superelems = new ArrayList<>();
         if (type == null) {
             return superelems;
         }
 
         // Set up a stack containing type, which is our starting point.
-        Deque<TypeElement> stack = new ArrayDeque<TypeElement>();
+        Deque<TypeElement> stack = new ArrayDeque<>();
         stack.push(type);
 
         while (!stack.isEmpty()) {
@@ -405,7 +402,7 @@ public class ElementUtils {
      * getSuperTypes?
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
-        List<VariableElement> fields = new ArrayList<VariableElement>();
+        List<VariableElement> fields = new ArrayList<>();
         fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
         List<TypeElement> alltypes = getSuperTypes(type, elements);
         for (TypeElement atype : alltypes) {
@@ -420,7 +417,7 @@ public class ElementUtils {
      * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
-        List<ExecutableElement> meths = new ArrayList<ExecutableElement>();
+        List<ExecutableElement> meths = new ArrayList<>();
         meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
 
         List<TypeElement> alltypes = getSuperTypes(type, elements);

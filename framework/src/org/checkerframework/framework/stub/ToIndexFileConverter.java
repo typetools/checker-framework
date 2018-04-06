@@ -3,7 +3,11 @@ package org.checkerframework.framework.stub;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -22,7 +26,14 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.ast.type.ReferenceType;
+import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.VoidType;
+import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.BufferedWriter;
@@ -94,7 +105,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         if (importDecls == null) {
             imports = Collections.emptyList();
         } else {
-            ArrayList<String> imps = new ArrayList<String>(importDecls.size());
+            ArrayList<String> imps = new ArrayList<>(importDecls.size());
             for (ImportDeclaration decl : importDecls) {
                 if (!decl.isStatic()) {
                     Matcher m = importPattern.matcher(decl.toString());
@@ -508,8 +519,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                      */
                     private InnerTypeLocation extendedTypePath(
                             InnerTypeLocation loc, int tag, int arg) {
-                        List<TypePathEntry> path =
-                                new ArrayList<TypePathEntry>(loc.location.size() + 1);
+                        List<TypePathEntry> path = new ArrayList<>(loc.location.size() + 1);
                         path.addAll(loc.location);
                         path.add(TypePathEntry.fromBinary(tag, arg));
                         return new InnerTypeLocation(path);

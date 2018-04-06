@@ -1,10 +1,5 @@
 package org.checkerframework.framework.type;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 // The imports from com.sun, but they are all
 // @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
@@ -63,6 +58,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
@@ -115,7 +111,6 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
-
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
  * AnnotatedTypeMirror}. The methods are:
@@ -150,7 +145,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // TODO: when should root be null? What are the use cases?
     // None of the existing test checkers has a null root.
     // Should not be modified between calls to "visit".
-    protected /*@Nullable*/ CompilationUnitTree root;
+    protected @Nullable CompilationUnitTree root;
 
     /** The processing environment to use for accessing compiler internals. */
     protected final ProcessingEnvironment processingEnv;
@@ -245,7 +240,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Map from the fully-qualified names of the aliased annotations, to the annotations in the
      * Checker Framework that will be used in its place.
      */
-    private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
+    private final Map<String, AnnotationMirror> aliases = new HashMap<>();
 
     /**
      * A set that contains the fully-qualified class names of the aliased annotations whose elements
@@ -366,7 +361,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
-        this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
+        this.cacheDeclAnnos = new HashMap<>();
 
         this.shouldCache = !checker.hasOption("atfDoNotCache");
         if (shouldCache) {
@@ -536,7 +531,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // TODO: document
     // Set the CompilationUnitTree that should be used.
     // What's a better name? Maybe "reset" or "start"?
-    public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
+    public void setRoot(@Nullable CompilationUnitTree root) {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
@@ -685,7 +680,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new DefaultTypeHierarchy(
                 checker,
                 getQualifierHierarchy(),
-                checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
+                checker.getBooleanOption("ignoreRawTypeArguments", true),
                 checker.hasOption("invariantArrays"));
     }
 
@@ -1646,8 +1641,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return super.visitDeclared(type, p);
         }
 
-        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited =
-                new HashMap<TypeParameterElement, AnnotatedTypeVariable>();
+        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited = new HashMap<>();
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
@@ -2144,7 +2138,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
                 && isSyntheticArgument(tree.getArguments().get(0))) {
             // happens for anonymous constructors of inner classes
-            List<AnnotatedTypeMirror> actualParams = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> actualParams = new ArrayList<>();
             actualParams.add(getAnnotatedType(tree.getArguments().get(0)));
             actualParams.addAll(con.getParameterTypes());
             con.setParameterTypes(actualParams);
@@ -2439,7 +2433,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if that annotation is part of the type system under which this type factory
      *     operates, false otherwise
      */
-    public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
+    public boolean isSupportedQualifier(@Nullable AnnotationMirror a) {
         if (a == null) {
             return false;
         }
@@ -2552,7 +2546,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param a the qualifier to check for an alias
      * @return the canonical annotation or null if none exists
      */
-    public /*@Nullable*/ AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+    public @Nullable AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         AnnotationMirror canonicalAnno = aliases.get(qualName);
@@ -2714,7 +2708,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @return receiver type of the most enclosing method being visited
      */
-    protected final /*@Nullable*/ AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
+    protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
         AnnotatedDeclaredType res = visitorState.getMethodReceiver();
         if (res == null) {
             TreePath path = getPath(tree);
@@ -2917,7 +2911,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
      *       is not supplied <br>
-     *   <li>flow.astub in the same directory as BaseTypeChecker <br>
      *   <li>Stub files listed in @Stubfiles annotation on the checker; must be in same directory as
      *       the checker<br>
      *   <li>Stub files provide via stubs system property <br>
@@ -2935,10 +2928,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.parseStubFiles called more than once");
         }
 
-        Map<Element, AnnotatedTypeMirror> typesFromStubFiles =
-                new HashMap<Element, AnnotatedTypeMirror>();
-        Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles =
-                new HashMap<String, Set<AnnotationMirror>>();
+        Map<Element, AnnotatedTypeMirror> typesFromStubFiles = new HashMap<>();
+        Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles = new HashMap<>();
 
         // 1. jdk.astub
         if (!checker.hasOption("ignorejdkastub")) {
@@ -2955,42 +2946,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        // 2. flow.astub
-        // stub file for type-system independent annotations
-        InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
-        if (input != null) {
-            StubParser.parse(
-                    "flow.astub",
-                    input,
-                    this,
-                    processingEnv,
-                    typesFromStubFiles,
-                    declAnnosFromStubFiles);
-        }
-
         // Stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @Stubfiles
         List<String> allStubFiles = new ArrayList<>();
 
-        // 3. Stub files listed in @Stubfiles annotation on the checker
+        // 2. Stub files listed in @Stubfiles annotation on the checker
         StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
         if (stubFilesAnnotation != null) {
             Collections.addAll(allStubFiles, stubFilesAnnotation.value());
         }
 
-        // 4. Stub files provide via stubs system property
+        // 3. Stub files provided via stubs system property
         String stubsProperty = System.getProperty("stubs");
         if (stubsProperty != null) {
             Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
         }
 
-        // 5. Stub files provide via stubs environment variable
+        // 4. Stub files provided via stubs environment variable
         String stubEnvVar = System.getenv("stubs");
         if (stubEnvVar != null) {
             Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
         }
 
-        // 6. Stub files provide via stubs option
+        // 5. Stub files provided via stubs option
         String stubsOption = checker.getOption("stubs");
         if (stubsOption != null) {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
@@ -3035,7 +3013,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         "Did not find stub file or files within directory: "
                                 + stubPath
                                 + " "
-                                + new File(stubPath).getAbsolutePath());
+                                + new File(stubPath).getAbsolutePath()
+                                + " "
+                                + stubPathFull);
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;

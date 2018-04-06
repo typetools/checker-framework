@@ -1,6 +1,5 @@
 // Test case for Issue 1379.
 // https://github.com/typetools/checker-framework/issues/1379
-// @below-java8-jdk-skip-test
 
 interface Box1379<V> {}
 
