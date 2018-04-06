@@ -14,18 +14,18 @@ task downloadJdk() {
 
     doLast {
         if (!jdk.exists()) {
-//            download {
-//                src "https://github.com/typetools/annotated-libraries/raw/${shaHash}/jdk8.jar"
-//                overwrite true
-//                dest jdk
-//            }
+            download {
+                src "https://github.com/typetools/annotated-libraries/raw/${shaHash}/jdk8.jar"
+                overwrite true
+                dest jdk
+            }
         }
         copy {
             from '../checker/jdk/jdk.jar'
             rename { String fileName ->
                 fileName.replace(fileName, "jdk8.jar")
             }
-            into '../checker/jdk'
+            into '../checker/dist'
         }
     }
 }
