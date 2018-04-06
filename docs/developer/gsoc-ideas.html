@@ -36,8 +36,8 @@
           <li><a href="#case-study-nullness-bazel">Bazel tool</a></li>
           <li><a href="#case-study-nullness-guava">Guava library</a></li>
         </ul></li>
+      <li><a href="#index-errors">Improving error messages</a></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
-      <li><a href="#index-erros">Improving error messages</a></li>
       <li><a href="#compare-other-tools">Comparison to other tools</a></li>
     </ul></li>
   <li><a href="#new-type-systems">New type systems</a>
@@ -1273,8 +1273,10 @@ differences from the real Nullness checker:
   the behavior is just to disable some functionality of existing checkers.
 </p>
 
-<p>It will be interesting to compare this NullnessLight Checker to the
-  regular Nullness Checker:
+<p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
+  Checker form a spetrum from easy-to-use bug detectors to sound
+  verification.  NullnessLight represents a new point in the design space.
+  It will be interesting to compare these checkers:
 </p>
 
 <ul>
@@ -1290,9 +1292,10 @@ differences from the real Nullness checker:
 </ul>
 
 <p>
-  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool may
+  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
   be an implementation of this idea (that is, a fast, but incomplete and
-  unsound, nullness checker).  Does Uber's tool provide users a good
+  unsound, nullness checker).  NullAway doesn't even handle Java Generics.
+  Does Uber's tool provide users a good
   introduction to the ideas that a user can use to transition to a nullness
   type system later?
 </p>
