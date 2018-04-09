@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.Set;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** A mapping from type variable to inference variable. */
 public class Theta extends HashMap<TypeVariable, Variable> {
@@ -62,6 +65,10 @@ public class Theta extends HashMap<TypeVariable, Variable> {
             Variable al = new Variable(pl, invocation, context);
             map.put(pl, al);
         }
+        if (TreeUtils.isDiamondTree(invocation)) {
+            ElementUtils.enclosingClass(TreeUtils.elementFromUse((NewClassTree) invocation));
+        }
+
         for (Variable v : map.values()) {
             v.initialBounds(map);
         }
