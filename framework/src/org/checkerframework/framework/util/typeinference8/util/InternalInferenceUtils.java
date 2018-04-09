@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.util;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
@@ -45,7 +46,13 @@ public class InternalInferenceUtils {
     }
 
     public static DeclaredType getReceiverType(ExpressionTree tree) {
-        Tree receiverTree = TreeUtils.getReceiverTree(tree);
+        Tree receiverTree;
+        if (tree.getKind() == Kind.NEW_CLASS) {
+            receiverTree = ((NewClassTree) tree).getEnclosingExpression();
+        } else {
+            receiverTree = TreeUtils.getReceiverTree(tree);
+        }
+
         if (receiverTree == null) {
             return null;
         }
@@ -62,16 +69,24 @@ public class InternalInferenceUtils {
     public static ExecutableType getTypeOfMethodAdaptedToUse(
             ExpressionTree expressionTree, Java8InferenceContext context) {
         if (expressionTree.getKind() == Kind.NEW_CLASS) {
-            return (ExecutableType) ((JCNewClass) expressionTree).constructorType;
+            if (!TreeUtils.isDiamondTree(expressionTree)) {
+                return (ExecutableType) ((JCNewClass) expressionTree).constructorType;
+            }
         } else if (expressionTree.getKind() != Kind.METHOD_INVOCATION) {
             return null;
         }
+        ExecutableElement ele;
+        if (expressionTree.getKind() == Kind.NEW_CLASS) {
+            ele = TreeUtils.constructor((NewClassTree) expressionTree);
+        } else {
+            ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
+        }
 
-        ExecutableElement ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
         if (ElementUtils.isStatic(ele)) {
             return (ExecutableType) ele.asType();
         }
         DeclaredType receiverType = getReceiverType(expressionTree);
+
         if (receiverType == null) {
             receiverType = context.enclosingType;
         }
@@ -80,7 +95,12 @@ public class InternalInferenceUtils {
                 == null) {
             TypeMirror enclosing = receiverType.getEnclosingType();
             if (enclosing == null || enclosing.getKind() != TypeKind.DECLARED) {
-                ErrorReporter.errorAbort("Method not found");
+                if (expressionTree.getKind() == Kind.NEW_CLASS) {
+                    // No receiver for the constructor.
+                    return (ExecutableType) ele.asType();
+                } else {
+                    ErrorReporter.errorAbort("Method not found");
+                }
             }
             receiverType = (DeclaredType) enclosing;
         }

@@ -6,10 +6,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** A mapping from type variable to inference variable. */
@@ -66,7 +70,20 @@ public class Theta extends HashMap<TypeVariable, Variable> {
             map.put(pl, al);
         }
         if (TreeUtils.isDiamondTree(invocation)) {
-            ElementUtils.enclosingClass(TreeUtils.elementFromUse((NewClassTree) invocation));
+            DeclaredType classType =
+                    (DeclaredType)
+                            ElementUtils.enclosingClass(
+                                            TreeUtils.elementFromUse((NewClassTree) invocation))
+                                    .asType();
+            for (TypeMirror typeMirror : classType.getTypeArguments()) {
+                if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+                    ErrorReporter.errorAbort("Expected type variable, found: %s", typeMirror);
+                    return map;
+                }
+                TypeVariable pl = (TypeVariable) typeMirror;
+                Variable al = new Variable(pl, invocation, context);
+                map.put(pl, al);
+            }
         }
 
         for (Variable v : map.values()) {
