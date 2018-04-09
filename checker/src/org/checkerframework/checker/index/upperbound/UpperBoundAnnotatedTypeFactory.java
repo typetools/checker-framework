@@ -57,10 +57,13 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -215,6 +218,45 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         if (AnnotationUtils.containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
             type.replaceAnnotation(BOTTOM);
+        }
+    }
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
+        return new ListTypeAnnotator(
+                new UpperBoundTypeAnnotator(this), super.createTypeAnnotator());
+    }
+
+    /**
+     * Performs pre-processing on annotations written by users, replacing illegal annotations by
+     * legal ones.
+     */
+    private class UpperBoundTypeAnnotator extends TypeAnnotator {
+
+        private UpperBoundTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
+        @Override
+        protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
+            // if there is an LTLengthOf annotation whose argument lengths don't match, replace it with bottom
+            AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
+            if (anm != null) {
+                List<String> sequences =
+                        AnnotationUtils.getElementValueArray(anm, "value", String.class, true);
+                List<String> offsets =
+                        AnnotationUtils.getElementValueArray(anm, "offset", String.class, true);
+                if (sequences != null
+                        && offsets != null
+                        && sequences.size() != offsets.size()
+                        && offsets.size() > 0) {
+                    // Cannot use type.replaceAnnotation because it will call isSubtype, which will try to process
+                    // the annotation and throw an error.
+                    type.clearAnnotations();
+                    type.addAnnotation(BOTTOM);
+                }
+            }
+            return super.scan(type, aVoid);
         }
     }
 
