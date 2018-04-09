@@ -90,6 +90,9 @@ public class BoundsInitializer {
                 }
             }
             typeArgs.add(typeArg);
+            if (javaTypeArg.getKind() == TypeKind.TYPEVAR) {
+                typeArgMap.put((TypeVariable) javaTypeArg, typeArg);
+            }
             typeArgMap.put((TypeVariable) typeElement.getTypeParameters().get(i).asType(), typeArg);
         }
 
