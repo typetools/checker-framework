@@ -1481,9 +1481,16 @@ public abstract class GenericAnnotatedTypeFactory<
                     "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
             return null; // dead code
         }
-        Value as = flowResult.getValue(tree);
-        if (as == null) {
+        Value as = null;
+        if (analysis.isRunning()) {
             as = analysis.getValue(tree);
+        }
+        if (as == null
+                &&
+                // TODO: this comparison shouldn't be needed, but
+                // checker-framework-inference fails without it.
+                flowResult != null) {
+            as = flowResult.getValue(tree);
         }
         return as;
     }
