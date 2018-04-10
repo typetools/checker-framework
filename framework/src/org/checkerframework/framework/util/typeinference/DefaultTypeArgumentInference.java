@@ -127,7 +127,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             //            System.out.println("Inferred the following for: "+expressionTree);
             //            System.out.println("\t"+PluginUtil.join("\n\t", result));
         }
-        if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
+        if (methodType == null) {
             return new HashMap<>();
         }
 
