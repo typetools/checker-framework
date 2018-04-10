@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -120,12 +119,16 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
-        if (expressionTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+        if (expressionTree.getKind() == Tree.Kind.METHOD_INVOCATION
+                || expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
             InvocationTypeInference java8inference =
                     new InvocationTypeInference(typeFactory, pathToExpression);
-            List<Variable> result = java8inference.infer((MethodInvocationTree) expressionTree);
+            List<Variable> result = java8inference.infer(expressionTree);
             //            System.out.println("Inferred the following for: "+expressionTree);
             //            System.out.println("\t"+PluginUtil.join("\n\t", result));
+        }
+        if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
+            return new HashMap<>();
         }
 
         final List<AnnotatedTypeMirror> argTypes =

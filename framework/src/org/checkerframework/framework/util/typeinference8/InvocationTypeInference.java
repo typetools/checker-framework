@@ -82,8 +82,8 @@ public class InvocationTypeInference {
         this.checker = factory.getContext().getChecker();
     }
 
-    /** Perform invocation type inference on {@code methodInvocation}. */
-    public List<Variable> infer(MethodInvocationTree methodInvocation) {
+    /** Perform invocation type inference on {@code invocation}. */
+    public List<Variable> infer(ExpressionTree invocation) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(context.pathToExpression);
         if (!shouldTryInference(assignmentContext, context.pathToExpression)) {
             return null;
@@ -97,20 +97,20 @@ public class InvocationTypeInference {
 
         List<Variable> result;
         try {
-            result = infer(methodInvocation, targetType);
+            result = infer(invocation, targetType);
         } catch (java.lang.Exception ex) {
             // Catch any exception so all crashes in a compilation unit are reported.
-            logException(methodInvocation, ex);
+            logException(invocation, ex);
             return null;
         }
         ExecutableType methodType =
-                InternalInferenceUtils.getTypeOfMethodAdaptedToUse(methodInvocation, context);
-        checkResult(result, methodInvocation, methodType);
+                InternalInferenceUtils.getTypeOfMethodAdaptedToUse(invocation, context);
+        checkResult(result, invocation, methodType);
         return result;
     }
 
     /** Convert the exceptions into a checker error and report it. */
-    private void logException(MethodInvocationTree methodInvocation, java.lang.Exception ex) {
+    private void logException(ExpressionTree methodInvocation, java.lang.Exception ex) {
         StringBuilder message = new StringBuilder();
         message.append(ex.getLocalizedMessage());
         if (checker.hasOption("printErrorStack")) {
@@ -179,13 +179,11 @@ public class InvocationTypeInference {
      * javac.
      */
     private void checkResult(
-            List<Variable> result,
-            MethodInvocationTree methodInvocation,
-            ExecutableType methodType) {
+            List<Variable> result, ExpressionTree invocation, ExecutableType methodType) {
         Map<TypeVariable, TypeMirror> fromReturn =
-                InferenceUtils.getMappingFromReturnType(methodInvocation, methodType, context.env);
+                InferenceUtils.getMappingFromReturnType(invocation, methodType, context.env);
         for (Variable variable : result) {
-            if (!variable.getInvocation().equals(methodInvocation)) {
+            if (!variable.getInvocation().equals(invocation)) {
                 continue;
             }
             TypeVariable typeVariable = variable.getJavaType();
@@ -208,7 +206,7 @@ public class InvocationTypeInference {
                                     typeVariable + "(" + variable + ")",
                                     inferredType,
                                     correctType),
-                            methodInvocation);
+                            invocation);
                 }
             }
         }
@@ -246,20 +244,25 @@ public class InvocationTypeInference {
         return false;
     }
 
-    /** @param target Nullable if methodInvocation isn't assigned. */
-    public List<Variable> infer(MethodInvocationTree methodInvocation, ProperType target) {
+    /** @param target Nullable if invocation isn't assigned. */
+    public List<Variable> infer(ExpressionTree invocation, ProperType target) {
+        List<? extends ExpressionTree> args;
+        if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            args = ((MethodInvocationTree) invocation).getArguments();
+        } else {
+            args = ((NewClassTree) invocation).getArguments();
+        }
         ExecutableType methodType =
-                InternalInferenceUtils.getTypeOfMethodAdaptedToUse(methodInvocation, context);
-        Theta map = Theta.create(methodInvocation, methodType, context);
-        BoundSet b2 = createB2(methodInvocation, methodType, methodInvocation.getArguments(), map);
+                InternalInferenceUtils.getTypeOfMethodAdaptedToUse(invocation, context);
+        Theta map = Theta.create(invocation, methodType, context);
+        BoundSet b2 = createB2(invocation, methodType, args, map);
         BoundSet b3;
-        if (target != null && TreeUtils.isPolyExpression(methodInvocation)) {
-            b3 = createB3(b2, methodInvocation, methodType, target, map);
+        if (target != null && TreeUtils.isPolyExpression(invocation)) {
+            b3 = createB3(b2, invocation, methodType, target, map);
         } else {
             b3 = b2;
         }
-        ConstraintSet c =
-                createC(methodInvocation, methodType, methodInvocation.getArguments(), map);
+        ConstraintSet c = createC(invocation, methodType, args, map);
 
         BoundSet b4 = getB4(b3, c);
         List<Variable> thetaPrime = b4.resolve();
