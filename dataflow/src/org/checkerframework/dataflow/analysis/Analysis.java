@@ -4,7 +4,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -178,7 +177,7 @@ public class Analysis<
      * Perform the actual analysis. Should only be called once after the object has been created.
      */
     public void performAnalysis(ControlFlowGraph cfg) {
-        assert isRunning == false;
+        assert !isRunning;
         isRunning = true;
 
         init(cfg);
@@ -300,7 +299,7 @@ public class Analysis<
             }
         }
 
-        assert isRunning == true;
+        assert isRunning;
         isRunning = false;
     }
 
@@ -433,7 +432,7 @@ public class Analysis<
         }
         inputs.clear();
         storesAtReturnStatements.clear();
-        //        nodeValues.clear();
+        nodeValues.clear();
         finalLocalValues.clear();
 
         this.cfg = cfg;
@@ -702,6 +701,18 @@ public class Analysis<
         return nodeValues.get(n);
     }
 
+    /** Return all current node values. */
+    public IdentityHashMap<Node, A> getNodeValues() {
+        return nodeValues;
+    }
+
+    /** Set all current node values to the given map. */
+    /*package-private*/ void setNodeValues(IdentityHashMap<Node, A> in) {
+        assert !isRunning;
+        nodeValues.clear();
+        nodeValues.putAll(in);
+    }
+
     /**
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available. Note that if the analysis has not finished yet, this value might not represent
@@ -769,12 +780,12 @@ public class Analysis<
 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
-        IdentityHashMap<Tree, Set<Node>> treeLookup = new IdentityHashMap<>();
-        IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup = new IdentityHashMap<>();
-        treeLookup.putAll(cfg.getTreeLookup());
-        unaryAssignNodeLookup.putAll(cfg.getUnaryAssignNodeLookup());
         return new AnalysisResult<>(
-                nodeValues, inputs, treeLookup, unaryAssignNodeLookup, finalLocalValues);
+                nodeValues,
+                inputs,
+                cfg.getTreeLookup(),
+                cfg.getUnaryAssignNodeLookup(),
+                finalLocalValues);
     }
 
     /**

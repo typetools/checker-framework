@@ -907,7 +907,8 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
         Store store =
-                AnalysisResult.runAnalysisFor(node, true, prevStore, flowResultAnalysisCaches);
+                AnalysisResult.runAnalysisFor(
+                        node, true, prevStore, analysis.getNodeValues(), flowResultAnalysisCaches);
         return store;
     }
 
@@ -938,7 +939,11 @@ public abstract class GenericAnnotatedTypeFactory<
     public Store getStoreAfter(Node node) {
         Store res =
                 AnalysisResult.runAnalysisFor(
-                        node, false, analysis.getInput(node.getBlock()), flowResultAnalysisCaches);
+                        node,
+                        false,
+                        analysis.getInput(node.getBlock()),
+                        analysis.getNodeValues(),
+                        flowResultAnalysisCaches);
         return res;
     }
 
