@@ -90,7 +90,14 @@ public class BoundsInitializer {
                 }
             }
             typeArgs.add(typeArg);
+
+            // Add mapping from type parameter to the annotated type argument.
             typeArgMap.put((TypeVariable) typeElement.getTypeParameters().get(i).asType(), typeArg);
+
+            if (javaTypeArg.getKind() == TypeKind.TYPEVAR) {
+                // Add mapping from Java type argument to the annotated type argument.
+                typeArgMap.put((TypeVariable) javaTypeArg, typeArg);
+            }
         }
 
         // Initialize type argument bounds using the typeArgsMap.
