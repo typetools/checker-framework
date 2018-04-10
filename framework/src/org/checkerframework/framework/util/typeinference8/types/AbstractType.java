@@ -130,6 +130,9 @@ public abstract class AbstractType {
         if (asSuper == null) {
             return null;
         }
+        if (TypesUtils.isCaptured(type)) {
+            return create(asSuper).capture();
+        }
         return create(asSuper);
     }
 
