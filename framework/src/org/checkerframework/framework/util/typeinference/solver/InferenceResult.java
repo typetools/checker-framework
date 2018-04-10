@@ -63,7 +63,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
         // TODO: we can probably make this a bit more efficient
         boolean grew = true;
-        while (grew == true) {
+        while (grew) {
             grew = false;
             for (final Entry<TypeVariable, InferredValue> inferred : this.entrySet()) {
                 final TypeVariable target = inferred.getKey();
