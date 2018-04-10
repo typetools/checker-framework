@@ -1,3 +1,20 @@
+sourceSets {
+    main {
+        resources {
+            // Stub files, message.properties, etc.
+            srcDirs = ['src/main/java']
+            exclude '**/*.java'
+        }
+    }
+    testannotations
+    test {
+        java {
+            // Tests that fail by design.
+            exclude 'tests/SubtypingStringPatternsPartialTest.java'
+        }
+    }
+}
+
 dependencies {
     compile project(':dataflow')
     compile project(':javacutil')
@@ -6,28 +23,8 @@ dependencies {
     compileOnly project(':checker-qual')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src']
-            exclude 'org/checkerframework/framework/test/**/*.java'
-        }
-        resources {
-            // Stub files, message.properties, etc.
-            srcDirs = ['src']
-            exclude '**/*.java'
-        }
-    }
-
-    test {
-        java {
-            srcDirs = ['tests/test-lubglb', 'tests/test-polyall', 'tests/src', 'src/org/checkerframework/framework/test']
-            // Tests that fail by design.
-            exclude 'tests/SubtypingStringPatternsPartialTest.java'
-        }
-    }
+    testCompile project(':util')
+    testCompile sourceSets.testannotations.output
 }
 
 shadowJar {

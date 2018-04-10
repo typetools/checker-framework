@@ -82,15 +82,13 @@ allprojects {
         // Also, build and use ManualTaglet as a taglet.
         tasks.withType(Javadoc) {
             dependsOn(':checker:shadowJar')
-            dependsOn(':javacutil:tagletClasses')
+            dependsOn(':util:tagletClasses')
             doFirst {
                 options.encoding = 'UTF-8'
                 options.memberLevel = javadocMemberLevel
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
-                if (!project.name.toString().equals("javacutil")) {
-                    options.taglets 'org.checkerframework.javacutil.dist.ManualTaglet'
-                    options.tagletPath(project(':javacutil').sourceSets.taglet.output as File[])
-                }
+                options.taglets 'org.checkerframework.taglet.ManualTaglet'
+                options.tagletPath(project(':util').sourceSets.taglet.output as File[])
                 options.links = ['http://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
@@ -139,12 +137,13 @@ def createCheckTypeTask(projectName, checker, shortName) {
     project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
         description "Run the ${shortName} Checker on the main sources."
         group 'Verification'
+        dependsOn ':jdk8:downloadJdk'
         // Always run the task.
         outputs.upToDateWhen { false }
         source = project("${projectName}").sourceSets.main.java
-        classpath = project("${projectName}").compileJava.classpath
+        classpath = files(project("${projectName}").compileJava.classpath,project(':checker-qual').sourceSets.main.output)
         destinationDir = file("${buildDir}")
-        dependsOn project(':checker-qual').tasks.jar
+
         options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archivePath)
         options.compilerArgs += [
                 '-processor', "${checker}",
@@ -166,8 +165,9 @@ def createCheckTypeTask(projectName, checker, shortName) {
  */
 List<String> getJavaFilesToFormat(projectName) {
     List<File> javaFiles = new ArrayList<>();
-    javaFiles.addAll(project(':' + projectName).sourceSets.main.java.files)
-    javaFiles.addAll(project(':' + projectName).sourceSets.test.java.files)
+    project(':' + projectName).sourceSets.forEach { set ->
+        javaFiles.addAll(set.java.files)
+    }
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
@@ -196,7 +196,7 @@ task htmlValidate(type: Exec) {
 task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
-    dependsOn(':javacutil:tagletClasses')
+    dependsOn(':util:tagletClasses')
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
@@ -392,7 +392,7 @@ subprojects {
         }
 
         // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-        sourceSets.test.allJava.filter { it.path.contains('s/src/tests') }.forEach { file ->
+        sourceSets.test.allJava.filter { it.path.contains('src/test/java/tests') }.forEach { file ->
             String junitClassName = file.name.replaceAll(".java", "")
             tasks.create(name: "${junitClassName}", type: Test) {
                 description "Run ${junitClassName} tests."
