@@ -66,7 +66,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
-    ValueAnnotatedTypeFactory atypefactory;
+    protected final ValueAnnotatedTypeFactory atypefactory;
 
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);

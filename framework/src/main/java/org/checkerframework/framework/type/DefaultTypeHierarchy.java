@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import static org.checkerframework.framework.util.AnnotatedTypes.isDeclarationOfJavaLangEnum;
 import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -540,22 +539,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             List<Integer> covariantArgIndexes = null;
             AnnotationMirror covam =
                     supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
-
-            if (covam == null) {
-                // Fall back to deprecated Nullness Checker version of the annotation.
-                // This should be removed once that version is removed.
-                // Using String instead of .class to prevent dependency.
-                try {
-                    @SuppressWarnings({"unchecked", "LiteralClassName"})
-                    Class<? extends Annotation> nncov =
-                            (Class<? extends Annotation>)
-                                    Class.forName(
-                                            "org.checkerframework.checker.nullness.qual.Covariant");
-                    covam = supertype.atypeFactory.getDeclAnnotation(supertypeElem, nncov);
-                } catch (ClassNotFoundException ex) {
-                    covam = null;
-                }
-            }
 
             if (covam != null) {
                 covariantArgIndexes =
