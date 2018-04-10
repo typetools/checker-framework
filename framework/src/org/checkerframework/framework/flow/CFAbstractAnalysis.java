@@ -161,7 +161,7 @@ public abstract class CFAbstractAnalysis<
 
     /**
      * Returns an abstract value containing an annotated type with the annotation {@code anno}, and
-     * 'top' for all other hierarchies. The underlying type is {@link Object}.
+     * 'top' for all other hierarchies. The underlying type is {@code underlyingType}.
      */
     public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
         QualifierHierarchy hierarchy = getTypeFactory().getQualifierHierarchy();
