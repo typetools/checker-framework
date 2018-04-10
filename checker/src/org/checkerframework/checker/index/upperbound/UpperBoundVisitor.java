@@ -66,7 +66,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                         AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
                 if (sequences.size() != offsets.size() && offsets.size() > 0) {
                     checker.report(
-                            Result.failure("not.enough.offsets", sequences.size(), offsets.size()),
+                            Result.failure(
+                                    "different.length.sequences.offsets",
+                                    sequences.size(),
+                                    offsets.size()),
                             node);
                     return null;
                 }
