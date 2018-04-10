@@ -419,8 +419,9 @@ public abstract class InitializationAnnotatedTypeFactory<
         // there might still be subclasses that need initialization.
         if (areAllFieldsCommittedOnly(enclosingClass)) {
             Store store = getStoreBefore(tree);
-            List<AnnotationMirror> annos = Collections.emptyList();
-            if (getUninitializedInvariantFields(store, path, false, annos).size() == 0) {
+            if (store != null
+                    && getUninitializedInvariantFields(store, path, false, Collections.emptyList())
+                            .isEmpty()) {
                 if (classType.isFinal()) {
                     annotation = COMMITTED;
                 } else if (useFbc) {
@@ -492,7 +493,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 // Does this field need to satisfy the invariant?
                 if (hasFieldInvariantAnnotation(field)) {
                     // Has the field been initialized?
-                    if (store != null && !store.isFieldInitialized(fieldElem)) {
+                    if (!store.isFieldInitialized(fieldElem)) {
                         violatingFields.add(field);
                     }
                 }
