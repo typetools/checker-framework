@@ -25,7 +25,6 @@ abstract class Issue1587b {
         Iterable<R> q();
     }
 
-    @SuppressWarnings("type.argument.type.incompatible") // TODO: FIX
     public Iterable<One> f(Six e) {
         return g(e.e(One.class).d().q());
     }
