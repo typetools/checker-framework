@@ -737,16 +737,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 continue;
             }
             CFStore store = getStoreBefore(tree);
-            if (store != null) {
-                CFValue value = store.getValue(receiver);
-                if (value != null && value.getAnnotations().size() == 1) {
-                    UBQualifier newUBQ =
-                            UBQualifier.createUBQualifier(value.getAnnotations().iterator().next());
-                    if (ubQualifier == null) {
-                        ubQualifier = newUBQ;
-                    } else {
-                        ubQualifier = ubQualifier.glb(newUBQ);
-                    }
+            CFValue value = store.getValue(receiver);
+            if (value != null && value.getAnnotations().size() == 1) {
+                UBQualifier newUBQ =
+                        UBQualifier.createUBQualifier(value.getAnnotations().iterator().next());
+                if (ubQualifier == null) {
+                    ubQualifier = newUBQ;
+                } else {
+                    ubQualifier = ubQualifier.glb(newUBQ);
                 }
             }
         }
