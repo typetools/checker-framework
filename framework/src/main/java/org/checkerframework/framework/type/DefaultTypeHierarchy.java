@@ -1082,7 +1082,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // Enum<MyEnum> are transferred to Enum<E>.  That is, if we have a type:
         // @1 Enum<@2 MyEnum>
         // asSuper should return:
-        // @1 Enum<@2 E>
+        // @1 Enum<E extends @2 Enum<E>>
         if (asSuperType != null
                 && isEnum(asSuperType)
                 && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
