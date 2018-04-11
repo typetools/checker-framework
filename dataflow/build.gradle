@@ -2,11 +2,3 @@ dependencies {
     compile project(':javacutil')
     compile project(':checker-qual')
 }
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src']
-        }
-    }
-}
