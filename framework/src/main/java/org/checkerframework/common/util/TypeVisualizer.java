@@ -44,7 +44,7 @@ import org.checkerframework.javacutil.PluginUtil;
  * }
  * }</pre>
  *
- * Be sure to remove such statements before commiting your changes.
+ * Be sure to remove such statements before committing your changes.
  */
 public class TypeVisualizer {
 
