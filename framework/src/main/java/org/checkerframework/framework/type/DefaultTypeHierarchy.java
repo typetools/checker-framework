@@ -32,7 +32,6 @@ import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -1097,7 +1096,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 final AnnotatedTypeMirror sourceTypeArg = asSuperAdt.getTypeArguments().get(0);
                 final AnnotatedTypeMirror resultTypeArg = resultAtd.getTypeArguments().get(0);
                 resultTypeArg.clearAnnotations();
-                resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
+                if (resultTypeArg.getKind() == TypeKind.TYPEVAR) {
+                    // Only change the upper bound of a type variable.
+                    AnnotatedTypeVariable resultTypeArgTV = (AnnotatedTypeVariable) resultTypeArg;
+                    resultTypeArgTV.getUpperBound().addAnnotations(sourceTypeArg.getAnnotations());
+                } else {
+                    resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
+                }
                 return (T) resultAtd;
             }
         }
