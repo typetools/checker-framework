@@ -52,7 +52,8 @@ public class Analysis<
     protected boolean isRunning = false;
 
     /** The transfer function for regular nodes. */
-    // TODO: make final and remove ugly hacks.
+    // TODO: make final. Currently, the transferFunction has a reference to the analysis, so it
+    // can't be created until the Analysis is initialized.
     protected T transferFunction;
 
     /** The current control flow graph to perform the analysis on. */
