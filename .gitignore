@@ -110,7 +110,7 @@ checker/tests/nullness-temp/*.class
 checker/jtreg/multipleexecutions/Main.class
 
 # Source is copied from elsewhere.
-checker-qual/generated-src
+checker-qual/src
 
 framework/tests/whole-program-inference/annotated/
 
@@ -132,3 +132,4 @@ target/
 *.ipr
 *.iws
 *.iml
+/.gradle/
