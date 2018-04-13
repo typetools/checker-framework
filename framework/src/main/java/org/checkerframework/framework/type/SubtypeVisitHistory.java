@@ -1,17 +1,15 @@
-package org.checkerframework.framework.type.visitor;
+package org.checkerframework.framework.type;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * IMPORTANT: DO NOT USE VisitHistory FOR VISITORS THAT UPDATE AN ANNOTATED TYPE MIRROR'S
- * ANNOTATIONS OR YOU VIOLATE THE CONTRACT OF equals/Hashcode. THIS CLASS IS DESIGNED FOR USE WITH
- * The DefaultTypeHierarchy AND RELATED CLASSES
+ * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
+ * StructuralEqualityComparer ONLY.
  *
  * <p>VisitHistory keeps track of all visits and allows clients of this class to check whether or
  * not they have visited an equivalent pair of AnnotatedTypeMirrors already. This is necessary in
@@ -23,19 +21,18 @@ import org.checkerframework.javacutil.Pair;
  * Serializable<T>} and {@code @C Serializable<?>}, then isSubtype is first called one those types
  * and then on {@code @B Serializable<T>} and {@code @C Serializable<?>}.
  */
-// After review: rename and move to org.checkerframework.framework.type
-public class VisitHistory {
+// TODO: do we need to clear the history sometimes?
+class SubtypeVisitHistory {
 
-    // TODO: doc that only stores true subtypes
+    /**
+     * The keys are pairs of types; the value is the set of qualifier hierarchy roots for which the
+     * key is in a subtype relationship.
+     */
     private final Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>, Set<AnnotationMirror>>
             visited;
 
-    public VisitHistory() {
+    public SubtypeVisitHistory() {
         this.visited = new HashMap<>();
-    }
-
-    public void clear() {
-        visited.clear();
     }
 
     /** Add a visit for type1 and type2. */

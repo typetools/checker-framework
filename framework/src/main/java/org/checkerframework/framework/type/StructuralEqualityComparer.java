@@ -14,7 +14,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -38,13 +37,13 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     // TODO: WHICH IS CLOSE TO THE OLD TypeHierarchy behavior
     private final DefaultRawnessComparer fallback;
 
-    protected final VisitHistory visitHistory;
+    protected final SubtypeVisitHistory visitHistory;
 
     // explain this one
     private AnnotationMirror currentTop = null;
 
     public StructuralEqualityComparer(
-            final DefaultRawnessComparer fallback, VisitHistory typeargVisitHistory) {
+            final DefaultRawnessComparer fallback, SubtypeVisitHistory typeargVisitHistory) {
         this.fallback = fallback;
         this.visitHistory = typeargVisitHistory;
     }
@@ -52,7 +51,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     // Fall-back for checker-framework-inference usage.
     // Remove after CFI was adapted.
     protected StructuralEqualityComparer(DefaultRawnessComparer fallback) {
-        this(fallback, new VisitHistory());
+        this(fallback, new SubtypeVisitHistory());
     }
 
     @Override

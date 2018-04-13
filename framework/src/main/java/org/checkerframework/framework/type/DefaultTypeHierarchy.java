@@ -26,7 +26,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.TypeArgumentMapper;
@@ -119,8 +118,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // currentTop before passing annotations to qualifierHierarchy.
     protected AnnotationMirror currentTop;
 
-    protected final VisitHistory visitHistory;
-    protected final VisitHistory typeargVisitHistory;
+    protected final SubtypeVisitHistory visitHistory;
+    protected final SubtypeVisitHistory typeargVisitHistory;
 
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
@@ -129,8 +128,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             boolean invariantArrayComponents) {
         this.checker = checker;
         this.qualifierHierarchy = qualifierHierarchy;
-        this.visitHistory = new VisitHistory();
-        this.typeargVisitHistory = new VisitHistory();
+        this.visitHistory = new SubtypeVisitHistory();
+        this.typeargVisitHistory = new SubtypeVisitHistory();
         this.rawnessComparer = createRawnessComparer();
         this.equalityComparer = createEqualityComparer();
 
