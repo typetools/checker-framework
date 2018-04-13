@@ -44,20 +44,21 @@ public class Capture {
     private final InferenceType lhs;
 
     /** A list of {@link CaptureTuple}s. */
-    private final List<CaptureTuple> tuples = new ArrayList<>();
+    private final List<CaptureTuple> tuples = new ArrayList<CaptureTuple>();
 
     /**
      * All capture variables in this capture. For example, a1 in {@code G<a1, ..., an> =
      * capture(G<A1, ..., An>)}.
      */
-    private final List<CaptureVariable> captureVariables = new ArrayList<>();
+    private final List<CaptureVariable> captureVariables = new ArrayList<CaptureVariable>();
 
     public Capture(AbstractType capturedType, ExpressionTree tree, Java8InferenceContext context) {
         this.capturedType = capturedType;
         DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
         TypeElement ele = TypesUtils.getTypeElement(underlying);
         this.map = new Theta();
-        List<Pair<CaptureVariable, TypeMirror>> pairs = new ArrayList<>();
+        List<Pair<CaptureVariable, TypeMirror>> pairs =
+                new ArrayList<Pair<CaptureVariable, TypeMirror>>();
         for (TypeParameterElement pEle : ele.getTypeParameters()) {
             TypeVariable pl = (TypeVariable) pEle.asType();
             CaptureVariable al = new CaptureVariable(pl, tree, context);
@@ -127,7 +128,7 @@ public class Capture {
 
     /** @return all variables on the right-hand side of this capture */
     public LinkedHashSet<Variable> getAllVariablesOnRHS() {
-        return new LinkedHashSet<>(capturedType.getInferenceVariables());
+        return new LinkedHashSet<Variable>(capturedType.getInferenceVariables());
     }
 
     public boolean isCaptureMentionsAny(Collection<Variable> as) {

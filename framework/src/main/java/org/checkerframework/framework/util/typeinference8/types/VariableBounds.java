@@ -50,9 +50,9 @@ public class VariableBounds {
     public VariableBounds(TypeVariable typeVariable, Java8InferenceContext context) {
         this.context = context;
         this.typeVariable = typeVariable;
-        bounds.put(BoundKind.EQUAL, new LinkedHashSet<>());
-        bounds.put(BoundKind.UPPER, new LinkedHashSet<>());
-        bounds.put(BoundKind.LOWER, new LinkedHashSet<>());
+        bounds.put(BoundKind.EQUAL, new LinkedHashSet<AbstractType>());
+        bounds.put(BoundKind.UPPER, new LinkedHashSet<AbstractType>());
+        bounds.put(BoundKind.LOWER, new LinkedHashSet<AbstractType>());
     }
 
     /** Save the current bounds. */

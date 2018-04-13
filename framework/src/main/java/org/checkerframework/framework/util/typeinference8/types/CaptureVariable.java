@@ -31,13 +31,13 @@ public class CaptureVariable extends Variable {
         ConstraintSet constraintSet = new ConstraintSet();
 
         // Only concerned with bounds against proper types or inference types.
-        List<AbstractType> upperBoundsNonVar = new ArrayList<>();
+        List<AbstractType> upperBoundsNonVar = new ArrayList<AbstractType>();
         for (AbstractType bound : variableBounds.bounds.get(VariableBounds.BoundKind.UPPER)) {
             if (bound.isProper() || bound.isInferenceType()) {
                 upperBoundsNonVar.add(bound);
             }
         }
-        List<AbstractType> lowerBoundsNonVar = new ArrayList<>();
+        List<AbstractType> lowerBoundsNonVar = new ArrayList<AbstractType>();
         for (AbstractType bound : variableBounds.bounds.get(VariableBounds.BoundKind.LOWER)) {
             if (bound.isProper() || bound.isInferenceType()) {
                 lowerBoundsNonVar.add(bound);

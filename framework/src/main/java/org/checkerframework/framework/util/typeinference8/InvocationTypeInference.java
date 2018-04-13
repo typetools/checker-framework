@@ -150,7 +150,8 @@ public class InvocationTypeInference {
         switch (assignmentContext.getKind()) {
             case RETURN:
                 HashSet<Tree.Kind> kinds =
-                        new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
+                        new HashSet<Tree.Kind>(
+                                Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
                 Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
                 return enclosing.getKind() != Tree.Kind.LAMBDA_EXPRESSION;
             case METHOD_INVOCATION:

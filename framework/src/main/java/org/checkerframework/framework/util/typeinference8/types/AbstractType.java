@@ -90,7 +90,7 @@ public abstract class AbstractType {
      * they are proper types.)
      */
     public List<ProperType> getTypeParameterBounds() {
-        List<ProperType> bounds = new ArrayList<>();
+        List<ProperType> bounds = new ArrayList<ProperType>();
         TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
         for (TypeParameterElement ele : typeelem.getTypeParameters()) {
             TypeVariable typeVariable = (TypeVariable) ele.asType();
@@ -167,7 +167,7 @@ public abstract class AbstractType {
     public final List<AbstractType> getFunctionTypeParameterTypes() {
         if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
             ExecutableType element = TypesUtils.findFunctionType(getJavaType(), context.env);
-            List<AbstractType> params = new ArrayList<>();
+            List<AbstractType> params = new ArrayList<AbstractType>();
             for (TypeMirror param : element.getParameterTypes()) {
                 params.add(create(param));
             }
@@ -235,7 +235,7 @@ public abstract class AbstractType {
      * @return assuming type is an intersection type, this method returns the bounds in this type
      */
     public final List<AbstractType> getIntersectionBounds() {
-        List<AbstractType> bounds = new ArrayList<>();
+        List<AbstractType> bounds = new ArrayList<AbstractType>();
         for (TypeMirror bound : ((IntersectionType) getJavaType()).getBounds()) {
             bounds.add(create(bound));
         }
@@ -276,7 +276,7 @@ public abstract class AbstractType {
         if (getJavaType().getKind() != TypeKind.DECLARED) {
             return null;
         }
-        List<AbstractType> list = new ArrayList<>();
+        List<AbstractType> list = new ArrayList<AbstractType>();
         for (TypeMirror typeArg : ((DeclaredType) getJavaType()).getTypeArguments()) {
             list.add(create(typeArg));
         }

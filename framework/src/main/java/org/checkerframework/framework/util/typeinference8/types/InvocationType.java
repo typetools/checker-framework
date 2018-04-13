@@ -54,7 +54,7 @@ public class InvocationType {
      * has been modified to match the arguments in {@code expression}.
      */
     public List<AbstractType> getParameterTypes(Theta map, int size) {
-        List<TypeMirror> params = new ArrayList<>(methodType.getParameterTypes());
+        List<TypeMirror> params = new ArrayList<TypeMirror>(methodType.getParameterTypes());
 
         if (TreeUtils.isVarArgMethodCall(invocation)) {
             ArrayType vararg = (ArrayType) params.remove(params.size() - 1);

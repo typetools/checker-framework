@@ -11,13 +11,14 @@ import java.util.Map.Entry;
 public class Dependencies {
 
     /** A map from a variable to the variables, including itself, on which it depends. */
-    private final Map<Variable, LinkedHashSet<Variable>> map = new LinkedHashMap<>();
+    private final Map<Variable, LinkedHashSet<Variable>> map =
+            new LinkedHashMap<Variable, LinkedHashSet<Variable>>();
 
     /** Add {@code value} as a dependency of {@code key}. */
     public boolean putOrAdd(Variable key, Variable value) {
         LinkedHashSet<Variable> set = map.get(key);
         if (set == null) {
-            set = new LinkedHashSet<>();
+            set = new LinkedHashSet<Variable>();
             map.put(key, set);
         }
         return set.add(value);
@@ -27,7 +28,7 @@ public class Dependencies {
     public boolean putOrAddAll(Variable key, Collection<? extends Variable> values) {
         LinkedHashSet<Variable> set = map.get(key);
         if (set == null) {
-            set = new LinkedHashSet<>();
+            set = new LinkedHashSet<Variable>();
             map.put(key, set);
         }
         return set.addAll(values);
@@ -47,7 +48,7 @@ public class Dependencies {
             for (Entry<Variable, LinkedHashSet<Variable>> entry : map.entrySet()) {
                 Variable alpha = entry.getKey();
                 LinkedHashSet<Variable> gammas = entry.getValue();
-                LinkedHashSet<Variable> betas = new LinkedHashSet<>();
+                LinkedHashSet<Variable> betas = new LinkedHashSet<Variable>();
                 for (Variable gamma : gammas) {
                     if (gamma.equals(alpha)) {
                         continue;
@@ -61,12 +62,12 @@ public class Dependencies {
 
     /** Returns the set of dependencies of {@code alpha}. */
     public LinkedHashSet<Variable> get(Variable alpha) {
-        return new LinkedHashSet<>(map.get(alpha));
+        return new LinkedHashSet<Variable>(map.get(alpha));
     }
 
     /** Returns the set of dependencies for all variables in {@code variables}. */
     public LinkedHashSet<Variable> get(List<Variable> variables) {
-        LinkedHashSet<Variable> set = new LinkedHashSet<>();
+        LinkedHashSet<Variable> set = new LinkedHashSet<Variable>();
         for (Variable v : variables) {
             LinkedHashSet<Variable> get = get(v);
             set.addAll(get);

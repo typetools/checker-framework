@@ -41,10 +41,10 @@ public class ConstraintSet implements ReductionResult {
 
     public ConstraintSet(Constraint... constraints) {
         if (constraints != null) {
-            list = new ArrayList<>(constraints.length);
+            list = new ArrayList<Constraint>(constraints.length);
             list.addAll(Arrays.asList(constraints));
         } else {
-            list = new ArrayList<>();
+            list = new ArrayList<Constraint>();
         }
     }
 
@@ -95,8 +95,8 @@ public class ConstraintSet implements ReductionResult {
      */
     public ConstraintSet getClosedSubset(Dependencies dependencies) {
         ConstraintSet subset = new ConstraintSet();
-        Set<Variable> inputDependencies = new LinkedHashSet<>();
-        Set<Variable> outDependencies = new LinkedHashSet<>();
+        Set<Variable> inputDependencies = new LinkedHashSet<Variable>();
+        Set<Variable> outDependencies = new LinkedHashSet<Variable>();
         for (Constraint c : list) {
             if (c.getKind() == Kind.EXPRESSION
                     || c.getKind() == Kind.LAMBDA_EXCEPTION
@@ -126,7 +126,7 @@ public class ConstraintSet implements ReductionResult {
         inputDependencies.clear();
         // If this subset is empty, then there is a cycle (or cycles) in the graph of dependencies
         // between constraints.
-        List<Constraint> consideredConstraints = new ArrayList<>();
+        List<Constraint> consideredConstraints = new ArrayList<Constraint>();
         for (Constraint c : list) {
             Set<Variable> newInputs = dependencies.get(c.getInputVariables());
             Set<Variable> newOutputs = dependencies.get(c.getOutputVariables());
@@ -160,7 +160,7 @@ public class ConstraintSet implements ReductionResult {
 
     /** @return all variables mentioned by any constraint in this set */
     public Set<Variable> getAllInferenceVariables() {
-        Set<Variable> vars = new LinkedHashSet<>();
+        Set<Variable> vars = new LinkedHashSet<Variable>();
         for (Constraint constraint : list) {
             vars.addAll(constraint.getInferenceVariables());
         }
@@ -169,7 +169,7 @@ public class ConstraintSet implements ReductionResult {
 
     /** @return all input variables for all constraints in this set */
     public Set<Variable> getAllInputVariables() {
-        Set<Variable> vars = new LinkedHashSet<>();
+        Set<Variable> vars = new LinkedHashSet<Variable>();
         for (Constraint constraint : list) {
             vars.addAll(constraint.getInputVariables());
         }

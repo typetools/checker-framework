@@ -60,7 +60,7 @@ public class CheckedExceptionConstraint extends Constraint {
     @Override
     public List<Variable> getOutputVariables() {
         List<Variable> input = getInputVariables();
-        List<Variable> output = new ArrayList<>(getT().getInferenceVariables());
+        List<Variable> output = new ArrayList<Variable>(getT().getInferenceVariables());
         output.removeAll(input);
         return output;
     }
@@ -70,8 +70,8 @@ public class CheckedExceptionConstraint extends Constraint {
     public ReductionResult reduce(Java8InferenceContext context) {
         ConstraintSet constraintSet = new ConstraintSet();
         ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
-        List<Variable> es = new ArrayList<>();
-        List<ProperType> properTypes = new ArrayList<>();
+        List<Variable> es = new ArrayList<Variable>();
+        List<ProperType> properTypes = new ArrayList<ProperType>();
         for (TypeMirror thrownType : ele.getThrownTypes()) {
             AbstractType ei = InferenceType.create(thrownType, map, context);
             if (ei.isProper()) {

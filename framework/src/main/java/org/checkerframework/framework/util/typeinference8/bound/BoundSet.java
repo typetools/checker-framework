@@ -46,8 +46,8 @@ public class BoundSet implements ReductionResult {
 
     public BoundSet(Java8InferenceContext context) {
         assert context != null;
-        this.variables = new LinkedHashSet<>();
-        this.captures = new LinkedHashSet<>();
+        this.variables = new LinkedHashSet<Variable>();
+        this.captures = new LinkedHashSet<Capture>();
         this.context = context;
         this.containsFalse = false;
         this.uncheckedConversion = false;
@@ -57,8 +57,8 @@ public class BoundSet implements ReductionResult {
     public BoundSet(BoundSet toCopy) {
         this.context = toCopy.context;
         this.containsFalse = toCopy.containsFalse;
-        this.captures = new LinkedHashSet<>(toCopy.captures);
-        this.variables = new LinkedHashSet<>(toCopy.variables);
+        this.captures = new LinkedHashSet<Capture>(toCopy.captures);
+        this.variables = new LinkedHashSet<Variable>(toCopy.variables);
         this.uncheckedConversion = toCopy.uncheckedConversion;
         // Save the current state of the variables so they can be restored later.
         for (Variable v : variables) {
@@ -148,7 +148,7 @@ public class BoundSet implements ReductionResult {
 
     /** Does the bound set contain a bound of the form {@code G<..., ai, ...> = capture(G<...>)}? */
     public boolean containsCapture(Collection<Variable> as) {
-        List<Variable> list = new ArrayList<>();
+        List<Variable> list = new ArrayList<Variable>();
         for (Capture c : captures) {
             list.addAll(c.getAllVariablesOnLHS());
         }
@@ -162,7 +162,7 @@ public class BoundSet implements ReductionResult {
 
     /** Returns a list of variables in {@code alphas} that are instantiated. */
     public List<Variable> getInstantiationsInAlphas(Collection<Variable> alphas) {
-        List<Variable> list = new ArrayList<>();
+        List<Variable> list = new ArrayList<Variable>();
         for (Variable var : alphas) {
             if (var.hasInstantiation()) {
                 list.add(var);
@@ -173,7 +173,7 @@ public class BoundSet implements ReductionResult {
 
     /** Returns a list of all variables in this bound set that are instantiated. */
     public List<Variable> getInstantiatedVariables() {
-        List<Variable> list = new ArrayList<>();
+        List<Variable> list = new ArrayList<Variable>();
         for (Variable var : variables) {
             if (var.hasInstantiation()) {
                 list.add(var);
@@ -190,7 +190,7 @@ public class BoundSet implements ReductionResult {
 
     /** Returns the dependencies between variables. */
     public Dependencies getDependencies() {
-        return getDependencies(new ArrayList<>());
+        return getDependencies(new ArrayList<Variable>());
     }
 
     /** Returns the dependencies between variables. */
@@ -208,10 +208,10 @@ public class BoundSet implements ReductionResult {
                 dependencies.putOrAddAll(var, lhsVars);
             }
         }
-        Set<Variable> allVariables = new LinkedHashSet<>(variables);
+        Set<Variable> allVariables = new LinkedHashSet<Variable>(variables);
         allVariables.addAll(additionalVars);
         for (Variable alpha : allVariables) {
-            LinkedHashSet<Variable> alphaDependencies = new LinkedHashSet<>();
+            LinkedHashSet<Variable> alphaDependencies = new LinkedHashSet<Variable>();
             // An inference variable alpha depends on the resolution of itself.
             alphaDependencies.add(alpha);
             alphaDependencies.addAll(alpha.getVariablesMentionedInBounds());
@@ -299,7 +299,7 @@ public class BoundSet implements ReductionResult {
         if (!TypesUtils.isCaptured(alpha.getInstantiation().getJavaType())) {
             return;
         }
-        List<Constraint> constraints = new ArrayList<>();
+        List<Constraint> constraints = new ArrayList<Constraint>();
         while (!alpha.variableBounds.constraints.isEmpty()) {
             Constraint constraint = alpha.variableBounds.constraints.pop();
             switch (constraint.getKind()) {

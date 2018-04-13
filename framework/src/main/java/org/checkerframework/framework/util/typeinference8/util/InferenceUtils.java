@@ -78,7 +78,7 @@ public class InferenceUtils {
                 return arrayType.getComponentType();
             case RETURN:
                 HashSet<Kind> kinds =
-                        new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
+                        new HashSet<Kind>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
                 Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
                 if (enclosing.getKind() == Kind.METHOD) {
                     MethodTree methodTree = (MethodTree) enclosing;
@@ -188,7 +188,7 @@ public class InferenceUtils {
      */
     private static class GetMapping implements TypeVisitor<Void, TypeMirror> {
 
-        final Map<TypeVariable, TypeMirror> subs = new HashMap<>();
+        final Map<TypeVariable, TypeMirror> subs = new HashMap<TypeVariable, TypeMirror>();
         final List<? extends TypeVariable> typeVariables;
         final Types types;
 
