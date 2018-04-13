@@ -366,7 +366,7 @@ subprojects {
                         args = [
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",
-                                "-reportDir: ${jtregOutput}/${name}/report",
+                                "-reportDir:${jtregOutput}/${name}/report",
                                 "-verbose:summary",
                                 "-javacoptions:-g",
                                 "-keywords:!ignore",
