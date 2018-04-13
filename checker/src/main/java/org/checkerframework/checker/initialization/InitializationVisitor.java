@@ -256,39 +256,6 @@ public class InitializationVisitor<
         return super.visitTypeCast(node, p);
     }
 
-    @Override
-    public Void visitBlock(BlockTree node, Void p) {
-        // Are we dealing with the last static initializer block? If so,
-        // then check that all static fields have been initialized.
-        if (node.isStatic()) {
-            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
-            boolean isStaticInitBlock = false;
-            boolean isLastStaticInitBlock = true;
-            for (Tree m : enclosingClass.getMembers()) {
-                if (m == node) {
-                    isStaticInitBlock = true;
-                    continue;
-                }
-                if (isStaticInitBlock && m.getKind() == Kind.BLOCK && ((BlockTree) m).isStatic()) {
-                    isLastStaticInitBlock = false;
-                }
-            }
-            if (isLastStaticInitBlock && isStaticInitBlock) {
-                boolean isStatic = true;
-                Store store = atypeFactory.getRegularExitStore(node);
-                // Add field values for fields with an initializer.
-                for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-                    store.addInitializedField(t.first);
-                }
-
-                // Check that all static fields are initialized.
-                List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
-                checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
-            }
-        }
-        return super.visitBlock(node, p);
-    }
-
     protected final List<VariableTree> initializedFields;
 
     @Override
@@ -297,41 +264,24 @@ public class InitializationVisitor<
         // save all fields that are initialized and do not report errors about
         // them later when checking constructors.
         for (Tree member : node.getMembers()) {
-            if (member instanceof BlockTree && !((BlockTree) member).isStatic()) {
+            if (member.getKind() == Tree.Kind.BLOCK && !((BlockTree) member).isStatic()) {
                 BlockTree block = (BlockTree) member;
                 Store store = atypeFactory.getRegularExitStore(block);
-                if (store != null) {
-                    // Add field values for fields with an initializer.
-                    for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-                        store.addInitializedField(t.first);
-                    }
-                    final List<VariableTree> init =
-                            atypeFactory.getInitializedInvariantFields(store, getCurrentPath());
-                    initializedFields.addAll(init);
+
+                // Add field values for fields with an initializer.
+                for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
+                    store.addInitializedField(t.first);
                 }
+                final List<VariableTree> init =
+                        atypeFactory.getInitializedInvariantFields(store, getCurrentPath());
+                initializedFields.addAll(init);
             }
         }
 
         super.processClassTree(node);
 
-        // Is there a static initializer block?
-        boolean hasStaticInitializer = false;
-        for (Tree t : node.getMembers()) {
-            switch (t.getKind()) {
-                case BLOCK:
-                    if (((BlockTree) t).isStatic()) {
-                        hasStaticInitializer = true;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        // Warn about uninitialized static fields if there is no static
-        // initializer (otherwise, errors are reported there).
-        if (!hasStaticInitializer && node.getKind() == Kind.CLASS) {
+        // Warn about uninitialized static fields.
+        if (node.getKind() == Kind.CLASS) {
             boolean isStatic = true;
             // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
             // the regular exit store of the class here.
