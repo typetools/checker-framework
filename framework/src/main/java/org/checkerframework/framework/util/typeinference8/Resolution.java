@@ -15,7 +15,7 @@ import org.checkerframework.framework.util.typeinference8.types.ContainsInferenc
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.types.Variable.BoundKind;
+import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -169,7 +169,7 @@ public class Resolution {
                     ti = InternalInferenceUtils.lub(context.env, ti, li);
                 }
             }
-            ai.addBound(BoundKind.EQUAL, new ProperType(ti, context));
+            ai.addBound(VariableBounds.BoundKind.EQUAL, new ProperType(ti, context));
             return;
         }
 
@@ -190,9 +190,10 @@ public class Resolution {
                 }
             }
             if (useRuntimeEx) {
-                ai.addBound(BoundKind.EQUAL, new ProperType(context.runtimeEx, context));
+                ai.addBound(
+                        VariableBounds.BoundKind.EQUAL, new ProperType(context.runtimeEx, context));
             } else {
-                ai.addBound(BoundKind.EQUAL, new ProperType(ti, context));
+                ai.addBound(VariableBounds.BoundKind.EQUAL, new ProperType(ti, context));
             }
         }
     }
@@ -277,7 +278,9 @@ public class Resolution {
             Variable ai = asList.get(i);
             ContainsInferenceVariable.getMentionedTypeVariables(
                     Collections.singleton(ai.getJavaType()), subsTypeArg.get(i));
-            ai.addBound(BoundKind.EQUAL, new ProperType(subsTypeArg.get(i), context).capture());
+            ai.addBound(
+                    VariableBounds.BoundKind.EQUAL,
+                    new ProperType(subsTypeArg.get(i), context).capture());
         }
 
         boundSet.incorporateToFixedPoint(resolvedBoundSet);

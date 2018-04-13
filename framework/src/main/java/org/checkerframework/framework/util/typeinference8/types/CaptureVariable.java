@@ -20,8 +20,8 @@ public class CaptureVariable extends Variable {
     @Override
     public String toString() {
         // Use "b" instead of "a" like super so it is apparent that this is a capture variable.
-        if (hasInstantiation()) {
-            return "b" + id + " := " + getInstantiation();
+        if (variableBounds.hasInstantiation()) {
+            return "b" + id + " := " + variableBounds.getInstantiation();
         }
         return "b" + id;
     }
@@ -32,19 +32,19 @@ public class CaptureVariable extends Variable {
 
         // Only concerned with bounds against proper types or inference types.
         List<AbstractType> upperBoundsNonVar = new ArrayList<>();
-        for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
+        for (AbstractType bound : variableBounds.bounds.get(VariableBounds.BoundKind.UPPER)) {
             if (bound.isProper() || bound.isInferenceType()) {
                 upperBoundsNonVar.add(bound);
             }
         }
         List<AbstractType> lowerBoundsNonVar = new ArrayList<>();
-        for (AbstractType bound : bounds.get(BoundKind.LOWER)) {
+        for (AbstractType bound : variableBounds.bounds.get(VariableBounds.BoundKind.LOWER)) {
             if (bound.isProper() || bound.isInferenceType()) {
                 lowerBoundsNonVar.add(bound);
             }
         }
 
-        for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
+        for (AbstractType bound : variableBounds.bounds.get(VariableBounds.BoundKind.EQUAL)) {
             if (bound.isProper() || bound.isInferenceType()) {
                 // var = R implies the bound false
                 return null;

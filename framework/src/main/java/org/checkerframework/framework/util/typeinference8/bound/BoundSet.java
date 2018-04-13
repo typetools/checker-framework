@@ -271,9 +271,9 @@ public class BoundSet implements ReductionResult {
                 if (alpha.hasInstantiation()) {
                     removeProblematicConstraints(alpha);
                 }
-                if (!alpha.constraints.isEmpty()) {
+                if (!alpha.variableBounds.constraints.isEmpty()) {
                     boundsChangeInst = true;
-                    merge(alpha.constraints.reduce(context));
+                    merge(alpha.variableBounds.constraints.reduce(context));
                 }
             }
             if (newBounds.isUncheckedConversion()) {
@@ -300,8 +300,8 @@ public class BoundSet implements ReductionResult {
             return;
         }
         List<Constraint> constraints = new ArrayList<>();
-        while (!alpha.constraints.isEmpty()) {
-            Constraint constraint = alpha.constraints.pop();
+        while (!alpha.variableBounds.constraints.isEmpty()) {
+            Constraint constraint = alpha.variableBounds.constraints.pop();
             switch (constraint.getKind()) {
                 case TYPE_COMPATIBILITY:
                 case SUBTYPE:
@@ -317,7 +317,7 @@ public class BoundSet implements ReductionResult {
                     constraints.add(constraint);
             }
         }
-        alpha.constraints.addAll(constraints);
+        alpha.variableBounds.constraints.addAll(constraints);
     }
 
     /** Remove any capture bound that mentions any variable in {@code as}. */

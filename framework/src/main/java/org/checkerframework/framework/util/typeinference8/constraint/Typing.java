@@ -12,7 +12,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.types.Variable.BoundKind;
+import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
@@ -135,16 +135,18 @@ public class Typing extends Constraint {
         if (S.isVariable() || T.isVariable()) {
             if (S.isVariable()) {
                 if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
-                    ((Variable) S).addBound(BoundKind.UPPER, T.getTypeVarLowerBound());
+                    ((Variable) S)
+                            .addBound(VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
                 } else {
-                    ((Variable) S).addBound(BoundKind.UPPER, T);
+                    ((Variable) S).addBound(VariableBounds.BoundKind.UPPER, T);
                 }
             }
             if (T.isVariable()) {
                 if (TypesUtils.isCaptured(S.getJavaType())) {
-                    ((Variable) T).addBound(BoundKind.LOWER, S.getTypeVarUpperBound());
+                    ((Variable) T)
+                            .addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
                 }
-                ((Variable) T).addBound(BoundKind.LOWER, S);
+                ((Variable) T).addBound(VariableBounds.BoundKind.LOWER, S);
             }
             return ConstraintSet.TRUE;
         }
@@ -340,10 +342,10 @@ public class Typing extends Constraint {
 
         if (S.isVariable() || T.isVariable()) {
             if (S.isVariable()) {
-                ((Variable) S).addBound(BoundKind.EQUAL, T);
+                ((Variable) S).addBound(VariableBounds.BoundKind.EQUAL, T);
             }
             if (T.isVariable()) {
-                ((Variable) T).addBound(BoundKind.EQUAL, S);
+                ((Variable) T).addBound(VariableBounds.BoundKind.EQUAL, S);
             }
             return ConstraintSet.TRUE;
         }
