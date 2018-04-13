@@ -30,9 +30,6 @@ public class VariableBounds {
 
     private final Java8InferenceContext context;
 
-    /** Type variable for which the instantiation of this variable is a type argument, */
-    public final TypeVariable typeVariable;
-
     public ProperType instantiation = null;
     /**
      * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
@@ -46,9 +43,8 @@ public class VariableBounds {
     /** Saved bounds. */
     public EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
 
-    public VariableBounds(TypeVariable typeVariable, Java8InferenceContext context) {
+    public VariableBounds(Java8InferenceContext context) {
         this.context = context;
-        this.typeVariable = typeVariable;
         bounds.put(BoundKind.EQUAL, new LinkedHashSet<>());
         bounds.put(BoundKind.UPPER, new LinkedHashSet<>());
         bounds.put(BoundKind.LOWER, new LinkedHashSet<>());
@@ -83,7 +79,7 @@ public class VariableBounds {
      *
      * @param map used to determine if the bounds refer to another variable
      */
-    public void initialBounds(Theta map) {
+    public void initialBounds(TypeVariable typeVariable, Theta map) {
         TypeMirror upperBound = typeVariable.getUpperBound();
         // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise, for
         // each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,..., Pp:=ap]}

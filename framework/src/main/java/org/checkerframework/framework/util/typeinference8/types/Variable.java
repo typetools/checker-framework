@@ -23,6 +23,9 @@ public class Variable extends AbstractType {
      */
     protected final ExpressionTree invocation;
 
+    /** Type variable for which the instantiation of this variable is a type argument, */
+    public final TypeVariable typeVariable;
+
     public Variable(
             TypeVariable typeVariable, ExpressionTree invocation, Java8InferenceContext context) {
         this(typeVariable, invocation, context, context.getNextVariableId());
@@ -35,7 +38,8 @@ public class Variable extends AbstractType {
             int id) {
         super(context);
         assert typeVariable != null;
-        this.variableBounds = new VariableBounds(typeVariable, context);
+        this.variableBounds = new VariableBounds(context);
+        this.typeVariable = typeVariable;
         this.invocation = invocation;
         this.id = id;
     }
@@ -67,7 +71,7 @@ public class Variable extends AbstractType {
 
     @Override
     public TypeVariable getJavaType() {
-        return variableBounds.typeVariable;
+        return typeVariable;
     }
 
     public ExpressionTree getInvocation() {
@@ -84,14 +88,13 @@ public class Variable extends AbstractType {
         }
 
         Variable variable = (Variable) o;
-        return context.modelTypes.isSameType(
-                        variableBounds.typeVariable, variable.variableBounds.typeVariable)
+        return context.modelTypes.isSameType(typeVariable, variable.typeVariable)
                 && invocation == variable.invocation;
     }
 
     @Override
     public int hashCode() {
-        int result = variableBounds.typeVariable.toString().hashCode();
+        int result = typeVariable.toString().hashCode();
         result = 31 * result + Kind.VARIABLE.hashCode();
         result = 31 * result + invocation.hashCode();
         return result;
@@ -147,11 +150,7 @@ public class Variable extends AbstractType {
      * @param map used to determine if the bounds refer to another variable
      */
     public void initialBounds(Theta map) {
-        // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise, for
-        // each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,..., Pp:=ap]}
-        // appears in the set; if this results in no proper upper bounds for al (only dependencies),
-        // then the bound {@literal al <: Object} also appears in the set.
-        variableBounds.initialBounds(map);
+        variableBounds.initialBounds(typeVariable, map);
     }
 
     /** @return true if this has a throws bound */
@@ -183,7 +182,6 @@ public class Variable extends AbstractType {
 
     /** Apply instantiations to all bounds and constraints of this variable. */
     public boolean applyInstantiationsToBounds(List<Variable> instantiations) {
-
         return variableBounds.applyInstantiationsToBounds(instantiations);
     }
 
@@ -221,7 +219,6 @@ public class Variable extends AbstractType {
      * class or interface?
      */
     public boolean hasLowerBoundDifferentParam() {
-
         return variableBounds.hasLowerBoundDifferentParam();
     }
 
@@ -231,10 +228,6 @@ public class Variable extends AbstractType {
      * type {@code |G<...>|} is a supertype of S?
      */
     public boolean hasRawTypeLowerOrEqualBound(AbstractType g) {
-
         return variableBounds.hasRawTypeLowerOrEqualBound(g);
     }
-
-    // </editor-fold>
-
 }
