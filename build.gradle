@@ -246,9 +246,16 @@ task getCodeFormatScripts() {
     }
 }
 
-task tags(type: Exec) {
+task tags {
     description 'Create Emacs TAGS table'
-    commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+    doLast {
+        exec {
+            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+        }
+        exec {
+            commandLine "make", "-C", "docs/manual", "tags"
+        }
+    }
 }
 
 subprojects {
