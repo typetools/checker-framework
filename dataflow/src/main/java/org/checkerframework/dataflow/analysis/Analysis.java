@@ -4,7 +4,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -53,9 +52,11 @@ public class Analysis<
     protected boolean isRunning = false;
 
     /** The transfer function for regular nodes. */
+    // TODO: make final. Currently, the transferFunction has a reference to the analysis, so it
+    // can't be created until the Analysis is initialized.
     protected T transferFunction;
 
-    /** The control flow graph to perform the analysis on. */
+    /** The current control flow graph to perform the analysis on. */
     protected ControlFlowGraph cfg;
 
     /** The associated processing environment */
@@ -65,16 +66,16 @@ public class Analysis<
     protected final Types types;
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
-    protected IdentityHashMap<Block, S> thenStores;
+    protected final IdentityHashMap<Block, S> thenStores;
 
     /** Else stores before every basic block (assumed to be 'no information' if not present). */
-    protected IdentityHashMap<Block, S> elseStores;
+    protected final IdentityHashMap<Block, S> elseStores;
 
     /**
      * Number of times every block has been analyzed since the last time widening was applied. Null,
      * if maxCountBeforeWidening is -1 which implies widening isn't used for this analysis.
      */
-    protected IdentityHashMap<Block, Integer> blockCount;
+    protected final IdentityHashMap<Block, Integer> blockCount;
 
     /**
      * Number of times a block can be analyzed before widening. -1 implies that widening shouldn't
@@ -85,19 +86,19 @@ public class Analysis<
     /**
      * The transfer inputs before every basic block (assumed to be 'no information' if not present).
      */
-    protected IdentityHashMap<Block, TransferInput<A, S>> inputs;
+    protected final IdentityHashMap<Block, TransferInput<A, S>> inputs;
 
     /** The stores after every return statement. */
-    protected IdentityHashMap<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
+    protected final IdentityHashMap<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
 
     /** The worklist used for the fix-point iteration. */
-    protected Worklist worklist;
+    protected final Worklist worklist;
 
     /** Abstract values of nodes. */
-    protected IdentityHashMap<Node, A> nodeValues;
+    protected final IdentityHashMap<Node, A> nodeValues;
 
     /** Map from (effectively final) local variable elements to their abstract value. */
-    public HashMap<Element, A> finalLocalValues;
+    public final HashMap<Element, A> finalLocalValues;
 
     /**
      * The node that is currently handled in the analysis (if it is running). The following
@@ -131,31 +132,34 @@ public class Analysis<
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
      */
     public Analysis(ProcessingEnvironment env) {
-        this(env, null, -1);
+        this(null, -1, env);
     }
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      */
-    public Analysis(ProcessingEnvironment env, T transfer) {
-        this(env, transfer, -1);
+    public Analysis(T transfer, ProcessingEnvironment env) {
+        this(transfer, -1, env);
     }
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      */
-    public Analysis(ProcessingEnvironment env, T transfer, int maxCountBeforeWidening) {
+    public Analysis(T transfer, int maxCountBeforeWidening, ProcessingEnvironment env) {
         this.env = env;
-        types = env.getTypeUtils();
+        this.types = env.getTypeUtils();
         this.transferFunction = transfer;
         this.maxCountBeforeWidening = maxCountBeforeWidening;
-        this.transferFunction = transfer;
-    }
-
-    public void setTransferFunction(T transfer) {
-        this.transferFunction = transfer;
+        this.thenStores = new IdentityHashMap<>();
+        this.elseStores = new IdentityHashMap<>();
+        this.blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<>();
+        this.inputs = new IdentityHashMap<>();
+        this.storesAtReturnStatements = new IdentityHashMap<>();
+        this.worklist = new Worklist();
+        this.nodeValues = new IdentityHashMap<>();
+        this.finalLocalValues = new HashMap<>();
     }
 
     public T getTransferFunction() {
@@ -174,7 +178,7 @@ public class Analysis<
      * Perform the actual analysis. Should only be called once after the object has been created.
      */
     public void performAnalysis(ControlFlowGraph cfg) {
-        assert isRunning == false;
+        assert !isRunning;
         isRunning = true;
 
         init(cfg);
@@ -296,7 +300,7 @@ public class Analysis<
             }
         }
 
-        assert isRunning == true;
+        assert isRunning;
         isRunning = false;
     }
 
@@ -422,15 +426,18 @@ public class Analysis<
 
     /** Initialize the analysis with a new control flow graph. */
     protected void init(ControlFlowGraph cfg) {
+        thenStores.clear();
+        elseStores.clear();
+        if (blockCount != null) {
+            blockCount.clear();
+        }
+        inputs.clear();
+        storesAtReturnStatements.clear();
+        nodeValues.clear();
+        finalLocalValues.clear();
+
         this.cfg = cfg;
-        thenStores = new IdentityHashMap<>();
-        elseStores = new IdentityHashMap<>();
-        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<>();
-        inputs = new IdentityHashMap<>();
-        storesAtReturnStatements = new IdentityHashMap<>();
-        worklist = new Worklist(cfg);
-        nodeValues = new IdentityHashMap<>();
-        finalLocalValues = new HashMap<>();
+        worklist.process(cfg);
         worklist.add(cfg.getEntryBlock());
 
         List<LocalVariableNode> parameters = null;
@@ -577,7 +584,7 @@ public class Analysis<
     protected static class Worklist {
 
         /** Map all blocks in the CFG to their depth-first order. */
-        protected IdentityHashMap<Block, Integer> depthFirstOrder;
+        protected final IdentityHashMap<Block, Integer> depthFirstOrder;
 
         /** Comparator to allow priority queue to order blocks by their depth-first order. */
         public class DFOComparator implements Comparator<Block> {
@@ -588,16 +595,21 @@ public class Analysis<
         }
 
         /** The backing priority queue. */
-        protected PriorityQueue<Block> queue;
+        protected final PriorityQueue<Block> queue;
 
-        public Worklist(ControlFlowGraph cfg) {
+        public Worklist() {
             depthFirstOrder = new IdentityHashMap<>();
+            queue = new PriorityQueue<>(11, new DFOComparator());
+        }
+
+        public void process(ControlFlowGraph cfg) {
+            depthFirstOrder.clear();
             int count = 1;
             for (Block b : cfg.getDepthFirstOrderedBlocks()) {
                 depthFirstOrder.put(b, count++);
             }
 
-            queue = new PriorityQueue<>(11, new DFOComparator());
+            queue.clear();
         }
 
         public boolean isEmpty() {
@@ -690,6 +702,18 @@ public class Analysis<
         return nodeValues.get(n);
     }
 
+    /** Return all current node values. */
+    public IdentityHashMap<Node, A> getNodeValues() {
+        return nodeValues;
+    }
+
+    /** Set all current node values to the given map. */
+    /*package-private*/ void setNodeValues(IdentityHashMap<Node, A> in) {
+        assert !isRunning;
+        nodeValues.clear();
+        nodeValues.putAll(in);
+    }
+
     /**
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available. Note that if the analysis has not finished yet, this value might not represent
@@ -721,7 +745,11 @@ public class Analysis<
 
     /** Get the set of {@link Node}s for a given {@link Tree}. */
     public Set<Node> getNodesForTree(Tree t) {
-        return cfg.getNodesCorrespondingToTree(t);
+        if (cfg == null) {
+            return null;
+        }
+        Set<Node> nodes = cfg.getNodesCorrespondingToTree(t);
+        return nodes;
     }
 
     /**
@@ -729,7 +757,8 @@ public class Analysis<
      * Node} in the CFG or null otherwise.
      */
     public @Nullable MethodTree getContainingMethod(Tree t) {
-        return cfg.getContainingMethod(t);
+        MethodTree mt = cfg.getContainingMethod(t);
+        return mt;
     }
 
     /**
@@ -737,7 +766,8 @@ public class Analysis<
      * Node} in the CFG or null otherwise.
      */
     public @Nullable ClassTree getContainingClass(Tree t) {
-        return cfg.getContainingClass(t);
+        ClassTree ct = cfg.getContainingClass(t);
+        return ct;
     }
 
     public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
@@ -751,11 +781,12 @@ public class Analysis<
 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
-        IdentityHashMap<Tree, Set<Node>> treeLookup = cfg.getTreeLookup();
-        IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup =
-                cfg.getUnaryAssignNodeLookup();
         return new AnalysisResult<>(
-                nodeValues, inputs, treeLookup, unaryAssignNodeLookup, finalLocalValues);
+                nodeValues,
+                inputs,
+                cfg.getTreeLookup(),
+                cfg.getUnaryAssignNodeLookup(),
+                finalLocalValues);
     }
 
     /**

@@ -21,7 +21,7 @@ public class ConstantPropagationPlayground {
         ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
         // TODO: correct processing environment
         Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis =
-                new Analysis<>(null, transfer);
+                new Analysis<>(transfer, null);
         JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputDir, method, clazz, true, analysis);
     }
 }

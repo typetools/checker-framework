@@ -22,7 +22,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -227,19 +226,23 @@ public abstract class CFAbstractTransfer<
     @Override
     public S initialStore(
             UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
-        if (fixedInitialStore != null
-                && underlyingAST.getKind() != Kind.LAMBDA
-                && underlyingAST.getKind() != Kind.METHOD) {
-            return fixedInitialStore;
+        if (underlyingAST.getKind() != Kind.LAMBDA && underlyingAST.getKind() != Kind.METHOD) {
+            if (fixedInitialStore != null) {
+                return fixedInitialStore;
+            } else {
+                return analysis.createEmptyStore(sequentialSemantics);
+            }
         }
 
-        S info = analysis.createEmptyStore(sequentialSemantics);
+        S info;
 
         if (underlyingAST.getKind() == Kind.METHOD) {
 
             if (fixedInitialStore != null) {
                 // copy knowledge
                 info = analysis.createCopiedStore(fixedInitialStore);
+            } else {
+                info = analysis.createEmptyStore(sequentialSemantics);
             }
 
             AnnotatedTypeFactory factory = analysis.getTypeFactory();
@@ -292,7 +295,6 @@ public abstract class CFAbstractTransfer<
                                     analysis.getTypeFactory());
                 }
             }
-            return info;
 
         } else if (underlyingAST.getKind() == Kind.LAMBDA) {
             // Create a copy and keep only the field values (nothing else applies).
@@ -367,6 +369,9 @@ public abstract class CFAbstractTransfer<
                                 .leastUpperBound(fieldValue.getValue());
                 info.fieldValues.put(fieldValue.getKey(), lubbedValue);
             }
+        } else {
+            assert false : "Unexpected tree: " + underlyingAST;
+            info = null;
         }
 
         return info;
@@ -1162,12 +1167,5 @@ public abstract class CFAbstractTransfer<
         TransferResult<V, S> result = super.visitStringConversion(n, p);
         result.setResultValue(p.getValueOfSubNode(n.getOperand()));
         return result;
-    }
-
-    /** @see CFAbstractAnalysis#getTypeFactoryOfSubchecker(Class) */
-    @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-    public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
-            W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
-        return analysis.getTypeFactoryOfSubchecker(checkerClass);
     }
 }

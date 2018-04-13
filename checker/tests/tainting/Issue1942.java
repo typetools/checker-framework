@@ -10,8 +10,8 @@ public class Issue1942 {
 
     static class BinaryOperatorSection<B extends LoadableExpression<B>> extends OperatorSection<B> {
         @Override
-        B makeExpression(List<@Untainted B> expressions) // <-- Error on this line
-                {
+        // Override used to fail.
+        B makeExpression(List<@Untainted B> expressions) {
             throw new RuntimeException("");
         }
     }
