@@ -69,7 +69,7 @@ public abstract class Constraint implements ReductionResult {
                     return Collections.singletonList((Variable) t);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
-                    List<Variable> inputs = new ArrayList<Variable>();
+                    List<Variable> inputs = new ArrayList<>();
                     if (TreeUtils.isImplicitlyTypedLambda(lambdaTree)) {
                         List<AbstractType> params = T.getFunctionTypeParameterTypes();
                         if (params == null) {
@@ -101,7 +101,7 @@ public abstract class Constraint implements ReductionResult {
                         // T is not a function type.
                         return Collections.emptyList();
                     }
-                    List<Variable> inputs = new ArrayList<Variable>();
+                    List<Variable> inputs = new ArrayList<>();
                     for (AbstractType param : params) {
                         inputs.addAll(param.getInferenceVariables());
                     }
@@ -111,7 +111,7 @@ public abstract class Constraint implements ReductionResult {
                 return getInputVariablesForExpression(TreeUtils.skipParens(tree), t);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree conditional = (ConditionalExpressionTree) tree;
-                List<Variable> inputs = new ArrayList<Variable>();
+                List<Variable> inputs = new ArrayList<>();
                 inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression(), t));
                 inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), t));
                 return inputs;

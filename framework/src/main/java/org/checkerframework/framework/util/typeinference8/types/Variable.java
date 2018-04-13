@@ -7,7 +7,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
@@ -168,17 +167,6 @@ public class Variable extends AbstractType {
     /** Adds {@code otherType} as bound against this variable. */
     public boolean addBound(BoundKind kind, AbstractType otherType) {
         return variableBounds.addBound(kind, otherType);
-    }
-
-    /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
-    private void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
-
-        variableBounds.addConstraintsFromComplementaryBounds(kind, s);
-    }
-
-    private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
-
-        return variableBounds.getConstraintsFromParameterized(s, t);
     }
 
     public LinkedHashSet<ProperType> findProperLowerBounds() {

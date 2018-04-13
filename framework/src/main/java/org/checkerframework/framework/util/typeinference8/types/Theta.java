@@ -19,14 +19,13 @@ import org.checkerframework.javacutil.TreeUtils;
 public class Theta extends HashMap<TypeVariable, Variable> {
     private static final long serialVersionUID = 42L;
 
-    private final List<Entry<TypeVariable, Variable>> entryList =
-            new ArrayList<Entry<TypeVariable, Variable>>();
+    private final List<Entry<TypeVariable, Variable>> entryList = new ArrayList<>();
 
     @Override
     public Variable put(TypeVariable key, Variable value) {
         assert !this.containsKey(key) || this.get(key).equals(value);
         if (!this.containsKey(key)) {
-            entryList.add(new SimpleEntry<TypeVariable, Variable>(key, value));
+            entryList.add(new SimpleEntry<>(key, value));
         }
         return super.put(key, value);
     }

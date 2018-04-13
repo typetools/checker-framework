@@ -80,10 +80,10 @@ public class Typing extends Constraint {
 
     @Override
     public List<Variable> getInferenceVariables() {
-        Set<Variable> vars = new HashSet<Variable>();
+        Set<Variable> vars = new HashSet<>();
         vars.addAll(T.getInferenceVariables());
         vars.addAll(S.getInferenceVariables());
-        return new ArrayList<Variable>(vars);
+        return new ArrayList<>(vars);
     }
 
     @Override

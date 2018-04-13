@@ -58,7 +58,7 @@ public class Expression extends Constraint {
     @Override
     public List<Variable> getOutputVariables() {
         List<Variable> input = getInputVariables();
-        List<Variable> output = new ArrayList<Variable>(getT().getInferenceVariables());
+        List<Variable> output = new ArrayList<>(getT().getInferenceVariables());
         output.removeAll(input);
         return output;
     }
@@ -284,7 +284,7 @@ public class Expression extends Constraint {
             AbstractType t, Java8InferenceContext context) {
         List<AbstractType> As = t.getTypeArguments();
         Iterator<ProperType> Bs = t.getTypeParameterBounds().iterator();
-        List<AbstractType> Ts = new ArrayList<AbstractType>();
+        List<AbstractType> Ts = new ArrayList<>();
         for (AbstractType Ai : As) {
             ProperType bi = Bs.next();
             if (Ai.getTypeKind() != TypeKind.WILDCARD) {
@@ -312,7 +312,7 @@ public class Expression extends Constraint {
         // Where a lambda expression with explicit parameter types P1, ..., Pn targets a functional
         // interface type F<A1, ..., Am> with at least one wildcard type argument, then a parameterization
         // of F may be derived as the ground target type of the lambda expression as follows.
-        List<ProperType> ps = new ArrayList<ProperType>();
+        List<ProperType> ps = new ArrayList<>();
         for (VariableTree paramTree : lambda.getParameters()) {
             ps.add(new ProperType(paramTree, context));
         }
@@ -320,7 +320,7 @@ public class Expression extends Constraint {
         TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
         // Let Q1, ..., Qk be the parameter types of the function type of the type F<alpha1, ..., alpham>,
         // where alpha1, ..., alpham are fresh inference variables.
-        List<Variable> alphas = new ArrayList<Variable>();
+        List<Variable> alphas = new ArrayList<>();
         Theta map = new Theta();
         for (TypeParameterElement param : typeEle.getTypeParameters()) {
             TypeVariable typeVar = (TypeVariable) param.asType();
@@ -330,7 +330,7 @@ public class Expression extends Constraint {
         }
 
         ExecutableType funcType = TypesUtils.findFunctionType(typeEle.asType(), context.env);
-        List<AbstractType> qs = new ArrayList<AbstractType>();
+        List<AbstractType> qs = new ArrayList<>();
         for (TypeMirror param : funcType.getParameterTypes()) {
             qs.add(InferenceType.create(param, map, context));
         }
@@ -349,7 +349,7 @@ public class Expression extends Constraint {
                 : "Bound set contains false during Functional Interface Parameterization Inference";
 
         // A new parameterization of the functional interface type, F<A'1, ..., A'm>, is constructed as follows, for 1 <= i <= m:
-        List<AbstractType> APrimes = new ArrayList<AbstractType>();
+        List<AbstractType> APrimes = new ArrayList<>();
         Iterator<Variable> alphaIter = alphas.iterator();
         boolean hasWildcard = false;
         for (AbstractType Ai : t.getTypeArguments()) {

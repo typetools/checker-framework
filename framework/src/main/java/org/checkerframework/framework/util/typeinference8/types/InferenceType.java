@@ -58,7 +58,7 @@ public class InferenceType extends AbstractType {
      */
     public static List<AbstractType> create(
             List<? extends TypeMirror> types, Theta map, Java8InferenceContext context) {
-        List<AbstractType> abstractTypes = new ArrayList<AbstractType>();
+        List<AbstractType> abstractTypes = new ArrayList<>();
         for (TypeMirror type : types) {
             abstractTypes.add(create(type, map, context));
         }
@@ -108,7 +108,7 @@ public class InferenceType extends AbstractType {
     /** @return all inference variables mentioned in this type. */
     @Override
     public Collection<Variable> getInferenceVariables() {
-        LinkedHashSet<Variable> variables = new LinkedHashSet<Variable>();
+        LinkedHashSet<Variable> variables = new LinkedHashSet<>();
         for (TypeVariable typeVar :
                 ContainsInferenceVariable.getMentionedTypeVariables(map.keySet(), type)) {
             variables.add(map.get(typeVar));
@@ -118,8 +118,8 @@ public class InferenceType extends AbstractType {
 
     @Override
     public AbstractType applyInstantiations(List<Variable> instantiations) {
-        List<TypeVariable> typeVariables = new ArrayList<TypeVariable>(instantiations.size());
-        List<TypeMirror> arguments = new ArrayList<TypeMirror>(instantiations.size());
+        List<TypeVariable> typeVariables = new ArrayList<>(instantiations.size());
+        List<TypeMirror> arguments = new ArrayList<>(instantiations.size());
 
         for (Variable alpha : instantiations) {
             if (map.containsValue(alpha)) {

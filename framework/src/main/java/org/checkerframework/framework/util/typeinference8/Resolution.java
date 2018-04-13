@@ -28,7 +28,7 @@ public class Resolution {
             return boundSet;
         }
         Dependencies dependencies = boundSet.getDependencies();
-        Queue<Variable> unresolvedVars = new ArrayDeque<Variable>(as);
+        Queue<Variable> unresolvedVars = new ArrayDeque<>(as);
         for (Variable var : as) {
             for (Variable dep : dependencies.get(var)) {
                 if (!unresolvedVars.contains(dep)) {
@@ -55,7 +55,7 @@ public class Resolution {
         }
         Dependencies dependencies = boundSet.getDependencies();
 
-        LinkedHashSet<Variable> unresolvedVars = new LinkedHashSet<Variable>();
+        LinkedHashSet<Variable> unresolvedVars = new LinkedHashSet<>();
         unresolvedVars.add(a);
         Resolution resolution = new Resolution(context, dependencies);
         boundSet = resolution.resolve(unresolvedVars, boundSet);
@@ -204,9 +204,9 @@ public class Resolution {
         assert !boundSet.containsFalse();
         boundSet.removeCaptures(as);
         BoundSet resolvedBoundSet = new BoundSet(context);
-        List<Variable> asList = new ArrayList<Variable>();
-        List<TypeVariable> typeVar = new ArrayList<TypeVariable>();
-        List<TypeMirror> typeArg = new ArrayList<TypeMirror>();
+        List<Variable> asList = new ArrayList<>();
+        List<TypeVariable> typeVar = new ArrayList<>();
+        List<TypeMirror> typeArg = new ArrayList<>();
 
         for (Variable ai : as) {
             ai.applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
@@ -268,7 +268,7 @@ public class Resolution {
         }
 
         // Instantiations that refer to another variable
-        List<TypeMirror> subsTypeArg = new ArrayList<TypeMirror>();
+        List<TypeMirror> subsTypeArg = new ArrayList<>();
         for (TypeMirror type : typeArg) {
             subsTypeArg.add(TypesUtils.substitute(type, typeVar, typeArg, context.env));
         }

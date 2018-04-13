@@ -56,7 +56,7 @@ public class CheckedExceptionsUtil {
         public List<TypeMirror> visitThrow(ThrowTree node, Void aVoid) {
             List<TypeMirror> result = super.visitThrow(node, aVoid);
             if (result == null) {
-                result = new ArrayList<TypeMirror>();
+                result = new ArrayList<>();
             }
             TypeMirror type = TreeUtils.typeOf(node);
             if (isCheckedException(type, context)) {
@@ -69,7 +69,7 @@ public class CheckedExceptionsUtil {
         public List<TypeMirror> visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
             List<TypeMirror> result = super.visitMethodInvocation(node, aVoid);
             if (result == null) {
-                result = new ArrayList<TypeMirror>();
+                result = new ArrayList<>();
             }
             for (TypeMirror type : TreeUtils.elementFromUse(node).getThrownTypes()) {
                 if (isCheckedException(type, context)) {
@@ -83,7 +83,7 @@ public class CheckedExceptionsUtil {
         public List<TypeMirror> visitNewClass(NewClassTree node, Void aVoid) {
             List<TypeMirror> result = super.visitNewClass(node, aVoid);
             if (result == null) {
-                result = new ArrayList<TypeMirror>();
+                result = new ArrayList<>();
             }
             for (TypeMirror type : TreeUtils.elementFromUse(node).getThrownTypes()) {
                 if (isCheckedException(type, context)) {
@@ -97,7 +97,7 @@ public class CheckedExceptionsUtil {
         public List<TypeMirror> visitTry(TryTree node, Void aVoid) {
             List<TypeMirror> results = scan(node.getBlock(), aVoid);
             if (results == null) {
-                results = new ArrayList<TypeMirror>();
+                results = new ArrayList<>();
             }
 
             if (!results.isEmpty()) {
@@ -126,7 +126,7 @@ public class CheckedExceptionsUtil {
                     removeAssignable(altern, thrownExceptionTypes);
                 }
             } else {
-                for (TypeMirror thrownType : new ArrayList<TypeMirror>(thrownExceptionTypes)) {
+                for (TypeMirror thrownType : new ArrayList<>(thrownExceptionTypes)) {
                     if (context.env.getTypeUtils().isAssignable(thrownType, type)) {
                         thrownExceptionTypes.remove(thrownType);
                     }

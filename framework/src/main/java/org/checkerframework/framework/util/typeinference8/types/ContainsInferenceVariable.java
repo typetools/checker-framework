@@ -42,10 +42,10 @@ public class ContainsInferenceVariable {
 
         /** Type variables in {@code typeVariables} that have been found. */
         // default visibility to allow direct access from getMentionedTypeVariables
-        final LinkedHashSet<TypeVariable> foundVariables = new LinkedHashSet<TypeVariable>();
+        final LinkedHashSet<TypeVariable> foundVariables = new LinkedHashSet<>();
 
         /** A set of types that have been visited. Used to prevent infinite recursion. */
-        private final Set<TypeMirror> visitedTypes = new HashSet<TypeMirror>();
+        private final Set<TypeMirror> visitedTypes = new HashSet<>();
 
         Visitor(Collection<TypeVariable> variables) {
             typeVariables = variables;

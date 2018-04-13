@@ -83,7 +83,7 @@ public class Java8InferenceContext {
         this.object = new ProperType(objecTypeMirror, this);
         ClassTree clazz = TreeUtils.enclosingClass(pathToExpression);
         this.enclosingType = (DeclaredType) TreeUtils.typeOf(clazz);
-        this.maps = new HashMap<ExpressionTree, Theta>();
+        this.maps = new HashMap<>();
         this.runtimeEx =
                 TypesUtils.typeFromClass(
                         RuntimeException.class, env.getTypeUtils(), env.getElementUtils());

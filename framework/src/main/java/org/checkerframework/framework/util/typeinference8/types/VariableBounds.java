@@ -38,8 +38,7 @@ public class VariableBounds {
      * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
      * {@link AbstractType}s.
      */
-    public final EnumMap<BoundKind, Set<AbstractType>> bounds =
-            new EnumMap<BoundKind, Set<AbstractType>>(BoundKind.class);
+    public final EnumMap<BoundKind, Set<AbstractType>> bounds = new EnumMap<>(BoundKind.class);
     /** Constraints implied by complementary pairs of bounds found during incorporation. */
     public final ConstraintSet constraints = new ConstraintSet();
     /** Whether or not this variable has a throws bounds. */
@@ -50,20 +49,17 @@ public class VariableBounds {
     public VariableBounds(TypeVariable typeVariable, Java8InferenceContext context) {
         this.context = context;
         this.typeVariable = typeVariable;
-        bounds.put(BoundKind.EQUAL, new LinkedHashSet<AbstractType>());
-        bounds.put(BoundKind.UPPER, new LinkedHashSet<AbstractType>());
-        bounds.put(BoundKind.LOWER, new LinkedHashSet<AbstractType>());
+        bounds.put(BoundKind.EQUAL, new LinkedHashSet<>());
+        bounds.put(BoundKind.UPPER, new LinkedHashSet<>());
+        bounds.put(BoundKind.LOWER, new LinkedHashSet<>());
     }
 
     /** Save the current bounds. */
     public void save() {
-        savedBounds = new EnumMap<BoundKind, LinkedHashSet<AbstractType>>(BoundKind.class);
-        savedBounds.put(
-                BoundKind.EQUAL, new LinkedHashSet<AbstractType>(bounds.get(BoundKind.EQUAL)));
-        savedBounds.put(
-                BoundKind.UPPER, new LinkedHashSet<AbstractType>(bounds.get(BoundKind.UPPER)));
-        savedBounds.put(
-                BoundKind.LOWER, new LinkedHashSet<AbstractType>(bounds.get(BoundKind.LOWER)));
+        savedBounds = new EnumMap<>(BoundKind.class);
+        savedBounds.put(BoundKind.EQUAL, new LinkedHashSet<>(bounds.get(BoundKind.EQUAL)));
+        savedBounds.put(BoundKind.UPPER, new LinkedHashSet<>(bounds.get(BoundKind.UPPER)));
+        savedBounds.put(BoundKind.LOWER, new LinkedHashSet<>(bounds.get(BoundKind.LOWER)));
     }
 
     /** Restore the bounds to the state previously saved. */
@@ -71,12 +67,9 @@ public class VariableBounds {
         assert savedBounds != null;
         instantiation = null;
         bounds.clear();
-        bounds.put(
-                BoundKind.EQUAL, new LinkedHashSet<AbstractType>(savedBounds.get(BoundKind.EQUAL)));
-        bounds.put(
-                BoundKind.UPPER, new LinkedHashSet<AbstractType>(savedBounds.get(BoundKind.UPPER)));
-        bounds.put(
-                BoundKind.LOWER, new LinkedHashSet<AbstractType>(savedBounds.get(BoundKind.LOWER)));
+        bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
+        bounds.put(BoundKind.UPPER, new LinkedHashSet<>(savedBounds.get(BoundKind.UPPER)));
+        bounds.put(BoundKind.LOWER, new LinkedHashSet<>(savedBounds.get(BoundKind.LOWER)));
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
             if (t.isProper()) {
                 instantiation = (ProperType) t;
@@ -186,9 +179,9 @@ public class VariableBounds {
                 InternalInferenceUtils.getParameterizedSupers(
                         s.getJavaType(), t.getJavaType(), context);
         if (pair == null) {
-            return new ArrayList<Typing>();
+            return new ArrayList<>();
         }
-        List<Typing> constraints = new ArrayList<Typing>();
+        List<Typing> constraints = new ArrayList<>();
 
         AbstractType super1 = s.create(pair.first);
         AbstractType super2 = t.create(pair.second);
@@ -207,7 +200,7 @@ public class VariableBounds {
     }
 
     public LinkedHashSet<ProperType> findProperLowerBounds() {
-        LinkedHashSet<ProperType> set = new LinkedHashSet<ProperType>();
+        LinkedHashSet<ProperType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.LOWER)) {
             if (bound.isProper()) {
                 set.add((ProperType) bound);
@@ -217,7 +210,7 @@ public class VariableBounds {
     }
 
     public LinkedHashSet<ProperType> findProperUpperBounds() {
-        LinkedHashSet<ProperType> set = new LinkedHashSet<ProperType>();
+        LinkedHashSet<ProperType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
             if (bound.isProper()) {
                 set.add((ProperType) bound);
@@ -227,7 +220,7 @@ public class VariableBounds {
     }
 
     public LinkedHashSet<AbstractType> upperBounds() {
-        LinkedHashSet<AbstractType> set = new LinkedHashSet<AbstractType>();
+        LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
             if (!bound.isVariable()) {
                 set.add(bound);
@@ -240,8 +233,7 @@ public class VariableBounds {
     public boolean applyInstantiationsToBounds(List<Variable> instantiations) {
         boolean changed = false;
         for (Set<AbstractType> boundList : bounds.values()) {
-            LinkedHashSet<AbstractType> newBounds =
-                    new LinkedHashSet<AbstractType>(boundList.size());
+            LinkedHashSet<AbstractType> newBounds = new LinkedHashSet<>(boundList.size());
             for (AbstractType bound : boundList) {
                 AbstractType newBound = bound.applyInstantiations(instantiations);
                 if (newBound != bound && !boundList.contains(newBound)) {
@@ -266,7 +258,7 @@ public class VariableBounds {
 
     /** @return all variables mentioned in a bound against this variable. */
     public Collection<? extends Variable> getVariablesMentionedInBounds() {
-        List<Variable> mentioned = new ArrayList<Variable>();
+        List<Variable> mentioned = new ArrayList<>();
         for (Set<AbstractType> boundList : bounds.values()) {
             for (AbstractType bound : boundList) {
                 mentioned.addAll(bound.getInferenceVariables());
@@ -321,7 +313,7 @@ public class VariableBounds {
      * class or interface?
      */
     public boolean hasLowerBoundDifferentParam() {
-        List<AbstractType> parameteredTypes = new ArrayList<AbstractType>();
+        List<AbstractType> parameteredTypes = new ArrayList<>();
         for (AbstractType type : bounds.get(BoundKind.LOWER)) {
             if (!type.isVariable() && type.isParameterizedType()) {
                 parameteredTypes.add(type);
