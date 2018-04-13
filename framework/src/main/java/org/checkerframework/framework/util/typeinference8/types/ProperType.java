@@ -13,7 +13,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** A type that does not contain any inference variables. */
-public class ProperType extends AbstractType {
+public class ProperType extends AbstractTypeMirror {
     private final TypeMirror properType;
 
     @Override
@@ -81,7 +81,7 @@ public class ProperType extends AbstractType {
     }
 
     @Override
-    public AbstractType applyInstantiations(List<Variable> instantiations) {
+    public AbstractTypeMirror applyInstantiations(List<Variable> instantiations) {
         return this;
     }
 

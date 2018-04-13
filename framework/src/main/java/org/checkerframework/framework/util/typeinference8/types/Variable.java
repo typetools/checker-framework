@@ -11,7 +11,7 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
 /** An inference variable */
-public class Variable extends AbstractType {
+public class Variable extends AbstractTypeMirror {
 
     public final VariableBounds variableBounds;
     /** Identification number. Used only to make debugging easier. */
@@ -45,7 +45,7 @@ public class Variable extends AbstractType {
     }
 
     @Override
-    public AbstractType create(TypeMirror type) {
+    public Variable create(TypeMirror type) {
         throw new UnsupportedOperationException();
     }
 
@@ -60,12 +60,12 @@ public class Variable extends AbstractType {
     }
 
     @Override
-    public AbstractType capture() {
+    public Variable capture() {
         return this;
     }
 
     @Override
-    public AbstractType getErased() {
+    public Variable getErased() {
         return this;
     }
 

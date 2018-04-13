@@ -33,7 +33,7 @@ public class InvocationType {
         return methodType.getThrownTypes();
     }
 
-    public AbstractType getReturnType(Theta map) {
+    public AbstractTypeMirror getReturnType(Theta map) {
         TypeMirror returnType;
         if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
                 || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {

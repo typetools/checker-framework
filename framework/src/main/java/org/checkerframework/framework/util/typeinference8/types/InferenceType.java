@@ -11,7 +11,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.TypesUtils;
 
 /** A type like structure that contains inference variables. */
-public class InferenceType extends AbstractType {
+public class InferenceType extends AbstractTypeMirror {
 
     /**
      * The underlying Java type. It contains type variables that are mapped to inference variables
@@ -35,7 +35,8 @@ public class InferenceType extends AbstractType {
      * to an inference variable, it will return that {@link Variable}. Or if {@code type} contains
      * no type variables that are mapped in an inference variable, a {@link ProperType} is returned.
      */
-    public static AbstractType create(TypeMirror type, Theta map, Java8InferenceContext context) {
+    public static AbstractTypeMirror create(
+            TypeMirror type, Theta map, Java8InferenceContext context) {
         assert type != null;
         if (map == null) {
             return new ProperType(type, context);
@@ -66,7 +67,7 @@ public class InferenceType extends AbstractType {
     }
 
     @Override
-    public AbstractType create(TypeMirror type) {
+    public AbstractTypeMirror create(TypeMirror type) {
         return create(type, map, context);
     }
 
@@ -117,7 +118,7 @@ public class InferenceType extends AbstractType {
     }
 
     @Override
-    public AbstractType applyInstantiations(List<Variable> instantiations) {
+    public AbstractTypeMirror applyInstantiations(List<Variable> instantiations) {
         List<TypeVariable> typeVariables = new ArrayList<>(instantiations.size());
         List<TypeMirror> arguments = new ArrayList<>(instantiations.size());
 
