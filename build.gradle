@@ -246,6 +246,11 @@ task getCodeFormatScripts() {
     }
 }
 
+task tags(type: Exec) {
+    description 'Create Emacs TAGS table'
+    commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+}
+
 subprojects {
     configurations {
         errorprone
