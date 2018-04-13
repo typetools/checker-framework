@@ -3,6 +3,7 @@ README.html
 LICENSE.txt
 checker/bin/**
 checker/dist/**
+checker/resources/**
 docs/manual/manual.html
 docs/manual/manual.pdf
 docs/manual/*.svg
