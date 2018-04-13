@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.PluginUtil;
 
 /**
  * IMPORTANT: DO NOT USE VisitHistory FOR VISITORS THAT UPDATE AN ANNOTATED TYPE MIRROR'S
