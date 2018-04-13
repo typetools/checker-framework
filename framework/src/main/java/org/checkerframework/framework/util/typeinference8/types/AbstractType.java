@@ -121,12 +121,14 @@ public abstract class AbstractType {
      * @return super type of this type that is the same class as {@code superType} or null if one
      *     doesn't exist
      */
-    public final AbstractType asSuper(TypeMirror superType) {
+    public final AbstractType asSuper(AbstractType superType) {
         TypeMirror type = getJavaType();
+        TypeMirror superTypeMirror = superType.getJavaType();
         if (type.getKind() == TypeKind.WILDCARD) {
             type = ((WildcardType) type).getExtendsBound();
         }
-        TypeMirror asSuper = context.types.asSuper((Type) type, ((Type) superType).asElement());
+        TypeMirror asSuper =
+                context.types.asSuper((Type) type, ((Type) superTypeMirror).asElement());
         if (asSuper == null) {
             return null;
         }

@@ -176,8 +176,7 @@ public class Typing extends Constraint {
             // constraint reduces to the following new constraints:
             // for all i (1 <= i <= n), <Bi <= Ai>.
 
-            TypeMirror tTypeMirror = T.getJavaType();
-            AbstractType sAsSuper = S.asSuper(tTypeMirror);
+            AbstractType sAsSuper = S.asSuper(T);
             if (sAsSuper == null) {
                 return ConstraintSet.FALSE;
             }
@@ -300,13 +299,13 @@ public class Typing extends Constraint {
             // Otherwise, if T is a parameterized type of the form G<T1, ..., Tn>,
             // and there exists no type of the form G<...> that is a supertype of S,
             // but the raw type G is a supertype of S, then the constraint reduces to true.
-            AbstractType superS = S.asSuper(T.getJavaType());
+            AbstractType superS = S.asSuper(T);
             if (superS != null && superS.isRaw()) {
                 return ReductionResult.UNCHECKED_CONVERSION;
             }
         } else if (T.getTypeKind() == TypeKind.ARRAY
                 && T.getComponentType().isParameterizedType()) {
-            AbstractType superS = S.asSuper(T.getJavaType());
+            AbstractType superS = S.asSuper(T);
             if (superS != null && superS.getComponentType().isRaw()) {
                 return ReductionResult.UNCHECKED_CONVERSION;
             }

@@ -10,7 +10,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -18,9 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -37,18 +34,18 @@ import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
+import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
-import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Performs invocation type inference as described in JLS Chapter 18.5.2. Main entry point is {@link
- * #infer(MethodInvocationTree)}.
+ * #infer(ExpressionTree)}.
  *
  * <p>At a high level, inference creates variables, as place holders for the method type arguments
  * to infer for the invocation of a method. Then it creates constraints between the arguments to the
@@ -89,12 +86,7 @@ public class InvocationTypeInference {
             return null;
         }
 
-        ProperType targetType = null;
-        TypeMirror assignmentType = InferenceUtils.getTargetType(context.pathToExpression, context);
-
-        if (assignmentType != null) {
-            targetType = new ProperType(assignmentType, context);
-        }
+        ProperType targetType = context.inferenceTypeFactory.getTargetType();
 
         List<Variable> result;
         try {
@@ -104,8 +96,8 @@ public class InvocationTypeInference {
             logException(invocation, ex);
             return null;
         }
-        ExecutableType methodType =
-                InternalInferenceUtils.getTypeOfMethodAdaptedToUse(invocation, context);
+        InvocationType methodType =
+                context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
         checkResult(result, invocation, methodType);
         return result;
     }
@@ -180,9 +172,10 @@ public class InvocationTypeInference {
      * javac.
      */
     private void checkResult(
-            List<Variable> result, ExpressionTree invocation, ExecutableType methodType) {
+            List<Variable> result, ExpressionTree invocation, InvocationType methodType) {
         Map<TypeVariable, TypeMirror> fromReturn =
-                InferenceUtils.getMappingFromReturnType(invocation, methodType, context.env);
+                InferenceUtils.getMappingFromReturnType(
+                        invocation, methodType.getJavaType(), context.env);
         for (Variable variable : result) {
             if (!variable.getInvocation().equals(invocation)) {
                 continue;
@@ -216,17 +209,13 @@ public class InvocationTypeInference {
     /** @return true if actual and inferred are captures of the same wildcard or declared type. */
     private boolean areSameCapture(TypeMirror actual, TypeMirror inferred) {
         if (TypesUtils.isCaptured(actual) && TypesUtils.isCaptured(inferred)) {
-            if (context.types.isSameWildcard(
+            return context.types.isSameWildcard(
                     (WildcardType) TypesUtils.getCapturedWildcard((TypeVariable) actual),
-                    (Type) TypesUtils.getCapturedWildcard((TypeVariable) inferred))) {
-                return true;
-            }
+                    (Type) TypesUtils.getCapturedWildcard((TypeVariable) inferred));
         } else if (TypesUtils.isCaptured(actual) && inferred.getKind() == TypeKind.WILDCARD) {
-            if (context.types.isSameWildcard(
+            return context.types.isSameWildcard(
                     (WildcardType) TypesUtils.getCapturedWildcard((TypeVariable) actual),
-                    (Type) inferred)) {
-                return true;
-            }
+                    (Type) inferred);
         } else if (actual.getKind() == TypeKind.DECLARED
                 && inferred.getKind() == TypeKind.DECLARED) {
             DeclaredType actualDT = (DeclaredType) actual;
@@ -253,8 +242,8 @@ public class InvocationTypeInference {
         } else {
             args = ((NewClassTree) invocation).getArguments();
         }
-        ExecutableType methodType =
-                InternalInferenceUtils.getTypeOfMethodAdaptedToUse(invocation, context);
+        InvocationType methodType =
+                context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
         Theta map = Theta.create(invocation, methodType, context);
         BoundSet b2 = createB2(invocation, methodType, args, map);
         BoundSet b3;
@@ -300,7 +289,7 @@ public class InvocationTypeInference {
      */
     public BoundSet createB2(
             ExpressionTree invocation,
-            ExecutableType methodType,
+            InvocationType methodType,
             List<? extends ExpressionTree> args,
             Theta map) {
         BoundSet b0 = BoundSet.initialBounds(map, context);
@@ -316,7 +305,7 @@ public class InvocationTypeInference {
 
         BoundSet b1 = b0;
         ConstraintSet c = new ConstraintSet();
-        List<AbstractType> formals = getParameterTypes(invocation, methodType, map, args.size());
+        List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
 
         for (int i = 0; i < formals.size(); i++) {
             ExpressionTree ei = args.get(i);
@@ -335,15 +324,12 @@ public class InvocationTypeInference {
     }
 
     /**
-     * Same as {@link #createB2(ExpressionTree, ExecutableType, List, Theta)}, but for method
+     * Same as {@link #createB2(ExpressionTree, InvocationType, List, Theta)}, but for method
      * references. A list of types is used instead of a list of arguments. These types are the types
      * of the formal parameters of function type of target type of the method reference.
      */
     public BoundSet createB2MethodRef(
-            MemberReferenceTree expression,
-            ExecutableType methodType,
-            List<AbstractType> args,
-            Theta map) {
+            InvocationType methodType, List<AbstractType> args, Theta map) {
         BoundSet b0 = BoundSet.initialBounds(map, context);
 
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
@@ -357,7 +343,7 @@ public class InvocationTypeInference {
 
         BoundSet b1 = b0;
         ConstraintSet c = new ConstraintSet();
-        List<AbstractType> formals = getParameterTypes(expression, methodType, map, args.size());
+        List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
 
         for (int i = 0; i < formals.size(); i++) {
             AbstractType ei = args.get(i);
@@ -370,23 +356,6 @@ public class InvocationTypeInference {
         b1.incorporateToFixedPoint(newBounds);
 
         return b1;
-    }
-
-    /**
-     * Returns a list of the parameter types of {@code executableType} where the vararg parameter
-     * has been modified to match the arguments in {@code expression}.
-     */
-    private List<AbstractType> getParameterTypes(
-            ExpressionTree expression, ExecutableType executableType, Theta map, int size) {
-        List<TypeMirror> params = new ArrayList<>(executableType.getParameterTypes());
-
-        if (TreeUtils.isVarArgMethodCall(expression)) {
-            ArrayType vararg = (ArrayType) params.remove(params.size() - 1);
-            for (int i = params.size(); i < size; i++) {
-                params.add(vararg.getComponentType());
-            }
-        }
-        return InferenceType.create(params, map, context);
     }
 
     /**
@@ -414,7 +383,7 @@ public class InvocationTypeInference {
      * Creates constraints against the targets type of {@code invocation} and then reduces and
      * incorporates those constraints with {@code b2}. (See JLS 18.5.2.1)
      *
-     * @param b2 BoundSet created by {@link #createB2(ExpressionTree, ExecutableType, List, Theta)}
+     * @param b2 BoundSet created by {@link #createB2(ExpressionTree, InvocationType, List, Theta)}
      * @param invocation method or constructor invocation
      * @param methodType the type of the method or constructor invoked by expression
      * @param target target type of the invocation
@@ -424,16 +393,10 @@ public class InvocationTypeInference {
     public BoundSet createB3(
             BoundSet b2,
             ExpressionTree invocation,
-            ExecutableType methodType,
+            InvocationType methodType,
             AbstractType target,
             Theta map) {
-        AbstractType r;
-        if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
-                || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {
-            r = InferenceType.create(methodType.getReturnType(), map, context);
-        } else {
-            r = InferenceType.create(TreeUtils.typeOf(invocation), map, context);
-        }
+        AbstractType r = methodType.getReturnType(map);
 
         if (b2.isUncheckedConversion()) {
             // If unchecked conversion was necessary for the method to be applicable during
@@ -508,11 +471,11 @@ public class InvocationTypeInference {
      */
     private ConstraintSet createC(
             ExpressionTree invocation,
-            ExecutableType methodType,
+            InvocationType methodType,
             List<? extends ExpressionTree> args,
             Theta map) {
         ConstraintSet c = new ConstraintSet();
-        List<AbstractType> formals = getParameterTypes(invocation, methodType, map, args.size());
+        List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
 
         for (int i = 0; i < formals.size(); i++) {
             ExpressionTree ei = args.get(i);
@@ -544,9 +507,9 @@ public class InvocationTypeInference {
             case METHOD_INVOCATION:
                 if (TreeUtils.isPolyExpression(ei)) {
                     MethodInvocationTree methodInvocation = (MethodInvocationTree) ei;
-                    ExecutableType methodType =
-                            InternalInferenceUtils.getTypeOfMethodAdaptedToUse(
-                                    methodInvocation, context);
+                    InvocationType methodType =
+                            context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(
+                                    methodInvocation);
                     Theta newMap = Theta.create(methodInvocation, methodType, context);
                     c.addAll(
                             createC(
@@ -559,9 +522,9 @@ public class InvocationTypeInference {
             case NEW_CLASS:
                 if (TreeUtils.isPolyExpression(ei)) {
                     NewClassTree newClassTree = (NewClassTree) ei;
-                    ExecutableType methodType =
-                            InternalInferenceUtils.getTypeOfMethodAdaptedToUse(
-                                    newClassTree, context);
+                    InvocationType methodType =
+                            context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(newClassTree);
+
                     Theta newMap = Theta.create(newClassTree, methodType, context);
                     c.addAll(
                             createC(newClassTree, methodType, newClassTree.getArguments(), newMap));

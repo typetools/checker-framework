@@ -21,11 +21,11 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
+import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
-import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
@@ -73,7 +73,7 @@ public class Expression extends Constraint {
         if (getT().isProper()) {
             return reduceProperType();
         } else if (TreeUtils.isStandaloneExpression(expression)) {
-            ProperType s = new ProperType(TreeUtils.typeOf(expression), context);
+            ProperType s = new ProperType(expression, context);
             return new Typing(s, T, Constraint.Kind.TYPE_COMPATIBILITY);
         }
         switch (expression.getKind()) {
@@ -133,8 +133,8 @@ public class Expression extends Constraint {
             args = methodInvocationTree.getArguments();
         }
 
-        ExecutableType methodType =
-                InternalInferenceUtils.getTypeOfMethodAdaptedToUse(expressionTree, context);
+        InvocationType methodType =
+                context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
         Theta map = Theta.create(expressionTree, methodType, context);
         BoundSet b2 = context.inference.createB2(expressionTree, methodType, args, map);
         return context.inference.createB3(b2, expressionTree, methodType, T, map);
@@ -144,20 +144,16 @@ public class Expression extends Constraint {
     private ReductionResult reduceMethodRef(Java8InferenceContext context) {
         MemberReferenceTree memRef = (MemberReferenceTree) expression;
         if (TreeUtils.isExactMethodReference(memRef)) {
-            ExecutableType typeOfPoAppMethod =
-                    TypesUtils.findFunctionType(TreeUtils.typeOf(memRef), context.env);
+            InvocationType typeOfPoAppMethod =
+                    context.inferenceTypeFactory.findFunctionType(memRef);
 
             ConstraintSet constraintSet = new ConstraintSet();
             List<AbstractType> ps = T.getFunctionTypeParameterTypes();
-            List<AbstractType> fs = new ArrayList<>();
-            for (TypeMirror param : typeOfPoAppMethod.getParameterTypes()) {
-                fs.add(new ProperType(param, context));
-            }
+            List<AbstractType> fs = typeOfPoAppMethod.getParameterTypes(null);
 
             if (ps.size() == fs.size() + 1) {
                 AbstractType targetReference = ps.remove(0);
-                ProperType referenceType =
-                        new ProperType(TreeUtils.typeOf(memRef.getQualifierExpression()), context);
+                ProperType referenceType = new ProperType(memRef.getQualifierExpression(), context);
                 constraintSet.add(
                         new Typing(targetReference, referenceType, Constraint.Kind.SUBTYPE));
             }
@@ -166,7 +162,7 @@ public class Expression extends Constraint {
             }
             AbstractType r = T.getFunctionTypeReturnType();
             if (r != null && r.getTypeKind() != TypeKind.VOID) {
-                AbstractType rPrime = new ProperType(typeOfPoAppMethod.getReturnType(), context);
+                AbstractType rPrime = typeOfPoAppMethod.getReturnType(null);
                 constraintSet.add(new Typing(rPrime, r, Constraint.Kind.TYPE_COMPATIBILITY));
             }
             return constraintSet;
@@ -174,8 +170,9 @@ public class Expression extends Constraint {
         // else the method reference is inexact.
 
         // Compile-time declaration of the member reference expression
-        ExecutableType compileTimeDecl = TreeUtils.compileTimeDeclarationType(memRef, context.env);
-        if (compileTimeDecl.getReturnType().getKind() == TypeKind.VOID) {
+        InvocationType compileTimeDecl =
+                context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
+        if (compileTimeDecl.isVoid()) {
             return ConstraintSet.TRUE;
         }
         AbstractType r = T.getFunctionTypeReturnType();
@@ -192,14 +189,13 @@ public class Expression extends Constraint {
         // function type, as defined in 18.5.2. B3 may contain new inference variables, as well as
         // dependencies between these new variables and the inference variables in T.
         Theta map = Theta.create(memRef, compileTimeDecl, context);
-        AbstractType compileTimeReturn =
-                InferenceType.create(compileTimeDecl.getReturnType(), map, context);
+        AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
         if (memRef.getTypeArguments() == null
                 && !compileTimeDecl.getTypeVariables().isEmpty()
                 && !compileTimeReturn.isProper()) {
             BoundSet b2 =
                     context.inference.createB2MethodRef(
-                            memRef, compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
+                            compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
             return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
         }
 
@@ -235,7 +231,7 @@ public class Expression extends Constraint {
 
             for (int i = 0; i < gs.size(); i++) {
                 VariableTree parameter = parameters.get(i);
-                AbstractType fi = new ProperType(TreeUtils.typeOf(parameter), context);
+                AbstractType fi = new ProperType(parameter, context);
                 AbstractType gi = gs.get(i);
                 constraintSet.add(new Typing(fi, gi, Constraint.Kind.TYPE_EQUALITY));
             }
@@ -318,7 +314,7 @@ public class Expression extends Constraint {
         // of F may be derived as the ground target type of the lambda expression as follows.
         List<ProperType> ps = new ArrayList<>();
         for (VariableTree paramTree : lambda.getParameters()) {
-            ps.add(new ProperType(TreeUtils.typeOf(paramTree), context));
+            ps.add(new ProperType(paramTree, context));
         }
 
         TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();

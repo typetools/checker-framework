@@ -12,6 +12,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
+import org.checkerframework.framework.util.typeinference8.types.InferenceTypeFactory;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.javacutil.TreeUtils;
@@ -61,6 +62,8 @@ public class Java8InferenceContext {
     /** TypeMirror for java.lang.RuntimeException. */
     public final TypeMirror runtimeEx;
 
+    public final InferenceTypeFactory inferenceTypeFactory;
+
     public Java8InferenceContext(
             ProcessingEnvironment env,
             AnnotatedTypeFactory factory,
@@ -84,6 +87,7 @@ public class Java8InferenceContext {
         this.runtimeEx =
                 TypesUtils.typeFromClass(
                         RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
+        this.inferenceTypeFactory = new InferenceTypeFactory(this);
     }
 
     /** @return the next number to use as the id for a non-capture variable */

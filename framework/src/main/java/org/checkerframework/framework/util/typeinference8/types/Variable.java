@@ -305,8 +305,10 @@ public class Variable extends AbstractType {
         }
         List<Typing> constraints = new ArrayList<>();
 
-        List<AbstractType> ss = s.asSuper(pair.first).getTypeArguments();
-        List<AbstractType> ts = t.asSuper(pair.second).getTypeArguments();
+        AbstractType super1 = s.create(pair.first);
+        AbstractType super2 = t.create(pair.second);
+        List<AbstractType> ss = s.asSuper(super1).getTypeArguments();
+        List<AbstractType> ts = t.asSuper(super2).getTypeArguments();
         assert ss.size() == ts.size();
 
         for (int i = 0; i < ss.size(); i++) {
@@ -450,8 +452,10 @@ public class Variable extends AbstractType {
                 if (supers == null) {
                     continue;
                 }
-                List<AbstractType> s1TypeArgs = s1.asSuper(supers.first).getTypeArguments();
-                List<AbstractType> s2TypeArgs = s2.asSuper(supers.second).getTypeArguments();
+                AbstractType super1 = s1.create(supers.first);
+                AbstractType super2 = s2.create(supers.second);
+                List<AbstractType> s1TypeArgs = s1.asSuper(super1).getTypeArguments();
+                List<AbstractType> s2TypeArgs = s2.asSuper(super2).getTypeArguments();
                 if (!s1TypeArgs.equals(s2TypeArgs)) {
                     return true;
                 }
@@ -467,12 +471,11 @@ public class Variable extends AbstractType {
      * type {@code |G<...>|} is a supertype of S?
      */
     public boolean hasRawTypeLowerOrEqualBound(AbstractType g) {
-        TypeMirror gTypeMirror = g.getJavaType();
         for (AbstractType type : bounds.get(BoundKind.LOWER)) {
             if (type.isVariable()) {
                 continue;
             }
-            AbstractType superTypeOfS = type.asSuper(gTypeMirror);
+            AbstractType superTypeOfS = type.asSuper(g);
             if (superTypeOfS != null && superTypeOfS.isRaw()) {
                 return true;
             }
@@ -482,7 +485,7 @@ public class Variable extends AbstractType {
             if (type.isVariable()) {
                 continue;
             }
-            AbstractType superTypeOfS = type.asSuper(gTypeMirror);
+            AbstractType superTypeOfS = type.asSuper(g);
             if (superTypeOfS != null && superTypeOfS.isRaw()) {
                 return true;
             }

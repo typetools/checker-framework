@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -60,7 +59,7 @@ public class Theta extends HashMap<TypeVariable, Variable> {
      * @return a mapping of the type variables of {@code methodType} to inference variables
      */
     public static Theta create(
-            ExpressionTree invocation, ExecutableType methodType, Java8InferenceContext context) {
+            ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
         if (context.maps.containsKey(invocation)) {
             return context.maps.get(invocation);
         }

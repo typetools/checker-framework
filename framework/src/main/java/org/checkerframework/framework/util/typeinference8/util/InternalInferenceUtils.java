@@ -45,7 +45,7 @@ public class InternalInferenceUtils {
         return types.glb(t1, t2);
     }
 
-    public static DeclaredType getReceiverType(ExpressionTree tree) {
+    private static DeclaredType getReceiverType(ExpressionTree tree) {
         Tree receiverTree;
         if (tree.getKind() == Kind.NEW_CLASS) {
             receiverTree = ((NewClassTree) tree).getEnclosingExpression();
@@ -75,12 +75,7 @@ public class InternalInferenceUtils {
         } else if (expressionTree.getKind() != Kind.METHOD_INVOCATION) {
             return null;
         }
-        ExecutableElement ele;
-        if (expressionTree.getKind() == Kind.NEW_CLASS) {
-            ele = TreeUtils.constructor((NewClassTree) expressionTree);
-        } else {
-            ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
-        }
+        ExecutableElement ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
 
         if (ElementUtils.isStatic(ele)) {
             return (ExecutableType) ele.asType();
