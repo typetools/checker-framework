@@ -222,6 +222,9 @@ task downloadJtreg(type: Download) {
             from tarTree(dest)
             into "${jtregHome}/.."
         }
+        exec {
+            commandLine('chmod',  '+x', "${jtregHome}/bin/jtdiff", "${jtregHome}/bin/jtreg")
+        }
     }
 }
 
