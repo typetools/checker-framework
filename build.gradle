@@ -602,7 +602,7 @@ task releaseBuild(type: GradleBuild) {
     description 'Build everything required for a release'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
-    // This download rather than builds the jdk8.jar because that's what is used in all the Travis tests.
+    // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
