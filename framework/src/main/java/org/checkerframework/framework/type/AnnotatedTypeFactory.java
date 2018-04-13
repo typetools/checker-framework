@@ -2933,11 +2933,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // 1. jdk.astub
         if (!checker.hasOption("ignorejdkastub")) {
-            InputStream in = null;
-            in = checker.getClass().getResourceAsStream("jdk.astub");
+            InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
                 StubParser.parse(
-                        "jdk.astub",
+                        checker.getClass().getResource("jdk.astub").toString(),
                         in,
                         this,
                         processingEnv,
