@@ -222,6 +222,9 @@ task downloadJtreg(type: Download) {
             from tarTree(dest)
             into "${jtregHome}/.."
         }
+        exec {
+            commandLine('chmod',  '+x', "${jtregHome}/bin/jtdiff", "${jtregHome}/bin/jtreg")
+        }
     }
 }
 
@@ -239,6 +242,18 @@ task getCodeFormatScripts() {
             workingDir "${formatScriptsHome}/../"
             executable 'git'
             args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+        }
+    }
+}
+
+task tags {
+    description 'Create Emacs TAGS table'
+    doLast {
+        exec {
+            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+        }
+        exec {
+            commandLine "make", "-C", "docs/manual", "tags"
         }
     }
 }
@@ -363,7 +378,7 @@ subprojects {
                         args = [
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",
-                                "-reportDir: ${jtregOutput}/${name}/report",
+                                "-reportDir:${jtregOutput}/${name}/report",
                                 "-verbose:summary",
                                 "-javacoptions:-g",
                                 "-keywords:!ignore",
@@ -587,7 +602,7 @@ task releaseBuild(type: GradleBuild) {
     description 'Build everything required for a release'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
-    // This download rather than builds the jdk8.jar because that's what is used in all the Travis tests.
+    // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {

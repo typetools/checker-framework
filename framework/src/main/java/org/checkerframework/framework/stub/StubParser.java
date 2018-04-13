@@ -102,12 +102,7 @@ public class StubParser {
     /** Whether to print verbose debugging messages. */
     private final boolean debugStubParser;
 
-    /**
-     * The name of the stub file being processed; used only for diagnostic messages.
-     *
-     * <p>TODO: filename is "jdk.astub" for that pre-defined file, but is the full path in other
-     * situations. Make this consistent.
-     */
+    /** The name of the stub file being processed; used only for diagnostic messages. */
     private final String filename;
 
     /**

@@ -42,45 +42,54 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * Caches of the analysis results for each input for the block of the node and each node.
      *
-     * @see #runAnalysisFor(Node, boolean, TransferInput, Map)
+     * @see #runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
      */
     protected final Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
             analysisCaches;
 
-    /** Initialize with a given node-value mapping. */
+    /** Initialize with given mappings. */
+    protected AnalysisResult(
+            Map<Node, A> nodeValues,
+            IdentityHashMap<Block, TransferInput<A, S>> stores,
+            IdentityHashMap<Tree, Set<Node>> treeLookup,
+            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
+            HashMap<Element, A> finalLocalValues,
+            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
+        this.nodeValues = new IdentityHashMap<>(nodeValues);
+        this.treeLookup = new IdentityHashMap<>(treeLookup);
+        this.unaryAssignNodeLookup = new IdentityHashMap<>(unaryAssignNodeLookup);
+        // TODO: why are stores and finalLocalValues captured?
+        this.stores = stores;
+        this.finalLocalValues = finalLocalValues;
+        this.analysisCaches = analysisCaches;
+    }
+
+    /** Initialize with given mappings and empty cache. */
     public AnalysisResult(
             Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
             HashMap<Element, A> finalLocalValues) {
-        this.nodeValues = new IdentityHashMap<>(nodeValues);
-        this.treeLookup = new IdentityHashMap<>(treeLookup);
-        this.unaryAssignNodeLookup = new IdentityHashMap<>(unaryAssignNodeLookup);
-        this.stores = stores;
-        this.finalLocalValues = finalLocalValues;
-        this.analysisCaches = new IdentityHashMap<>();
-    }
-
-    /** Initialize empty result. */
-    public AnalysisResult() {
-        nodeValues = new IdentityHashMap<>();
-        treeLookup = new IdentityHashMap<>();
-        unaryAssignNodeLookup = new IdentityHashMap<>();
-        stores = new IdentityHashMap<>();
-        finalLocalValues = new HashMap<>();
-        analysisCaches = new IdentityHashMap<>();
+        this(
+                nodeValues,
+                stores,
+                treeLookup,
+                unaryAssignNodeLookup,
+                finalLocalValues,
+                new IdentityHashMap<>());
     }
 
     /** Initialize empty result with specified cache. */
     public AnalysisResult(
             Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
-        this.nodeValues = new IdentityHashMap<>();
-        this.treeLookup = new IdentityHashMap<>();
-        this.unaryAssignNodeLookup = new IdentityHashMap<>();
-        this.stores = new IdentityHashMap<>();
-        this.finalLocalValues = new HashMap<>();
-        this.analysisCaches = analysisCaches;
+        this(
+                new IdentityHashMap<>(),
+                new IdentityHashMap<>(),
+                new IdentityHashMap<>(),
+                new IdentityHashMap<>(),
+                new HashMap<>(),
+                analysisCaches);
     }
 
     /** Combine with another analysis result. */
@@ -230,7 +239,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (transferInput == null) {
             return null;
         }
-        return runAnalysisFor(node, before, transferInput, analysisCaches);
+        return runAnalysisFor(node, before, transferInput, nodeValues, analysisCaches);
     }
 
     /**
@@ -247,6 +256,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             Node node,
             boolean before,
             TransferInput<A, S> transferInput,
+            IdentityHashMap<Node, A> nodeValues,
             Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
         assert node != null;
         Block block = node.getBlock();
@@ -269,6 +279,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (analysis.isRunning) {
             return analysis.currentInput.getRegularStore();
         }
+        analysis.setNodeValues(nodeValues);
         analysis.isRunning = true;
         try {
             switch (block.getType()) {
