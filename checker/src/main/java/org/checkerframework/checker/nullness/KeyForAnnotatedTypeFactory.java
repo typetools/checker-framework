@@ -30,7 +30,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -116,9 +115,8 @@ public class KeyForAnnotatedTypeFactory
         }
 
         @Override
-        public boolean isSubtype(
-                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
-
+        protected boolean isSubtype(
+                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
             // TODO: THIS IS FROM THE OLD TYPE HIERARCHY.  WE SHOULD FIX DATA-FLOW/PROPAGATION TO DO
             // THE RIGHT THING
             if (supertype.getKind() == TypeKind.TYPEVAR && subtype.getKind() == TypeKind.TYPEVAR) {
@@ -133,8 +131,7 @@ public class KeyForAnnotatedTypeFactory
             if (subtype.hasAnnotation(KeyForBottom.class)) {
                 return true;
             }
-
-            return super.isSubtype(subtype, supertype, visited);
+            return super.isSubtype(subtype, supertype, top);
         }
     }
 
