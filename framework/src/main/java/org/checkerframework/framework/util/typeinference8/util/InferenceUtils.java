@@ -36,11 +36,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
-import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 public class InferenceUtils {
 
@@ -146,24 +143,6 @@ public class InferenceUtils {
                     || isArgument(path, conditionalExpressionTree.getFalseExpression());
         }
         return false;
-    }
-
-    /** @return the greatest lower bound of {@code a} and {@code b}. */
-    public static AbstractType glb(AbstractType a, AbstractType b, Java8InferenceContext context) {
-        Type aJavaType = (Type) a.getJavaType();
-        Type bJavaType = (Type) b.getJavaType();
-        TypeMirror glb = TypesUtils.greatestLowerBound(aJavaType, bJavaType, context.env);
-        if (context.env.getTypeUtils().isSameType(glb, bJavaType)) {
-            return b;
-        } else if (context.env.getTypeUtils().isSameType(glb, aJavaType)) {
-            return a;
-        } else if (a.isInferenceType()) {
-            return a.create(glb);
-        } else if (b.isInferenceType()) {
-            return b.create(glb);
-        }
-        assert a.isProper() && b.isProper();
-        return new ProperTypeMirror(glb, context);
     }
 
     /**

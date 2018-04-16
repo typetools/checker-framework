@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.typeinference8.types.typemirror;
+package org.checkerframework.framework.util.typeinference8.typemirror.type;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.VariableTree;
@@ -23,17 +23,17 @@ public class ProperTypeMirror extends AbstractTypeMirror implements ProperType {
         return new ProperTypeMirror(properType, context);
     }
 
-    public ProperTypeMirror(TypeMirror properType, Java8InferenceContext context) {
+    ProperTypeMirror(TypeMirror properType, Java8InferenceContext context) {
         super(context);
         assert properType != null && context != null && properType.getKind() != TypeKind.VOID;
         this.properType = properType;
     }
 
-    public ProperTypeMirror(ExpressionTree tree, Java8InferenceContext context) {
+    ProperTypeMirror(ExpressionTree tree, Java8InferenceContext context) {
         this(TreeUtils.typeOf(tree), context);
     }
 
-    public ProperTypeMirror(VariableTree varTree, Java8InferenceContext context) {
+    ProperTypeMirror(VariableTree varTree, Java8InferenceContext context) {
         this(TreeUtils.typeOf(varTree), context);
     }
 

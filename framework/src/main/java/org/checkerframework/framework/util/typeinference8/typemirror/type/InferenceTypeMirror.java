@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.typeinference8.types.typemirror;
+package org.checkerframework.framework.util.typeinference8.typemirror.type;
 
 import java.util.ArrayList;
 import java.util.Collection;

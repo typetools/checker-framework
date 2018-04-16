@@ -32,13 +32,13 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint.
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;

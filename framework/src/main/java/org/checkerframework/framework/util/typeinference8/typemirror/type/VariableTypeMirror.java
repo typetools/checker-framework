@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.typeinference8.types.typemirror;
+package org.checkerframework.framework.util.typeinference8.typemirror.type;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Collection;

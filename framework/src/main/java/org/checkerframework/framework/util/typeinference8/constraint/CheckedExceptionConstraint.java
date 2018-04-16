@@ -1,23 +1,14 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
-import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * &lt;LambdaExpression &rarr;throws T&gt;: The checked exceptions thrown by the body of the
@@ -69,50 +60,7 @@ public class CheckedExceptionConstraint extends Constraint {
     /** See JLS 18.2.5 */
     @Override
     public ReductionResult reduce(Java8InferenceContext context) {
-        ConstraintSet constraintSet = new ConstraintSet();
-        ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
-        List<Variable> es = new ArrayList<>();
-        List<ProperType> properTypes = new ArrayList<>();
-        for (TypeMirror thrownType : ele.getThrownTypes()) {
-            AbstractType ei = InferenceTypeMirror.create(thrownType, map, context);
-            if (ei.isProper()) {
-                properTypes.add((ProperType) ei);
-            } else {
-                es.add((Variable) ei);
-            }
-        }
-        if (es.isEmpty()) {
-            return ConstraintSet.TRUE;
-        }
-
-        List<? extends TypeMirror> thrownTypes;
-        if (getKind() == Kind.LAMBDA_EXCEPTION) {
-            thrownTypes =
-                    CheckedExceptionsUtil.thrownCheckedExceptions(
-                            (LambdaExpressionTree) expression, context);
-        } else {
-            thrownTypes =
-                    TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env)
-                            .getThrownTypes();
-        }
-
-        for (TypeMirror xi : thrownTypes) {
-            boolean isSubtypeOfProper = false;
-            for (ProperType properType : properTypes) {
-                if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
-                    isSubtypeOfProper = true;
-                }
-            }
-            if (!isSubtypeOfProper) {
-                for (Variable ei : es) {
-                    constraintSet.add(
-                            new Typing(new ProperTypeMirror(xi, context), ei, Kind.SUBTYPE));
-                    ei.getBounds().setHasThrowsBound(true);
-                }
-            }
-        }
-
-        return constraintSet;
+        return context.inferenceTypeFactory.getCheckedExceptionConstraints(expression, map);
     }
 
     @Override

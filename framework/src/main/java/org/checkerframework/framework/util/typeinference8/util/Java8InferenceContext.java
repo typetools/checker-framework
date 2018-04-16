@@ -12,10 +12,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
-import org.checkerframework.framework.util.typeinference8.types.InferenceTypeFactory;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirrorFactory;
+import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -63,7 +63,7 @@ public class Java8InferenceContext {
     /** TypeMirror for java.lang.RuntimeException. */
     public final TypeMirror runtimeEx;
 
-    public final InferenceTypeFactory inferenceTypeFactory;
+    public final InferenceFactory inferenceTypeFactory;
 
     public Java8InferenceContext(
             ProcessingEnvironment env,
@@ -76,19 +76,14 @@ public class Java8InferenceContext {
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         this.types = Types.instance(javacEnv.getContext());
         this.modelTypes = factory.getContext().getChecker().getTypeUtils();
-        TypeMirror objecTypeMirror =
-                TypesUtils.typeFromClass(
-                        Object.class,
-                        factory.getContext().getTypeUtils(),
-                        factory.getElementUtils());
-        this.object = new ProperTypeMirror(objecTypeMirror, this);
         ClassTree clazz = TreeUtils.enclosingClass(pathToExpression);
         this.enclosingType = (DeclaredType) TreeUtils.typeOf(clazz);
         this.maps = new HashMap<>();
         this.runtimeEx =
                 TypesUtils.typeFromClass(
                         RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
-        this.inferenceTypeFactory = new InferenceTypeFactory(this);
+        this.inferenceTypeFactory = new InferenceTypeMirrorFactory(this);
+        this.object = inferenceTypeFactory.getObject();
     }
 
     /** @return the next number to use as the id for a non-capture variable */

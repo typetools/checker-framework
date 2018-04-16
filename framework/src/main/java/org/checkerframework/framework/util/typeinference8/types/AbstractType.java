@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.VariableTypeMirror;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.ProperTypeMirror;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
 
 public interface AbstractType {
 

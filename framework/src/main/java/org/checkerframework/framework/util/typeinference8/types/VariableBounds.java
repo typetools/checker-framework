@@ -14,8 +14,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
-import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
@@ -178,20 +177,18 @@ public class VariableBounds {
     }
 
     public List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
-        Pair<TypeMirror, TypeMirror> pair =
-                InternalInferenceUtils.getParameterizedSupers(
-                        s.getJavaType(), t.getJavaType(), context);
+        Pair<AbstractType, AbstractType> pair =
+                context.inferenceTypeFactory.getParameterizedSupers(s, t);
+
         if (pair == null) {
             return new ArrayList<>();
         }
-        List<Typing> constraints = new ArrayList<>();
 
-        AbstractType super1 = s.create(pair.first);
-        AbstractType super2 = t.create(pair.second);
-        List<AbstractType> ss = s.asSuper(super1).getTypeArguments();
-        List<AbstractType> ts = t.asSuper(super2).getTypeArguments();
+        List<AbstractType> ss = pair.first.getTypeArguments();
+        List<AbstractType> ts = pair.second.getTypeArguments();
         assert ss.size() == ts.size();
 
+        List<Typing> constraints = new ArrayList<>();
         for (int i = 0; i < ss.size(); i++) {
             AbstractType si = ss.get(i);
             AbstractType ti = ts.get(i);
@@ -324,19 +321,15 @@ public class VariableBounds {
         }
         for (int i = 0; i < parameteredTypes.size(); i++) {
             AbstractType s1 = parameteredTypes.get(i);
-            TypeMirror s1Java = s1.getJavaType();
             for (int j = i + 1; j < parameteredTypes.size(); j++) {
                 AbstractType s2 = parameteredTypes.get(j);
-                TypeMirror s2Java = s2.getJavaType();
-                Pair<TypeMirror, TypeMirror> supers =
-                        InternalInferenceUtils.getParameterizedSupers(s1Java, s2Java, context);
+                Pair<AbstractType, AbstractType> supers =
+                        context.inferenceTypeFactory.getParameterizedSupers(s1, s2);
                 if (supers == null) {
                     continue;
                 }
-                AbstractType super1 = s1.create(supers.first);
-                AbstractType super2 = s2.create(supers.second);
-                List<AbstractType> s1TypeArgs = s1.asSuper(super1).getTypeArguments();
-                List<AbstractType> s2TypeArgs = s2.asSuper(super2).getTypeArguments();
+                List<AbstractType> s1TypeArgs = supers.first.getTypeArguments();
+                List<AbstractType> s2TypeArgs = supers.second.getTypeArguments();
                 if (!s1TypeArgs.equals(s2TypeArgs)) {
                     return true;
                 }

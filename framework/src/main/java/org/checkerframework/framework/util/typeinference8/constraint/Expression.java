@@ -19,15 +19,13 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.VariableTypeMirror;
-import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
@@ -75,7 +73,7 @@ public class Expression extends Constraint {
         if (getT().isProper()) {
             return reduceProperType();
         } else if (TreeUtils.isStandaloneExpression(expression)) {
-            ProperType s = new ProperTypeMirror(expression, context);
+            ProperType s = context.inferenceTypeFactory.getTypeOfExpression(expression);
             return new Typing(s, T, Constraint.Kind.TYPE_COMPATIBILITY);
         }
         switch (expression.getKind()) {
@@ -156,7 +154,8 @@ public class Expression extends Constraint {
             if (ps.size() == fs.size() + 1) {
                 AbstractType targetReference = ps.remove(0);
                 ProperType referenceType =
-                        new ProperTypeMirror(memRef.getQualifierExpression(), context);
+                        context.inferenceTypeFactory.getTypeOfExpression(
+                                memRef.getQualifierExpression());
                 constraintSet.add(
                         new Typing(targetReference, referenceType, Constraint.Kind.SUBTYPE));
             }
@@ -234,7 +233,7 @@ public class Expression extends Constraint {
 
             for (int i = 0; i < gs.size(); i++) {
                 VariableTree parameter = parameters.get(i);
-                AbstractType fi = new ProperTypeMirror(parameter, context);
+                AbstractType fi = context.inferenceTypeFactory.getTypeOfVariable(parameter);
                 AbstractType gi = gs.get(i);
                 constraintSet.add(new Typing(fi, gi, Constraint.Kind.TYPE_EQUALITY));
             }
@@ -296,7 +295,7 @@ public class Expression extends Constraint {
                 Ts.add(bi);
             } else if (Ai.isUpperBoundedWildcard()) {
                 AbstractType Ui = Ai.getWildcardUpperBound();
-                AbstractType glb = InferenceUtils.glb(Ui, bi, context);
+                AbstractType glb = context.inferenceTypeFactory.glb(Ui, bi);
                 Ts.add(glb);
             } else {
                 // Lower bounded wildcard
@@ -317,7 +316,7 @@ public class Expression extends Constraint {
         // of F may be derived as the ground target type of the lambda expression as follows.
         List<ProperType> ps = new ArrayList<>();
         for (VariableTree paramTree : lambda.getParameters()) {
-            ps.add(new ProperTypeMirror(paramTree, context));
+            ps.add(context.inferenceTypeFactory.getTypeOfVariable(paramTree));
         }
 
         TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
