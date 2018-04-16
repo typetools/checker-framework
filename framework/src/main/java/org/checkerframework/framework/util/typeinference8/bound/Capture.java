@@ -21,6 +21,7 @@ import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.CaptureVariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
@@ -61,7 +62,7 @@ public class Capture {
         List<Pair<CaptureVariable, TypeMirror>> pairs = new ArrayList<>();
         for (TypeParameterElement pEle : ele.getTypeParameters()) {
             TypeVariable pl = (TypeVariable) pEle.asType();
-            CaptureVariable al = new CaptureVariable(pl, tree, context);
+            CaptureVariable al = new CaptureVariableTypeMirror(pl, tree, context);
             map.put(pl, al);
             pairs.add(Pair.of(al, pl.getUpperBound()));
             captureVariables.add(al);

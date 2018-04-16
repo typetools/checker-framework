@@ -7,7 +7,6 @@ import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -146,12 +145,6 @@ public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
             return "a" + id + " := " + variableBounds.getInstantiation();
         }
         return "a" + id;
-    }
-
-    /** @return true if this is a variable created for a capture bound. */
-    @Override
-    public boolean isCaptureVariable() {
-        return this instanceof CaptureVariable;
     }
 
     /** Save the current bounds. */

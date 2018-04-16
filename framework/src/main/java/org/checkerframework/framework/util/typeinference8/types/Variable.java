@@ -21,7 +21,9 @@ public interface Variable extends AbstractType {
     ExpressionTree getInvocation();
 
     /** @return true if this is a variable created for a capture bound. */
-    boolean isCaptureVariable();
+    default boolean isCaptureVariable() {
+        return false;
+    }
 
     /** Save the current bounds. */
     void save();
