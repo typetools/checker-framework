@@ -14,7 +14,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -23,9 +22,9 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * The JLS references "types", explained in 18.1.1, that are "type-like syntax that contain
  * inference variables". This class represents these "types" separated into three kinds: {@link
- * ProperType}, a type that contains no inference variables; {@link InferenceType}, a type that
- * contains inference variables, but is not an inference variable; and {@link Variable}, an
- * inference variable.
+ * ProperTypeMirror}, a type that contains no inference variables; {@link InferenceTypeMirror}, a
+ * type that contains inference variables, but is not an inference variable; and {@link Variable},
+ * an inference variable.
  */
 public abstract class AbstractTypeMirror implements AbstractType {
     protected final Java8InferenceContext context;
@@ -54,7 +53,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
         TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
         for (TypeParameterElement ele : typeelem.getTypeParameters()) {
             TypeVariable typeVariable = (TypeVariable) ele.asType();
-            bounds.add(new ProperType(typeVariable.getUpperBound(), context));
+            bounds.add(new ProperTypeMirror(typeVariable.getUpperBound(), context));
         }
         return bounds;
     }
@@ -287,7 +286,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
 
     /** @return if this type is a wildcard return its upper bound; otherwise, return null. */
     @Override
-    public final AbstractTypeMirror getWildcardUpperBound() {
+    public final AbstractType getWildcardUpperBound() {
         if (getJavaType().getKind() != TypeKind.WILDCARD) {
             return null;
         } else if (((Type.WildcardType) getJavaType()).isExtendsBound()) {

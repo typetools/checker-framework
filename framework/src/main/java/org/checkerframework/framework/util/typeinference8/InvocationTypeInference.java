@@ -33,11 +33,11 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
@@ -297,7 +297,7 @@ public class InvocationTypeInference {
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
         // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound set, B1.
         for (TypeMirror type : methodType.getThrownTypes()) {
-            AbstractType thrownType = InferenceType.create(type, map, context);
+            AbstractType thrownType = InferenceTypeMirror.create(type, map, context);
             if (thrownType.isVariable()) {
                 ((Variable) thrownType).setHasThrowsBound(true);
             }
@@ -335,7 +335,7 @@ public class InvocationTypeInference {
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
         // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound set, B1.
         for (TypeMirror type : methodType.getThrownTypes()) {
-            AbstractType thrownType = InferenceType.create(type, map, context);
+            AbstractType thrownType = InferenceTypeMirror.create(type, map, context);
             if (thrownType.isVariable()) {
                 ((Variable) thrownType).setHasThrowsBound(true);
             }

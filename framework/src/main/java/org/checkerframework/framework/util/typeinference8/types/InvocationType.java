@@ -10,6 +10,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.AbstractTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -45,9 +47,9 @@ public class InvocationType {
             returnType = TreeUtils.typeOf(invocation);
         }
         if (map == null) {
-            return new ProperType(returnType, context);
+            return new ProperTypeMirror(returnType, context);
         }
-        return InferenceType.create(returnType, map, context);
+        return InferenceTypeMirror.create(returnType, map, context);
     }
 
     /**
@@ -63,7 +65,7 @@ public class InvocationType {
                 params.add(vararg.getComponentType());
             }
         }
-        return InferenceType.create(params, map, context);
+        return InferenceTypeMirror.create(params, map, context);
     }
 
     public List<? extends TypeVariable> getTypeVariables() {

@@ -37,7 +37,7 @@ import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.ProperType;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -163,7 +163,7 @@ public class InferenceUtils {
             return b.create(glb);
         }
         assert a.isProper() && b.isProper();
-        return new ProperType(glb, context);
+        return new ProperTypeMirror(glb, context);
     }
 
     /**

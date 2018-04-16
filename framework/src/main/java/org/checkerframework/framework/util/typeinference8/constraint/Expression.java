@@ -20,11 +20,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -73,7 +74,7 @@ public class Expression extends Constraint {
         if (getT().isProper()) {
             return reduceProperType();
         } else if (TreeUtils.isStandaloneExpression(expression)) {
-            ProperType s = new ProperType(expression, context);
+            ProperType s = new ProperTypeMirror(expression, context);
             return new Typing(s, T, Constraint.Kind.TYPE_COMPATIBILITY);
         }
         switch (expression.getKind()) {
@@ -153,7 +154,8 @@ public class Expression extends Constraint {
 
             if (ps.size() == fs.size() + 1) {
                 AbstractType targetReference = ps.remove(0);
-                ProperType referenceType = new ProperType(memRef.getQualifierExpression(), context);
+                ProperType referenceType =
+                        new ProperTypeMirror(memRef.getQualifierExpression(), context);
                 constraintSet.add(
                         new Typing(targetReference, referenceType, Constraint.Kind.SUBTYPE));
             }
@@ -231,7 +233,7 @@ public class Expression extends Constraint {
 
             for (int i = 0; i < gs.size(); i++) {
                 VariableTree parameter = parameters.get(i);
-                AbstractType fi = new ProperType(parameter, context);
+                AbstractType fi = new ProperTypeMirror(parameter, context);
                 AbstractType gi = gs.get(i);
                 constraintSet.add(new Typing(fi, gi, Constraint.Kind.TYPE_EQUALITY));
             }
@@ -314,7 +316,7 @@ public class Expression extends Constraint {
         // of F may be derived as the ground target type of the lambda expression as follows.
         List<ProperType> ps = new ArrayList<>();
         for (VariableTree paramTree : lambda.getParameters()) {
-            ps.add(new ProperType(paramTree, context));
+            ps.add(new ProperTypeMirror(paramTree, context));
         }
 
         TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
@@ -332,7 +334,7 @@ public class Expression extends Constraint {
         ExecutableType funcType = TypesUtils.findFunctionType(typeEle.asType(), context.env);
         List<AbstractType> qs = new ArrayList<>();
         for (TypeMirror param : funcType.getParameterTypes()) {
-            qs.add(InferenceType.create(param, map, context));
+            qs.add(InferenceTypeMirror.create(param, map, context));
         }
         assert qs.size() == ps.size();
 

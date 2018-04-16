@@ -15,6 +15,7 @@ import org.checkerframework.framework.util.typeinference8.InvocationTypeInferenc
 import org.checkerframework.framework.util.typeinference8.types.InferenceTypeFactory;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -80,7 +81,7 @@ public class Java8InferenceContext {
                         Object.class,
                         factory.getContext().getTypeUtils(),
                         factory.getElementUtils());
-        this.object = new ProperType(objecTypeMirror, this);
+        this.object = new ProperTypeMirror(objecTypeMirror, this);
         ClassTree clazz = TreeUtils.enclosingClass(pathToExpression);
         this.enclosingType = (DeclaredType) TreeUtils.typeOf(clazz);
         this.maps = new HashMap<>();

@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference8.types;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -28,7 +29,7 @@ public class InferenceTypeFactory {
         TypeMirror assignmentType = InferenceUtils.getTargetType(context.pathToExpression, context);
 
         if (assignmentType != null) {
-            targetType = new ProperType(assignmentType, context);
+            targetType = new ProperTypeMirror(assignmentType, context);
         }
         return targetType;
     }

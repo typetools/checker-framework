@@ -13,6 +13,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
@@ -88,12 +89,12 @@ public class VariableBounds {
         switch (upperBound.getKind()) {
             case INTERSECTION:
                 for (TypeMirror bound : ((IntersectionType) upperBound).getBounds()) {
-                    AbstractType t1 = InferenceType.create(bound, map, context);
+                    AbstractType t1 = InferenceTypeMirror.create(bound, map, context);
                     addBound(BoundKind.UPPER, t1);
                 }
                 break;
             default:
-                AbstractType t1 = InferenceType.create(upperBound, map, context);
+                AbstractType t1 = InferenceTypeMirror.create(upperBound, map, context);
                 addBound(BoundKind.UPPER, t1);
                 break;
         }

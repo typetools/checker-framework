@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 
 public interface AbstractType {
 
@@ -160,13 +162,13 @@ public interface AbstractType {
     AbstractType getComponentType();
 
     public enum Kind {
-        /** {@link ProperType},a type that contains no inference variables* */
+        /** {@link ProperTypeMirror},a type that contains no inference variables* */
         PROPER,
         /** {@link Variable}, an inference variable. */
         VARIABLE,
         /**
-         * {@link InferenceType}, a type that contains inference variables, but is not an inference
-         * variable.
+         * {@link InferenceTypeMirror}, a type that contains inference variables, but is not an
+         * inference variable.
          */
         INFERENCE_TYPE
     }

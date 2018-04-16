@@ -21,6 +21,7 @@ import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
@@ -66,14 +67,14 @@ public class Capture {
             captureVariables.add(al);
         }
 
-        lhs = (InferenceType) InferenceType.create(ele.asType(), map, context);
+        lhs = (InferenceType) InferenceTypeMirror.create(ele.asType(), map, context);
 
         Iterator<AbstractType> args = capturedType.getTypeArguments().iterator();
         for (Pair<CaptureVariable, TypeMirror> pair : pairs) {
             AbstractType Ai = args.next();
             CaptureVariable alaphi = pair.first;
             alaphi.initialBounds(map);
-            AbstractType Bi = InferenceType.create(pair.second, map, context);
+            AbstractType Bi = InferenceTypeMirror.create(pair.second, map, context);
             tuples.add(CaptureTuple.of(alaphi, Ai, Bi));
         }
     }

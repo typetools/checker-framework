@@ -9,10 +9,11 @@ import java.util.Objects;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
@@ -73,7 +74,7 @@ public class CheckedExceptionConstraint extends Constraint {
         List<Variable> es = new ArrayList<>();
         List<ProperType> properTypes = new ArrayList<>();
         for (TypeMirror thrownType : ele.getThrownTypes()) {
-            AbstractType ei = InferenceType.create(thrownType, map, context);
+            AbstractType ei = InferenceTypeMirror.create(thrownType, map, context);
             if (ei.isProper()) {
                 properTypes.add((ProperType) ei);
             } else {
@@ -104,7 +105,8 @@ public class CheckedExceptionConstraint extends Constraint {
             }
             if (!isSubtypeOfProper) {
                 for (Variable ei : es) {
-                    constraintSet.add(new Typing(new ProperType(xi, context), ei, Kind.SUBTYPE));
+                    constraintSet.add(
+                            new Typing(new ProperTypeMirror(xi, context), ei, Kind.SUBTYPE));
                     ei.setHasThrowsBound(true);
                 }
             }
