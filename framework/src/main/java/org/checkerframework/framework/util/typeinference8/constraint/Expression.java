@@ -26,6 +26,7 @@ import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -326,7 +327,7 @@ public class Expression extends Constraint {
         Theta map = new Theta();
         for (TypeParameterElement param : typeEle.getTypeParameters()) {
             TypeVariable typeVar = (TypeVariable) param.asType();
-            Variable ai = new Variable(typeVar, lambda, context);
+            Variable ai = new VariableTypeMirror(typeVar, lambda, context);
             map.put(typeVar, ai);
             alphas.add(ai);
         }

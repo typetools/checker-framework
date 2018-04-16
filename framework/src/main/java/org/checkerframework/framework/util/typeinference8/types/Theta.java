@@ -10,6 +10,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -65,7 +66,7 @@ public class Theta extends HashMap<TypeVariable, Variable> {
         }
         Theta map = new Theta();
         for (TypeVariable pl : methodType.getTypeVariables()) {
-            Variable al = new Variable(pl, invocation, context);
+            Variable al = new VariableTypeMirror(pl, invocation, context);
             map.put(pl, al);
         }
         if (TreeUtils.isDiamondTree(invocation)) {
@@ -80,7 +81,7 @@ public class Theta extends HashMap<TypeVariable, Variable> {
                     return map;
                 }
                 TypeVariable pl = (TypeVariable) typeMirror;
-                Variable al = new Variable(pl, invocation, context);
+                Variable al = new VariableTypeMirror(pl, invocation, context);
                 map.put(pl, al);
             }
         }

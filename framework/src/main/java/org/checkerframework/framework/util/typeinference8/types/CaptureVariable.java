@@ -7,10 +7,11 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
 /** A variable created for a capture bound. */
-public class CaptureVariable extends Variable {
+public class CaptureVariable extends VariableTypeMirror {
 
     public CaptureVariable(
             TypeVariable type, ExpressionTree invocation, Java8InferenceContext context) {

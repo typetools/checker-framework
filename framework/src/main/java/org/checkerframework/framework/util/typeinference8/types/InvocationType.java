@@ -9,7 +9,6 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.util.typeinference8.types.typemirror.AbstractTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.ProperTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -36,7 +35,7 @@ public class InvocationType {
         return methodType.getThrownTypes();
     }
 
-    public AbstractTypeMirror getReturnType(Theta map) {
+    public AbstractType getReturnType(Theta map) {
         TypeMirror returnType;
         if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
                 || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {

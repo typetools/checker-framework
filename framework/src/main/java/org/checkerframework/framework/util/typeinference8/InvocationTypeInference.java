@@ -38,6 +38,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.InferenceTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.typemirror.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
@@ -62,8 +63,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * Groups of constraints are stored in {@link ConstraintSet}s.
  *
  * <p>Bounds are between an inference variable and another abstract type, including another
- * variable. They are stored in {@link Variable} and {@link Variable}s are stored in {@link
- * BoundSet}s.
+ * variable. They are stored in {@link VariableTypeMirror} and {@link VariableTypeMirror}s are
+ * stored in {@link BoundSet}s.
  *
  * <p>Variables are resolved via {@link Resolution#resolve(LinkedHashSet, BoundSet)}.
  */

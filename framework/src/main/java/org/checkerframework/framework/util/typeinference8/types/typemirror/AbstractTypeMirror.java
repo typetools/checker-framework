@@ -15,7 +15,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
-import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -23,8 +22,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * The JLS references "types", explained in 18.1.1, that are "type-like syntax that contain
  * inference variables". This class represents these "types" separated into three kinds: {@link
  * ProperTypeMirror}, a type that contains no inference variables; {@link InferenceTypeMirror}, a
- * type that contains inference variables, but is not an inference variable; and {@link Variable},
- * an inference variable.
+ * type that contains inference variables, but is not an inference variable; and {@link
+ * VariableTypeMirror}, an inference variable.
  */
 public abstract class AbstractTypeMirror implements AbstractType {
     protected final Java8InferenceContext context;
@@ -34,7 +33,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
     }
 
     @Override
-    public abstract AbstractTypeMirror create(TypeMirror type);
+    public abstract AbstractType create(TypeMirror type);
 
     /** @return the TypeKind of the underlying Java type */
     @Override
@@ -60,7 +59,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
 
     /** @return a new type that is the capture of this type. */
     @Override
-    public AbstractTypeMirror capture() {
+    public AbstractType capture() {
         TypeMirror capture;
         if (getJavaType().getKind() == TypeKind.WILDCARD) {
             capture =
@@ -106,7 +105,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
      * @return the return type of the function type of this type or null if one doesn't exist
      */
     @Override
-    public final AbstractTypeMirror getFunctionTypeReturnType() {
+    public final AbstractType getFunctionTypeReturnType() {
         if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
             ExecutableType element = TypesUtils.findFunctionType(getJavaType(), context.env);
             TypeMirror returnType = element.getReturnType();
@@ -216,7 +215,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
      *     type.
      */
     @Override
-    public final AbstractTypeMirror getTypeVarUpperBound() {
+    public final AbstractType getTypeVarUpperBound() {
         return create(((TypeVariable) getJavaType()).getUpperBound());
     }
 
@@ -225,7 +224,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
      *     lower bound of this type.
      */
     @Override
-    public final AbstractTypeMirror getTypeVarLowerBound() {
+    public final AbstractType getTypeVarLowerBound() {
         return create(((TypeVariable) getJavaType()).getLowerBound());
     }
 
@@ -277,7 +276,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
 
     /** @return if this type is a wildcard return its lower bound; otherwise, return null. */
     @Override
-    public final AbstractTypeMirror getWildcardLowerBound() {
+    public final AbstractType getWildcardLowerBound() {
         if (getJavaType().getKind() == TypeKind.WILDCARD) {
             return create(TypesUtils.wildLowerBound(getJavaType(), context.env));
         }
@@ -302,13 +301,13 @@ public abstract class AbstractTypeMirror implements AbstractType {
 
     /** @return a new type whose Java type is the erasure of this type */
     @Override
-    public AbstractTypeMirror getErased() {
+    public AbstractType getErased() {
         return create(context.env.getTypeUtils().erasure(getJavaType()));
     }
 
     /** @return the array component type of this type or null if one does not exist. */
     @Override
-    public final AbstractTypeMirror getComponentType() {
+    public final AbstractType getComponentType() {
         if (getJavaType().getKind() == TypeKind.ARRAY) {
             return create(((ArrayType) getJavaType()).getComponentType());
         } else {

@@ -37,12 +37,11 @@ public class InferenceTypeMirror extends AbstractTypeMirror implements Inference
      * Creates an abstract type for the given TypeMirror. The created type is an {@link
      * InferenceTypeMirror} if {@code type} contains any type variables that are mapped to inference
      * variables as specified by {@code map}. Or if {@code type} is a type variable that is mapped
-     * to an inference variable, it will return that {@link Variable}. Or if {@code type} contains
-     * no type variables that are mapped in an inference variable, a {@link ProperTypeMirror} is
-     * returned.
+     * to an inference variable, it will return that {@link VariableTypeMirror}. Or if {@code type}
+     * contains no type variables that are mapped in an inference variable, a {@link
+     * ProperTypeMirror} is returned.
      */
-    public static AbstractTypeMirror create(
-            TypeMirror type, Theta map, Java8InferenceContext context) {
+    public static AbstractType create(TypeMirror type, Theta map, Java8InferenceContext context) {
         assert type != null;
         if (map == null) {
             return new ProperTypeMirror(type, context);
@@ -60,9 +59,9 @@ public class InferenceTypeMirror extends AbstractTypeMirror implements Inference
      * Creates abstract types for each TypeMirror. The created type is an {@link
      * InferenceTypeMirror} if {@code type} contains any type variables that are mapped to inference
      * variables as specified by {@code map}. Or if {@code type} is a type variable that is mapped
-     * to an inference variable, it will return that {@link Variable}. Or if {@code type} contains
-     * no type variables that are mapped in an inference variable, a {@link ProperTypeMirror} is
-     * returned.
+     * to an inference variable, it will return that {@link VariableTypeMirror}. Or if {@code type}
+     * contains no type variables that are mapped in an inference variable, a {@link
+     * ProperTypeMirror} is returned.
      */
     public static List<AbstractType> create(
             List<? extends TypeMirror> types, Theta map, Java8InferenceContext context) {
@@ -74,7 +73,7 @@ public class InferenceTypeMirror extends AbstractTypeMirror implements Inference
     }
 
     @Override
-    public AbstractTypeMirror create(TypeMirror type) {
+    public AbstractType create(TypeMirror type) {
         return create(type, map, context);
     }
 
@@ -120,7 +119,7 @@ public class InferenceTypeMirror extends AbstractTypeMirror implements Inference
     }
 
     @Override
-    public AbstractTypeMirror applyInstantiations(List<Variable> instantiations) {
+    public AbstractType applyInstantiations(List<Variable> instantiations) {
         List<TypeVariable> typeVariables = new ArrayList<>(instantiations.size());
         List<TypeMirror> arguments = new ArrayList<>(instantiations.size());
 
