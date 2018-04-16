@@ -20,6 +20,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class VariableBounds {
+
     public enum BoundKind {
         /** {@code other type <: this } */
         LOWER,
@@ -103,6 +104,10 @@ public class VariableBounds {
     /** @return true if this has a throws bound */
     public boolean hasThrowsBound() {
         return hasThrowsBound;
+    }
+
+    public void setHasThrowsBound(boolean b) {
+        hasThrowsBound = b;
     }
 
     /** Adds {@code otherType} as bound against this variable. */

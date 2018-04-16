@@ -51,7 +51,7 @@ public class Resolution {
     }
 
     public static BoundSet resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
-        if (a.hasInstantiation()) {
+        if (a.getBounds().hasInstantiation()) {
             return boundSet;
         }
         Dependencies dependencies = boundSet.getDependencies();
@@ -146,9 +146,9 @@ public class Resolution {
     private BoundSet resolveNoCapture(LinkedHashSet<Variable> as, BoundSet boundSet) {
         BoundSet resolvedBoundSet = new BoundSet(context);
         for (Variable ai : as) {
-            assert !ai.hasInstantiation();
+            assert !ai.getBounds().hasInstantiation();
             resolveNoCapture(ai);
-            if (!ai.hasInstantiation()) {
+            if (!ai.getBounds().hasInstantiation()) {
                 resolvedBoundSet.addFalse();
                 break;
             }
@@ -158,8 +158,8 @@ public class Resolution {
     }
 
     private void resolveNoCapture(Variable ai) {
-        assert !ai.hasInstantiation();
-        LinkedHashSet<ProperType> lowerBounds = ai.findProperLowerBounds();
+        assert !ai.getBounds().hasInstantiation();
+        LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
         if (!lowerBounds.isEmpty()) {
             TypeMirror ti = null;
             for (ProperType liProperType : lowerBounds) {
@@ -170,17 +170,18 @@ public class Resolution {
                     ti = InternalInferenceUtils.lub(context.env, ti, li);
                 }
             }
-            ai.addBound(VariableBounds.BoundKind.EQUAL, new ProperTypeMirror(ti, context));
+            ai.getBounds()
+                    .addBound(VariableBounds.BoundKind.EQUAL, new ProperTypeMirror(ti, context));
             return;
         }
 
-        LinkedHashSet<ProperType> upperBounds = ai.findProperUpperBounds();
+        LinkedHashSet<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
         if (!upperBounds.isEmpty()) {
             TypeMirror ti = null;
             boolean useRuntimeEx = false;
             for (ProperType liProperType : upperBounds) {
                 TypeMirror li = liProperType.getJavaType();
-                if (ai.hasThrowsBound()
+                if (ai.getBounds().hasThrowsBound()
                         && context.env.getTypeUtils().isSubtype(context.runtimeEx, li)) {
                     useRuntimeEx = true;
                 }
@@ -191,11 +192,14 @@ public class Resolution {
                 }
             }
             if (useRuntimeEx) {
-                ai.addBound(
-                        VariableBounds.BoundKind.EQUAL,
-                        new ProperTypeMirror(context.runtimeEx, context));
+                ai.getBounds()
+                        .addBound(
+                                VariableBounds.BoundKind.EQUAL,
+                                new ProperTypeMirror(context.runtimeEx, context));
             } else {
-                ai.addBound(VariableBounds.BoundKind.EQUAL, new ProperTypeMirror(ti, context));
+                ai.getBounds()
+                        .addBound(
+                                VariableBounds.BoundKind.EQUAL, new ProperTypeMirror(ti, context));
             }
         }
     }
@@ -211,14 +215,14 @@ public class Resolution {
         List<TypeMirror> typeArg = new ArrayList<>();
 
         for (Variable ai : as) {
-            ai.applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
-            if (ai.hasInstantiation()) {
+            ai.getBounds().applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
+            if (ai.getBounds().hasInstantiation()) {
                 // If ai is equal to a variable that was resolved previously,
                 // ai would now have an instantiation.
                 continue;
             }
             asList.add(ai);
-            LinkedHashSet<ProperType> lowerBounds = ai.findProperLowerBounds();
+            LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
             TypeMirror lowerBound = null;
             for (ProperType liProperType : lowerBounds) {
                 TypeMirror li = liProperType.getJavaType();
@@ -229,7 +233,7 @@ public class Resolution {
                 }
             }
 
-            LinkedHashSet<AbstractType> upperBounds = ai.upperBounds();
+            LinkedHashSet<AbstractType> upperBounds = ai.getBounds().upperBounds();
             TypeMirror upperBound = null;
             for (AbstractType liAb : upperBounds) {
                 TypeMirror li = liAb.getJavaType();
@@ -280,9 +284,10 @@ public class Resolution {
             Variable ai = asList.get(i);
             ContainsInferenceVariable.getMentionedTypeVariables(
                     Collections.singleton(ai.getJavaType()), subsTypeArg.get(i));
-            ai.addBound(
-                    VariableBounds.BoundKind.EQUAL,
-                    new ProperTypeMirror(subsTypeArg.get(i), context).capture());
+            ai.getBounds()
+                    .addBound(
+                            VariableBounds.BoundKind.EQUAL,
+                            new ProperTypeMirror(subsTypeArg.get(i), context).capture());
         }
 
         boundSet.incorporateToFixedPoint(resolvedBoundSet);

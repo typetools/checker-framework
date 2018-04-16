@@ -183,7 +183,7 @@ public class InvocationTypeInference {
             TypeVariable typeVariable = variable.getJavaType();
             if (fromReturn.containsKey(typeVariable)) {
                 TypeMirror correctType = fromReturn.get(typeVariable);
-                TypeMirror inferredType = variable.getInstantiation().getJavaType();
+                TypeMirror inferredType = variable.getBounds().getInstantiation().getJavaType();
                 if (context.types.isSameType(
                         context.types.erasure((Type) correctType),
                         context.types.erasure((Type) inferredType),
@@ -299,7 +299,7 @@ public class InvocationTypeInference {
         for (TypeMirror type : methodType.getThrownTypes()) {
             AbstractType thrownType = InferenceTypeMirror.create(type, map, context);
             if (thrownType.isVariable()) {
-                ((Variable) thrownType).setHasThrowsBound(true);
+                ((Variable) thrownType).getBounds().setHasThrowsBound(true);
             }
         }
 
@@ -337,7 +337,7 @@ public class InvocationTypeInference {
         for (TypeMirror type : methodType.getThrownTypes()) {
             AbstractType thrownType = InferenceTypeMirror.create(type, map, context);
             if (thrownType.isVariable()) {
-                ((Variable) thrownType).setHasThrowsBound(true);
+                ((Variable) thrownType).getBounds().setHasThrowsBound(true);
             }
         }
 
@@ -423,27 +423,27 @@ public class InvocationTypeInference {
             // T is a reference type, but is not a wildcard-parameterized type, and either
             if (!target.isWildcardParameterizedType()) {
                 // i) B2 contains a bound of one of the forms alpha = S or S <: alpha, where S is a wildcard-parameterized type, or
-                compatiblity = alpha.hasWildcardParameterizedLowerOrEqualBound();
+                compatiblity = alpha.getBounds().hasWildcardParameterizedLowerOrEqualBound();
                 if (!compatiblity) {
                     // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1 and S2
                     // have supertypes that are two different parameterizations of the same generic class or interface.
-                    compatiblity = alpha.hasLowerBoundDifferentParam();
+                    compatiblity = alpha.getBounds().hasLowerBoundDifferentParam();
                 }
             }
             if (target.isParameterizedType()) {
                 // T is a parameterization of a generic class or interface, G, and B2 contains a
                 // bound of one of the forms alpha = S or S <: alpha, where there exists no type of the form
                 // G<...> that is a supertype of S, but the raw type |G<...>| is a supertype of S.
-                compatiblity = alpha.hasRawTypeLowerOrEqualBound(target);
+                compatiblity = alpha.getBounds().hasRawTypeLowerOrEqualBound(target);
             }
             if (target.getTypeKind().isPrimitive()) {
                 // T is a primitive type, and one of the primitive wrapper classes mentioned in 5.1.7
                 // is an instantiation, upper bound, or lower bound for alpha in B2.
-                compatiblity = alpha.hasPrimitiveWrapperBound();
+                compatiblity = alpha.getBounds().hasPrimitiveWrapperBound();
             }
             if (compatiblity) {
                 BoundSet resolve = Resolution.resolve(alpha, b2, context);
-                ProperType u = (ProperType) alpha.getInstantiation().capture();
+                ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture();
                 ConstraintSet constraintSet =
                         new ConstraintSet(new Typing(u, target, Kind.TYPE_COMPATIBILITY));
                 BoundSet newBounds = constraintSet.reduce(context);

@@ -136,17 +136,19 @@ public class Typing extends Constraint {
             if (S.isVariable()) {
                 if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
                     ((Variable) S)
+                            .getBounds()
                             .addBound(VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
                 } else {
-                    ((Variable) S).addBound(VariableBounds.BoundKind.UPPER, T);
+                    ((Variable) S).getBounds().addBound(VariableBounds.BoundKind.UPPER, T);
                 }
             }
             if (T.isVariable()) {
                 if (TypesUtils.isCaptured(S.getJavaType())) {
                     ((Variable) T)
+                            .getBounds()
                             .addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
                 }
-                ((Variable) T).addBound(VariableBounds.BoundKind.LOWER, S);
+                ((Variable) T).getBounds().addBound(VariableBounds.BoundKind.LOWER, S);
             }
             return ConstraintSet.TRUE;
         }
@@ -342,10 +344,10 @@ public class Typing extends Constraint {
 
         if (S.isVariable() || T.isVariable()) {
             if (S.isVariable()) {
-                ((Variable) S).addBound(VariableBounds.BoundKind.EQUAL, T);
+                ((Variable) S).getBounds().addBound(VariableBounds.BoundKind.EQUAL, T);
             }
             if (T.isVariable()) {
-                ((Variable) T).addBound(VariableBounds.BoundKind.EQUAL, S);
+                ((Variable) T).getBounds().addBound(VariableBounds.BoundKind.EQUAL, S);
             }
             return ConstraintSet.TRUE;
         }

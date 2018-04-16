@@ -164,7 +164,7 @@ public class BoundSet implements ReductionResult {
     public List<Variable> getInstantiationsInAlphas(Collection<Variable> alphas) {
         List<Variable> list = new ArrayList<>();
         for (Variable var : alphas) {
-            if (var.hasInstantiation()) {
+            if (var.getBounds().hasInstantiation()) {
                 list.add(var);
             }
         }
@@ -175,7 +175,7 @@ public class BoundSet implements ReductionResult {
     public List<Variable> getInstantiatedVariables() {
         List<Variable> list = new ArrayList<>();
         for (Variable var : variables) {
-            if (var.hasInstantiation()) {
+            if (var.getBounds().hasInstantiation()) {
                 list.add(var);
             }
         }
@@ -214,7 +214,7 @@ public class BoundSet implements ReductionResult {
             LinkedHashSet<Variable> alphaDependencies = new LinkedHashSet<>();
             // An inference variable alpha depends on the resolution of itself.
             alphaDependencies.add(alpha);
-            alphaDependencies.addAll(alpha.getVariablesMentionedInBounds());
+            alphaDependencies.addAll(alpha.getBounds().getVariablesMentionedInBounds());
 
             if (alpha.isCaptureVariable()) {
                 // If alpha appears on the left-hand side of another bound of the form
@@ -263,12 +263,12 @@ public class BoundSet implements ReductionResult {
             boolean boundsChangeInst = false;
             if (!instantiations.isEmpty()) {
                 for (Variable var : variables) {
-                    boundsChangeInst = var.applyInstantiationsToBounds(instantiations);
+                    boundsChangeInst = var.getBounds().applyInstantiationsToBounds(instantiations);
                 }
             }
             boundsChangeInst |= captures.addAll(newBounds.captures);
             for (Variable alpha : variables) {
-                if (alpha.hasInstantiation()) {
+                if (alpha.getBounds().hasInstantiation()) {
                     removeProblematicConstraints(alpha);
                 }
                 if (!alpha.variableBounds.constraints.isEmpty()) {
@@ -296,7 +296,7 @@ public class BoundSet implements ReductionResult {
      * Resolution#resolveWithCapture(LinkedHashSet, BoundSet, Java8InferenceContext)}}.
      */
     private void removeProblematicConstraints(Variable alpha) {
-        if (!TypesUtils.isCaptured(alpha.getInstantiation().getJavaType())) {
+        if (!TypesUtils.isCaptured(alpha.getBounds().getInstantiation().getJavaType())) {
             return;
         }
         List<Constraint> constraints = new ArrayList<>();

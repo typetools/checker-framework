@@ -127,7 +127,7 @@ public class InferenceTypeMirror extends AbstractTypeMirror implements Inference
         for (Variable alpha : instantiations) {
             if (map.containsValue(alpha)) {
                 typeVariables.add(alpha.getJavaType());
-                arguments.add(alpha.getInstantiation().getJavaType());
+                arguments.add(alpha.getBounds().getInstantiation().getJavaType());
             }
         }
         if (typeVariables.isEmpty()) {

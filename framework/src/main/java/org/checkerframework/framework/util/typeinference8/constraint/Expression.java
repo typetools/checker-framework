@@ -357,7 +357,7 @@ public class Expression extends Constraint {
         for (AbstractType Ai : t.getTypeArguments()) {
             Variable alphaI = alphaIter.next();
             // If B contains an instantiation (18.1.3) for alphai, T, then A'i = T.
-            AbstractType AiPrime = alphaI.getInstantiation();
+            AbstractType AiPrime = alphaI.getBounds().getInstantiation();
             if (AiPrime == null) {
                 AiPrime = Ai;
             }

@@ -107,7 +107,7 @@ public class CheckedExceptionConstraint extends Constraint {
                 for (Variable ei : es) {
                     constraintSet.add(
                             new Typing(new ProperTypeMirror(xi, context), ei, Kind.SUBTYPE));
-                    ei.setHasThrowsBound(true);
+                    ei.getBounds().setHasThrowsBound(true);
                 }
             }
         }

@@ -3,11 +3,9 @@ package org.checkerframework.framework.util.typeinference8.types;
 import com.sun.source.tree.ExpressionTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.types.typemirror.AbstractTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
@@ -43,6 +41,19 @@ public class Variable extends AbstractTypeMirror {
         this.typeVariable = typeVariable;
         this.invocation = invocation;
         this.id = id;
+    }
+
+    public VariableBounds getBounds() {
+        return variableBounds;
+    }
+    /**
+     * Adds the initial bounds to this variable. These are the bounds implied by the upper bounds of
+     * the type variable. See end of JLS 18.1.3.
+     *
+     * @param map used to determine if the bounds refer to another variable
+     */
+    public void initialBounds(Theta map) {
+        variableBounds.initialBounds(typeVariable, map);
     }
 
     @Override
@@ -142,93 +153,5 @@ public class Variable extends AbstractTypeMirror {
     /** Restore the bounds to the state previously saved. */
     public void restore() {
         variableBounds.restore();
-    }
-
-    /**
-     * Adds the initial bounds to this variable. These are the bounds implied by the upper bounds of
-     * the type variable. See end of JLS 18.1.3.
-     *
-     * @param map used to determine if the bounds refer to another variable
-     */
-    public void initialBounds(Theta map) {
-        variableBounds.initialBounds(typeVariable, map);
-    }
-
-    /** @return true if this has a throws bound */
-    public boolean hasThrowsBound() {
-        return variableBounds.hasThrowsBound();
-    }
-
-    /** Sets the value of hasThrowsBound to {@code hasThrowsBound} */
-    public void setHasThrowsBound(boolean hasThrowsBound) {
-        this.variableBounds.hasThrowsBound = hasThrowsBound;
-    }
-
-    /** Adds {@code otherType} as bound against this variable. */
-    public boolean addBound(BoundKind kind, AbstractType otherType) {
-        return variableBounds.addBound(kind, otherType);
-    }
-
-    public LinkedHashSet<ProperType> findProperLowerBounds() {
-        return variableBounds.findProperLowerBounds();
-    }
-
-    public LinkedHashSet<ProperType> findProperUpperBounds() {
-        return variableBounds.findProperUpperBounds();
-    }
-
-    public LinkedHashSet<AbstractType> upperBounds() {
-        return variableBounds.upperBounds();
-    }
-
-    /** Apply instantiations to all bounds and constraints of this variable. */
-    public boolean applyInstantiationsToBounds(List<Variable> instantiations) {
-        return variableBounds.applyInstantiationsToBounds(instantiations);
-    }
-
-    /** @return all variables mentioned in a bound against this variable. */
-    public Collection<? extends Variable> getVariablesMentionedInBounds() {
-        return variableBounds.getVariablesMentionedInBounds();
-    }
-
-    /** @return the instantiation of this variable */
-    public ProperType getInstantiation() {
-        return variableBounds.getInstantiation();
-    }
-
-    /** @return true if this has an instantiation */
-    public boolean hasInstantiation() {
-        return variableBounds.hasInstantiation();
-    }
-
-    /** @return true if any bound mentions a primitive wrapper type. */
-    public boolean hasPrimitiveWrapperBound() {
-        return variableBounds.hasPrimitiveWrapperBound();
-    }
-
-    /**
-     * @return true if any lower or equal bound is a parameterized type with at least one wildcard
-     *     for a type argument
-     */
-    public boolean hasWildcardParameterizedLowerOrEqualBound() {
-        return variableBounds.hasWildcardParameterizedLowerOrEqualBound();
-    }
-
-    /**
-     * Does this bound set contain two bounds of the forms {@code S1 <: var} and {@code S2 <: var},
-     * where S1 and S2 have supertypes that are two different parameterizations of the same generic
-     * class or interface?
-     */
-    public boolean hasLowerBoundDifferentParam() {
-        return variableBounds.hasLowerBoundDifferentParam();
-    }
-
-    /**
-     * Does this bound set contain a bound of one of the forms {@code var = S} or {@code S <: var},
-     * where there exists no type of the form {@code G<...>} that is a supertype of S, but the raw
-     * type {@code |G<...>|} is a supertype of S?
-     */
-    public boolean hasRawTypeLowerOrEqualBound(AbstractType g) {
-        return variableBounds.hasRawTypeLowerOrEqualBound(g);
     }
 }
