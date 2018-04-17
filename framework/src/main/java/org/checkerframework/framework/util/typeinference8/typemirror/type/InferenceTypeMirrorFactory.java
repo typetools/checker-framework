@@ -62,6 +62,7 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
      * @param context Java8InferenceContext
      * @return a mapping of the type variables of {@code methodType} to inference variables
      */
+    @Override
     public Theta createTheta(
             ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
         if (context.maps.containsKey(invocation)) {
@@ -261,6 +262,7 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
         return new ProperTypeMirror(context.runtimeEx, context);
     }
 
+    @Override
     public ConstraintSet getCheckedExceptionConstraints(ExpressionTree expression, Theta map) {
         ConstraintSet constraintSet = new ConstraintSet();
         ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
