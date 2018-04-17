@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -191,6 +192,11 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
     @Override
     public ProperType getTypeOfVariable(VariableTree tree) {
         return new ProperTypeMirror(tree, context);
+    }
+
+    @Override
+    public AbstractType getTypeOfElement(Element element, Theta map) {
+        return InferenceTypeMirror.create(element.asType(), map, context);
     }
 
     @Override

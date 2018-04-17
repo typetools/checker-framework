@@ -4,6 +4,7 @@ import com.sun.source.tree.ExpressionTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -11,6 +12,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
+import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
 /** An inference variable */
@@ -59,7 +61,23 @@ public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
      */
     @Override
     public void initialBounds(Theta map) {
-        variableBounds.initialBounds(typeVariable, map);
+        TypeMirror upperBound = typeVariable.getUpperBound();
+        // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise, for
+        // each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,..., Pp:=ap]}
+        // appears in the set; if this results in no proper upper bounds for al (only dependencies),
+        // then the bound {@literal al <: Object} also appears in the set.
+        switch (upperBound.getKind()) {
+            case INTERSECTION:
+                for (TypeMirror bound : ((IntersectionType) upperBound).getBounds()) {
+                    AbstractType t1 = InferenceTypeMirror.create(bound, map, context);
+                    variableBounds.addBound(BoundKind.UPPER, t1);
+                }
+                break;
+            default:
+                AbstractType t1 = InferenceTypeMirror.create(upperBound, map, context);
+                variableBounds.addBound(BoundKind.UPPER, t1);
+                break;
+        }
     }
 
     @Override

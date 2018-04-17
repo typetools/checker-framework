@@ -6,6 +6,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.VariableTree;
 import java.util.LinkedHashSet;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -31,6 +32,8 @@ public interface InferenceFactory {
     ProperType getTypeOfExpression(ExpressionTree tree);
 
     ProperType getTypeOfVariable(VariableTree tree);
+
+    AbstractType getTypeOfElement(Element element, Theta map);
 
     ProperType getObject();
 

@@ -13,7 +13,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
@@ -60,19 +59,19 @@ public class Capture {
         map.forEach(
                 (pl, al) -> {
                     CaptureVariable captureVariable = (CaptureVariable) al;
-                    pairs.add(Pair.of(captureVariable, pl.getUpperBound()));
+                    captureVariable.initialBounds(map);
                     captureVariables.add(captureVariable);
                 });
 
-        lhs = (InferenceType) InferenceTypeMirror.create(ele.asType(), map, context);
-
+        lhs = (InferenceType) context.inferenceTypeFactory.getTypeOfElement(ele, map);
         Iterator<AbstractType> args = capturedType.getTypeArguments().iterator();
-        for (Pair<CaptureVariable, TypeMirror> pair : pairs) {
+        Iterator<CaptureVariable> alphas = captureVariables.iterator();
+
+        for (AbstractType typeParams : lhs.getTypeArguments()) {
             AbstractType Ai = args.next();
-            CaptureVariable alaphi = pair.first;
-            alaphi.initialBounds(map);
-            AbstractType Bi = InferenceTypeMirror.create(pair.second, map, context);
-            tuples.add(CaptureTuple.of(alaphi, Ai, Bi));
+            AbstractType Bi = typeParams.getTypeVarUpperBound();
+            CaptureVariable alphai = alphas.next();
+            tuples.add(CaptureTuple.of(alphai, Ai, Bi));
         }
     }
 

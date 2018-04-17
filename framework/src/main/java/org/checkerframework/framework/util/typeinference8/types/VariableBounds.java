@@ -6,15 +6,11 @@ import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
@@ -72,32 +68,6 @@ public class VariableBounds {
             if (t.isProper()) {
                 instantiation = (ProperType) t;
             }
-        }
-    }
-
-    /**
-     * Adds the initial bounds to this variable. These are the bounds implied by the upper bounds of
-     * the type variable. See end of JLS 18.1.3.
-     *
-     * @param map used to determine if the bounds refer to another variable
-     */
-    public void initialBounds(TypeVariable typeVariable, Theta map) {
-        TypeMirror upperBound = typeVariable.getUpperBound();
-        // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise, for
-        // each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,..., Pp:=ap]}
-        // appears in the set; if this results in no proper upper bounds for al (only dependencies),
-        // then the bound {@literal al <: Object} also appears in the set.
-        switch (upperBound.getKind()) {
-            case INTERSECTION:
-                for (TypeMirror bound : ((IntersectionType) upperBound).getBounds()) {
-                    AbstractType t1 = InferenceTypeMirror.create(bound, map, context);
-                    addBound(BoundKind.UPPER, t1);
-                }
-                break;
-            default:
-                AbstractType t1 = InferenceTypeMirror.create(upperBound, map, context);
-                addBound(BoundKind.UPPER, t1);
-                break;
         }
     }
 
