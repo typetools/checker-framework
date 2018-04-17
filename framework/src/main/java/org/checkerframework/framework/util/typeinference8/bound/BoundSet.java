@@ -271,6 +271,8 @@ public class BoundSet implements ReductionResult {
                 if (alpha.getBounds().hasInstantiation()) {
                     removeProblematicConstraints(alpha);
                 }
+            }
+            for (Variable alpha : variables) {
                 if (!alpha.getBounds().constraints.isEmpty()) {
                     boundsChangeInst = true;
                     merge(alpha.getBounds().constraints.reduce(context));
