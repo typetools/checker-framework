@@ -18,11 +18,6 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ProperTypeMirror extends AbstractTypeMirror implements ProperType {
     private final TypeMirror properType;
 
-    @Override
-    public ProperTypeMirror create(TypeMirror properType) {
-        return new ProperTypeMirror(properType, context);
-    }
-
     ProperTypeMirror(TypeMirror properType, Java8InferenceContext context) {
         super(context);
         assert properType != null && context != null && properType.getKind() != TypeKind.VOID;
@@ -35,6 +30,11 @@ public class ProperTypeMirror extends AbstractTypeMirror implements ProperType {
 
     ProperTypeMirror(VariableTree varTree, Java8InferenceContext context) {
         this(TreeUtils.typeOf(varTree), context);
+    }
+
+    @Override
+    public ProperTypeMirror create(TypeMirror properType) {
+        return new ProperTypeMirror(properType, context);
     }
 
     @Override

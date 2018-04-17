@@ -42,7 +42,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class InferenceTypeMirrorFactory implements InferenceFactory {
-    Java8InferenceContext context;
+    private Java8InferenceContext context;
 
     public InferenceTypeMirrorFactory(Java8InferenceContext context) {
         this.context = context;

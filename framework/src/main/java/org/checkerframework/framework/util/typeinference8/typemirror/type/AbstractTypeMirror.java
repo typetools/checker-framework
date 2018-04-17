@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public abstract class AbstractTypeMirror implements AbstractType {
     protected final Java8InferenceContext context;
 
-    protected AbstractTypeMirror(Java8InferenceContext context) {
+    AbstractTypeMirror(Java8InferenceContext context) {
         this.context = context;
     }
 

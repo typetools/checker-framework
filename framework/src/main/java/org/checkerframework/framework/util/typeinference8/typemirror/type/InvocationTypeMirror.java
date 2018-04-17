@@ -21,7 +21,7 @@ public class InvocationTypeMirror implements InvocationType {
     private final ExecutableType methodType;
     private final Java8InferenceContext context;
 
-    public InvocationTypeMirror(
+    InvocationTypeMirror(
             ExecutableType methodType, ExpressionTree invocation, Java8InferenceContext context) {
         this.methodType = methodType;
         this.invocation = invocation;

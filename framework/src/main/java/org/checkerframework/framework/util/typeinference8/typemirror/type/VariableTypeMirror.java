@@ -18,7 +18,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 /** An inference variable */
 public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
 
-    public final VariableBounds variableBounds;
+    protected final VariableBounds variableBounds;
     /** Identification number. Used only to make debugging easier. */
     protected final int id;
 
@@ -29,7 +29,7 @@ public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
     protected final ExpressionTree invocation;
 
     /** Type variable for which the instantiation of this variable is a type argument, */
-    public final TypeVariable typeVariable;
+    protected final TypeVariable typeVariable;
 
     VariableTypeMirror(
             TypeVariable typeVariable, ExpressionTree invocation, Java8InferenceContext context) {
