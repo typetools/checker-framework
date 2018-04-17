@@ -109,6 +109,9 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
 
     @Override
     public ProperType lub(LinkedHashSet<ProperType> lowerBounds) {
+        if (lowerBounds.isEmpty()) {
+            return null;
+        }
         TypeMirror ti = null;
         for (ProperType liProperType : lowerBounds) {
             TypeMirror li = liProperType.getJavaType();
@@ -209,8 +212,8 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
     public ProperType createWildcard(ProperType lowerBound, AbstractType upperBound) {
         TypeMirror wildcard =
                 TypesUtils.createWildcard(
-                        lowerBound.getJavaType(),
-                        upperBound.getJavaType(),
+                        lowerBound == null ? null : lowerBound.getJavaType(),
+                        upperBound == null ? null : upperBound.getJavaType(),
                         context.env.getTypeUtils());
         return new ProperTypeMirror(wildcard, context);
     }
@@ -237,6 +240,8 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
                                 Collections.singletonList(typeVariableI),
                                 Collections.singletonList(unbound),
                                 context.env);
+                javaTypeArgs.add(inst);
+            } else {
                 javaTypeArgs.add(inst);
             }
         }
