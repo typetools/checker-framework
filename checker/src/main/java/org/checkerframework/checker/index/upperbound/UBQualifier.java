@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.Pair;
  * Abstraction for Upper Bound annotations.
  *
  * <p>{@link UpperBoundUnknown} is modeled as {@link UpperBoundUnknownQualifier} and {@link
- * UpperBoundBottom} is modeled as {@link UpperBoundBottomQualifier}.
+ * UpperBoundBottom} is modeled as {@link UBQualifier.UpperBoundBottomQualifier}.
  *
  * <p>{@link LTLengthOf} is modeled by {@link LessThanLengthOf}. {@link LTEqLengthOf} is equivalent
  * to @{@link LessThanLengthOf} with an offset of -1. {@link LTOMLengthOf} is equivalent to @{@link
