@@ -8,4 +8,6 @@ public interface ProperType extends AbstractType {
     }
 
     ProperType boxType();
+
+    boolean isSubType(ProperType superType);
 }

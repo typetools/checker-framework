@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -115,13 +114,7 @@ public class Typing extends Constraint {
      */
     private ReductionResult reduceSubtyping(Java8InferenceContext context) {
         if (S.isProper() && T.isProper()) {
-            TypeMirror subType = S.getJavaType();
-            TypeMirror superType = T.getJavaType();
-            if (subType == superType) {
-                return ConstraintSet.TRUE;
-            }
-
-            if (context.types.isSubtypeUnchecked((Type) subType, (Type) superType)) {
+            if (((ProperType) S).isSubType((ProperType) T)) {
                 return ConstraintSet.TRUE;
             } else {
                 return ConstraintSet.FALSE;
