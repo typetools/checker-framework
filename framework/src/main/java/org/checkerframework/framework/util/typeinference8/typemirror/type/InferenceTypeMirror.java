@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -143,16 +140,5 @@ public class InferenceTypeMirror extends AbstractTypeMirror implements Inference
     @Override
     public String toString() {
         return "inference type: " + type;
-    }
-
-    @Override
-    public List<AbstractType> getTypeBounds() {
-        List<AbstractType> bounds = new ArrayList<>();
-        TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
-        for (TypeParameterElement ele : typeelem.getTypeParameters()) {
-            TypeVariable typeVariable = (TypeVariable) ele.asType();
-            bounds.add(InferenceTypeMirror.create(typeVariable.getUpperBound(), map, context));
-        }
-        return bounds;
     }
 }
