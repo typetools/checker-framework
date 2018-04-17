@@ -201,6 +201,12 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
     }
 
     @Override
+    public AbstractType getTypeOfBound(TypeParameterElement pEle, Theta map) {
+        return InferenceTypeMirror.create(
+                ((TypeVariable) pEle.asType()).getUpperBound(), map, context);
+    }
+
+    @Override
     public ProperType getObject() {
         TypeMirror objecTypeMirror =
                 TypesUtils.typeFromClass(

@@ -10,11 +10,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
@@ -58,18 +56,18 @@ public class CaptureBound {
         TypeElement ele = TypesUtils.getTypeElement(underlying);
         this.map = context.inferenceTypeFactory.createThetaForCapture(tree, capturedType);
 
-        lhs = (InferenceType) InferenceTypeMirror.create(ele.asType(), map, context);
+        lhs = (InferenceType) context.inferenceTypeFactory.getTypeOfElement(ele, map);
 
         Iterator<Variable> alphas = this.map.values().iterator();
         Iterator<AbstractType> args = capturedType.getTypeArguments().iterator();
         for (TypeParameterElement pEle : ele.getTypeParameters()) {
-            TypeVariable pl = (TypeVariable) pEle.asType();
+            AbstractType Bi = context.inferenceTypeFactory.getTypeOfBound(pEle, map);
             AbstractType Ai = args.next();
 
             CaptureVariable alphai = (CaptureVariable) alphas.next();
             captureVariables.add(alphai);
             alphai.initialBounds(map);
-            AbstractType Bi = InferenceTypeMirror.create(pl.getUpperBound(), map, context);
+
             tuples.add(CaptureTuple.of(alphai, Ai, Bi));
         }
     }

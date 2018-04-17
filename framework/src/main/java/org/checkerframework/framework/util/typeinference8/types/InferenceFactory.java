@@ -7,6 +7,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -74,4 +75,6 @@ public interface InferenceFactory {
     Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType);
 
     List<AbstractType> findParametersOfFunctionType(AbstractType t, Theta map);
+
+    AbstractType getTypeOfBound(TypeParameterElement pEle, Theta map);
 }

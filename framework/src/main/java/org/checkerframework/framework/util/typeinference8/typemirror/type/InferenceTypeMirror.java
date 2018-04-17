@@ -41,7 +41,7 @@ public class InferenceTypeMirror extends AbstractTypeMirror implements Inference
      * contains no type variables that are mapped in an inference variable, a {@link
      * ProperTypeMirror} is returned.
      */
-    public static AbstractType create(TypeMirror type, Theta map, Java8InferenceContext context) {
+    static AbstractType create(TypeMirror type, Theta map, Java8InferenceContext context) {
         assert type != null;
         if (map == null) {
             return new ProperTypeMirror(type, context);
