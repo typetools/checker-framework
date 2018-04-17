@@ -32,7 +32,6 @@ public abstract class AbstractTypeMirror implements AbstractType {
         this.context = context;
     }
 
-    @Override
     public abstract AbstractType create(TypeMirror type);
 
     /** @return the TypeKind of the underlying Java type */

@@ -84,8 +84,8 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
         Type asSuperOfA = context.types.asSuper((Type) aTypeMirror, ((Type) lubResult).asElement());
         Type asSuperOfB = context.types.asSuper((Type) bTypeMirror, ((Type) lubResult).asElement());
 
-        AbstractType superA = a.create(asSuperOfA);
-        AbstractType superB = b.create(asSuperOfB);
+        AbstractType superA = ((AbstractTypeMirror) a).create(asSuperOfA);
+        AbstractType superB = ((AbstractTypeMirror) b).create(asSuperOfB);
         return Pair.of(a.asSuper(superA), b.asSuper(superB));
     }
 
@@ -145,9 +145,9 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
         } else if (context.env.getTypeUtils().isSameType(glb, aJavaType)) {
             return a;
         } else if (a.isInferenceType()) {
-            return a.create(glb);
+            return ((AbstractTypeMirror) a).create(glb);
         } else if (b.isInferenceType()) {
-            return b.create(glb);
+            return ((AbstractTypeMirror) b).create(glb);
         }
         assert a.isProper() && b.isProper();
         return new ProperTypeMirror(glb, context);

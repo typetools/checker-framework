@@ -10,9 +10,6 @@ import org.checkerframework.framework.util.typeinference8.typemirror.type.Variab
 
 public interface AbstractType {
 
-    /** Creates an {@link AbstractType} with underlying type {@code type}. */
-    AbstractType create(TypeMirror type);
-
     /** Returns the kind of {@link AbstractType}. */
     Kind getKind();
 
