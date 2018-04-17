@@ -29,4 +29,9 @@ public class CaptureVariableTypeMirror extends VariableTypeMirror implements Cap
     public ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
         return variableBounds.getWildcardConstraints(Ai, Bi);
     }
+
+    @Override
+    public boolean isCaptureVariable() {
+        return true;
+    }
 }

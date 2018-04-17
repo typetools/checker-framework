@@ -176,4 +176,9 @@ public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
     public void restore() {
         variableBounds.restore();
     }
+
+    @Override
+    public boolean isCaptureVariable() {
+        return false;
+    }
 }
