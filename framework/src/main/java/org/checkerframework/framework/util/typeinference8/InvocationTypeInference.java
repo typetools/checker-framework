@@ -25,7 +25,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
-import org.checkerframework.framework.util.typeinference8.bound.Capture;
+import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
@@ -411,7 +411,7 @@ public class InvocationTypeInference {
             // An is a wildcard, then, for fresh inference variables B1, ..., Bn, the constraint
             // formula <G<B1, ..., Bn> -> T> is reduced and incorporated, along with the bound
             // G<B1, ..., Bn> = capture(G<A1, ..., An>), with B2.
-            Capture capture = new Capture(r, invocation, context);
+            CaptureBound capture = new CaptureBound(r, invocation, context);
             BoundSet b = capture.incorporate(target, context);
             b2.incorporateToFixedPoint(b);
             return b2;

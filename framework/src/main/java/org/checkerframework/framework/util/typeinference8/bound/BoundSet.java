@@ -32,7 +32,7 @@ public class BoundSet implements ReductionResult {
     private final LinkedHashSet<Variable> variables;
 
     /** All capture bounds */
-    private final LinkedHashSet<Capture> captures;
+    private final LinkedHashSet<CaptureBound> captures;
 
     private final Java8InferenceContext context;
 
@@ -141,7 +141,7 @@ public class BoundSet implements ReductionResult {
     }
 
     /** Adds {@code capture} to this bound set. */
-    public void addCapture(Capture capture) {
+    public void addCapture(CaptureBound capture) {
         captures.add(capture);
         variables.addAll(capture.getAllVariablesOnLHS());
     }
@@ -149,7 +149,7 @@ public class BoundSet implements ReductionResult {
     /** Does the bound set contain a bound of the form {@code G<..., ai, ...> = capture(G<...>)}? */
     public boolean containsCapture(Collection<Variable> as) {
         List<Variable> list = new ArrayList<>();
-        for (Capture c : captures) {
+        for (CaptureBound c : captures) {
             list.addAll(c.getAllVariablesOnLHS());
         }
         for (Variable ai : as) {
@@ -197,7 +197,7 @@ public class BoundSet implements ReductionResult {
     public Dependencies getDependencies(Collection<Variable> additionalVars) {
         Dependencies dependencies = new Dependencies();
 
-        for (Capture capture : captures) {
+        for (CaptureBound capture : captures) {
             List<? extends CaptureVariable> lhsVars = capture.getAllVariablesOnLHS();
             LinkedHashSet<Variable> rhsVars = capture.getAllVariablesOnRHS();
             for (Variable var : lhsVars) {
@@ -324,7 +324,7 @@ public class BoundSet implements ReductionResult {
 
     /** Remove any capture bound that mentions any variable in {@code as}. */
     public void removeCaptures(LinkedHashSet<Variable> as) {
-        captures.removeIf((Capture c) -> c.isCaptureMentionsAny(as));
+        captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
     }
 
     @Override

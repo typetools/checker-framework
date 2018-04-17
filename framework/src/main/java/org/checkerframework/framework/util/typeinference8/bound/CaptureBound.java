@@ -10,12 +10,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.CaptureVariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
@@ -24,7 +22,6 @@ import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -32,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * represent the result of capture conversion applied to {@code G<A1, ..., An>} (where A1, ..., An
  * may be types or wildcards and may mention inference variables).
  */
-public class Capture {
+public class CaptureBound {
     /** {@code G<A1, ..., An>} sometimes called the right hand side */
     private final AbstractType capturedType;
 
@@ -54,29 +51,26 @@ public class Capture {
      */
     private final List<CaptureVariable> captureVariables = new ArrayList<>();
 
-    public Capture(AbstractType capturedType, ExpressionTree tree, Java8InferenceContext context) {
+    public CaptureBound(
+            AbstractType capturedType, ExpressionTree tree, Java8InferenceContext context) {
         this.capturedType = capturedType;
         DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
         TypeElement ele = TypesUtils.getTypeElement(underlying);
-        this.map = new Theta();
-        List<Pair<CaptureVariable, TypeMirror>> pairs = new ArrayList<>();
-        for (TypeParameterElement pEle : ele.getTypeParameters()) {
-            TypeVariable pl = (TypeVariable) pEle.asType();
-            CaptureVariable al = new CaptureVariableTypeMirror(pl, tree, context);
-            map.put(pl, al);
-            pairs.add(Pair.of(al, pl.getUpperBound()));
-            captureVariables.add(al);
-        }
+        this.map = context.inferenceTypeFactory.createThetaForCapture(tree, capturedType);
 
         lhs = (InferenceType) InferenceTypeMirror.create(ele.asType(), map, context);
 
+        Iterator<Variable> alphas = this.map.values().iterator();
         Iterator<AbstractType> args = capturedType.getTypeArguments().iterator();
-        for (Pair<CaptureVariable, TypeMirror> pair : pairs) {
+        for (TypeParameterElement pEle : ele.getTypeParameters()) {
+            TypeVariable pl = (TypeVariable) pEle.asType();
             AbstractType Ai = args.next();
-            CaptureVariable alaphi = pair.first;
-            alaphi.initialBounds(map);
-            AbstractType Bi = InferenceTypeMirror.create(pair.second, map, context);
-            tuples.add(CaptureTuple.of(alaphi, Ai, Bi));
+
+            CaptureVariable alphai = (CaptureVariable) alphas.next();
+            captureVariables.add(alphai);
+            alphai.initialBounds(map);
+            AbstractType Bi = InferenceTypeMirror.create(pl.getUpperBound(), map, context);
+            tuples.add(CaptureTuple.of(alphai, Ai, Bi));
         }
     }
 
