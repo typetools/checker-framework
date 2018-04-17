@@ -34,8 +34,12 @@ public class InvocationTypeMirror implements InvocationType {
     }
 
     @Override
-    public Iterable<? extends TypeMirror> getThrownTypes() {
-        return methodType.getThrownTypes();
+    public List<? extends AbstractType> getThrownTypes(Theta map) {
+        List<AbstractType> thrown = new ArrayList<>();
+        for (TypeMirror t : methodType.getThrownTypes()) {
+            thrown.add(InferenceTypeMirror.create(t, map, context));
+        }
+        return thrown;
     }
 
     @Override

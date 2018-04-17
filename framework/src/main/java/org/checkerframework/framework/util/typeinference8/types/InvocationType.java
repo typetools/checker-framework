@@ -2,14 +2,13 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import java.util.List;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 public interface InvocationType {
 
     ExecutableType getJavaType();
 
-    Iterable<? extends TypeMirror> getThrownTypes();
+    List<? extends AbstractType> getThrownTypes(Theta map);
 
     AbstractType getReturnType(Theta map);
 

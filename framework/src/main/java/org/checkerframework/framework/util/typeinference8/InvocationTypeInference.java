@@ -32,7 +32,6 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint.
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
@@ -297,8 +296,7 @@ public class InvocationTypeInference {
 
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
         // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound set, B1.
-        for (TypeMirror type : methodType.getThrownTypes()) {
-            AbstractType thrownType = InferenceTypeMirror.create(type, map, context);
+        for (AbstractType thrownType : methodType.getThrownTypes(map)) {
             if (thrownType.isVariable()) {
                 ((Variable) thrownType).getBounds().setHasThrowsBound(true);
             }
@@ -335,8 +333,7 @@ public class InvocationTypeInference {
 
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
         // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound set, B1.
-        for (TypeMirror type : methodType.getThrownTypes()) {
-            AbstractType thrownType = InferenceTypeMirror.create(type, map, context);
+        for (AbstractType thrownType : methodType.getThrownTypes(map)) {
             if (thrownType.isVariable()) {
                 ((Variable) thrownType).getBounds().setHasThrowsBound(true);
             }
