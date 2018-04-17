@@ -7,12 +7,16 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.CaptureVariableTypeMirror;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
@@ -54,24 +58,25 @@ public class Capture {
         this.capturedType = capturedType;
         DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
         TypeElement ele = TypesUtils.getTypeElement(underlying);
-        this.map = context.inferenceTypeFactory.createThetaForCapture(tree, capturedType);
+        this.map = new Theta();
         List<Pair<CaptureVariable, TypeMirror>> pairs = new ArrayList<>();
-        map.forEach(
-                (pl, al) -> {
-                    CaptureVariable captureVariable = (CaptureVariable) al;
-                    captureVariable.initialBounds(map);
-                    captureVariables.add(captureVariable);
-                });
+        for (TypeParameterElement pEle : ele.getTypeParameters()) {
+            TypeVariable pl = (TypeVariable) pEle.asType();
+            CaptureVariable al = new CaptureVariableTypeMirror(pl, tree, context);
+            map.put(pl, al);
+            pairs.add(Pair.of(al, pl.getUpperBound()));
+            captureVariables.add(al);
+        }
 
-        lhs = (InferenceType) context.inferenceTypeFactory.getTypeOfElement(ele, map);
+        lhs = (InferenceType) InferenceTypeMirror.create(ele.asType(), map, context);
+
         Iterator<AbstractType> args = capturedType.getTypeArguments().iterator();
-        Iterator<CaptureVariable> alphas = captureVariables.iterator();
-
-        for (AbstractType typeParams : lhs.getTypeArguments()) {
+        for (Pair<CaptureVariable, TypeMirror> pair : pairs) {
             AbstractType Ai = args.next();
-            AbstractType Bi = typeParams.getTypeVarUpperBound();
-            CaptureVariable alphai = alphas.next();
-            tuples.add(CaptureTuple.of(alphai, Ai, Bi));
+            CaptureVariable alaphi = pair.first;
+            alaphi.initialBounds(map);
+            AbstractType Bi = InferenceTypeMirror.create(pair.second, map, context);
+            tuples.add(CaptureTuple.of(alaphi, Ai, Bi));
         }
     }
 
@@ -102,8 +107,9 @@ public class Capture {
                 ConstraintSet newCon = t.alpha.getWildcardConstraints(t.capturedTypeArg, t.bound);
                 if (newCon == null) {
                     containsFalse = true;
+                } else {
+                    set.addAll(newCon);
                 }
-                set.addAll(newCon);
             }
         }
 

@@ -91,7 +91,7 @@ public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
     }
 
     @Override
-    public List<ProperType> getTypeParameterBounds() {
+    public List<ProperType> getTypeParameterProperTypeBounds() {
         return null;
     }
 

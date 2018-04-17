@@ -276,7 +276,7 @@ public class Expression extends Constraint {
     private AbstractType nonWildcardParameterization(
             AbstractType t, Java8InferenceContext context) {
         List<AbstractType> As = t.getTypeArguments();
-        Iterator<ProperType> Bs = t.getTypeParameterBounds().iterator();
+        Iterator<ProperType> Bs = t.getTypeParameterProperTypeBounds().iterator();
         List<AbstractType> Ts = new ArrayList<>();
         for (AbstractType Ai : As) {
             ProperType bi = Bs.next();

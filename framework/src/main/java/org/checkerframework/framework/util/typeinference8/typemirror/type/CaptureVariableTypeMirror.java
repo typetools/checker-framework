@@ -10,7 +10,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 /** A variable created for a capture bound. */
 public class CaptureVariableTypeMirror extends VariableTypeMirror implements CaptureVariable {
 
-    CaptureVariableTypeMirror(
+    public CaptureVariableTypeMirror(
             TypeVariable type, ExpressionTree invocation, Java8InferenceContext context) {
         super(type, invocation, context, context.getNextCaptureVariableId());
     }

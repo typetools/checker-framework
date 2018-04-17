@@ -46,7 +46,7 @@ public abstract class AbstractTypeMirror implements AbstractType {
      * they are proper types.)
      */
     @Override
-    public List<ProperType> getTypeParameterBounds() {
+    public List<ProperType> getTypeParameterProperTypeBounds() {
         List<ProperType> bounds = new ArrayList<>();
         TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
         for (TypeParameterElement ele : typeelem.getTypeParameters()) {

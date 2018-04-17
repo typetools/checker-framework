@@ -51,7 +51,7 @@ public interface AbstractType {
      * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
      * they are proper types.)
      */
-    List<ProperType> getTypeParameterBounds();
+    List<ProperType> getTypeParameterProperTypeBounds();
 
     /** @return a new type that is the capture of this type. */
     AbstractType capture();
