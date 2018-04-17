@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.VariableTree;
 import java.util.LinkedHashSet;
@@ -64,4 +65,8 @@ public interface InferenceFactory {
      */
     Theta createTheta(
             ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context);
+
+    Theta createTheta(LambdaExpressionTree lambda, AbstractType t);
+
+    List<AbstractType> findParametersOfFunctionType(AbstractType t, Theta map);
 }

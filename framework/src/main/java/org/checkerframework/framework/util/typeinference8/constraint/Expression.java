@@ -11,16 +11,8 @@ import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirror;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -30,7 +22,6 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * &lt;Expression &rarr; T&gt; An expression is compatible in a loose invocation context with type T
@@ -319,23 +310,12 @@ public class Expression extends Constraint {
             ps.add(context.inferenceTypeFactory.getTypeOfVariable(paramTree));
         }
 
-        TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
         // Let Q1, ..., Qk be the parameter types of the function type of the type F<alpha1, ..., alpham>,
         // where alpha1, ..., alpham are fresh inference variables.
-        List<Variable> alphas = new ArrayList<>();
-        Theta map = new Theta();
-        for (TypeParameterElement param : typeEle.getTypeParameters()) {
-            TypeVariable typeVar = (TypeVariable) param.asType();
-            Variable ai = new VariableTypeMirror(typeVar, lambda, context);
-            map.put(typeVar, ai);
-            alphas.add(ai);
-        }
+        Theta map = context.inferenceTypeFactory.createTheta(lambda, t);
+        List<Variable> alphas = new ArrayList<>(map.values());
 
-        ExecutableType funcType = TypesUtils.findFunctionType(typeEle.asType(), context.env);
-        List<AbstractType> qs = new ArrayList<>();
-        for (TypeMirror param : funcType.getParameterTypes()) {
-            qs.add(InferenceTypeMirror.create(param, map, context));
-        }
+        List<AbstractType> qs = context.inferenceTypeFactory.findParametersOfFunctionType(t, map);
         assert qs.size() == ps.size();
 
         // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.

@@ -29,12 +29,12 @@ public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
     /** Type variable for which the instantiation of this variable is a type argument, */
     public final TypeVariable typeVariable;
 
-    public VariableTypeMirror(
+    VariableTypeMirror(
             TypeVariable typeVariable, ExpressionTree invocation, Java8InferenceContext context) {
         this(typeVariable, invocation, context, context.getNextVariableId());
     }
 
-    protected VariableTypeMirror(
+    VariableTypeMirror(
             TypeVariable typeVariable,
             ExpressionTree invocation,
             Java8InferenceContext context,

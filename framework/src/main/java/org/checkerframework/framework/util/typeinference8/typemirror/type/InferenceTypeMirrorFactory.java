@@ -12,7 +12,10 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -92,6 +95,19 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
     }
 
     @Override
+    public Theta createTheta(LambdaExpressionTree lambda, AbstractType t) {
+        TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
+
+        Theta map = new Theta();
+        for (TypeParameterElement param : typeEle.getTypeParameters()) {
+            TypeVariable typeVar = (TypeVariable) param.asType();
+            Variable ai = new VariableTypeMirror(typeVar, lambda, context);
+            map.put(typeVar, ai);
+        }
+        return map;
+    }
+
+    @Override
     public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
         return new InvocationTypeMirror(
                 InternalInferenceUtils.getTypeOfMethodAdaptedToUse(invocation, context),
@@ -122,6 +138,17 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
                 TypesUtils.findFunctionType(TreeUtils.typeOf(memRef), context.env),
                 memRef,
                 context);
+    }
+
+    @Override
+    public List<AbstractType> findParametersOfFunctionType(AbstractType t, Theta map) {
+        TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
+        ExecutableType funcType = TypesUtils.findFunctionType(typeEle.asType(), context.env);
+        List<AbstractType> qs = new ArrayList<>();
+        for (TypeMirror param : funcType.getParameterTypes()) {
+            qs.add(InferenceTypeMirror.create(param, map, context));
+        }
+        return qs;
     }
 
     @Override
