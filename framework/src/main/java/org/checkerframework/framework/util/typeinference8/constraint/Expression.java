@@ -135,7 +135,7 @@ public class Expression extends Constraint {
 
         InvocationType methodType =
                 context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
-        Theta map = Theta.create(expressionTree, methodType, context);
+        Theta map = context.inferenceTypeFactory.createTheta(expressionTree, methodType, context);
         BoundSet b2 = context.inference.createB2(expressionTree, methodType, args, map);
         return context.inference.createB3(b2, expressionTree, methodType, T, map);
     }
@@ -190,7 +190,7 @@ public class Expression extends Constraint {
         // determine the method reference's invocation type when targeting the return type of the
         // function type, as defined in 18.5.2. B3 may contain new inference variables, as well as
         // dependencies between these new variables and the inference variables in T.
-        Theta map = Theta.create(memRef, compileTimeDecl, context);
+        Theta map = context.inferenceTypeFactory.createTheta(memRef, compileTimeDecl, context);
         AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
         if (memRef.getTypeArguments() == null
                 && !compileTimeDecl.getTypeVariables().isEmpty()

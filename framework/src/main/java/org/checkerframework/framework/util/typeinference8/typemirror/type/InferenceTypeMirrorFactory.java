@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference8.typemirror.type;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Type;
@@ -11,6 +12,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
@@ -27,6 +30,8 @@ import org.checkerframework.framework.util.typeinference8.util.CheckedExceptions
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.InternalInferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -36,6 +41,54 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
 
     public InferenceTypeMirrorFactory(Java8InferenceContext context) {
         this.context = context;
+    }
+
+    /**
+     * If a mapping for {@code invocation} doesn't exist create it by:
+     *
+     * <p>Creates inference variables for the type parameters to {@code methodType} for a particular
+     * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
+     * variables to newly created variables.
+     *
+     * <p>Otherwise, returns the previously created mapping.
+     *
+     * @param invocation method or constructor invocation
+     * @param methodType type of generic method
+     * @param context Java8InferenceContext
+     * @return a mapping of the type variables of {@code methodType} to inference variables
+     */
+    public Theta createTheta(
+            ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
+        if (context.maps.containsKey(invocation)) {
+            return context.maps.get(invocation);
+        }
+        Theta map = new Theta();
+        for (TypeVariable pl : methodType.getTypeVariables()) {
+            Variable al = new VariableTypeMirror(pl, invocation, context);
+            map.put(pl, al);
+        }
+        if (TreeUtils.isDiamondTree(invocation)) {
+            DeclaredType classType =
+                    (DeclaredType)
+                            ElementUtils.enclosingClass(
+                                            TreeUtils.elementFromUse((NewClassTree) invocation))
+                                    .asType();
+            for (TypeMirror typeMirror : classType.getTypeArguments()) {
+                if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+                    ErrorReporter.errorAbort("Expected type variable, found: %s", typeMirror);
+                    return map;
+                }
+                TypeVariable pl = (TypeVariable) typeMirror;
+                Variable al = new VariableTypeMirror(pl, invocation, context);
+                map.put(pl, al);
+            }
+        }
+
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        context.maps.put(invocation, map);
+        return map;
     }
 
     @Override

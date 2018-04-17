@@ -245,7 +245,7 @@ public class InvocationTypeInference {
         }
         InvocationType methodType =
                 context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
-        Theta map = Theta.create(invocation, methodType, context);
+        Theta map = context.inferenceTypeFactory.createTheta(invocation, methodType, context);
         BoundSet b2 = createB2(invocation, methodType, args, map);
         BoundSet b3;
         if (target != null && TreeUtils.isPolyExpression(invocation)) {
@@ -511,7 +511,9 @@ public class InvocationTypeInference {
                     InvocationType methodType =
                             context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(
                                     methodInvocation);
-                    Theta newMap = Theta.create(methodInvocation, methodType, context);
+                    Theta newMap =
+                            context.inferenceTypeFactory.createTheta(
+                                    methodInvocation, methodType, context);
                     c.addAll(
                             createC(
                                     methodInvocation,
@@ -526,7 +528,9 @@ public class InvocationTypeInference {
                     InvocationType methodType =
                             context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(newClassTree);
 
-                    Theta newMap = Theta.create(newClassTree, methodType, context);
+                    Theta newMap =
+                            context.inferenceTypeFactory.createTheta(
+                                    newClassTree, methodType, context);
                     c.addAll(
                             createC(newClassTree, methodType, newClassTree.getArguments(), newMap));
                 }

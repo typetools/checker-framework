@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
 
 public interface InferenceFactory {
@@ -46,4 +47,21 @@ public interface InferenceFactory {
 
     List<ProperType> getSubsTypeArgs(
             List<TypeVariable> typeVar, List<ProperType> typeArg, List<Variable> asList);
+
+    /**
+     * If a mapping for {@code invocation} doesn't exist create it by:
+     *
+     * <p>Creates inference variables for the type parameters to {@code methodType} for a particular
+     * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
+     * variables to newly created variables.
+     *
+     * <p>Otherwise, returns the previously created mapping.
+     *
+     * @param invocation method or constructor invocation
+     * @param methodType type of generic method
+     * @param context Java8InferenceContext
+     * @return a mapping of the type variables of {@code methodType} to inference variables
+     */
+    Theta createTheta(
+            ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context);
 }
