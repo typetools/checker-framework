@@ -68,5 +68,7 @@ public interface InferenceFactory {
 
     Theta createTheta(LambdaExpressionTree lambda, AbstractType t);
 
+    Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType);
+
     List<AbstractType> findParametersOfFunctionType(AbstractType t, Theta map);
 }

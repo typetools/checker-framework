@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint.
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
@@ -103,6 +104,19 @@ public class InferenceTypeMirrorFactory implements InferenceFactory {
             TypeVariable typeVar = (TypeVariable) param.asType();
             Variable ai = new VariableTypeMirror(typeVar, lambda, context);
             map.put(typeVar, ai);
+        }
+        return map;
+    }
+
+    @Override
+    public Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType) {
+        DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
+        TypeElement ele = TypesUtils.getTypeElement(underlying);
+        Theta map = new Theta();
+        for (TypeParameterElement pEle : ele.getTypeParameters()) {
+            TypeVariable pl = (TypeVariable) pEle.asType();
+            CaptureVariable al = new CaptureVariableTypeMirror(pl, tree, context);
+            map.put(pl, al);
         }
         return map;
     }
