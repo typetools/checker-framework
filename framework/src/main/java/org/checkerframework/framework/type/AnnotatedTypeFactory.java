@@ -3512,16 +3512,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Functional interface
         AnnotatedDeclaredType functionalInterfaceType = getFunctionalInterfaceType(tree);
         makeGroundTargetType(functionalInterfaceType, (DeclaredType) TreeUtils.typeOf(tree));
-
         // Functional method
         Element fnElement = TreeUtils.findFunction(tree, processingEnv);
-
-        // Function type
-        AnnotatedExecutableType functionType =
-                (AnnotatedExecutableType)
-                        AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
-
+        AnnotatedExecutableType functionType = getFunctionType(fnElement, functionalInterfaceType);
         return Pair.of(functionalInterfaceType, functionType);
+    }
+
+    /**
+     * Returns the annotated function type of the functional interface.
+     *
+     * @param functionalElement
+     * @param functionalInterfaceType
+     * @return
+     */
+    public AnnotatedExecutableType getFunctionType(
+            Element functionalElement, AnnotatedDeclaredType functionalInterfaceType) {
+        // Function type
+        return (AnnotatedExecutableType)
+                AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, functionalElement);
     }
 
     /**
