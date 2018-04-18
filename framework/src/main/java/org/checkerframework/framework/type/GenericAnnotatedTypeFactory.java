@@ -178,11 +178,11 @@ public abstract class GenericAnnotatedTypeFactory<
     protected Store initializationStaticStore;
 
     /**
-     * Caches for {@link AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, Map)}. This
-     * cache is enabled if {@link #shouldCache} is true. The cache size is derived from {@link
-     * #getCacheSize()}.
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, boolean, TransferInput,
+     * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
+     * is derived from {@link #getCacheSize()}.
      *
-     * @see AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, Map)
+     * @see AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
      */
     protected final Map<
                     TransferInput<Value, Store>,

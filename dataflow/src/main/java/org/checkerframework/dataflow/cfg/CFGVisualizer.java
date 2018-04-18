@@ -19,7 +19,7 @@ public interface CFGVisualizer<
         A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
     /**
      * Initialization method guaranteed to be called once before the first invocation of {@link
-     * visualize}.
+     * #visualize}.
      *
      * @param args implementation-dependent options
      */

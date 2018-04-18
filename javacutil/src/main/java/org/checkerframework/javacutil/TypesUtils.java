@@ -470,7 +470,10 @@ public final class TypesUtils {
     }
 
     /** Returns whether a TypeVariable represents a captured type. */
-    public static boolean isCaptured(TypeVariable typeVar) {
+    public static boolean isCaptured(TypeMirror typeVar) {
+        if (typeVar.getKind() != TypeKind.TYPEVAR) {
+            return false;
+        }
         return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
     }
 
