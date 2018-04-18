@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.cftypeinference8;
+package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
