@@ -60,7 +60,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new DeterminismTreeAnnotator(this), super.createTreeAnnotator());
     }
 
-    private class DeterminismTreeAnnotator extends TreeAnnotator {
+    private static class DeterminismTreeAnnotator extends TreeAnnotator {
 
         public DeterminismTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
