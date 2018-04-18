@@ -42,7 +42,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * Caches of the analysis results for each input for the block of the node and each node.
      *
-     * @see #runAnalysisFor(Node, boolean, TransferInput, Map)
+     * @see #runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
      */
     protected final Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
             analysisCaches;

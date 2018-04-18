@@ -19,13 +19,13 @@ public final class SignednessUtil {
         throw new Error("Do not instantiate");
     }
 
-    /** Gets the unsigned int width of a Java Dimension. */
+    /** Gets the unsigned width of a {@code Dimension}. */
     @SuppressWarnings("signedness")
     public static @Unsigned int dimensionUnsignedWidth(Dimension dim) {
         return dim.width;
     }
 
-    /** Gets the unsigned int height of a Java Dimension. */
+    /** Gets the unsigned height of a {@code Dimension}. */
     @SuppressWarnings("signedness")
     public static @Unsigned int dimensionUnsignedHeight(Dimension dim) {
         return dim.height;
