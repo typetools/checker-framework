@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.framework.util.cftypeinference8.CFInvocationTypeInference;
 import org.checkerframework.framework.util.typeinference.constraint.A2F;
 import org.checkerframework.framework.util.typeinference.constraint.A2FReducer;
 import org.checkerframework.framework.util.typeinference.constraint.AFConstraint;
@@ -50,15 +51,14 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
-import org.checkerframework.framework.util.typeinference8.CFInvocationTypeInference;
-import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
-import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.typeinference8.InvocationTypeInference;
+import org.checkerframework.javacutil.typeinference8.types.Variable;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
