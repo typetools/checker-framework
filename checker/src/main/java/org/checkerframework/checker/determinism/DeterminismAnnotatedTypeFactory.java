@@ -7,31 +7,42 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET = AnnotationBuilder.fromClass(elements, PolyDet.class);
-    //public final AnnotationMirror POLYDET2 = AnnotationBuilder.fromClass(elements, PolyDet2.class);
-    //public final AnnotationMirror POLYDET3 = AnnotationBuilder.fromClass(elements, PolyDet3.class);
-    public final AnnotationMirror OND2D = AnnotationBuilder.fromClass(elements, Ond2D.class);
-    public final AnnotationMirror OND2ND = AnnotationBuilder.fromClass(elements, Ond2Nd.class);
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
+    //    public final ExecutableElement polyValueElement;
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
+        //        polyValueElement =
+        //                TreeUtils.getMethod(
+        //                        org.checkerframework.checker.determinism.qual.PolyDet.class.getName(),
+        //                        "value",
+        //                        0,
+        //                        processingEnv);
+    }
+
+    @Override
+    public QualifierPolymorphism createQualifierPolymorphism() {
+        return new DeterminismQualifierPolymorphism(processingEnv, this);
     }
 
     @Override
@@ -63,30 +74,31 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
-            if (p.getAnnotations().size() > 0) {
-                ExecutableElement method = TreeUtils.elementFromUse(node);
-                AnnotationMirror declAnno = getDeclAnnotation(method, Ond2D.class);
-                AnnotationMirror returnAnno = p.getAnnotations().iterator().next();
-
-                if (declAnno != null) {
-                    if (types.isSameType(declAnno.getAnnotationType(), OND2D.getAnnotationType())) {
-                        if (types.isSameType(
-                                returnAnno.getAnnotationType(), ORDERNONDET.getAnnotationType())) {
-                            p.clearAnnotations();
-                            p.addAnnotation(AnnotationBuilder.fromClass(elements, Det.class));
-                        }
-                    }
-                    if (types.isSameType(
-                            declAnno.getAnnotationType(), OND2ND.getAnnotationType())) {
-                        if (types.isSameType(
-                                returnAnno.getAnnotationType(), ORDERNONDET.getAnnotationType())) {
-                            p.clearAnnotations();
-                            p.addAnnotation(AnnotationBuilder.fromClass(elements, NonDet.class));
-                        }
-                    }
-                }
-            }
             return super.visitMethodInvocation(node, p);
+        }
+    }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(
+            MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+        return new DeterminismQualifierHierarchy(factory, DET);
+    }
+
+    class DeterminismQualifierHierarchy extends GraphQualifierHierarchy {
+
+        public DeterminismQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
+            super(f, bottom);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, POLYDET)) {
+                subAnno = POLYDET;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, POLYDET)) {
+                superAnno = POLYDET;
+            }
+            return super.isSubtype(subAnno, superAnno);
         }
     }
 }

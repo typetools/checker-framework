@@ -275,7 +275,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return the number of elements in this list
      */
-    @Ond2D @PolyDet public int size(@PolyDet ArrayList<E> this) {
+    @PolyDet("down") public int size(@PolyDet ArrayList<E> this) {
         return size;
     }
 
@@ -284,7 +284,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return <tt>true</tt> if this list contains no elements
      */
-    @Ond2D @PolyDet public boolean isEmpty(@PolyDet ArrayList<E> this) {
+    @PolyDet("down") public boolean isEmpty(@PolyDet ArrayList<E> this) {
         return size == 0;
     }
 
@@ -297,7 +297,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element whose presence in this list is to be tested
      * @return <tt>true</tt> if this list contains the specified element
      */
-    @Ond2D @PolyDet public boolean contains(@PolyDet ArrayList<E> this, @PolyDet Object o) {
+    @PolyDet("down") public boolean contains(@PolyDet ArrayList<E> this, @PolyDet Object o) {
         return indexOf(o) >= 0;
     }
 
@@ -308,7 +308,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    @Ond2Nd @PolyDet public int indexOf(@PolyDet ArrayList<E> this, @PolyDet Object o) {
+    @PolyDet("up") public int indexOf(@PolyDet ArrayList<E> this, @PolyDet Object o) {
         if (o == null) {
             for (int i = 0; i < size; i++)
                 if (elementData[i]==null)
@@ -441,7 +441,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @Ond2Nd @PolyDet E set(@PolyDet ArrayList<E> this, int index, E element) {
+    public @PolyDet("up") E set(@PolyDet ArrayList<E> this, int index, E element) {
         rangeCheck(index);
 
         E oldValue = elementData(index);
@@ -455,7 +455,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param e element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      */
-    public @Ond2D @PolyDet boolean add(@PolyDet ArrayList<E> this, E e) {
+    public @PolyDet("down") boolean add(@PolyDet ArrayList<E> this, E e) {
         ensureCapacityInternal(size + 1);  // Increments modCount!!
         elementData[size++] = e;
         return true;

@@ -240,7 +240,7 @@ public class LinkedList<E>
      * @return the first element in this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @Ond2Nd @PolyDet E getFirst(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E getFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         if (f == null)
             throw new NoSuchElementException();
@@ -253,7 +253,7 @@ public class LinkedList<E>
      * @return the last element in this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @Ond2Nd @PolyDet E getLast(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E getLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         if (l == null)
             throw new NoSuchElementException();
@@ -266,7 +266,7 @@ public class LinkedList<E>
      * @return the first element from this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @Ond2Nd @PolyDet E removeFirst(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E removeFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         if (f == null)
             throw new NoSuchElementException();
@@ -279,7 +279,7 @@ public class LinkedList<E>
      * @return the last element from this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @Ond2Nd @PolyDet E removeLast(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E removeLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         if (l == null)
             throw new NoSuchElementException();
@@ -315,7 +315,7 @@ public class LinkedList<E>
      * @param o element whose presence in this list is to be tested
      * @return {@code true} if this list contains the specified element
      */
-    public @Ond2D @PolyDet boolean contains(@PolyDet LinkedList<E> this, Object o) {
+    public @PolyDet("down") boolean contains(@PolyDet LinkedList<E> this, Object o) {
         return indexOf(o) != -1;
     }
 
@@ -324,7 +324,7 @@ public class LinkedList<E>
      *
      * @return the number of elements in this list
      */
-    public @Ond2D @PolyDet int size(@PolyDet LinkedList<E> this) {
+    public @PolyDet("down") int size(@PolyDet LinkedList<E> this) {
         return size;
     }
 
@@ -336,7 +336,7 @@ public class LinkedList<E>
      * @param e element to be appended to this list
      * @return {@code true} (as specified by {@link Collection#add})
      */
-    public @Ond2D @PolyDet boolean add(@PolyDet LinkedList<E> this, E e) {
+    public @PolyDet("down") boolean add(@PolyDet LinkedList<E> this, E e) {
         linkLast(e);
         return true;
     }
@@ -474,7 +474,7 @@ public class LinkedList<E>
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @Ond2Nd @PolyDet E get(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    public @PolyDet("up") E get(@PolyDet LinkedList<E> this, @PolyDet int index) {
         checkElementIndex(index);
         return node(index).item;
     }
@@ -594,7 +594,7 @@ public class LinkedList<E>
      * @return the index of the first occurrence of the specified element in
      *         this list, or -1 if this list does not contain the element
      */
-    public @Ond2Nd @PolyDet int indexOf(@PolyDet LinkedList<E> this, @PolyDet Object o) {
+    public @PolyDet("up") int indexOf(@PolyDet LinkedList<E> this, @PolyDet Object o) {
         int index = 0;
         if (o == null) {
             for (Node<E> x = first; x != null; x = x.next) {
@@ -623,7 +623,7 @@ public class LinkedList<E>
      * @return the index of the last occurrence of the specified element in
      *         this list, or -1 if this list does not contain the element
      */
-    public @Ond2Nd @PolyDet int lastIndexOf(@PolyDet LinkedList<E> this, @PolyDet Object o) {
+    public @PolyDet("up") int lastIndexOf(@PolyDet LinkedList<E> this, @PolyDet Object o) {
         int index = size;
         if (o == null) {
             for (Node<E> x = last; x != null; x = x.prev) {
@@ -649,7 +649,7 @@ public class LinkedList<E>
      * @return the head of this list, or {@code null} if this list is empty
      * @since 1.5
      */
-    public @Ond2Nd @PolyDet E peek(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E peek(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : f.item;
     }
@@ -661,7 +661,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.5
      */
-    public @Ond2Nd @PolyDet E element(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E element(@PolyDet LinkedList<E> this) {
         return getFirst();
     }
 
@@ -671,7 +671,7 @@ public class LinkedList<E>
      * @return the head of this list, or {@code null} if this list is empty
      * @since 1.5
      */
-    public @Ond2Nd @PolyDet E poll(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E poll(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : unlinkFirst(f);
     }
@@ -683,7 +683,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.5
      */
-    public @Ond2Nd @PolyDet E remove(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E remove(@PolyDet LinkedList<E> this) {
         return removeFirst();
     }
 
@@ -694,7 +694,7 @@ public class LinkedList<E>
      * @return {@code true} (as specified by {@link Queue#offer})
      * @since 1.5
      */
-    public @Ond2D @PolyDet boolean offer(@PolyDet LinkedList<E> this, E e) {
+    public @PolyDet("down") boolean offer(@PolyDet LinkedList<E> this, E e) {
         return add(e);
     }
 
@@ -706,7 +706,7 @@ public class LinkedList<E>
      * @return {@code true} (as specified by {@link Deque#offerFirst})
      * @since 1.6
      */
-    public @Ond2D @PolyDet boolean offerFirst(@PolyDet LinkedList<E> this, E e) {
+    public @PolyDet("down") boolean offerFirst(@PolyDet LinkedList<E> this, E e) {
         addFirst(e);
         return true;
     }
@@ -718,7 +718,7 @@ public class LinkedList<E>
      * @return {@code true} (as specified by {@link Deque#offerLast})
      * @since 1.6
      */
-    public @Ond2D @PolyDet boolean offerLast(@PolyDet LinkedList<E> this, E e) {
+    public @PolyDet("down") boolean offerLast(@PolyDet LinkedList<E> this, E e) {
         addLast(e);
         return true;
     }
@@ -731,7 +731,7 @@ public class LinkedList<E>
      *         if this list is empty
      * @since 1.6
      */
-    public @Ond2Nd @PolyDet E peekFirst(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E peekFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : f.item;
      }
@@ -744,7 +744,7 @@ public class LinkedList<E>
      *         if this list is empty
      * @since 1.6
      */
-    public @Ond2Nd @PolyDet E peekLast(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E peekLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         return (l == null) ? null : l.item;
     }
@@ -757,7 +757,7 @@ public class LinkedList<E>
      *     this list is empty
      * @since 1.6
      */
-    public @Ond2Nd @PolyDet E pollFirst(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E pollFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : unlinkFirst(f);
     }
@@ -770,7 +770,7 @@ public class LinkedList<E>
      *     this list is empty
      * @since 1.6
      */
-    public @Ond2Nd @PolyDet E pollLast(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E pollLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         return (l == null) ? null : unlinkLast(l);
     }
@@ -799,7 +799,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.6
      */
-    public @Ond2Nd @PolyDet E pop(@PolyDet LinkedList<E> this) {
+    public @PolyDet("up") E pop(@PolyDet LinkedList<E> this) {
         return removeFirst();
     }
 
@@ -882,11 +882,11 @@ public class LinkedList<E>
             nextIndex = index;
         }
 
-        public @Ond2D @PolyDet boolean hasNext(@PolyDet ListItr this) {
+        public @PolyDet("down") boolean hasNext(@PolyDet ListItr this) {
             return nextIndex < size;
         }
 
-        public @Ond2Nd @PolyDet E next(@PolyDet ListItr this) {
+        public @PolyDet("up") E next(@PolyDet ListItr this) {
             checkForComodification();
             if (!hasNext())
                 throw new NoSuchElementException();
@@ -897,11 +897,11 @@ public class LinkedList<E>
             return lastReturned.item;
         }
 
-        public @Ond2D @PolyDet boolean hasPrevious(@PolyDet ListItr this) {
+        public @PolyDet("down") boolean hasPrevious(@PolyDet ListItr this) {
             return nextIndex > 0;
         }
 
-        public @Ond2Nd @PolyDet E previous(@PolyDet ListItr this) {
+        public @PolyDet("up") E previous(@PolyDet ListItr this) {
             checkForComodification();
             if (!hasPrevious())
                 throw new NoSuchElementException();
@@ -911,11 +911,11 @@ public class LinkedList<E>
             return lastReturned.item;
         }
 
-        public @Ond2Nd @PolyDet int nextIndex(@PolyDet ListItr this) {
+        public @PolyDet("up") int nextIndex(@PolyDet ListItr this) {
             return nextIndex;
         }
 
-        public @Ond2Nd @PolyDet int previousIndex(@PolyDet ListItr this) {
+        public @PolyDet("up") int previousIndex(@PolyDet ListItr this) {
             return nextIndex - 1;
         }
 
@@ -996,7 +996,7 @@ public class LinkedList<E>
         public boolean hasNext() {
             return itr.hasPrevious();
         }
-        public @Ond2Nd @PolyDet E next(@PolyDet DescendingIterator this) {
+        public @PolyDet("up") E next(@PolyDet DescendingIterator this) {
             return itr.previous();
         }
         public void remove() {
