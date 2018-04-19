@@ -1775,11 +1775,11 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Sets the super bound of this wild card
+         * Sets the super bound of this wildcard
          *
          * @param type the type of the lower bound
          */
-        void setSuperBound(AnnotatedTypeMirror type) {
+        public void setSuperBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
                 ErrorReporter.errorAbort(
                         "Super bounds should never be null or a declaration.\n"
@@ -1813,7 +1813,7 @@ public abstract class AnnotatedTypeMirror {
          *
          * @param type the type of the upper bound
          */
-        void setExtendsBound(AnnotatedTypeMirror type) {
+        public void setExtendsBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
                 ErrorReporter.errorAbort(
                         "Extends bounds should never be null or a declaration.\n"

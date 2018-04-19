@@ -2,7 +2,6 @@ package org.checkerframework.javacutil.typeinference8.types;
 
 import java.util.List;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeVariable;
 
 public interface InvocationType {
 
@@ -18,7 +17,7 @@ public interface InvocationType {
      */
     List<AbstractType> getParameterTypes(Theta map, int size);
 
-    List<? extends TypeVariable> getTypeVariables();
+    boolean hasTypeVariables();
 
     boolean isVoid();
 

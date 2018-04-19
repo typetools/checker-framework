@@ -32,8 +32,6 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -103,7 +101,6 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -2530,79 +2527,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType functionType = result.second;
 
         // ========= Overriding Type =========
-        // This doesn't get the correct type for a "MyOuter.super" based on the receiver of the
-        // enclosing method.
-        // That is handled separately in method receiver check.
-
-        // The type of the expression or type use, <expression>::method or <type use>::method.
-        final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
-        final ReferenceKind memRefKind = ((JCMemberReference) memberReferenceTree).kind;
-        AnnotatedTypeMirror enclosingType;
-        if (memberReferenceTree.getMode() == ReferenceMode.NEW
-                || memRefKind == ReferenceKind.UNBOUND
-                || memRefKind == ReferenceKind.STATIC) {
-            // The "qualifier expression" is a type tree.
-            enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
-        } else {
-            // The "qualifier expression" is an expression.
-            enclosingType = atypeFactory.getAnnotatedType(qualifierExpression);
-        }
+        AnnotatedTypeMirror enclosingType =
+                atypeFactory.getEnclosingTypeOfMemberReference(memberReferenceTree, functionType);
 
         // ========= Overriding Executable =========
-        // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
-        ExecutableElement compileTimeDeclaration =
-                (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
-
-        if (enclosingType.getKind() == TypeKind.DECLARED
-                && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-            if (memRefKind == ReferenceKind.UNBOUND) {
-                // The method reference is of the form: Type # instMethod
-                // and Type is a raw type.
-                // If the first parameter of the function type, p1, is a subtype
-                // of type, then type should be p1.  This has the effect of "inferring" the
-                // class type parameter.
-                AnnotatedTypeMirror p1 = functionType.getParameterTypes().get(0);
-                TypeMirror asSuper =
-                        TypesUtils.asSuper(
-                                p1.getUnderlyingType(),
-                                enclosingType.getUnderlyingType(),
-                                atypeFactory.getProcessingEnv());
-                if (asSuper != null) {
-                    enclosingType = AnnotatedTypes.asSuper(atypeFactory, p1, enclosingType);
-                }
-            }
-            // else method reference is something like ArrayList::new
-            // TODO: Use diamond, <>, inference to infer the class type arguments.
-            // for now this case is skipped below in checkMethodReferenceInference.
-        }
-
-        // The type of the compileTimeDeclaration if it were invoked with a receiver expression
-        // of type {@code type}
         AnnotatedExecutableType invocationType =
-                atypeFactory.methodFromUse(
-                                memberReferenceTree, compileTimeDeclaration, enclosingType)
-                        .first;
+                atypeFactory.getCompileTimeDeclarationMemberReference(
+                        memberReferenceTree, functionType, enclosingType);
 
         if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
             // Type argument inference is required, skip check.
             // #checkMethodReferenceInference issued a warning.
             return true;
         }
-
         // This needs to be done before invocationType.getReturnType() and
         // functionType.getReturnType()
         if (invocationType.getTypeVariables().isEmpty()
                 && !functionType.getTypeVariables().isEmpty()) {
             functionType = functionType.getErased();
         }
-
-        // Use the function type's parameters to resolve polymorphic qualifiers.
-        QualifierPolymorphism poly =
-                new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
-        poly.annotate(functionType, invocationType);
-
         AnnotatedTypeMirror invocationReturnType;
-        if (compileTimeDeclaration.getKind() == ElementKind.CONSTRUCTOR) {
+        if (invocationType.getElement().getKind() == ElementKind.CONSTRUCTOR) {
             if (enclosingType.getKind() == TypeKind.ARRAY) {
                 // Special casing for the return of array constructor
                 invocationReturnType = enclosingType;

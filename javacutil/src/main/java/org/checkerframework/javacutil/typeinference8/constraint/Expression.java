@@ -184,7 +184,7 @@ public class Expression extends Constraint {
         Theta map = context.inferenceTypeFactory.createTheta(memRef, compileTimeDecl, context);
         AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
         if (memRef.getTypeArguments() == null
-                && !compileTimeDecl.getTypeVariables().isEmpty()
+                && !compileTimeDecl.hasTypeVariables()
                 && !compileTimeReturn.isProper()) {
             BoundSet b2 =
                     context.inference.createB2MethodRef(
