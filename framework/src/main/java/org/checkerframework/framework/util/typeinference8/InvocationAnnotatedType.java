@@ -22,7 +22,7 @@ public class InvocationAnnotatedType implements InvocationType {
     private final ExpressionTree invocation;
     private final AnnotatedExecutableType methodType;
     private final CFInferenceContext context;
-    AnnotatedTypeFactory typeFactory;
+    private final AnnotatedTypeFactory typeFactory;
 
     InvocationAnnotatedType(
             AnnotatedExecutableType methodType,
@@ -31,6 +31,7 @@ public class InvocationAnnotatedType implements InvocationType {
         this.methodType = methodType;
         this.invocation = invocation;
         this.context = context;
+        this.typeFactory = context.typeFactory;
     }
 
     @Override
