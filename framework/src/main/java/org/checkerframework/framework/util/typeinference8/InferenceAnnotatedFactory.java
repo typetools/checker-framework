@@ -61,11 +61,12 @@ import org.checkerframework.javacutil.typeinference8.types.Variable;
 import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 public class InferenceAnnotatedFactory implements InferenceFactory {
-    private Java8InferenceContext context;
-    private AnnotatedTypeFactory typeFactory;
+    private final CFInferenceContext context;
+    private final AnnotatedTypeFactory typeFactory;
 
-    public InferenceAnnotatedFactory(Java8InferenceContext context) {
+    public InferenceAnnotatedFactory(CFInferenceContext context) {
         this.context = context;
+        typeFactory = context.typeFactory;
     }
 
     /**
@@ -91,7 +92,7 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
         InvocationAnnotatedType annotatedMethodType = (InvocationAnnotatedType) methodType;
         Theta map = new Theta();
         for (AnnotatedTypeVariable pl : annotatedMethodType.getTypeVariables()) {
-            Variable al = new VariableAnnotatedType(pl, invocation, context);
+            Variable al = new VariableAnnotatedType(pl, invocation, (CFInferenceContext) context);
             map.put(pl.getUnderlyingType(), al);
         }
         if (TreeUtils.isDiamondTree(invocation)) {
@@ -107,7 +108,8 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
                     return map;
                 }
                 AnnotatedTypeVariable pl = (AnnotatedTypeVariable) typeMirror;
-                Variable al = new VariableAnnotatedType(pl, invocation, context);
+                Variable al =
+                        new VariableAnnotatedType(pl, invocation, (CFInferenceContext) context);
                 map.put(pl.getUnderlyingType(), al);
             }
         }

@@ -18,7 +18,6 @@ import org.checkerframework.javacutil.typeinference8.types.ContainsInferenceVari
 import org.checkerframework.javacutil.typeinference8.types.InferenceType;
 import org.checkerframework.javacutil.typeinference8.types.Theta;
 import org.checkerframework.javacutil.typeinference8.types.Variable;
-import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 public class InferenceAnnotatedType extends AbstractAnnotatedType implements InferenceType {
     /**
@@ -31,7 +30,7 @@ public class InferenceAnnotatedType extends AbstractAnnotatedType implements Inf
     private final Theta map;
 
     private InferenceAnnotatedType(
-            AnnotatedTypeMirror type, Theta map, Java8InferenceContext context) {
+            AnnotatedTypeMirror type, Theta map, CFInferenceContext context) {
         super(context);
         this.type = type;
         this.map = map;
@@ -44,7 +43,7 @@ public class InferenceAnnotatedType extends AbstractAnnotatedType implements Inf
      * contains no type variables that are mapped in an inference variable, a {@link
      * ProperTypeMirror} is returned.
      */
-    static AbstractType create(AnnotatedTypeMirror type, Theta map, Java8InferenceContext context) {
+    static AbstractType create(AnnotatedTypeMirror type, Theta map, CFInferenceContext context) {
         assert type != null;
         if (map == null) {
             return new ProperAnnotatedType(type, context);
@@ -68,7 +67,7 @@ public class InferenceAnnotatedType extends AbstractAnnotatedType implements Inf
      * ProperTypeMirror} is returned.
      */
     static List<AbstractType> create(
-            List<? extends AnnotatedTypeMirror> types, Theta map, Java8InferenceContext context) {
+            List<? extends AnnotatedTypeMirror> types, Theta map, CFInferenceContext context) {
         List<AbstractType> abstractTypes = new ArrayList<>();
         for (AnnotatedTypeMirror type : types) {
             abstractTypes.add(create(type, map, context));

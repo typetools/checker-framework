@@ -11,12 +11,11 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.typeinference8.types.AbstractType;
 import org.checkerframework.javacutil.typeinference8.types.ProperType;
 import org.checkerframework.javacutil.typeinference8.types.Variable;
-import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 public class ProperAnnotatedType extends AbstractAnnotatedType implements ProperType {
     private final AnnotatedTypeMirror type;
 
-    ProperAnnotatedType(AnnotatedTypeMirror type, Java8InferenceContext context) {
+    ProperAnnotatedType(AnnotatedTypeMirror type, CFInferenceContext context) {
         super(context);
         this.type = type;
     }

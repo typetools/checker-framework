@@ -17,18 +17,17 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.typeinference8.types.AbstractType;
 import org.checkerframework.javacutil.typeinference8.types.InvocationType;
 import org.checkerframework.javacutil.typeinference8.types.Theta;
-import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 public class InvocationAnnotatedType implements InvocationType {
     private final ExpressionTree invocation;
     private final AnnotatedExecutableType methodType;
-    private final Java8InferenceContext context;
+    private final CFInferenceContext context;
     AnnotatedTypeFactory typeFactory;
 
     InvocationAnnotatedType(
             AnnotatedExecutableType methodType,
             ExpressionTree invocation,
-            Java8InferenceContext context) {
+            CFInferenceContext context) {
         this.methodType = methodType;
         this.invocation = invocation;
         this.context = context;

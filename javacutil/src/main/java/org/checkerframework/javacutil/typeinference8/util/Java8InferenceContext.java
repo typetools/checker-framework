@@ -81,8 +81,12 @@ public class Java8InferenceContext {
         this.runtimeEx =
                 TypesUtils.typeFromClass(
                         RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
-        this.inferenceTypeFactory = new InferenceTypeMirrorFactory(this);
+        this.inferenceTypeFactory = createInferenceFactory();
         this.object = inferenceTypeFactory.getObject();
+    }
+
+    public InferenceFactory createInferenceFactory() {
+        return new InferenceTypeMirrorFactory(this);
     }
 
     /** @return the next number to use as the id for a non-capture variable */

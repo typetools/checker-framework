@@ -5,12 +5,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.javacutil.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.javacutil.typeinference8.types.AbstractType;
 import org.checkerframework.javacutil.typeinference8.types.CaptureVariable;
-import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 public class CaptureVariableAnnotatedType extends VariableAnnotatedType implements CaptureVariable {
 
     CaptureVariableAnnotatedType(
-            AnnotatedTypeVariable type, ExpressionTree invocation, Java8InferenceContext context) {
+            AnnotatedTypeVariable type, ExpressionTree invocation, CFInferenceContext context) {
         super(type, invocation, context, context.getNextCaptureVariableId());
     }
 

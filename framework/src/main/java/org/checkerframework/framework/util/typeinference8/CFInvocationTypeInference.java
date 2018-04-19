@@ -34,7 +34,6 @@ import org.checkerframework.javacutil.typeinference8.types.AbstractType;
 import org.checkerframework.javacutil.typeinference8.types.InvocationType;
 import org.checkerframework.javacutil.typeinference8.types.Variable;
 import org.checkerframework.javacutil.typeinference8.util.InferenceUtils;
-import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 /**
  * Performs invocation type inference as described in JLS Chapter 18.5.2. Main entry point is {@link
@@ -65,12 +64,7 @@ public class CFInvocationTypeInference extends InvocationTypeInference {
     private final SourceChecker checker;
 
     public CFInvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
-        this.context =
-                new Java8InferenceContext(
-                        factory.getProcessingEnv(),
-                        factory.getContext().getTypeUtils(),
-                        pathToExpression,
-                        this);
+        this.context = new CFInferenceContext(factory, pathToExpression, this);
         this.checker = factory.getContext().getChecker();
     }
 

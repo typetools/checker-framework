@@ -14,7 +14,6 @@ import org.checkerframework.javacutil.typeinference8.types.Theta;
 import org.checkerframework.javacutil.typeinference8.types.Variable;
 import org.checkerframework.javacutil.typeinference8.types.VariableBounds;
 import org.checkerframework.javacutil.typeinference8.types.VariableBounds.BoundKind;
-import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 public class VariableAnnotatedType extends AbstractAnnotatedType implements Variable {
     protected final VariableBounds variableBounds;
@@ -33,14 +32,14 @@ public class VariableAnnotatedType extends AbstractAnnotatedType implements Vari
     VariableAnnotatedType(
             AnnotatedTypeVariable typeVariable,
             ExpressionTree invocation,
-            Java8InferenceContext context) {
+            CFInferenceContext context) {
         this(typeVariable, invocation, context, context.getNextVariableId());
     }
 
     VariableAnnotatedType(
             AnnotatedTypeVariable typeVariable,
             ExpressionTree invocation,
-            Java8InferenceContext context,
+            CFInferenceContext context,
             int id) {
         super(context);
         assert typeVariable != null;

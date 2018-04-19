@@ -22,14 +22,14 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.typeinference8.types.AbstractType;
 import org.checkerframework.javacutil.typeinference8.types.ProperType;
-import org.checkerframework.javacutil.typeinference8.util.Java8InferenceContext;
 
 public abstract class AbstractAnnotatedType implements AbstractType {
-    protected final Java8InferenceContext context;
-    AnnotatedTypeFactory typeFactory;
+    protected final CFInferenceContext context;
+    protected final AnnotatedTypeFactory typeFactory;
 
-    public AbstractAnnotatedType(Java8InferenceContext context) {
+    public AbstractAnnotatedType(CFInferenceContext context) {
         this.context = context;
+        this.typeFactory = context.typeFactory;
     }
 
     public abstract AbstractType create(AnnotatedTypeMirror type);
