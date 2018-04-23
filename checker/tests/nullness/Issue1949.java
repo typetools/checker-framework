@@ -4,11 +4,10 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue1949 {
     public interface Base<R> {}
-    //public interface Child<R> extends Base<@Nullable R>{}
-    public interface Child<@Nullable R> {}
 
-    public abstract static class BaseClass<R> implements Child<@Nullable R> { // 1
-        //    public static abstract class BaseClass<R { // 2
+    public interface Child<R> extends Base<@Nullable R> {}
+
+    public abstract static class BaseClass<R> implements Child<R> {
         abstract List<Child<R>> foo();
     }
 
