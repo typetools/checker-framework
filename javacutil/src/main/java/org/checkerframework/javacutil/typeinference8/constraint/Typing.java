@@ -1,6 +1,5 @@
 package org.checkerframework.javacutil.typeinference8.constraint;
 
-import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -281,9 +280,9 @@ public class Typing extends Constraint {
         if (T.isProper() && S.isProper()) {
             // the constraint reduces to true if S is compatible in a loose invocation context
             // with T (5.3), and false otherwise.
-            if (((ProperType) S).isSubType((ProperType) T)) {
+            if (((ProperType) S).isSubTypeUnchecked((ProperType) T)) {
                 return ConstraintSet.TRUE;
-            } else if (context.types.isAssignable((Type) S.getJavaType(), (Type) T.getJavaType())) {
+            } else if (((ProperType) S).isAssignable((ProperType) T)) {
                 return ReductionResult.UNCHECKED_CONVERSION;
             } else {
                 return ConstraintSet.FALSE;

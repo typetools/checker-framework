@@ -99,7 +99,29 @@ public class ProperTypeMirror extends AbstractTypeMirror implements ProperType {
             return true;
         }
 
+        return context.types.isSubtype((Type) subType, (Type) superType);
+    }
+
+    @Override
+    public boolean isSubTypeUnchecked(ProperType otherType) {
+        TypeMirror subType = getJavaType();
+        TypeMirror superType = otherType.getJavaType();
+        if (subType == superType) {
+            return true;
+        }
+
         return context.types.isSubtypeUnchecked((Type) subType, (Type) superType);
+    }
+
+    @Override
+    public boolean isAssignable(ProperType otherType) {
+        TypeMirror subType = getJavaType();
+        TypeMirror superType = otherType.getJavaType();
+        if (subType == superType) {
+            return true;
+        }
+
+        return context.types.isAssignable((Type) subType, (Type) superType);
     }
 
     @Override

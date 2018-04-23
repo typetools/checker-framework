@@ -44,7 +44,35 @@ public class ProperAnnotatedType extends AbstractAnnotatedType implements Proper
         TypeMirror subType = getJavaType();
         TypeMirror superJavaType = superType.getJavaType();
 
+        if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
+            AnnotatedTypeMirror superATM = ((ProperAnnotatedType) superType).getAnnotatedType();
+            AnnotatedTypeMirror subATM = this.getAnnotatedType();
+            return typeFactory.getTypeHierarchy().isSubtype(subATM, superATM);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isSubTypeUnchecked(ProperType superType) {
+        TypeMirror subType = getJavaType();
+        TypeMirror superJavaType = superType.getJavaType();
+
         if (context.types.isSubtypeUnchecked((Type) subType, (Type) superJavaType)) {
+            AnnotatedTypeMirror superATM = ((ProperAnnotatedType) superType).getAnnotatedType();
+            AnnotatedTypeMirror subATM = this.getAnnotatedType();
+            return typeFactory.getTypeHierarchy().isSubtype(subATM, superATM);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isAssignable(ProperType superType) {
+        TypeMirror subType = getJavaType();
+        TypeMirror superJavaType = superType.getJavaType();
+
+        if (context.types.isAssignable((Type) subType, (Type) superJavaType)) {
             AnnotatedTypeMirror superATM = ((ProperAnnotatedType) superType).getAnnotatedType();
             AnnotatedTypeMirror subATM = this.getAnnotatedType();
             return typeFactory.getTypeHierarchy().isSubtype(subATM, superATM);
