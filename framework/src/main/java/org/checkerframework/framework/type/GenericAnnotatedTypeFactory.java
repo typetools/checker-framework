@@ -989,6 +989,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * classes.
      */
     protected void performFlowAnalysis(ClassTree classTree) {
+        analysis.reset();
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();
             returnStatementStores = new IdentityHashMap<>();
