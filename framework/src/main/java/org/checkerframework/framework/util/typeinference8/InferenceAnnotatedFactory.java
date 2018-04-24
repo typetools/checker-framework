@@ -21,9 +21,11 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -556,39 +558,26 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
     @Override
     public List<ProperType> getSubsTypeArgs(
             List<TypeVariable> typeVar, List<ProperType> typeArg, List<Variable> asList) {
-        throw new RuntimeException("Not implemented");
-        //        List<TypeMirror> javaTypeArgs = new ArrayList<>();
-        //        // Recursive types:
-        //        for (int i = 0; i < typeArg.size(); i++) {
-        //            Variable ai = asList.get(i);
-        //            TypeMirror inst = typeArg.get(i).getJavaType();
-        //            TypeVariable typeVariableI = ai.getJavaType();
-        //            if (ContainsInferenceVariable.hasAnyTypeVariable(
-        //                    Collections.singleton(typeVariableI), inst)) {
-        //                // If the instantiation of ai includes a reference to ai,
-        //                // then substitute ai with an unbound wildcard.  This isn't quite right but I'm not
-        //                // sure how to make recursive types Java types.
-        //                // TODO: This causes problems when incorporating the bounds.
-        //                TypeMirror unbound = context.env.getTypeUtils().getWildcardType(null, null);
-        //                inst =
-        //                        TypesUtils.substitute(
-        //                                inst,
-        //                                Collections.singletonList(typeVariableI),
-        //                                Collections.singletonList(unbound),
-        //                                context.env);
-        //                javaTypeArgs.add(inst);
-        //            } else {
-        //                javaTypeArgs.add(inst);
-        //            }
-        //        }
-        //
-        //        // Instantiations that refer to another variable
-        //        List<ProperType> subsTypeArg = new ArrayList<>();
-        //        for (TypeMirror type : javaTypeArgs) {
-        //            TypeMirror subs = TypesUtils.substitute(type, typeVar, javaTypeArgs, context.env);
-        //            subsTypeArg.add(new ProperTypeMirror(subs, context));
-        //        }
-        //        return subsTypeArg;
+
+        Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
+
+        List<AnnotatedTypeMirror> typeArgsATM = new ArrayList<>();
+        // Recursive types:
+        for (int i = 0; i < typeArg.size(); i++) {
+            Variable ai = asList.get(i);
+            ProperAnnotatedType inst = (ProperAnnotatedType) typeArg.get(i);
+            typeArgsATM.add(inst.getAnnotatedType());
+            TypeVariable typeVariableI = ai.getJavaType();
+            map.put(typeVariableI, inst.getAnnotatedType());
+        }
+
+        // Instantiations that refer to another variable
+        List<ProperType> subsTypeArg = new ArrayList<>();
+        for (AnnotatedTypeMirror type : typeArgsATM) {
+            AnnotatedTypeMirror subs = typeFactory.getTypeVarSubstitutor().substitute(map, type);
+            subsTypeArg.add(new ProperAnnotatedType(subs, context));
+        }
+        return subsTypeArg;
     }
 
     public static TypeMirror lub(
