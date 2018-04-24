@@ -417,11 +417,13 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
 
     @Override
     public ProperType getObject() {
-        throw new RuntimeException("Not implemented");
-        //        TypeMirror objecTypeMirror =
-        //                TypesUtils.typeFromClass(
-        //                        Object.class, context.modelTypes, context.env.getElementUtils());
-        //        return new ProperTypeMirror(objecTypeMirror, context);
+        TypeMirror objectTypeMirror =
+                TypesUtils.typeFromClass(
+                        Object.class, context.modelTypes, context.env.getElementUtils());
+        AnnotatedTypeMirror object =
+                AnnotatedTypeMirror.createType(objectTypeMirror, typeFactory, false);
+        object.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
+        return new ProperAnnotatedType(object, context);
     }
 
     @Override
@@ -475,8 +477,10 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
 
     @Override
     public ProperType getRuntimeException() {
-        throw new RuntimeException("Not implemented");
-        //        return new ProperTypeMirror(context.runtimeEx, context);
+        AnnotatedTypeMirror runtimeEx =
+                AnnotatedTypeMirror.createType(context.runtimeEx, typeFactory, false);
+        runtimeEx.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
+        return new ProperAnnotatedType(runtimeEx, context);
     }
 
     @Override
