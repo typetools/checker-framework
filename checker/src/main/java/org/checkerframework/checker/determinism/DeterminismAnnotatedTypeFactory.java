@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    public final AnnotationMirror POLYDET = AnnotationBuilder.fromClass(elements, PolyDet.class);
+    public final AnnotationMirror POLYDET, POLYDET_USE;
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
@@ -31,6 +31,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
+        builder.setValue("value", "use");
+        POLYDET_USE = builder.build();
+        AnnotationBuilder builder2 = new AnnotationBuilder(processingEnv, PolyDet.class);
+        builder2.setValue("value", "");
+        POLYDET = builder2.build();
         postInit();
         //        polyValueElement =
         //                TreeUtils.getMethod(
