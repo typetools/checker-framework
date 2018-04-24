@@ -40,9 +40,7 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
         builder.setValue("value", "use");
         POLYDET_USE = builder.build();
         POLYDET = AnnotationBuilder.fromClass(elements, PolyDet.class);
-        polyQuals.put(
-                POLYDET,
-                AnnotationBuilder.fromClass(elements, NonDet.class));
+        polyQuals.put(POLYDET, AnnotationBuilder.fromClass(elements, NonDet.class));
         polyQuals.put(POLYDET_USE, AnnotationBuilder.fromClass(elements, NonDet.class));
     }
 
@@ -57,7 +55,7 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
                 upOrDown =
                         AnnotationUtils.getElementValue(
                                 typeAnnoMirror, "value", String.class, true);
-                if(upOrDown.equals("down") || upOrDown.equals("up"))
+                if (upOrDown.equals("down") || upOrDown.equals("up"))
                     type.replaceAnnotation(AnnotationBuilder.fromClass(elements, PolyDet.class));
             }
         }
@@ -65,10 +63,9 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
             AnnotationMirror poly = pqentry.getKey();
             if (poly != null && type.hasAnnotation(poly)) {
                 AnnotationMirrorSet quals;
-                if(poly.equals(POLYDET_USE)){
+                if (poly.equals(POLYDET_USE)) {
                     quals = matches.get(POLYDET);
-                }
-                else{
+                } else {
                     quals = pqentry.getValue();
                 }
                 type.removeAnnotation(poly);

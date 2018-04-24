@@ -105,7 +105,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                         AbstractList.class, types, processingEnvironment.getElementUtils());
         TypeMirror AbstractSequentialListTypeMirror =
                 TypesUtils.typeFromClass(
-                        AbstractSequentialList.class, types, processingEnvironment.getElementUtils());
+                        AbstractSequentialList.class,
+                        types,
+                        processingEnvironment.getElementUtils());
         TypeMirror LinkedListTypeMirror =
                 TypesUtils.typeFromClass(
                         LinkedList.class, types, processingEnvironment.getElementUtils());
@@ -116,9 +118,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         TypeMirror SetTypeMirror =
                 TypesUtils.typeFromClass(Set.class, types, processingEnvironment.getElementUtils());
         TypeMirror AbstractSetTypeMirror =
-                TypesUtils.typeFromClass(AbstractSet.class, types, processingEnvironment.getElementUtils());
+                TypesUtils.typeFromClass(
+                        AbstractSet.class, types, processingEnvironment.getElementUtils());
         TypeMirror EnumSetTypeMirror =
-                TypesUtils.typeFromClass(EnumSet.class, types, processingEnvironment.getElementUtils());
+                TypesUtils.typeFromClass(
+                        EnumSet.class, types, processingEnvironment.getElementUtils());
         TypeMirror HashSetTypeMirror =
                 TypesUtils.typeFromClass(
                         HashSet.class, types, processingEnvironment.getElementUtils());

@@ -48,8 +48,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
-                Arrays.asList(
-                        Det.class, OrderNonDet.class, NonDet.class, PolyDet.class));
+                Arrays.asList(Det.class, OrderNonDet.class, NonDet.class, PolyDet.class));
     }
 
     @Override
