@@ -446,6 +446,9 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
                 ti = li;
             } else {
                 ti = glb(ti, li);
+                if (ti == null) {
+                    return null;
+                }
             }
         }
         return ti;
@@ -453,22 +456,17 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
 
     @Override
     public AbstractType glb(AbstractType a, AbstractType b) {
-        // TODO:
-        throw new RuntimeException("Not implemented");
-        //        AnnotatedTypeMirror aAtm = ((AbstractAnnotatedType) a).getAnnotatedType();
-        //        AnnotatedTypeMirror bAtm = ((AbstractAnnotatedType) b).getAnnotatedType();
-        //        TypeMirror glb = TypesUtils.greatestLowerBound(aJavaType, bJavaType, context.env);
-        //        if (context.env.getTypeUtils().isSameType(glb, bJavaType)) {
-        //            return b;
-        //        } else if (context.env.getTypeUtils().isSameType(glb, aJavaType)) {
-        //            return a;
-        //        } else if (a.isInferenceType()) {
-        //            return ((AbstractTypeMirror) a).create(glb);
-        //        } else if (b.isInferenceType()) {
-        //            return ((AbstractTypeMirror) b).create(glb);
-        //        }
-        //        assert a.isProper() && b.isProper();
-        //        return new ProperTypeMirror(glb, context);
+        AnnotatedTypeMirror aAtm = ((AbstractAnnotatedType) a).getAnnotatedType();
+        AnnotatedTypeMirror bAtm = ((AbstractAnnotatedType) b).getAnnotatedType();
+        AnnotatedTypeMirror glb = AnnotatedTypes.greatestLowerBound(typeFactory, aAtm, bAtm);
+        if (a.isInferenceType()) {
+            return ((AbstractAnnotatedType) a).create(glb);
+        } else if (b.isInferenceType()) {
+            return ((AbstractAnnotatedType) b).create(glb);
+        }
+
+        assert a.isProper() && b.isProper();
+        return new ProperAnnotatedType(glb, context);
     }
 
     @Override

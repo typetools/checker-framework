@@ -29,7 +29,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -48,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -609,34 +609,56 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2) {
-        AnnotatedTypeMirror subtype = subtype(atypeFactory, type1, type2);
+        Set<? extends AnnotationMirror> glbAnno =
+                atypeFactory
+                        .getQualifierHierarchy()
+                        .greatestLowerBounds(
+                                type1, type2, type1.getAnnotations(), type2.getAnnotations());
+        AnnotatedTypeMirror type1Copy = type1.deepCopy();
+        type1Copy.replaceAnnotations(glbAnno);
+        AnnotatedTypeMirror type2Copy = type2.deepCopy();
+        type2Copy.replaceAnnotations(glbAnno);
+
+        AnnotatedTypeMirror subtype = glbSubtype(atypeFactory, type1Copy, type2Copy);
         if (subtype != null) {
             return subtype.getKind() == TypeKind.NULL ? null : subtype;
         }
 
-        TypeMirror glb =
+        TypeMirror glbJava =
                 TypesUtils.greatestLowerBound(
                         type1.getUnderlyingType(),
                         type2.getUnderlyingType(),
                         atypeFactory.getProcessingEnv());
 
-        if (glb.getKind() != TypeKind.INTERSECTION) {
+        if (glbJava.getKind() != TypeKind.INTERSECTION) {
             // If one type isn't a subtype of the other, then GLB must be an intersection.
             return null;
         }
-        IntersectionType intersectionType = (IntersectionType) glb;
+        AnnotatedIntersectionType glb =
+                (AnnotatedIntersectionType)
+                        AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
+        glb.addAnnotations(glbAnno);
+        Types types = atypeFactory.getContext().getTypeUtils();
 
-        return null;
+        for (AnnotatedTypeMirror bound : glb.directSuperTypes()) {
+            if (types.isSameType(bound.getUnderlyingType(), type1Copy.getUnderlyingType())) {
+                AnnotatedTypeMerger.merge(type1Copy, bound);
+            } else if (types.isSameType(bound.getUnderlyingType(), type2Copy.getUnderlyingType())) {
+                AnnotatedTypeMerger.merge(type2Copy, bound);
+            } else {
+                return null;
+            }
+        }
+
+        return glb;
     }
 
-    private static AnnotatedTypeMirror subtype(
+    private static AnnotatedTypeMirror glbSubtype(
             AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2) {
-        if (atypeFactory
-                .getContext()
-                .getTypeUtils()
-                .isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
+        Types types = atypeFactory.getContext().getTypeUtils();
+        if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
             if (atypeFactory.getTypeHierarchy().isSubtype(type1, type2)) {
                 return type1;
             } else {
@@ -644,11 +666,8 @@ public class AnnotatedTypes {
                 return atypeFactory.getAnnotatedNullType(
                         atypeFactory.getQualifierHierarchy().getBottomAnnotations());
             }
-        } else if (atypeFactory
-                .getContext()
-                .getTypeUtils()
-                .isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
-            if (atypeFactory.getTypeHierarchy().isSubtype(type1, type2)) {
+        } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+            if (atypeFactory.getTypeHierarchy().isSubtype(type2, type1)) {
                 return type1;
             } else {
                 // There's no annotated GLB.
