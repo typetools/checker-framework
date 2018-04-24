@@ -72,6 +72,7 @@ public class Java8InferenceContext {
             AnnotatedTypeFactory factory,
             TreePath pathToExpression,
             CFInvocationTypeInference inference) {
+        this.typeFactory = factory;
         this.pathToExpression = pathToExpression;
         this.env = factory.getProcessingEnv();
         this.inference = inference;
@@ -86,7 +87,6 @@ public class Java8InferenceContext {
                         RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
         this.inferenceTypeFactory = new InferenceAnnotatedFactory(this);
         this.object = inferenceTypeFactory.getObject();
-        this.typeFactory = factory;
     }
 
     /** @return the next number to use as the id for a non-capture variable */

@@ -31,21 +31,21 @@ public class InvocationTypeInference {
     public InvocationTypeInference() {}
 
     /** Perform invocation type inference on {@code invocation}. */
-    public List<Variable> infer(ExpressionTree invocation) {
+    public List<Variable> infer(ExpressionTree invocation, InvocationType invocationType) {
         ProperType targetType = context.inferenceTypeFactory.getTargetType();
-        return infer(invocation, targetType);
+        return infer(invocation, invocationType, targetType);
     }
 
     /** @param target Nullable if invocation isn't assigned. */
-    public List<Variable> infer(ExpressionTree invocation, ProperType target) {
+    public List<Variable> infer(
+            ExpressionTree invocation, InvocationType methodType, ProperType target) {
         List<? extends ExpressionTree> args;
         if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
             args = ((MethodInvocationTree) invocation).getArguments();
         } else {
             args = ((NewClassTree) invocation).getArguments();
         }
-        InvocationType methodType =
-                context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
+
         Theta map = context.inferenceTypeFactory.createTheta(invocation, methodType, context);
         BoundSet b2 = createB2(invocation, methodType, args, map);
         BoundSet b3;

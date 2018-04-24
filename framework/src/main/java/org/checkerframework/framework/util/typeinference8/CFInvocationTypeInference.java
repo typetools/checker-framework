@@ -13,18 +13,21 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirrorFactory;
 import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
@@ -36,7 +39,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Performs invocation type inference as described in JLS Chapter 18.5.2. Main entry point is {@link
- * #infer(ExpressionTree)}.
+ * InvocationTypeInference#infer(ExpressionTree, InvocationType)}.
  *
  * <p>At a high level, inference creates variables, as place holders for the method type arguments
  * to infer for the invocation of a method. Then it creates constraints between the arguments to the
@@ -68,23 +71,24 @@ public class CFInvocationTypeInference extends InvocationTypeInference {
         this.checker = factory.getContext().getChecker();
     }
 
-    @Override
-    public List<Variable> infer(ExpressionTree invocation) {
+    public List<Variable> infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(context.pathToExpression);
         if (!shouldTryInference(assignmentContext, context.pathToExpression)) {
             return null;
         }
         List<Variable> result;
         try {
-            result = super.infer(invocation);
+            InvocationType invocationType =
+                    new InvocationAnnotatedType(methodType, invocation, context);
+            result = super.infer(invocation, invocationType);
         } catch (Exception ex) {
             // Catch any exception so all crashes in a compilation unit are reported.
             logException(invocation, ex);
             return null;
         }
-        InvocationType methodType =
-                context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
-        checkResult(result, invocation, methodType);
+        ExecutableType e =
+                InferenceTypeMirrorFactory.getTypeOfMethodAdaptedToUse(invocation, context);
+        checkResult(result, invocation, e);
         return result;
     }
 
@@ -158,10 +162,9 @@ public class CFInvocationTypeInference extends InvocationTypeInference {
      * javac.
      */
     private void checkResult(
-            List<Variable> result, ExpressionTree invocation, InvocationType methodType) {
+            List<Variable> result, ExpressionTree invocation, ExecutableType methodType) {
         Map<TypeVariable, TypeMirror> fromReturn =
-                InferenceUtils.getMappingFromReturnType(
-                        invocation, methodType.getJavaType(), context.env);
+                InferenceUtils.getMappingFromReturnType(invocation, methodType, context.env);
         for (Variable variable : result) {
             if (!variable.getInvocation().equals(invocation)) {
                 continue;

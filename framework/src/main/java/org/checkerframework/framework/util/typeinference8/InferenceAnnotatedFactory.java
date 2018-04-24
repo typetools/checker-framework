@@ -155,10 +155,16 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
 
     @Override
     public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
-        return new InvocationAnnotatedType(
-                (AnnotatedExecutableType) typeFactory.getAnnotatedType(invocation),
-                invocation,
-                context);
+        ExecutableElement methodElt;
+        if (invocation.getKind() == Kind.METHOD_INVOCATION) {
+            methodElt = TreeUtils.elementFromUse((MethodInvocationTree) invocation);
+        } else {
+            methodElt = TreeUtils.elementFromUse((NewClassTree) invocation);
+        }
+        AnnotatedTypeMirror receiverType = typeFactory.getReceiverType(invocation);
+        AnnotatedExecutableType methodType =
+                AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, receiverType, methodElt);
+        return new InvocationAnnotatedType(methodType, invocation, context);
     }
     /**
      * Returns the type that the leaf of path is assigned to, if it is within an assignment context.
