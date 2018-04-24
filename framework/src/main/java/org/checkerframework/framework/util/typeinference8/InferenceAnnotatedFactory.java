@@ -487,11 +487,11 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
             pair = typeFactory.getFnInterfaceFromTree((MemberReferenceTree) expression);
         }
         List<Variable> es = new ArrayList<>();
-        List<ProperType> properTypes = new ArrayList<>();
+        List<ProperAnnotatedType> properTypes = new ArrayList<>();
         for (AnnotatedTypeMirror thrownType : pair.second.getThrownTypes()) {
             AbstractType ei = InferenceAnnotatedType.create(thrownType, map, context);
             if (ei.isProper()) {
-                properTypes.add((ProperType) ei);
+                properTypes.add((ProperAnnotatedType) ei);
             } else {
                 es.add((Variable) ei);
             }
@@ -502,11 +502,9 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
 
         List<? extends AnnotatedTypeMirror> thrownTypes;
         if (expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-            // TODO
-            throw new RuntimeException("not implemented");
-            //                    thrownTypes =
-            //                            CheckedExceptionsUtil.thrownCheckedExceptions(
-            //                                    (LambdaExpressionTree) expression, context);
+            thrownTypes =
+                    CheckedExceptionsUtil.thrownCheckedExceptions(
+                            (LambdaExpressionTree) expression, context);
         } else {
             AnnotatedTypeMirror enclosing =
                     typeFactory.getEnclosingTypeOfMemberReference(
@@ -520,8 +518,8 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
 
         for (AnnotatedTypeMirror xi : thrownTypes) {
             boolean isSubtypeOfProper = false;
-            for (ProperType properType : properTypes) {
-                if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
+            for (ProperAnnotatedType properType : properTypes) {
+                if (typeFactory.getTypeHierarchy().isSubtype(xi, properType.getAnnotatedType())) {
                     isSubtypeOfProper = true;
                 }
             }
