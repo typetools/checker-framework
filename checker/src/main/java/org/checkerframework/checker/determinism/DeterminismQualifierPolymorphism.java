@@ -20,6 +20,8 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
     Elements elements;
     ProcessingEnvironment env;
     DeterminismAnnotatedTypeFactory factory;
+    AnnotationMirror POLYDET_USE;
+    AnnotationMirror POLYDET;
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
      * querying type qualifiers and the given factory for getting annotated types. Subclass need to
@@ -34,9 +36,14 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
         this.env = env;
         this.factory = factory;
         elements = env.getElementUtils();
+        AnnotationBuilder builder = new AnnotationBuilder(env, PolyDet.class);
+        builder.setValue("value", "use");
+        POLYDET_USE = builder.build();
+        POLYDET = AnnotationBuilder.fromClass(elements, PolyDet.class);
         polyQuals.put(
-                AnnotationBuilder.fromClass(elements, PolyDet.class),
+                POLYDET,
                 AnnotationBuilder.fromClass(elements, NonDet.class));
+        polyQuals.put(POLYDET_USE, AnnotationBuilder.fromClass(elements, NonDet.class));
     }
 
     @Override
@@ -50,14 +57,21 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
                 upOrDown =
                         AnnotationUtils.getElementValue(
                                 typeAnnoMirror, "value", String.class, true);
-                type.replaceAnnotation(AnnotationBuilder.fromClass(elements, PolyDet.class));
+                if(upOrDown.equals("down") || upOrDown.equals("up"))
+                    type.replaceAnnotation(AnnotationBuilder.fromClass(elements, PolyDet.class));
             }
         }
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : matches.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
             if (poly != null && type.hasAnnotation(poly)) {
+                AnnotationMirrorSet quals;
+                if(poly.equals(POLYDET_USE)){
+                    quals = matches.get(POLYDET);
+                }
+                else{
+                    quals = pqentry.getValue();
+                }
                 type.removeAnnotation(poly);
-                AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);
                 if (type.hasAnnotation(factory.ORDERNONDET)) {
                     if (upOrDown.equals("down")) type.replaceAnnotation(factory.DET);

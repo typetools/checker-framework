@@ -530,7 +530,7 @@ public interface List<E> extends Collection<E> {
      * @see #equals(Object)
      */
 
-    @PolyDet("up") int hashCode(@PolyDet List<E> this);
+    @NonDet int hashCode(@PolyDet List<E> this);
 
     // Positional Access Operations
 
@@ -583,7 +583,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
-    void add(int index, E element);
+    void add(@PolyDet List<E> this, @PolyDet("use") int index, E element);
 
     /**
      * Removes the element at the specified position in this list (optional
