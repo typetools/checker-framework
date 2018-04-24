@@ -49,7 +49,9 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.typeinference8.constraint.Constraint;
 import org.checkerframework.javacutil.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.javacutil.typeinference8.constraint.Typing;
 import org.checkerframework.javacutil.typeinference8.typemirror.type.AbstractTypeMirror;
 import org.checkerframework.javacutil.typeinference8.types.AbstractType;
 import org.checkerframework.javacutil.typeinference8.types.CaptureVariable;
@@ -477,54 +479,65 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
 
     @Override
     public ConstraintSet getCheckedExceptionConstraints(ExpressionTree expression, Theta map) {
-        throw new RuntimeException("Not implemented");
-        //        ConstraintSet constraintSet = new ConstraintSet();
-        //        ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
-        //        List<Variable> es = new ArrayList<>();
-        //        List<ProperType> properTypes = new ArrayList<>();
-        //        for (TypeMirror thrownType : ele.getThrownTypes()) {
-        //            AbstractType ei = InferenceTypeMirror.create(thrownType, map, context);
-        //            if (ei.isProper()) {
-        //                properTypes.add((ProperType) ei);
-        //            } else {
-        //                es.add((Variable) ei);
-        //            }
-        //        }
-        //        if (es.isEmpty()) {
-        //            return ConstraintSet.TRUE;
-        //        }
-        //
-        //        List<? extends TypeMirror> thrownTypes;
-        //        if (expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-        //            thrownTypes =
-        //                    CheckedExceptionsUtil.thrownCheckedExceptions(
-        //                            (LambdaExpressionTree) expression, context);
-        //        } else {
-        //            thrownTypes =
-        //                    TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env)
-        //                            .getThrownTypes();
-        //        }
-        //
-        //        for (TypeMirror xi : thrownTypes) {
-        //            boolean isSubtypeOfProper = false;
-        //            for (ProperType properType : properTypes) {
-        //                if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
-        //                    isSubtypeOfProper = true;
-        //                }
-        //            }
-        //            if (!isSubtypeOfProper) {
-        //                for (Variable ei : es) {
-        //                    constraintSet.add(
-        //                            new Typing(
-        //                                    new ProperTypeMirror(xi, context),
-        //                                    ei,
-        //                                    Constraint.Kind.SUBTYPE));
-        //                    ei.getBounds().setHasThrowsBound(true);
-        //                }
-        //            }
-        //        }
-        //
-        //        return constraintSet;
+        ConstraintSet constraintSet = new ConstraintSet();
+        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> pair;
+        if (expression.getKind() == Kind.LAMBDA_EXPRESSION) {
+            pair = typeFactory.getFnInterfaceFromTree((LambdaExpressionTree) expression);
+        } else {
+            pair = typeFactory.getFnInterfaceFromTree((MemberReferenceTree) expression);
+        }
+        List<Variable> es = new ArrayList<>();
+        List<ProperType> properTypes = new ArrayList<>();
+        for (AnnotatedTypeMirror thrownType : pair.second.getThrownTypes()) {
+            AbstractType ei = InferenceAnnotatedType.create(thrownType, map, context);
+            if (ei.isProper()) {
+                properTypes.add((ProperType) ei);
+            } else {
+                es.add((Variable) ei);
+            }
+        }
+        if (es.isEmpty()) {
+            return ConstraintSet.TRUE;
+        }
+
+        List<? extends AnnotatedTypeMirror> thrownTypes;
+        if (expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            // TODO
+            throw new RuntimeException("not implemented");
+            //                    thrownTypes =
+            //                            CheckedExceptionsUtil.thrownCheckedExceptions(
+            //                                    (LambdaExpressionTree) expression, context);
+        } else {
+            AnnotatedTypeMirror enclosing =
+                    typeFactory.getEnclosingTypeOfMemberReference(
+                            (MemberReferenceTree) expression, pair.second);
+            thrownTypes =
+                    typeFactory
+                            .getCompileTimeDeclarationMemberReference(
+                                    (MemberReferenceTree) expression, pair.second, enclosing)
+                            .getThrownTypes();
+        }
+
+        for (AnnotatedTypeMirror xi : thrownTypes) {
+            boolean isSubtypeOfProper = false;
+            for (ProperType properType : properTypes) {
+                if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
+                    isSubtypeOfProper = true;
+                }
+            }
+            if (!isSubtypeOfProper) {
+                for (Variable ei : es) {
+                    constraintSet.add(
+                            new Typing(
+                                    new ProperAnnotatedType(xi, context),
+                                    ei,
+                                    Constraint.Kind.SUBTYPE));
+                    ei.getBounds().setHasThrowsBound(true);
+                }
+            }
+        }
+
+        return constraintSet;
     }
 
     @Override
