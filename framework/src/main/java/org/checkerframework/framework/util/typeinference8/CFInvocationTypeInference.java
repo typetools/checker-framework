@@ -19,21 +19,20 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
+import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
+import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
+import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.Expression;
+import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
+import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.InvocationType;
+import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.checkerframework.javacutil.typeinference8.InvocationTypeInference;
-import org.checkerframework.javacutil.typeinference8.Resolution;
-import org.checkerframework.javacutil.typeinference8.bound.BoundSet;
-import org.checkerframework.javacutil.typeinference8.constraint.CheckedExceptionConstraint;
-import org.checkerframework.javacutil.typeinference8.constraint.Constraint;
-import org.checkerframework.javacutil.typeinference8.constraint.ConstraintSet;
-import org.checkerframework.javacutil.typeinference8.constraint.Expression;
-import org.checkerframework.javacutil.typeinference8.constraint.Typing;
-import org.checkerframework.javacutil.typeinference8.typemirror.type.VariableTypeMirror;
-import org.checkerframework.javacutil.typeinference8.types.AbstractType;
-import org.checkerframework.javacutil.typeinference8.types.InvocationType;
-import org.checkerframework.javacutil.typeinference8.types.Variable;
-import org.checkerframework.javacutil.typeinference8.util.InferenceUtils;
 
 /**
  * Performs invocation type inference as described in JLS Chapter 18.5.2. Main entry point is {@link
@@ -57,14 +56,15 @@ import org.checkerframework.javacutil.typeinference8.util.InferenceUtils;
  * variable. They are stored in {@link VariableTypeMirror} and {@link VariableTypeMirror}s are
  * stored in {@link BoundSet}s.
  *
- * <p>Variables are resolved via {@link Resolution#resolve(LinkedHashSet, BoundSet)}.
+ * <p>Variables are resolved via {@link
+ * org.checkerframework.framework.util.typeinference8.Resolution#resolve(LinkedHashSet, BoundSet)}.
  */
 public class CFInvocationTypeInference extends InvocationTypeInference {
 
     private final SourceChecker checker;
 
     public CFInvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
-        this.context = new CFInferenceContext(factory, pathToExpression, this);
+        this.context = new Java8InferenceContext(factory, pathToExpression, this);
         this.checker = factory.getContext().getChecker();
     }
 

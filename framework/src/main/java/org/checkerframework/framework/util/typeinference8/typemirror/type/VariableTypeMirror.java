@@ -1,13 +1,12 @@
-package org.checkerframework.framework.util.typeinference8;
+package org.checkerframework.framework.util.typeinference8.typemirror.type;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
@@ -16,7 +15,9 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
-public class VariableAnnotatedType extends AbstractAnnotatedType implements Variable {
+/** An inference variable */
+public class VariableTypeMirror extends AbstractTypeMirror implements Variable {
+
     protected final VariableBounds variableBounds;
     /** Identification number. Used only to make debugging easier. */
     protected final int id;
@@ -28,17 +29,15 @@ public class VariableAnnotatedType extends AbstractAnnotatedType implements Vari
     protected final ExpressionTree invocation;
 
     /** Type variable for which the instantiation of this variable is a type argument, */
-    protected final AnnotatedTypeVariable typeVariable;
+    protected final TypeVariable typeVariable;
 
-    VariableAnnotatedType(
-            AnnotatedTypeVariable typeVariable,
-            ExpressionTree invocation,
-            Java8InferenceContext context) {
+    VariableTypeMirror(
+            TypeVariable typeVariable, ExpressionTree invocation, Java8InferenceContext context) {
         this(typeVariable, invocation, context, context.getNextVariableId());
     }
 
-    VariableAnnotatedType(
-            AnnotatedTypeVariable typeVariable,
+    VariableTypeMirror(
+            TypeVariable typeVariable,
             ExpressionTree invocation,
             Java8InferenceContext context,
             int id) {
@@ -62,34 +61,28 @@ public class VariableAnnotatedType extends AbstractAnnotatedType implements Vari
      */
     @Override
     public void initialBounds(Theta map) {
-        AnnotatedTypeMirror upperBound = typeVariable.getUpperBound();
+        TypeMirror upperBound = typeVariable.getUpperBound();
         // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise, for
         // each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,..., Pp:=ap]}
         // appears in the set; if this results in no proper upper bounds for al (only dependencies),
         // then the bound {@literal al <: Object} also appears in the set.
         switch (upperBound.getKind()) {
             case INTERSECTION:
-                for (AnnotatedTypeMirror bound :
-                        ((AnnotatedIntersectionType) upperBound).directSuperTypes()) {
-                    AbstractType t1 = InferenceAnnotatedType.create(bound, map, context);
+                for (TypeMirror bound : ((IntersectionType) upperBound).getBounds()) {
+                    AbstractType t1 = InferenceTypeMirror.create(bound, map, context);
                     variableBounds.addBound(BoundKind.UPPER, t1);
                 }
                 break;
             default:
-                AbstractType t1 = InferenceAnnotatedType.create(upperBound, map, context);
+                AbstractType t1 = InferenceTypeMirror.create(upperBound, map, context);
                 variableBounds.addBound(BoundKind.UPPER, t1);
                 break;
         }
     }
 
     @Override
-    public VariableAnnotatedType create(AnnotatedTypeMirror type) {
+    public VariableTypeMirror create(TypeMirror type) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public AnnotatedTypeVariable getAnnotatedType() {
-        return typeVariable;
     }
 
     @Override
@@ -103,18 +96,18 @@ public class VariableAnnotatedType extends AbstractAnnotatedType implements Vari
     }
 
     @Override
-    public VariableAnnotatedType capture() {
+    public VariableTypeMirror capture() {
         return this;
     }
 
     @Override
-    public VariableAnnotatedType getErased() {
+    public VariableTypeMirror getErased() {
         return this;
     }
 
     @Override
     public TypeVariable getJavaType() {
-        return typeVariable.getUnderlyingType();
+        return typeVariable;
     }
 
     @Override
@@ -131,9 +124,8 @@ public class VariableAnnotatedType extends AbstractAnnotatedType implements Vari
             return false;
         }
 
-        VariableAnnotatedType variable = (VariableAnnotatedType) o;
-        return context.modelTypes.isSameType(
-                        typeVariable.getUnderlyingType(), variable.typeVariable.getUnderlyingType())
+        VariableTypeMirror variable = (VariableTypeMirror) o;
+        return context.modelTypes.isSameType(typeVariable, variable.typeVariable)
                 && invocation == variable.invocation;
     }
 

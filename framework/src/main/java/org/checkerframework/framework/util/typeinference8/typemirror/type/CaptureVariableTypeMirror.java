@@ -1,16 +1,17 @@
-package org.checkerframework.framework.util.typeinference8;
+package org.checkerframework.framework.util.typeinference8.typemirror.type;
 
 import com.sun.source.tree.ExpressionTree;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
-public class CaptureVariableAnnotatedType extends VariableAnnotatedType implements CaptureVariable {
+/** A variable created for a capture bound. */
+public class CaptureVariableTypeMirror extends VariableTypeMirror implements CaptureVariable {
 
-    CaptureVariableAnnotatedType(
-            AnnotatedTypeVariable type, ExpressionTree invocation, Java8InferenceContext context) {
+    CaptureVariableTypeMirror(
+            TypeVariable type, ExpressionTree invocation, Java8InferenceContext context) {
         super(type, invocation, context, context.getNextCaptureVariableId());
     }
 

@@ -1,17 +1,14 @@
-package org.checkerframework.framework.util.typeinference8;
+package org.checkerframework.framework.util.typeinference8.typemirror.type;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.Element;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
@@ -19,52 +16,47 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-public class InvocationAnnotatedType implements InvocationType {
+public class InvocationTypeMirror implements InvocationType {
     private final ExpressionTree invocation;
-    private final AnnotatedExecutableType methodType;
+    private final ExecutableType methodType;
     private final Java8InferenceContext context;
-    private final AnnotatedTypeFactory typeFactory;
 
-    InvocationAnnotatedType(
-            AnnotatedExecutableType methodType,
-            ExpressionTree invocation,
-            Java8InferenceContext context) {
+    InvocationTypeMirror(
+            ExecutableType methodType, ExpressionTree invocation, Java8InferenceContext context) {
         this.methodType = methodType;
         this.invocation = invocation;
         this.context = context;
-        this.typeFactory = context.typeFactory;
     }
 
     @Override
     public ExecutableType getJavaType() {
-        return methodType.getUnderlyingType();
+        return methodType;
     }
 
     @Override
     public List<? extends AbstractType> getThrownTypes(Theta map) {
         List<AbstractType> thrown = new ArrayList<>();
-        for (AnnotatedTypeMirror t : methodType.getThrownTypes()) {
-            thrown.add(InferenceAnnotatedType.create(t, map, context));
+        for (TypeMirror t : methodType.getThrownTypes()) {
+            thrown.add(InferenceTypeMirror.create(t, map, context));
         }
         return thrown;
     }
 
     @Override
     public AbstractType getReturnType(Theta map) {
-        AnnotatedTypeMirror returnType;
+        TypeMirror returnType;
         if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
                 || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {
             returnType = methodType.getReturnType();
         } else if (TreeUtils.isDiamondTree(invocation)) {
-            Element e = ElementUtils.enclosingClass(TreeUtils.elementFromUse(invocation));
-            returnType = typeFactory.getAnnotatedType(e);
+            returnType = ElementUtils.enclosingClass(TreeUtils.elementFromUse(invocation)).asType();
         } else {
-            returnType = typeFactory.getAnnotatedType(invocation);
+            returnType = TreeUtils.typeOf(invocation);
         }
         if (map == null) {
-            return new ProperAnnotatedType(returnType, context);
+            return new ProperTypeMirror(returnType, context);
         }
-        return InferenceAnnotatedType.create(returnType, map, context);
+        return InferenceTypeMirror.create(returnType, map, context);
     }
 
     /**
@@ -73,15 +65,15 @@ public class InvocationAnnotatedType implements InvocationType {
      */
     @Override
     public List<AbstractType> getParameterTypes(Theta map, int size) {
-        List<AnnotatedTypeMirror> params = new ArrayList<>(methodType.getParameterTypes());
+        List<TypeMirror> params = new ArrayList<>(methodType.getParameterTypes());
 
         if (TreeUtils.isVarArgMethodCall(invocation)) {
-            AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
+            ArrayType vararg = (ArrayType) params.remove(params.size() - 1);
             for (int i = params.size(); i < size; i++) {
                 params.add(vararg.getComponentType());
             }
         }
-        return InferenceAnnotatedType.create(params, map, context);
+        return InferenceTypeMirror.create(params, map, context);
     }
 
     @Override
@@ -89,7 +81,7 @@ public class InvocationAnnotatedType implements InvocationType {
         return !methodType.getTypeVariables().isEmpty();
     }
 
-    public List<? extends AnnotatedTypeVariable> getTypeVariables() {
+    public List<? extends TypeVariable> getTypeVariables() {
         return methodType.getTypeVariables();
     }
 
