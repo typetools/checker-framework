@@ -6,6 +6,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -102,6 +103,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final SupertypesSolver supertypesSolver = new SupertypesSolver();
     private final SubtypesSolver subtypesSolver = new SubtypesSolver();
     private final ConstraintMapBuilder constraintMapBuilder = new ConstraintMapBuilder();
+    private CFInvocationTypeInference java8Inference = null;
 
     private final boolean showInferenceSteps;
 
@@ -121,9 +123,16 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (expressionTree.getKind() == Tree.Kind.METHOD_INVOCATION
                 || expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
-            CFInvocationTypeInference java8inference =
-                    new CFInvocationTypeInference(typeFactory, pathToExpression);
-            List<Variable> result = java8inference.infer(expressionTree, methodType);
+            if (java8Inference != null) {
+                // Currently infering, dont infer again.
+                return Collections.emptyMap();
+            }
+            try {
+                java8Inference = new CFInvocationTypeInference(typeFactory, pathToExpression);
+                List<Variable> result = java8Inference.infer(expressionTree, methodType);
+            } finally {
+                java8Inference = null;
+            }
             //            System.out.println("Inferred the following for: "+expressionTree);
             //            System.out.println("\t"+PluginUtil.join("\n\t", result));
         }
