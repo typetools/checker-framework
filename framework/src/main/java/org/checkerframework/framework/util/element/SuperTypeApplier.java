@@ -73,10 +73,10 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         return index;
     }
 
-    /** @return the type_index of anno's TypeAnnotationPosition */
+    /** @return the pos of anno's TypeAnnotationPosition */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
-        return anno.getPosition().type_index;
+        return anno.getPosition().pos;
     }
 
     /** @return TargetType.CLASS_EXTENDS */

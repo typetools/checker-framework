@@ -1,0 +1,24 @@
+/*
+ * @test
+ * @summary Test annotations on type parameters in extends..
+ *
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker SupplierDefs.java
+ * @compile/fail/ref=NPE2Test.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker NPE2Test.java -Anomsgtext
+ */
+
+import java.util.function.Supplier;
+import org.checkerframework.checker.nullness.qual.*;
+
+public class SupplierDefs {
+    public abstract static class Supplier<R> {
+        public abstract R get();
+    }
+
+    public static class NullSupplier extends Supplier<@Nullable String> {
+
+        @Override
+        public @Nullable String get() {
+            return null;
+        }
+    }
+}
