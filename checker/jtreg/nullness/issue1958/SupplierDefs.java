@@ -15,10 +15,20 @@ public class SupplierDefs {
     }
 
     public static class NullSupplier extends Supplier<@Nullable String> {
-
         @Override
         public @Nullable String get() {
             return null;
         }
+    }
+
+    public static class NullInterface implements MyInterface<@Nullable String> {
+        @Override
+        public @Nullable String getT() {
+            return null;
+        }
+    }
+
+    public interface MyInterface<T> {
+        T getT();
     }
 }
