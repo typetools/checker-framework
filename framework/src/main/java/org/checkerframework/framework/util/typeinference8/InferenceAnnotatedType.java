@@ -96,13 +96,12 @@ public class InferenceAnnotatedType extends AbstractAnnotatedType implements Inf
         }
 
         InferenceAnnotatedType variable = (InferenceAnnotatedType) o;
-        return context.modelTypes.isSameType(
-                type.getUnderlyingType(), variable.type.getUnderlyingType());
+        return type.equals(variable.type);
     }
 
     @Override
     public int hashCode() {
-        int result = type.toString().hashCode();
+        int result = type.hashCode();
         result = 31 * result + Kind.INFERENCE_TYPE.hashCode();
         return result;
     }

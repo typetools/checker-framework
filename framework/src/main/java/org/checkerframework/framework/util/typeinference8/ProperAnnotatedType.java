@@ -101,4 +101,23 @@ public class ProperAnnotatedType extends AbstractAnnotatedType implements Proper
     public boolean isObject() {
         return TypesUtils.isObject(getJavaType());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ProperAnnotatedType that = (ProperAnnotatedType) o;
+
+        return type.equals(that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
 }
