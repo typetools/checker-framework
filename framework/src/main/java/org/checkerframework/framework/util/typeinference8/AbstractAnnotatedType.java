@@ -67,7 +67,7 @@ public abstract class AbstractAnnotatedType implements AbstractType {
     public AbstractType capture() {
 
         // TODO:
-        throw new RuntimeException("not implemented");
+        throw new RuntimeException("not implemented: capture");
         //        TypeMirror capture;
         //        if (getJavaType().getKind() == TypeKind.WILDCARD) {
         //            capture =

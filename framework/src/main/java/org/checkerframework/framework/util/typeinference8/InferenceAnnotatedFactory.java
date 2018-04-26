@@ -559,8 +559,12 @@ public class InferenceAnnotatedFactory implements InferenceFactory {
         AnnotatedWildcardType wildcardAtm =
                 (AnnotatedWildcardType)
                         AnnotatedTypeMirror.createType(wildcard, typeFactory, false);
-        wildcardAtm.setSuperBound(((ProperAnnotatedType) lowerBound).getAnnotatedType());
-        wildcardAtm.setExtendsBound(((AbstractAnnotatedType) upperBound).getAnnotatedType());
+        if (lowerBound != null) {
+            wildcardAtm.setSuperBound(((ProperAnnotatedType) lowerBound).getAnnotatedType());
+        }
+        if (upperBound != null) {
+            wildcardAtm.setExtendsBound(((AbstractAnnotatedType) upperBound).getAnnotatedType());
+        }
         return new ProperAnnotatedType(wildcardAtm, context);
     }
 

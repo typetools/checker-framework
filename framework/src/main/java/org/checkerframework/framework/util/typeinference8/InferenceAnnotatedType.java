@@ -77,8 +77,8 @@ public class InferenceAnnotatedType extends AbstractAnnotatedType implements Inf
     }
 
     @Override
-    public InferenceAnnotatedType create(AnnotatedTypeMirror type) {
-        return (InferenceAnnotatedType) create(type, map, context);
+    public AbstractType create(AnnotatedTypeMirror type) {
+        return create(type, map, context);
     }
 
     @Override
