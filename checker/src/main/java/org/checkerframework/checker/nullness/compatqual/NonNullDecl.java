@@ -5,7 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Java 7 compatibility annotation without dependency on Java 8 classes.
+ * Identical to {@code @NonNull}, but can only be written at declaration locations. This annotation
+ * can be used in Java 7 code; it has no dependency on Java 8 classes.
  *
  * @see org.checkerframework.checker.nullness.qual.NonNull
  * @checker_framework.manual #nullness-checker Nullness Checker
