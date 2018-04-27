@@ -114,10 +114,8 @@ checker-qual/src
 
 framework/tests/whole-program-inference/annotated/
 
-docs/tutorial/eclipse-projects.zip
-docs/tutorial/eclipse-projects/README.txt
-docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
-docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
+docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
+docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
 docs/tutorial/sourcefiles.zip
 
 # release tmps

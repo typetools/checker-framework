@@ -24,6 +24,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * offset = {"-1", "x"})}. Then {@code e - 1} is less than {@code a.length}, and {@code e + x} is
  * less than {@code b.length}.
  *
+ * <p>It is an error to write a {@code LTLengthOf} annotation with a different number of sequences
+ * and offsets, if an offset is included.
+ *
  * @see IndexFor
  * @checker_framework.manual #index-checker Index Checker
  */
