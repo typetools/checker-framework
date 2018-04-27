@@ -88,12 +88,6 @@ public abstract class CFAbstractAnalysis<
                 factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
     }
 
-    public void reset() {
-        // If the checker crashed on the last compilation unit, then isRunning might still be true,
-        // so set it to false.
-        isRunning = false;
-    }
-
     public void performAnalysis(ControlFlowGraph cfg, List<Pair<VariableElement, V>> fieldValues) {
         this.fieldValues.clear();
         this.fieldValues.addAll(fieldValues);
