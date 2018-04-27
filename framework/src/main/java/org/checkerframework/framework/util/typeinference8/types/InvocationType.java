@@ -33,6 +33,7 @@ public class InvocationType {
             ExecutableType methodType,
             ExpressionTree invocation,
             Java8InferenceContext context) {
+        assert annotatedExecutableType != null && methodType != null;
         this.annotatedExecutableType = annotatedExecutableType;
         this.methodType = methodType;
         this.invocation = invocation;

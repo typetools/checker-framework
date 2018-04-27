@@ -45,6 +45,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
@@ -174,7 +175,8 @@ public class InferenceFactory {
      *
      * @return type that path leaf is assigned to
      */
-    public static TypeMirror getTargetType(TreePath path, Java8InferenceContext context) {
+    public static Pair<AnnotatedTypeMirror, TypeMirror> getTargetType(
+            AnnotatedTypeFactory factory, TreePath path, Java8InferenceContext context) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(path);
         if (assignmentContext == null) {
             return null;
@@ -183,33 +185,65 @@ public class InferenceFactory {
         switch (assignmentContext.getKind()) {
             case ASSIGNMENT:
                 ExpressionTree variable = ((AssignmentTree) assignmentContext).getVariable();
-                return TreeUtils.typeOf(variable);
+                AnnotatedTypeMirror atm = factory.getAnnotatedType(variable);
+                return Pair.of(atm, TreeUtils.typeOf(variable));
             case VARIABLE:
                 VariableTree variableTree = (VariableTree) assignmentContext;
-                return TreeUtils.typeOf(variableTree.getType());
+                AnnotatedTypeMirror variableAtm = assignedToVariable(factory, assignmentContext);
+                return Pair.of(variableAtm, TreeUtils.typeOf(variableTree.getType()));
             case METHOD_INVOCATION:
                 MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
-                return assignedToExecutable(
-                        path, methodInvocation, methodInvocation.getArguments(), context);
+                ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
+                AnnotatedTypeMirror receiver = factory.getReceiverType(methodInvocation);
+                AnnotatedTypeMirror ex =
+                        TypeArgInferenceUtil.assignedToExecutable(
+                                factory,
+                                path,
+                                methodElt,
+                                receiver,
+                                methodInvocation.getArguments());
+                return Pair.of(
+                        ex,
+                        assignedToExecutable(
+                                path, methodInvocation, methodInvocation.getArguments(), context));
             case NEW_CLASS:
                 NewClassTree newClassTree = (NewClassTree) assignmentContext;
-                return assignedToExecutable(
-                        path, newClassTree, newClassTree.getArguments(), context);
+                ExecutableElement constructorElt = TreeUtils.constructor(newClassTree);
+                AnnotatedTypeMirror receiverConst = factory.fromNewClass(newClassTree);
+                AnnotatedTypeMirror constATM =
+                        TypeArgInferenceUtil.assignedToExecutable(
+                                factory,
+                                path,
+                                constructorElt,
+                                receiverConst,
+                                newClassTree.getArguments());
+                return Pair.of(
+                        constATM,
+                        assignedToExecutable(
+                                path, newClassTree, newClassTree.getArguments(), context));
             case NEW_ARRAY:
                 NewArrayTree newArrayTree = (NewArrayTree) assignmentContext;
                 ArrayType arrayType = (ArrayType) TreeUtils.typeOf(newArrayTree);
-                return arrayType.getComponentType();
+                AnnotatedTypeMirror type =
+                        factory.getAnnotatedType((NewArrayTree) assignmentContext);
+                AnnotatedTypeMirror component =
+                        ((AnnotatedTypeMirror.AnnotatedArrayType) type).getComponentType();
+                return Pair.of(component, arrayType.getComponentType());
             case RETURN:
                 HashSet<Kind> kinds =
                         new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
                 Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
                 if (enclosing.getKind() == Tree.Kind.METHOD) {
                     MethodTree methodTree = (MethodTree) enclosing;
-                    return TreeUtils.typeOf(methodTree.getReturnType());
+                    AnnotatedTypeMirror res = factory.getAnnotatedType(methodTree).getReturnType();
+                    return Pair.of(res, TreeUtils.typeOf(methodTree.getReturnType()));
                 } else {
                     // TODO: I don't think this should happen. during inference
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
-                    return TreeUtils.typeOf(lambdaTree);
+                    Pair<AnnotatedDeclaredType, AnnotatedExecutableType> fninf =
+                            factory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
+                    AnnotatedTypeMirror res = fninf.second.getReturnType();
+                    return Pair.of(res, TreeUtils.typeOf(lambdaTree));
                 }
             default:
                 if (assignmentContext
@@ -218,13 +252,70 @@ public class InferenceFactory {
                         .equals(CompoundAssignmentTree.class)) {
                     // 11 Tree kinds are compound assignments, so don't use it in the switch
                     ExpressionTree var = ((CompoundAssignmentTree) assignmentContext).getVariable();
-                    return TreeUtils.typeOf(var);
+                    AnnotatedTypeMirror res = factory.getAnnotatedType(var);
+
+                    return Pair.of(res, TreeUtils.typeOf(var));
                 } else {
                     ErrorReporter.errorAbort(
                             "Unexpected assignment context.\nKind: %s\nTree: %s",
                             assignmentContext.getKind(), assignmentContext);
                     return null;
                 }
+        }
+    }
+
+    /**
+     * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
+     * Rational:
+     *
+     * <p>For example:
+     *
+     * <pre>{@code
+     * <S> S bar () {...}
+     *
+     * <T> T foo(T p) {
+     *     T local = bar();
+     *     return local;
+     *   }
+     * }</pre>
+     *
+     * During type argument inference of {@code bar}, the assignment context is {@code local}. If
+     * the local variable default is used, then the type of assignment context type is
+     * {@code @Nullable T} and the type argument inferred for {@code bar()} is {@code @Nullable T}.
+     * And an incompatible types in return error is issued.
+     *
+     * <p>If instead, the local variable default is not applied, then the assignment context type is
+     * {@code T} (with lower bound {@code @NonNull Void} and upper bound {@code @Nullable Object})
+     * and the type argument inferred for {@code bar()} is {@code T}. During dataflow, the type of
+     * {@code local} is refined to {@code T} and the return is legal.
+     *
+     * <p>If the assignment context type was a declared type, for example:
+     *
+     * <pre>{@code
+     * <S> S bar () {...}
+     * Object foo() {
+     *     Object local = bar();
+     *     return local;
+     * }
+     * }</pre>
+     *
+     * The local variable default must be used or else the assignment context type is missing an
+     * annotation. So, an incompatible types in return error is issued in the above code. We could
+     * improve type argument inference in this case and by using the lower bound of {@code S}
+     * instead of the local variable default.
+     *
+     * @param atypeFactory AnnotatedTypeFactory
+     * @param assignmentContext VariableTree
+     * @return AnnotatedTypeMirror of Assignment context
+     */
+    public static AnnotatedTypeMirror assignedToVariable(
+            AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
+        if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
+            final GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
+                    ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory);
+            return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
+        } else {
+            return atypeFactory.getAnnotatedType(assignmentContext);
         }
     }
 
@@ -330,12 +421,11 @@ public class InferenceFactory {
 
     public ProperType getTargetType() {
         ProperType targetType = null;
-        TypeMirror assignmentTypeMirror = getTargetType(context.pathToExpression, context);
+        Pair<AnnotatedTypeMirror, TypeMirror> assignmentTypes =
+                getTargetType(context.typeFactory, context.pathToExpression, context);
 
-        if (assignmentTypeMirror != null) {
-            AnnotatedTypeMirror assignmentType =
-                    TypeArgInferenceUtil.assignedTo(typeFactory, context.pathToExpression);
-            targetType = new ProperType(assignmentType, assignmentTypeMirror, context);
+        if (assignmentTypes != null) {
+            targetType = new ProperType(assignmentTypes.first, assignmentTypes.second, context);
         }
         return targetType;
     }

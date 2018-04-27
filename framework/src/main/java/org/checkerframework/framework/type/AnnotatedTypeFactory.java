@@ -2196,9 +2196,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         if (TreeUtils.isDiamondTree(newClassTree)) {
-            getTypeArgumentInference()
-                    .inferTypeArgs(
-                            this, newClassTree, TreeUtils.elementFromUse(newClassTree), null);
             AnnotatedDeclaredType type =
                     (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
             if (((com.sun.tools.javac.code.Type) type.actualType)
