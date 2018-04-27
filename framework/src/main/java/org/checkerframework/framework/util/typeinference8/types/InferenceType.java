@@ -63,7 +63,7 @@ public class InferenceType extends AbstractType {
         if (map == null) {
             return new ProperType(type, typeMirror, context);
         }
-        if (type.getKind() == TypeKind.TYPEVAR && map.containsKey(typeMirror)) {
+        if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(typeMirror)) {
             return map.get(typeMirror);
         } else if (ContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), typeMirror)) {
             return new InferenceType(type, typeMirror, map, context);
