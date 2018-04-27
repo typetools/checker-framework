@@ -99,7 +99,7 @@ public class InvocationType {
         List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
 
         if (TreeUtils.isVarArgMethodCall(invocation)) {
-            ArrayType vararg = (ArrayType) params.remove(params.size() - 1);
+            ArrayType vararg = (ArrayType) paramsJava.remove(paramsJava.size() - 1);
             for (int i = paramsJava.size(); i < size; i++) {
                 paramsJava.add(vararg.getComponentType());
             }
