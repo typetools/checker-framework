@@ -174,9 +174,7 @@ public class Analysis<
         return env;
     }
 
-    /**
-     * Perform the actual analysis. Should only be called once after the object has been created.
-     */
+    /** Perform the actual analysis. */
     public void performAnalysis(ControlFlowGraph cfg) {
         assert !isRunning;
         isRunning = true;
