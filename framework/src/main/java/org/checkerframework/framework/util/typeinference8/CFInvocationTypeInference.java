@@ -27,9 +27,8 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.InferenceTypeMirrorFactory;
-import org.checkerframework.framework.util.typeinference8.typemirror.type.VariableTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
@@ -56,8 +55,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * Groups of constraints are stored in {@link ConstraintSet}s.
  *
  * <p>Bounds are between an inference variable and another abstract type, including another
- * variable. They are stored in {@link VariableTypeMirror} and {@link VariableTypeMirror}s are
- * stored in {@link BoundSet}s.
+ * variable. They are stored in {@link Variable} and {@link Variable}s are stored in {@link
+ * BoundSet}s.
  *
  * <p>Variables are resolved via {@link
  * org.checkerframework.framework.util.typeinference8.Resolution#resolve(LinkedHashSet, BoundSet)}.
@@ -76,18 +75,17 @@ public class CFInvocationTypeInference extends InvocationTypeInference {
         if (!shouldTryInference(assignmentContext, context.pathToExpression)) {
             return null;
         }
+        ExecutableType e = InferenceFactory.getTypeOfMethodAdaptedToUse(invocation, context);
         List<Variable> result;
         try {
-            InvocationType invocationType =
-                    new InvocationAnnotatedType(methodType, invocation, context);
+            InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
             result = super.infer(invocation, invocationType);
         } catch (Exception ex) {
             // Catch any exception so all crashes in a compilation unit are reported.
             logException(invocation, ex);
             return null;
         }
-        ExecutableType e =
-                InferenceTypeMirrorFactory.getTypeOfMethodAdaptedToUse(invocation, context);
+
         checkResult(result, invocation, e);
         return result;
     }

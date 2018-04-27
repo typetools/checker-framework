@@ -319,7 +319,7 @@ public class VariableBounds {
             if (type.isVariable()) {
                 continue;
             }
-            AbstractType superTypeOfS = type.asSuper(g);
+            AbstractType superTypeOfS = type.asSuper(g.getJavaType());
             if (superTypeOfS != null && superTypeOfS.isRaw()) {
                 return true;
             }
@@ -329,7 +329,7 @@ public class VariableBounds {
             if (type.isVariable()) {
                 continue;
             }
-            AbstractType superTypeOfS = type.asSuper(g);
+            AbstractType superTypeOfS = type.asSuper(g.getJavaType());
             if (superTypeOfS != null && superTypeOfS.isRaw()) {
                 return true;
             }
