@@ -176,141 +176,139 @@ public class Analysis<
 
     /** Perform the actual analysis. */
     public void performAnalysis(ControlFlowGraph cfg) {
+        try {
+            preformAnalysisHelper(cfg);
+        } finally {
+            // In case preformatAnalysisHelper crashed, reset isRunning to false.
+            isRunning = false;
+        }
+    }
+
+    /** Perform the actual analysis. */
+    private void preformAnalysisHelper(ControlFlowGraph cfg) {
         assert !isRunning;
         isRunning = true;
 
-        try {
-            init(cfg);
+        init(cfg);
 
-            while (!worklist.isEmpty()) {
-                Block b = worklist.poll();
+        while (!worklist.isEmpty()) {
+            Block b = worklist.poll();
 
-                switch (b.getType()) {
-                    case REGULAR_BLOCK:
-                        {
-                            RegularBlock rb = (RegularBlock) b;
+            switch (b.getType()) {
+                case REGULAR_BLOCK:
+                    {
+                        RegularBlock rb = (RegularBlock) b;
 
-                            // apply transfer function to contents
-                            TransferInput<A, S> inputBefore = getInputBefore(rb);
-                            currentInput = inputBefore.copy();
-                            TransferResult<A, S> transferResult = null;
-                            Node lastNode = null;
-                            boolean addToWorklistAgain = false;
-                            for (Node n : rb.getContents()) {
-                                transferResult = callTransferFunction(n, currentInput);
-                                addToWorklistAgain |= updateNodeValues(n, transferResult);
-                                currentInput = new TransferInput<>(n, this, transferResult);
-                                lastNode = n;
-                            }
-                            // loop will run at least once, making transferResult non-null
+                        // apply transfer function to contents
+                        TransferInput<A, S> inputBefore = getInputBefore(rb);
+                        currentInput = inputBefore.copy();
+                        TransferResult<A, S> transferResult = null;
+                        Node lastNode = null;
+                        boolean addToWorklistAgain = false;
+                        for (Node n : rb.getContents()) {
+                            transferResult = callTransferFunction(n, currentInput);
+                            addToWorklistAgain |= updateNodeValues(n, transferResult);
+                            currentInput = new TransferInput<>(n, this, transferResult);
+                            lastNode = n;
+                        }
+                        // loop will run at least once, making transferResult non-null
 
-                            // propagate store to successors
-                            Block succ = rb.getSuccessor();
-                            assert succ != null
-                                    : "regular basic block without non-exceptional successor unexpected";
+                        // propagate store to successors
+                        Block succ = rb.getSuccessor();
+                        assert succ != null
+                                : "regular basic block without non-exceptional successor unexpected";
+                        propagateStoresTo(
+                                succ, lastNode, currentInput, rb.getFlowRule(), addToWorklistAgain);
+                        break;
+                    }
+
+                case EXCEPTION_BLOCK:
+                    {
+                        ExceptionBlock eb = (ExceptionBlock) b;
+
+                        // apply transfer function to content
+                        TransferInput<A, S> inputBefore = getInputBefore(eb);
+                        currentInput = inputBefore.copy();
+                        Node node = eb.getNode();
+                        TransferResult<A, S> transferResult =
+                                callTransferFunction(node, currentInput);
+                        boolean addToWorklistAgain = updateNodeValues(node, transferResult);
+
+                        // propagate store to successor
+                        Block succ = eb.getSuccessor();
+                        if (succ != null) {
+                            currentInput = new TransferInput<>(node, this, transferResult);
+                            // TODO? Variable wasn't used.
+                            // Store.FlowRule storeFlow = eb.getFlowRule();
                             propagateStoresTo(
-                                    succ,
-                                    lastNode,
-                                    currentInput,
-                                    rb.getFlowRule(),
-                                    addToWorklistAgain);
-                            break;
+                                    succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                         }
 
-                    case EXCEPTION_BLOCK:
-                        {
-                            ExceptionBlock eb = (ExceptionBlock) b;
-
-                            // apply transfer function to content
-                            TransferInput<A, S> inputBefore = getInputBefore(eb);
-                            currentInput = inputBefore.copy();
-                            Node node = eb.getNode();
-                            TransferResult<A, S> transferResult =
-                                    callTransferFunction(node, currentInput);
-                            boolean addToWorklistAgain = updateNodeValues(node, transferResult);
-
-                            // propagate store to successor
-                            Block succ = eb.getSuccessor();
-                            if (succ != null) {
-                                currentInput = new TransferInput<>(node, this, transferResult);
-                                // TODO? Variable wasn't used.
-                                // Store.FlowRule storeFlow = eb.getFlowRule();
-                                propagateStoresTo(
-                                        succ,
-                                        node,
-                                        currentInput,
-                                        eb.getFlowRule(),
-                                        addToWorklistAgain);
-                            }
-
-                            // propagate store to exceptional successors
-                            for (Entry<TypeMirror, Set<Block>> e :
-                                    eb.getExceptionalSuccessors().entrySet()) {
-                                TypeMirror cause = e.getKey();
-                                S exceptionalStore = transferResult.getExceptionalStore(cause);
-                                if (exceptionalStore != null) {
-                                    for (Block exceptionSucc : e.getValue()) {
-                                        addStoreBefore(
-                                                exceptionSucc,
-                                                node,
-                                                exceptionalStore,
-                                                Store.Kind.BOTH,
-                                                addToWorklistAgain);
-                                    }
-                                } else {
-                                    for (Block exceptionSucc : e.getValue()) {
-                                        addStoreBefore(
-                                                exceptionSucc,
-                                                node,
-                                                inputBefore.copy().getRegularStore(),
-                                                Store.Kind.BOTH,
-                                                addToWorklistAgain);
-                                    }
+                        // propagate store to exceptional successors
+                        for (Entry<TypeMirror, Set<Block>> e :
+                                eb.getExceptionalSuccessors().entrySet()) {
+                            TypeMirror cause = e.getKey();
+                            S exceptionalStore = transferResult.getExceptionalStore(cause);
+                            if (exceptionalStore != null) {
+                                for (Block exceptionSucc : e.getValue()) {
+                                    addStoreBefore(
+                                            exceptionSucc,
+                                            node,
+                                            exceptionalStore,
+                                            Store.Kind.BOTH,
+                                            addToWorklistAgain);
+                                }
+                            } else {
+                                for (Block exceptionSucc : e.getValue()) {
+                                    addStoreBefore(
+                                            exceptionSucc,
+                                            node,
+                                            inputBefore.copy().getRegularStore(),
+                                            Store.Kind.BOTH,
+                                            addToWorklistAgain);
                                 }
                             }
-                            break;
                         }
-
-                    case CONDITIONAL_BLOCK:
-                        {
-                            ConditionalBlock cb = (ConditionalBlock) b;
-
-                            // get store before
-                            TransferInput<A, S> inputBefore = getInputBefore(cb);
-                            TransferInput<A, S> input = inputBefore.copy();
-
-                            // propagate store to successor
-                            Block thenSucc = cb.getThenSuccessor();
-                            Block elseSucc = cb.getElseSuccessor();
-
-                            propagateStoresTo(thenSucc, null, input, cb.getThenFlowRule(), false);
-                            propagateStoresTo(elseSucc, null, input, cb.getElseFlowRule(), false);
-                            break;
-                        }
-
-                    case SPECIAL_BLOCK:
-                        {
-                            // special basic blocks are empty and cannot throw exceptions,
-                            // thus there is no need to perform any analysis.
-                            SpecialBlock sb = (SpecialBlock) b;
-                            Block succ = sb.getSuccessor();
-                            if (succ != null) {
-                                propagateStoresTo(
-                                        succ, null, getInputBefore(b), sb.getFlowRule(), false);
-                            }
-                            break;
-                        }
-
-                    default:
-                        assert false;
                         break;
-                }
-            }
+                    }
 
-            assert isRunning;
-        } finally {
-            isRunning = false;
+                case CONDITIONAL_BLOCK:
+                    {
+                        ConditionalBlock cb = (ConditionalBlock) b;
+
+                        // get store before
+                        TransferInput<A, S> inputBefore = getInputBefore(cb);
+                        TransferInput<A, S> input = inputBefore.copy();
+
+                        // propagate store to successor
+                        Block thenSucc = cb.getThenSuccessor();
+                        Block elseSucc = cb.getElseSuccessor();
+
+                        propagateStoresTo(thenSucc, null, input, cb.getThenFlowRule(), false);
+                        propagateStoresTo(elseSucc, null, input, cb.getElseFlowRule(), false);
+                        break;
+                    }
+
+                case SPECIAL_BLOCK:
+                    {
+                        // special basic blocks are empty and cannot throw exceptions,
+                        // thus there is no need to perform any analysis.
+                        SpecialBlock sb = (SpecialBlock) b;
+                        Block succ = sb.getSuccessor();
+                        if (succ != null) {
+                            propagateStoresTo(
+                                    succ, null, getInputBefore(b), sb.getFlowRule(), false);
+                        }
+                        break;
+                    }
+
+                default:
+                    assert false;
+                    break;
+            }
         }
+        assert isRunning;
+        isRunning = false;
     }
 
     /**
