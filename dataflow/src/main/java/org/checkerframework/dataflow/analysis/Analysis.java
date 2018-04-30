@@ -174,10 +174,18 @@ public class Analysis<
         return env;
     }
 
-    /**
-     * Perform the actual analysis. Should only be called once after the object has been created.
-     */
+    /** Perform the actual analysis. */
     public void performAnalysis(ControlFlowGraph cfg) {
+        try {
+            preformAnalysisHelper(cfg);
+        } finally {
+            // In case preformatAnalysisHelper crashed, reset isRunning to false.
+            isRunning = false;
+        }
+    }
+
+    /** Perform the actual analysis. */
+    private void preformAnalysisHelper(ControlFlowGraph cfg) {
         assert !isRunning;
         isRunning = true;
 
@@ -299,7 +307,6 @@ public class Analysis<
                     break;
             }
         }
-
         assert isRunning;
         isRunning = false;
     }
