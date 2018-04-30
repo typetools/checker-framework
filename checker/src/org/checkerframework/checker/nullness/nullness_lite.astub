@@ -1,0 +1,38 @@
+// stub file for NullnessLite option
+// assume all BoxedClass.valueOf() method are @Pure
+// returned objects are equal by ==
+import org.checkerframework.dataflow.qual.Pure;
+
+package java.lang;
+
+public final class Character {
+    @Pure public static Character valueOf(char ch);
+}
+
+public final class Double {
+    @Pure public static Double valueOf(double a1);
+}
+
+public final class Integer {
+    @Pure public static Integer valueOf(int a1);
+}
+
+public final class Float {
+    @Pure public static Float valueOf(float a1);
+}
+
+public final class Long {
+    @Pure  public static Long valueOf(long a1);
+}
+
+public final class Short {
+    @Pure public static Short valueOf(short a1);
+}
+
+public final class Byte {
+    @Pure public static Byte valueOf(byte a1);
+}
+
+public final class Boolean {
+    @Pure public static Boolean valueOf(boolean a1);
+}
