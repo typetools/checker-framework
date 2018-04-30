@@ -74,7 +74,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   fi
   set -e
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  // TODO: remove branch before merging!
+# TODO: remove branch before merging!
   (cd .. && git clone -b issue1948 --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone -b issue1948 --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
 
