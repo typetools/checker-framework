@@ -22,7 +22,7 @@ public final class Integer extends Number implements Comparable<Integer> {
   @Pure public static int parseInt(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static Integer valueOf(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static Integer valueOf(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static Integer valueOf(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static Integer valueOf(int a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Integer(int a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Integer(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public byte byteValue() { throw new RuntimeException("skeleton method"); }

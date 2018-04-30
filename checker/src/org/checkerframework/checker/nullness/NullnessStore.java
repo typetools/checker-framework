@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import org.checkerframework.checker.initialization.InitializationStore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -62,5 +63,17 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
 
     public void setPolyNullNull(boolean isPolyNullNull) {
         this.isPolyNullNull = isPolyNullNull;
+    }
+
+    /**
+     * [Invalidation of Dataflow] When NullnessLite is enabled, canAlias returns false to disallow
+     * aliasing;
+     */
+    @Override
+    public boolean canAlias(FlowExpressions.Receiver a, FlowExpressions.Receiver b) {
+        if (((NullnessAnalysis) analysis).NULLNESS_LITE_OPTION) {
+            return false;
+        }
+        return super.canAlias(a, b);
     }
 }
