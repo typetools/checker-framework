@@ -8,8 +8,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -21,10 +23,13 @@ public class ProperType extends AbstractType {
     public ProperType(
             AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
         super(context);
-        assert properType != null
-                && context != null
-                && properType.getKind() != TypeKind.VOID
-                && type != null;
+        assert properType != null && properType.getKind() != TypeKind.VOID && type != null;
+        if (TypesUtils.isCaptured(properType) && type.getKind() == TypeKind.WILDCARD) {
+            type = ((AnnotatedWildcardType) type).capture((TypeVariable) properType);
+        }
+
+        assert properType.getKind() == type.getKind();
+
         this.properType = properType;
         this.type = type;
     }

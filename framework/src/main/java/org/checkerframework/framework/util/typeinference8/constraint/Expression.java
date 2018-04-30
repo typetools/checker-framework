@@ -231,7 +231,7 @@ public class Expression extends Constraint {
             constraintSet.add(new Typing(tPrime, T, Constraint.Kind.SUBTYPE));
         }
 
-        AbstractType R = T.getFunctionTypeReturnType();
+        AbstractType R = tPrime.getFunctionTypeReturnType();
         if (R != null && R.getTypeKind() != TypeKind.VOID) {
             for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambda)) {
                 if (R.isProper()) {

@@ -37,6 +37,7 @@ public class InferenceType extends AbstractType {
             Theta map,
             Java8InferenceContext context) {
         super(context);
+        assert type.getKind() == typeMirror.getKind();
         this.type = type;
         this.typeMirror = typeMirror;
         this.map = map;

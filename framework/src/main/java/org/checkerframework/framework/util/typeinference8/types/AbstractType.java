@@ -110,11 +110,14 @@ public abstract class AbstractType {
                     context.types.freshTypeVariables(
                                     com.sun.tools.javac.util.List.of((Type) getJavaType()))
                             .head;
+            AnnotatedTypeMirror captureATM =
+                    ((AnnotatedWildcardType) getAnnotatedType()).capture((TypeVariable) capture);
+            return create(captureATM, capture);
         } else {
             capture = context.env.getTypeUtils().capture(getJavaType());
+            // The annotated type will be captured later if needed.
+            return create(getAnnotatedType(), capture);
         }
-        throw new RuntimeException("not implemented: capture");
-        //        return create(capture);
     }
 
     /**
