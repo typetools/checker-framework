@@ -18,6 +18,8 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -438,6 +440,17 @@ public class InferenceFactory {
 
         AnnotatedTypeMirror enclosingType =
                 typeFactory.getEnclosingTypeOfMemberReference(memRef, functionType);
+        if (enclosingType.getKind() == TypeKind.DECLARED
+                && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
+            final ReferenceKind memRefKind = ((JCMemberReference) memRef).kind;
+            if (memRefKind != ReferenceKind.UNBOUND) {
+                Element typeElement =
+                        ((AnnotatedDeclaredType) enclosingType).getUnderlyingType().asElement();
+                AnnotatedDeclaredType t = typeFactory.getAnnotatedType((TypeElement) typeElement);
+                ((AnnotatedDeclaredType) enclosingType).setTypeArguments(t.getTypeArguments());
+            }
+        }
+
         AnnotatedExecutableType compileTimeType =
                 typeFactory.getCompileTimeDeclarationMemberReference(
                         memRef, functionType, enclosingType);
