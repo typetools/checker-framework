@@ -342,7 +342,7 @@ subprojects {
         tasks.create(name: 'sourcesJar', type: Jar) {
             description 'Creates sources jar.'
             classifier = 'source'
-            baseName = project.name
+            baseName = jar.baseName
             from sourceSets.main.java
         }
 
@@ -350,7 +350,7 @@ subprojects {
         tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
             description 'Creates javadoc jar.'
             classifier = 'javadoc'
-            baseName = project.name
+            baseName = jar.baseName
             from tasks.javadoc.destinationDir
         }
 

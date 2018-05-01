@@ -3,8 +3,12 @@ sourceSets {
 }
 
 dependencies {
+    // If this version changes, then the version in maven-artifacts/poms/testlibPom.xml
+    // and maven-artifacts/release/testlibReleasePom.xml must be changed, too.
     compile  group: 'junit', name: 'junit', version: '4.12'
     compile project(':javacutil')
 
     tagletCompile configurations.toolsJar
 }
+
+jar.baseName = 'testlib'
