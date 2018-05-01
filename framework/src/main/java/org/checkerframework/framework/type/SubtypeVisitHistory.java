@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.Pair;
  * and then on {@code @B Serializable<T>} and {@code @C Serializable<?>}.
  */
 // TODO: do we need to clear the history sometimes?
-class SubtypeVisitHistory {
+public class SubtypeVisitHistory {
 
     /**
      * The keys are pairs of types; the value is the set of qualifier hierarchy roots for which the
