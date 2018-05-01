@@ -30,28 +30,13 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>See also DefaultTypeHierarchy, and VisitHistory
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, Void> {
-
-    // TODO: REMOVE THIS OVERRIDE WHEN inferTypeArgs NO LONGER GENERATES INCOMPARABLE TYPES
-    // TODO: THE PROBLEM IS THIS CLASS SHOULD FAIL WHEN INCOMPARABLE TYPES ARE COMPARED BUT
-    // TODO: TO CURRENTLY SUPPORT THE BUGGY inferTypeArgs WE FALL BACK TO the RawnessComparer
-    // TODO: WHICH IS CLOSE TO THE OLD TypeHierarchy behavior
-    private final DefaultRawnessComparer fallback;
-
     protected final SubtypeVisitHistory visitHistory;
 
     // explain this one
     private AnnotationMirror currentTop = null;
 
-    public StructuralEqualityComparer(
-            final DefaultRawnessComparer fallback, SubtypeVisitHistory typeargVisitHistory) {
-        this.fallback = fallback;
+    public StructuralEqualityComparer(SubtypeVisitHistory typeargVisitHistory) {
         this.visitHistory = typeargVisitHistory;
-    }
-
-    // Fall-back for checker-framework-inference usage.
-    // Remove after CFI was adapted.
-    protected StructuralEqualityComparer(DefaultRawnessComparer fallback) {
-        this(fallback, new SubtypeVisitHistory());
     }
 
     @Override
@@ -66,12 +51,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                     && ((AnnotatedWildcardType) type2).isUninferredTypeArgument()) {
                 return true;
             }
-        }
-
-        // TODO: REMOVE THIS OVERRIDE WHEN inferTypeArgs NO LONGER GENERATES INCOMPARABLE TYPES
-        // TODO: THe rawness comparer is close to the old implementation of TypeHierarchy
-        if (fallback != null) {
-            return fallback.isValidInHierarchy(type1, type2, currentTop);
         }
 
         return super.defaultAction(type1, type2, p);
@@ -517,5 +496,43 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
         visitHistory.add(type1, type2, currentTop, result);
         return result;
+    }
+
+    @Override
+    public Boolean visitWildcard_Declared(
+            AnnotatedWildcardType type1, AnnotatedDeclaredType type2, Void p) {
+        if (type1.atypeFactory.ignoreUninferredTypeArguments
+                && (type1.isUninferredTypeArgument())) {
+            return true;
+        }
+        // TODO: add proper checks
+        return arePrimeAnnosEqual(type1.getExtendsBound(), type2);
+    }
+
+    @Override
+    public Boolean visitTypevar_Declared(
+            AnnotatedTypeVariable type1, AnnotatedDeclaredType type2, Void p) {
+        // TODO: add proper checks
+        return true;
+    }
+
+    @Override
+    public Boolean visitTypevar_Wildcard(
+            AnnotatedTypeVariable type1, AnnotatedWildcardType type2, Void p) {
+        // TODO: add proper checks
+        return true;
+    }
+
+    @Override
+    public Boolean visitDeclared_Typevar(
+            AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, Void p) {
+        // TODO: add proper checks
+        return true;
+    }
+
+    @Override
+    public Boolean visitNull_Typevar(AnnotatedNullType type1, AnnotatedTypeVariable type2, Void p) {
+        // TODO: add proper checks
+        return true;
     }
 }
