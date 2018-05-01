@@ -13,10 +13,12 @@ import com.sun.source.tree.VariableTree;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
@@ -35,6 +37,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Require that only UI code invokes code with the UI effect. */
 public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
@@ -224,12 +227,19 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     @Override
     public Void visitVariable(VariableTree node, Void p) {
         Void result = super.visitVariable(node, p);
-        if (node.getInitializer() != null
-                && node.getInitializer().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-            lambdaAssignmentCheck(
-                    atypeFactory.getAnnotatedType(node),
-                    (LambdaExpressionTree) node.getInitializer(),
-                    "assignment.type.incompatible");
+        if (node.getInitializer() != null) {
+            if (node.getInitializer().getKind() == Tree.Kind.NEW_CLASS) {
+                commonAssignmentCheck(
+                        atypeFactory.getAnnotatedType(node),
+                        atypeFactory.getAnnotatedType(node.getInitializer()),
+                        node.getInitializer(),
+                        "assignment.type.incompatible");
+            } else if (node.getInitializer().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                lambdaAssignmentCheck(
+                        atypeFactory.getAnnotatedType(node),
+                        (LambdaExpressionTree) node.getInitializer(),
+                        "assignment.type.incompatible");
+            }
         }
         return result;
     }
@@ -237,7 +247,13 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
         Void result = super.visitAssignment(node, p);
-        if (node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+        if (node.getExpression().getKind() == Tree.Kind.NEW_CLASS) {
+            commonAssignmentCheck(
+                    atypeFactory.getAnnotatedType(node.getVariable()),
+                    atypeFactory.getAnnotatedType(node.getExpression()),
+                    node.getExpression(),
+                    "assignment.type.incompatible");
+        } else if (node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
             lambdaAssignmentCheck(
                     atypeFactory.getAnnotatedType(node.getVariable()),
                     (LambdaExpressionTree) node.getExpression(),
@@ -246,12 +262,14 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         return result;
     }
 
-    // Returning a lambda expression also triggers inference based on the method's return type.
+    // Returning a lambda expression or anonymous inner class also triggers inference based on the method's return
+    // type.
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
         Void result = super.visitReturn(node, p);
         if (node.getExpression() != null
-                && node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                && (node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION
+                        || node.getExpression().getKind() == Tree.Kind.NEW_CLASS)) {
 
             // Unfortunately, need to duplicate a fair bit of BaseTypeVisitor.visitReturn after
             // lambdas have been inferred.
@@ -275,10 +293,19 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
                 if (ret != null) {
                     visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
-                    lambdaAssignmentCheck(
-                            ret,
-                            (LambdaExpressionTree) node.getExpression(),
-                            "return.type.incompatible");
+                    if (node.getExpression().getKind() == Tree.Kind.NEW_CLASS) {
+                        commonAssignmentCheck(
+                                ret,
+                                atypeFactory.getAnnotatedType(node.getExpression()),
+                                node.getExpression(),
+                                "return.type.incompatible");
+
+                    } else if (node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                        lambdaAssignmentCheck(
+                                ret,
+                                (LambdaExpressionTree) node.getExpression(),
+                                "return.type.incompatible");
+                    }
                 }
             } finally {
                 visitorState.setAssignmentContext(preAssCtxt);
@@ -324,6 +351,51 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             }
 
             callerEffect = atypeFactory.getDeclaredEffect(callerElt);
+            final DeclaredType callerReceiverType =
+                    this.visitorState.getClassType().getUnderlyingType();
+            assert callerReceiverType != null;
+            final TypeElement callerReceiverElt = (TypeElement) callerReceiverType.asElement();
+            // Note: All these checks should be fast in the common case, but happen for every method call inside the
+            // anonymous class. Consider a cache here if profiling surfaces this as taking too long.
+            if (TypesUtils.isAnonymous(callerReceiverType)
+                    // Skip if already inferred @UI
+                    && !effStack.peek().isUI()
+                    // Ignore if explicitly annotated
+                    && !atypeFactory.fromElement(callerReceiverElt).hasAnnotation(AlwaysSafe.class)
+                    && !atypeFactory.fromElement(callerReceiverElt).hasAnnotation(UI.class)) {
+                boolean overridesPolymorphic = false;
+                Map<AnnotatedTypeMirror.AnnotatedDeclaredType, ExecutableElement>
+                        overriddenMethods =
+                                AnnotatedTypes.overriddenMethods(elements, atypeFactory, callerElt);
+                for (Map.Entry<AnnotatedTypeMirror.AnnotatedDeclaredType, ExecutableElement> pair :
+                        overriddenMethods.entrySet()) {
+                    AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType = pair.getKey();
+                    AnnotatedExecutableType overriddenMethod =
+                            AnnotatedTypes.asMemberOf(
+                                    types, atypeFactory, overriddenType, pair.getValue());
+                    if (atypeFactory.getDeclAnnotation(
+                                            overriddenMethod.getElement(), PolyUIEffect.class)
+                                    != null
+                            && atypeFactory.getDeclAnnotation(
+                                            overriddenType.getUnderlyingType().asElement(),
+                                            PolyUIType.class)
+                                    != null) {
+                        overridesPolymorphic = true;
+                        break;
+                    }
+                }
+                // Perform anonymous class polymorphic effect inference:
+                // method overrides @PolyUIEffect method of @PolyUIClass class, calls @UIEffect => @UI anon class
+                if (overridesPolymorphic && targetEffect.isUI()) {
+                    // Mark the anonymous class as @UI
+                    atypeFactory.constrainAnonymousClassToUI(callerReceiverElt);
+                    // Then re-calculate this method's effect (it might still not be an @PolyUIEffect method).
+                    callerEffect = atypeFactory.getDeclaredEffect(callerElt);
+                    effStack.pop();
+                    effStack.push(callerEffect);
+                }
+            }
+
             // Field initializers inside anonymous inner classes show up with a null current-method
             // --- the traversal goes straight from the class to the initializer.
             assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
@@ -354,15 +426,20 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         Void result = super.visitMethodInvocation(node, p);
 
         // Check arguments to this method invocation for UI-lambdas, this must be re-checked after
-        // visiting the lambda
-        // body due to inference.
+        // visiting the lambda body or anonymous inner class due to inference.
         List<? extends ExpressionTree> args = node.getArguments();
         ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
         AnnotatedExecutableType invokedMethod = mType.methodType;
         List<AnnotatedTypeMirror> argsTypes =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         for (int i = 0; i < args.size(); ++i) {
-            if (args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            if (args.get(i).getKind() == Tree.Kind.NEW_CLASS) {
+                commonAssignmentCheck(
+                        argsTypes.get(i),
+                        atypeFactory.getAnnotatedType(args.get(i)),
+                        args.get(i),
+                        "argument.type.incompatible");
+            } else if (args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
                 lambdaAssignmentCheck(
                         argsTypes.get(i),
                         (LambdaExpressionTree) args.get(i),

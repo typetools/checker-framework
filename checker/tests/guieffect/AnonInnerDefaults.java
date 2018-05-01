@@ -1,5 +1,7 @@
+import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
 import org.checkerframework.checker.guieffect.qual.PolyUIType;
+import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.checker.guieffect.qual.UIType;
@@ -24,6 +26,53 @@ public class AnonInnerDefaults {
     public static interface PolyIface {
         @PolyUIEffect
         public void doStuff();
+    }
+
+    @PolyUIType
+    public static interface ParlyPolyIface {
+        @PolyUIEffect
+        public void doPolyUIStuff();
+
+        public void doSafeStuff();
+    }
+
+    public static interface IndirectPolyIface extends PolyIface {}
+
+    @PolyUIType
+    public static interface IPolyIfaceCaller {
+
+        @PolyUIEffect
+        public void call(final @PolyUI PolyIface p);
+    }
+
+    public PolyIface getSafePolyIface(final UIElement e) {
+        // :: error: (return.type.incompatible)
+        return new PolyIface() { // Anonymous inner class inference for @UI
+            @Override
+            public void doStuff() {
+                // Safe due to anonymous inner class effect inference
+                e.dangerous(); // should be okay
+            }
+        };
+    }
+
+    public @UI PolyIface getUIPolyIface(final UIElement e) {
+        return new PolyIface() { // Anonymous inner class inference for @UI
+            @Override
+            public void doStuff() {
+                // Safe due to anonymous inner class effect inference
+                e.dangerous(); // should be okay
+            }
+        };
+    }
+
+    public void callSafePolyIface(final PolyIface p) {
+        p.doStuff();
+    }
+
+    @UIEffect
+    public void callUIPolyIface(final @UI PolyIface p) {
+        p.doStuff();
     }
 
     @UIEffect
@@ -57,13 +106,108 @@ public class AnonInnerDefaults {
                         e.dangerous(); // should be okay
                     }
                 };
-        PolyIface p2 =
+        @UI PolyIface p2 =
                 new PolyIface() {
                     @Override
                     public void doStuff() {
-                        // :: error: (call.invalid.ui)
+                        // Safe due to anonymous inner class effect inference
                         e.dangerous(); // should be okay
                     }
                 };
+        PolyIface p3 =
+                // :: error: (assignment.type.incompatible)
+                new PolyIface() { // Anonymous inner class inference for @UI
+                    @Override
+                    public void doStuff() {
+                        // Safe due to anonymous inner class effect inference
+                        e.dangerous(); // should be okay
+                    }
+                };
+        @UI PolyIface p4 =
+                new IndirectPolyIface() {
+                    @Override
+                    public void doStuff() {
+                        // Safe due to anonymous inner class effect inference
+                        e.dangerous(); // should be okay
+                    }
+                };
+        @UI ParlyPolyIface p5 =
+                new ParlyPolyIface() {
+                    @Override
+                    public void doPolyUIStuff() {
+                        // Safe due to anonymous inner class effect inference
+                        e.dangerous(); // should be okay
+                    }
+
+                    @Override
+                    @SafeEffect
+                    public void doSafeStuff() {
+                        e.repaint();
+                    }
+                };
+        ParlyPolyIface p6 =
+                new ParlyPolyIface() {
+                    @Override
+                    public void doPolyUIStuff() {
+                        e.repaint(); // Safe
+                    }
+
+                    @Override
+                    public void doSafeStuff() {
+                        // :: error: (call.invalid.ui)
+                        e.dangerous(); // No inference here, just as an invalid call
+                    }
+                };
+        @UI ParlyPolyIface p7 =
+                new ParlyPolyIface() {
+                    @Override
+                    public void doPolyUIStuff() {
+                        // Safe due to anonymous inner class effect inference
+                        e.dangerous(); // should be okay
+                    }
+
+                    @Override
+                    @SafeEffect
+                    public void doSafeStuff() {
+                        // :: error: (call.invalid.ui)
+                        e.dangerous(); // No inference here, just as an invalid call
+                    }
+                };
+        callSafePolyIface(
+                // :: error: (argument.type.incompatible)
+                new PolyIface() { // Anonymous inner class inference for @UI
+                    @Override
+                    public void doStuff() {
+                        // Safe due to anonymous inner class effect inference
+                        e.dangerous(); // should be okay
+                    }
+                });
+        callUIPolyIface(
+                new PolyIface() { // Anonymous inner class inference for @UI
+                    @Override
+                    public void doStuff() {
+                        // Safe due to anonymous inner class effect inference
+                        e.dangerous(); // should be okay
+                    }
+                });
+        callSafePolyIface(getSafePolyIface(e));
+        callUIPolyIface(getUIPolyIface(e));
+
+        // ToDo: To decide, this case and whether or not we base on @PolyUIType for super type or @PolyUIEffect for
+        // overriden method.
+        (new IPolyIfaceCaller() { // Anonymous inner class inference for @UI
+                    @Override
+                    public void call(final @UI PolyIface p) { // No global inference
+                        p.doStuff();
+                    }
+                })
+                .call(
+                        new PolyIface() { // Anonymous inner class inference for @UI
+                            @Override
+                            public void doStuff() {
+                                // Safe due to anonymous inner class effect inference
+                                e.dangerous(); // should be okay
+                            }
+                        });
     }
 }

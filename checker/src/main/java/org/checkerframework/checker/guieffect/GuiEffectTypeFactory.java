@@ -55,6 +55,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected final Set<LambdaExpressionTree> uiLambdas = new HashSet<>();
 
+    private final Set<TypeElement> uiAnonClasses = new HashSet<>();
+
     public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
         // use true to enable flow inference, false to disable it
         super(checker, false);
@@ -123,6 +125,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         // they're so often used for closures to run async on background
         // threads.
         if (isAnonymousType(cls)) {
+            // However, we need to look into Anonymous class effect inference
+            if (uiAnonClasses.contains(cls)) {
+                return true;
+            }
             return false;
         }
 
@@ -335,6 +341,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 && uiLambdas.contains((LambdaExpressionTree) tree)
                 && !typeMirror.hasAnnotation(UI.class)) {
             typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
+        } else if (tree.getKind() == Tree.Kind.NEW_CLASS
+                && uiAnonClasses.contains(
+                        ((DeclaredType) typeMirror.getUnderlyingType()).asElement())
+                && !typeMirror.hasAnnotation(UI.class)) {
+            typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
         }
         return typeMirror;
     }
@@ -469,7 +480,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                         // @UI on an anon class decl extending Runnable
                         boolean isAnonInstantiation =
                                 isAnonymousType(declaringType)
-                                        && fromElement(declaringType).hasAnnotation(UI.class);
+                                        && (fromElement(declaringType).hasAnnotation(UI.class)
+                                                || uiAnonClasses.contains(declaringType));
                         if (!isAnonInstantiation && !supdecl.hasAnnotation(UI.class)) {
                             checker.report(
                                     Result.failure(
@@ -548,6 +560,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public void constrainLambdaToUI(LambdaExpressionTree lambdaExpressionTree) {
         uiLambdas.add(lambdaExpressionTree);
+    }
+
+    public void constrainAnonymousClassToUI(TypeElement callerReceiverElt) {
+        assert TypesUtils.isAnonymous(callerReceiverElt.asType());
+        uiAnonClasses.add(callerReceiverElt);
     }
 
     /** A class for adding annotations based on tree. */
