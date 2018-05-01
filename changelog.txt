@@ -1,5 +1,7 @@
 Version 2.5.1, May 1, 2018
 
+Added a Maven artifact of the Checker Framework testing library, testlib.
+
 ---------------------------------------------------------------------------
 
 Version 2.5.0, April 2, 2018
