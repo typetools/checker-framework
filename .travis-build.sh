@@ -53,7 +53,7 @@ if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
   export CHECKERFRAMEWORK=$ROOT/checker-framework
-  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.Nul    lnessChecker)
+  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
