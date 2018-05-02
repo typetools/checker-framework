@@ -668,7 +668,7 @@ public class AnnotatedTypes {
             }
         } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
             if (atypeFactory.getTypeHierarchy().isSubtype(type2, type1)) {
-                return type1;
+                return type2;
             } else {
                 // There's no annotated GLB.
                 return atypeFactory.getAnnotatedNullType(

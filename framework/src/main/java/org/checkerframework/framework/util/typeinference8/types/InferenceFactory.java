@@ -496,10 +496,10 @@ public class InferenceFactory {
     }
 
     public InvocationType findFunctionType(MemberReferenceTree memRef) {
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                typeFactory.getFnInterfaceFromTree(memRef);
+        InvocationType other = compileTimeDeclarationType(memRef);
+
         // The type of the single method that is declared by the functional interface.
-        AnnotatedExecutableType functionType = result.second;
+        AnnotatedExecutableType functionType = other.getAnnotatedType();
         return new InvocationType(
                 functionType,
                 TypesUtils.findFunctionType(TreeUtils.typeOf(memRef), context.env),

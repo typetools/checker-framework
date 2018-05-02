@@ -406,24 +406,25 @@ public abstract class QualifierHierarchy {
      */
     public Set<? extends AnnotationMirror> greatestLowerBoundsTypeVariable(
             Collection<? extends AnnotationMirror> annos1,
-            Collection<? extends AnnotationMirror> annos2) {
+            Collection<? extends AnnotationMirror> upperBounds1,
+            Collection<? extends AnnotationMirror> annos2,
+            Collection<? extends AnnotationMirror> upperBounds2) {
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : getTopAnnotations()) {
-            AnnotationMirror anno1ForTop = null;
-            for (AnnotationMirror anno1 : annos1) {
-                if (isSubtypeTypeVariable(anno1, top)) {
-                    anno1ForTop = anno1;
+            AnnotationMirror anno1ForTop = findAnnotationInHierarchy(annos1, top);
+            AnnotationMirror anno2ForTop = findAnnotationInHierarchy(annos2, top);
+            if (anno1ForTop != null && anno2ForTop != null) {
+                result.add(greatestLowerBound(anno1ForTop, anno2ForTop));
+            } else if (anno1ForTop == null && anno2ForTop == null) {
+                // no annotation
+            } else if (anno1ForTop == null) {
+                if (!isSubtype(findAnnotationInHierarchy(upperBounds1, top), anno2ForTop)) {
+                    result.add(anno2ForTop);
                 }
-            }
-            AnnotationMirror anno2ForTop = null;
-            for (AnnotationMirror anno2 : annos2) {
-                if (isSubtypeTypeVariable(anno2, top)) {
-                    anno2ForTop = anno2;
+            } else { // if (anno2ForTop == null)
+                if (!isSubtype(findAnnotationInHierarchy(upperBounds2, top), anno1ForTop)) {
+                    result.add(anno1ForTop);
                 }
-            }
-            AnnotationMirror t = greatestLowerBoundTypeVariable(anno1ForTop, anno2ForTop);
-            if (t != null) {
-                result.add(t);
             }
         }
         return result;
@@ -589,7 +590,11 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> annos1,
             Collection<AnnotationMirror> annos2) {
         if (canHaveEmptyAnnotationSet(type1) || canHaveEmptyAnnotationSet(type2)) {
-            return greatestLowerBoundsTypeVariable(annos1, annos2);
+            return greatestLowerBoundsTypeVariable(
+                    annos1,
+                    type1.getEffectiveAnnotations(),
+                    annos2,
+                    type2.getEffectiveAnnotations());
         } else {
             return greatestLowerBounds(annos1, annos2);
         }

@@ -127,4 +127,8 @@ public class InvocationType {
     public List<AbstractType> getParameterTypes(Theta map) {
         return getParameterTypes(map, annotatedExecutableType.getParameterTypes().size());
     }
+
+    public AnnotatedExecutableType getAnnotatedType() {
+        return annotatedExecutableType;
+    }
 }
