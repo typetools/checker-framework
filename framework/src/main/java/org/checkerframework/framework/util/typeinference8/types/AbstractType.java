@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -171,9 +172,9 @@ public abstract class AbstractType {
             }
 
             ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-            AnnotatedExecutableType aet =
-                    typeFactory.getFunctionType(
-                            element, (AnnotatedDeclaredType) getAnnotatedType());
+            AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
+            makeGround(copy);
+            AnnotatedExecutableType aet = typeFactory.getFunctionType(element, copy);
             AnnotatedTypeMirror returnType = aet.getReturnType();
             if (returnType.getKind() == TypeKind.VOID) {
                 return null;
@@ -197,9 +198,9 @@ public abstract class AbstractType {
             List<? extends TypeMirror> paramsTypeMirror = elementType.getParameterTypes();
 
             ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-            AnnotatedExecutableType aet =
-                    typeFactory.getFunctionType(
-                            element, (AnnotatedDeclaredType) getAnnotatedType());
+            AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
+            makeGround(copy);
+            AnnotatedExecutableType aet = typeFactory.getFunctionType(element, copy);
             List<AbstractType> params = new ArrayList<>();
             Iterator<? extends TypeMirror> iter = paramsTypeMirror.iterator();
             for (AnnotatedTypeMirror param : aet.getParameterTypes()) {
@@ -209,6 +210,33 @@ public abstract class AbstractType {
         } else {
             return null;
         }
+    }
+
+    void makeGround(AnnotatedDeclaredType type) {
+        Element e = type.getUnderlyingType().asElement();
+        AnnotatedDeclaredType decl = typeFactory.getAnnotatedType((TypeElement) e);
+        Iterator<AnnotatedTypeMirror> bounds = decl.getTypeArguments().iterator();
+
+        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
+        for (AnnotatedTypeMirror pn : type.getTypeArguments()) {
+            AnnotatedTypeVariable typeVariable = (AnnotatedTypeVariable) bounds.next();
+            if (pn.getKind() != TypeKind.WILDCARD) {
+                newTypeArgs.add(pn);
+                continue;
+            }
+            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) pn;
+            if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
+                //› If Ai is a upper-bounded wildcard ? extends Ui, then Ti = glb(Ui, Bi)
+                newTypeArgs.add(
+                        AnnotatedTypes.greatestLowerBound(
+                                typeFactory,
+                                typeVariable.getUpperBound(),
+                                wildcardType.getExtendsBound()));
+            } else {
+                newTypeArgs.add(wildcardType.getSuperBound());
+            }
+        }
+        type.setTypeArguments(newTypeArgs);
     }
 
     /** @return true if the type is a raw type */

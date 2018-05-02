@@ -43,13 +43,13 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
@@ -198,12 +198,13 @@ public class InferenceFactory {
                 ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
                 AnnotatedTypeMirror receiver = factory.getReceiverType(methodInvocation);
                 AnnotatedTypeMirror ex =
-                        TypeArgInferenceUtil.assignedToExecutable(
-                                factory,
+                        assignedToExecutable(
                                 path,
-                                methodElt,
+                                methodInvocation,
+                                methodInvocation.getArguments(),
                                 receiver,
-                                methodInvocation.getArguments());
+                                factory,
+                                methodElt);
                 return Pair.of(
                         ex,
                         assignedToExecutable(
@@ -213,12 +214,13 @@ public class InferenceFactory {
                 ExecutableElement constructorElt = TreeUtils.constructor(newClassTree);
                 AnnotatedTypeMirror receiverConst = factory.fromNewClass(newClassTree);
                 AnnotatedTypeMirror constATM =
-                        TypeArgInferenceUtil.assignedToExecutable(
-                                factory,
+                        assignedToExecutable(
                                 path,
-                                constructorElt,
+                                newClassTree,
+                                newClassTree.getArguments(),
                                 receiverConst,
-                                newClassTree.getArguments());
+                                factory,
+                                constructorElt);
                 return Pair.of(
                         constATM,
                         assignedToExecutable(
@@ -341,6 +343,38 @@ public class InferenceFactory {
             treeIndex = methodType.getParameterTypes().size() - 1;
             TypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
             return ((ArrayType) typeMirror).getComponentType();
+        }
+
+        return methodType.getParameterTypes().get(treeIndex);
+    }
+
+    private static AnnotatedTypeMirror assignedToExecutable(
+            TreePath path,
+            ExpressionTree methodInvocation,
+            List<? extends ExpressionTree> arguments,
+            AnnotatedTypeMirror receiver,
+            AnnotatedTypeFactory atypeFactory,
+            ExecutableElement methodElt) {
+        int treeIndex = -1;
+        for (int i = 0; i < arguments.size(); ++i) {
+            ExpressionTree argumentTree = arguments.get(i);
+            if (isArgument(path, argumentTree)) {
+                treeIndex = i;
+                break;
+            }
+        }
+
+        AnnotatedExecutableType methodType =
+                AnnotatedTypes.asMemberOf(
+                        atypeFactory.getContext().getTypeUtils(),
+                        atypeFactory,
+                        receiver,
+                        methodElt);
+        if (treeIndex >= methodType.getParameterTypes().size() - 1
+                && TreeUtils.isVarArgMethodCall(methodInvocation)) {
+            treeIndex = methodType.getParameterTypes().size() - 1;
+            AnnotatedTypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
+            return ((AnnotatedArrayType) typeMirror).getComponentType();
         }
 
         return methodType.getParameterTypes().get(treeIndex);
