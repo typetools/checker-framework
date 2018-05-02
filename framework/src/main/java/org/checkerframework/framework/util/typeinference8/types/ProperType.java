@@ -24,14 +24,23 @@ public class ProperType extends AbstractType {
             AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
         super(context);
         assert properType != null && properType.getKind() != TypeKind.VOID && type != null;
-        if (TypesUtils.isCaptured(properType) && type.getKind() == TypeKind.WILDCARD) {
-            type = ((AnnotatedWildcardType) type).capture((TypeVariable) properType);
+        if (type.getKind() == TypeKind.WILDCARD) {
+            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
+            if (TypesUtils.isCaptured(properType)) {
+                type = ((AnnotatedWildcardType) type).capture((TypeVariable) properType);
+            } else if (wildcardType.isUninferredTypeArgument()) {
+                throw new CantCompute();
+            }
         }
 
         assert properType.getKind() == type.getKind();
 
         this.properType = properType;
         this.type = type;
+    }
+
+    public static class CantCompute extends RuntimeException {
+        private static final long serialVersionUID = 1;
     }
 
     public ProperType(ExpressionTree tree, Java8InferenceContext context) {

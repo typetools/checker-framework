@@ -30,6 +30,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
+import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -92,6 +93,9 @@ public class CFInvocationTypeInference extends InvocationTypeInference {
 
     /** Convert the exceptions into a checker error and report it. */
     private void logException(ExpressionTree methodInvocation, java.lang.Exception ex) {
+        if (ex instanceof ProperType.CantCompute) {
+            return;
+        }
         StringBuilder message = new StringBuilder();
         message.append(ex.getLocalizedMessage());
         if (checker.hasOption("printErrorStack")) {
