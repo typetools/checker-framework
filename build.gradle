@@ -109,8 +109,8 @@ allprojects {
         // Add standard javac options
         tasks.withType(JavaCompile) {
             dependsOn(':installGitHooks')
-            sourceCompatibility = 1.8
-            targetCompatibility = 1.8
+            sourceCompatibility = 8
+            targetCompatibility = 8
             options.failOnError = true
             options.deprecation = true
             options.compilerArgs += [
@@ -162,7 +162,9 @@ def createCheckTypeTask(projectName, checker, shortName) {
                 '-proc:only',
                 '-Xlint:-processing',
                 '-AprintErrorStack',
-                "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar"
+                "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar",
+                "-source 8",
+                "-target 8",
         ]
     }
 }
@@ -411,6 +413,8 @@ subprojects {
 
                                 "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +
                                         "${jsr308}/jsr308-langtools/dist/lib/javac.jar",
+                                "-javacoptions:-source 8",
+                                "-javacoptions:-target 8",
                         ]
                         if (project.name.is('checker')) {
                             args += [
