@@ -40,7 +40,7 @@ export SHELLOPTS
 
 SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
 if [[ "$SLUGOWNER" == "" ]]; then
-  SLUGOWNER=typetools
+  SLUGOWNER=eisop
 fi
 
 ./.travis-build-without-test.sh ${BUILDJDK}

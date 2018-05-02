@@ -20,7 +20,7 @@ export SHELLOPTS
 
 SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
 if [[ "$SLUGOWNER" == "" ]]; then
-  SLUGOWNER=typetools
+  SLUGOWNER=eisop
 fi
 
 ## Build annotation-tools (Annotation File Utilities)
