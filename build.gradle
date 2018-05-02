@@ -61,6 +61,16 @@ allprojects {
     repositories {
         mavenCentral()
     }
+    configurations {
+        jsr308Javac
+    }
+    dependencies {
+        jsr308Javac group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
+
+        // Comment the above and uncomment the below to use jsr308-langtools.
+        // jsr308Javac files("${jsr308}/jsr308-langtools/cfmake/javac-jdk.jar")
+        // jsr308Javac files("${jsr308}/jsr308-langtools/cfmake/javac.jar")
+    }
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -96,6 +106,8 @@ allprojects {
                     "-Xlint",
             ]
             options.encoding = 'UTF-8'
+            options.fork = true
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.jsr308Javac.asPath}"]
         }
     }
 }
@@ -379,6 +391,8 @@ subprojects {
             if (project.hasProperty('emit.test.debug')) {
                 systemProperties += ["emit.test.debug": 'true']
             }
+
+            jvmArgs "-Xbootclasspath/p:${configurations.jsr308Javac.asPath}"
 
             testLogging {
                 showStandardStreams = true
