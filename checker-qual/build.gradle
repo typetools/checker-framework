@@ -1,25 +1,16 @@
 sourceSets {
-    main {
-        java {
-            srcDirs = ['generated-src/main']
-        }
-    }
-
-    compatQual {
-        java {
-            srcDirs = ['generated-src/compat']
-        }
-    }
+    compatQual
 }
 
 task copySources(type: Copy) {
     description 'Copy checker-qual source from other projects.'
+    includeEmptyDirs = false
     doFirst {
         // Delete the directory in case a previously copied file should no longer be in checker-qual
-        delete file('generated-src/main/')
+        delete file('src/main/java')
     }
 
-    from files('../checker/src', '../dataflow/src', '../framework/src')
+    from files('../checker/src/main/java', '../dataflow/src/main/java', '../framework/src/main/java')
     include "**/FormatUtil.java"
     include "**/NullnessUtil.java"
     include "**/RegexUtil.java"
@@ -34,7 +25,7 @@ task copySources(type: Copy) {
     // Make files read only.
     fileMode(0444)
 
-    into file('generated-src/main/')
+    into file('src/main/java')
 }
 
 compileJava {
@@ -43,22 +34,23 @@ compileJava {
 
 task copyCompatQual(type: Copy) {
     description 'Copy checker-compat-qual source from other projects.'
+    includeEmptyDirs = false
     doFirst {
         // Delete the directory in case a previously copied file should no longer be in checker-qual
-        delete file('generated-src/compat/')
+        delete file('src/compatQual/java')
     }
 
-    from files('../checker/src', '../framework/src')
+    from files('../checker/src/main/java', '../framework/src/main/java')
     include "**/compatqual/*.java"
     // Make files read only.
     fileMode(0444)
 
-    into file('generated-src/compat')
+    into file('src/compatQual/java')
 }
 
 compileCompatQualJava {
     dependsOn copyCompatQual
-    doLast {
+    doFirst {
         sourceCompatibility = 1.6
         targetCompatibility = 1.6
     }
@@ -75,7 +67,7 @@ task compatQualJar(type: Jar, dependsOn: compileCompatQualJava) {
 
 task compatQualSourcesJar(type: Jar) {
     description 'Creates compat-qual sources jar.'
-    classifier = 'sources'
+    classifier = 'source'
     baseName = 'checker-compat-qual'
     from sourceSets.compatQual.java
 }
@@ -90,7 +82,7 @@ task compatQualJavadocJar(type: Jar, dependsOn: compatQualJavadoc) {
 
 
 artifacts {
-    compatQualJar
+    archives compatQualJar
 }
 
 clean {

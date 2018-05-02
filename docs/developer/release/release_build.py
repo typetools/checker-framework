@@ -114,16 +114,15 @@ def create_dev_website_release_version_dir(project_name, version):
     execute("mkdir -p %s" % interm_dir, True, False)
     return interm_dir
 
-def create_dirs_for_dev_website_release_versions(jsr308_and_cf_version, afu_version):
-    """Create directories for the given versions of the JSR308, CF, and AFU
+def create_dirs_for_dev_website_release_versions(cf_version, afu_version):
+    """Create directories for the given versions of the CF, and AFU
     projects under the releases directory of the dev web site.
     For example,
     /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> ."""
-    jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_and_cf_version)
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", afu_version)
-    checker_framework_interm_dir = create_dev_website_release_version_dir(None, jsr308_and_cf_version)
+    checker_framework_interm_dir = create_dev_website_release_version_dir(None, cf_version)
 
-    return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
+    return (afu_interm_dir, checker_framework_interm_dir)
 
 ### def update_project_dev_website_symlink(project_name, release_version):
 ###     """Update the \"current\" symlink in the dev web site for the given project
@@ -148,50 +147,15 @@ def update_project_dev_website(project_name, release_version):
     print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
     copy_tree(dev_website_relative_dir, project_dev_site)
 
-
-def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr308_interm_dir):
-    """Build the jsr308-langtools project's artifacts and place them in the
-    development web site."""
-
-    afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
-
-    # update jsr308_langtools versions
-    ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_version, afu_build_properties, afu_release_date)
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s update-langtools-versions " % (ant_debug, ant_props)
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
-
-    # TODO: perhaps make a "dist" target rather than listing out the relevant targets
-    # build jsr308 binaries and documents but not website, fail if the tests don't pass
-    ant_cmd = "ant %s -Dhalt.on.test.failure=true -Dlauncher.java=java clean-and-build-all-tools build-javadoc build-doclets" % (ant_debug)
-    execute(ant_cmd, True, False, JSR308_MAKE)
-
-    jsr308ZipName = "jsr308-langtools-%s.zip" % version
-
-    # zip up jsr308-langtools project and place it in jsr308_interm_dir
-    ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, jsr308ZipName, version)
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s zip-langtools " % (ant_debug, ant_props)
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
-
-    # build jsr308 website
-    make_cmd = "make jsr308_www_dir=%s jsr308_url=%s web-no-checks" % (jsr308_interm_dir, HTTP_PATH_TO_DEV_SITE)
-    execute(make_cmd, True, False, JSR308_LT_DOC)
-
-    # copy remaining website files to jsr308_interm_dir
-    ant_props = "-Dlangtools=%s -Ddest.dir=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir)
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s langtools-website-docs " % (ant_debug, ant_props)
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
-
-    update_project_dev_website("jsr308", version)
-
-    return
-
 def get_current_date():
     "Return today's date in a string format similar to: 02 May 2016"
     return CURRENT_DATE.strftime("%d %b %Y")
 
+def download_jsr308_langtools():
+    """Download and unzip jsr308-langtools"""
+    execute('wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
+    execute('unzip -q jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
+    execute('mv jsr308-langtools-2.4.0 '+BUILD_DIR+"/jsr308-langtools", True, False, BUILD_DIR)
 
 def build_annotation_tools_release(version, afu_interm_dir):
     """Build the Annotation File Utilities project's artifacts and place them
@@ -219,8 +183,6 @@ def build_and_locally_deploy_maven(version):
     # Deploy jsr308 and checker-qual jars to maven repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
-    mvn_deploy(CHECKER_QUAL7, CHECKER_QUAL7_POM, MAVEN_DEV_REPO)
-    mvn_deploy(JAVAC_BINARY, JAVAC_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)
 
     return
@@ -235,7 +197,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     # build stubparser
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
 
-    # update jsr308_langtools versions
+    # update versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (ant_debug, ant_props)
@@ -244,9 +206,9 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     if not manual_only:
         # build the checker framework binaries and documents, run checker framework tests
         if notest:
-            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release-notest" % (ant_debug)
+            ant_cmd = "./gradlew releaseBuild"
         else:
-            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
+            ant_cmd = "./gradlew releaseAndTest"
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
@@ -296,23 +258,21 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
 
     return
 
-def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
+def commit_to_interm_projects(cf_version, afu_version, projects_to_release):
     """Commit the changes for each project from its build repo to its
     corresponding intermediate repo in preparation for running the release_push
     script, which does not read the build repos."""
     # Use project definition instead, see find project location find_project_locations
-    if projects_to_release[LT_OPT]:
-        commit_tag_and_push(jsr308_version, JSR308_LANGTOOLS, "jsr308-")
 
     if projects_to_release[AFU_OPT]:
         commit_tag_and_push(afu_version, ANNO_TOOLS, "")
 
     if projects_to_release[CF_OPT]:
-        commit_tag_and_push(jsr308_version, CHECKER_FRAMEWORK, "checker-framework-")
+        commit_tag_and_push(cf_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 def main(argv):
     """The release_build script is responsible for building the release
-    artifacts for jsr308-langtools, the AFU and the Checker Framework projects
+    artifacts for the AFU and the Checker Framework projects
     and placing them in the development web site. It can also be used to review
     the documentation and changelogs for the three projects."""
     # MANUAL Indicates a manual step
@@ -346,9 +306,9 @@ def main(argv):
     # For each project, build what is necessary but don't push
 
     if not review_documentation:
-        print "Building a new release of Langtools, Annotation Tools, and the Checker Framework!"
+        print "Building a new release of Annotation Tools and the Checker Framework!"
     else:
-        print "Reviewing the documentation for Langtools, Annotation Tools, and the Checker Framework."
+        print "Reviewing the documentation for Annotation Tools and the Checker Framework."
 
     print "\nPATH:\n" + os.environ['PATH'] + "\n"
 
@@ -390,24 +350,18 @@ def main(argv):
     # version. You can also manually specify a version higher than the current version. Lower or equivalent
     # versions are not possible and will be rejected when you try to push the release.
 
-    # The jsr308-langtools version ALWAYS matches the Checker Framework version.
-
     # NOTE: If you pass --auto on the command line then the next logical version will be chosen automatically
 
     print_step("Build Step 3: Determine release versions.") # SEMIAUTO
 
-    print("Increment the minor version rather than just the patch level if:\n")
-    print(" * any new checkers have been added,\n")
-    print(" * the patch level is 9 (keep the patch level as a single digit), or\n")
-    print(" * backward-incompatible changes have been made to APIs or elsewhere.\n")
+    old_cf_version = current_distribution_by_website(HTTP_PATH_TO_LIVE_SITE)
+    cf_version = CF_VERSION
+    print "Version: " + cf_version + "\n"
 
-    old_jsr308_version = current_distribution(CHECKER_FRAMEWORK)
-    (old_jsr308_version, jsr308_version) = get_new_version("JSR308/Checker Framework", old_jsr308_version, auto)
-
-    if old_jsr308_version == jsr308_version:
+    if old_cf_version == cf_version:
         print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
-              "and jsr308-langtools even if no changes were made to these in a month. This would break so much " +
-              "in the release scripts that they would become unusable.\n")
+              "even if no changes were made to these in a month. This would break so much " +
+              "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n")
         prompt_to_continue()
 
     old_afu_version = get_afu_version_from_html(AFU_MANUAL)
@@ -433,7 +387,7 @@ def main(argv):
         print "Ensure that the changelogs end with a line that lists resolved issues in numerical order, like"
         print "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374.\n"
 
-        print("To ensure the jsr308-langtools, AFU and Checker Framework changelogs are correct and complete, " +
+        print("To ensure AFU and the Checker Framework changelogs are correct and complete, " +
               "please follow the Content Guidelines found in README-release-process.html#content_guidelines\n")
 
         prompt_to_continue()
@@ -448,16 +402,12 @@ def main(argv):
         print " * All new features mentioned in the changelogs are documented in the manuals."
         print ""
 
-        if projects_to_release[LT_OPT]:
-            propose_documentation_change_review("the JSR308 documentation updates", old_jsr308_version, JSR308_LANGTOOLS,
-                                                JSR308_TAG_PREFIXES, JSR308_LT_DOC, TMP_DIR + "/jsr308.manual")
-
         if projects_to_release[AFU_OPT]:
             propose_documentation_change_review("the Annotation File Utilities documentation updates", old_afu_version, ANNO_TOOLS,
                                                 AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual")
 
         if projects_to_release[CF_OPT]:
-            build_checker_framework_release(jsr308_version, afu_version, afu_date, "checker-framework", manual_only=True)
+            build_checker_framework_release(cf_version, afu_version, afu_date, "checker-framework", manual_only=True)
 
             print ""
             print "The built Checker Framework manual (HTML and PDF) can be found at " + CHECKER_MANUAL
@@ -471,7 +421,7 @@ def main(argv):
             print " * Run-time tests and type refinement"
             print ""
 
-            propose_documentation_change_review("the Checker Framework documentation updates", old_jsr308_version, CHECKER_FRAMEWORK,
+            propose_documentation_change_review("the Checker Framework documentation updates", old_cf_version, CHECKER_FRAMEWORK,
                                                 CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual")
 
         return
@@ -489,11 +439,11 @@ def main(argv):
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # AUTO
 
-    (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir) = \
-        create_dirs_for_dev_website_release_versions(jsr308_version, afu_version)
+    (afu_interm_dir, checker_framework_interm_dir) = \
+        create_dirs_for_dev_website_release_versions(cf_version, afu_version)
 
-    # The projects are built in the following order: JSR308-Langtools,
-    # Annotation File Utilities, and Checker Framework. Furthermore, their
+    # The projects are built in the following order:
+    # Annotation File Utilities and Checker Framework. Furthermore, their
     # manuals and websites are also built and placed in their relevant locations
     # at https://checkerframework.org/dev/ .  This is the most time-consuming
     # piece of the release. There are no prompts from this step forward; you
@@ -501,9 +451,9 @@ def main(argv):
 
     print_step("Build Step 6: Build projects and websites.") # AUTO
     print projects_to_release
-    if projects_to_release[LT_OPT]:
-        print_step("6a: Build Type Annotations Compiler.")
-        build_jsr308_langtools_release(jsr308_version, afu_version, afu_date, jsr308_interm_dir)
+
+    print_step("6a: Download Type Annotations Compiler.")
+    download_jsr308_langtools()
 
     if projects_to_release[AFU_OPT]:
         print_step("6b: Build Annotation File Utilities.")
@@ -511,7 +461,7 @@ def main(argv):
 
     if projects_to_release[CF_OPT]:
         print_step("6c: Build Checker Framework.")
-        build_checker_framework_release(jsr308_version, afu_version, afu_date, checker_framework_interm_dir)
+        build_checker_framework_release(cf_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
     print_step("Build Step 7: Overwrite .htaccess and CFLogo.png .") # AUTO
@@ -525,7 +475,7 @@ def main(argv):
     # scripts in the jsr308-release/scripts directory will never be checked in.
 
     print_step("Build Step 8: Commit projects to intermediate repos.") # AUTO
-    commit_to_interm_projects(jsr308_version, afu_version, projects_to_release)
+    commit_to_interm_projects(cf_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
     # under https://checkerframework.org/dev/ These directories need group read/execute

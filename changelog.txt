@@ -1,3 +1,12 @@
+Version 2.5.1, May 1, 2018
+
+Added a Maven artifact of the Checker Framework testing library, testlib.
+
+Closed issues:
+
+849, 1739, 1838, 1847, 1890, 1901, 1911, 1912, 1913, 1934, 1936, 1941, 1942,
+1945, 1946, 1948, 1949, 1952, 1953, 1956, 1958.
+
 ---------------------------------------------------------------------------
 
 Version 2.5.0, April 2, 2018
@@ -5,6 +14,15 @@ Version 2.5.0, April 2, 2018
 Declaration annotations that are aliases for type annotations are now treated
 as if they apply to the top-level type.  See "Declaration annotations" section
 in the "Warnings" chapter in the manual for more details.
+
+Ended support for annotations in comments.  See "Migrating away from
+annotations in comments" section in the "Handling legacy code" chapter in the
+manual for instructions on how to remove annotations from comments.
+
+Closed issues:
+
+515, 1667, 1739, 1776, 1819, 1863, 1864, 1865, 1866, 1867, 1870, 1876, 1879,
+1882, 1898, 1903, 1905, 1906, 1910, 1914, 1915, 1920.
 
 ---------------------------------------------------------------------------
 

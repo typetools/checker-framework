@@ -1,7 +1,7 @@
 <project name="jsr-308" basedir="../../..">
 
     <description>
-        Ant utilities for releasing JSR308-Langtools and Checker-Framework.  All targets in this file
+        Ant utilities for releasing the Checker-Framework.  All targets in this file
         are intended to be run much like method calls (i.e. you must specify a certain set of properties
         as parameters and they do not depend on any other target.
     </description>
@@ -24,77 +24,6 @@
                            match="@{start}.*@{end}" replace="@{start}@{with}@{end}"/>
         </sequential>
     </macrodef>
-
-    <target name="update-langtools-versions" description="updates version info in Langtool documents and build configs">
-
-        <fail unless="langtools"   message="langtools property is not set!"  />
-        <fail unless="release.ver" message="release.ver property is not set!"/>
-        <fail unless="afu.properties"      message="afu.properties property is not set!"/>
-        <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
-        <fail unless="afu.version"    message="afu.version not set"/>
-
-        <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
-        <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.html"  />
-        <property name="langtools.make"  value="${langtools}/make"                    />
-        <property name="release.version.regexp" value="\d\.\d\.\d+(?:\.\d)"                   />
-
-        <!-- for afu.date.0 and afu.date.1 -->
-        <loadproperties srcFile="${afu.properties}"/>
-
-        <replaceregexp file="${jsr308WebPage}" byline="true"
-                       match="checker-framework-${release.version.regexp}{0,1}.zip" replace="checker-framework-${release.ver}.zip"/>
-
-        <replaceregexp file="${jsr308WebPage}" byline="true"
-                       match="annotation-tools-${release.version.regexp}{0,1}.zip" replace="annotation-tools-${afu.version}.zip"/>
-
-        <replaceregexp file="${jsr308WebPage}" byline="true"
-                       match="jsr308-langtools-${release.version.regexp}{0,1}.zip" replace="jsr308-langtools-${release.ver}.zip"/>
-
-        <update file="${jsr308WebPage}"
-                start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
-                with="checker-framework-${release.ver}.zip"/>
-
-        <update file="${jsr308WebPage}"
-                start="${afu.zip.ver.0}" end="${afu.zip.ver.1}"
-                with="annotation-tools-${afu.version}.zip"/>
-
-        <update file="${jsr308WebPage}"
-                start="${jsr308.zip.ver.0}" end="${jsr308.zip.ver.1}"
-                with="jsr308-langtools-${release.ver}.zip"/>
-
-        <update file="${jsr308WebPage}"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}, ${release.date}"/>
-
-        <update file="${jsr308WebPage}"
-                start="${compiler.ver.0}" end="${compiler.ver.1}"
-                with="${release.ver}, ${release.date}"/>
-
-        <update file="${jsr308WebPage}"
-                start="${checkers.date.0}" end="${checkers.date.1}"
-                with="${release.date}"/>
-
-        <update file="${jsr308WebPage}"
-                start="${afu.date.0}" end="${afu.date.1}"
-                with="${afu.release.date}"/>
-
-        <!-- I can only find these in design.tex and they are commented out but
-             for now I will keep these in -->
-        <replaceregexp file="${jsr308WebPage}" byline="true"
-                       flags="g" match="~~" replace="--"/>
-
-        <update file="${langtools.make}/build.properties"
-                start="jsr308.version = " with="${release.ver}"/>
-
-        <update file="${jsr308Readme}"
-                start="${h4.ver.0}" end="${h4.ver.1}"
-                with="Version ${release.ver} (${release.date})"/>
-
-
-        <update file="${langtools}/doc/Makefile-jsr308-install"
-                start="JSR308_BUILD := "
-                with="${release.ver}"/>
-     </target>
 
     <target name="update-checker-framework-versions" description="updates version info in Checker Framework documents and build configs">
 
@@ -230,15 +159,6 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <!-- jsr308 compiler -->
-        <update file="${checker.binary.poms}/compilerPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/compilerReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
         <!-- jdk8 -->
         <update file="${checker.binary.poms}/jdk8Pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -270,6 +190,14 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <update file="${checker.binary.poms}/testlibPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/testlibReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
         <!-- examples -->
         <update file="${cf.docs.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -282,36 +210,6 @@
         <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava8Example/build.gradle" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
-
-    </target>
-
-    <target name="zip-langtools" description="Creates a zip archive for JSR308-Langtools.">
-
-        <fail unless="checkerframework" message="checkerframework property is not set!"/>
-        <fail unless="langtools"   message="langtools property is not set!" />
-        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
-        <fail unless="file.name"   message="file.name property is not set!" />
-        <fail unless="version"     message="version number is not set!"     />
-
-        <property name="langtools.excludes" value="${checkerframework}/docs/developer/release/langtools-excludes"/>
-        <available file="${langtools.excludes}"  property="langtools.excludes.available"/>
-        <fail unless="${langtools.excludes.available}" message="${langtools.excludes} includes file not available"/>
-
-        <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
-                        excludesfile="docs/developer/release/langtools-excludes"/>
-
-            <zipfileset dir="${langtools}"
-                        includes="dist/lib/javac.jar"
-                        fullpath="jsr308-langtools-${version}/binary/javac.jar"/>
-
-            <zipfileset dir="${langtools}"
-                        includes="dist/lib/javap.jar"
-                        fullpath="jsr308-langtools-${version}/binary/javap.jar"/>
-
-            <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
-                        includes="dist/bin/**" filemode="755"/>
-        </zip>
 
     </target>
 
@@ -401,27 +299,8 @@
 
         <property name="maven.release.dir" value="${maven.artifacts.dir}/release"/>
 
-        <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
-        <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>
-
         <jar destfile="${dest.dir}/jdk8-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
         <jar destfile="${dest.dir}/jdk8-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
-
-    </target>
-
-    <target name="langtools-website-docs" description="Copies the relevant JSR308 Langtools files to the given directory">
-
-        <fail unless="langtools"  message="langtools property is not set!" />
-        <fail unless="dest.dir"   message="dest.dir property is not set!"  />
-
-        <property name="langtools.doc"   value="${langtools}/doc" />
-        <property name="web.root"        value="${dest.dir}/../.." />
-
-        <copy todir="${dest.dir}" file="${langtools.doc}/README-jsr308.html"      />
-        <copy todir="${dest.dir}" file="${langtools.doc}/jsr308-faq.html"      />
-        <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
-        <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
-        <copy tofile="${dest.dir}/index.html" file="${langtools.doc}/jsr308-webpage.html"    />
 
     </target>
 
@@ -449,7 +328,7 @@
 
         <copy file="${cf.docs}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
 
-	<mkdir dir="${dest.dir.manual}" />
+        <mkdir dir="${dest.dir.manual}" />
 
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir.manual}/${manual.name}.html"/>
         <symlink link="${dest.dir.manual}/index.html" resource="${manual.name}.html" />
@@ -481,7 +360,7 @@
         <copy todir="${dest.dir}" file="${checker}/../changelog.txt" />
 
         <copy todir="${dest.dir}/api" flatten="false">
-            <fileset dir="${checker}/api">
+            <fileset dir="${checker}/../docs/api">
                 <include name="**" />
             </fileset>
         </copy>

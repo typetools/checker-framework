@@ -13,7 +13,7 @@ If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it, or select a
 project from the ideas list at
 % \url{https://github.com/typetools/checker-framework/wiki/Ideas}.
-\url{https://checkerframework.org/gsoc-2017-ideas.html}.
+\url{https://rawgit.com/typetools/checker-framework/master/docs/developer/gsoc-ideas.html}.
 \end{sloppypar}
 
 
@@ -177,8 +177,7 @@ Framework.
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
-You can use JDK 8 at run time, or compile
-with a Java 6 or 7 compiler that will ignore the annotations in comments.
+You can use JDK 8 at run time.
 
 \item
 A ``class file for \ldots\ not found'' error, especially for an inner class
@@ -536,8 +535,6 @@ Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
 fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
-Alternately, if you wish to continue using the legacy annotations in
-declaration locations, see Section~\ref{declaration-annotations-for-java7}.
 
 
 \item
@@ -553,15 +550,7 @@ references an enum constant that is only defined in the Java 8 JDK.  The
 problem might be that your code uses a library that references the enum
 constant.  In particular, the type annotations shipped with the Checker
 Framework reference
-\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
-Framework, but still compile and run your code in a Java 6 or 7 JVM, by
-following the instructions in Section~\ref{backward-compatibility}.
-
-If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
-
-\begin{Verbatim}
-  java.lang.ArrayStoreException: sun.reflect.annotation.EnumConstantNotPresentExceptionProxy
-\end{Verbatim}
+\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.
 
 
 \item
@@ -662,54 +651,6 @@ statically-imported enum, is caused by a javac bug, unrelated to the
 Checker Framework.  See
 \url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
 % Also see https://github.com/typetools/checker-framework/issues/1304
-
-
-\subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
-
-An error like this
-
-\begin{Verbatim}
-Unsupported major.minor version 52.0
-\end{Verbatim}
-
-\noindent
-means that you have compiled some files into the Java 8 format (version
-52.0), but you are trying to run them with Java 7 or earlier.
-Likewise, ``Unsupported major.minor version 51.0''
-means that you have compiled some files into the Java 7 format (version
-51.0), but you are trying to run them with Java 6 or earlier.
-Here are ways to solve the problem:
-
-\begin{itemize}
-\item
-Use a newer JVM (run \<java -version> to
-determine the version you are using)
-\item
-Use the Checker Framework to type-check your code, then afterward produce a
-classfile that targets an earlier JVM by supplying arguments such as
-\<javac -source 7 -target 7 ...>.
-\end{itemize}
-
-
-\subsection{Classfile version warning\label{common-problems-classfile-version}}
-
-The following warning is innocuous and you can ignore it, or you can
-suppress it using the \<-Xlint:-classfile> command-line argument to javac:
-
-\begin{myxsmall}
-\begin{Verbatim}
-warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in version 52.0 class files is ignored in version 51.0 class files
-\end{Verbatim}
-\end{myxsmall}
-
-This warning results when you compile a library using the Checker Framework
-compiler, then use a normal Java compiler to compile client code that uses
-the library.
-The Checker Framework compiler puts type annotations even in Java 7
-classfiles, for the benefit of modular type-checking.  The Checker Framework
-compiler reads these annotations in Java 7, and other compilers ignore them
-(but some compilers print a warning that they are ignoring them).
-
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
 
@@ -852,17 +793,23 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls
 
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
-  the following commands (you may need to update the version number (\<2.31>):
+  the following commands (you may need to update the version number \<2.31>):
 
 \begin{Verbatim}
 brew update
-brew install caskroom/cask/brew-cask
 brew install git ant hevea maven mercurial librsvg unzip make
 brew cask install java
 brew cask install mactex
+\end{Verbatim}
+
+Make latex directory and copy hevea.sty file into it.
+
+\begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
+
+Note: If copy permission denied, try sudo.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,

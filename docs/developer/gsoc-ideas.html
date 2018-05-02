@@ -36,8 +36,8 @@
           <li><a href="#case-study-nullness-bazel">Bazel tool</a></li>
           <li><a href="#case-study-nullness-guava">Guava library</a></li>
         </ul></li>
+      <li><a href="#index-errors">Improving error messages</a></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
-      <li><a href="#index-erros">Improving error messages</a></li>
       <li><a href="#compare-other-tools">Comparison to other tools</a></li>
     </ul></li>
   <li><a href="#new-type-systems">New type systems</a>
@@ -1273,8 +1273,10 @@ differences from the real Nullness checker:
   the behavior is just to disable some functionality of existing checkers.
 </p>
 
-<p>It will be interesting to compare this NullnessLight Checker to the
-  regular Nullness Checker:
+<p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
+  Checker form a spetrum from easy-to-use bug detectors to sound
+  verification.  NullnessLight represents a new point in the design space.
+  It will be interesting to compare these checkers:
 </p>
 
 <ul>
@@ -1290,9 +1292,10 @@ differences from the real Nullness checker:
 </ul>
 
 <p>
-  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool may
+  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
   be an implementation of this idea (that is, a fast, but incomplete and
-  unsound, nullness checker).  Does Uber's tool provide users a good
+  unsound, nullness checker).  NullAway doesn't even handle Java Generics.
+  Does Uber's tool provide users a good
   introduction to the ideas that a user can use to transition to a nullness
   type system later?
 </p>
@@ -1396,9 +1399,9 @@ of the Checker Framework.
   and text files.  These programs were written before the
   <a href="http://asm.ow2.org/">ASM</a> bytecode library supported Java 8's
   type annotations.  Therefore, the AFU has its own custom version of ASM
-  that supports type annotations.  Now that ASM 5 has been released and it
+  that supports type annotations.  Now that ASM 6 has been released and it
   supports type annotations, the AFU needs to be slightly changed to use
-  the official ASM 5 library instead of its own custom ASM variant.
+  the official ASM 6 library instead of its own custom ASM variant.
 </p>
 
 <p>
@@ -1548,6 +1551,12 @@ well enough in practice.
 A prototype implementation of this idea already exists, but it needs to be
 evaluated in order to discover its flaws, improve its design, and discover
 how accurate it is in practice.
+</p>
+
+<p>
+A valuable project all by itself would be to compare heavy-weight and
+light-weight type inference this whole-program inference vs. Checker
+Framework Inference vs. Julia, to understand when each one is worth using.
 </p>
 
 

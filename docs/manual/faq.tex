@@ -162,8 +162,7 @@ pseudo-typedef antipattern~\cite{Goetz2006:typedef}.  Even if compatibility
 is not a concern, a code change may introduce bugs, whereas adding
 annotations does not change the run-time behavior.  It is possible to add
 annotations to existing code, including code you do not maintain or cannot
-change.  For code that strictly cannot be changed, you can add
-annotations in comments (see Section~\ref{annotations-in-comments}), or you
+change.  For code that strictly cannot be changed, you
 can write library annotations (see Chapter~\ref{annotating-libraries}).
 
 \item[Broader applicability]
@@ -1381,8 +1380,8 @@ must have the Checker Framework annotations on their classpath, for
 instance by using the Checker Framework Compiler.
 
 Clients who do not wish to perform pluggable type-checking do not need to
-have the Checker Framework annotations (\<checker.jar> or
-\<checker-qual.jar>) in their classpath, either when compiling or running
+have the Checker Framework annotations
+(\<checker-qual.jar>) in their classpath, either when compiling or running
 their programs.
 
 The JVM does not issue a link error if an annotation is not found when a
@@ -1626,11 +1625,6 @@ Java language.
 JSR 308 does not define any type annotations such as \<@NonNull>, and it does
 not specify the semantics of any annotations.  Those tasks are left to
 third-party tools.  The Checker Framework is one such tool.
-
-The Checker Framework makes use of Java SE 8's type annotation syntax, but
-the Checker Framework can
-be used with previous versions of the Java language via the
-annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 
 
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil

@@ -623,7 +623,7 @@ code:
   A potential disadvantage of using the \<castNonNull> method is that your
   code becomes dependent on the Checker Framework at run time as well as at
   compile time:  you need to include \<checker-qual.jar>
-  or \<checker.jar> on your classpath at run time.
+  on your classpath at run time.
   If this is a problem, you can copy the implementation of
   \<castNonNull> into your own code, and possibly renaming it if you do not
   like the name.  Be sure to retain the documentation that indicates that
@@ -749,9 +749,9 @@ corresponding annotation:
   argument type):
   change the argument type to \<@Nullable Object>; for \<remove>, also change
   the return type to \<@Nullable Object>.
-% Emacs code for the argument types:
-% ;;NOT: (tags-query-replace " apply(Object " " apply(/*@Nullable*/ Object ")
-% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(/*@Nullable*/ Object ")
+% Emacs code that adds annotations to the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(@Nullable Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(@Nullable Object ")
 
 \end{itemize}
 
@@ -1201,12 +1201,6 @@ helper routine that is called by constructor.  For example:
 
 
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can
@@ -1830,15 +1824,6 @@ class MyClass {
 \end{Verbatim}
 
 \noindent
-If you are using annotations in comments, you would write:
-
-\begin{Verbatim}
-class MyClass {
-  void initHelper(/*>>>@UnknownInitialization MyClass this,*/ String param1) { ... }
-}
-\end{Verbatim}
-
-\noindent
 You are likely to want to annotate \<initHelper()> with
 \refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
@@ -2036,12 +2021,6 @@ is called by constructor.  For example:
       field3 = new Object();
     }
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>> @Raw MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can

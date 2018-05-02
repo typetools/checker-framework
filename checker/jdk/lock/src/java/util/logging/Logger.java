@@ -35,9 +35,8 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
-// import java.util.function.Supplier;
-// TODO ignore Java 8 annotation for now.
-// import sun.reflect.CallerSensitive;
+import java.util.function.Supplier;
+import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 
 import org.checkerframework.checker.lock.qual.*;
@@ -532,7 +531,7 @@ public class Logger {
      * @param   msgSupplier   A function, which when called, produces the
      *                        desired log message
      */
-//     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a message, with one object parameter.
@@ -597,7 +596,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Throwable thrown, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Throwable thrown, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     //================================================================
     // Start of convenience methods WITH className and methodName
@@ -634,8 +633,8 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
-//                     Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+                    Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class and method,
@@ -715,8 +714,8 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
-//                     Throwable thrown, Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+                    Throwable thrown, Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
 
     //=========================================================================
@@ -1019,7 +1018,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void severe(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void severe(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a WARNING message, which is only to be constructed if the logging
@@ -1034,7 +1033,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void warning(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void warning(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a INFO message, which is only to be constructed if the logging
@@ -1049,7 +1048,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void info(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void info(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a CONFIG message, which is only to be constructed if the logging
@@ -1064,7 +1063,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void config(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void config(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINE message, which is only to be constructed if the logging
@@ -1079,7 +1078,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void fine(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void fine(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINER message, which is only to be constructed if the logging
@@ -1094,7 +1093,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void finer(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void finer(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINEST message, which is only to be constructed if the logging
@@ -1109,7 +1108,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//     public void finest(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+    public void finest(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     //================================================================
     // End of convenience methods

@@ -14,9 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.4.0<!-- /checker-framework-version --></checkerFrameworkVersion>
-     <!-- Uncomment to use the Type Annotations compiler. -->
-     <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>-->
+    <checkerFrameworkVersion><!-- checker-framework-version -->2.5.1<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -34,12 +32,6 @@
       <!-- <artifactId>checker-qual7</artifactId> -->
       <version>${checkerFrameworkVersion}</version>
     </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
-    <!--<dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>compiler</artifactId>
-      <version>${checkerFrameworkVersion}</version>
-    </dependency>-->
     <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
       <groupId>org.checkerframework</groupId>
@@ -77,11 +69,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.6.1</version>
           <configuration>
-              <!-- Change source and target to 1.7 to create .class files that can be run on a Java 7 JVM -->
               <source>1.8</source>
               <target>1.8</target>
-              <!-- Uncomment to use the Type Annotations compiler. -->
-              <!--<fork>true</fork>-->
               <showWarnings>true</showWarnings>
               <annotationProcessorPaths>
                 <path>
@@ -99,8 +88,6 @@
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!--treat Checker Framework errors as warnings-->
                   <!-- <arg>-Awarns</arg> -->
-                  <!-- Uncomment the following line to use the type annotations compiler. -->
-                  <!-- <arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg> -->
                   <arg>-Alint</arg>
               </compilerArgs>
           </configuration>

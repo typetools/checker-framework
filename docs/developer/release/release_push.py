@@ -60,10 +60,8 @@ def copy_htaccess():
     ensure_group_access(LIVE_HTACCESS)
 
 def copy_releases_to_live_site(checker_version, afu_version):
-    """Copy the new releases of jsr308-langtools, the AFU and the Checker
+    """Copy the new releases of the AFU and the Checker
     Framework from the dev site to the live site."""
-    copy_release_dir(JSR308_INTERM_RELEASES_DIR, JSR308_LIVE_RELEASES_DIR, checker_version)
-    promote_release(JSR308_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version)
     promote_release(CHECKER_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
@@ -82,9 +80,8 @@ def copy_releases_to_live_site(checker_version, afu_version):
 
 def ensure_group_access_to_releases():
     """Gives group access to all files and directories in the \"releases\"
-    subdirectories on the live web site for jsr308-langtools, the AFU and the
+    subdirectories on the live web site for the AFU and the
     Checker Framework."""
-    ensure_group_access(JSR308_LIVE_RELEASES_DIR)
     ensure_group_access(AFU_LIVE_RELEASES_DIR)
     ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
 
@@ -110,12 +107,6 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             CHECKER_SOURCE, CHECKER_JAVADOC,
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-qual7.jar, so use the same javadoc jar
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL7_RELEASE_POM, CHECKER_QUAL7,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL7_SOURCE),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
-                            pgp_user, pgp_passphrase)
-
     # checker.jar is a superset of checker-qual.jar, so use the same javadoc jar
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_SOURCE),
@@ -129,11 +120,6 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar"),
-                            pgp_user, pgp_passphrase)
-
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar"),
@@ -145,6 +131,10 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, DATAFLOW_BINARY_RELEASE_POM, DATAFLOW_BINARY,
                             DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
+                            pgp_user, pgp_passphrase)
+
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, TESTLIB_BINARY_RELEASE_POM, TESTLIB_BINARY,
+                            TESTLIB_SOURCE_JAR, TESTLIB_JAVADOC_JAR,
                             pgp_user, pgp_passphrase)
 
     delete_path(mvn_dist)
@@ -178,8 +168,8 @@ def run_link_checker(site, output, additional_param=""):
 
     return output
 
-def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_mode, checker_version_of_broken_link_to_suppress=""):
-    """Checks all links on the given web sites for jsr308-langtools, the AFU
+def check_all_links(afu_website, checker_website, suffix, test_mode, checker_version_of_broken_link_to_suppress=""):
+    """Checks all links on the given web sites for the AFU
     and the Checker Framework. The suffix parameter should be \"dev\" for the
     dev web site and \"live\" for the live web site. test_mode indicates
     whether this script is being run in release or in test mode. The
@@ -187,22 +177,18 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_m
     new Checker Framework version and should only be passed when checking links
     for the dev web site (to prevent reporting of a broken link to the
     not-yet-live zip file for the new release)."""
-    jsr308Check = run_link_checker(jsr308_website, TMP_DIR + "/jsr308." + suffix + ".check")
     afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
     if checker_version_of_broken_link_to_suppress != "":
         additional_param = "--suppress-broken 404:https://checkerframework.org/checker-framework-" + checker_version_of_broken_link_to_suppress + ".zip"
     checkerCheck = run_link_checker(checker_website, TMP_DIR + "/checker-framework." + suffix + ".check", additional_param)
 
-    is_jsr308Check_empty = is_file_empty(jsr308Check)
     is_afuCheck_empty = is_file_empty(afuCheck)
     is_checkerCheck_empty = is_file_empty(checkerCheck)
 
-    errors_reported = not (is_jsr308Check_empty and is_afuCheck_empty and is_checkerCheck_empty)
+    errors_reported = not (is_afuCheck_empty and is_checkerCheck_empty)
     if errors_reported:
         print  "Link checker results can be found at:\n"
-    if not is_jsr308Check_empty:
-        print  "\t" + jsr308Check  + "\n"
     if not is_afuCheck_empty:
         print  "\t" + afuCheck     + "\n"
     if not is_checkerCheck_empty:
@@ -217,9 +203,8 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_m
 
 def push_interm_to_release_repos():
     """Push the release to the GitHub/Bitbucket repositories for
-    jsr308-langtools, the AFU and the Checker Framework. This is an
+    the AFU and the Checker Framework. This is an
     irreversible step."""
-    push_changes_prompt_if_fail(INTERM_JSR308_REPO)
     push_changes_prompt_if_fail(INTERM_ANNO_REPO)
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
 
@@ -250,7 +235,7 @@ def print_usage():
 
 def main(argv):
     """The release_push script is mainly responsible for copying the artifacts
-    (for jsr308-langtools, the AFU and the Checker Framework) from the
+    (for the AFU and the Checker Framework) from the
     development web site to Maven Central and to
     the live site. It also performs link checking on the live site, pushes
     the release to GitHub/Bitbucket repositories, and guides the user to
@@ -291,15 +276,13 @@ def main(argv):
     # The release script checks that the new release version is greater than the previous release version.
 
     print_step("Push Step 1: Checking release versions") # SEMIAUTO
-    dev_jsr308_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "jsr308")
-    live_jsr308_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "jsr308")
     dev_afu_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "annotation-file-utilities")
     live_afu_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
 
     dev_checker_website = HTTP_PATH_TO_DEV_SITE
     live_checker_website = HTTP_PATH_TO_LIVE_SITE
     current_checker_version = current_distribution_by_website(live_checker_website)
-    new_checker_version = current_distribution(CHECKER_FRAMEWORK)
+    new_checker_version = CF_VERSION
     check_release_version(current_checker_version, new_checker_version)
 
     # note, get_afu_version_from_html uses the file path not the web url
@@ -309,7 +292,7 @@ def main(argv):
     new_afu_version = get_afu_version_from_html(dev_afu_website_file)
     check_release_version(current_afu_version, new_afu_version)
 
-    print "Checker Framework/JSR308:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version)
+    print "Checker Framework:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version)
     print "AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version)
 
     # Runs the link the checker on all websites at:
@@ -325,7 +308,7 @@ def main(argv):
     print_step("Push Step 2: Check links on development site") # SEMIAUTO
 
     if auto or prompt_yes_no("Run link checker on DEV site?", True):
-        check_all_links(dev_jsr308_website, dev_afu_website, dev_checker_website, "dev", test_mode, new_checker_version)
+        check_all_links(dev_afu_website, dev_checker_website, "dev", test_mode, new_checker_version)
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
@@ -410,12 +393,6 @@ def main(argv):
                 execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
             execute("sh " + sanity_test_script + " " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
-            # Ensure that the jsr308-langtools javac works with the system-wide java launcher
-            if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
-                execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
-            execute("wget https://checkerframework.org/jsr308/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
-            execute("unzip -uq jsr308-langtools-" + new_checker_version +".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
-            execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
     else:
         print  "Test mode: Skipping javac sanity tests on the live release."
 
@@ -433,7 +410,7 @@ def main(argv):
     print_step("Push Step 7. Check live site links") # SEMIAUTO
     if not test_mode:
         if auto or prompt_yes_no("Run link checker on LIVE site?", True):
-            check_all_links(live_jsr308_website, live_afu_website, live_checker_website, "live", test_mode)
+            check_all_links(live_afu_website, live_checker_website, "live", test_mode)
     else:
         print  "Test mode: Skipping checking of live site links."
 

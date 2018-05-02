@@ -12,10 +12,13 @@ Copyright (c) 2014 University of Washington. All rights reserved.
 # it will be invaluable when trying to understand the scripts that drive the
 # release process
 
-#from release_utils import *
 import os
 import datetime
 import pwd
+import subprocess
+import shlex
+
+
 
 #---------------------------------------------------------------------------------
 # The only methods that should go here are methods that help define global release
@@ -38,6 +41,29 @@ def append_to_PATH(paths):
     current_PATH = os.getenv('PATH')
     new_PATH = current_PATH + ':' + ':'.join(paths)
     os.environ['PATH'] = new_PATH
+
+def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
+  """Execute the given command.
+If capture_output is true, then return the output (and ignore the halt_if_fail argument).
+If capture_output is not true, return the return code of the subprocess call."""
+
+  if working_dir != None:
+    print "Executing in %s: %s" % (working_dir, command_args)
+  else:
+    print "Executing: %s" % (command_args)
+  args = shlex.split(command_args) if isinstance(command_args, str) else command_args
+
+  if capture_output:
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=working_dir)
+    out = process.communicate()[0]
+    process.wait()
+    return out
+
+  else:
+    result = subprocess.call(args, cwd=working_dir)
+    if halt_if_fail and result:
+      raise Exception('Error %s while executing %s' % (result, args))
+    return result
 
 #---------------------------------------------------------------------------------
 
@@ -74,7 +100,6 @@ SCRIPTS_DIR = TMP_DIR + "/checker-framework/docs/developer/release"
 # Location in which we will download files to run sanity checks
 SANITY_DIR = TMP_DIR + "/sanity"
 SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
-SANITY_TEST_JSR308_LANGTOOLS_DIR = SANITY_DIR + "/test-jsr308-langtools"
 
 # The existence of this file indicates that release_build completed.
 # It is deleted at the beginning of a release_build run, and at the
@@ -85,11 +110,9 @@ RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR + "/release-build-completed"
 # When a release is deployed all INTERM repos get pushed to LIVE_REPOS
 INTERM_REPO_ROOT = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
-INTERM_JSR308_REPO = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
 # The central repositories for Checker Framework related projects
-LIVE_JSR308_REPO = "https://bitbucket.org/typetools/jsr308-langtools"
 LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
 LIVE_PLUME_LIB = "https://github.com/mernst/plume-lib"
@@ -99,51 +122,54 @@ LIVE_STUBPARSER = "https://github.com/typetools/stubparser"
 
 OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
-EMAIL_TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
+EMAIL_TO = 'checker-framework-discuss@googlegroups.com'
 
 # Location of the project directories in which we will build the actual projects.
 # When we build these projects are pushed to the INTERM repositories.
 BUILD_DIR = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'docs/developer/release')
+CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
 CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
+CF_VERSION = execute("./gradlew -q version", True, True, TMP_DIR + "/checker-framework").strip()
+
 CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
-CHECKER_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar')
-CHECKER_JAVADOC = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar')
+CHECKER_LIBS_DIR = os.path.join(CHECKER_FRAMEWORK, "checker", "build", "libs")
+CHECKER_SOURCE = os.path.join(CHECKER_LIBS_DIR, 'checker-'+CF_VERSION+'-source.jar')
+CHECKER_JAVADOC = os.path.join(CHECKER_LIBS_DIR, 'checker-'+CF_VERSION+'-javadoc.jar')
 
-CHECKER_QUAL7 = os.path.join(CHECKER_BIN_DIR, 'checker-qual7.jar')
-CHECKER_QUAL7_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-qual7-source.jar')
 CHECKER_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar')
-CHECKER_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-qual-source.jar')
-CHECKER_COMPAT_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual.jar')
-CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual-source.jar')
-CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
+CHECKER_QUAL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual", "build", "libs")
+CHECKER_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-source.jar')
+CHECKER_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-javadoc.jar')
 
-JAVAC_BINARY = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
+CHECKER_COMPAT_QUAL = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'.jar')
+CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'-source.jar')
+CHECKER_COMPAT_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'-javadoc.jar')
+
+JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "build", "libs")
+JAVACUTIL_BINARY = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+".jar")
+JAVACUTIL_SOURCE_JAR = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+"-source.jar")
+JAVACUTIL_JAVADOC_JAR = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+"-javadoc.jar")
+
+DATAFLOW_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "dataflow", "build", "libs")
+DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
+DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
+DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
+
+TESTLIB_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "util", "build", "libs")
+TESTLIB_BINARY = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+".jar")
+TESTLIB_SOURCE_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-source.jar")
+TESTLIB_JAVADOC_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-javadoc.jar")
+
 JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
-
-JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "dist")
-JAVACUTIL_BINARY = os.path.join(JAVACUTIL_DIST_DIR, "javacutil.jar")
-JAVACUTIL_SOURCE_JAR = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-source.jar")
-JAVACUTIL_JAVADOC_JAR = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-javadoc.jar")
-
-DATAFLOW_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "dataflow", "dist")
-DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow.jar")
-DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-source.jar")
-DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-javadoc.jar")
-
-FRAMEWORK_BINARY = os.path.join(CHECKER_FRAMEWORK, 'framework', 'dist', 'framework.jar')
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
 
 JSR308_LANGTOOLS = os.path.join(BUILD_DIR, 'jsr308-langtools')
-JSR308_LT_DOC = os.path.join(JSR308_LANGTOOLS, 'doc')
-JSR308_CHANGELOG = os.path.join(JSR308_LANGTOOLS, 'doc', 'changelog-jsr308.txt')
-JSR308_MAKE = os.path.join(JSR308_LANGTOOLS, 'make')
-JSR308_TAG_PREFIXES = ["jsr308-"]
 
 ANNO_TOOLS = os.path.join(BUILD_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, 'annotation-file-utilities')
@@ -165,42 +191,33 @@ CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_QUAL7_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQual7Pom.xml')
 CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
 
-JAVAC_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml')
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
 MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
 CHECKER_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerReleasePom.xml')
 CHECKER_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml')
-CHECKER_QUAL7_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQual7ReleasePom.xml')
 CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompatQualReleasePom.xml')
-
-JAVAC_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'compilerReleasePom.xml')
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
+TESTLIB_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'testlibReleasePom.xml')
 
-BUILD_REPOS = (CHECKER_FRAMEWORK, JSR308_LANGTOOLS, ANNO_TOOLS)
-INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_JSR308_REPO, INTERM_ANNO_REPO)
-LIVE_REPOS = (LIVE_CHECKER_REPO, LIVE_JSR308_REPO, LIVE_ANNO_REPO)
+BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
+INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)
+LIVE_REPOS = (LIVE_CHECKER_REPO, LIVE_ANNO_REPO)
 
 INTERM_TO_BUILD_REPOS = (
     (INTERM_CHECKER_REPO, CHECKER_FRAMEWORK),
-    (INTERM_JSR308_REPO, JSR308_LANGTOOLS),
     (INTERM_ANNO_REPO, ANNO_TOOLS)
 )
 
 LIVE_TO_INTERM_REPOS = (
     (LIVE_CHECKER_REPO, INTERM_CHECKER_REPO),
-    (LIVE_JSR308_REPO, INTERM_JSR308_REPO),
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO)
 )
 
-JSR308_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "jsr308", "releases")
 AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases")
 CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "releases")
-
-JSR308_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "jsr308")
-JSR308_LIVE_RELEASES_DIR = os.path.join(JSR308_LIVE_SITE, "releases")
 
 AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
 AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
@@ -241,11 +258,9 @@ os.environ['PATH'] = PATH
 TOOLS = ['hevea', 'perl', 'java', 'latex', 'mvn', 'hg', 'git', 'html5validator', EDITOR]
 
 # Script option constants
-LT_OPT = "langtools"
 AFU_OPT = "annotation-file-utilities"
 CF_OPT = "checker-framework"
 ALL_OPT = "all"
 
-PROJECTS_TO_SHORTNAMES = [(LT_OPT, "lt"),
-                          (AFU_OPT, "afu"),
+PROJECTS_TO_SHORTNAMES = [(AFU_OPT, "afu"),
                           (CF_OPT, "cf")]

@@ -126,12 +126,13 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew checkStyle
+  ./gradlew checkStyle checkFormat
 
   # Run error-prone
   ./gradlew runErrorProne
 
   # Documentation
+  ./gradlew allJavadoc
   ./gradlew javadocPrivate
   make -C docs/manual all
 

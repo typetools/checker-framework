@@ -4,12 +4,9 @@
 This chapter describes support for Java generics (also known as
 ``parametric polymorphism'') and polymorphism over type qualifiers.
 
-The Checker Framework currently supports two schemes for polymorphism over
+Section~\ref{qualifier-polymorphism} describes support for polymorphism over
 type qualifiers.
 
-Section~\ref{qualifier-polymorphism} describes the
-original scheme, which uses method-based annotations that are meta-annotated
-with \refqualclass{framework/qual}{PolymorphicQualifier}.
 
 \section{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
@@ -418,7 +415,7 @@ type qualifiers. In such situations, you might need to provide
 explicit method type arguments, for which the syntax is as follows:
 
 \begin{alltt}
-    Collections.</*@MyTypeAnnotation*/ Object>sort(l, c);
+    Collections.<@MyTypeAnnotation Object>sort(l, c);
 \end{alltt}
 
 \noindent
