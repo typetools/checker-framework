@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -374,6 +375,9 @@ public abstract class AbstractType {
     public List<AbstractType> getTypeArguments() {
         if (getJavaType().getKind() != TypeKind.DECLARED) {
             return null;
+        }
+        if (((AnnotatedDeclaredType) getAnnotatedType()).wasRaw()) {
+            return Collections.emptyList();
         }
         List<? extends TypeMirror> javaTypeArgs = ((DeclaredType) getJavaType()).getTypeArguments();
         Iterator<? extends TypeMirror> iter = javaTypeArgs.iterator();
