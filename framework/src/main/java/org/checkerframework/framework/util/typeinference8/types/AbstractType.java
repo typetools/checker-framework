@@ -137,6 +137,9 @@ public abstract class AbstractType {
         }
         TypeMirror asSuperJava =
                 context.types.asSuper((Type) typeJava, ((Type) superType).asElement());
+        if (asSuperJava == null) {
+            return null;
+        }
 
         AnnotatedTypeMirror type = getAnnotatedType();
 
