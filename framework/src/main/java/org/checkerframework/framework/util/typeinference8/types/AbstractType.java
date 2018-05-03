@@ -407,8 +407,10 @@ public abstract class AbstractType {
     /** @return if this type is a wildcard return its lower bound; otherwise, return null. */
     public AbstractType getWildcardLowerBound() {
         if (getJavaType().getKind() == TypeKind.WILDCARD) {
-            TypeMirror javaType = TypesUtils.wildLowerBound(getJavaType(), context.env);
-            return create(((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), javaType);
+            WildcardType wild = (WildcardType) getJavaType();
+            return create(
+                    ((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(),
+                    wild.getSuperBound());
         }
         return null;
     }
