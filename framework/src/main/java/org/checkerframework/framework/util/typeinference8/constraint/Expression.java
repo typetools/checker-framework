@@ -184,7 +184,7 @@ public class Expression extends Constraint {
         Theta map = context.inferenceTypeFactory.createTheta(memRef, compileTimeDecl, context);
         AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
         if (memRef.getTypeArguments() == null
-                && !compileTimeDecl.hasTypeVariables()
+                && compileTimeDecl.hasTypeVariables()
                 && !compileTimeReturn.isProper()) {
             BoundSet b2 =
                     context.inference.createB2MethodRef(
@@ -197,7 +197,7 @@ public class Expression extends Constraint {
         // of applying capture conversion (5.1.10) to the return type of the invocation type
         // (15.12.2.6) of the compile-time declaration. If R' is void, the constraint reduces
         // to false; otherwise, the constraint reduces to <R' -> R>.
-
+        assert map.isEmpty();
         return ReductionResultPair.of(
                 new ConstraintSet(
                         new Typing(

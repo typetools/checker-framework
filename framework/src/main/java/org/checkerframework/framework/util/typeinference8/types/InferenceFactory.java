@@ -467,10 +467,17 @@ public class InferenceFactory {
     }
 
     public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                typeFactory.getFnInterfaceFromTree(memRef);
-        // The type of the single method that is declared by the functional interface.
-        AnnotatedExecutableType functionType = result.second;
+        Object x = TreeUtils.compileTimeDeclarationType(memRef, context.env);
+
+        // Functional interface
+        AnnotatedDeclaredType functionalInterfaceType =
+                (AnnotatedDeclaredType) typeFactory.getAnnotatedType(memRef);
+        ;
+        AbstractType.makeGround(functionalInterfaceType, typeFactory);
+        // Functional method
+        Element fnElement = TreeUtils.findFunction(memRef, context.env);
+        AnnotatedExecutableType functionType =
+                typeFactory.getFunctionType(fnElement, functionalInterfaceType);
 
         AnnotatedTypeMirror enclosingType =
                 typeFactory.getEnclosingTypeOfMemberReference(memRef, functionType);

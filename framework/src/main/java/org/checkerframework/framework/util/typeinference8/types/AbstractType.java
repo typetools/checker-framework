@@ -174,7 +174,7 @@ public abstract class AbstractType {
 
             ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
             AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
-            makeGround(copy);
+            makeGround(copy, typeFactory);
             AnnotatedExecutableType aet = typeFactory.getFunctionType(element, copy);
             AnnotatedTypeMirror returnType = aet.getReturnType();
             if (returnType.getKind() == TypeKind.VOID) {
@@ -200,7 +200,7 @@ public abstract class AbstractType {
 
             ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
             AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
-            makeGround(copy);
+            makeGround(copy, typeFactory);
             AnnotatedExecutableType aet = typeFactory.getFunctionType(element, copy);
             List<AbstractType> params = new ArrayList<>();
             Iterator<? extends TypeMirror> iter = paramsTypeMirror.iterator();
@@ -213,7 +213,7 @@ public abstract class AbstractType {
         }
     }
 
-    void makeGround(AnnotatedDeclaredType type) {
+    public static void makeGround(AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
         Element e = type.getUnderlyingType().asElement();
         AnnotatedDeclaredType decl = typeFactory.getAnnotatedType((TypeElement) e);
         Iterator<AnnotatedTypeMirror> bounds = decl.getTypeArguments().iterator();
