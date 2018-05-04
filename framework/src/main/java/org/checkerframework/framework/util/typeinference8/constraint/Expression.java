@@ -14,6 +14,7 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
@@ -313,8 +314,10 @@ public class Expression extends Constraint {
         // where alpha1, ..., alpham are fresh inference variables.
         Theta map = context.inferenceTypeFactory.createTheta(lambda, t);
         List<Variable> alphas = new ArrayList<>(map.values());
+        AbstractType tprime =
+                InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
 
-        List<AbstractType> qs = context.inferenceTypeFactory.findParametersOfFunctionType(t, map);
+        List<AbstractType> qs = tprime.getFunctionTypeParameterTypes();
         assert qs.size() == ps.size();
 
         // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.

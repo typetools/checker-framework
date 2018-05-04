@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
 public abstract class AbstractType {
@@ -161,6 +162,21 @@ public abstract class AbstractType {
         return create(asSuper, asSuperJava);
     }
 
+    private Pair<AnnotatedExecutableType, ExecutableType> functionType = null;
+
+    Pair<AnnotatedExecutableType, ExecutableType> getFunctionType() {
+        if (functionType == null) {
+            ExecutableType elementType = TypesUtils.findFunctionType(getJavaType(), context.env);
+            ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
+            AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
+            makeGround(copy, typeFactory);
+            AnnotatedExecutableType aet =
+                    AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, copy, element);
+            functionType = Pair.of(aet, elementType);
+        }
+        return functionType;
+    }
+
     /**
      * If this type is a functional interface, then this method returns the return type of the
      * function type of that functional interface. Otherwise, returns null.
@@ -169,16 +185,14 @@ public abstract class AbstractType {
      */
     public AbstractType getFunctionTypeReturnType() {
         if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
-            ExecutableType elementType = TypesUtils.findFunctionType(getJavaType(), context.env);
+            Pair<AnnotatedExecutableType, ExecutableType> pair = getFunctionType();
+            ExecutableType elementType = pair.second;
             TypeMirror returnTypeJava = elementType.getReturnType();
             if (returnTypeJava.getKind() == TypeKind.VOID) {
                 return null;
             }
 
-            ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-            AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
-            makeGround(copy, typeFactory);
-            AnnotatedExecutableType aet = typeFactory.getFunctionType(element, copy);
+            AnnotatedExecutableType aet = pair.first;
             AnnotatedTypeMirror returnType = aet.getReturnType();
             if (returnType.getKind() == TypeKind.VOID) {
                 return null;
@@ -198,16 +212,11 @@ public abstract class AbstractType {
      */
     public List<AbstractType> getFunctionTypeParameterTypes() {
         if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
-            ExecutableType elementType = TypesUtils.findFunctionType(getJavaType(), context.env);
-            List<? extends TypeMirror> paramsTypeMirror = elementType.getParameterTypes();
-
-            ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-            AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
-            makeGround(copy, typeFactory);
-            AnnotatedExecutableType aet = typeFactory.getFunctionType(element, copy);
+            Pair<AnnotatedExecutableType, ExecutableType> pair = getFunctionType();
+            List<? extends TypeMirror> paramsTypeMirror = pair.second.getParameterTypes();
             List<AbstractType> params = new ArrayList<>();
             Iterator<? extends TypeMirror> iter = paramsTypeMirror.iterator();
-            for (AnnotatedTypeMirror param : aet.getParameterTypes()) {
+            for (AnnotatedTypeMirror param : pair.first.getParameterTypes()) {
                 params.add(create(param, iter.next()));
             }
             return params;

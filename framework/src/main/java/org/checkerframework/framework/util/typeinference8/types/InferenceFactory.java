@@ -6,6 +6,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -124,6 +125,49 @@ public class InferenceFactory {
             v.initialBounds(map);
         }
         context.maps.put(invocation, map);
+        return map;
+    }
+
+    public Theta createTheta(
+            MemberReferenceTree memRef, InvocationType methodType, Java8InferenceContext context) {
+        if (context.maps.containsKey(memRef)) {
+            return context.maps.get(memRef);
+        }
+
+        Theta map = new Theta();
+        if (TreeUtils.isDiamondMemberReference(memRef)) {
+            TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
+            TypeElement classEle = (TypeElement) ((Type) type).asElement();
+            DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
+
+            AnnotatedDeclaredType classType =
+                    (AnnotatedDeclaredType)
+                            typeFactory.getAnnotatedType(classTypeMirror.asElement());
+
+            Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
+            for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
+                if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+                    ErrorReporter.errorAbort("Expected type variable, found: %s", typeMirror);
+                    return map;
+                }
+                TypeVariable pl = (TypeVariable) typeMirror;
+                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+                Variable al = new Variable(atv, pl, memRef, context);
+                map.put(pl, al);
+            }
+        }
+        if (memRef.getTypeArguments() == null && methodType.hasTypeVariables()) {
+            Iterator<? extends AnnotatedTypeVariable> iter1 =
+                    methodType.getAnnotatedTypeVariables().iterator();
+            for (TypeVariable pl : methodType.getTypeVariables()) {
+                Variable al = new Variable(iter1.next(), pl, memRef, context);
+                map.put(pl, al);
+            }
+        }
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        context.maps.put(memRef, map);
         return map;
     }
 
@@ -467,34 +511,46 @@ public class InferenceFactory {
     }
 
     public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
-        Object x = TreeUtils.compileTimeDeclarationType(memRef, context.env);
-
-        // Functional interface
-        AnnotatedDeclaredType functionalInterfaceType =
-                (AnnotatedDeclaredType) typeFactory.getAnnotatedType(memRef);
-        ;
-        AbstractType.makeGround(functionalInterfaceType, typeFactory);
-        // Functional method
-        Element fnElement = TreeUtils.findFunction(memRef, context.env);
-        AnnotatedExecutableType functionType =
-                typeFactory.getFunctionType(fnElement, functionalInterfaceType);
-
-        AnnotatedTypeMirror enclosingType =
-                typeFactory.getEnclosingTypeOfMemberReference(memRef, functionType);
-        if (enclosingType.getKind() == TypeKind.DECLARED
-                && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-            final ReferenceKind memRefKind = ((JCMemberReference) memRef).kind;
-            if (memRefKind != ReferenceKind.UNBOUND) {
-                Element typeElement =
-                        ((AnnotatedDeclaredType) enclosingType).getUnderlyingType().asElement();
-                AnnotatedDeclaredType t = typeFactory.getAnnotatedType((TypeElement) typeElement);
-                ((AnnotatedDeclaredType) enclosingType).setTypeArguments(t.getTypeArguments());
-            }
+        // The type of the expression or type use, <expression>::method or <type use>::method.
+        final ExpressionTree qualifierExpression = memRef.getQualifierExpression();
+        final ReferenceKind memRefKind = ((JCMemberReference) memRef).kind;
+        AnnotatedTypeMirror enclosingType;
+        if (memRef.getMode() == ReferenceMode.NEW
+                || memRefKind == ReferenceKind.UNBOUND
+                || memRefKind == ReferenceKind.STATIC) {
+            // The "qualifier expression" is a type tree.
+            enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+        } else {
+            // The "qualifier expression" is an expression.
+            enclosingType = typeFactory.getAnnotatedType(qualifierExpression);
+        }
+        if (enclosingType.getKind() == TypeKind.DECLARED) {
+            AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);
         }
 
+        TypeMirror functionalType = TreeUtils.typeOf(memRef);
+        ExecutableElement func2 = TypesUtils.findFunction(functionalType, context.env);
+        ExecutableType functionType = TypesUtils.findFunctionType(functionalType, context.env);
+
+        // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
+        ExecutableElement compileTimeDeclaration;
+        if (memRef.getMode() == ReferenceMode.NEW) {
+            if (enclosingType.getKind() == TypeKind.DECLARED
+                    && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
+                // This will be inferred later.
+                TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+                enclosingType = typeFactory.getAnnotatedType(typeEle);
+            }
+            compileTimeDeclaration = (ExecutableElement) TreeUtils.elementFromTree(memRef);
+        } else {
+            compileTimeDeclaration =
+                    (ExecutableElement) TreeUtils.findFunction(memRef, context.env);
+        }
+        // The type of the compileTimeDeclaration if it were invoked with a receiver expression
+        // of type {@code type}
         AnnotatedExecutableType compileTimeType =
-                typeFactory.getCompileTimeDeclarationMemberReference(
-                        memRef, functionType, enclosingType);
+                typeFactory.methodFromUse(memRef, compileTimeDeclaration, enclosingType).first;
+
         return new InvocationType(
                 compileTimeType,
                 TreeUtils.compileTimeDeclarationType(memRef, context.env),
@@ -512,15 +568,6 @@ public class InferenceFactory {
                 TypesUtils.findFunctionType(TreeUtils.typeOf(memRef), context.env),
                 memRef,
                 context);
-    }
-
-    public List<AbstractType> findParametersOfFunctionType(AbstractType t, Theta map) {
-        TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
-        ExecutableType funcTypeMirror = TypesUtils.findFunctionType(typeEle.asType(), context.env);
-        AnnotatedExecutableType funcType =
-                typeFactory.getFunctionType(typeEle, (AnnotatedDeclaredType) t.getAnnotatedType());
-        return InferenceType.create(
-                funcType.getParameterTypes(), funcTypeMirror.getParameterTypes(), map, context);
     }
 
     public Pair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
@@ -670,13 +717,9 @@ public class InferenceFactory {
             thrownTypeMirrors =
                     TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env)
                             .getThrownTypes();
-            AnnotatedTypeMirror enclosing =
-                    typeFactory.getEnclosingTypeOfMemberReference(
-                            (MemberReferenceTree) expression, pair.second);
             thrownTypes =
-                    typeFactory
-                            .getCompileTimeDeclarationMemberReference(
-                                    (MemberReferenceTree) expression, pair.second, enclosing)
+                    compileTimeDeclarationType((MemberReferenceTree) expression)
+                            .getAnnotatedType()
                             .getThrownTypes();
         }
 

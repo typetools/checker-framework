@@ -1416,6 +1416,21 @@ public final class TreeUtils {
         }
     }
 
+    public static boolean isDiamondMemberReference(ExpressionTree tree) {
+        if (tree.getKind() != Kind.MEMBER_REFERENCE) {
+            return false;
+        }
+        MemberReferenceTree memRef = (MemberReferenceTree) tree;
+        TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
+        if (memRef.getMode() == ReferenceMode.NEW && type.getKind() == TypeKind.DECLARED) {
+            TypeElement classEle = (TypeElement) ((Type) type).asElement();
+            DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
+            return !classTypeMirror.getTypeArguments().isEmpty()
+                    && ((Type) type).getTypeArguments().isEmpty();
+        }
+        return false;
+    }
+
     /**
      * JLS 15.13.1: "The compile-time declaration of a method reference is the method to which the
      * expression refers."
@@ -1426,15 +1441,24 @@ public final class TreeUtils {
      */
     public static ExecutableType compileTimeDeclarationType(
             MemberReferenceTree memberReferenceTree, ProcessingEnvironment env) {
-        ExecutableType type;
-        if (memberReferenceTree.getMode() == ReferenceMode.NEW) {
-            TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);
-            return TypesUtils.findFunctionType(functionalType, env);
-        }
         // The compile-time declaration is ((JCMemberReference) memberReferenceTree).sym.
         // However, to get the correct type, the declaration has to be modified based on the use.
         ExecutableElement ctDecl =
                 (ExecutableElement) ((JCMemberReference) memberReferenceTree).sym;
+        if (memberReferenceTree.getMode() == ReferenceMode.NEW) {
+            if (isDiamondMemberReference(memberReferenceTree)) {
+                TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);
+                ExecutableType functionType = TypesUtils.findFunctionType(functionalType, env);
+                DeclaredType receiver =
+                        (DeclaredType)
+                                TreeUtils.typeOf(memberReferenceTree.getQualifierExpression());
+                return (ExecutableType) env.getTypeUtils().asMemberOf(receiver, ctDecl);
+            }
+            TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);
+            return TypesUtils.findFunctionType(functionalType, env);
+        }
+
+        ExecutableType type;
         switch (((JCMemberReference) memberReferenceTree).kind) {
             case UNBOUND: // ref is of form: Type :: instance method
                 TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);

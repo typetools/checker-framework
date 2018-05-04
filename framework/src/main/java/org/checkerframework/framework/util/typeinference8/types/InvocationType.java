@@ -56,26 +56,21 @@ public class InvocationType {
 
     public AbstractType getReturnType(Theta map) {
         TypeMirror returnTypeJava;
-        if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
+        AnnotatedTypeMirror returnType;
+
+        if (TreeUtils.isDiamondTree(invocation) || TreeUtils.isDiamondMemberReference(invocation)) {
+            Element e = ElementUtils.enclosingClass(TreeUtils.elementFromUse(invocation));
+            returnTypeJava = e.asType();
+            returnType = typeFactory.getAnnotatedType(e);
+        } else if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
                 || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {
             returnTypeJava = methodType.getReturnType();
-        } else if (TreeUtils.isDiamondTree(invocation)) {
-            returnTypeJava =
-                    ElementUtils.enclosingClass(TreeUtils.elementFromUse(invocation)).asType();
+            returnType = annotatedExecutableType.getReturnType();
         } else {
             returnTypeJava = TreeUtils.typeOf(invocation);
-        }
-
-        AnnotatedTypeMirror returnType;
-        if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
-                || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {
-            returnType = annotatedExecutableType.getReturnType();
-        } else if (TreeUtils.isDiamondTree(invocation)) {
-            Element e = ElementUtils.enclosingClass(TreeUtils.elementFromUse(invocation));
-            returnType = typeFactory.getAnnotatedType(e);
-        } else {
             returnType = typeFactory.getAnnotatedType(invocation);
         }
+
         if (map == null) {
             return new ProperType(returnType, returnTypeJava, context);
         }

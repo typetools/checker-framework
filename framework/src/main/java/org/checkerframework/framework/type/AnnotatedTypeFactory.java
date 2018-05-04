@@ -13,7 +13,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -26,8 +25,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -3461,94 +3458,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return annotatedTypeMirror;
     }
 
-    public AnnotatedExecutableType getCompileTimeDeclarationMemberReference(
-            MemberReferenceTree memberReferenceTree,
-            AnnotatedExecutableType functionType,
-            AnnotatedTypeMirror enclosingType) {
-        // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
-        ExecutableElement compileTimeDeclaration =
-                (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
-        // The type of the compileTimeDeclaration if it were invoked with a receiver expression
-        // of type {@code type}
-        AnnotatedExecutableType invocationType =
-                methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType).first;
-        return invocationType;
-    }
-
-    public AnnotatedTypeMirror getEnclosingTypeOfMemberReference(
-            MemberReferenceTree memberReferenceTree, AnnotatedExecutableType functionType) {
-        // This doesn't get the correct type for a "MyOuter.super" based on the receiver of the
-        // enclosing method.
-        // That is handled separately in method receiver check.
-
-        // The type of the expression or type use, <expression>::method or <type use>::method.
-        final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
-        final ReferenceKind memRefKind = ((JCMemberReference) memberReferenceTree).kind;
-        AnnotatedTypeMirror enclosingType;
-        if (memberReferenceTree.getMode() == ReferenceMode.NEW
-                || memRefKind == ReferenceKind.UNBOUND
-                || memRefKind == ReferenceKind.STATIC) {
-            // The "qualifier expression" is a type tree.
-            enclosingType = getAnnotatedTypeFromTypeTree(qualifierExpression);
-        } else {
-            // The "qualifier expression" is an expression.
-            enclosingType = getAnnotatedType(qualifierExpression);
-        }
-
-        if (enclosingType.getKind() == TypeKind.DECLARED
-                && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-            if (memRefKind == ReferenceKind.UNBOUND) {
-                // The method reference is of the form: Type # instMethod
-                // and Type is a raw type.
-                // If the first parameter of the function type, p1, is a subtype
-                // of type, then type should be p1.  This has the effect of "inferring" the
-                // class type parameter.
-                AnnotatedTypeMirror p1 = functionType.getParameterTypes().get(0);
-                TypeMirror asSuper =
-                        TypesUtils.asSuper(
-                                p1.getUnderlyingType(),
-                                enclosingType.getUnderlyingType(),
-                                getProcessingEnv());
-                if (asSuper != null) {
-                    enclosingType = AnnotatedTypes.asSuper(this, p1, enclosingType);
-                }
-            }
-            // else method reference is something like ArrayList::new
-            // TODO: Use diamond, <>, inference to infer the class type arguments.
-            // for now this case is skipped below in checkMethodReferenceInference.
-        }
-        return enclosingType;
-    }
-
-    /**
-     * Gets the type of the resulting constructor call of a MemberReferenceTree.
-     *
-     * @param memberReferenceTree MemberReferenceTree where the member is a constructor
-     * @param constructorType AnnotatedExecutableType of the declaration of the constructor
-     * @return AnnotatedTypeMirror of the resulting type of the constructor
-     */
-    public AnnotatedTypeMirror getResultingTypeOfConstructorMemberReference(
-            MemberReferenceTree memberReferenceTree, AnnotatedExecutableType constructorType) {
-        assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
-
-        // The return type for constructors should only have explicit annotations from the
-        // constructor.  Recreate some of the logic from TypeFromTree.visitNewClass here.
-
-        // The return type of the constructor will be the type of the expression of the member
-        // reference tree.
-        AnnotatedDeclaredType constructorReturnType =
-                (AnnotatedDeclaredType) fromTypeTree(memberReferenceTree.getQualifierExpression());
-
-        // Keep only explicit annotations and those from @Poly
-        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(
-                this, constructorReturnType, constructorType);
-
-        // Now add back defaulting.
-        addComputedTypeAnnotations(
-                memberReferenceTree.getQualifierExpression(), constructorReturnType);
-        return constructorReturnType;
-    }
-
     /**
      * Returns the functional interface and the function type that this member reference targets.
      *
@@ -3600,24 +3509,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Functional interface
         AnnotatedDeclaredType functionalInterfaceType = getFunctionalInterfaceType(tree);
         makeGroundTargetType(functionalInterfaceType, (DeclaredType) TreeUtils.typeOf(tree));
+
         // Functional method
         Element fnElement = TreeUtils.findFunction(tree, processingEnv);
-        AnnotatedExecutableType functionType = getFunctionType(fnElement, functionalInterfaceType);
-        return Pair.of(functionalInterfaceType, functionType);
-    }
 
-    /**
-     * Returns the annotated function type of the functional interface.
-     *
-     * @param functionalElement
-     * @param functionalInterfaceType
-     * @return
-     */
-    public AnnotatedExecutableType getFunctionType(
-            Element functionalElement, AnnotatedDeclaredType functionalInterfaceType) {
         // Function type
-        return (AnnotatedExecutableType)
-                AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, functionalElement);
+        AnnotatedExecutableType functionType =
+                (AnnotatedExecutableType)
+                        AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
+
+        return Pair.of(functionalInterfaceType, functionType);
     }
 
     /**

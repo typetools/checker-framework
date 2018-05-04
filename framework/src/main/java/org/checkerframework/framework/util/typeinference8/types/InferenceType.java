@@ -55,7 +55,7 @@ public class InferenceType extends AbstractType {
      * to an inference variable, it will return that {@link Variable}. Or if {@code type} contains
      * no type variables that are mapped in an inference variable, a {@link ProperType} is returned.
      */
-    static AbstractType create(
+    public static AbstractType create(
             AnnotatedTypeMirror type,
             TypeMirror typeMirror,
             Theta map,
@@ -80,7 +80,7 @@ public class InferenceType extends AbstractType {
      * variable, it will return that {@link Variable}. Or if {@code type} contains no type variables
      * that are mapped in an inference variable, a {@link ProperType} is returned.
      */
-    static List<AbstractType> create(
+    public static List<AbstractType> create(
             List<AnnotatedTypeMirror> types,
             List<? extends TypeMirror> typeMirrors,
             Theta map,
