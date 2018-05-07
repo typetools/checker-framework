@@ -194,9 +194,7 @@ public class InferenceFactory {
     }
 
     public Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType) {
-        if (context.maps.containsKey(tree)) {
-            return context.maps.get(tree);
-        }
+        // Don't save this theta, because there is also a noncapture theta for this tree.
         DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
         TypeElement ele = TypesUtils.getTypeElement(underlying);
         AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(ele);
@@ -211,7 +209,6 @@ public class InferenceFactory {
         for (Variable v : map.values()) {
             v.initialBounds(map);
         }
-        context.maps.put(tree, map);
         return map;
     }
 
