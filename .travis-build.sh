@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, all-tests, jdk.jar, downstream, misc
+#   all, all-tests, jdk.jar, downstream, misc, inference
 # If it is omitted, this script does everything.
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "inference" ]]; then
   echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc."
   exit 1
 fi
@@ -49,14 +49,6 @@ fi
 
 set -e
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  export CHECKERFRAMEWORK=$ROOT/checker-framework
-  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
-fi
-
-if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   ./gradlew allTests
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
@@ -70,23 +62,12 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
 
-  # checker-framework-inference: 18 minutes
-  set +e
-  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
-  git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
-  if [ "$?" -ne 0 ]; then
-    CFISLUGOWNER=typetools
-  else
-    CFISLUGOWNER=${SLUGOWNER}
-  fi
-  set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-
-  export AFU=`pwd`/../annotation-tools/annotation-file-utilities
-  export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test)
+  # guava: 7 minutes
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  export CHECKERFRAMEWORK=$ROOT/checker-framework
+  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
   # plume-lib-typecheck: 30 minutes
   set +e
@@ -152,4 +133,23 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   # HTML legality
   ./gradlew htmlValidate
 
+fi
+if [[ "${GROUP}" == "inference" || "${GROUP}" == "all" ]]; then
+  # checker-framework-inference: 18 minutes
+  set +e
+  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
+  git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
+  if [ "$?" -ne 0 ]; then
+    CFISLUGOWNER=typetools
+  else
+    CFISLUGOWNER=${SLUGOWNER}
+  fi
+  set -e
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
+  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
+
+  export AFU=`pwd`/../annotation-tools/annotation-file-utilities
+  export PATH=$AFU/scripts:$PATH
+  (cd ../checker-framework-inference && ./gradlew dist test)
 fi
