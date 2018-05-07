@@ -993,15 +993,21 @@ clone and build all projects from their sources.
 \item Download Eclipse from
 the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
 and install it.
-\item Run Eclipse and set the
-workspace to the directory pointed to by \code{\$JSR308}.
+\item Run Eclipse.
 \item Enter the main Eclipse working screen and in the ``File'' menu,
-select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
-Projects into workspace''.
-\item After the ``Import Projects'' window appears, select ``Select
-Root Directory'', and select the directory pointed to by \code{\$JSR308}.
-\item Select all the projects in the folder except for the ones
-related to ``Eclipse'', ``encryption'', ``tutorial'', and ``demo''.
+select ``Import'' $\rightarrow$ ``Gradle'' $\rightarrow$ ``Existing
+Gradle Project''.
+\item After the ``Import Gradle Project'' window appears, select ``Browse'',
+and select the directory pointed to by \code{\$JSR308/checker-framework}.
+\item Select "Finish". The checker-framework project and its subprojects
+should now appear in the "Package Explorer" panel.
+\item Wait until Eclipse finishes building the workspace, then in the
+``Package Explorer'' panel, right click on the \code{util} project and select
+``Properties''.
+\item Select ``Java Build Path'' $\rightarrow$ ``Libraries'' $\rightarrow$
+``Add External JARs'', and add \code{tools.jar} within the \code{lib}
+folder of your JDK 8 installation to the list of library dependencies.
+Once added, select ``Apply and Close''.
 \end{enumerate}
 Eclipse should successfully build all the imported projects.
 If Eclipse reports any errors, ensure you followed the instructions
