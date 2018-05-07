@@ -184,8 +184,9 @@ public class Expression extends Constraint {
         // dependencies between these new variables and the inference variables in T.
         Theta map = context.inferenceTypeFactory.createTheta(memRef, compileTimeDecl, context);
         AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
-        if (memRef.getTypeArguments() == null
-                && compileTimeDecl.hasTypeVariables()
+        if ((TreeUtils.isDiamondMemberReference(memRef)
+                        || (memRef.getTypeArguments() == null
+                                && compileTimeDecl.hasTypeVariables()))
                 && !compileTimeReturn.isProper()) {
             BoundSet b2 =
                     context.inference.createB2MethodRef(

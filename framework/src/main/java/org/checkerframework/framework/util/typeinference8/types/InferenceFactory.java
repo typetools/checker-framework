@@ -515,36 +515,35 @@ public class InferenceFactory {
         final ExpressionTree qualifierExpression = memRef.getQualifierExpression();
         final ReferenceKind memRefKind = ((JCMemberReference) memRef).kind;
         AnnotatedTypeMirror enclosingType;
-        if (memRef.getMode() == ReferenceMode.NEW
-                || memRefKind == ReferenceKind.UNBOUND
-                || memRefKind == ReferenceKind.STATIC) {
+
+        if (memRef.getMode() == ReferenceMode.NEW) {
+            enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+            if (enclosingType.getKind() == TypeKind.DECLARED
+                    && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
+                // The member reference is HashMap::new so the type arguments for HashMap must be inferred.
+                // So use the type declared type.
+                TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+                enclosingType = typeFactory.getAnnotatedType(typeEle);
+            }
+        } else if (memRefKind == ReferenceKind.UNBOUND || memRefKind == ReferenceKind.STATIC) {
             // The "qualifier expression" is a type tree.
             enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
         } else {
             // The "qualifier expression" is an expression.
             enclosingType = typeFactory.getAnnotatedType(qualifierExpression);
         }
-        if (enclosingType.getKind() == TypeKind.DECLARED) {
-            AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);
-        }
-
-        TypeMirror functionalType = TreeUtils.typeOf(memRef);
-        ExecutableElement func2 = TypesUtils.findFunction(functionalType, context.env);
-        ExecutableType functionType = TypesUtils.findFunctionType(functionalType, context.env);
 
         // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
         ExecutableElement compileTimeDeclaration;
         if (memRef.getMode() == ReferenceMode.NEW) {
-            if (enclosingType.getKind() == TypeKind.DECLARED
-                    && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-                // This will be inferred later.
-                TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
-                enclosingType = typeFactory.getAnnotatedType(typeEle);
-            }
             compileTimeDeclaration = (ExecutableElement) TreeUtils.elementFromTree(memRef);
         } else {
-            compileTimeDeclaration =
-                    (ExecutableElement) TreeUtils.findFunction(memRef, context.env);
+            TypeMirror functionalType = TreeUtils.typeOf(memRef);
+            compileTimeDeclaration = TypesUtils.findFunction(functionalType, context.env);
+        }
+
+        if (enclosingType.getKind() == TypeKind.DECLARED) {
+            AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);
         }
         // The type of the compileTimeDeclaration if it were invoked with a receiver expression
         // of type {@code type}
