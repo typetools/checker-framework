@@ -60,7 +60,7 @@ public class CheckedExceptionConstraint extends Constraint {
     /** See JLS 18.2.5 */
     @Override
     public ReductionResult reduce(Java8InferenceContext context) {
-        return context.inferenceTypeFactory.getCheckedExceptionConstraints(expression, map);
+        return context.inferenceTypeFactory.getCheckedExceptionConstraints(expression, T, map);
     }
 
     @Override

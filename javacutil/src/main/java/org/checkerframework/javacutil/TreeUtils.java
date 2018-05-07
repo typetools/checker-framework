@@ -1436,19 +1436,20 @@ public final class TreeUtils {
      * expression refers."
      *
      * @param memberReferenceTree method reference
+     * @param targetType
      * @param env processing environment
      * @return method to which the expression refers
      */
     public static ExecutableType compileTimeDeclarationType(
-            MemberReferenceTree memberReferenceTree, ProcessingEnvironment env) {
+            MemberReferenceTree memberReferenceTree,
+            TypeMirror targetType,
+            ProcessingEnvironment env) {
         // The compile-time declaration is ((JCMemberReference) memberReferenceTree).sym.
         // However, to get the correct type, the declaration has to be modified based on the use.
         ExecutableElement ctDecl =
                 (ExecutableElement) ((JCMemberReference) memberReferenceTree).sym;
         if (memberReferenceTree.getMode() == ReferenceMode.NEW) {
             if (isDiamondMemberReference(memberReferenceTree)) {
-                TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);
-                ExecutableType functionType = TypesUtils.findFunctionType(functionalType, env);
                 DeclaredType receiver =
                         (DeclaredType)
                                 TreeUtils.typeOf(memberReferenceTree.getQualifierExpression());
@@ -1461,8 +1462,7 @@ public final class TreeUtils {
         ExecutableType type;
         switch (((JCMemberReference) memberReferenceTree).kind) {
             case UNBOUND: // ref is of form: Type :: instance method
-                TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);
-                ExecutableType functionType = TypesUtils.findFunctionType(functionalType, env);
+                ExecutableType functionType = TypesUtils.findFunctionType(targetType, env);
                 DeclaredType receiver = (DeclaredType) functionType.getParameterTypes().get(0);
                 type = (ExecutableType) env.getTypeUtils().asMemberOf(receiver, ctDecl);
                 break;

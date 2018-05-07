@@ -510,7 +510,8 @@ public class InferenceFactory {
         return targetType;
     }
 
-    public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
+    public InvocationType compileTimeDeclarationType(
+            MemberReferenceTree memRef, AbstractType targetType) {
         // The type of the expression or type use, <expression>::method or <type use>::method.
         final ExpressionTree qualifierExpression = memRef.getQualifierExpression();
         final ReferenceKind memRefKind = ((JCMemberReference) memRef).kind;
@@ -525,7 +526,16 @@ public class InferenceFactory {
                 TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
                 enclosingType = typeFactory.getAnnotatedType(typeEle);
             }
-        } else if (memRefKind == ReferenceKind.UNBOUND || memRefKind == ReferenceKind.STATIC) {
+        } else if (memRefKind == ReferenceKind.UNBOUND) {
+            enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+            if (enclosingType.getKind() == TypeKind.DECLARED
+                    && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
+                List<AbstractType> params = targetType.getFunctionTypeParameterTypes();
+                if (params.size() > 0) {
+                    enclosingType = params.get(0).getAnnotatedType();
+                }
+            }
+        } else if (memRefKind == ReferenceKind.STATIC) {
             // The "qualifier expression" is a type tree.
             enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
         } else {
@@ -547,13 +557,13 @@ public class InferenceFactory {
 
         return new InvocationType(
                 compileTimeType,
-                TreeUtils.compileTimeDeclarationType(memRef, context.env),
+                TreeUtils.compileTimeDeclarationType(memRef, targetType.getJavaType(), context.env),
                 memRef,
                 context);
     }
 
-    public InvocationType findFunctionType(MemberReferenceTree memRef) {
-        InvocationType other = compileTimeDeclarationType(memRef);
+    public InvocationType findFunctionType(MemberReferenceTree memRef, AbstractType targetType) {
+        InvocationType other = compileTimeDeclarationType(memRef, targetType);
 
         // The type of the single method that is declared by the functional interface.
         AnnotatedExecutableType functionType = other.getAnnotatedType();
@@ -674,7 +684,8 @@ public class InferenceFactory {
         return new ProperType(runtimeEx, context.runtimeEx, context);
     }
 
-    public ConstraintSet getCheckedExceptionConstraints(ExpressionTree expression, Theta map) {
+    public ConstraintSet getCheckedExceptionConstraints(
+            ExpressionTree expression, AbstractType targetType, Theta map) {
         ConstraintSet constraintSet = new ConstraintSet();
         ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
         List<Variable> es = new ArrayList<>();
@@ -712,7 +723,7 @@ public class InferenceFactory {
                     TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env)
                             .getThrownTypes();
             thrownTypes =
-                    compileTimeDeclarationType((MemberReferenceTree) expression)
+                    compileTimeDeclarationType((MemberReferenceTree) expression, targetType)
                             .getAnnotatedType()
                             .getThrownTypes();
         }
