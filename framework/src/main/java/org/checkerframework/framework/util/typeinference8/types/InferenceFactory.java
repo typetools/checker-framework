@@ -172,6 +172,9 @@ public class InferenceFactory {
     }
 
     public Theta createTheta(LambdaExpressionTree lambda, AbstractType t) {
+        if (context.maps.containsKey(lambda)) {
+            return context.maps.get(lambda);
+        }
         TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
         AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
 
@@ -183,10 +186,17 @@ public class InferenceFactory {
             Variable ai = new Variable(atv, typeVar, lambda, context);
             map.put(typeVar, ai);
         }
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        context.maps.put(lambda, map);
         return map;
     }
 
     public Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType) {
+        if (context.maps.containsKey(tree)) {
+            return context.maps.get(tree);
+        }
         DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
         TypeElement ele = TypesUtils.getTypeElement(underlying);
         AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(ele);
@@ -198,6 +208,10 @@ public class InferenceFactory {
             CaptureVariable al = new CaptureVariable(atv, pl, tree, context);
             map.put(pl, al);
         }
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        context.maps.put(tree, map);
         return map;
     }
 
