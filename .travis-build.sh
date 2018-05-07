@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, all-tests, jdk.jar, downstream, misc
+#   all, all-tests, jdk.jar, downstream, misc, plume-lib
 # If it is omitted, this script does everything.
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
   echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc."
   exit 1
 fi
@@ -48,12 +48,23 @@ fi
 # subsequent command to build it except to test building it.
 
 set -e
-if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  export CHECKERFRAMEWORK=$ROOT/checker-framework
-  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
+if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
+  # plume-lib-typecheck: 30 minutes
+  set +e
+  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-"
+  git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-
+  if [ "$?" -ne 0 ]; then
+    PLSLUGOWNER=mernst
+  else
+    PLSLUGOWNER=${SLUGOWNER}
+  fi
+  set -e
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
+  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git) || (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
+
+  export CHECKERFRAMEWORK=`pwd`
+  (cd ../plume-lib/java && make check-types)
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
@@ -88,22 +99,11 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && ./gradlew dist test)
 
-  # plume-lib-typecheck: 30 minutes
-  set +e
-  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-"
-  git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-
-  if [ "$?" -ne 0 ]; then
-    PLSLUGOWNER=mernst
-  else
-    PLSLUGOWNER=${SLUGOWNER}
-  fi
-  set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
-  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git) || (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
-
-  export CHECKERFRAMEWORK=`pwd`
-  (cd ../plume-lib/java && make check-types)
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  export CHECKERFRAMEWORK=$ROOT/checker-framework
+  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
