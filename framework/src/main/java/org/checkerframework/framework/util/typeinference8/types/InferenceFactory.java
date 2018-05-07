@@ -534,13 +534,8 @@ public class InferenceFactory {
         }
 
         // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
-        ExecutableElement compileTimeDeclaration;
-        if (memRef.getMode() == ReferenceMode.NEW) {
-            compileTimeDeclaration = (ExecutableElement) TreeUtils.elementFromTree(memRef);
-        } else {
-            TypeMirror functionalType = TreeUtils.typeOf(memRef);
-            compileTimeDeclaration = TypesUtils.findFunction(functionalType, context.env);
-        }
+        ExecutableElement compileTimeDeclaration =
+                (ExecutableElement) TreeUtils.elementFromTree(memRef);
 
         if (enclosingType.getKind() == TypeKind.DECLARED) {
             AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);
