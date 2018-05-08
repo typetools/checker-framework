@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference8;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
@@ -136,6 +137,14 @@ public class CFInvocationTypeInference extends InvocationTypeInference {
         if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
             return false;
         }
+        if (path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+            MethodInvocationTree tree = (MethodInvocationTree) path.getLeaf();
+            ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+            if (TreeUtils.isPolyExpression(receiver)) {
+                return false;
+            }
+        }
+
         if (assignmentContext == null) {
             return true;
         }
