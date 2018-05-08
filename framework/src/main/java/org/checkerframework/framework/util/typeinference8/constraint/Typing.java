@@ -113,11 +113,7 @@ public class Typing extends Constraint {
      */
     private ReductionResult reduceSubtyping(Java8InferenceContext context) {
         if (S.isProper() && T.isProper()) {
-            if (((ProperType) S).isSubType((ProperType) T)) {
-                return ConstraintSet.TRUE;
-            } else {
-                return ConstraintSet.FALSE;
-            }
+            return ((ProperType) S).isSubType((ProperType) T);
         } else if (S.getTypeKind() == TypeKind.NULL) {
             return ConstraintSet.TRUE;
         } else if (T.getTypeKind() == TypeKind.NULL) {
@@ -280,13 +276,11 @@ public class Typing extends Constraint {
         if (T.isProper() && S.isProper()) {
             // the constraint reduces to true if S is compatible in a loose invocation context
             // with T (5.3), and false otherwise.
-            if (((ProperType) S).isSubTypeUnchecked((ProperType) T)) {
+            ReductionResult r = ((ProperType) S).isSubTypeUnchecked((ProperType) T);
+            if (ConstraintSet.TRUE == r) {
                 return ConstraintSet.TRUE;
-            } else if (((ProperType) S).isAssignable((ProperType) T)) {
-                return ReductionResult.UNCHECKED_CONVERSION;
-            } else {
-                return ConstraintSet.FALSE;
             }
+            return (((ProperType) S).isAssignable((ProperType) T));
         } else if (S.isProper() && S.getTypeKind().isPrimitive()) {
             return new Typing(((ProperType) S).boxType(), T, Kind.TYPE_COMPATIBILITY);
         } else if (T.isProper() && T.getTypeKind().isPrimitive()) {

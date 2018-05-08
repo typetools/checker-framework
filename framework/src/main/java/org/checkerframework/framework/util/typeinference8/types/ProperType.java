@@ -12,6 +12,9 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
+import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -71,42 +74,54 @@ public class ProperType extends AbstractType {
         return this;
     }
 
-    public boolean isSubType(ProperType superType) {
+    public ReductionResult isSubType(ProperType superType) {
         TypeMirror subType = getJavaType();
         TypeMirror superJavaType = superType.getJavaType();
 
         if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
             AnnotatedTypeMirror superATM = superType.getAnnotatedType();
             AnnotatedTypeMirror subATM = this.getAnnotatedType();
-            return typeFactory.getTypeHierarchy().isSubtype(subATM, superATM);
+            if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+                return ConstraintSet.TRUE;
+            } else {
+                return new FalseBound(true);
+            }
         } else {
-            return false;
+            return new FalseBound(false);
         }
     }
 
-    public boolean isSubTypeUnchecked(ProperType superType) {
+    public ReductionResult isSubTypeUnchecked(ProperType superType) {
         TypeMirror subType = getJavaType();
         TypeMirror superJavaType = superType.getJavaType();
 
         if (context.types.isSubtypeUnchecked((Type) subType, (Type) superJavaType)) {
             AnnotatedTypeMirror superATM = superType.getAnnotatedType();
             AnnotatedTypeMirror subATM = this.getAnnotatedType();
-            return typeFactory.getTypeHierarchy().isSubtype(subATM, superATM);
+            if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+                return ConstraintSet.TRUE;
+            } else {
+                return new FalseBound(true);
+            }
         } else {
-            return false;
+            return new FalseBound(false);
         }
     }
 
-    public boolean isAssignable(ProperType superType) {
+    public ReductionResult isAssignable(ProperType superType) {
         TypeMirror subType = getJavaType();
         TypeMirror superJavaType = superType.getJavaType();
 
         if (context.types.isAssignable((Type) subType, (Type) superJavaType)) {
             AnnotatedTypeMirror superATM = superType.getAnnotatedType();
             AnnotatedTypeMirror subATM = this.getAnnotatedType();
-            return typeFactory.getTypeHierarchy().isSubtype(subATM, superATM);
+            if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+                return ConstraintSet.TRUE;
+            } else {
+                return new FalseBound(true);
+            }
         } else {
-            return false;
+            return new FalseBound(false);
         }
     }
 

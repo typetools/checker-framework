@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
+import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -201,7 +202,7 @@ public class ConstraintSet implements ReductionResult {
             if (result instanceof ReductionResultPair) {
                 boundSet.merge(((ReductionResultPair) result).boundSet);
                 if (boundSet.containsFalse()) {
-                    throw new FalseBoundException(constraint);
+                    throw new FalseBoundException(constraint, (FalseBound) result);
                 }
                 this.addAll(((ReductionResultPair) result).constraintSet);
             } else if (result instanceof Constraint) {
@@ -211,10 +212,12 @@ public class ConstraintSet implements ReductionResult {
             } else if (result instanceof BoundSet) {
                 boundSet.merge((BoundSet) result);
                 if (boundSet.containsFalse()) {
-                    throw new FalseBoundException(constraint);
+                    throw new FalseBoundException(constraint, (FalseBound) result);
                 }
-            } else if (result == null || result == ConstraintSet.FALSE) {
-                throw new FalseBoundException(constraint);
+            } else if (result == null
+                    || result == ConstraintSet.FALSE
+                    || result instanceof FalseBound) {
+                throw new FalseBoundException(constraint, (FalseBound) result);
             } else if (result == UNCHECKED_CONVERSION) {
                 boundSet.setUncheckedConversion(true);
             } else if (result == ConstraintSet.TRUE) {

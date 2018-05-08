@@ -33,6 +33,7 @@ import org.checkerframework.framework.util.typeinference8.types.InferenceFactory
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
@@ -82,6 +83,14 @@ public class CFInvocationTypeInference extends InvocationTypeInference {
         try {
             InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
             result = super.infer(invocation, invocationType);
+        } catch (FalseBoundException ex) {
+            if (ex.isAnnotatedTypeFailed()) {
+                checker.report(Result.failure("type.inference.failed"), invocation);
+            } else {
+                // Catch any exception so all crashes in a compilation unit are reported.
+                logException(invocation, ex);
+            }
+            return null;
         } catch (Exception ex) {
             // Catch any exception so all crashes in a compilation unit are reported.
             logException(invocation, ex);
