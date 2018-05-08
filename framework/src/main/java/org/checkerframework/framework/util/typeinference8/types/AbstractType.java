@@ -147,14 +147,10 @@ public abstract class AbstractType {
         if (type.getKind() == TypeKind.WILDCARD) {
             type = ((AnnotatedWildcardType) type).getExtendsBound();
         }
-        AnnotatedTypeMirror asSuper;
-        if (TypesUtils.isErasedSubtype(type.getUnderlyingType(), superType, context.modelTypes)) {
-            AnnotatedTypeMirror superAnnotatedType =
-                    AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
-            asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
-        } else {
-            return null;
-        }
+
+        AnnotatedTypeMirror superAnnotatedType =
+                AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
+        AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
 
         if (TypesUtils.isCaptured(type.getUnderlyingType())) {
             return create(asSuper, asSuperJava).capture();
