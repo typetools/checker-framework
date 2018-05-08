@@ -13,8 +13,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jsr308-langtools"/>
-	<classpathentry kind="lib" path="/home/jeff/.gradle/caches/modules-2/files-2.1/junit/junit/4.12/2973d150c0dc1fefe998f834810d68f278ea58ec/junit-4.12.jar" sourcepath="/home/jeff/.gradle/caches/modules-2/files-2.1/junit/junit/4.12/a6c32b40bf3d76eca54e3c601e5d1470c86fcdfa/junit-4.12-sources.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/javacutil"/>
+	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
+	<classpathentry kind="src" path="/javacutil"/>
+	<classpathentry kind="src" path="/jsr308-langtools"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>

@@ -19,13 +19,13 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/scene-lib"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/dataflow"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jsr308-langtools"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/javacutil"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/stubparser"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/util"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/checker-qual"/>
-	<classpathentry kind="lib" path="/scene-lib/junit.jar"/>
+	<classpathentry kind="lib" path="/util/lib/junit-4.12.jar"/>
+	<classpathentry kind="src" path="/checker-qual"/>
+	<classpathentry kind="src" path="/dataflow"/>
+	<classpathentry kind="src" path="/javacutil"/>
+	<classpathentry kind="src" path="/jsr308-langtools"/>
+	<classpathentry kind="src" path="/scene-lib"/>
+	<classpathentry kind="src" path="/stubparser"/>
+	<classpathentry kind="src" path="/util"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
