@@ -1,3 +1,4 @@
+@SuppressWarnings("determinism")
 class GenericTest11full {
     public void m(BeanManager beanManager) {
         Bean<?> bean = beanManager.getBeans(GenericTest11full.class).iterator().next();

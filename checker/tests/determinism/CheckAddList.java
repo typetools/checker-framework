@@ -21,6 +21,7 @@ public class CheckAddList {
     void addToList3(
             @Det ArrayList<@Det ArrayList<@Det Integer>> lst,
             @OrderNonDet ArrayList<@Det ArrayList<Integer>> i) {
+        // :: error: (argument.type.incompatible)
         lst.addAll(i);
     }
 

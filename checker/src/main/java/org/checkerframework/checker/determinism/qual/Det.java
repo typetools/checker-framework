@@ -20,6 +20,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({OrderNonDet.class})
-@DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
+@DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER})
 @DefaultQualifierInHierarchy
 public @interface Det {}

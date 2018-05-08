@@ -3,9 +3,7 @@ package org.checkerframework.checker.determinism;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ReturnTree;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -21,16 +19,23 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET, POLYDET_USE;
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
+
     //    public final ExecutableElement polyValueElement;
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+                super(checker);
 
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder.setValue("value", "use");
@@ -64,7 +69,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new DeterminismTreeAnnotator(this), super.createTreeAnnotator());
     }
 
-    private static class DeterminismTreeAnnotator extends TreeAnnotator {
+    private class DeterminismTreeAnnotator extends TreeAnnotator {
 
         public DeterminismTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -72,14 +77,89 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitReturn(ReturnTree node, AnnotatedTypeMirror p) {
-            System.out.println("Correct return anno: " + node);
             return super.visitReturn(node, p);
         }
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
+            if(node == null)
+                return super.visitMethodInvocation(node, p);
+            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
+            if(receiver == null)
+                return super.visitMethodInvocation(node, p);
+//            boolean isCollection = isCollection(receiver.getUnderlyingType());
+//            if(isCollection){
+//                System.out.println("Method name: " + TreeUtils.getMethodName(node));
+//            }
             return super.visitMethodInvocation(node, p);
         }
+    }
+
+    public boolean isCollection(TypeMirror tm){
+        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
+        //List and subclasses
+        TypeMirror ListTypeMirror =
+                TypesUtils.typeFromClass(
+                        List.class, types, processingEnv.getElementUtils());
+        TypeMirror ArrayListTypeMirror =
+                TypesUtils.typeFromClass(
+                        ArrayList.class, types, processingEnv.getElementUtils());
+        TypeMirror LinkedListTypeMirror =
+                TypesUtils.typeFromClass(
+                        LinkedList.class, types, processingEnv.getElementUtils());
+        TypeMirror AbstractListTypeMirror =
+                TypesUtils.typeFromClass(
+                        AbstractList.class, types, processingEnv.getElementUtils());
+        TypeMirror AbstractSequentialListTypeMirror =
+                TypesUtils.typeFromClass(
+                        AbstractSequentialList.class,
+                        types,
+                        processingEnv.getElementUtils());
+        TypeMirror ArraysTypeMirror =
+                TypesUtils.typeFromClass(
+                        Arrays.class, types, processingEnv.getElementUtils());
+        //Set and subclasses
+        TypeMirror SetTypeMirror =
+                TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
+        TypeMirror AbstractSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        AbstractSet.class, types, processingEnv.getElementUtils());
+        TypeMirror EnumSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        EnumSet.class, types, processingEnv.getElementUtils());
+        TypeMirror HashSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        HashSet.class, types, processingEnv.getElementUtils());
+        TypeMirror LinkedHashSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        LinkedHashSet.class, types, processingEnv.getElementUtils());
+        TypeMirror TreeSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        TreeSet.class, types, processingEnv.getElementUtils());
+        TypeMirror SortedSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        SortedSet.class, types, processingEnv.getElementUtils());
+        TypeMirror NavigableSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        NavigableSet.class, types, processingEnv.getElementUtils());
+
+        if (types.isSubtype(tm, ListTypeMirror)
+                || types.isSubtype(tm, SetTypeMirror)
+                || types.isSubtype(tm, ArrayListTypeMirror)
+                || types.isSubtype(tm, HashSetTypeMirror)
+                || types.isSubtype(tm, AbstractListTypeMirror)
+                || types.isSubtype(tm, AbstractSequentialListTypeMirror)
+                || types.isSubtype(tm, LinkedListTypeMirror)
+                || types.isSubtype(tm, ArraysTypeMirror)
+                || types.isSubtype(tm, AbstractSetTypeMirror)
+                || types.isSubtype(tm, EnumSetTypeMirror)
+                || types.isSubtype(tm, LinkedHashSetTypeMirror)
+                || types.isSubtype(tm, TreeSetTypeMirror)
+                || types.isSubtype(tm, SortedSetTypeMirror)
+                || types.isSubtype(tm, NavigableSetTypeMirror)) {
+            return true;
+        }
+        return false;
     }
 
     @Override

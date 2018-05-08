@@ -168,7 +168,7 @@ public interface List<E> extends Collection<E> {
      *         sequence
      * @see Arrays#asList(Object[])
      */
-    @PolyDet("up") Object[] toArray(@PolyDet List<E> this);
+    @PolyDet("up") Object @PolyDet("up")[] toArray(@PolyDet List<E> this);
 
     /**
      * Returns an array containing all of the elements in this list in
@@ -209,7 +209,7 @@ public interface List<E> extends Collection<E> {
      *         this list
      * @throws NullPointerException if the specified array is null
      */
-    <T> T[] toArray(T[] a);
+    <T> @PolyDet("up") T @PolyDet("up") [] toArray(@PolyDet List<E> this, T[] a);
 
 
     // Modification Operations
@@ -305,7 +305,7 @@ public interface List<E> extends Collection<E> {
      *         specified collection prevents it from being added to this list
      * @see #add(Object)
      */
-    boolean addAll(List<E> this, Collection<? extends E> c);
+    @PolyDet("down") boolean addAll(@PolyDet List<E> this, @PolyDet("use") Collection<? extends E> c);
 
     /**
      * Inserts all of the elements in the specified collection into this
@@ -334,7 +334,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
-    boolean addAll(int index, Collection<? extends E> c);
+    @PolyDet("down") boolean addAll(@PolyDet List<E> this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends E> c);
 
     /**
      * Removes from this list all of its elements that are contained in the
@@ -354,7 +354,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    @PolyDet("down") boolean removeAll(@PolyDet List<E> this, @PolyDet Collection<?> c);
+    @PolyDet("down") boolean removeAll(@PolyDet List<E> this, @PolyDet("use") Collection<?> c);
 
     /**
      * Retains only the elements in this list that are contained in the
@@ -376,7 +376,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    @PolyDet("down") boolean retainAll(@PolyDet List<E> this, @PolyDet Collection<?> c);
+    @PolyDet("down") boolean retainAll(@PolyDet List<E> this, @PolyDet("use") Collection<?> c);
 
     /**
      * Replaces each element of this list with the result of applying the
@@ -491,7 +491,7 @@ public interface List<E> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>clear</tt> operation
      *         is not supported by this list
      */
-    void clear();
+    void clear(@NonDet List<E> this);
 
 
     // Comparison and hashing
@@ -510,7 +510,7 @@ public interface List<E> extends Collection<E> {
      * @param o the object to be compared for equality with this list
      * @return <tt>true</tt> if the specified object is equal to this list
      */
-    boolean equals(Object o);
+    @PolyDet("up") boolean equals(@PolyDet List<E> this, @PolyDet Object o);
 
     /**
      * Returns the hash code value for this list.  The hash code of a list
@@ -530,7 +530,7 @@ public interface List<E> extends Collection<E> {
      * @see #equals(Object)
      */
 
-    @NonDet int hashCode(@PolyDet List<E> this);
+    @NonDet int hashCode(@NonDet List<E> this);
 
     // Positional Access Operations
 
@@ -562,7 +562,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E set(List<E> this, int index, E element);
+    @PolyDet("up") E set(@PolyDet List<E> this, @PolyDet("use") int index, E element);
 
     /**
      * Inserts the specified element at the specified position in this list
@@ -598,7 +598,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E remove(int index);
+    @PolyDet("up") E remove(@PolyDet List<E> this, @PolyDet("use") int index);
 
 
     // Search Operations
@@ -639,7 +639,7 @@ public interface List<E> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    int lastIndexOf(Object o);
+    @PolyDet("up") int lastIndexOf(@PolyDet List<E> this, @PolyDet Object o);
 
 
     // List Iterators
@@ -668,7 +668,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         ({@code index < 0 || index > size()})
      */
-    ListIterator<E> listIterator(int index);
+    @PolyDet ListIterator<E> listIterator(@PolyDet List<E> this, @PolyDet int index);
 
     // View
 
@@ -729,7 +729,7 @@ public interface List<E> extends Collection<E> {
      * @since 1.8
      */
     @Override
-    default Spliterator<E> spliterator() {
+    default @PolyDet Spliterator<E> spliterator(@PolyDet List<E> this) {
         return Spliterators.spliterator(this, Spliterator.ORDERED);
     }
 }
