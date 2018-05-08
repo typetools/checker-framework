@@ -5,7 +5,6 @@ import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.*;
@@ -13,10 +12,8 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
     public DeterminismVisitor(BaseTypeChecker checker) {
@@ -26,8 +23,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     private static final @CompilerMessageKey String INVALID_ANNOTATION = "invalid.annotation";
     private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
             "invalid.parameter.type";
-
-
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
@@ -93,74 +88,74 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return false;
     }
 
-//    public static boolean isCollection(AnnotatedTypeMirror atm, ProcessingEnvironment processingEnvironment) {
-//        javax.lang.model.util.Types types = processingEnvironment.getTypeUtils();
-//        //List and subclasses
-//        TypeMirror ListTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        List.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror ArrayListTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        ArrayList.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror LinkedListTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        LinkedList.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror AbstractListTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        AbstractList.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror AbstractSequentialListTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        AbstractSequentialList.class,
-//                        types,
-//                        processingEnvironment.getElementUtils());
-//        TypeMirror ArraysTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        Arrays.class, types, processingEnvironment.getElementUtils());
-//        //Set and subclasses
-//        TypeMirror SetTypeMirror =
-//                TypesUtils.typeFromClass(Set.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror AbstractSetTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        AbstractSet.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror EnumSetTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        EnumSet.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror HashSetTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        HashSet.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror LinkedHashSetTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        LinkedHashSet.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror TreeSetTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        TreeSet.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror SortedSetTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        SortedSet.class, types, processingEnvironment.getElementUtils());
-//        TypeMirror NavigableSetTypeMirror =
-//                TypesUtils.typeFromClass(
-//                        NavigableSet.class, types, processingEnvironment.getElementUtils());
-//
-//        if (types.isSubtype(tm, ListTypeMirror)
-//                || types.isSubtype(tm, SetTypeMirror)
-//                || types.isSubtype(tm, ArrayListTypeMirror)
-//                || types.isSubtype(tm, HashSetTypeMirror)
-//                || types.isSubtype(tm, AbstractListTypeMirror)
-//                || types.isSubtype(tm, AbstractSequentialListTypeMirror)
-//                || types.isSubtype(tm, LinkedListTypeMirror)
-//                || types.isSubtype(tm, ArraysTypeMirror)
-//                || types.isSubtype(tm, AbstractSetTypeMirror)
-//                || types.isSubtype(tm, EnumSetTypeMirror)
-//                || types.isSubtype(tm, LinkedHashSetTypeMirror)
-//                || types.isSubtype(tm, TreeSetTypeMirror)
-//                || types.isSubtype(tm, SortedSetTypeMirror)
-//                || types.isSubtype(tm, NavigableSetTypeMirror)) {
-//            System.out.println("is it really a collection??? Or is it not??? " + tm + " => true");
-//            return true;
-//// }
-//        System.out.println("is it really a collection??? Or is it not??? " + tm + " => false");
-//        return false;
-//    }
+    //    public static boolean isCollection(AnnotatedTypeMirror atm, ProcessingEnvironment processingEnvironment) {
+    //        javax.lang.model.util.Types types = processingEnvironment.getTypeUtils();
+    //        //List and subclasses
+    //        TypeMirror ListTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        List.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror ArrayListTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        ArrayList.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror LinkedListTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        LinkedList.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror AbstractListTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        AbstractList.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror AbstractSequentialListTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        AbstractSequentialList.class,
+    //                        types,
+    //                        processingEnvironment.getElementUtils());
+    //        TypeMirror ArraysTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        Arrays.class, types, processingEnvironment.getElementUtils());
+    //        //Set and subclasses
+    //        TypeMirror SetTypeMirror =
+    //                TypesUtils.typeFromClass(Set.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror AbstractSetTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        AbstractSet.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror EnumSetTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        EnumSet.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror HashSetTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        HashSet.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror LinkedHashSetTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        LinkedHashSet.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror TreeSetTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        TreeSet.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror SortedSetTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        SortedSet.class, types, processingEnvironment.getElementUtils());
+    //        TypeMirror NavigableSetTypeMirror =
+    //                TypesUtils.typeFromClass(
+    //                        NavigableSet.class, types, processingEnvironment.getElementUtils());
+    //
+    //        if (types.isSubtype(tm, ListTypeMirror)
+    //                || types.isSubtype(tm, SetTypeMirror)
+    //                || types.isSubtype(tm, ArrayListTypeMirror)
+    //                || types.isSubtype(tm, HashSetTypeMirror)
+    //                || types.isSubtype(tm, AbstractListTypeMirror)
+    //                || types.isSubtype(tm, AbstractSequentialListTypeMirror)
+    //                || types.isSubtype(tm, LinkedListTypeMirror)
+    //                || types.isSubtype(tm, ArraysTypeMirror)
+    //                || types.isSubtype(tm, AbstractSetTypeMirror)
+    //                || types.isSubtype(tm, EnumSetTypeMirror)
+    //                || types.isSubtype(tm, LinkedHashSetTypeMirror)
+    //                || types.isSubtype(tm, TreeSetTypeMirror)
+    //                || types.isSubtype(tm, SortedSetTypeMirror)
+    //                || types.isSubtype(tm, NavigableSetTypeMirror)) {
+    //            System.out.println("is it really a collection??? Or is it not??? " + tm + " => true");
+    //            return true;
+    //// }
+    //        System.out.println("is it really a collection??? Or is it not??? " + tm + " => false");
+    //        return false;
+    //    }
 
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {

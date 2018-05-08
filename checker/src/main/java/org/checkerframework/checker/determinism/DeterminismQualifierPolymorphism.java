@@ -1,19 +1,15 @@
 package org.checkerframework.checker.determinism;
 
-import com.sun.source.tree.Tree;
 import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
 import javax.lang.model.util.Elements;
-
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.poly.AbstractQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorphism {
 
@@ -75,8 +71,8 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
                 if (type.hasAnnotation(factory.ORDERNONDET)) {
                     if (upDownOrUse.equals("down")) type.replaceAnnotation(factory.DET);
                     else if (upDownOrUse.equals("up")) type.replaceAnnotation(factory.NONDET);
-                    else if(!underlyingType.getKind().isPrimitive() &&
-                            !factory.isCollection(underlyingType)){
+                    else if (!underlyingType.getKind().isPrimitive()
+                            && !factory.isCollection(underlyingType)) {
                         type.replaceAnnotation(factory.DET);
                     }
                 }

@@ -5,6 +5,7 @@ import com.sun.source.tree.ReturnTree;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -18,11 +19,6 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -35,7 +31,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     //    public final ExecutableElement polyValueElement;
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
-                super(checker);
+        super(checker);
 
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder.setValue("value", "use");
@@ -82,63 +78,50 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
-            if(node == null)
-                return super.visitMethodInvocation(node, p);
+            if (node == null) return super.visitMethodInvocation(node, p);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
-            if(receiver == null)
-                return super.visitMethodInvocation(node, p);
-//            boolean isCollection = isCollection(receiver.getUnderlyingType());
-//            if(isCollection){
-//                System.out.println("Method name: " + TreeUtils.getMethodName(node));
-//            }
+            if (receiver == null) return super.visitMethodInvocation(node, p);
+            //            boolean isCollection = isCollection(receiver.getUnderlyingType());
+            //            if(isCollection){
+            //                System.out.println("Method name: " + TreeUtils.getMethodName(node));
+            //            }
             return super.visitMethodInvocation(node, p);
         }
     }
 
-    public boolean isCollection(TypeMirror tm){
+    public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         //List and subclasses
         TypeMirror ListTypeMirror =
-                TypesUtils.typeFromClass(
-                        List.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
         TypeMirror ArrayListTypeMirror =
-                TypesUtils.typeFromClass(
-                        ArrayList.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
         TypeMirror LinkedListTypeMirror =
-                TypesUtils.typeFromClass(
-                        LinkedList.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
         TypeMirror AbstractListTypeMirror =
                 TypesUtils.typeFromClass(
                         AbstractList.class, types, processingEnv.getElementUtils());
         TypeMirror AbstractSequentialListTypeMirror =
                 TypesUtils.typeFromClass(
-                        AbstractSequentialList.class,
-                        types,
-                        processingEnv.getElementUtils());
+                        AbstractSequentialList.class, types, processingEnv.getElementUtils());
         TypeMirror ArraysTypeMirror =
-                TypesUtils.typeFromClass(
-                        Arrays.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
         //Set and subclasses
         TypeMirror SetTypeMirror =
                 TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
         TypeMirror AbstractSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        AbstractSet.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(AbstractSet.class, types, processingEnv.getElementUtils());
         TypeMirror EnumSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        EnumSet.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(EnumSet.class, types, processingEnv.getElementUtils());
         TypeMirror HashSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        HashSet.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(HashSet.class, types, processingEnv.getElementUtils());
         TypeMirror LinkedHashSetTypeMirror =
                 TypesUtils.typeFromClass(
                         LinkedHashSet.class, types, processingEnv.getElementUtils());
         TypeMirror TreeSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        TreeSet.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
         TypeMirror SortedSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        SortedSet.class, types, processingEnv.getElementUtils());
+                TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
         TypeMirror NavigableSetTypeMirror =
                 TypesUtils.typeFromClass(
                         NavigableSet.class, types, processingEnv.getElementUtils());
