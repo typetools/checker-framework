@@ -702,13 +702,13 @@ public class InferenceFactory {
         List<Variable> es = new ArrayList<>();
         List<ProperType> properTypes = new ArrayList<>();
 
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> pair;
+        AnnotatedExecutableType aet;
         if (expression.getKind() == Kind.LAMBDA_EXPRESSION) {
-            pair = typeFactory.getFnInterfaceFromTree((LambdaExpressionTree) expression);
+            aet = typeFactory.getFnInterfaceFromTree((LambdaExpressionTree) expression).second;
         } else {
-            pair = typeFactory.getFnInterfaceFromTree((MemberReferenceTree) expression);
+            aet = findFunctionType((MemberReferenceTree) expression, targetType).getAnnotatedType();
         }
-        Iterator<AnnotatedTypeMirror> iter = pair.second.getThrownTypes().iterator();
+        Iterator<AnnotatedTypeMirror> iter = aet.getThrownTypes().iterator();
         for (TypeMirror thrownType : ele.getThrownTypes()) {
             AbstractType ei = InferenceType.create(iter.next(), thrownType, map, context);
             if (ei.isProper()) {
