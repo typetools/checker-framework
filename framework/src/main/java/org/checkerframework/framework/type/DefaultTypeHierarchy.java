@@ -53,7 +53,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
     protected final QualifierHierarchy qualifierHierarchy;
     protected final StructuralEqualityComparer equalityComparer;
-    protected final DefaultRawnessComparer rawnessComparer;
 
     protected final boolean ignoreRawTypes;
     protected final boolean invariantArrayComponents;
@@ -130,19 +129,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         this.qualifierHierarchy = qualifierHierarchy;
         this.visitHistory = new SubtypeVisitHistory();
         this.typeargVisitHistory = new SubtypeVisitHistory();
-        this.rawnessComparer = createRawnessComparer();
         this.equalityComparer = createEqualityComparer();
 
         this.ignoreRawTypes = ignoreRawTypes;
         this.invariantArrayComponents = invariantArrayComponents;
     }
 
-    public DefaultRawnessComparer createRawnessComparer() {
-        return new DefaultRawnessComparer(this);
-    }
-
     public StructuralEqualityComparer createEqualityComparer() {
-        return new StructuralEqualityComparer(rawnessComparer, typeargVisitHistory);
+        return new StructuralEqualityComparer(typeargVisitHistory);
     }
 
     /**
@@ -524,9 +518,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 final boolean covariant =
                         covariantArgIndexes != null && covariantArgIndexes.contains(i);
 
-                Boolean result =
-                        compareTypeArgs(
-                                subTypeArg, superTypeArg, supertypeRaw, subtypeRaw, covariant);
+                Boolean result = isContainedBy(subTypeArg, superTypeArg, covariant);
 
                 if (!result) {
                     return false;
@@ -535,26 +527,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         }
 
         return true;
-    }
-
-    /**
-     * Compare typeArgs is called on a single pair of type args that should share a relationship
-     * subTypeArg {@literal <:} superTypeArg (subtypeArg is contained by superTypeArg). However, if
-     * either type is raw then either (subTypeArg {@literal <:} superTypeArg) or the
-     * rawnessComparer.isValid(superTypeArg, subTypeArg, visited)
-     */
-    protected boolean compareTypeArgs(
-            AnnotatedTypeMirror subTypeArg,
-            AnnotatedTypeMirror superTypeArg,
-            boolean subtypeRaw,
-            boolean supertypeRaw,
-            boolean isCovariant) {
-        if (subtypeRaw || supertypeRaw) {
-            return rawnessComparer.isValidInHierarchy(subTypeArg, superTypeArg, currentTop)
-                    || isContainedBy(subTypeArg, superTypeArg, isCovariant);
-        } else {
-            return isContainedBy(subTypeArg, superTypeArg, isCovariant);
-        }
     }
 
     @Override

@@ -18,7 +18,7 @@ if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     ./gradlew -q  getCodeFormatScripts
     ## For debugging:
     # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
-    python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running: ./gradew reformat" && /bin/false)
+    python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running: ./gradlew reformat" && /bin/false)
 fi
 
 # This is to handle non-.java files, since the above already handled .java files.
