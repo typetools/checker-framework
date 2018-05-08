@@ -81,10 +81,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (node == null) return super.visitMethodInvocation(node, p);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
             if (receiver == null) return super.visitMethodInvocation(node, p);
-            //            boolean isCollection = isCollection(receiver.getUnderlyingType());
-            //            if(isCollection){
-            //                System.out.println("Method name: " + TreeUtils.getMethodName(node));
-            //            }
+            TypeMirror underlyingType =
+                    (TypesUtils.getTypeElement(receiver.getUnderlyingType())).asType();
+            boolean isCollection = isCollection(underlyingType);
+            if (isCollection) {
+                //System.out.println("Method name: " + node);
+            }
             return super.visitMethodInvocation(node, p);
         }
     }
