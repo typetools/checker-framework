@@ -1,10 +1,10 @@
 package org.checkerframework.checker.determinism;
 
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -19,6 +19,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -80,7 +81,21 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
             if (node == null) return super.visitMethodInvocation(node, p);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
-            if (receiver == null) return super.visitMethodInvocation(node, p);
+            if (receiver == null) {
+                return super.visitMethodInvocation(node, p);
+            }
+            AnnotatedTypeMirror.AnnotatedExecutableType invokedMethod =
+                    atypeFactory.methodFromUse(node).first;
+            ExecutableElement invokedMethodElement = invokedMethod.getElement();
+
+            //Static methods with no arguments: return type should be @Det, not @polyDet
+            if (ElementUtils.isStatic(invokedMethodElement) && node.getArguments().size() == 0) {
+                if (!p.hasExplicitAnnotation(NONDET)
+                        && !p.hasExplicitAnnotation(DET)
+                        && !p.hasExplicitAnnotation(ORDERNONDET)) {
+                    p.replaceAnnotation(DET);
+                }
+            }
             if (TypesUtils.getTypeElement(receiver.getUnderlyingType()) == null) {
                 return super.visitMethodInvocation(node, p);
             }
@@ -92,6 +107,34 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return super.visitMethodInvocation(node, p);
         }
+
+        @Override
+        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
+            //Annotate String variable argument as @PolyDet (Is there an easier way to do this?)
+            //            System.out.println("varargs check: " + node);
+            //            for (VariableTree param:
+            //                    node.getParameters()) {
+            //                if(param.toString().contains("...")){
+            //                    if(!p.hasExplicitAnnotation(NONDET) && !p.hasExplicitAnnotation(DET)
+            //                            && !p.hasExplicitAnnotation(ORDERNONDET)){
+            //                        p.replaceAnnotation(POLYDET);
+            //                    }
+            //                }
+            //            }
+            return super.visitMethod(node, p);
+        }
+
+        //        @Override
+        //        public Void visitThrow(ThrowTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+        //            System.out.println(" ************************** ");
+        //            return super.visitThrow(node, annotatedTypeMirror);
+        //        }
+        //
+        //        @Override
+        //        public Void visitCatch(CatchTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+        //            System.out.println(" ------------------------- ");
+        //            return super.visitCatch(node, annotatedTypeMirror);
+        //        }
     }
 
     public boolean isCollection(TypeMirror tm) {

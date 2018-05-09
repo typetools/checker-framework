@@ -1,5 +1,6 @@
 // Test case for issue 689
 // https://github.com/typetools/checker-framework/issues/689
+@SuppressWarnings("determinism")
 public class Issue689 {
 
     public int initializerFodder() {

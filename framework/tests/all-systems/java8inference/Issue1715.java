@@ -2,6 +2,7 @@
 import java.util.List;
 import java.util.function.Function;
 
+@SuppressWarnings("determinism")
 public class Issue1715 {
 
     static final class A {

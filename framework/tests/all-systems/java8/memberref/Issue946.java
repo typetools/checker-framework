@@ -5,6 +5,7 @@ interface Supply946<R> {
     R supply();
 }
 
+@SuppressWarnings("determinism")
 class Issue946 {
     class MethodRefInnerA {
         // this line of code causes a crash in CF

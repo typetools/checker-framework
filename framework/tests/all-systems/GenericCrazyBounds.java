@@ -21,6 +21,7 @@ interface MyMap<K, V> {
 
 class MyRec<E extends MyList<E>> {}
 
+@SuppressWarnings("determinism")
 class RecMyList extends MyRec<RecMyList> implements MyList<RecMyList> {
     @SuppressWarnings("return.type.incompatible")
     public RecMyList getZZ() {

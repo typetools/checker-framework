@@ -31,6 +31,7 @@ interface RegularFunc3 {
     void take(Object o, String s, String s2);
 }
 
+@SuppressWarnings("determinism")
 class MoreVarAgrgsTest {
     static void myObjectArgArg(Object o, String... vararg) {}
 

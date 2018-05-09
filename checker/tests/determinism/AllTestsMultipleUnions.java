@@ -12,7 +12,9 @@ public class AllTestsMultipleUnions {
             } catch (SubMyExceptionA | MyExceptionB ex2) {
 
                 Throwable t = flag ? ex1 : ex2;
+                // ::error: (type.argument.type.incompatible)
                 typeVar(ex1, ex1);
+                // ::error: (type.argument.type.incompatible)
                 typeVar(ex2, ex2);
                 // See UnionCrash for version that crashes
                 // typeVar(ex1, ex2);

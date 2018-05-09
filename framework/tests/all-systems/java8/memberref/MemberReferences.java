@@ -19,6 +19,7 @@ interface BiFunctionMR<T, U, R> {
 
 /** super # instMethod */
 // SUPER(ReferenceMode.INVOKE, false),
+@SuppressWarnings("determinism")
 class Super {
 
     Object func1(Object o) {
@@ -123,6 +124,7 @@ class BoundWithArg<U> {
 
 /** Inner # new */
 // IMPLICIT_INNER(ReferenceMode.NEW, false),
+@SuppressWarnings("determinism")
 class Outer {
     void context(Outer other) {
         Supplier<Inner> f1 = Inner::new;
@@ -131,6 +133,7 @@ class Outer {
     class Inner extends Outer {}
 }
 
+@SuppressWarnings("determinism")
 class OuterWithArg {
     void context() {
         // TODO: Issue 802: type argument inference

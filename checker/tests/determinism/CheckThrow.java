@@ -1,7 +1,9 @@
-import java.util.List;
+package determinism;
 
-@SuppressWarnings("determinism")
-class Throw {
+import java.util.List;
+import org.checkerframework.checker.determinism.qual.*;
+
+class CheckThrow {
     <E extends Exception> void throwTypeVar(E ex) {
         try {
             throw ex;
@@ -11,6 +13,7 @@ class Throw {
 
     void throwWildcard(List<? extends Exception> list) {
         try {
+            // ::error: (throw.type.invalid)
             throw list.get(0);
         } catch (Exception e) {
 

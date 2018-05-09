@@ -3,6 +3,7 @@
 
 import java.util.Arrays;
 
+@SuppressWarnings("determinism")
 class Issue808 {
     void f() {
         Arrays.asList(0, 0, "", Arrays.asList(new Object[0]));

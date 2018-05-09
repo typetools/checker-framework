@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "determinism"})
 abstract class Issue1809 {
 
     abstract <T> Stream<T> concat(Stream<? extends T>... streams);

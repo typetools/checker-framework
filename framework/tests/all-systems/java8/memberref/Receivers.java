@@ -36,7 +36,7 @@ class MyClass {
 }
 
 /** Constraints for implicit inner constraints and super */
-@SuppressWarnings("lock")
+@SuppressWarnings({"lock", "determinism"})
 class OuterR {
     class Inner {
         Inner(/*1*/ OuterR OuterR.this) {}
