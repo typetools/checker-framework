@@ -1,4 +1,5 @@
 import java.util.List;
+
 @SuppressWarnings("determinism")
 class RawTypes {
     public void m(ClassLoader cl) throws ClassNotFoundException {

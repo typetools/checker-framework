@@ -63,7 +63,7 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
                 } else {
                     quals = pqentry.getValue();
                 }
-                if(quals != null){
+                if (quals != null) {
                     type.removeAnnotation(poly);
                     type.replaceAnnotations(quals);
                 }

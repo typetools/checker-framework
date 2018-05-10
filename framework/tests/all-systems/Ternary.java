@@ -1,6 +1,7 @@
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import java.lang.ref.WeakReference;
+
 @SuppressWarnings("determinism")
 class Ternary<F> {
     void m1(boolean b) {

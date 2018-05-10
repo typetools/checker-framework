@@ -7,6 +7,7 @@ public class TestSubtyping {
         @Det ArrayList<@Det Integer> cpy = new ArrayList<Integer>();
         lst = cpy;
     }
+
     void TestSubArr() {
         @Det Integer @NonDet [] lst = new Integer[10];
         @Det Integer @Det [] cpy = new Integer[20];

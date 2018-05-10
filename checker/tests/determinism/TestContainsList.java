@@ -21,13 +21,13 @@ public class TestContainsList {
         ret = myDetList.contains(rand);
     }
 
-        void TestList3(@NonDet int rand) {
-            @NonDet Integer ndInt = new Integer(rand);
-        }
+    void TestList3(@NonDet int rand) {
+        @NonDet Integer ndInt = new Integer(rand);
+    }
 
-        void TestList4(@NonDet Integer elem) {
-            @NonDet ArrayList<@NonDet Integer> arrL = new @NonDet ArrayList<@NonDet Integer>(elem);
-        }
+    void TestList4(@NonDet Integer elem) {
+        @NonDet ArrayList<@NonDet Integer> arrL = new @NonDet ArrayList<@NonDet Integer>(elem);
+    }
 
     public @PolyDet TestContainsList(@PolyDet int a) {}
 

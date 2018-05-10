@@ -9,6 +9,7 @@ abstract class Issue1749 {
     public class I<X> {}
 
     abstract <Y> I<Y> f(Class<? super Y> x);
+
     @SuppressWarnings("determinism")
     void f() {
         I<B> x = f(A.class);

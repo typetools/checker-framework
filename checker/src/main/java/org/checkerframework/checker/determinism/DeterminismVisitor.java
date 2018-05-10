@@ -174,14 +174,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         //Do not allow arrays of type @NonDet Object @Det []
         AnnotationMirror arrayType;
         AnnotationMirror elementType;
-        if(type.getAnnotations().size() > 0 && type.getComponentType().getAnnotations().size() > 0){
+        if (type.getAnnotations().size() > 0
+                && type.getComponentType().getAnnotations().size() > 0) {
             arrayType = type.getAnnotations().iterator().next();
             elementType = type.getComponentType().getAnnotations().iterator().next();
-            if(isAnnoSubType(arrayType, elementType)){
+            if (isAnnoSubType(arrayType, elementType)) {
                 checker.report(
-                        Result.failure(
-                                INVALID_ANNOTATION_SUBTYPE, elementType, arrayType),
-                        tree);
+                        Result.failure(INVALID_ANNOTATION_SUBTYPE, elementType, arrayType), tree);
             }
         }
         return super.isValidUse(type, tree);

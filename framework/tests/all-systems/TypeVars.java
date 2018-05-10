@@ -2,7 +2,7 @@ class TypeVars {
 
     class Test1<T> {
         void m() {
-            @SuppressWarnings({"unchecked","determinism"})
+            @SuppressWarnings({"unchecked", "determinism"})
             T x = (T) new Object();
 
             Object o = x;
