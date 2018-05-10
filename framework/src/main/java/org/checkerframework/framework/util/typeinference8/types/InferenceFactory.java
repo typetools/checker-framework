@@ -807,6 +807,13 @@ public class InferenceFactory {
             }
         }
 
+        for (int i = 0; i < typeVar.size(); i++) {
+            TypeMirror javaTypeArg = javaTypeArgs.get(i);
+            TypeMirror x = TypesUtils.substitute(javaTypeArg, typeVar, javaTypeArgs, context.env);
+            javaTypeArgs.remove(i);
+            javaTypeArgs.add(i, x);
+        }
+
         Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
 
         List<AnnotatedTypeMirror> typeArgsATM = new ArrayList<>();
