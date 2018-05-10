@@ -115,11 +115,12 @@ public class Resolution {
         BoundSet resolvedBounds;
         if (boundSet.containsCapture(as)) {
             // First resolve the non-capture variables using the usual resolution algorithm.
-            for (Variable ai : as) {
-                if (!ai.isCaptureVariable()) {
-                    resolveNoCapture(ai);
-                }
-            }
+            //            for (Variable ai : as) {
+            //                if (!ai.isCaptureVariable()) {
+            //                    resolveNoCapture(ai);
+            //                }
+            //            }
+            fixes(new ArrayList<>(as), boundSet);
             as.removeAll(boundSet.getInstantiatedVariables());
             // Then resolve the capture variables
             resolvedBounds = resolveWithCapture(as, boundSet, context);
@@ -137,6 +138,32 @@ public class Resolution {
             }
         }
         return resolvedBounds;
+    }
+
+    private void fixes(List<Variable> variables, BoundSet boundSet) {
+        Variable smallV = null;
+        do {
+            smallV = null;
+            int smallest = Integer.MAX_VALUE;
+            for (Variable v : variables) {
+                v.getBounds().applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
+                if (v.getBounds().hasInstantiation()) {
+                    variables.remove(v);
+                    break;
+                }
+                if (!v.isCaptureVariable()) {
+                    int size = v.getBounds().getVariablesMentionedInBounds().size();
+                    if (size < smallest) {
+                        smallest = size;
+                        smallV = v;
+                    }
+                }
+            }
+            if (smallV != null) {
+                resolveNoCapture(smallV);
+                variables.remove(smallV);
+            }
+        } while (smallV != null);
     }
 
     /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-A */
