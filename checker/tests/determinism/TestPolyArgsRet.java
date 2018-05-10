@@ -7,6 +7,7 @@ public class TestPolyArgsRet {
 
     //One parameter, no return
     void callee2() {
+        // :: error: (assignment.type.incompatible)
         TestPolyArgsRet tst = this;
     }
     //two parameters, no return

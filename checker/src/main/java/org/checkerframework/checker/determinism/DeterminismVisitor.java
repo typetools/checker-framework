@@ -168,8 +168,22 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     @Override
     public boolean isValidUse(AnnotatedTypeMirror.AnnotatedArrayType type, Tree tree) {
         Set<AnnotationMirror> annos = type.getAnnotations();
+        //TODO: Allow OrderNonDet array?
         if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class)))
             checker.report(Result.failure(INVALID_ANNOTATION), tree);
+        //Do not allow arrays of type @NonDet Object @Det []
+        AnnotationMirror arrayType;
+        AnnotationMirror elementType;
+        if(type.getAnnotations().size() > 0 && type.getComponentType().getAnnotations().size() > 0){
+            arrayType = type.getAnnotations().iterator().next();
+            elementType = type.getComponentType().getAnnotations().iterator().next();
+            if(isAnnoSubType(arrayType, elementType)){
+                checker.report(
+                        Result.failure(
+                                INVALID_ANNOTATION_SUBTYPE, elementType, arrayType),
+                        tree);
+            }
+        }
         return super.isValidUse(type, tree);
     }
 

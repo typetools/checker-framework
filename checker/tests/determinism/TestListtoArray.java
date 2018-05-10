@@ -19,10 +19,13 @@ public class TestListtoArray {
     }
 
     void ListToObjectArray4(@OrderNonDet List<@Det String> ondetList) {
-        @NonDet String[] objArr = ondetList.toArray(new String[10]);
+        String[] arg = new String[10];
+        @NonDet String @NonDet [] objArr = ondetList.toArray(arg);
+        @NonDet String @NonDet [] objArr1 = ondetList.toArray(new @NonDet String @NonDet [10]);
     }
 
     void ListToObjectArray5(@NonDet List<@Det String> nondetList) {
-        @NonDet String[] objArr = nondetList.toArray(new String[10]);
+        String[] arg = new String[10];
+        @NonDet String @NonDet [] objArr = nondetList.toArray(arg);
     }
 }

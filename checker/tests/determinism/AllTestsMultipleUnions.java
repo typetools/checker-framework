@@ -10,7 +10,7 @@ public class AllTestsMultipleUnions {
             try {
                 bar();
             } catch (SubMyExceptionA | MyExceptionB ex2) {
-
+                // ::error: (assignment.type.incompatible)
                 Throwable t = flag ? ex1 : ex2;
                 // ::error: (type.argument.type.incompatible)
                 typeVar(ex1, ex1);

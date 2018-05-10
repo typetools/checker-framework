@@ -407,7 +407,7 @@ public interface List<E> extends Collection<E> {
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default void replaceAll(UnaryOperator<E> operator) {
+    default void replaceAll(@PolyDet List<E> this, @PolyDet("use") UnaryOperator<E> operator) {
         Objects.requireNonNull(operator);
         final ListIterator<E> li = this.listIterator();
         while (li.hasNext()) {
@@ -491,7 +491,7 @@ public interface List<E> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>clear</tt> operation
      *         is not supported by this list
      */
-    void clear(@NonDet List<E> this);
+    void clear(@PolyDet List<E> this);
 
 
     // Comparison and hashing
@@ -530,7 +530,7 @@ public interface List<E> extends Collection<E> {
      * @see #equals(Object)
      */
 
-    @NonDet int hashCode(@NonDet List<E> this);
+    @NonDet int hashCode(@PolyDet List<E> this);
 
     // Positional Access Operations
 

@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/1709
 import java.util.Iterator;
 import java.util.List;
-
+@SuppressWarnings("determinism")
 public class Issue1709 {
     public static void m(final List<? super Integer> l) {
         Iterator<? super Integer> it = l.iterator();

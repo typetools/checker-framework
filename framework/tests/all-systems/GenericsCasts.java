@@ -13,7 +13,7 @@ class GenericsCasts {
     Data<?> forName(String p) {
         throw new Error("");
     }
-
+    @SuppressWarnings("determinism")
     void m() {
         // Cast from a wildcard to a normal type argument.
         // Warning only with -AcheckCastElementType.

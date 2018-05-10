@@ -63,9 +63,10 @@ public class DeterminismQualifierPolymorphism extends AbstractQualifierPolymorph
                 } else {
                     quals = pqentry.getValue();
                 }
-                type.removeAnnotation(poly);
-                type.replaceAnnotations(quals);
-
+                if(quals != null){
+                    type.removeAnnotation(poly);
+                    type.replaceAnnotations(quals);
+                }
                 TypeMirror underlyingType = type.getUnderlyingType();
 
                 if (type.hasAnnotation(factory.ORDERNONDET)) {

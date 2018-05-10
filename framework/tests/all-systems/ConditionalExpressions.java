@@ -4,7 +4,7 @@
 
 import java.io.Serializable;
 import java.util.List;
-
+@SuppressWarnings("determinism")
 public class ConditionalExpressions {
     public static boolean flag = true;
 

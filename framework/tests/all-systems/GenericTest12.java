@@ -1,4 +1,5 @@
 // Test case from Issue 142
+@SuppressWarnings("determinism")
 abstract class GenericTest12 {
     interface Task<V> {}
 

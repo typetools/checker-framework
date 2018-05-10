@@ -1,5 +1,6 @@
 // Test case for #692
 // https://github.com/typetools/checker-framework/issues/692
+@SuppressWarnings("determinism")
 public class Issue692<T extends Enum<T>> {
 
     private boolean method(Object param, Class<T> tClass) {
