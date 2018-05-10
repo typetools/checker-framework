@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -169,8 +170,8 @@ public class Typing extends Constraint {
             // for all i (1 <= i <= n), <Bi <= Ai>.
 
             AbstractType sAsSuper = S.asSuper(T.getJavaType());
-            if (sAsSuper == null) {
-                return ConstraintSet.FALSE;
+            if (sAsSuper == null || sAsSuper.isRaw() || T.isRaw()) {
+                return new FalseBound(false);
             }
 
             List<AbstractType> Bs = sAsSuper.getTypeArguments();
@@ -183,6 +184,7 @@ public class Typing extends Constraint {
 
             return set;
         } else {
+            // TODO: Annotated types.
             // The constraint reduces to true if T is among the supertypes of S, and false otherwise.
             return ConstraintSet.TRUE;
         }
