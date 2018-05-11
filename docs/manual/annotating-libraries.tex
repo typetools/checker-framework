@@ -112,7 +112,8 @@ Do not change the library's code, which will change its behavior and make
 the annotated version inconsistent with the unannotated version.
 (Sometimes it is acceptable to make a refactoring, such as extracting an
 expression into a new local variable in order to annotate its type or
-suppress a warning.)
+suppress a warning.  Perform refactoring only when you cannot use
+\<@AssumeAssertion>.)
 % (The only time it is acceptable to comment out existing code in the library
 % is if the regular Java compiler cannot compile the code; but this should be
 % extremely rare.)

@@ -152,13 +152,16 @@ not just the most specific one.
 \<@SuppressWarnings> is a declaration annotation, so it may be placed on
 program declarations such as a local variable declaration, a method, or a
 class.  It cannot be used on statements, expressions, or types.
+(\<assert> plus \<@AssumeAssertion> can be used between statements and can
+affect arbitrary expressions; see Section~\ref{assumeassertion}.)
 
 Always write a \<@SuppressWarnings> annotation on the smallest possible
 scope.  To reduce the scope of a \<@SuppressWarnings> annotation, it is
 sometimes desirable to refactor the code.  You might extract an expression
 into a local variable, so that warnings can be suppressed just for that
 local variable's initializer expression.  Likewise, you might extract some
-code into a separate method.
+code into a separate method, so that warnings can be suppressed just for
+its body.
 
 As an example, consider suppressing a warning at a cast that you know is
 safe.  Here is an example that uses the Tainting Checker
@@ -203,11 +206,14 @@ assignments or other statements or expressions.
 
 \subsubsection{Suppress warnings in the smallest possible scope\label{suppresswarnings-best-practices-smallest-scope}}
 
-If a particular expression causes a
-false positive warning, you should extract that expression into a local variable
+You may be able to suppress a warning by writing
+\<@AssumeAssertion> for some subpart of it.  See Section~\ref{assumeassertion}.
+
+Otherwise, if a particular expression causes a false positive warning,
+don't suppress warnings for a larger expression or an entire method body.
+It is better to extract the expression into a local variable
 and place a \code{@SuppressWarnings} annotation on the variable
-declaration, rather than suppressing warnings for a larger expression or an
-entire method body.  See Section~\ref{suppresswarnings-annotation-locations}.
+declaration.  See Section~\ref{suppresswarnings-annotation-locations}.
 
 %% I'm not sure how this is related to the smallest possible scope.
 % As another example, if you have annotated the signatures but not the bodies
@@ -305,6 +311,9 @@ The warning key is exactly as in the \<@SuppressWarnings> annotation
 as for \<@SuppressWarnings> annotations, such as writing a comment
 justifying why the assumption is safe
 (Section~\ref{suppresswarnings-best-practices}).
+Sometimes, writing an assertion and \<@AssumeAssertion> is a less
+disruptive code change than refactoring to create a location where
+\<@SuppressWarnings> can be written.
 
 The \<-AassumeAssertionsAreEnabled> and \<-AassumeAssertionsAreDisabled>
 command-line options (Section~\ref{type-refinement-assertions}) do not
