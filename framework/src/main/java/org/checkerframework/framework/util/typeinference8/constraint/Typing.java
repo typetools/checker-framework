@@ -114,7 +114,13 @@ public class Typing extends Constraint {
      */
     private ReductionResult reduceSubtyping(Java8InferenceContext context) {
         if (S.isProper() && T.isProper()) {
-            return ((ProperType) S).isSubType((ProperType) T);
+            ReductionResult isSubtype = ((ProperType) S).isSubType((ProperType) T);
+            if (isSubtype == ConstraintSet.TRUE) {
+                return ConstraintSet.TRUE;
+            } else if (((ProperType) S).isSubTypeUnchecked((ProperType) T) == ConstraintSet.TRUE) {
+                return ReductionResult.UNCHECKED_CONVERSION;
+            }
+            return isSubtype;
         } else if (S.getTypeKind() == TypeKind.NULL) {
             return ConstraintSet.TRUE;
         } else if (T.getTypeKind() == TypeKind.NULL) {
@@ -170,8 +176,10 @@ public class Typing extends Constraint {
             // for all i (1 <= i <= n), <Bi <= Ai>.
 
             AbstractType sAsSuper = S.asSuper(T.getJavaType());
-            if (sAsSuper == null || sAsSuper.isRaw() || T.isRaw()) {
+            if (sAsSuper == null) {
                 return new FalseBound(false);
+            } else if (sAsSuper.isRaw() || T.isRaw()) {
+                return ReductionResult.UNCHECKED_CONVERSION;
             }
 
             List<AbstractType> Bs = sAsSuper.getTypeArguments();
