@@ -9,7 +9,7 @@ if [[ "${GROUP}" == "" ]]; then
 fi
 
 if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc."
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc, plume-lib."
   exit 1
 fi
 
@@ -94,27 +94,29 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
   (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && ./gradlew dist test)
 
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  export CHECKERFRAMEWORK=$ROOT/checker-framework
-  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
-
+  # Checker Framework demos
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
     ./gradlew :checker:demosTests
   fi
+
   # sparta: 1 minute, but the command is "true"!
   # TODO: requires Android installation (and at one time, it caused weird
   # Travis hangs if enabled without Android installation).
   # (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/sparta.git)
   # (cd ../sparta && ant jar all-tests)
+
+  # Guava
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  export CHECKERFRAMEWORK=$ROOT/checker-framework
+  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
 fi
 
