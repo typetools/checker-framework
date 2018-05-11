@@ -1458,19 +1458,19 @@ public final class TreeUtils {
             TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);
             return TypesUtils.findFunctionType(functionalType, env);
         }
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+        Types types = Types.instance(javacEnv.getContext());
 
         ExecutableType type;
         switch (((JCMemberReference) memberReferenceTree).kind) {
             case UNBOUND: // ref is of form: Type :: instance method
                 ExecutableType functionType = TypesUtils.findFunctionType(targetType, env);
-                DeclaredType receiver = (DeclaredType) functionType.getParameterTypes().get(0);
-                type = (ExecutableType) env.getTypeUtils().asMemberOf(receiver, ctDecl);
+                TypeMirror receiver = functionType.getParameterTypes().get(0);
+                type = (ExecutableType) types.memberType((Type) receiver, (Symbol) ctDecl);
                 break;
             case BOUND: // ref is of form: expression :: method
             case SUPER: // ref is of form: super :: method
                 TypeMirror expr = TreeUtils.typeOf(((JCMemberReference) memberReferenceTree).expr);
-                JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
-                Types types = Types.instance(javacEnv.getContext());
                 type = (ExecutableType) types.memberType((Type) expr, (Symbol) ctDecl);
                 break;
             case STATIC: // ref is of form: Type :: static method

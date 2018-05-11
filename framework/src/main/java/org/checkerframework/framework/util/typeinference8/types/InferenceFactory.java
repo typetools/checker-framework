@@ -21,7 +21,6 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -477,7 +476,7 @@ public class InferenceFactory {
             ExpressionTree expressionTree, Java8InferenceContext context) {
         if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
             if (!TreeUtils.isDiamondTree(expressionTree)) {
-                return (ExecutableType) ((JCNewClass) expressionTree).constructorType;
+                return (ExecutableType) TreeUtils.elementFromUse(expressionTree).asType();
             }
         } else if (expressionTree.getKind() != Tree.Kind.METHOD_INVOCATION) {
             return null;
