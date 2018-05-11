@@ -32,6 +32,10 @@ import java.util.function.ToLongFunction;
 import java.util.function.ToDoubleFunction;
 import java.util.Comparators;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.dataflow.qual.Pure;
+
 /**
  * A comparison function, which imposes a <i>total ordering</i> on some
  * collection of objects.  Comparators can be passed to a sort method (such
@@ -171,6 +175,7 @@ public interface Comparator<T> {
      * @see Object#equals(Object)
      * @see Object#hashCode()
      */
+    @Pure
     boolean equals(Object obj);
 
     /**
@@ -353,7 +358,7 @@ public interface Comparator<T> {
      * @since 1.8
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable<? super T>> Comparator<T> naturalOrder() {
+    public static <T extends Comparable<? super T>> Comparator<@NonNull T> naturalOrder() {
         return (Comparator<T>) Comparators.NaturalOrderComparator.INSTANCE;
     }
 
@@ -374,7 +379,7 @@ public interface Comparator<T> {
      *         {@code Comparator}.
      * @since 1.8
      */
-    public static <T> Comparator<T> nullsFirst(Comparator<? super T> comparator) {
+    public static <T> Comparator<@Nullable T> nullsFirst(Comparator<? super T> comparator) {
         return new Comparators.NullComparator<>(true, comparator);
     }
 
@@ -395,7 +400,7 @@ public interface Comparator<T> {
      *         {@code Comparator}.
      * @since 1.8
      */
-    public static <T> Comparator<T> nullsLast(Comparator<? super T> comparator) {
+    public static <T> Comparator<@Nullable T> nullsLast(Comparator<? super T> comparator) {
         return new Comparators.NullComparator<>(false, comparator);
     }
 
