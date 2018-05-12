@@ -161,7 +161,7 @@ public class OptionalVisitor
                             receiver,
                             // The literal "CONTAININGCLASS::" is gross.
                             // TODO: add this to the error message.
-                            //ElementUtils.getQualifiedClassName(ele);
+                            // ElementUtils.getQualifiedClassName(ele);
                             ele.getSimpleName(),
                             falseExpr),
                     node);

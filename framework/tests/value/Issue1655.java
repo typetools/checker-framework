@@ -1,5 +1,6 @@
 // Test case for Issue 1655
 // https://github.com/typetools/checker-framework/issues/1655
+
 import org.checkerframework.common.value.qual.IntRange;
 
 public class Issue1655 {

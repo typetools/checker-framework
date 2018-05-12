@@ -383,7 +383,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         assert methodTree != null;
 
         StatementTree stmnt = methodTree.getBody().getStatements().get(0);
-        // The call to Heuristics.matchParents already ensured the enclosing method has at least one statement (an if statement) in the body
+        // The call to Heuristics.matchParents already ensured the enclosing method has at least one
+        // statement (an if statement) in the body
         assert stmnt != null;
 
         if (stmnt != ifStatementTree) {
