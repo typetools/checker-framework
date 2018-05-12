@@ -13,9 +13,11 @@ env:
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
 #TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=all-tests
 #TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=jdk.jar
 #TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=downstream
+#TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=plume-lib
     - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
 
 # The "docker run" command will pull if needed.

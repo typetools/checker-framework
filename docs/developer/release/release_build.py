@@ -354,7 +354,7 @@ def main(argv):
 
     print_step("Build Step 3: Determine release versions.") # SEMIAUTO
 
-    old_cf_version = current_distribution(CHECKER_FRAMEWORK)
+    old_cf_version = current_distribution_by_website(HTTP_PATH_TO_LIVE_SITE)
     cf_version = CF_VERSION
     print "Version: " + cf_version + "\n"
 

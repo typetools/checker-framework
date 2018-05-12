@@ -34,7 +34,7 @@ public class JdkCheck {
         return mos.get();
     }
 
-    @Present Optional<String> ofTesPNn(String s) {
+    @Present Optional<String> ofTestPNn(String s) {
         return Optional.of(s);
     }
 

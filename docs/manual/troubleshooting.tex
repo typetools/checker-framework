@@ -13,7 +13,7 @@ If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it, or select a
 project from the ideas list at
 % \url{https://github.com/typetools/checker-framework/wiki/Ideas}.
-\url{https://checkerframework.org/gsoc-2017-ideas.html}.
+\url{https://rawgit.com/typetools/checker-framework/master/docs/developer/gsoc-ideas.html}.
 \end{sloppypar}
 
 
@@ -793,17 +793,23 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls
 
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
-  the following commands (you may need to update the version number (\<2.31>):
+  the following commands (you may need to update the version number \<2.31>):
 
 \begin{Verbatim}
 brew update
-brew install caskroom/cask/brew-cask
 brew install git ant hevea maven mercurial librsvg unzip make
 brew cask install java
 brew cask install mactex
+\end{Verbatim}
+
+Make latex directory and copy hevea.sty file into it.
+
+\begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
+
+Note: If copy permission denied, try sudo.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
