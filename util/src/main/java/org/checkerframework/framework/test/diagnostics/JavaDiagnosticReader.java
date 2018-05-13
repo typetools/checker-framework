@@ -28,6 +28,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * @param files the Java files to read; each is a File or a JavaFileObject
      * @return the List of TestDiagnostics from the input file
      */
+    // The argument is has type Iterable<? extends Object> because Java cannot resolve the overload
+    // of two versions that take Iterable<? extends File> and Iterable<? extends JavaFileObject>.
     public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends Object> files) {
         List<JavaDiagnosticReader> readers = new ArrayList<>();
         for (Object file : files) {
