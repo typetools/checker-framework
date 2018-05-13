@@ -37,6 +37,21 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         return readDiagnostics(readers);
     }
 
+    // This method is used by Checker Framework Inference
+    /**
+     * Returns all the diagnostics in any of the files.
+     *
+     * @param files the Java files to read
+     * @return the List of TestDiagnostics from the input file
+     */
+    public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends File> files) {
+        List<JavaDiagnosticReader> readers = new ArrayList<>();
+        for (File file : files) {
+            readers.add(new JavaDiagnosticReader(file, JAVA_COMMENT_CODEC));
+        }
+        return readDiagnostics(readers);
+    }
+
     /**
      * Reads diagnostics line-by-line from the input Diagnostic files.
      *
