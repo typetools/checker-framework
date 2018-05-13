@@ -25,29 +25,22 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     /**
      * Returns all the diagnostics in any of the files.
      *
-     * @param files the Java files to read
+     * @param files the Java files to read; each is a File or a JavaFileObject
      * @return the List of TestDiagnostics from the input file
      */
-    public static List<TestDiagnostic> readJavaSourceFiles(
-            Iterable<? extends JavaFileObject> files) {
+    public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends Object> files) {
         List<JavaDiagnosticReader> readers = new ArrayList<>();
-        for (JavaFileObject file : files) {
-            readers.add(new JavaDiagnosticReader(file, JAVA_COMMENT_CODEC));
-        }
-        return readDiagnostics(readers);
-    }
-
-    // This method is used by Checker Framework Inference
-    /**
-     * Returns all the diagnostics in any of the files.
-     *
-     * @param files the Java files to read
-     * @return the List of TestDiagnostics from the input file
-     */
-    public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends File> files) {
-        List<JavaDiagnosticReader> readers = new ArrayList<>();
-        for (File file : files) {
-            readers.add(new JavaDiagnosticReader(file, JAVA_COMMENT_CODEC));
+        for (Object file : files) {
+            if (file instanceof JavaFileObject) {
+                readers.add(new JavaDiagnosticReader((JavaFileObject) file, JAVA_COMMENT_CODEC));
+            } else if (file instanceof File) {
+                readers.add(new JavaDiagnosticReader((File) file, JAVA_COMMENT_CODEC));
+            } else {
+                throw new IllegalArgumentException(
+                        String.format(
+                                "Elements of argument should be File or JavaFileObject, not %s: %s",
+                                file.getClass(), file));
+            }
         }
         return readDiagnostics(readers);
     }
@@ -161,17 +154,17 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     private LineNumberReader reader = null;
 
-    public String nextLine = null;
-    public int nextLineNumber = -1;
+    private String nextLine = null;
+    private int nextLineNumber = -1;
 
-    public JavaDiagnosticReader(File toRead, DiagnosticCodec codec) {
+    private JavaDiagnosticReader(File toRead, DiagnosticCodec codec) {
         this.toRead = toRead;
-        this.filename = shortFileName(toRead.getAbsolutePath());
         this.toReadFileObject = null;
         this.codec = codec;
+        this.filename = shortFileName(toRead.getAbsolutePath());
     }
 
-    public JavaDiagnosticReader(JavaFileObject toRead, DiagnosticCodec codec) {
+    private JavaDiagnosticReader(JavaFileObject toRead, DiagnosticCodec codec) {
         this.toRead = null;
         this.toReadFileObject = toRead;
         this.codec = codec;
