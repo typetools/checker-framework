@@ -9,6 +9,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.*;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -23,6 +24,9 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    //public class DeterminismAnnotatedTypeFactory
+    //        extends InitializationAnnotatedTypeFactory<
+    //        DeterminismValue, DeterminismStore, DeterminismTransfer, DeterminismAnalysis> {
     public final AnnotationMirror POLYDET, POLYDET_USE;
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
@@ -55,10 +59,29 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        return new DeterminismTransfer((CFAnalysis) analysis);
+    }
+
+    @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
                 Arrays.asList(Det.class, OrderNonDet.class, NonDet.class, PolyDet.class));
     }
+
+    //    @Override
+    //    public AnnotationMirror getFieldInvariantAnnotation() {
+    //        return DET;
+    //    }
+    //
+    //    @Override
+    //    protected boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type) {
+    //        AnnotationMirror invariant = getFieldInvariantAnnotation();
+    //        Set<AnnotationMirror> lowerBounds =
+    //                AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);
+    //        return AnnotationUtils.containsSame(lowerBounds, invariant);
+    //    }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
@@ -99,12 +122,28 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TypesUtils.getTypeElement(receiver.getUnderlyingType()) == null) {
                 return super.visitMethodInvocation(node, p);
             }
-            TypeMirror underlyingType =
-                    (TypesUtils.getTypeElement(receiver.getUnderlyingType())).asType();
-            boolean isCollection = isCollection(underlyingType);
-            if (isCollection) {
-                //System.out.println("Method name: " + node);
-            }
+
+            //Type refinement for sort
+            //            TypeMirror underlyingType =
+            //                    (TypesUtils.getTypeElement(receiver.getUnderlyingType())).asType();
+            //            boolean isCollection = isCollection(underlyingType);
+            //            if (isCollection) {
+            //                String methodName = node.toString();
+            //                int startIndex = methodName.indexOf(".");
+            //                int endIndex = methodName.indexOf("(");
+            //                String methName = methodName.substring(startIndex + 1, endIndex);
+            //                if(methName.equals("sort")){
+            //                    //Check if receiver has OrderNonDet annotation
+            //                    AnnotationMirror receiverAnno = receiver.getAnnotation(OrderNonDet.class);
+            //                    if(receiverAnno != null && AnnotationUtils.areSame(receiverAnno, ORDERNONDET)){
+            //                        System.out.println("before replace: " + receiver.getAnnotations().iterator().next());
+            //                        receiver.removeAnnotation(ORDERNONDET);
+            //                        receiver.replaceAnnotation(DET);
+            //                        System.out.println("after replace: " + receiver.getAnnotations().iterator().next() + " "
+            //                        + receiver.getAnnotations().size());
+            //                    }
+            //                }
+            //            }
             return super.visitMethodInvocation(node, p);
         }
 
