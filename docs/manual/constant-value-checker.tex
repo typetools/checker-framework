@@ -9,9 +9,11 @@ There are two ways to run the Constant Value Checker.
 \begin{itemize}
 \item
 Typically, it is automatically run by another type checker.
-When using the Constant Value Checker as part of another checker, the
-\code{statically-executable.astub} file in the Constant Value Checker directory must
-be passed as a stub file for the checker.
+%% This is an implementation detail that does not belong in the user
+%% manual, because users don't have to do anything.
+% When using the Constant Value Checker as part of another checker, the
+% \code{statically-executable.astub} file in the Constant Value Checker directory must
+% be passed as a stub file for the checker.
 \item
 Alternately, you can run just the Constant Value Checker, by
 supplying the following command-line options to javac:
