@@ -5,17 +5,16 @@ import java.util.List;
 
 class Issue1981 {
 
-    @SuppressWarnings("unchecked")
-    void test(List ids) {
-        for (List l : func2(func1(ids))) {}
+    void test(List<Integer> ids) {
+        for (List<Integer> l : func2(func1(ids))) {}
     }
 
-    static <E extends Comparable<? super E>> List func1(Iterable<? extends E> elements) {
+    static <E extends Comparable<? super E>> List<E> func1(Iterable<? extends E> elements) {
         // :: error: (return.type.incompatible)
         return null;
     }
 
-    static List<List> func2(List list) {
+    static <T> List<List<T>> func2(List<T> list) {
         // :: error: (return.type.incompatible)
         return null;
     }
