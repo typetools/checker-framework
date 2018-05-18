@@ -11,8 +11,8 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
+import org.checkerframework.checker.index.samelen.SameLenQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -97,25 +97,23 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
 
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrTree);
+
         // Produce the full list of relevant names by checking the SameLen type.
-        if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
-            if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
-                List<String> slNames =
-                        AnnotationUtils.getElementValueArray(
-                                sameLenAnno, "value", String.class, true);
-                if (qualifier.isLessThanLengthOfAny(slNames)) {
+        if (sameLenAnno != null) {
+            SameLenQualifier slq = SameLenQualifier.of(sameLenAnno);
+            if (qualifier.isLessThanLengthOfAny(slq)) {
+                return;
+            }
+            List<String> slNames = slq.sameLenArrays();
+            for (String slName : slNames) {
+                // Check if any of the arrays have a minlen that is greater than the
+                // known constant value.
+                int minlenSL =
+                        atypeFactory
+                                .getValueAnnotatedTypeFactory()
+                                .getMinLenFromString(slName, arrTree, getCurrentPath());
+                if (valMax != null && valMax < minlenSL) {
                     return;
-                }
-                for (String slName : slNames) {
-                    // Check if any of the arrays have a minlen that is greater than the
-                    // known constant value.
-                    int minlenSL =
-                            atypeFactory
-                                    .getValueAnnotatedTypeFactory()
-                                    .getMinLenFromString(slName, arrTree, getCurrentPath());
-                    if (valMax != null && valMax < minlenSL) {
-                        return;
-                    }
                 }
             }
         }

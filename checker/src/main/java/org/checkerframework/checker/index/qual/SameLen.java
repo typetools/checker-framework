@@ -18,4 +18,18 @@ public @interface SameLen {
     /** A list of other sequences with the same length. */
     @JavaExpression
     String[] value();
+
+    /**
+     * When an index for the value[i] is added to offset[i], then the resulting expression is an
+     * index for the array that is annotated with this SameLen annotation. The {@code offset}
+     * element must ether be empty or the same length as {@code value}. These offets work exactly
+     * like those in {@link LTLengthOf}. The default value for the offset is "0", meaning that the
+     * length of the annotated array is exactly the length the arrays listed in the value
+     * expressions.
+     *
+     * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
+     * expressions. For example, {@code @SameLen(value = "a", offset = "x + y + 2"}}.
+     */
+    @JavaExpression
+    String[] offset() default {};
 }

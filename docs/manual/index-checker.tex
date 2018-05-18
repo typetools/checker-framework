@@ -451,7 +451,7 @@ like the following:
 When needed, you can specify which sequences have the same length using the following type qualifiers (Figure~\ref{fig-index-array-types}):
 
 \begin{description}
-\item[\refqualclasswithparams{checker/index/qual}{SameLen}{String[] names}]
+\item[\refqualclasswithparams{checker/index/qual}{SameLen}{String[] names, String[] offset}]
   An expression with this type represents a sequence that has the
   same length as the other sequences named in \<names>. In general,
   \code{@SameLen} types that have non-intersecting sets of names
@@ -471,6 +471,13 @@ When needed, you can specify which sequences have the same length using the foll
   \code{null} has this type.
 \end{description}
 
+\code{@SameLen} annotations can take an optional offset argument. If one offset is provided,
+there must be exactly as many offsets as sequence names. If no offsets are provided, then
+it is assumed that the offsets are zero. A \code{@SameLen} annotation on a sequence $s$ with
+a target sequence $t$ and an offset $x$ means that an expression $e$ is an index for $s$ if
+its type is exactly \code{LTLengthOf} with respect to $t$ with an offset $y$ such that $x + y = 0$.
+This relationship is not symetric and is never inferred; it is meant to be written on custom collections
+that are views of larger backing arrays.
 
 \section{Binary search indices\label{index-searchindex}}
 
