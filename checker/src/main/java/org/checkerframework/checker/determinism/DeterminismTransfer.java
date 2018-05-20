@@ -39,7 +39,7 @@ public class DeterminismTransfer extends CFTransfer {
             int startIndex = methodnameWithoutReceiver.indexOf(".");
             int endIndex = methodnameWithoutReceiver.indexOf("(");
             String methName = methodnameWithoutReceiver.substring(startIndex + 1, endIndex);
-            if (methName.equals("sort")) {
+            if (methName.equals("sort") && receiver.getType().getAnnotationMirrors().size() > 0) {
                 //Check if receiver has OrderNonDet annotation
                 AnnotationMirror receiverAnno =
                         receiver.getType().getAnnotationMirrors().iterator().next();
