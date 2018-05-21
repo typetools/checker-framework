@@ -48,11 +48,14 @@ fi
 # subsequent command to build it except to test building it.
 
 set -e
+# Checks for the existence of a repository
+GITEXISTS="wget -q --spider"
+
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   # plume-lib-typecheck: 30 minutes
   set +e
-  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-"
-  git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-
+  echo "Running: $GITEXISTS https://github.com/${SLUGOWNER}/plume-lib.git &>-"
+  $GITEXISTS https://github.com/${SLUGOWNER}/plume-lib.git &>-
   if [ "$?" -ne 0 ]; then
     PLSLUGOWNER=mernst
   else
@@ -83,8 +86,8 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
   # checker-framework-inference: 18 minutes
   set +e
-  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
-  git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
+  echo "Running: $GITEXISTS https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
+  $GITEXISTS https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
   if [ "$?" -ne 0 ]; then
     CFISLUGOWNER=typetools
   else

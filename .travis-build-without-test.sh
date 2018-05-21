@@ -23,8 +23,10 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 
+# Checks for the existence of a repository
+GITEXISTS="wget -q --spider"
+
 ## Build annotation-tools (Annotation File Utilities)
-WGETCMD="wget -q --spider"
 if [ -d ../annotation-tools ] ; then
     # Older versions of git don't support the -C command-line option
     echo "Running: (cd ../annotation-tools && git pull)"
@@ -32,8 +34,8 @@ if [ -d ../annotation-tools ] ; then
     echo "... done: (cd ../annotation-tools && git pull)"
 else
     set +e
-    echo "Running: $WGETCMD https://github.com/${SLUGOWNER}/annotation-tools.git &>-"
-    $WGETCMD https://github.com/${SLUGOWNER}/annotation-tools.git &>-
+    echo "Running: $GITEXISTS https://github.com/${SLUGOWNER}/annotation-tools.git &>-"
+    $GITEXISTS https://github.com/${SLUGOWNER}/annotation-tools.git &>-
     if [ "$?" -ne 0 ]; then
         ATSLUGOWNER=typetools
     else
@@ -59,8 +61,8 @@ if [ -d ../stubparser ] ; then
     echo "... done: (cd ../stubparser && git pull)"
 else
     set +e
-    echo "Running: $WGETCMD https://github.com/${SLUGOWNER}/stubparser.git &>-"
-    $WGETCMD https://github.com/${SLUGOWNER}/stubparser.git &>-
+    echo "Running: $GITEXISTS https://github.com/${SLUGOWNER}/stubparser.git &>-"
+    $GITEXISTS https://github.com/${SLUGOWNER}/stubparser.git &>-
     if [ "$?" -ne 0 ]; then
         SPSLUGOWNER=typetools
     else
