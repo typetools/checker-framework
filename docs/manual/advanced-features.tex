@@ -1172,10 +1172,9 @@ The set of permitted expressions is a subset of all Java expressions:
 % indices.
 
 \item
-  a local variable.  This is not applicable for method annotations, but is
-  applicable to type annotations such as
-  \refqualclass{checker/nullness/qual}{KeyFor}.  Write the variable name.  For
-  example: \<myLocalVar>.
+  a local variable.  Write the variable name.  For example: \<myLocalVar>.
+  The variable must be in scope; for example, a method annotation on method
+  \<m> cannot mention a local variable that is declared inside \<m>.
 
 \item
   a static variable.  Write the class name and the variable, as in

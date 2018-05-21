@@ -76,7 +76,11 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     /** @return the type_index of anno's TypeAnnotationPosition */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
-        return anno.getPosition().type_index;
+        int type_index = anno.getPosition().type_index;
+        // TODO: this is a workaround of a bug in langtools
+        // https://bugs.openjdk.java.net/browse/JDK-8164519
+        // This bug is fixed in Java 9.
+        return type_index == 0xffff ? -1 : type_index;
     }
 
     /** @return TargetType.CLASS_EXTENDS */

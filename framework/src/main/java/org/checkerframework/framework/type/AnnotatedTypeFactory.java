@@ -2933,11 +2933,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // 1. jdk.astub
         if (!checker.hasOption("ignorejdkastub")) {
-            InputStream in = null;
-            in = checker.getClass().getResourceAsStream("jdk.astub");
+            InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
                 StubParser.parse(
-                        "jdk.astub",
+                        checker.getClass().getResource("jdk.astub").toString(),
                         in,
                         this,
                         processingEnv,
@@ -2994,8 +2993,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.size() == 0) {
-                InputStream in = null;
-                in = checker.getClass().getResourceAsStream(stubPath);
+                InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
                     StubParser.parse(
                             stubPath,

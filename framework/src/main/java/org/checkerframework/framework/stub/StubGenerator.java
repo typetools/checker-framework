@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>A stub file can be used to add annotations to methods of classes, that are only available in
  * binary or the source of which cannot be edited.
  *
- * @checker_framework.manual #stub-creating-and-using Using stub classes
+ * @checker_framework.manual #stub Using stub classes
  */
 public class StubGenerator {
     /** The indentation for the class */

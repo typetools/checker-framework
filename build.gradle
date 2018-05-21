@@ -58,7 +58,7 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.0'
+    version '2.5.1'
 
     repositories {
         mavenCentral()
@@ -174,6 +174,13 @@ List<String> getJavaFilesToFormat(projectName) {
             javaFiles.add(details.file)
         }
     }
+     // Collect all java files in jtreg directory
+    fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+            javaFiles.add(details.file)
+        }
+    }
+
     List<String> args = new ArrayList<>();
     for (File f : javaFiles) {
         args += f.absolutePath
@@ -222,6 +229,9 @@ task downloadJtreg(type: Download) {
             from tarTree(dest)
             into "${jtregHome}/.."
         }
+        exec {
+            commandLine('chmod',  '+x', "${jtregHome}/bin/jtdiff", "${jtregHome}/bin/jtreg")
+        }
     }
 }
 
@@ -239,6 +249,18 @@ task getCodeFormatScripts() {
             workingDir "${formatScriptsHome}/../"
             executable 'git'
             args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+        }
+    }
+}
+
+task tags {
+    description 'Create Emacs TAGS table'
+    doLast {
+        exec {
+            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "util/TAGS", "-i", "docs/manual/TAGS"
+        }
+        exec {
+            commandLine "make", "-C", "docs/manual", "tags"
         }
     }
 }
@@ -320,7 +342,7 @@ subprojects {
         tasks.create(name: 'sourcesJar', type: Jar) {
             description 'Creates sources jar.'
             classifier = 'source'
-            baseName = project.name
+            baseName = jar.baseName
             from sourceSets.main.java
         }
 
@@ -328,7 +350,7 @@ subprojects {
         tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
             description 'Creates javadoc jar.'
             classifier = 'javadoc'
-            baseName = project.name
+            baseName = jar.baseName
             from tasks.javadoc.destinationDir
         }
 
@@ -363,7 +385,7 @@ subprojects {
                         args = [
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",
-                                "-reportDir: ${jtregOutput}/${name}/report",
+                                "-reportDir:${jtregOutput}/${name}/report",
                                 "-verbose:summary",
                                 "-javacoptions:-g",
                                 "-keywords:!ignore",
@@ -587,7 +609,7 @@ task releaseBuild(type: GradleBuild) {
     description 'Build everything required for a release'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
-    // This download rather than builds the jdk8.jar because that's what is used in all the Travis tests.
+    // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
