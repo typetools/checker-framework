@@ -476,7 +476,22 @@ public class InferenceFactory {
             ExpressionTree expressionTree, Java8InferenceContext context) {
         if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
             if (!TreeUtils.isDiamondTree(expressionTree)) {
-                return (ExecutableType) TreeUtils.elementFromUse(expressionTree).asType();
+                NewClassTree newClassTree = (NewClassTree) expressionTree;
+                ExecutableType type =
+                        (ExecutableType) TreeUtils.elementFromUse(expressionTree).asType();
+                List<? extends Tree> typeArgs =
+                        TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
+                if (!typeArgs.isEmpty()) {
+                    List<TypeMirror> args = new ArrayList<>();
+                    for (Tree arg : typeArgs) {
+                        args.add(TreeUtils.typeOf(arg));
+                    }
+
+                    return (ExecutableType)
+                            TypesUtils.substitute(type, args, type.getTypeVariables(), context.env);
+                }
+
+                return type;
             }
         } else if (expressionTree.getKind() != Tree.Kind.METHOD_INVOCATION) {
             return null;

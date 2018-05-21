@@ -778,12 +778,12 @@ public final class TypesUtils {
      */
     public static TypeMirror substitute(
             TypeMirror type,
-            List<? extends TypeVariable> typeVariables,
+            List<? extends TypeMirror> typeVariables,
             List<? extends TypeMirror> typeArgs,
             ProcessingEnvironment env) {
 
         List<Type> newP = new ArrayList<>();
-        for (TypeVariable typeVariable : typeVariables) {
+        for (TypeMirror typeVariable : typeVariables) {
             newP.add((Type) typeVariable);
         }
 

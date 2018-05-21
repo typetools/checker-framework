@@ -718,6 +718,20 @@ public final class TreeUtils {
         }
     }
 
+    public static final List<? extends Tree> getTypeArgumentsToNewClassTree(Tree tree) {
+        switch (tree.getKind()) {
+            case ANNOTATED_TYPE:
+                return getTypeArgumentsToNewClassTree(
+                        ((AnnotatedTypeTree) tree).getUnderlyingType());
+            case PARAMETERIZED_TYPE:
+                return ((ParameterizedTypeTree) tree).getTypeArguments();
+            case NEW_CLASS:
+                return getTypeArgumentsToNewClassTree(((NewClassTree) tree).getIdentifier());
+            default:
+                return new ArrayList<>();
+        }
+    }
+
     /** Returns true if the tree represents a {@code String} concatenation operation */
     public static final boolean isStringConcatenation(Tree tree) {
         return (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree)));
