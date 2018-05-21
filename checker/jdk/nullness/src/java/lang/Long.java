@@ -49,4 +49,5 @@ public final class Long extends Number implements Comparable<Long> {
   @Pure public static long reverse(long a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int signum(long a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static long reverseBytes(long a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int compare(long x, long y) { throw new RuntimeException("skeleton method"); }
 }

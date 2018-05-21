@@ -49,4 +49,5 @@ public final class Integer extends Number implements Comparable<Integer> {
   @Pure public static int reverse(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int signum(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int reverseBytes(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure  public static int compare(int x, int y) { throw new RuntimeException("skeleton method"); }
 }
