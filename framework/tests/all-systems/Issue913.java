@@ -2,7 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/913
 
 class Issue913 {
-    @SuppressWarnings("determinism")
     void test(Ordering<Object> o) {
         Multimap<Long> newMap = create(o);
     }

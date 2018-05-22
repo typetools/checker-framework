@@ -2,6 +2,7 @@ import java.lang.annotation.ElementType;
 
 class MyEnumSet<E extends Enum<E>> {}
 
+@SuppressWarnings("determinism")
 class Enumeration {
     public enum VarFlags {
         IS_PARAM,
@@ -26,7 +27,6 @@ class Enumeration {
         return ref;
     }
 
-    @SuppressWarnings("determinism")
     class Test<T extends Enum<T>> {
         void m(Class<T> p) {
             checkNotNull(p);
@@ -41,7 +41,6 @@ class Enumeration {
 
     class Unbound<X extends Object> {}
 
-    @SuppressWarnings("determinism")
     class Test2<T extends Unbound<S>, S extends Unbound<T>> {
         void m(Class<T> p, Class<S> q) {
             checkNotNull2(p, q);

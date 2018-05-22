@@ -7,7 +7,7 @@ interface AInterface<T> {
 
 class B implements AInterface<Object> {
     // This shouldn't work for nullness as the function won't take possibly nullable values.
-    @SuppressWarnings({"determinism", "nullness", "fenum:override.param.invalid", "aliasing"})
+    @SuppressWarnings({"nullness", "fenum:override.param.invalid", "aliasing"})
     @Override
     public int transform(List<? super Object> function) {
         return 0;

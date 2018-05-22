@@ -1,6 +1,5 @@
 // Test case for Issue 145
 // https://github.com/typetools/checker-framework/issues/145
-@SuppressWarnings("determinism")
 class UnionTypes {
     public void TryCatch() {
         try {

@@ -15,7 +15,7 @@ class WildcardCharPrimitive {
             public boolean matches(char c) {
                 //  this will happen when a type system does not have an EXPLICIT_LOWER_BOUND
                 //  that matches the default for char c
-                @SuppressWarnings({"argument.type.incompatible", "determinism"})
+                @SuppressWarnings({"argument.type.incompatible"})
                 boolean value = predicate.apply(c);
                 return value;
             }

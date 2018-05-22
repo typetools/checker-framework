@@ -4,7 +4,6 @@ class InferAndWildcards {
         return clazz;
     }
 
-    @SuppressWarnings("determinism")
     <TTT> void a(Class<TTT> clazz) {
         Class<? extends TTT> v = b(clazz);
     }

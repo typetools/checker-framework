@@ -5,10 +5,8 @@ public class TryCatchError {
         try {
 
         } catch (LinkageError e) {
-            // ::error: (throw.type.invalid)
             throw e;
         } catch (AssertionError e) {
-            // ::error: (throw.type.invalid)
             throw e;
         }
     }

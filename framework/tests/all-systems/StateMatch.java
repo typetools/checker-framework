@@ -12,7 +12,6 @@ public class StateMatch {
         if (!(state instanceof double[][])) {
             System.out.println("");
         }
-        @SuppressWarnings("determinism")
         double[][] e = (double[][]) state;
         boolean match = false;
         if (elts[0] == e[0]) {

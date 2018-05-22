@@ -29,7 +29,6 @@ class Issue450 {
 
         Consumer<String> cs1 = (false) ? Issue450::consumeStr2 : Issue450::consumeStr;
         Consumer<String> cs2 = (false) ? e : Issue450::consumeStr;
-        @SuppressWarnings("determinism")
         Top t = (false) ? s : Issue450::consumeStr;
 
         new Issue450(42, new Thread()::start); // Use lambda as a constructor argument

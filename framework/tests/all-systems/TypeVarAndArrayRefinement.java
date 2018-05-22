@@ -2,7 +2,6 @@
 class TypeVarAndArrayRefinement {
 
     private <T extends Enum<T>> T getEnumValue(Class<T> enumType, String name) {
-        @SuppressWarnings("determinism")
         T[] constants = enumType.getEnumConstants();
         if (constants == null) {
             throw new IllegalArgumentException(enumType.getName() + " is not an enum type");

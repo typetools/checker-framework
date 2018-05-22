@@ -5,10 +5,8 @@ public class TryCatchException {
         try {
 
         } catch (IndexOutOfBoundsException | NullPointerException ex) {
-            // ::error: (throw.type.invalid)
             throw ex;
         } catch (IllegalArgumentException e) {
-            // ::error: (throw.type.invalid)
             throw e;
         }
     }

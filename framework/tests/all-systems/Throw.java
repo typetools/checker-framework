@@ -1,6 +1,5 @@
 import java.util.List;
 
-@SuppressWarnings("determinism")
 class Throw {
     <E extends Exception> void throwTypeVar(E ex) {
         try {

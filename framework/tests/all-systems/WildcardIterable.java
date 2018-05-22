@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("determinism")
 public class WildcardIterable {
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {

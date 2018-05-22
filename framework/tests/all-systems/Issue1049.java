@@ -5,7 +5,7 @@ public class Issue1049 {
         T get();
     }
 
-    @SuppressWarnings({"known.nonnull", "determinism"})
+    @SuppressWarnings({"known.nonnull"})
     void bar(Gen<?> g) {
         Gen<?> l = g.get() != null ? g.get() : g;
     }

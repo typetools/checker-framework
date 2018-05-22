@@ -13,7 +13,6 @@ class CheckThrow {
 
     void throwWildcard(List<? extends Exception> list) {
         try {
-            // ::error: (throw.type.invalid)
             throw list.get(0);
         } catch (Exception e) {
 
