@@ -510,6 +510,29 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     @Override
+    public Boolean visitDeclared_Wildcard(
+            AnnotatedDeclaredType type1, AnnotatedWildcardType type2, Void p) {
+        if (type2.atypeFactory.ignoreUninferredTypeArguments
+                && (type2.isUninferredTypeArgument())) {
+            return true;
+        }
+        final QualifierHierarchy qualifierHierarchy = type1.atypeFactory.getQualifierHierarchy();
+
+        // TODO: add proper checks
+        // TODO: compare whole types instead of just main modifiers
+        AnnotationMirror q1 =
+                AnnotatedTypes.findEffectiveAnnotationInHierarchy(
+                        qualifierHierarchy, type1, currentTop);
+        AnnotationMirror q2 =
+                AnnotatedTypes.findEffectiveAnnotationInHierarchy(
+                        qualifierHierarchy, type2, currentTop);
+
+        Boolean result = qualifierHierarchy.isSubtype(q1, q2);
+        visitHistory.add(type1, type2, currentTop, result);
+        return result;
+    }
+
+    @Override
     public Boolean visitTypevar_Declared(
             AnnotatedTypeVariable type1, AnnotatedDeclaredType type2, Void p) {
         // TODO: add proper checks
