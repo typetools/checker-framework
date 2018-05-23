@@ -14,7 +14,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -210,33 +209,72 @@ public class SameLenQualifier {
     }
 
     /**
-     * Removes the given sequence and offset from this qualifier. Returns true iff the resulting
-     * qualifier would be empty.
+     * Determines whether it is possible to remove the given sequence's mapping and still have a
+     * valid SameLenQualifier.
      */
-    public boolean remove(String sequence) {
-        offsets.remove(sequence, OffsetEquation.ZERO);
-        return offsets.keySet().size() == 0;
+    public boolean canRemove(String sequence) {
+        return offsets.keySet().contains(sequence) && offsets.keySet().size() == 1;
+    }
+
+    /**
+     * Returns a new SameLenQualifier with the mapping for the given sequence removed.
+     *
+     * <p>Note that you should always call canRemove(sequence) before calling this method. If
+     * canRemove returns false, this method is guaranteed to throw an UnsupportedOperationException.
+     */
+    public SameLenQualifier remove(String sequence) {
+        if (!offsets.keySet().contains(sequence)) {
+            throw new UnsupportedOperationException(
+                    "cannot remove "
+                            + sequence
+                            + " from SameLenQualifier, because it is not mapped.");
+        } else if (!canRemove(sequence)) {
+            throw new UnsupportedOperationException(
+                    "cannot remove "
+                            + sequence
+                            + " from SameLenQualifier, because it is the only mapped sequence");
+        } else {
+            List<String> sequences =
+                    offsets.keySet()
+                            .stream()
+                            .filter(seq -> !seq.equals(sequence))
+                            .collect(Collectors.toList());
+            List<String> newOffsets =
+                    sequences
+                            .stream()
+                            .map(seq -> offsets.get(seq).toString())
+                            .collect(Collectors.toList());
+            return of(sequences, newOffsets);
+        }
+    }
+
+    /** Returns a list of all the strings mapped by this qualifier. */
+    public List<String> getAllArrays() {
+        return new ArrayList<>(offsets.keySet());
+    }
+
+    /**
+     * Adds the offset associated with the given sequence to all elements of the passed set to
+     * create the returned set. If the set is modified, this method returns a copy of the set.
+     *
+     * <p>If the given replacementSequence is not mapped by this SameLenQualifier, then this will
+     * return a reference to the passed set of offsets.
+     */
+    public Set<OffsetEquation> addOffsetToAll(
+            String replacementSequence, Set<OffsetEquation> otherOffsets) {
+        OffsetEquation sameLenOffset = offsets.get(replacementSequence);
+        if (sameLenOffset == null) {
+            return otherOffsets;
+        } else {
+            return otherOffsets
+                    .stream()
+                    .map(otherOffset -> sameLenOffset.copyAdd('+', otherOffset))
+                    .collect(Collectors.toSet());
+        }
     }
 
     @Override
     public String toString() {
         return "SameLenQualifier{" + "offsets=" + offsets + '}';
-    }
-
-    /** Accesses the map directly, so use with caution. */
-    public @Nullable OffsetEquation get(String sameLenArrayName) {
-        if (offsets.containsKey(sameLenArrayName)) {
-            return offsets.get(sameLenArrayName);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Gives all the strings with entries in this qualifier. Very dangerous - don't modify what's
-     * returned.
-     */
-    public Set<String> getAllArrays() {
-        return offsets.keySet();
     }
 }

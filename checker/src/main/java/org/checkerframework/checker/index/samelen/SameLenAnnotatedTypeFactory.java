@@ -166,10 +166,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror anm = atm.getAnnotation(SameLen.class);
                 if (anm != null) {
                     SameLenQualifier slq = SameLenQualifier.of(anm);
-                    if (slq.remove(varName)) {
+                    if (!slq.canRemove(varName)) {
                         atm.replaceAnnotation(UNKNOWN);
                     } else {
-                        atm.replaceAnnotation(slq.convertToAnnotation(processingEnv));
+                        atm.replaceAnnotation(
+                                slq.remove(varName).convertToAnnotation(processingEnv));
                     }
                 }
             }

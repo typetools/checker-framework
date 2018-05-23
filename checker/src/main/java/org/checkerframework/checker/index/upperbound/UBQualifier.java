@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
@@ -855,13 +854,8 @@ public abstract class UBQualifier {
                     continue;
                 }
 
-                OffsetEquation sameLenOffset = slq.get(replacementSequence);
-
                 Set<OffsetEquation> otherOffsetsMapped =
-                        otherOffsets
-                                .stream()
-                                .map(otherOffset -> sameLenOffset.copyAdd('+', otherOffset))
-                                .collect(Collectors.toSet());
+                        slq.addOffsetToAll(replacementSequence, otherOffsets);
 
                 isValid = isValid || containsSame(offsets, otherOffsetsMapped);
             }
