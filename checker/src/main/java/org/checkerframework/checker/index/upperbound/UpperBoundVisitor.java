@@ -276,27 +276,39 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
         ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
                 atypeFactory.getValueAnnotatedTypeFactory();
+
         checkloop:
         for (String sequenceName : varLtlQual.getSequences()) {
 
-            List<String> sameLenSequences =
-                    sameLenFactory.getSameLensFromString(sequenceName, valueExp, getCurrentPath());
-            if (testSameLen(expQual, varLtlQual, sameLenSequences, sequenceName)) {
-                continue;
-            }
-
+            // test minlen
             int minlen =
                     valueAnnotatedTypeFactory.getMinLenFromString(
                             sequenceName, valueExp, getCurrentPath());
             if (testMinLen(value, minlen, sequenceName, varLtlQual)) {
                 continue;
             }
-            for (String sequence : sameLenSequences) {
-                int minlenSL =
-                        valueAnnotatedTypeFactory.getMinLenFromString(
-                                sequence, valueExp, getCurrentPath());
-                if (testMinLen(value, minlenSL, sequenceName, varLtlQual)) {
-                    continue checkloop;
+
+            SameLenQualifier slq =
+                    sameLenFactory.getSameLenQualifierFromString(
+                            sequenceName, valueExp, getCurrentPath());
+
+            // test SameLen directly, then minlens of samelens
+
+            if (slq != null) {
+
+                boolean testSameLen = testSameLen(expQual, varLtlQual, slq, sequenceName);
+
+                if (testSameLen) {
+                    continue;
+                }
+
+                for (String sequence : slq.sameLenArrays()) {
+                    int minlenSL =
+                            valueAnnotatedTypeFactory.getMinLenFromString(
+                                    sequence, valueExp, getCurrentPath());
+                    if (testMinLen(value, minlenSL, sequenceName, varLtlQual)) {
+                        continue checkloop;
+                    }
                 }
             }
 
@@ -307,28 +319,17 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Tests whether replacing any of the arrays in sameLenArrays with arrayName makes expQual
-     * equivalent to varQual.
+     * Tests whether replacing any of the arrays in slq with arrayName makes expQual equivalent to
+     * varQual.
      */
     private boolean testSameLen(
-            UBQualifier expQual,
-            LessThanLengthOf varQual,
-            List<String> sameLenArrays,
-            String arrayName) {
+            UBQualifier expQual, LessThanLengthOf varQual, SameLenQualifier slq, String arrayName) {
 
         if (!expQual.isLessThanLengthQualifier()) {
             return false;
         }
 
-        for (String sameLenArrayName : sameLenArrays) {
-            // Check whether replacing the value for any of the current type's offset results
-            // in the type we're trying to match.
-            if (varQual.isValidReplacement(
-                    arrayName, sameLenArrayName, (LessThanLengthOf) expQual)) {
-                return true;
-            }
-        }
-        return false;
+        return varQual.isValidReplacement(arrayName, slq, (LessThanLengthOf) expQual);
     }
 
     /**

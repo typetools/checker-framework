@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
@@ -839,16 +840,33 @@ public abstract class UBQualifier {
          * replacementSequence entry in other.
          */
         public boolean isValidReplacement(
-                String sequence, String replacementSequence, LessThanLengthOf other) {
-            Set<OffsetEquation> offsets = map.get(sequence);
-            if (offsets == null) {
-                return false;
+                String sequence, SameLenQualifier slq, LessThanLengthOf other) {
+
+            boolean isValid = false;
+
+            for (String replacementSequence : slq.getAllArrays()) {
+
+                Set<OffsetEquation> offsets = map.get(sequence);
+                if (offsets == null) {
+                    continue;
+                }
+                Set<OffsetEquation> otherOffsets = other.map.get(replacementSequence);
+                if (otherOffsets == null) {
+                    continue;
+                }
+
+                OffsetEquation sameLenOffset = slq.get(replacementSequence);
+
+                Set<OffsetEquation> otherOffsetsMapped =
+                        otherOffsets
+                                .stream()
+                                .map(otherOffset -> sameLenOffset.copyAdd('+', otherOffset))
+                                .collect(Collectors.toSet());
+
+                isValid = isValid || containsSame(offsets, otherOffsetsMapped);
             }
-            Set<OffsetEquation> otherOffsets = other.map.get(replacementSequence);
-            if (otherOffsets == null) {
-                return false;
-            }
-            return containsSame(offsets, otherOffsets);
+
+            return isValid;
         }
 
         @Override

@@ -14,13 +14,13 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Analogue of {@link org.checkerframework.checker.index.upperbound.UBQualifier} for SameLen. */
 public class SameLenQualifier {
     private final Map<String, OffsetEquation> offsets;
-    private final List<String> sequences;
 
     /**
      * Produces a SameLen qualifier with the given list of sequences and offsets. The lists must
@@ -30,9 +30,6 @@ public class SameLenQualifier {
      * <p>May return null if the sequence list is empty.
      */
     public static SameLenQualifier of(List<String> sequenceList, List<String> offsetList) {
-        if (sequenceList.size() == 0) {
-            return null;
-        }
         if (offsetList.size() == 0) {
             offsetList = Collections.nCopies(sequenceList.size(), "0");
         }
@@ -69,10 +66,14 @@ public class SameLenQualifier {
     private SameLenQualifier(List<String> sequenceList, List<String> offsetList) {
         assert sequenceList.size() == offsetList.size();
         assert sequenceList.size() != 0;
-        sequences = sequenceList;
         offsets = new HashMap<>();
         for (int i = 0; i < sequenceList.size(); i++) {
             String sequence = sequenceList.get(i);
+            if (sequence.length() >= 2
+                    && sequence.charAt(0) == '"'
+                    && sequence.charAt(sequence.length() - 1) == '"') {
+                sequence = sequence.substring(1, sequence.length() - 1);
+            }
             String offset = offsetList.get(i);
             offsets.put(sequence, OffsetEquation.createOffsetFromJavaExpression(offset));
         }
@@ -89,6 +90,8 @@ public class SameLenQualifier {
      * @return the AnnotationMirror that represents this qualifier
      */
     public AnnotationMirror convertToAnnotation(ProcessingEnvironment env) {
+        List<String> sequences = new ArrayList<>();
+        sequences.addAll(offsets.keySet());
         Collections.sort(sequences);
         List<String> offset =
                 sequences
@@ -109,7 +112,7 @@ public class SameLenQualifier {
     /** @return The list of sequences with an offset of the given string. */
     public List<String> sameLenArrays(String s) {
         List<String> result =
-                sequences
+                offsets.keySet()
                         .stream()
                         .filter(sequence -> offsets.get(sequence).toString().equals(s))
                         .collect(Collectors.toList());
@@ -128,7 +131,7 @@ public class SameLenQualifier {
 
     /** Returns true iff every sequence in the superType has the same offset in this qualifier. */
     public boolean isSubtype(SameLenQualifier superType) {
-        for (String superArray : superType.sequences) {
+        for (String superArray : superType.offsets.keySet()) {
             if (!superType.offsets.get(superArray).equals(offsets.get(superArray))) {
                 return false;
             }
@@ -144,10 +147,10 @@ public class SameLenQualifier {
      */
     public AnnotationMirror lub(
             SameLenQualifier other, AnnotationMirror unknown, ProcessingEnvironment env) {
-        if (!Collections.disjoint(this.sequences, other.sequences)) {
+        if (!Collections.disjoint(this.offsets.keySet(), other.offsets.keySet())) {
             List<String> intersection = new ArrayList<>();
-            intersection.addAll(sequences);
-            intersection.retainAll(other.sequences);
+            intersection.addAll(offsets.keySet());
+            intersection.retainAll(other.offsets.keySet());
             List<String> intersectionOffsets = new ArrayList<>();
             for (String sequence : intersection) {
                 if (offsets.get(sequence).equals(other.offsets.get(sequence))) {
@@ -168,7 +171,7 @@ public class SameLenQualifier {
      */
     public AnnotationMirror glb(
             SameLenQualifier other, AnnotationMirror bottom, ProcessingEnvironment env) {
-        if (!Collections.disjoint(sequences, other.sequences)) {
+        if (!Collections.disjoint(offsets.keySet(), other.offsets.keySet())) {
             return this.combine(other).convertToAnnotation(env);
         } else {
             return bottom;
@@ -183,8 +186,8 @@ public class SameLenQualifier {
      */
     public SameLenQualifier combine(SameLenQualifier other) {
         Set<String> union = new HashSet<>();
-        union.addAll(sequences);
-        union.addAll(other.sequences);
+        union.addAll(offsets.keySet());
+        union.addAll(other.offsets.keySet());
         List<String> unionOffsets = new ArrayList<>();
         for (String sequence : union) {
             if (offsets.containsKey(sequence) && other.offsets.containsKey(sequence)) {
@@ -204,5 +207,36 @@ public class SameLenQualifier {
                         + " \nand\n "
                         + unionOffsets.toString();
         return of(new ArrayList<>(union), unionOffsets);
+    }
+
+    /**
+     * Removes the given sequence and offset from this qualifier. Returns true iff the resulting
+     * qualifier would be empty.
+     */
+    public boolean remove(String sequence) {
+        offsets.remove(sequence, OffsetEquation.ZERO);
+        return offsets.keySet().size() == 0;
+    }
+
+    @Override
+    public String toString() {
+        return "SameLenQualifier{" + "offsets=" + offsets + '}';
+    }
+
+    /** Accesses the map directly, so use with caution. */
+    public @Nullable OffsetEquation get(String sameLenArrayName) {
+        if (offsets.containsKey(sameLenArrayName)) {
+            return offsets.get(sameLenArrayName);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Gives all the strings with entries in this qualifier. Very dangerous - don't modify what's
+     * returned.
+     */
+    public Set<String> getAllArrays() {
+        return offsets.keySet();
     }
 }

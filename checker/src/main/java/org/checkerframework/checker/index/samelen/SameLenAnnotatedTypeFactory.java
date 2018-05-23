@@ -22,6 +22,7 @@ import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -164,14 +165,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 AnnotationMirror anm = atm.getAnnotation(SameLen.class);
                 if (anm != null) {
-                    List<String> slArrays = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
-                    if (slArrays.contains(varName)) {
-                        slArrays.remove(varName);
-                    }
-                    if (slArrays.size() == 0) {
+                    SameLenQualifier slq = SameLenQualifier.of(anm);
+                    if (slq.remove(varName)) {
                         atm.replaceAnnotation(UNKNOWN);
                     } else {
-                        atm.replaceAnnotation(createSameLen(slArrays.toArray(new String[0])));
+                        atm.replaceAnnotation(slq.convertToAnnotation(processingEnv));
                     }
                 }
             }
@@ -227,7 +225,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 slq = slq.combine(SameLenQualifier.of(anno));
             }
         }
-        return slq.convertToAnnotation(processingEnv);
+        AnnotationMirror result = slq.convertToAnnotation(processingEnv);
+        return result;
     }
 
     public static boolean shouldUseInAnnotation(Receiver receiver) {
@@ -381,9 +380,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Find all the sequences that are members of the SameLen annotation associated with the
-     * sequence named in sequenceExpression along the current path.
+     * sequence named in sequenceExpression along the current path with the given offset.
      */
-    public List<String> getSameLensFromString(
+    public @Nullable SameLenQualifier getSameLenQualifierFromString(
             String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror sameLenAnno = null;
         try {
@@ -395,8 +394,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         if (sameLenAnno == null) {
             // Could not find a more precise type, so return 0;
-            return new ArrayList<>();
+            return null;
         }
-        return SameLenQualifier.of(sameLenAnno).sameLenArrays();
+        return SameLenQualifier.of(sameLenAnno);
     }
 }
