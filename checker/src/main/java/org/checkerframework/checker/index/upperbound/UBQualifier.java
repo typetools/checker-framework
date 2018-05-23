@@ -843,7 +843,7 @@ public abstract class UBQualifier {
 
             boolean isValid = false;
 
-            for (String replacementSequence : slq.getAllArrays()) {
+            for (String replacementSequence : slq.getSequences()) {
 
                 Set<OffsetEquation> offsets = map.get(sequence);
                 if (offsets == null) {

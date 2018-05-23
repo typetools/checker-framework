@@ -210,35 +210,36 @@ public class SameLenQualifier {
 
     /**
      * Determines whether it is possible to remove the given sequence's mapping and still have a
-     * valid SameLenQualifier.
+     * valid SameLenQualifier. Will return false if the only sequence mapped in this qualifier is
+     * the passed sequence, and true otherwise.
      */
     public boolean canRemove(String sequence) {
-        return offsets.keySet().contains(sequence) && offsets.keySet().size() == 1;
+        return !(offsets.keySet().size() == 1 && offsets.keySet().contains(sequence));
     }
 
     /**
      * Returns a new SameLenQualifier with the mapping for the given sequence removed.
      *
+     * <p>If the given sequence is unmapped, returns this qualifier (not a copy).
+     *
      * <p>Note that you should always call canRemove(sequence) before calling this method. If
      * canRemove returns false, this method is guaranteed to throw an UnsupportedOperationException.
      */
     public SameLenQualifier remove(String sequence) {
-        if (!offsets.keySet().contains(sequence)) {
-            throw new UnsupportedOperationException(
-                    "cannot remove "
-                            + sequence
-                            + " from SameLenQualifier, because it is not mapped.");
-        } else if (!canRemove(sequence)) {
+        if (!canRemove(sequence)) {
             throw new UnsupportedOperationException(
                     "cannot remove "
                             + sequence
                             + " from SameLenQualifier, because it is the only mapped sequence");
+        } else if (!offsets.keySet().contains(sequence)) {
+            return this;
         } else {
             List<String> sequences =
                     offsets.keySet()
                             .stream()
                             .filter(seq -> !seq.equals(sequence))
                             .collect(Collectors.toList());
+
             List<String> newOffsets =
                     sequences
                             .stream()
@@ -249,8 +250,8 @@ public class SameLenQualifier {
     }
 
     /** Returns a list of all the strings mapped by this qualifier. */
-    public List<String> getAllArrays() {
-        return new ArrayList<>(offsets.keySet());
+    public Iterable<? extends String> getSequences() {
+        return offsets.keySet();
     }
 
     /**
