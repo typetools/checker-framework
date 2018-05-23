@@ -11,13 +11,13 @@ public class SameLenOffsetSubtyping {
                         )
                         []
                 d = b;
-        // :: error: (assignment.type.incompatible)
         int
                         @SameLen(
                             value = {"a", "b"},
                             offset = {"0", "c"}
                         )
                         []
+                // :: error: (assignment.type.incompatible)
                 e = b;
         int
                         @SameLen(
@@ -26,13 +26,13 @@ public class SameLenOffsetSubtyping {
                         )
                         []
                 f = b;
-        // :: error: (assignment.type.incompatible)
         int
                         @SameLen(
                             value = {"a"},
                             offset = {"0"}
                         )
                         []
+                // :: error: (assignment.type.incompatible)
                 g = b;
     }
 
@@ -56,22 +56,22 @@ public class SameLenOffsetSubtyping {
                         []
                 f = d;
 
-        // :: error: (assignment.type.incompatible)
         int
                         @SameLen(
                             value = {"a", "b", "d"},
                             offset = {"0", "0", "0"}
                         )
                         []
+                // :: error: (assignment.type.incompatible)
                 g = b;
 
-        // :: error: (assignment.type.incompatible)
         int
                         @SameLen(
                             value = {"a", "b", "d"},
                             offset = {"0", "0", "0"}
                         )
                         []
+                // :: error: (assignment.type.incompatible)
                 h = d;
     }
 
