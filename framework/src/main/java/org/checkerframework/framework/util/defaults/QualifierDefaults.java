@@ -12,7 +12,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.lang.annotation.Annotation;
-import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -396,8 +394,10 @@ public class QualifierDefaults {
                     ExpressionTree vtreeInit = vtree.getInitializer();
                     if (vtreeInit != null && prev == vtreeInit) {
                         Element elt = TreeUtils.elementFromDeclaration((VariableTree) t);
-                        DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
-                        DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
+                        AnnotationMirror d =
+                                atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+                        AnnotationMirror ds =
+                                atypeFactory.getDeclAnnotation(elt, DefaultQualifiers.class);
 
                         if (d == null && ds == null) {
                             break;
@@ -483,26 +483,12 @@ public class QualifierDefaults {
         applyToTypeVar = false;
     }
 
-    private DefaultSet fromDefaultQualifier(DefaultQualifier dq) {
-        // TODO: I want to simply write d.value(), but that doesn't work.
-        // It works in other places, e.g. see handling of @SubtypeOf.
-        // The hack below should probably be added to:
-        // Class<? extends Annotation> cls = AnnotationUtils.parseTypeValue(dq, "value");
-        Class<? extends Annotation> cls;
-        try {
-            cls = dq.value();
-        } catch (MirroredTypeException mte) {
-            try {
-                @SuppressWarnings("unchecked")
-                Class<? extends Annotation> clscast =
-                        (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
-                cls = clscast;
-            } catch (ClassNotFoundException e) {
-                ErrorReporter.errorAbort("Could not load qualifier: " + e.getMessage(), e);
-                cls = null;
-            }
-        }
-
+    // dq must be an AnnotationMirror that represent a @DefaultQualifier
+    private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
+        @SuppressWarnings("unchecked")
+        Class<? extends Annotation> cls =
+                (Class<? extends Annotation>)
+                        AnnotationUtils.getElementValueClass(dq, "value", false);
         AnnotationMirror anno = AnnotationBuilder.fromClass(elements, cls);
 
         if (anno == null) {
@@ -514,7 +500,9 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            EnumSet<TypeUseLocation> locations = EnumSet.of(dq.locations()[0], dq.locations());
+            List<TypeUseLocation> locations =
+                    AnnotationUtils.getElementValueEnumArray(
+                            dq, "locations", TypeUseLocation.class, true);
             DefaultSet ret = new DefaultSet();
             for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));
@@ -587,7 +575,7 @@ public class QualifierDefaults {
         DefaultSet qualifiers = null;
 
         {
-            DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
+            AnnotationMirror d = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
 
             if (d != null) {
                 qualifiers = new DefaultSet();
@@ -600,12 +588,15 @@ public class QualifierDefaults {
         }
 
         {
-            DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
+            AnnotationMirror ds = atypeFactory.getDeclAnnotation(elt, DefaultQualifiers.class);
             if (ds != null) {
                 if (qualifiers == null) {
                     qualifiers = new DefaultSet();
                 }
-                for (DefaultQualifier d : ds.value()) {
+                @SuppressWarnings("unchecked") // unchecked conversion to generic type
+                List<AnnotationMirror> values =
+                        AnnotationUtils.getElementValue(ds, "value", List.class, false);
+                for (AnnotationMirror d : values) {
                     Set<Default> p = fromDefaultQualifier(d);
                     if (p != null) {
                         qualifiers.addAll(p);

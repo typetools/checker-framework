@@ -354,6 +354,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                                 .widenToUpperBound(outsideWcUB, (AnnotatedWildcardType) inside);
             }
             while (outsideWcUB.getKind() == TypeKind.WILDCARD) {
+                if (ignoreUninferredTypeArgument(outsideWcUB)) {
+                    return true;
+                }
                 outsideWcUB = ((AnnotatedWildcardType) outsideWcUB).getExtendsBound();
             }
 
@@ -378,6 +381,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                                 .widenToUpperBound(outsideWcUB, (AnnotatedWildcardType) inside);
             }
             while (outsideWcUB.getKind() == TypeKind.WILDCARD) {
+                if (ignoreUninferredTypeArgument(outsideWcUB)) {
+                    return true;
+                }
                 outsideWcUB = ((AnnotatedWildcardType) outsideWcUB).getExtendsBound();
             }
 
