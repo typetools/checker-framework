@@ -49,6 +49,15 @@ never be written by a programmer.}
 \label{fig-map-key-keyfor-hierarchy}
 \end{figure}
 
+\section{Default annotations\label{map-key-defaults}}
+
+The null literal is implicitly annotated with \code{@UnknownKeyFor}, because
+\code{null} is a key for every map.  In order to reduce the number of false
+postives, lower bounds are defaulted to \code{@KeyForBottom}.  If you expect a
+type variable to be instantiated with \code{@KeyFor} for a particular map, then
+you must explictly annotated the lower bound of that type variable with
+\code{@KeyForBottom}.  For example, \code{<@KeyForBottom T>}.
+
 \section{Examples\label{map-key-examples}}
 
 The Map Key Checker keeps track of which variables reference keys to
