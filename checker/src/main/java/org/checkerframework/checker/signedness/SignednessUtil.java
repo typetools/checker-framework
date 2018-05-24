@@ -10,7 +10,9 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
 /**
  * Provides static utility methods for unsigned values. Some re-implement functionality in JDK 8,
  * making it available in earlier versions of Java. Others provide new functionality. {@link
- * SignednessUtilExtra} has more methods that reference
+ * SignednessUtilExtra} has more methods that reference packages that Android does not provide.
+ *
+ * @checker_framework.manual #signedness-utilities Utility routines for manipulating unsigned values
  */
 public final class SignednessUtil {
 
