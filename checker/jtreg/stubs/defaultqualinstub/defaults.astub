@@ -1,0 +1,8 @@
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+package pck;
+
+@DefaultQualifier(Nullable.class)
+class Defaults {
+}

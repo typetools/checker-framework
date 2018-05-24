@@ -2,7 +2,9 @@ package org.checkerframework.common.util.count;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -94,6 +96,22 @@ public class JavaCodeStatistics extends SourceChecker {
                 }
             }
             return super.visitAnnotation(node, aVoid);
+        }
+
+        @Override
+        public Void visitAssert(AssertTree tree, Void aVoid) {
+            ExpressionTree detail = tree.getDetail();
+            if (detail != null) {
+                String msg = detail.toString();
+                for (String indexKey : warningKeys) {
+                    String key = "@AssumeAssertion(" + indexKey;
+                    if (msg.contains(key)) {
+                        numberOfIndexWarningSuppressions++;
+                        return super.visitAssert(tree, aVoid);
+                    }
+                }
+            }
+            return super.visitAssert(tree, aVoid);
         }
 
         @Override
