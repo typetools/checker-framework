@@ -3,7 +3,7 @@ package org.checkerframework.framework.test.diagnostics;
 import java.util.List;
 import org.checkerframework.javacutil.PluginUtil;
 
-/** Represents an entire line of TestDiagnostics which is essentially a list of diagnostics */
+/** Represents a list of TestDiagnostics, which was read from a file. */
 public class TestDiagnosticLine {
     private final String filename;
     private final long lineNumber;
