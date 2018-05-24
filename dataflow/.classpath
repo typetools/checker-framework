@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="bin/main" path="src/main/java">
+	<classpathentry kind="src" path="src/main/java">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
@@ -10,5 +10,5 @@
 	<classpathentry kind="src" path="/checker-qual"/>
 	<classpathentry kind="src" path="/javacutil"/>
 	<classpathentry kind="src" path="/jsr308-langtools"/>
-	<classpathentry kind="output" path="bin/default"/>
+	<classpathentry kind="output" path="build/classes/java/main"/>
 </classpath>

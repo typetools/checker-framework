@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="bin/main" path="src/main/java">
+	<classpathentry kind="src" output="build/classes/java/main" path="src/main/java">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="bin/test" path="src/test/java">
+	<classpathentry kind="src" output="build/classes/java/test" path="src/test/java">
 		<attributes>
 			<attribute name="gradle_scope" value="test"/>
 			<attribute name="gradle_used_by_scope" value="test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="bin/testannotations" path="src/testannotations/java">
+	<classpathentry kind="src" output="build/classes/java/testannotations" path="src/testannotations/java">
 		<attributes>
 			<attribute name="gradle_scope" value="testannotations"/>
 			<attribute name="gradle_used_by_scope" value="test,testannotations"/>
@@ -25,5 +25,5 @@
 	<classpathentry kind="src" path="/javacutil"/>
 	<classpathentry kind="src" path="/jsr308-langtools"/>
 	<classpathentry kind="src" path="/util"/>
-	<classpathentry kind="output" path="bin/default"/>
+	<classpathentry kind="output" path="build/classes/java/default"/>
 </classpath>
