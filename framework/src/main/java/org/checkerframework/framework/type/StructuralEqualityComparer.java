@@ -9,7 +9,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -52,7 +51,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                 return true;
             }
         }
-
+        if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
+            // If one of the types is the NULL type, compare main qualifiers only.
+            return arePrimeAnnosEqual(type1, type2);
+        }
         return super.defaultAction(type1, type2, p);
     }
 
@@ -287,19 +289,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         Boolean result = areAllEqual(type1.directSuperTypes(), type2.directSuperTypes());
         visitHistory.add(type1, type2, currentTop, result);
         return result;
-    }
-
-    /**
-     * Two null types are equal if:
-     *
-     * <ul>
-     *   <li>Their sets of primary annotations are equal
-     * </ul>
-     */
-    @Override
-    public Boolean visitNull_Null(
-            final AnnotatedNullType type1, final AnnotatedNullType type2, final Void p) {
-        return arePrimeAnnosEqual(type1, type2);
     }
 
     /**
@@ -549,12 +538,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitDeclared_Typevar(
             AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, Void p) {
-        // TODO: add proper checks
-        return true;
-    }
-
-    @Override
-    public Boolean visitNull_Typevar(AnnotatedNullType type1, AnnotatedTypeVariable type2, Void p) {
         // TODO: add proper checks
         return true;
     }
