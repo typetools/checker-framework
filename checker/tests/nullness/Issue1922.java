@@ -18,11 +18,8 @@ public class Issue1922 {
     public static String findKeyAndFetchString(Map<String, Object> someMap) {
         // :: error: (type.argument.type.incompatible)
         @Nullable @KeyFor("someMap") String myKey = Issue1922.<@KeyFor("someMap") String>findKey(someMap.keySet(), "Foo");
-        // If I change above line to this line, I do get an error:
-        //@Nullable @KeyFor("someMap") String myKey = null;
 
         Object value = someMap.get(myKey);
-        // value will be null here, but checker gives no error:
         return value.toString();
     }
 
