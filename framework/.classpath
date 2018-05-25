@@ -3,9 +3,9 @@
 	<classpathentry kind="src" output="build/classes/java/main" path="src/main/java"/>
 	<classpathentry kind="src" output="build/classes/java/test" path="src/test/java" excluding="tests/SubtypingStringPatternsPartialTest.java"/>
 	<classpathentry kind="src" output="build/classes/java/testannotations" path="src/testannotations/java"/>
-	<classpathentry kind="src" path="/dataflow"/>
+	<classpathentry kind="src" path="/dataflow" exported="true"/>
 	<classpathentry kind="src" path="/javacutil"/>
-	<classpathentry kind="src" path="/jsr308-langtools"/>
+	<classpathentry kind="src" path="/jsr308-langtools" exported="true"/>
 	<classpathentry kind="src" path="/scene-lib"/>
 	<classpathentry kind="src" path="/stubparser"/>
 	<classpathentry kind="src" path="/util"/>
