@@ -254,10 +254,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
                         AnnotationMirror t1am = type1.getAnnotationInHierarchy(UNKNOWNVAL);
                         AnnotationMirror t2am = type2.getAnnotationInHierarchy(UNKNOWNVAL);
-                        if (t1am == null || t2am == null) {
-                            // TODO: work around issue with implicits or defaults.
-                            return true;
-                        }
 
                         type1.replaceAnnotation(convertSpecialIntRangeToStandardIntRange(t1am));
                         type2.replaceAnnotation(convertSpecialIntRangeToStandardIntRange(t2am));

@@ -51,6 +51,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                 return true;
             }
         }
+        if (type1.getKind() == TypeKind.TYPEVAR || type2.getKind() == TypeKind.TYPEVAR) {
+            // TODO: Handle any remaining typevar combinations.
+            return true;
+        }
         if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
             // If one of the types is the NULL type, compare main qualifiers only.
             return arePrimeAnnosEqual(type1, type2);
