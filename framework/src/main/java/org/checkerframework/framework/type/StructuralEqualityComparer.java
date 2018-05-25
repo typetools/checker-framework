@@ -52,7 +52,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             }
         }
         if (type1.getKind() == TypeKind.TYPEVAR || type2.getKind() == TypeKind.TYPEVAR) {
-            // TODO: Handle any remaining typevar combinations.
+            // TODO: Handle any remaining typevar combinations correctly.
             return true;
         }
         if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
@@ -523,26 +523,5 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         Boolean result = qualifierHierarchy.isSubtype(q1, q2);
         visitHistory.add(type1, type2, currentTop, result);
         return result;
-    }
-
-    @Override
-    public Boolean visitTypevar_Declared(
-            AnnotatedTypeVariable type1, AnnotatedDeclaredType type2, Void p) {
-        // TODO: add proper checks
-        return true;
-    }
-
-    @Override
-    public Boolean visitTypevar_Wildcard(
-            AnnotatedTypeVariable type1, AnnotatedWildcardType type2, Void p) {
-        // TODO: add proper checks
-        return true;
-    }
-
-    @Override
-    public Boolean visitDeclared_Typevar(
-            AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, Void p) {
-        // TODO: add proper checks
-        return true;
     }
 }
