@@ -252,16 +252,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     @Override
                     protected boolean arePrimeAnnosEqual(
                             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-                        type1.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type1.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type2.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type2.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type1.replaceAnnotation(
-                                convertToUnknown(type1.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type2.replaceAnnotation(
-                                convertToUnknown(type2.getAnnotationInHierarchy(UNKNOWNVAL)));
+                        AnnotationMirror t1am = type1.getAnnotationInHierarchy(UNKNOWNVAL);
+                        AnnotationMirror t2am = type2.getAnnotationInHierarchy(UNKNOWNVAL);
+                        if (t1am == null || t2am == null) {
+                            // TODO: work around issue with implicits or defaults.
+                            return true;
+                        }
+
+                        type1.replaceAnnotation(convertSpecialIntRangeToStandardIntRange(t1am));
+                        type2.replaceAnnotation(convertSpecialIntRangeToStandardIntRange(t2am));
+                        type1.replaceAnnotation(convertToUnknown(t1am));
+                        type2.replaceAnnotation(convertToUnknown(t2am));
 
                         return super.arePrimeAnnosEqual(type1, type2);
                     }
