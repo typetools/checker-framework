@@ -52,11 +52,15 @@ never be written by a programmer.}
 \section{Default annotations\label{map-key-defaults}}
 
 The null literal is implicitly annotated with \code{@UnknownKeyFor}, because
-\code{null} is a key for every map.  In order to reduce the number of false
-postives, lower bounds are defaulted to \code{@KeyForBottom}.  If you expect a
-type variable to be instantiated with \code{@KeyFor} for a particular map, then
-you must explictly annotated the lower bound of that type variable with
-\code{@KeyForBottom}.  For example, \code{<@KeyForBottom T>}.
+\code{null} might be a key for any map.
+
+Lower bounds are defaulted to \code{@KeyForBottom}.
+This reduces the number of false
+positives, but it does require you to take action if you expect a
+type variable to be instantiated with \code{@KeyFor} for a particular map.
+In that case,
+you must explicitly annotate the lower bound of that type variable with
+\code{@KeyForBottom}.  For example, \code{List<@KeyForBottom T>}.
 
 \section{Examples\label{map-key-examples}}
 
