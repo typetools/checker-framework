@@ -365,7 +365,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 return false;
             }
 
-            return canBeCovariant || checkAndSubtype(outsideWc.getSuperBound(), inside);
+            AnnotatedTypeMirror lowerbound = outsideWc.getSuperBound();
+            if (lowerbound.getKind() == TypeKind.TYPEVAR) {
+                // TODO: determine correct check for (captured) type variables.
+                return true;
+            }
+            return canBeCovariant || checkAndSubtype(lowerbound, inside);
         } else if (TypesUtils.isCaptured(outside.getUnderlyingType())) {
             if (typeargVisitHistory.contains(inside, outside, currentTop)) {
                 return true;
