@@ -4,11 +4,9 @@
 	<classpathentry kind="src" output="build/classes/java/test" path="src/test/java" excluding="tests/SubtypingStringPatternsPartialTest.java"/>
 	<classpathentry kind="src" output="build/classes/java/testannotations" path="src/testannotations/java"/>
 	<classpathentry kind="src" path="/dataflow" exported="true"/>
-	<classpathentry kind="src" path="/javacutil"/>
-	<classpathentry kind="src" path="/jsr308-langtools" exported="true"/>
-	<classpathentry kind="src" path="/scene-lib"/>
+	<classpathentry kind="src" path="/scene-lib" exported="true"/>
 	<classpathentry kind="src" path="/stubparser"/>
-	<classpathentry kind="src" path="/util"/>
+	<classpathentry kind="src" path="/util" exported="true"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="/checker/dist/checker-qual.jar" sourcepath="/checker"/>
