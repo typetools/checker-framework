@@ -198,6 +198,12 @@ In \code{MyClass2<@Interned String>},
 % \code{T}.
 
 
+Defaulting never affects a use of a type variable, even if the type
+variable use has no explicit annotation.  Defaulting helps to choose a
+single type qualifier for a concrete Java class or interface.  By contrast,
+a type variable use represents a set of possible types.
+
+
 \subsection{Annotations on wildcards\label{annotations-on-wildcards}}
 
 At an instantiation of a generic type, a Java wildcard indicates that some
