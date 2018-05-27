@@ -46,8 +46,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         INTERNAL_FORM = AnnotationBuilder.fromClass(elements, InternalForm.class);
         FULLY_QUALIFIED_NAME = AnnotationBuilder.fromClass(elements, FullyQualifiedName.class);
         CLASS_GET_NAME = AnnotationBuilder.fromClass(elements, ClassGetName.class);
-        BINARY_NAME_FOR_NON_ARRAY = AnnotationBuilder.fromClass(elements, BinaryNameForNonArray.class);
-        INTERNAL_FORM_FOR_NON_ARRAY = AnnotationBuilder.fromClass(elements, InternalFormForNonArray.class);
+        BINARY_NAME_FOR_NON_ARRAY =
+                AnnotationBuilder.fromClass(elements, BinaryNameForNonArray.class);
+        INTERNAL_FORM_FOR_NON_ARRAY =
+                AnnotationBuilder.fromClass(elements, InternalFormForNonArray.class);
 
         replaceCharChar =
                 TreeUtils.getMethod(
@@ -138,15 +140,15 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
             final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
-            if (receiverType.getAnnotation(BinaryName.class) != null){
+            if (receiverType.getAnnotation(BinaryName.class) != null) {
                 handleReplaceOnBinaryName(c1, c2, type);
-            } else if (receiverType.getAnnotation(InternalForm.class) != null){
+            } else if (receiverType.getAnnotation(InternalForm.class) != null) {
                 handleReplaceOnInternalForm(c1, c2, type);
-            } else if (receiverType.getAnnotation(InternalFormForNonArray.class) != null){
+            } else if (receiverType.getAnnotation(InternalFormForNonArray.class) != null) {
                 handleReplaceOnInternalFormForNonArray(c1, c2, type);
-            } else if (receiverType.getAnnotation(BinaryNameForNonArray.class) != null){
+            } else if (receiverType.getAnnotation(BinaryNameForNonArray.class) != null) {
                 handleReplaceOnBinaryNameForNonArray(c1, c2, type);
-            } 
+            }
             return super.visitMethodInvocation(tree, type);
         }
 
@@ -156,13 +158,15 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        private void handleReplaceOnBinaryNameForNonArray(char c1, char c2, AnnotatedTypeMirror type) {
+        private void handleReplaceOnBinaryNameForNonArray(
+                char c1, char c2, AnnotatedTypeMirror type) {
             if (c1 == '.' && c2 == '/') {
                 type.replaceAnnotation(INTERNAL_FORM_FOR_NON_ARRAY);
             }
         }
 
-        private void handleReplaceOnInternalFormForNonArray(char c1, char c2, AnnotatedTypeMirror type) {
+        private void handleReplaceOnInternalFormForNonArray(
+                char c1, char c2, AnnotatedTypeMirror type) {
             if (c1 == '/' && c2 == '.') {
                 type.replaceAnnotation(BINARY_NAME_FOR_NON_ARRAY);
             }
