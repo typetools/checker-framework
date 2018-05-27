@@ -11,6 +11,14 @@ public class Conversion {
             return iform.replace('/', '.');
         }
 
+        @BinaryName String internalFormForNonArrayToBinaryName(@InternalFormForNonArray String iformna) {
+            return iformna.replace('/', '.');
+        }
+
+        @ClassGetName String internalFormForNonArrayToClassGetName(@InternalFormForNonArray String iformna) {
+            return iformna.replace('/', '.');
+        }
+
         @InternalForm String binaryNameToInternalFormWRONG1(@BinaryName String bn) {
             // :: error: (return.type.incompatible)
             return bn.replace('/', '.');
