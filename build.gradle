@@ -271,7 +271,7 @@ task tags {
     description 'Create Emacs TAGS table'
     doLast {
         exec {
-            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "util/TAGS", "-i", "docs/manual/TAGS"
         }
         exec {
             commandLine "make", "-C", "docs/manual", "tags"

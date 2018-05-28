@@ -118,11 +118,11 @@ public class TypecheckExecutor {
         List<TestDiagnostic> expectedDiagnostics;
         if (config.getDiagnosticFiles() == null || config.getDiagnosticFiles().isEmpty()) {
             expectedDiagnostics =
-                    JavaDiagnosticReader.readExpectedDiagnosticsJfo(
-                            compilationResult.getJavaFileObjects(), true);
+                    JavaDiagnosticReader.readJavaSourceFiles(
+                            compilationResult.getJavaFileObjects());
         } else {
             expectedDiagnostics =
-                    JavaDiagnosticReader.readDiagnosticFiles(config.getDiagnosticFiles(), true);
+                    JavaDiagnosticReader.readDiagnosticFiles(config.getDiagnosticFiles());
         }
 
         return expectedDiagnostics;
