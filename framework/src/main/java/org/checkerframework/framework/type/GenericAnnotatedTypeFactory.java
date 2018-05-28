@@ -1009,12 +1009,15 @@ public abstract class GenericAnnotatedTypeFactory<
             ClassTree ct = queue.remove();
             scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
+            TreePath preTreePath = visitorState.getPath();
             AnnotatedDeclaredType preClassType = visitorState.getClassType();
             ClassTree preClassTree = visitorState.getClassTree();
             AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
             MethodTree preMT = visitorState.getMethodTree();
 
-            visitorState.setClassType(getAnnotatedType(ct));
+            // Don't use getPath, b/c that depends on the visitorState path.
+            visitorState.setPath(TreePath.getPath(this.root, ct));
+            visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
             visitorState.setClassTree(ct);
             visitorState.setMethodReceiver(null);
             visitorState.setMethodTree(null);
@@ -1138,6 +1141,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     regularExitStores.put(ct, initializationStaticStore);
                 }
             } finally {
+                visitorState.setPath(preTreePath);
                 visitorState.setClassType(preClassType);
                 visitorState.setClassTree(preClassTree);
                 visitorState.setMethodReceiver(preAMT);
@@ -1559,7 +1563,9 @@ public abstract class GenericAnnotatedTypeFactory<
             VisitorState subFactoryVisitorState = subFactory.getVisitorState();
             subFactoryVisitorState.setPath(visitorState.getPath());
             subFactoryVisitorState.setClassTree(visitorState.getClassTree());
+            subFactoryVisitorState.setClassType(visitorState.getClassType());
             subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
+            subFactoryVisitorState.setMethodReceiver(visitorState.getMethodReceiver());
         }
         return subFactory;
     }
