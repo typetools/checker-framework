@@ -27,12 +27,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * equal. One reason this class is necessary is that at the moment we compare wildcards and type
  * variables for "equality". This occurs because we do not employ capture conversion.
  *
- * <p>See also DefaultTypeHierarchy, and VisitHistory
+ * <p>See also DefaultTypeHierarchy, and SubtypeVisitHistory
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, Void> {
     protected final SubtypeVisitHistory visitHistory;
 
-    // explain this one
+    // See org.checkerframework.framework.type.DefaultTypeHierarchy.currentTop
     private AnnotationMirror currentTop = null;
 
     public StructuralEqualityComparer(SubtypeVisitHistory typeargVisitHistory) {
@@ -54,6 +54,29 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         }
 
         return super.defaultAction(type1, type2, p);
+    }
+
+    /**
+     * Called for every combination that isn't specifically handled.
+     *
+     * @return error message explaining the two types' classes are not the same
+     */
+    @Override
+    protected String defaultErrorMessage(
+            AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
+        return "AnnotatedTypeMirrors aren't structurally equal.\n"
+                + "  type1 = "
+                + type1.getClass().getSimpleName()
+                + "( "
+                + type1
+                + " )\n"
+                + "  type2 = "
+                + type2.getClass().getSimpleName()
+                + "( "
+                + type2
+                + " )\n"
+                + "  visitHistory = "
+                + visitHistory;
     }
 
     /**
@@ -156,30 +179,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * Called for every combination in which !type1.getClass().equals(type2.getClass()) except for
-     * Wildcard_Typevar.
-     *
-     * @return error message explaining the two types' classes are not the same
-     */
-    @Override
-    protected String defaultErrorMessage(
-            AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        return "AnnotatedTypeMirror classes aren't equal.\n"
-                + "type1 = "
-                + type1.getClass().getSimpleName()
-                + "( "
-                + type1
-                + " )\n"
-                + "type2 = "
-                + type2.getClass().getSimpleName()
-                + "( "
-                + type2
-                + " )\n"
-                + "visitHistory = "
-                + visitHistory;
-    }
-
-    /**
      * Two arrays are equal if:
      *
      * <ol>
@@ -266,9 +265,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * //TODO: SHOULD PRIMARY ANNOTATIONS OVERRIDE INDIVIDUAL BOUND ANNOTATIONS? //TODO: IF SO THEN
-     * WE SHOULD REMOVE THE arePrimeAnnosEqual AND FIX AnnotatedIntersectionType Two intersection
-     * types are equal if:
+     * TODO: SHOULD PRIMARY ANNOTATIONS OVERRIDE INDIVIDUAL BOUND ANNOTATIONS? IF SO THEN WE SHOULD
+     * REMOVE THE arePrimeAnnosEqual AND FIX AnnotatedIntersectionType.
+     *
+     * <p>Two intersection types are equal if:
      *
      * <ul>
      *   <li>Their sets of primary annotations are equal
