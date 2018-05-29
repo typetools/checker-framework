@@ -192,6 +192,12 @@ import org.checkerframework.javacutil.TreeUtils;
     // suppress that warning.
     "showSuppressWarningKeys",
 
+    // Warn about @SuppressWarnings annotations that do not suppress any warnings.
+    // org.checkerframework.common.basetype.BaseTypeChecker.warnUnusedSuppressions
+    // org.checkerframework.framework.source.SourceChecker.shouldSuppressWarnings(javax.lang.model.element.Element, java.lang.String)
+    // org.checkerframework.common.basetype.BaseTypeVisitor.checkForSuppressWarningsAnno
+    "warnUnusedSuppressions",
+
     ///
     /// Partially-annotated libraries
     ///
@@ -319,7 +325,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // to override.
 
     /** The @SuppressWarnings key that will suppress warnings for all checkers. */
-    protected static final String SUPPRESS_ALL_KEY = "all";
+    public static final String SUPPRESS_ALL_KEY = "all";
+
+    /** The @SuppressWarnings key emitted when an unused warning suppression is found. */
+    public static final String UNUSED_SUPPRESSION_KEY = "unused.suppression";
 
     /** File name of the localized messages. */
     protected static final String MSGS_FILE = "messages.properties";
@@ -1358,7 +1367,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // Public so it can be called from a few places in
     // org.checkerframework.framework.flow.CFAbstractTransfer
     public boolean shouldSuppressWarnings(Tree tree, String errKey) {
-
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
         if (checkerKeys.isEmpty()) {
@@ -1450,6 +1458,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
+     * Elements with a {@code @SuppressWarnings} that actually suppressed a warning for this
+     * checker.
+     */
+    public final Set<Element> elementsSuppress = new HashSet<>();
+
+    /**
      * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
      * true if the element is within the scope of a @SuppressWarnings annotation, one of whose
      * values suppresses the checker's warnings. The list of keys that suppress a checker's warnings
@@ -1463,12 +1477,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
+        if (errKey.equals(UNUSED_SUPPRESSION_KEY)) {
+            // never suppress an unused suppression key warning.
+            return false;
+        }
 
         if (elt == null) {
             return false;
         }
 
         if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), errKey)) {
+            if (hasOption("warnUnusedSuppressions")) {
+                elementsSuppress.add(elt);
+            }
             return true;
         }
 

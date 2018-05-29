@@ -1,7 +1,12 @@
 package org.checkerframework.common.basetype;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -22,11 +27,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -36,6 +43,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -497,12 +505,75 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         this.errsOnLastExit = nerrorsOfAllPreviousCheckers;
         super.typeProcess(element, tree);
-
+        if (this.parentChecker == null) {
+            warnUnusedSuppressions();
+        }
+        getVisitor().treesWithSuppressWarnings.clear();
         if (getSubcheckers().size() > 0) {
             printCollectedMessages(tree.getCompilationUnit());
             // Update errsOnLastExit to reflect the errors issued.
             this.errsOnLastExit = log.nerrors;
         }
+    }
+
+    /**
+     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
+     * contains a key that would suppress a warning from this checker.
+     */
+    private void warnUnusedSuppressions() {
+        if (!hasOption("warnUnusedSuppressions")) {
+            return;
+        }
+        Set<Element> elementsSuppress = new HashSet<>(this.elementsSuppress);
+        this.elementsSuppress.clear();
+        Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
+        for (BaseTypeChecker subChecker : subcheckers) {
+            elementsSuppress.addAll(subChecker.elementsSuppress);
+            subChecker.elementsSuppress.clear();
+            checkerKeys.addAll(subChecker.getSuppressWarningsKeys());
+        }
+        // It's not clear for which checker this suppression is intended,
+        // so never report it as unused.
+        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
+
+        for (Tree tree : getVisitor().treesWithSuppressWarnings) {
+            Element elt = TreeUtils.elementFromTree(tree);
+            SuppressWarnings suppress = elt.getAnnotation(SuppressWarnings.class);
+            if (suppress == null || elementsSuppress.contains(elt)) {
+                continue;
+            }
+            for (String suppressKey : suppress.value()) {
+                for (String checkerKey : checkerKeys) {
+                    if (suppressKey.contains(checkerKey)) {
+                        Tree swTree = findSWTree(tree);
+                        report(
+                                Result.warning(
+                                        SourceChecker.UNUSED_SUPPRESSION_KEY,
+                                        getClass().getSimpleName(),
+                                        suppressKey),
+                                swTree);
+                    }
+                }
+            }
+        }
+    }
+
+    private Tree findSWTree(Tree tree) {
+        List<? extends AnnotationTree> annotations;
+        if (TreeUtils.isClassTree(tree)) {
+            annotations = ((ClassTree) tree).getModifiers().getAnnotations();
+        } else if (tree.getKind() == Kind.METHOD) {
+            annotations = ((MethodTree) tree).getModifiers().getAnnotations();
+        } else {
+            annotations = ((VariableTree) tree).getModifiers().getAnnotations();
+        }
+
+        for (AnnotationTree annotationTree : annotations) {
+            if (annotationTree.getAnnotationType().toString().equals("SuppressWarnings")) {
+                return annotationTree;
+            }
+        }
+        return tree;
     }
 
     /**
