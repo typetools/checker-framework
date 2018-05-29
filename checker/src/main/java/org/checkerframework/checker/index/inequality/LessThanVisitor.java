@@ -31,7 +31,10 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         // occurs, from <= to.
 
         Element element = TreeUtils.elementFromTree(varTree);
-        AnnotationMirror hss = atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+        AnnotationMirror hss =
+                element == null
+                        ? null
+                        : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
         if (hss != null) {
             String from =
                     AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);

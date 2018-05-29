@@ -14,7 +14,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -87,94 +86,64 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Checks if this array access is either using a variable that is less than the length of the
-     * array, or using a constant less than the array's minlen. Issues an error if neither is true.
+     * Checks if this array access is legal. Uses the common assignment check and a simple MinLen
+     * check of its own. The MinLen check is needed because the common assignment check always
+     * returns false when the upper bound qualifier is @UpperBoundUnknown.
      */
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
-        AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
+
         String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
+        LessThanLengthOf lhsQual = (LessThanLengthOf) UBQualifier.createUBQualifier(arrName, "0");
+        if (!relaxedCommonAssignmentCheck(lhsQual, indexTree) && !checkMinLen(indexTree, arrTree)) {
 
-        UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
-        if (qualifier.isLessThanLengthOf(arrName)) {
-            return;
-        }
+            // We can issue three different errors:
+            // 1. If the index is a compile-time constant, issue an error that describes the array type.
+            // 2. If the index is a compile-time range and has no upperbound qualifier,
+            //    issue an error that names the upperbound of the range and the array's type.
+            // 3. If neither of the above, issue an error that names the upper bound type.
 
-        // Find max because it's important to determine whether the index is less than the
-        // minimum length of the array. If it could be any of several values, only the max is of
-        // interest.
-        Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+            AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
+            UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
+            Long valMax =
+                    IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
 
-        AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrTree);
-        // Produce the full list of relevant names by checking the SameLen type.
-        if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
-            if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
-                List<String> slNames =
-                        AnnotationUtils.getElementValueArray(
-                                sameLenAnno, "value", String.class, true);
-                if (qualifier.isLessThanLengthOfAny(slNames)) {
-                    return;
-                }
-                for (String slName : slNames) {
-                    // Check if any of the arrays have a minlen that is greater than the
-                    // known constant value.
-                    int minlenSL =
-                            atypeFactory
-                                    .getValueAnnotatedTypeFactory()
-                                    .getMinLenFromString(slName, arrTree, getCurrentPath());
-                    if (valMax != null && valMax < minlenSL) {
-                        return;
-                    }
-                }
+            if (IndexUtil.getExactValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory())
+                    != null) {
+                // Note that valMax is equal to the exact value in this case.
+                checker.report(
+                        Result.failure(
+                                UPPER_BOUND_CONST,
+                                valMax,
+                                atypeFactory
+                                        .getValueAnnotatedTypeFactory()
+                                        .getAnnotatedType(arrTree)
+                                        .toString(),
+                                valMax + 1,
+                                valMax + 1),
+                        indexTree);
+            } else if (valMax != null && qualifier.isUnknown()) {
+
+                checker.report(
+                        Result.failure(
+                                UPPER_BOUND_RANGE,
+                                atypeFactory
+                                        .getValueAnnotatedTypeFactory()
+                                        .getAnnotatedType(indexTree)
+                                        .toString(),
+                                atypeFactory
+                                        .getValueAnnotatedTypeFactory()
+                                        .getAnnotatedType(arrTree)
+                                        .toString(),
+                                arrName,
+                                arrName,
+                                valMax + 1),
+                        indexTree);
+            } else {
+                checker.report(
+                        Result.failure(
+                                UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
+                        indexTree);
             }
-        }
-
-        // Check against the minlen of the array itself.
-        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
-        if (valMax != null && valMax < minLen) {
-            return;
-        }
-
-        // We can issue three different errors:
-        // 1. If the index is a compile-time constant, issue an error that describes the array type.
-        // 2. If the index is a compile-time range and has no upperbound qualifier,
-        //    issue an error that names the upperbound of the range and the array's type.
-        // 3. If neither of the above, issue an error that names the upper bound type.
-
-        if (IndexUtil.getExactValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory())
-                != null) {
-            // Note that valMax is equal to the exact value in this case.
-            checker.report(
-                    Result.failure(
-                            UPPER_BOUND_CONST,
-                            valMax,
-                            atypeFactory
-                                    .getValueAnnotatedTypeFactory()
-                                    .getAnnotatedType(arrTree)
-                                    .toString(),
-                            valMax + 1,
-                            valMax + 1),
-                    indexTree);
-        } else if (valMax != null && qualifier.isUnknown()) {
-
-            checker.report(
-                    Result.failure(
-                            UPPER_BOUND_RANGE,
-                            atypeFactory
-                                    .getValueAnnotatedTypeFactory()
-                                    .getAnnotatedType(indexTree)
-                                    .toString(),
-                            atypeFactory
-                                    .getValueAnnotatedTypeFactory()
-                                    .getAnnotatedType(arrTree)
-                                    .toString(),
-                            arrName,
-                            arrName,
-                            valMax + 1),
-                    indexTree);
-        } else {
-            checker.report(
-                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
-                    indexTree);
         }
     }
 
@@ -186,7 +155,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // occurs, to <= a.length, i.e. to is @LTEqLengthOf(a).
 
         Element element = TreeUtils.elementFromTree(varTree);
-        AnnotationMirror hss = atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+        AnnotationMirror hss =
+                element == null
+                        ? null
+                        : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
         if (hss != null) {
             String from =
                     AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
@@ -274,7 +246,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * <p>If the varType is less than the length of multiple arrays, then the this method only
      * returns true if the relaxed rules above apply for each array.
      *
-     * <p>If the varType is an array type and the value express is an array initializer, then the
+     * <p>If the varType is an array type and the value expression is an array initializer, then the
      * above rules are applied for expression in the initializer where the varType is the component
      * type of the array.
      */
@@ -305,6 +277,69 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
     }
 
+    private FlowExpressions.Receiver getReceiverFromJavaExpressionString(String s) {
+        FlowExpressions.Receiver rec;
+        try {
+            rec = atypeFactory.getReceiverFromJavaExpressionString(s, getCurrentPath());
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            rec = null;
+        }
+        return rec;
+    }
+
+    private AnnotationMirror getDeclarationAnnotationFromReceiver(FlowExpressions.Receiver rec) {
+        AnnotationMirror anm = null;
+
+        if (rec == null) {
+            return null;
+        }
+
+        if (rec instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess fa = (FlowExpressions.FieldAccess) rec;
+            anm = atypeFactory.getDeclAnnotation(fa.getField(), HasSubsequence.class);
+        } else if (rec instanceof FlowExpressions.LocalVariable) {
+            FlowExpressions.LocalVariable lv = (FlowExpressions.LocalVariable) rec;
+            anm = atypeFactory.getDeclAnnotation(lv.getElement(), HasSubsequence.class);
+        }
+        return anm;
+    }
+
+    private FlowExpressionParseUtil.FlowExpressionContext getContextFromReceiver(
+            FlowExpressions.Receiver rec) {
+        if (rec == null) {
+            return null;
+        }
+        FlowExpressionParseUtil.FlowExpressionContext context = null;
+        if (rec instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess fa = (FlowExpressions.FieldAccess) rec;
+            context =
+                    new FlowExpressionParseUtil.FlowExpressionContext(
+                            fa.getReceiver(), null, checker);
+
+        } else if (rec instanceof FlowExpressions.LocalVariable) {
+            FlowExpressions.LocalVariable lv = (FlowExpressions.LocalVariable) rec;
+            context = new FlowExpressionParseUtil.FlowExpressionContext(lv, null, checker);
+        }
+        return context;
+    }
+
+    private static String negateString(String s) {
+        if (s.startsWith("-")) {
+            return s.substring(1);
+        } else {
+            return "-" + s;
+        }
+    }
+
+    private boolean checkMinLen(ExpressionTree indexTree, ExpressionTree arrTree) {
+        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
+        Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+        if (valMax != null && valMax < minLen) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Implements the actual check for the relaxed common assignment check. For what is permitted,
      * see {@link #relaxedCommonAssignment}.
@@ -327,6 +362,55 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
         if (expQual.isSubtype(varLtlQual)) {
             return true;
+        }
+
+        // Take advantage of information available on a HasSubsequence(a, from, to) annotation on either:
+        // 1. the lhs qualifier (varLtlQual): this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual includes LTL(a, -from), then the LTL(b) can be removed from varLtlQual
+        // 2. the rhs qualifier (expQual): this allows us to show that iff expQual includes LTL(b, from) for some b that has HSS, and varLtlQual includes LTL(a), then the LTL(a) can be removed from varLtlQual
+        // 3. TODO: Finally, the expression "y - x" has type @LTEqLengthOf("a")
+
+        for (String lhsSeq : varLtlQual.getSequences()) {
+            // check is lhsSeq is an actual LTL
+            if (varLtlQual.hasSequenceWithOffset(lhsSeq, 0)) {
+
+                FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(lhsSeq);
+                AnnotationMirror anm = getDeclarationAnnotationFromReceiver(rec);
+                FlowExpressionParseUtil.FlowExpressionContext context = getContextFromReceiver(rec);
+
+                if (anm != null) {
+                    String from =
+                            AnnotationUtils.getElementValueArray(anm, "from", String.class, false)
+                                    .get(0);
+                    String a =
+                            AnnotationUtils.getElementValueArray(anm, "value", String.class, false)
+                                    .get(0);
+
+                    // viewpoint adapt strings from HasSubsequence expression
+                    try {
+                        from =
+                                FlowExpressionParseUtil.parse(
+                                                from, context, getCurrentPath(), false)
+                                        .toString();
+                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    }
+
+                    try {
+                        a =
+                                FlowExpressionParseUtil.parse(a, context, getCurrentPath(), false)
+                                        .toString();
+                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    }
+
+                    if (expQual.hasSequenceWithOffset(a, negateString(from))) {
+                        UBQualifier newLHS = varLtlQual.removeOffset(lhsSeq, 0);
+                        if (newLHS.isUnknown()) {
+                            return true;
+                        } else {
+                            varLtlQual = (LessThanLengthOf) newLHS;
+                        }
+                    }
+                }
+            }
         }
 
         Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());

@@ -72,7 +72,10 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
         // occurs, from is non-negative.
 
         Element element = TreeUtils.elementFromTree(varTree);
-        AnnotationMirror hss = atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+        AnnotationMirror hss =
+                element == null
+                        ? null
+                        : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
         if (hss != null) {
             String from =
                     AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
