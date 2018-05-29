@@ -328,7 +328,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     public static final String SUPPRESS_ALL_KEY = "all";
 
     /** The @SuppressWarnings key emitted when an unused warning suppression is found. */
-    public static final String UNUSED_SUPPRESSION_KEY = "unused.suppression";
+    public static final @CompilerMessageKey String UNUSED_SUPPRESSION_KEY = "unused.suppression";
 
     /** File name of the localized messages. */
     protected static final String MSGS_FILE = "messages.properties";
