@@ -262,6 +262,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 convertToUnknown(type1.getAnnotationInHierarchy(UNKNOWNVAL)));
                         type2.replaceAnnotation(
                                 convertToUnknown(type2.getAnnotationInHierarchy(UNKNOWNVAL)));
+
                         return super.arePrimeAnnosEqual(type1, type2);
                     }
                 };
