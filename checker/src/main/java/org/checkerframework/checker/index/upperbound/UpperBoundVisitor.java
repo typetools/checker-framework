@@ -4,12 +4,15 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
@@ -21,15 +24,20 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
-    private static final String UPPER_BOUND = "array.access.unsafe.high";
-    private static final String UPPER_BOUND_CONST = "array.access.unsafe.high.constant";
-    private static final String UPPER_BOUND_RANGE = "array.access.unsafe.high.range";
+    private static final @CompilerMessageKey String UPPER_BOUND = "array.access.unsafe.high";
+    private static final @CompilerMessageKey String UPPER_BOUND_CONST =
+            "array.access.unsafe.high.constant";
+    private static final @CompilerMessageKey String UPPER_BOUND_RANGE =
+            "array.access.unsafe.high.range";
+    private static final @CompilerMessageKey String TO_NOT_LTEL = "to.not.ltel";
+    private static final @CompilerMessageKey String HSS = "which.subsequence";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -168,6 +176,58 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
                     indexTree);
         }
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            Tree varTree, ExpressionTree valueTree, @CompilerMessageKey String errorKey) {
+
+        // check that when an assignment to a variable b declared as @HasSubsequence(a, from, to)
+        // occurs, to <= a.length, i.e. to is @LTEqLengthOf(a).
+
+        Element element = TreeUtils.elementFromTree(varTree);
+        AnnotationMirror hss = atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+        if (hss != null) {
+            String from =
+                    AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
+            String to = AnnotationUtils.getElementValueArray(hss, "to", String.class, false).get(0);
+            String a =
+                    AnnotationUtils.getElementValueArray(hss, "value", String.class, false).get(0);
+            AnnotationMirror anm;
+            try {
+                anm =
+                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                to, varTree, getCurrentPath());
+            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                anm = null;
+            }
+
+            // the check fails if either anm is null or to is not LTEqLengthOf(a)
+            boolean checkFailed = anm == null;
+
+            if (!checkFailed) {
+                UBQualifier qual = UBQualifier.createUBQualifier(anm);
+                checkFailed = !qual.isLessThanOrEqualTo(a);
+            }
+
+            if (checkFailed) {
+                // issue an error
+                checker.report(
+                        Result.failure(
+                                TO_NOT_LTEL,
+                                to,
+                                a,
+                                anm == null ? "@UpperBoundUnknown" : anm,
+                                a,
+                                a,
+                                a),
+                        valueTree);
+            } else {
+                checker.report(Result.warning(HSS, a, from, from, to, to, a, a), valueTree);
+            }
+        }
+
+        super.commonAssignmentCheck(varTree, valueTree, errorKey);
     }
 
     @Override

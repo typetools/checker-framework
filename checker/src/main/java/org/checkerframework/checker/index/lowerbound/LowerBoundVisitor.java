@@ -88,7 +88,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
                     || !(AnnotationUtils.areSameByClass(anm, NonNegative.class)
                             || AnnotationUtils.areSameByClass(anm, Positive.class))) {
                 checker.report(
-                        Result.failure(FROM_NOT_NN, from, anm == null ? "null" : anm.toString()),
+                        Result.failure(FROM_NOT_NN, from, anm == null ? "@LowerBoundUnknown" : anm),
                         valueTree);
             }
         }

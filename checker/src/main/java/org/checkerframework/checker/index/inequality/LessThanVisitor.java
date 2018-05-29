@@ -52,7 +52,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                                 FROM_GT_TO,
                                 from,
                                 to,
-                                anm == null ? "null" : anm.toString(),
+                                anm == null ? "@LessThanUnknown" : anm,
                                 to,
                                 to),
                         valueTree);
