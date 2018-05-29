@@ -3,13 +3,20 @@ package org.checkerframework.checker.index.lowerbound;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Implements the actual checks to make sure that array accesses aren't too low. Will issue a
@@ -23,6 +30,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
      */
     private static final @CompilerMessageKey String LOWER_BOUND = "array.access.unsafe.low";
     private static final @CompilerMessageKey String NEGATIVE_ARRAY = "array.length.negative";
+    private static final @CompilerMessageKey String FROM_NOT_NN = "from.not.nonnegative";
 
     public LowerBoundVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -54,5 +62,37 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
         }
 
         return super.visitNewArray(tree, type);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            Tree varTree, ExpressionTree valueTree, @CompilerMessageKey String errorKey) {
+
+        // check that when an assignment to a variable declared as @HasSubsequence(a, start, end)
+        // occurs, start is non-negative.
+
+        Element element = TreeUtils.elementFromTree(varTree);
+        AnnotationMirror hss = atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+        if (hss != null) {
+            String from =
+                    AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
+            AnnotationMirror anm;
+            try {
+                anm =
+                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                from, varTree, getCurrentPath());
+            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                anm = null;
+            }
+            if (anm == null
+                    || !(AnnotationUtils.areSameByClass(anm, NonNegative.class)
+                            || AnnotationUtils.areSameByClass(anm, Positive.class))) {
+                checker.report(
+                        Result.failure(FROM_NOT_NN, from, anm == null ? "null" : anm.toString()),
+                        valueTree);
+            }
+        }
+
+        super.commonAssignmentCheck(varTree, valueTree, errorKey);
     }
 }

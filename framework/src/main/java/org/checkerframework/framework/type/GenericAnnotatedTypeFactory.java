@@ -814,6 +814,29 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Produces the annotation mirror that represents the given expression String in this type
+     * factory's type system.
+     *
+     * @param expression a Java expression
+     * @param tree the tree at the location to parse the expression
+     * @param currentPath location at which expression is evaluated
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @return an AnnotationMirror representing the type in the store at the given location from
+     *     this type factory's type system, or null if one is not available
+     */
+    public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
+            String expression, Tree tree, TreePath currentPath)
+            throws FlowExpressionParseException {
+        FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
+        if (rec == null) {
+            return null;
+        }
+        Store store = getStoreBefore(tree);
+        Value value = store.getValue(rec);
+        return value != null ? value.getAnnotations().iterator().next() : null;
+    }
+
+    /**
      * Track the state of org.checkerframework.dataflow analysis scanning for each class tree in the
      * compilation unit.
      */
