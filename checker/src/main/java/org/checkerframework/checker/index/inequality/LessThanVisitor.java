@@ -1,16 +1,65 @@
 package org.checkerframework.checker.index.inequality;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
 
+    private static final @CompilerMessageKey String FROM_GT_TO = "from.gt.to";
+
     public LessThanVisitor(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            Tree varTree, ExpressionTree valueTree, @CompilerMessageKey String errorKey) {
+
+        // check that when an assignment to a variable declared as @HasSubsequence(a, from, to)
+        // occurs, from <= to.
+
+        Element element = TreeUtils.elementFromTree(varTree);
+        AnnotationMirror hss = atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+        if (hss != null) {
+            String from =
+                    AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
+            String to = AnnotationUtils.getElementValueArray(hss, "to", String.class, false).get(0);
+            AnnotationMirror anm;
+            try {
+                anm =
+                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                from, varTree, getCurrentPath());
+            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                anm = null;
+            }
+
+            if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, to)) {
+                // issue an error
+                checker.report(
+                        Result.failure(
+                                FROM_GT_TO,
+                                from,
+                                to,
+                                anm == null ? "null" : anm.toString(),
+                                to,
+                                to),
+                        valueTree);
+            }
+        }
+
+        super.commonAssignmentCheck(varTree, valueTree, errorKey);
     }
 
     @Override

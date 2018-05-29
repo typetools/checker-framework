@@ -68,8 +68,8 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
     protected void commonAssignmentCheck(
             Tree varTree, ExpressionTree valueTree, @CompilerMessageKey String errorKey) {
 
-        // check that when an assignment to a variable declared as @HasSubsequence(a, start, end)
-        // occurs, start is non-negative.
+        // check that when an assignment to a variable declared as @HasSubsequence(a, from, to)
+        // occurs, from is non-negative.
 
         Element element = TreeUtils.elementFromTree(varTree);
         AnnotationMirror hss = atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
