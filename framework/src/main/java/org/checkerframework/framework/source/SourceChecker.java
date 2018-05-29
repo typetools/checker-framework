@@ -1477,7 +1477,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
-        if (errKey.equals(UNUSED_SUPPRESSION_KEY)) {
+        if (UNUSED_SUPPRESSION_KEY.equals(errKey)) {
             // never suppress an unused suppression key warning.
             return false;
         }
