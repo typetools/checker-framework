@@ -547,17 +547,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
             for (String keyFromAnno : suppressAnno.value()) {
                 for (String checkerKey : checkerKeys) {
-                    // KeyFromAnno may contain a checker key, but not equal it in cases where
-                    // the checker key if followed by a more precise warning.
+                    // KeyFromAnno may contain a checker key, but may not be equal to it in cases
+                    // where the checker key if followed by a more precise warning.
                     // For example if keyFromAnno is "nullness:assignment.type.incompatible"
                     if (keyFromAnno.contains(checkerKey)) {
-                        Tree swTree = findSuppressWarningsTree(tree);
-                        report(
-                                Result.warning(
-                                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
-                                        getClass().getSimpleName(),
-                                        "\"" + keyFromAnno + "\""),
-                                swTree);
+                        reportUnneededSuppression(tree, keyFromAnno);
                     }
                 }
                 if (keyFromAnno.contains(":")) {
@@ -568,20 +562,26 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 }
 
                 for (String errorKey : errorKeys) {
-                    if (keyFromAnno.equals(errorKey)) {
-                        Tree swTree = findSuppressWarningsTree(tree);
-                        report(
-                                Result.warning(
-                                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
-                                        getClass().getSimpleName(),
-                                        // Have to add quotes here so that the key not its value is printed.
-                                        "\"" + keyFromAnno + "\""),
-                                swTree);
+                    // The keyFromAnno may only be a part of an error key.
+                    // For example, @SuppressWarnings("purity") suppresses errors with keys:
+                    // purity.deterministic.void.method, purity.deterministic.constructor, etc..
+                    if (errorKey.contains(keyFromAnno)) {
+                        reportUnneededSuppression(tree, keyFromAnno);
                     }
                 }
             }
         }
         getVisitor().treesWithSuppressWarnings.clear();
+    }
+
+    private void reportUnneededSuppression(Tree tree, String keyFromAnno) {
+        Tree swTree = findSuppressWarningsTree(tree);
+        report(
+                Result.warning(
+                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
+                        getClass().getSimpleName(),
+                        "\"" + keyFromAnno + "\""),
+                swTree);
     }
 
     /**
