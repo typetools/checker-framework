@@ -240,7 +240,27 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         notEqualToValue(rfi.left, rfi.right, rfi.rightAnno, notEqualsStore);
         notEqualToValue(rfi.right, rfi.left, rfi.leftAnno, notEqualsStore);
 
+        notEqualsLessThan(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, notEqualsStore);
+        notEqualsLessThan(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, notEqualsStore);
+
         return rfi.newResult;
+    }
+
+    private void notEqualsLessThan(
+            Node mLiteral,
+            AnnotationMirror mAnno,
+            Node otherNode,
+            AnnotationMirror otherAnno,
+            CFStore store) {
+        if (!isNonNegative(mAnno) || !isNonNegative(otherAnno)) {
+            return;
+        }
+        Receiver otherRec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
+        if (aTypeFactory
+                .getLessThanAnnotatedTypeFactory()
+                .isLessThanOrEqual(mLiteral.getTree(), otherRec.toString())) {
+            store.insertValue(otherRec, POS);
+        }
     }
 
     /**
