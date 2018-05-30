@@ -1,7 +1,5 @@
 package org.checkerframework.checker.signedness;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
@@ -11,24 +9,15 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
 
 /**
  * Provides static utility methods for unsigned values. Some re-implement functionality in JDK 8,
- * making it available in earlier versions of Java. Others provide new functionality.
+ * making it available in earlier versions of Java. Others provide new functionality. {@link
+ * SignednessUtilExtra} has more methods that reference packages that Android does not provide.
+ *
+ * @checker_framework.manual #signedness-utilities Utility routines for manipulating unsigned values
  */
 public final class SignednessUtil {
 
     private SignednessUtil() {
         throw new Error("Do not instantiate");
-    }
-
-    /** Gets the unsigned width of a {@code Dimension}. */
-    @SuppressWarnings("signedness")
-    public static @Unsigned int dimensionUnsignedWidth(Dimension dim) {
-        return dim.width;
-    }
-
-    /** Gets the unsigned height of a {@code Dimension}. */
-    @SuppressWarnings("signedness")
-    public static @Unsigned int dimensionUnsignedHeight(Dimension dim) {
-        return dim.height;
     }
 
     /**
@@ -219,42 +208,6 @@ public final class SignednessUtil {
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsignedLong(ByteBuffer b, int i, @Unsigned long ulong) {
         return b.putLong(i, ulong);
-    }
-
-    /**
-     * Sets rgb of BufferedImage b given unsigned ints. This method is a wrapper around {@link
-     * java.awt.image.BufferedImage#setRGB(int, int, int, int, int[], int, int) setRGB(int, int,
-     * int, int, int[], int, int)}, but assumes that the input should be interpreted as unsigned.
-     */
-    @SuppressWarnings("signedness")
-    public static void setUnsignedRGB(
-            BufferedImage b,
-            int startX,
-            int startY,
-            int w,
-            int h,
-            @Unsigned int[] rgbArray,
-            int offset,
-            int scansize) {
-        b.setRGB(startX, startY, w, h, rgbArray, offset, scansize);
-    }
-
-    /**
-     * Gets rgb of BufferedImage b as unsigned ints. This method is a wrapper around {@link
-     * java.awt.image.BufferedImage#getRGB(int, int, int, int, int[], int, int) getRGB(int, int,
-     * int, int, int[], int, int)}, but assumes that the output should be interpreted as unsigned.
-     */
-    @SuppressWarnings("signedness")
-    public static @Unsigned int[] getUnsignedRGB(
-            BufferedImage b,
-            int startX,
-            int startY,
-            int w,
-            int h,
-            @Unsigned int[] rgbArray,
-            int offset,
-            int scansize) {
-        return b.getRGB(startX, startY, w, h, rgbArray, offset, scansize);
     }
 
     /**
