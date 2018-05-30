@@ -31,7 +31,8 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         // occurs, from <= to.
 
         if (varTree.getKind() == Tree.Kind.IDENTIFIER
-                || varTree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                || varTree.getKind() == Tree.Kind.MEMBER_SELECT
+                || varTree.getKind() == Tree.Kind.VARIABLE) {
 
             Element element = TreeUtils.elementFromTree(varTree);
             AnnotationMirror hss =

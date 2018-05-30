@@ -8,6 +8,7 @@ import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.value.qual.MinLen;
 
@@ -46,10 +47,13 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return -1;
     }
 
+    @SuppressWarnings("lessthan") // https://github.com/kelloggm/checker-framework/issues/225
     GuavaPrimitives(short @MinLen(1) [] array) {
         this(array, 0, array.length);
     }
 
+    @SuppressWarnings(
+            "index") // these three fields need to be initialized in some order, and any ordering leads to the first two issuing errors - since each field is dependent on at least one of the others
     GuavaPrimitives(
             short @MinLen(1) [] array,
             @IndexFor("#1") @LessThan("#3 + 1") int start,
@@ -60,7 +64,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
         this.end = end;
     }
 
-    public @Positive @LTLengthOf(
+    public @NonNegative @LTLengthOf(
         value = {"this", "array"},
         offset = {"-1", "start - 1"}
     ) int size() { // INDEX: Annotation on a public method refers to private member.
@@ -75,6 +79,8 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return array[start + index];
     }
 
+    @SuppressWarnings(
+            "lowerbound") // needs https://github.com/kelloggm/checker-framework/issues/227 on static indexOf method
     public @IndexOrLow("this") int indexOf(Object target) {
         // Overridden to prevent a ton of boxing
         if (target instanceof Short) {
@@ -86,6 +92,8 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return -1;
     }
 
+    @SuppressWarnings(
+            "lowerbound") // needs https://github.com/kelloggm/checker-framework/issues/227 on static lastIndexOf method
     public @IndexOrLow("this") int lastIndexOf(Object target) {
         // Overridden to prevent a ton of boxing
         if (target instanceof Short) {
@@ -104,6 +112,8 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return oldValue;
     }
 
+    @SuppressWarnings(
+            "index") // needs https://github.com/kelloggm/checker-framework/issues/228 and https://github.com/kelloggm/checker-framework/issues/229
     public List<Short> subList(
             @IndexOrHigh("this") @LessThan("#2 + 1") int fromIndex,
             @IndexOrHigh("this") int toIndex) {

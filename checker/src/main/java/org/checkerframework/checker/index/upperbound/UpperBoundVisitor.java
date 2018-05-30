@@ -6,6 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -23,6 +24,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -155,7 +157,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // occurs, to <= a.length, i.e. to is @LTEqLengthOf(a).
 
         if (varTree.getKind() == Tree.Kind.IDENTIFIER
-                || varTree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                || varTree.getKind() == Tree.Kind.MEMBER_SELECT
+                || varTree.getKind() == Tree.Kind.VARIABLE) {
 
             Element element = TreeUtils.elementFromTree(varTree);
             AnnotationMirror hss =
@@ -284,17 +287,19 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
     }
 
-    private FlowExpressions.Receiver getReceiverFromJavaExpressionString(String s) {
+    static FlowExpressions.Receiver getReceiverFromJavaExpressionString(
+            String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
         FlowExpressions.Receiver rec;
         try {
-            rec = atypeFactory.getReceiverFromJavaExpressionString(s, getCurrentPath());
+            rec = atypeFactory.getReceiverFromJavaExpressionString(s, currentPath);
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             rec = null;
         }
         return rec;
     }
 
-    private AnnotationMirror getHasSubsequenceAnnotationFromReceiver(FlowExpressions.Receiver rec) {
+    static AnnotationMirror getHasSubsequenceAnnotationFromReceiver(
+            FlowExpressions.Receiver rec, UpperBoundAnnotatedTypeFactory atypeFactory) {
         AnnotationMirror anm = null;
 
         if (rec == null) {
@@ -311,8 +316,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return anm;
     }
 
-    private FlowExpressionParseUtil.FlowExpressionContext getContextFromReceiver(
-            FlowExpressions.Receiver rec) {
+    static FlowExpressionParseUtil.FlowExpressionContext getContextFromReceiver(
+            FlowExpressions.Receiver rec, BaseContext checker) {
         if (rec == null) {
             return null;
         }
@@ -442,9 +447,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
         LessThanLengthOf rhsQual = (LessThanLengthOf) expQual;
         for (String rhsSeq : rhsQual.getSequences()) {
-            FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(rhsSeq);
-            AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec);
-            FlowExpressionParseUtil.FlowExpressionContext context = getContextFromReceiver(rec);
+            FlowExpressions.Receiver rec =
+                    getReceiverFromJavaExpressionString(rhsSeq, atypeFactory, getCurrentPath());
+            AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec, atypeFactory);
+            FlowExpressionParseUtil.FlowExpressionContext context =
+                    getContextFromReceiver(rec, checker);
 
             if (anm != null) {
                 String from =
@@ -455,19 +462,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                                 .get(0);
 
                 // viewpoint adapt strings from HasSubsequence expression
-                try {
-                    from =
-                            FlowExpressionParseUtil.parse(from, context, getCurrentPath(), false)
-                                    .toString();
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                }
+                from = standardizeAndViewpointAdapt(from, getCurrentPath(), context);
 
-                try {
-                    a =
-                            FlowExpressionParseUtil.parse(a, context, getCurrentPath(), false)
-                                    .toString();
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                }
+                a = standardizeAndViewpointAdapt(a, getCurrentPath(), context);
 
                 if (rhsQual.hasSequenceWithOffset(rhsSeq, from)) {
                     if (varLtlQual.hasSequenceWithOffset(a, "0")) {
@@ -489,9 +486,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // check is lhsSeq is an actual LTL
             if (varLtlQual.hasSequenceWithOffset(lhsSeq, 0)) {
 
-                FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(lhsSeq);
-                AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec);
-                FlowExpressionParseUtil.FlowExpressionContext context = getContextFromReceiver(rec);
+                FlowExpressions.Receiver rec =
+                        getReceiverFromJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
+                AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec, atypeFactory);
+                FlowExpressionParseUtil.FlowExpressionContext context =
+                        getContextFromReceiver(rec, checker);
 
                 if (anm != null) {
                     String from =
@@ -502,20 +501,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                                     .get(0);
 
                     // viewpoint adapt strings from HasSubsequence expression
-                    try {
-                        from =
-                                FlowExpressionParseUtil.parse(
-                                                from, context, getCurrentPath(), false)
-                                        .toString();
-                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    }
+                    from = standardizeAndViewpointAdapt(from, getCurrentPath(), context);
 
-                    try {
-                        a =
-                                FlowExpressionParseUtil.parse(a, context, getCurrentPath(), false)
-                                        .toString();
-                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    }
+                    a = standardizeAndViewpointAdapt(a, getCurrentPath(), context);
 
                     if (expQual.hasSequenceWithOffset(a, negateString(from))) {
                         // this cast is safe because LTLs cannot contain duplicates
@@ -525,6 +513,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             }
         }
         return newLHS;
+    }
+
+    static String standardizeAndViewpointAdapt(
+            String s, TreePath currentPath, FlowExpressionParseUtil.FlowExpressionContext context) {
+        try {
+            s = FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+        }
+        return s;
     }
 
     /**

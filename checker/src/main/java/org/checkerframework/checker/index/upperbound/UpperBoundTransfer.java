@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index.upperbound;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -574,6 +577,60 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             // annotations should be kept.
             if (left.isLessThanLengthQualifier()) {
                 leftWithOffset = left.glb(leftWithOffset);
+            }
+        }
+
+        // If the result of a numerical subtraction would be LTEL(b), and b is HSS(a, from, to),
+        // and the subtraction node itself is to - from, then the result is LTEL(a).
+
+        if (leftWithOffset.isLessThanLengthQualifier()) {
+            LessThanLengthOf subtractionResult = (LessThanLengthOf) leftWithOffset;
+            for (String b : subtractionResult.getSequences()) {
+                if (subtractionResult.hasSequenceWithOffset(b, -1)) {
+
+                    TreePath currentPath = this.atypeFactory.getPath(n.getTree());
+                    FlowExpressions.Receiver rec =
+                            UpperBoundVisitor.getReceiverFromJavaExpressionString(
+                                    b, atypeFactory, currentPath);
+                    AnnotationMirror anm =
+                            UpperBoundVisitor.getHasSubsequenceAnnotationFromReceiver(
+                                    rec, atypeFactory);
+                    FlowExpressionParseUtil.FlowExpressionContext context =
+                            UpperBoundVisitor.getContextFromReceiver(
+                                    rec, atypeFactory.getContext());
+
+                    if (anm != null) {
+                        String from =
+                                AnnotationUtils.getElementValueArray(
+                                                anm, "from", String.class, false)
+                                        .get(0);
+                        String to =
+                                AnnotationUtils.getElementValueArray(anm, "to", String.class, false)
+                                        .get(0);
+                        String a =
+                                AnnotationUtils.getElementValueArray(
+                                                anm, "value", String.class, false)
+                                        .get(0);
+
+                        // viewpoint adapt strings from HasSubsequence expression
+                        from =
+                                UpperBoundVisitor.standardizeAndViewpointAdapt(
+                                        from, currentPath, context);
+                        to =
+                                UpperBoundVisitor.standardizeAndViewpointAdapt(
+                                        to, currentPath, context);
+                        a = UpperBoundVisitor.standardizeAndViewpointAdapt(a, currentPath, context);
+
+                        Receiver leftOp =
+                                FlowExpressions.internalReprOf(atypeFactory, n.getLeftOperand());
+                        Receiver rightOp =
+                                FlowExpressions.internalReprOf(atypeFactory, n.getRightOperand());
+                        if (leftOp.toString().equals(to) && rightOp.toString().equals(from)) {
+                            UBQualifier ltelA = UBQualifier.createUBQualifier(a, "-1");
+                            leftWithOffset = leftWithOffset.glb(ltelA);
+                        }
+                    }
+                }
             }
         }
         return createTransferResult(n, in, leftWithOffset);
