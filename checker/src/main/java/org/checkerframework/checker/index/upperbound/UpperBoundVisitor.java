@@ -154,48 +154,55 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // check that when an assignment to a variable b declared as @HasSubsequence(a, from, to)
         // occurs, to <= a.length, i.e. to is @LTEqLengthOf(a).
 
-        Element element = TreeUtils.elementFromTree(varTree);
-        AnnotationMirror hss =
-                element == null
-                        ? null
-                        : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
-        if (hss != null) {
-            String from =
-                    AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
-            String to = AnnotationUtils.getElementValueArray(hss, "to", String.class, false).get(0);
-            String a =
-                    AnnotationUtils.getElementValueArray(hss, "value", String.class, false).get(0);
-            AnnotationMirror anm;
-            try {
-                anm =
-                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
-                                to, varTree, getCurrentPath());
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                anm = null;
-            }
+        if (varTree.getKind() == Tree.Kind.IDENTIFIER
+                || varTree.getKind() == Tree.Kind.MEMBER_SELECT) {
 
-            // the check fails if either anm is null or to is not LTEqLengthOf(a)
-            boolean checkFailed = anm == null;
+            Element element = TreeUtils.elementFromTree(varTree);
+            AnnotationMirror hss =
+                    element == null
+                            ? null
+                            : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+            if (hss != null) {
+                String from =
+                        AnnotationUtils.getElementValueArray(hss, "from", String.class, false)
+                                .get(0);
+                String to =
+                        AnnotationUtils.getElementValueArray(hss, "to", String.class, false).get(0);
+                String a =
+                        AnnotationUtils.getElementValueArray(hss, "value", String.class, false)
+                                .get(0);
+                AnnotationMirror anm;
+                try {
+                    anm =
+                            atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                    to, varTree, getCurrentPath());
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    anm = null;
+                }
 
-            if (!checkFailed) {
-                UBQualifier qual = UBQualifier.createUBQualifier(anm);
-                checkFailed = !qual.isLessThanOrEqualTo(a);
-            }
+                // the check fails if either anm is null or to is not LTEqLengthOf(a)
+                boolean checkFailed = anm == null;
 
-            if (checkFailed) {
-                // issue an error
-                checker.report(
-                        Result.failure(
-                                TO_NOT_LTEL,
-                                to,
-                                a,
-                                anm == null ? "@UpperBoundUnknown" : anm,
-                                a,
-                                a,
-                                a),
-                        valueTree);
-            } else {
-                checker.report(Result.warning(HSS, a, from, from, to, to, a, a), valueTree);
+                if (!checkFailed) {
+                    UBQualifier qual = UBQualifier.createUBQualifier(anm);
+                    checkFailed = !qual.isLessThanOrEqualTo(a);
+                }
+
+                if (checkFailed) {
+                    // issue an error
+                    checker.report(
+                            Result.failure(
+                                    TO_NOT_LTEL,
+                                    to,
+                                    a,
+                                    anm == null ? "@UpperBoundUnknown" : anm,
+                                    a,
+                                    a,
+                                    a),
+                            valueTree);
+                } else {
+                    checker.report(Result.warning(HSS, a, from, from, to, to, a, a), valueTree);
+                }
             }
         }
 

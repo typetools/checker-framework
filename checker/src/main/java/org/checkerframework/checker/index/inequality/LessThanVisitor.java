@@ -30,35 +30,42 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         // check that when an assignment to a variable declared as @HasSubsequence(a, from, to)
         // occurs, from <= to.
 
-        Element element = TreeUtils.elementFromTree(varTree);
-        AnnotationMirror hss =
-                element == null
-                        ? null
-                        : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
-        if (hss != null) {
-            String from =
-                    AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
-            String to = AnnotationUtils.getElementValueArray(hss, "to", String.class, false).get(0);
-            AnnotationMirror anm;
-            try {
-                anm =
-                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
-                                from, varTree, getCurrentPath());
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                anm = null;
-            }
+        if (varTree.getKind() == Tree.Kind.IDENTIFIER
+                || varTree.getKind() == Tree.Kind.MEMBER_SELECT) {
 
-            if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, to)) {
-                // issue an error
-                checker.report(
-                        Result.failure(
-                                FROM_GT_TO,
-                                from,
-                                to,
-                                anm == null ? "@LessThanUnknown" : anm,
-                                to,
-                                to),
-                        valueTree);
+            Element element = TreeUtils.elementFromTree(varTree);
+            AnnotationMirror hss =
+                    element == null
+                            ? null
+                            : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+
+            if (hss != null) {
+                String from =
+                        AnnotationUtils.getElementValueArray(hss, "from", String.class, false)
+                                .get(0);
+                String to =
+                        AnnotationUtils.getElementValueArray(hss, "to", String.class, false).get(0);
+                AnnotationMirror anm;
+                try {
+                    anm =
+                            atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                    from, varTree, getCurrentPath());
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    anm = null;
+                }
+
+                if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, to)) {
+                    // issue an error
+                    checker.report(
+                            Result.failure(
+                                    FROM_GT_TO,
+                                    from,
+                                    to,
+                                    anm == null ? "@LessThanUnknown" : anm,
+                                    to,
+                                    to),
+                            valueTree);
+                }
             }
         }
 

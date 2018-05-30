@@ -71,28 +71,34 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
         // check that when an assignment to a variable declared as @HasSubsequence(a, from, to)
         // occurs, from is non-negative.
 
-        Element element = TreeUtils.elementFromTree(varTree);
-        AnnotationMirror hss =
-                element == null
-                        ? null
-                        : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
-        if (hss != null) {
-            String from =
-                    AnnotationUtils.getElementValueArray(hss, "from", String.class, false).get(0);
-            AnnotationMirror anm;
-            try {
-                anm =
-                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
-                                from, varTree, getCurrentPath());
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                anm = null;
-            }
-            if (anm == null
-                    || !(AnnotationUtils.areSameByClass(anm, NonNegative.class)
-                            || AnnotationUtils.areSameByClass(anm, Positive.class))) {
-                checker.report(
-                        Result.failure(FROM_NOT_NN, from, anm == null ? "@LowerBoundUnknown" : anm),
-                        valueTree);
+        if (varTree.getKind() == Tree.Kind.IDENTIFIER
+                || varTree.getKind() == Tree.Kind.MEMBER_SELECT) {
+
+            Element element = TreeUtils.elementFromTree(varTree);
+            AnnotationMirror hss =
+                    element == null
+                            ? null
+                            : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
+            if (hss != null) {
+                String from =
+                        AnnotationUtils.getElementValueArray(hss, "from", String.class, false)
+                                .get(0);
+                AnnotationMirror anm;
+                try {
+                    anm =
+                            atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                    from, varTree, getCurrentPath());
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    anm = null;
+                }
+                if (anm == null
+                        || !(AnnotationUtils.areSameByClass(anm, NonNegative.class)
+                                || AnnotationUtils.areSameByClass(anm, Positive.class))) {
+                    checker.report(
+                            Result.failure(
+                                    FROM_NOT_NN, from, anm == null ? "@LowerBoundUnknown" : anm),
+                            valueTree);
+                }
             }
         }
 
