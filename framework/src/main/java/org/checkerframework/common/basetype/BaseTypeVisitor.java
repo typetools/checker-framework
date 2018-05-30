@@ -173,9 +173,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
-    /**
-     * A set of trees that are annotated with {@code @SuppressWarnings}/
-     *//*package-private*/ final List<Tree> treesWithSuppressWarnings;
+    /** A set of trees that are annotated with {@code @SuppressWarnings}. */
+    /*package-private*/ final List<Tree> treesWithSuppressWarnings;
 
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link

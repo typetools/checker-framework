@@ -41,6 +41,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -546,8 +547,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
             for (String keyFromAnno : suppressAnno.value()) {
                 for (String checkerKey : checkerKeys) {
+                    // KeyFromAnno may contain a checker key, but not equal it in cases where
+                    // the checker key if followed by a more precise warning.
+                    // For example if keyFromAnno is "nullness:assignment.type.incompatible"
                     if (keyFromAnno.contains(checkerKey)) {
-                        Tree swTree = findSWTree(tree);
+                        Tree swTree = findSuppressWarningsTree(tree);
                         report(
                                 Result.warning(
                                         SourceChecker.UNNEEDED_SUPPRESSION_KEY,
@@ -565,7 +569,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
                 for (String errorKey : errorKeys) {
                     if (keyFromAnno.equals(errorKey)) {
-                        Tree swTree = findSWTree(tree);
+                        Tree swTree = findSuppressWarningsTree(tree);
                         report(
                                 Result.warning(
                                         SourceChecker.UNNEEDED_SUPPRESSION_KEY,
@@ -580,22 +584,30 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         getVisitor().treesWithSuppressWarnings.clear();
     }
 
-    private Tree findSWTree(Tree tree) {
+    /**
+     * Finds the tree that is a {@code @SuppressWarnings} annotation.
+     *
+     * @param defaultTree tree to return if {@code @SuppressWarnings} isn't found
+     * @return defaultTree for {@code @SuppressWarnings} or {@code default} if one isn't found
+     */
+    private Tree findSuppressWarningsTree(Tree defaultTree) {
         List<? extends AnnotationTree> annotations;
-        if (TreeUtils.isClassTree(tree)) {
-            annotations = ((ClassTree) tree).getModifiers().getAnnotations();
-        } else if (tree.getKind() == Kind.METHOD) {
-            annotations = ((MethodTree) tree).getModifiers().getAnnotations();
+        if (TreeUtils.isClassTree(defaultTree)) {
+            annotations = ((ClassTree) defaultTree).getModifiers().getAnnotations();
+        } else if (defaultTree.getKind() == Kind.METHOD) {
+            annotations = ((MethodTree) defaultTree).getModifiers().getAnnotations();
         } else {
-            annotations = ((VariableTree) tree).getModifiers().getAnnotations();
+            annotations = ((VariableTree) defaultTree).getModifiers().getAnnotations();
         }
 
         for (AnnotationTree annotationTree : annotations) {
-            if (annotationTree.getAnnotationType().toString().equals("SuppressWarnings")) {
+            if (AnnotationUtils.areSameByClass(
+                    TreeUtils.annotationFromAnnotationTree(annotationTree),
+                    SuppressWarnings.class)) {
                 return annotationTree;
             }
         }
-        return tree;
+        return defaultTree;
     }
 
     /**
