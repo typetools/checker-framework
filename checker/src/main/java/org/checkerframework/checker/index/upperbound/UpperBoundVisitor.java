@@ -287,7 +287,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return rec;
     }
 
-    private AnnotationMirror getDeclarationAnnotationFromReceiver(FlowExpressions.Receiver rec) {
+    private AnnotationMirror getHasSubsequenceAnnotationFromReceiver(FlowExpressions.Receiver rec) {
         AnnotationMirror anm = null;
 
         if (rec == null) {
@@ -369,48 +369,20 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // 2. the rhs qualifier (expQual): this allows us to show that iff expQual includes LTL(b, from) for some b that has HSS, and varLtlQual includes LTL(a), then the LTL(a) can be removed from varLtlQual
         // 3. TODO: Finally, the expression "y - x" has type @LTEqLengthOf("a")
 
-        for (String lhsSeq : varLtlQual.getSequences()) {
-            // check is lhsSeq is an actual LTL
-            if (varLtlQual.hasSequenceWithOffset(lhsSeq, 0)) {
+        // first case
+        UBQualifier newLHS = processSubsequenceForLHS(varLtlQual, expQual);
+        if (newLHS.isUnknown()) {
+            return true;
+        } else {
+            varLtlQual = (LessThanLengthOf) newLHS;
+        }
 
-                FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(lhsSeq);
-                AnnotationMirror anm = getDeclarationAnnotationFromReceiver(rec);
-                FlowExpressionParseUtil.FlowExpressionContext context = getContextFromReceiver(rec);
-
-                if (anm != null) {
-                    String from =
-                            AnnotationUtils.getElementValueArray(anm, "from", String.class, false)
-                                    .get(0);
-                    String a =
-                            AnnotationUtils.getElementValueArray(anm, "value", String.class, false)
-                                    .get(0);
-
-                    // viewpoint adapt strings from HasSubsequence expression
-                    try {
-                        from =
-                                FlowExpressionParseUtil.parse(
-                                                from, context, getCurrentPath(), false)
-                                        .toString();
-                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    }
-
-                    try {
-                        a =
-                                FlowExpressionParseUtil.parse(a, context, getCurrentPath(), false)
-                                        .toString();
-                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    }
-
-                    if (expQual.hasSequenceWithOffset(a, negateString(from))) {
-                        UBQualifier newLHS = varLtlQual.removeOffset(lhsSeq, 0);
-                        if (newLHS.isUnknown()) {
-                            return true;
-                        } else {
-                            varLtlQual = (LessThanLengthOf) newLHS;
-                        }
-                    }
-                }
-            }
+        // second case
+        newLHS = processSubsequenceForRHS(varLtlQual, expQual);
+        if (newLHS.isUnknown()) {
+            return true;
+        } else {
+            varLtlQual = (LessThanLengthOf) newLHS;
         }
 
         Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());
@@ -450,6 +422,102 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         return true;
+    }
+
+    /* Returns the new value of the left hand side after processing the arrays named in the rhs.
+     * Iff expQual includes LTL(rhsSeq, from)
+     * for some rhsSeq that has HSS, and varLtlQual includes LTL(a), then the LTL(a) will be removed from varLtlQual
+     */
+    private UBQualifier processSubsequenceForRHS(LessThanLengthOf varLtlQual, UBQualifier expQual) {
+        UBQualifier newLHS = varLtlQual;
+        if (!expQual.isLessThanLengthQualifier()) {
+            return newLHS;
+        }
+        LessThanLengthOf rhsQual = (LessThanLengthOf) expQual;
+        for (String rhsSeq : rhsQual.getSequences()) {
+            FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(rhsSeq);
+            AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec);
+            FlowExpressionParseUtil.FlowExpressionContext context = getContextFromReceiver(rec);
+
+            if (anm != null) {
+                String from =
+                        AnnotationUtils.getElementValueArray(anm, "from", String.class, false)
+                                .get(0);
+                String a =
+                        AnnotationUtils.getElementValueArray(anm, "value", String.class, false)
+                                .get(0);
+
+                // viewpoint adapt strings from HasSubsequence expression
+                try {
+                    from =
+                            FlowExpressionParseUtil.parse(from, context, getCurrentPath(), false)
+                                    .toString();
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                }
+
+                try {
+                    a =
+                            FlowExpressionParseUtil.parse(a, context, getCurrentPath(), false)
+                                    .toString();
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                }
+
+                if (rhsQual.hasSequenceWithOffset(rhsSeq, from)) {
+                    if (varLtlQual.hasSequenceWithOffset(a, "0")) {
+                        newLHS = ((LessThanLengthOf) newLHS).removeOffset(a, 0);
+                    }
+                }
+            }
+        }
+        return newLHS;
+    }
+
+    /* Returns the new value of the left hand side after processing the arrays named in the lhs.
+     * Iff varLtlQual includes LTL(lhsSeq),
+     * lhsSeq has HSS, and expQual includes LTL(a, -from), then the LTL(lhsSeq) will be removed from varLtlQual
+     */
+    private UBQualifier processSubsequenceForLHS(LessThanLengthOf varLtlQual, UBQualifier expQual) {
+        UBQualifier newLHS = varLtlQual;
+        for (String lhsSeq : varLtlQual.getSequences()) {
+            // check is lhsSeq is an actual LTL
+            if (varLtlQual.hasSequenceWithOffset(lhsSeq, 0)) {
+
+                FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(lhsSeq);
+                AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec);
+                FlowExpressionParseUtil.FlowExpressionContext context = getContextFromReceiver(rec);
+
+                if (anm != null) {
+                    String from =
+                            AnnotationUtils.getElementValueArray(anm, "from", String.class, false)
+                                    .get(0);
+                    String a =
+                            AnnotationUtils.getElementValueArray(anm, "value", String.class, false)
+                                    .get(0);
+
+                    // viewpoint adapt strings from HasSubsequence expression
+                    try {
+                        from =
+                                FlowExpressionParseUtil.parse(
+                                                from, context, getCurrentPath(), false)
+                                        .toString();
+                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    }
+
+                    try {
+                        a =
+                                FlowExpressionParseUtil.parse(a, context, getCurrentPath(), false)
+                                        .toString();
+                    } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    }
+
+                    if (expQual.hasSequenceWithOffset(a, negateString(from))) {
+                        // this cast is safe because LTLs cannot contain duplicates
+                        newLHS = ((LessThanLengthOf) newLHS).removeOffset(lhsSeq, 0);
+                    }
+                }
+            }
+        }
+        return newLHS;
     }
 
     /**

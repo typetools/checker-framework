@@ -5,6 +5,7 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
+import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.Positive;
@@ -19,7 +20,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     final short @MinLen(1) [] array;
 
     final @IndexFor("array") @LessThan("end + 1") int start;
-    final @IndexOrHigh("array") int end;
+    final @Positive @LTEqLengthOf("array") int end;
 
     public static @IndexOrLow("#1") int indexOf(short[] array, short target) {
         return indexOf(array, target, 0, array.length);
@@ -35,10 +36,6 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return -1;
     }
 
-    public static @IndexOrLow("#1") int lastIndexOf(short[] array, short target) {
-        return lastIndexOf(array, target, 0, array.length);
-    }
-
     private static @IndexOrLow("#1") int lastIndexOf(
             short[] array, short target, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
         for (int i = end - 1; i >= start; i--) {
@@ -49,15 +46,16 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return -1;
     }
 
-    GuavaPrimitives(short @MinLen(1) [] bar) {
-        this(bar, 0, bar.length);
+    GuavaPrimitives(short @MinLen(1) [] array) {
+        this(array, 0, array.length);
     }
 
     GuavaPrimitives(
             short @MinLen(1) [] array,
             @IndexFor("#1") @LessThan("#3 + 1") int start,
-            @IndexOrHigh("#1") int end) {
-        this.array = array; // may need to reorder this
+            @Positive @LTEqLengthOf("#1") int end) {
+        // warnings in here might just need to be suppressed. A single @SuppressWarnings("index") to establish rep. invariant might be okay?
+        this.array = array;
         this.start = start;
         this.end = end;
     }
@@ -107,7 +105,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     }
 
     public List<Short> subList(
-            @IndexOrHigh("this") @LessThan("#3 + 1") int fromIndex,
+            @IndexOrHigh("this") @LessThan("#2 + 1") int fromIndex,
             @IndexOrHigh("this") int toIndex) {
         int size = size();
         if (fromIndex == toIndex) {
