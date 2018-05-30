@@ -8,7 +8,6 @@ import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.value.qual.MinLen;
 
@@ -20,7 +19,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     @HasSubsequence(value = "this", from = "this.start", to = "this.end")
     final short @MinLen(1) [] array;
 
-    final @IndexFor("array") @LessThan("end + 1") int start;
+    final @IndexFor("array") @LessThan("end") int start;
     final @Positive @LTEqLengthOf("array") int end;
 
     public static @IndexOrLow("#1") int indexOf(short[] array, short target) {
@@ -47,7 +46,6 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return -1;
     }
 
-    @SuppressWarnings("lessthan") // https://github.com/kelloggm/checker-framework/issues/225
     GuavaPrimitives(short @MinLen(1) [] array) {
         this(array, 0, array.length);
     }
@@ -56,7 +54,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
             "index") // these three fields need to be initialized in some order, and any ordering leads to the first two issuing errors - since each field is dependent on at least one of the others
     GuavaPrimitives(
             short @MinLen(1) [] array,
-            @IndexFor("#1") @LessThan("#3 + 1") int start,
+            @IndexFor("#1") @LessThan("#3") int start,
             @Positive @LTEqLengthOf("#1") int end) {
         // warnings in here might just need to be suppressed. A single @SuppressWarnings("index") to establish rep. invariant might be okay?
         this.array = array;
@@ -64,7 +62,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
         this.end = end;
     }
 
-    public @NonNegative @LTLengthOf(
+    public @Positive @LTLengthOf(
         value = {"this", "array"},
         offset = {"-1", "start - 1"}
     ) int size() { // INDEX: Annotation on a public method refers to private member.
@@ -112,11 +110,9 @@ public class GuavaPrimitives extends AbstractList<Short> {
         return oldValue;
     }
 
-    @SuppressWarnings(
-            "index") // needs https://github.com/kelloggm/checker-framework/issues/228 and https://github.com/kelloggm/checker-framework/issues/229
+    @SuppressWarnings("index") // needs https://github.com/kelloggm/checker-framework/issues/229
     public List<Short> subList(
-            @IndexOrHigh("this") @LessThan("#2 + 1") int fromIndex,
-            @IndexOrHigh("this") int toIndex) {
+            @IndexOrHigh("this") @LessThan("#2") int fromIndex, @IndexOrHigh("this") int toIndex) {
         int size = size();
         if (fromIndex == toIndex) {
             return Collections.emptyList();
