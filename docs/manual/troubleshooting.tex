@@ -993,15 +993,15 @@ clone and build all projects from their sources.
 \item Download Eclipse from
 the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
 and install it.
-\item Run Eclipse and set the
-workspace to the directory pointed to by \code{\$JSR308}.
+\item Run Eclipse.
 \item Enter the main Eclipse working screen and in the ``File'' menu,
 select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
-Projects into workspace''.
+Projects into Workspace''.
 \item After the ``Import Projects'' window appears, select ``Select
 Root Directory'', and select the directory pointed to by \code{\$JSR308}.
-\item Select all the projects in the folder except for the ones
-related to ``Eclipse'', ``encryption'', ``tutorial'', and ``demo''.
+\item Ensure ``Search for nested projects'' is selected in the Options panel.
+\item Select all the projects in the folder except for ``personalblog-demo'',
+then select ``Finish'' to import the projects.
 \end{enumerate}
 Eclipse should successfully build all the imported projects.
 If Eclipse reports any errors, ensure you followed the instructions

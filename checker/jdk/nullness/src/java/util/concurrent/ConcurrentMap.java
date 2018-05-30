@@ -26,7 +26,4 @@ public interface ConcurrentMap<K extends @NonNull Object, V extends @NonNull Obj
      @SideEffectFree public Set<@KeyFor("this") K> keySet();
      @SideEffectFree public Collection<V> values();
      @SideEffectFree public Set<Map.Entry<@KeyFor("this") K, V>> entrySet();
-     @SideEffectFree public Enumeration<K> keys();
-     @SideEffectFree public Enumeration<V> elements();
-     @SideEffectFree public Object clone();
 }

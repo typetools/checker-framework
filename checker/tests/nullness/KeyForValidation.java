@@ -65,7 +65,7 @@ public class KeyForValidation {
         throw new RuntimeException();
     }
     // :: error: (expression.unparsable.type.invalid)
-    <T extends @KeyFor("ALSOBAD") Object> void foo9() {}
+    <@KeyForBottom T extends @KeyFor("ALSOBAD") Object> void foo9() {}
     // :: error: (expression.unparsable.type.invalid)
     void foo10(@KeyFor("ALSOBAD") KeyForValidation this) {}
 
@@ -107,7 +107,7 @@ public class KeyForValidation {
         throw new RuntimeException();
     }
     // :: error: (expression.unparsable.type.invalid)
-    static <T extends @KeyFor("this.instanceField") Object> void bar9() {}
+    static <@KeyForBottom T extends @KeyFor("this.instanceField") Object> void bar9() {}
 
     // :: error: (expression.unparsable.type.invalid)
     public static void test2(Set<@KeyFor("this.instanceField") String> keySet) {

@@ -12,15 +12,10 @@ import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
 
 /**
- * Reads a file that has serialized javac diagnostics and returns either a list of
- * TestDiagnosticLines or TestDiagnostics. This file might either:
+ * A file can indicate expected javac diagnostics. There are two types of such files: Java source
+ * files, and Diagnostic files.
  *
- * <ul>
- *   <li>a Java file, which is read by creating a {@code JavaDiagnosticReader} with the {@link
- *       #JAVA_COMMENT_CODEC}
- *   <li>a "Diagnostic" file, which is read by creating a {@code JavaDiagnosticReader} with a {@link
- *       #DIAGNOSTIC_FILE_CODEC}
- * </ul>
+ * <p>This class contains a static method to read each type of file.
  */
 public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
@@ -28,197 +23,110 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     // diagnostics
 
     /**
-     * Reads the entire input file using the given codec and returns the resulting line.
+     * Returns all the diagnostics in any of the files.
      *
-     * @param toRead the file (Java or Diagnostics format) to read
-     * @param codec a codec corresponding to the file type being read
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnosticLines from the input file
+     * @param files the Java files to read; each is a File or a JavaFileObject
+     * @return the List of TestDiagnostics from the input file
      */
-    public static List<TestDiagnosticLine> readDiagnostics(
-            File toRead, DiagnosticCodec codec, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines = new ArrayList<>();
-        JavaDiagnosticReader reader = new JavaDiagnosticReader(toRead, codec);
-        while (reader.hasNext()) {
-            TestDiagnosticLine line = reader.next();
-            if (!omitEmptyDiagnostics || line.hasDiagnostics()) {
-                lines.add(line);
+    // The argument is has type Iterable<? extends Object> because Java cannot resolve the overload
+    // of two versions that take Iterable<? extends File> and Iterable<? extends JavaFileObject>.
+    public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends Object> files) {
+        List<JavaDiagnosticReader> readers = new ArrayList<>();
+        for (Object file : files) {
+            if (file instanceof JavaFileObject) {
+                readers.add(new JavaDiagnosticReader((JavaFileObject) file, JAVA_COMMENT_CODEC));
+            } else if (file instanceof File) {
+                readers.add(new JavaDiagnosticReader((File) file, JAVA_COMMENT_CODEC));
+            } else {
+                throw new IllegalArgumentException(
+                        String.format(
+                                "Elements of argument should be File or JavaFileObject, not %s: %s",
+                                file.getClass(), file));
             }
         }
-        reader.close();
-
-        return lines;
-    }
-
-    /**
-     * Reads diagnostic lines from the comments of the input Java file.
-     *
-     * @param toRead a Java File
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnosticLines from the input file
-     */
-    public static List<TestDiagnosticLine> readDiagnostics(
-            File toRead, boolean omitEmptyDiagnostics) {
-        return readDiagnostics(toRead, JAVA_COMMENT_CODEC, omitEmptyDiagnostics);
-    }
-
-    /**
-     * Reads diagnostic lines from the comments of a set of Java file.
-     *
-     * @param toRead java files to read using the JAVA_COMMENT_CODEC
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnosticLines from the input Jav afiles
-     */
-    public static List<TestDiagnosticLine> readDiagnosticLines(
-            Iterable<File> toRead, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines = new ArrayList<>();
-        for (File file : toRead) {
-            lines.addAll(readDiagnostics(file, omitEmptyDiagnostics));
-        }
-        return lines;
-    }
-
-    /**
-     * Reads diagnostics from the comments of a set of Java file.
-     *
-     * @param toRead java files to read using the JAVA_COMMENT_CODEC
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnostics (not lines) from the files ToRead
-     */
-    public static List<TestDiagnostic> readDiagnostics(
-            Iterable<File> toRead, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines = readDiagnosticLines(toRead, omitEmptyDiagnostics);
-
-        List<TestDiagnostic> diagnostics =
-                new ArrayList<TestDiagnostic>((int) (lines.size() + lines.size() * 0.1));
-        for (TestDiagnosticLine line : lines) {
-            diagnostics.addAll(line.getDiagnostics());
-        }
-        return diagnostics;
-    }
-
-    /**
-     * Reads diagnostic lines from the comments of a set of Java file.
-     *
-     * @param toRead the Java files to read using the JAVA_COMMENT_CODEC
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnostics (not lines) from the files ToRead
-     */
-    public static List<TestDiagnosticLine> readDiagnosticsJfo(
-            JavaFileObject toRead, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines = new ArrayList<>();
-        JavaDiagnosticReader reader = new JavaDiagnosticReader(toRead, JAVA_COMMENT_CODEC);
-        while (reader.hasNext()) {
-            TestDiagnosticLine line = reader.next();
-            if (!omitEmptyDiagnostics || line.hasDiagnostics()) {
-                lines.add(line);
-            }
-        }
-        reader.close();
-
-        return lines;
-    }
-
-    /**
-     * Reads diagnostic lines from the comments of a set of Java file.
-     *
-     * @param toRead the Java files to read using the JAVA_COMMENT_CODEC
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnosticLines from the input Jav afiles
-     */
-    public static List<TestDiagnosticLine> readExpectedDiagnosticLinesJfo(
-            Iterable<? extends JavaFileObject> toRead, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines = new ArrayList<>();
-        for (JavaFileObject file : toRead) {
-            lines.addAll(readDiagnosticsJfo(file, omitEmptyDiagnostics));
-        }
-        return lines;
-    }
-
-    /**
-     * Reads diagnostics from the comments of a set of Java file.
-     *
-     * @param toRead the Java files to read using the JAVA_COMMENT_CODEC
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnostics (not lines)
-     */
-    public static List<TestDiagnostic> readExpectedDiagnosticsJfo(
-            Iterable<? extends JavaFileObject> toRead, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines =
-                readExpectedDiagnosticLinesJfo(toRead, omitEmptyDiagnostics);
-
-        List<TestDiagnostic> diagnostics =
-                new ArrayList<TestDiagnostic>((int) (lines.size() + lines.size() * 0.1));
-        for (TestDiagnosticLine line : lines) {
-            diagnostics.addAll(line.getDiagnostics());
-        }
-        return diagnostics;
-    }
-
-    /**
-     * Reads diagnostic lines line-by-line from the input Diagnostic file.
-     *
-     * @param toRead a Diagnostic File
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnosticLines from the input file
-     */
-    public static List<TestDiagnosticLine> readDiagnosticFile(
-            File toRead, boolean omitEmptyDiagnostics) {
-        return readDiagnostics(toRead, DIAGNOSTIC_FILE_CODEC, omitEmptyDiagnostics);
-    }
-
-    /**
-     * Reads diagnostic lines line-by-line from the input Diagnostic files.
-     *
-     * @param toRead a set of Diagnostic Files
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
-     * @return the List of TestDiagnosticLines from the input files
-     */
-    public static List<TestDiagnosticLine> readDiagnosticFileLines(
-            Iterable<? extends File> toRead, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines = new ArrayList<>();
-        for (File file : toRead) {
-            lines.addAll(readDiagnosticFile(file, omitEmptyDiagnostics));
-        }
-        return lines;
+        return readDiagnostics(readers);
     }
 
     /**
      * Reads diagnostics line-by-line from the input Diagnostic files.
      *
-     * @param toRead a set of Diagnostic Files
-     * @param omitEmptyDiagnostics whether or not lines that do not contain any diagnostics should
-     *     be reported as empty TestDiagnosticLines
+     * @param files a set of Diagnostic Files
      * @return the List of TestDiagnosticLines from the input files
      */
-    public static List<TestDiagnostic> readDiagnosticFiles(
-            Iterable<? extends File> toRead, boolean omitEmptyDiagnostics) {
-        List<TestDiagnosticLine> lines = readDiagnosticFileLines(toRead, omitEmptyDiagnostics);
-
-        List<TestDiagnostic> diagnostics =
-                new ArrayList<TestDiagnostic>((int) (lines.size() + lines.size() * 0.1));
-        for (TestDiagnosticLine line : lines) {
-            diagnostics.addAll(line.getDiagnostics());
+    public static List<TestDiagnostic> readDiagnosticFiles(Iterable<? extends File> files) {
+        List<JavaDiagnosticReader> readers = new ArrayList<>();
+        for (File file : files) {
+            readers.add(new JavaDiagnosticReader(file, DIAGNOSTIC_FILE_CODEC));
         }
-        return diagnostics;
+        return readDiagnostics(readers);
     }
 
-    /** Instances of DiagnosticCodec represent the various formats diagnostic strings can take */
-    public interface DiagnosticCodec {
+    /**
+     * Returns all the diagnostics in any of the files.
+     *
+     * @param file the file (Java or Diagnostics format) to read
+     * @param codec a codec corresponding to the file type being read
+     * @return the List of TestDiagnosticLines from the input file
+     */
+    private static List<TestDiagnostic> readDiagnostics(Iterable<JavaDiagnosticReader> readers) {
+        return getDiagnostics(readDiagnosticLines(readers));
+    }
+
+    /**
+     * Reads the entire input file using the given codec and returns the resulting line.
+     *
+     * @param file the file (Java or Diagnostics format) to read
+     * @param codec a codec corresponding to the file type being read
+     * @return the List of TestDiagnosticLines from the input file
+     */
+    private static List<TestDiagnosticLine> readDiagnosticLines(
+            Iterable<JavaDiagnosticReader> readers) {
+        List<TestDiagnosticLine> result = new ArrayList<>();
+        for (JavaDiagnosticReader reader : readers) {
+            result.addAll(readDiagnosticLines(reader));
+        }
+        return result;
+    }
+
+    /**
+     * Reads the entire input file using the given codec and returns the resulting line.
+     *
+     * @param file the file (Java or Diagnostics format) to read
+     * @param codec a codec corresponding to the file type being read
+     * @return the List of TestDiagnosticLines from the input file
+     */
+    private static List<TestDiagnosticLine> readDiagnosticLines(JavaDiagnosticReader reader) {
+        List<TestDiagnosticLine> lines = new ArrayList<>();
+        while (reader.hasNext()) {
+            TestDiagnosticLine line = reader.next();
+            if (line.hasDiagnostics()) {
+                lines.add(line);
+            }
+        }
+        reader.close();
+
+        return lines;
+    }
+
+    /** Converts a list of TestDiagnosticLine into a list of TestDiagnostic. */
+    private static List<TestDiagnostic> getDiagnostics(List<TestDiagnosticLine> lines) {
+        List<TestDiagnostic> result = new ArrayList<TestDiagnostic>((int) (lines.size() * 1.1));
+        for (TestDiagnosticLine line : lines) {
+            result.addAll(line.getDiagnostics());
+        }
+        return result;
+    }
+
+    /**
+     * DiagnosticCodec converts a line of a file into a TestDiagnosticLine. There are currently two
+     * possible formats: one for Java source code, and one for Diagnostic files.
+     */
+    private interface DiagnosticCodec {
         public TestDiagnosticLine convertLine(String filename, long lineNumber, String line);
     }
 
-    /** Interprets a string that was written as a comment in a Java file */
-    public static DiagnosticCodec JAVA_COMMENT_CODEC =
+    /** Parses a string that was written as a comment in a Java file. */
+    private static DiagnosticCodec JAVA_COMMENT_CODEC =
             new DiagnosticCodec() {
                 @Override
                 public TestDiagnosticLine convertLine(
@@ -227,8 +135,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
                 }
             };
 
-    /** Interprets a string that was written as a line in a Diagnostic File */
-    public static DiagnosticCodec DIAGNOSTIC_FILE_CODEC =
+    /** Parses a string that was written as a line in a Diagnostic File. */
+    private static DiagnosticCodec DIAGNOSTIC_FILE_CODEC =
             new DiagnosticCodec() {
                 @Override
                 public TestDiagnosticLine convertLine(
@@ -237,9 +145,9 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
                 }
             };
 
-    public final File toRead;
-    public final JavaFileObject toReadFileObject;
-    public final DiagnosticCodec codec;
+    private final File toRead;
+    private final JavaFileObject toReadFileObject;
+    private final DiagnosticCodec codec;
 
     private final String filename;
 
@@ -248,17 +156,17 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     private LineNumberReader reader = null;
 
-    public String nextLine = null;
-    public int nextLineNumber = -1;
+    private String nextLine = null;
+    private int nextLineNumber = -1;
 
-    public JavaDiagnosticReader(File toRead, DiagnosticCodec codec) {
+    private JavaDiagnosticReader(File toRead, DiagnosticCodec codec) {
         this.toRead = toRead;
-        this.filename = shortFileName(toRead.getAbsolutePath());
         this.toReadFileObject = null;
         this.codec = codec;
+        this.filename = shortFileName(toRead.getAbsolutePath());
     }
 
-    public JavaDiagnosticReader(JavaFileObject toRead, DiagnosticCodec codec) {
+    private JavaDiagnosticReader(JavaFileObject toRead, DiagnosticCodec codec) {
         this.toRead = null;
         this.toReadFileObject = toRead;
         this.codec = codec;

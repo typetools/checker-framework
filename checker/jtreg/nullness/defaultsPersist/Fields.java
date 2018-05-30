@@ -204,7 +204,7 @@ public class Fields {
             genericLocation = {3, 0}
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = FIELD,
             genericLocation = {3, 0}
         ),
@@ -240,7 +240,7 @@ public class Fields {
             genericLocation = {3, 0}
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = FIELD,
             genericLocation = {3, 0}
         ),
