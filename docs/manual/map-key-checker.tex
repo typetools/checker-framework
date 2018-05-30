@@ -54,13 +54,18 @@ never be written by a programmer.}
 The null literal is implicitly annotated with \code{@UnknownKeyFor}, because
 \code{null} might be a key for any map.
 
-Lower bounds are defaulted to \code{@KeyForBottom}.
-This reduces the number of false
-positives, but it does require you to take action if you expect a
-type variable to be instantiated with \code{@KeyFor} for a particular map.
+Lower bounds are defaulted to \code{@UnknownKeyFor}.
+This reduces false
+positives when \code{null} is assigned to a variable whose type is a type variable,
+but it does require you to take action if a
+type variable will be instantiated with \code{@KeyFor} for a particular map.
 In that case,
 you must explicitly annotate the lower bound of that type variable with
-\code{@KeyForBottom}.  For example, \code{List<@KeyForBottom T>}.
+\code{@KeyForBottom}.  For example,
+
+\begin{Verbatim}
+public abstract class MyKeySet<@KeyForBottom K> implements Set<K> { }
+\end{Verbatim}
 
 \section{Examples\label{map-key-examples}}
 
