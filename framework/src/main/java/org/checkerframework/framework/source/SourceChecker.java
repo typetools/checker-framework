@@ -328,7 +328,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     public static final String SUPPRESS_ALL_KEY = "all";
 
     /** The @SuppressWarnings key emitted when an unused warning suppression is found. */
-    public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY = "unused.suppression";
+    public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY =
+            "unneeded.suppression";
 
     /** File name of the localized messages. */
     protected static final String MSGS_FILE = "messages.properties";
@@ -1461,7 +1462,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Elements with a {@code @SuppressWarnings} that actually suppressed a warning for this
      * checker.
      */
-    public final Set<Element> elementsSuppress = new HashSet<>();
+    public final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
 
     /**
      * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
@@ -1478,7 +1479,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
         if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
-            // never suppress an unused suppression key warning.
+            // never suppress an unneeded suppression key warning.
             return false;
         }
 
@@ -1488,7 +1489,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), errKey)) {
             if (hasOption("warnUnneededSuppressions")) {
-                elementsSuppress.add(elt);
+                elementsWithSuppressedWarnings.add(elt);
             }
             return true;
         }
@@ -1760,6 +1761,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public final boolean hasOption(String name) {
+        if ("warnUnneededSuppressions".equals(name)) {
+            return true;
+        }
         return getOptions().containsKey(name);
     }
 

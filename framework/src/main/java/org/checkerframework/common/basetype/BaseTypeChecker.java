@@ -508,7 +508,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (this.parentChecker == null) {
             warnUnneededSuppressions();
         }
-        getVisitor().treesWithSuppressWarnings.clear();
         if (getSubcheckers().size() > 0) {
             printCollectedMessages(tree.getCompilationUnit());
             // Update errsOnLastExit to reflect the errors issued.
@@ -524,15 +523,16 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (!hasOption("warnUnneededSuppressions")) {
             return;
         }
-        Set<Element> elementsSuppress = new HashSet<>(this.elementsSuppress);
-        this.elementsSuppress.clear();
+        Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
+        this.elementsWithSuppressedWarnings.clear();
         Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
-        checkerKeys.addAll(messages.stringPropertyNames());
+        Set<String> errorKeys = new HashSet<>(messages.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
-            elementsSuppress.addAll(subChecker.elementsSuppress);
-            subChecker.elementsSuppress.clear();
+            elementsSuppress.addAll(subChecker.elementsWithSuppressedWarnings);
+            subChecker.elementsWithSuppressedWarnings.clear();
             checkerKeys.addAll(subChecker.getSuppressWarningsKeys());
-            checkerKeys.addAll(subChecker.messages.stringPropertyNames());
+            errorKeys.addAll(subChecker.messages.stringPropertyNames());
+            subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
         // It's not clear for which checker this suppression is intended,
         // so never report it as unused.
@@ -540,24 +540,43 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         for (Tree tree : getVisitor().treesWithSuppressWarnings) {
             Element elt = TreeUtils.elementFromTree(tree);
-            SuppressWarnings suppress = elt.getAnnotation(SuppressWarnings.class);
-            if (suppress == null || elementsSuppress.contains(elt)) {
+            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
+            if (suppressAnno == null || elementsSuppress.contains(elt)) {
                 continue;
             }
-            for (String suppressKey : suppress.value()) {
+            for (String keyFromAnno : suppressAnno.value()) {
                 for (String checkerKey : checkerKeys) {
-                    if (suppressKey.contains(checkerKey)) {
+                    if (keyFromAnno.contains(checkerKey)) {
                         Tree swTree = findSWTree(tree);
                         report(
                                 Result.warning(
                                         SourceChecker.UNNEEDED_SUPPRESSION_KEY,
                                         getClass().getSimpleName(),
-                                        suppressKey),
+                                        "\"" + keyFromAnno + "\""),
+                                swTree);
+                    }
+                }
+                if (keyFromAnno.contains(":")) {
+                    // The key starts with a checker name, if that is this checker, then the warning
+                    // was issued above.  For example, if this is the Nullness Checker and the
+                    // keyForAnno is "index:override.return.invalid", then don't issue a warning.
+                    continue;
+                }
+
+                for (String errorKey : errorKeys) {
+                    if (keyFromAnno.equals(errorKey)) {
+                        Tree swTree = findSWTree(tree);
+                        report(
+                                Result.warning(
+                                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
+                                        getClass().getSimpleName(),
+                                        "\"" + keyFromAnno + "\""),
                                 swTree);
                     }
                 }
             }
         }
+        getVisitor().treesWithSuppressWarnings.clear();
     }
 
     private Tree findSWTree(Tree tree) {
