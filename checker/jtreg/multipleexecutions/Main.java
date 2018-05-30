@@ -47,7 +47,12 @@ public class Main {
                                 "../../dist/checker.jar",
                                 "-proc:only",
                                 "-AprintErrorStack",
-                                "-AprintAllQualifiers"),
+                                "-AprintAllQualifiers",
+                                "-source",
+                                "8",
+                                "-target",
+                                "8",
+                                "-Xlint:-options"),
                         null,
                         fileManager.getJavaFileObjects(testfile));
         task.setProcessors(Arrays.asList(new RegexChecker()));
