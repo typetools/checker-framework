@@ -506,7 +506,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         this.errsOnLastExit = nerrorsOfAllPreviousCheckers;
         super.typeProcess(element, tree);
         if (this.parentChecker == null) {
-            warnUnusedSuppressions();
+            warnUnneededSuppressions();
         }
         getVisitor().treesWithSuppressWarnings.clear();
         if (getSubcheckers().size() > 0) {
@@ -520,17 +520,19 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
      * contains a key that would suppress a warning from this checker.
      */
-    private void warnUnusedSuppressions() {
-        if (!hasOption("warnUnusedSuppressions")) {
+    private void warnUnneededSuppressions() {
+        if (!hasOption("warnUnneededSuppressions")) {
             return;
         }
         Set<Element> elementsSuppress = new HashSet<>(this.elementsSuppress);
         this.elementsSuppress.clear();
         Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
+        checkerKeys.addAll(messages.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
             elementsSuppress.addAll(subChecker.elementsSuppress);
             subChecker.elementsSuppress.clear();
             checkerKeys.addAll(subChecker.getSuppressWarningsKeys());
+            checkerKeys.addAll(subChecker.messages.stringPropertyNames());
         }
         // It's not clear for which checker this suppression is intended,
         // so never report it as unused.
@@ -548,7 +550,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                         Tree swTree = findSWTree(tree);
                         report(
                                 Result.warning(
-                                        SourceChecker.UNUSED_SUPPRESSION_KEY,
+                                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
                                         getClass().getSimpleName(),
                                         suppressKey),
                                 swTree);

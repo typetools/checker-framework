@@ -333,7 +333,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param tree a declaration on which a {@code @SuppressWarnings} annotation may be placed.
      */
     private void checkForSuppressWarningsAnno(Tree tree) {
-        if (!checker.hasOption("warnUnusedSuppressions")) {
+        if (!checker.hasOption("warnUnneededSuppressions")) {
             return;
         }
         Element elt = TreeUtils.elementFromTree(tree);

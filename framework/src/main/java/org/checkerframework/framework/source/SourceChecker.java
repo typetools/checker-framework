@@ -193,10 +193,10 @@ import org.checkerframework.javacutil.TreeUtils;
     "showSuppressWarningKeys",
 
     // Warn about @SuppressWarnings annotations that do not suppress any warnings.
-    // org.checkerframework.common.basetype.BaseTypeChecker.warnUnusedSuppressions
+    // org.checkerframework.common.basetype.BaseTypeChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.shouldSuppressWarnings(javax.lang.model.element.Element, java.lang.String)
     // org.checkerframework.common.basetype.BaseTypeVisitor.checkForSuppressWarningsAnno
-    "warnUnusedSuppressions",
+    "warnUnneededSuppressions",
 
     ///
     /// Partially-annotated libraries
@@ -328,7 +328,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     public static final String SUPPRESS_ALL_KEY = "all";
 
     /** The @SuppressWarnings key emitted when an unused warning suppression is found. */
-    public static final @CompilerMessageKey String UNUSED_SUPPRESSION_KEY = "unused.suppression";
+    public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY = "unused.suppression";
 
     /** File name of the localized messages. */
     protected static final String MSGS_FILE = "messages.properties";
@@ -1477,7 +1477,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
-        if (UNUSED_SUPPRESSION_KEY.equals(errKey)) {
+        if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
             // never suppress an unused suppression key warning.
             return false;
         }
@@ -1487,7 +1487,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), errKey)) {
-            if (hasOption("warnUnusedSuppressions")) {
+            if (hasOption("warnUnneededSuppressions")) {
                 elementsSuppress.add(elt);
             }
             return true;
