@@ -148,6 +148,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *   <li>29. a GTEN1 modded by anything is GTEN1
  *   <li>30. anything right-shifted by a non-negative is non-negative
  *   <li>31. anything bitwise-anded by a non-negative is non-negative
+ *   <li>32. If a and b are non-negative and a <= b and a != b, then b is pos.
  * </ul>
  */
 public class LowerBoundTransfer extends IndexAbstractTransfer {
@@ -213,7 +214,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Implements the transfer rules for both equal nodes and not-equals nodes (i.e. cases 5 and 6).
+     * Implements the transfer rules for both equal nodes and not-equals nodes (i.e. cases 5, 6,
+     * 32).
      */
     @Override
     protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
@@ -246,19 +248,20 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         return rfi.newResult;
     }
 
+    /** Implements case 32. */
     private void notEqualsLessThan(
-            Node mLiteral,
-            AnnotationMirror mAnno,
+            Node leftNode,
+            AnnotationMirror leftAnno,
             Node otherNode,
             AnnotationMirror otherAnno,
             CFStore store) {
-        if (!isNonNegative(mAnno) || !isNonNegative(otherAnno)) {
+        if (!isNonNegative(leftAnno) || !isNonNegative(otherAnno)) {
             return;
         }
         Receiver otherRec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
         if (aTypeFactory
                 .getLessThanAnnotatedTypeFactory()
-                .isLessThanOrEqual(mLiteral.getTree(), otherRec.toString())) {
+                .isLessThanOrEqual(leftNode.getTree(), otherRec.toString())) {
             store.insertValue(otherRec, POS);
         }
     }
