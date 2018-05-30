@@ -24,7 +24,7 @@ if [[ "$SLUGOWNER" == "" ]]; then
 fi
 
 # Checks for the existence of a repository
-GITEXISTS="wget -q --spider"
+export GITEXISTS="wget -q --spider"
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then

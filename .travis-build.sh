@@ -43,13 +43,11 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 
-./.travis-build-without-test.sh ${BUILDJDK}
+. ./.travis-build-without-test.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
 # subsequent command to build it except to test building it.
 
 set -e
-# Checks for the existence of a repository
-GITEXISTS="wget -q --spider"
 
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   # plume-lib-typecheck: 30 minutes
