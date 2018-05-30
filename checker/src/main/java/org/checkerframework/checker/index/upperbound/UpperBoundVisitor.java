@@ -11,8 +11,8 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
+import org.checkerframework.checker.index.samelen.SameLenQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -97,25 +97,23 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
 
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrTree);
+
         // Produce the full list of relevant names by checking the SameLen type.
-        if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
-            if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
-                List<String> slNames =
-                        AnnotationUtils.getElementValueArray(
-                                sameLenAnno, "value", String.class, true);
-                if (qualifier.isLessThanLengthOfAny(slNames)) {
+        if (sameLenAnno != null) {
+            SameLenQualifier slq = SameLenQualifier.of(sameLenAnno);
+            if (qualifier.isLessThanLengthOfAny(slq)) {
+                return;
+            }
+            List<String> slNames = slq.sameLenArrays();
+            for (String slName : slNames) {
+                // Check if any of the arrays have a minlen that is greater than the
+                // known constant value.
+                int minlenSL =
+                        atypeFactory
+                                .getValueAnnotatedTypeFactory()
+                                .getMinLenFromString(slName, arrTree, getCurrentPath());
+                if (valMax != null && valMax < minlenSL) {
                     return;
-                }
-                for (String slName : slNames) {
-                    // Check if any of the arrays have a minlen that is greater than the
-                    // known constant value.
-                    int minlenSL =
-                            atypeFactory
-                                    .getValueAnnotatedTypeFactory()
-                                    .getMinLenFromString(slName, arrTree, getCurrentPath());
-                    if (valMax != null && valMax < minlenSL) {
-                        return;
-                    }
                 }
             }
         }
@@ -278,27 +276,39 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
         ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
                 atypeFactory.getValueAnnotatedTypeFactory();
+
         checkloop:
         for (String sequenceName : varLtlQual.getSequences()) {
 
-            List<String> sameLenSequences =
-                    sameLenFactory.getSameLensFromString(sequenceName, valueExp, getCurrentPath());
-            if (testSameLen(expQual, varLtlQual, sameLenSequences, sequenceName)) {
-                continue;
-            }
-
+            // test minlen
             int minlen =
                     valueAnnotatedTypeFactory.getMinLenFromString(
                             sequenceName, valueExp, getCurrentPath());
             if (testMinLen(value, minlen, sequenceName, varLtlQual)) {
                 continue;
             }
-            for (String sequence : sameLenSequences) {
-                int minlenSL =
-                        valueAnnotatedTypeFactory.getMinLenFromString(
-                                sequence, valueExp, getCurrentPath());
-                if (testMinLen(value, minlenSL, sequenceName, varLtlQual)) {
-                    continue checkloop;
+
+            SameLenQualifier slq =
+                    sameLenFactory.getSameLenQualifierFromString(
+                            sequenceName, valueExp, getCurrentPath());
+
+            // test SameLen directly, then minlens of samelens
+
+            if (slq != null) {
+
+                boolean testSameLen = testSameLen(expQual, varLtlQual, slq, sequenceName);
+
+                if (testSameLen) {
+                    continue;
+                }
+
+                for (String sequence : slq.sameLenArrays()) {
+                    int minlenSL =
+                            valueAnnotatedTypeFactory.getMinLenFromString(
+                                    sequence, valueExp, getCurrentPath());
+                    if (testMinLen(value, minlenSL, sequenceName, varLtlQual)) {
+                        continue checkloop;
+                    }
                 }
             }
 
@@ -309,28 +319,17 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Tests whether replacing any of the arrays in sameLenArrays with arrayName makes expQual
-     * equivalent to varQual.
+     * Tests whether replacing any of the arrays in slq with arrayName makes expQual equivalent to
+     * varQual.
      */
     private boolean testSameLen(
-            UBQualifier expQual,
-            LessThanLengthOf varQual,
-            List<String> sameLenArrays,
-            String arrayName) {
+            UBQualifier expQual, LessThanLengthOf varQual, SameLenQualifier slq, String arrayName) {
 
         if (!expQual.isLessThanLengthQualifier()) {
             return false;
         }
 
-        for (String sameLenArrayName : sameLenArrays) {
-            // Check whether replacing the value for any of the current type's offset results
-            // in the type we're trying to match.
-            if (varQual.isValidReplacement(
-                    arrayName, sameLenArrayName, (LessThanLengthOf) expQual)) {
-                return true;
-            }
-        }
-        return false;
+        return varQual.isValidReplacement(arrayName, slq, (LessThanLengthOf) expQual);
     }
 
     /**

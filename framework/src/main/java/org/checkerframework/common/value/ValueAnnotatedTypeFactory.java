@@ -1431,7 +1431,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // The field access is to the length field, as in "someArrayExpression.length"
                     AnnotatedTypeMirror receiverType = getAnnotatedType(tree.getExpression());
                     if (receiverType.getKind() == TypeKind.ARRAY) {
-
                         AnnotationMirror resultAnno =
                                 createArrayLengthResultAnnotation(receiverType);
                         if (resultAnno != null) {

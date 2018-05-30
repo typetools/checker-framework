@@ -11,6 +11,7 @@ import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
+import org.checkerframework.checker.index.samelen.SameLenQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -591,10 +592,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
         // Look up the SameLen type of the sequence.
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
-        List<String> sameLenSequences =
-                sameLenAnno == null
-                        ? new ArrayList<>()
-                        : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno);
+
+        List<String> sameLenSequences = new ArrayList<>();
+
+        if (sameLenAnno != null) {
+            SameLenQualifier slq = SameLenQualifier.of(sameLenAnno);
+            sameLenSequences = slq.sameLenArrays();
+        }
 
         if (!sameLenSequences.contains(sequenceRec.toString())) {
             sameLenSequences.add(sequenceRec.toString());
@@ -605,8 +609,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             offsets.add("-1");
         }
 
+        UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenSequences, offsets);
+
         if (CFAbstractStore.canInsertReceiver(sequenceRec)) {
-            UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenSequences, offsets);
             UBQualifier previous = getUBQualifier(n, in);
             return createTransferResult(n, in, qualifier.glb(previous));
         }

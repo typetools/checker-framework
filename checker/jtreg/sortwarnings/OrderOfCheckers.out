@@ -5,7 +5,7 @@ OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[all, index, searchinde
 found   : @SearchIndexUnknown int @SearchIndexUnknown []
 required: @SearchIndexBottom int @SearchIndexUnknown []
 OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[all, index, samelen]:assignment.type.incompatible] incompatible types in assignment.
-found   : @SameLenUnknown int @SameLen("y") []
+found   : @SameLenUnknown int @SameLen(value="y", offset="0") []
 required: @SameLenUnknown int @SameLenBottom []
 OrderOfCheckers.java:12:99: compiler.err.proc.messager: [[all, index, lowerbound]:assignment.type.incompatible] incompatible types in assignment.
 found   : @LowerBoundUnknown int @LowerBoundUnknown []

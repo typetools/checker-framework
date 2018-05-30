@@ -10,41 +10,47 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.PolyLength;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The SameLen Checker is used to determine whether there are multiple fixed-length sequences (such
  * as arrays or strings) in a program that share the same length. It is part of the Index Checker,
- * and is used as a subchecker by the Index Checker's components.
+ * and is used as a subchecker by the Index Checker's components. Annotations that indicate fixed
+ * offsets between arrays can be written using the "offset" mechanism of the SameLen annotation, but
+ * are currently never inferred.
  *
  * <p>This annotated type factory refines types in X cases:
  *
@@ -100,6 +106,44 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected TypeAnnotator createTypeAnnotator() {
+        return new ListTypeAnnotator(new SameLenTypeAnnotator(this), super.createTypeAnnotator());
+    }
+
+    /**
+     * Performs pre-processing on annotations written by users, replacing illegal annotations by
+     * legal ones.
+     */
+    private class SameLenTypeAnnotator extends TypeAnnotator {
+
+        private SameLenTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
+        @Override
+        protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
+            // if there is an SameLen annotation whose argument lengths don't match, replace it with bottom
+            AnnotationMirror anm = type.getAnnotation(SameLen.class);
+            if (anm != null) {
+                List<String> sequences =
+                        AnnotationUtils.getElementValueArray(anm, "value", String.class, true);
+                List<String> offsets =
+                        AnnotationUtils.getElementValueArray(anm, "offset", String.class, true);
+                if (sequences != null
+                        && offsets != null
+                        && sequences.size() != offsets.size()
+                        && offsets.size() > 0) {
+                    // Cannot use type.replaceAnnotation because it will call isSubtype, which will try to process
+                    // the annotation and throw an error.
+                    type.clearAnnotations();
+                    type.addAnnotation(BOTTOM);
+                }
+            }
+            return super.scan(type, aVoid);
+        }
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new SameLenQualifierHierarchy(factory);
     }
@@ -121,14 +165,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 AnnotationMirror anm = atm.getAnnotation(SameLen.class);
                 if (anm != null) {
-                    List<String> slArrays = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
-                    if (slArrays.contains(varName)) {
-                        slArrays.remove(varName);
-                    }
-                    if (slArrays.size() == 0) {
+                    SameLenQualifier slq = SameLenQualifier.of(anm);
+                    if (!slq.canRemove(varName)) {
                         atm.replaceAnnotation(UNKNOWN);
                     } else {
-                        atm.replaceAnnotation(createSameLen(slArrays.toArray(new String[0])));
+                        atm.replaceAnnotation(
+                                slq.remove(varName).convertToAnnotation(processingEnv));
                     }
                 }
             }
@@ -136,20 +178,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return atm;
     }
 
-    /**
-     * This function finds the union of the values of two annotations. Both annotations must have a
-     * value field; otherwise the function will fail.
-     *
-     * @return the set union of the two value fields
-     */
-    public AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
-
-        HashSet<String> newValues = new HashSet<>(a1Names.size() + a2Names.size());
-
-        newValues.addAll(a1Names);
-        newValues.addAll(a2Names);
-        String[] names = newValues.toArray(new String[newValues.size()]);
-        return createSameLen(names);
+    @Override
+    protected DependentTypesHelper createDependentTypesHelper() {
+        return new OffsetDependentTypesHelper(this);
     }
 
     /**
@@ -181,19 +212,22 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
 
         assert receivers.size() == annos.size();
-        List<String> values = new ArrayList<>();
+        SameLenQualifier slq = null;
         for (int i = 0; i < receivers.size(); i++) {
-            Receiver rec = receivers.get(i);
-            AnnotationMirror anno = annos.get(i);
-            if (shouldUseInAnnotation(rec)) {
-                values.add(rec.toString());
+            if (slq == null) {
+                slq = SameLenQualifier.of(receivers.get(i).toString());
             }
-            if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
-                values.addAll(getValueOfAnnotationWithStringArgument(anno));
+            Receiver rec = receivers.get(i);
+            if (shouldUseInAnnotation(rec)) {
+                slq = slq.combine(SameLenQualifier.of(rec.toString()));
+            }
+            AnnotationMirror anno = annos.get(i);
+            if (anno != null && AnnotationUtils.areSameByClass(anno, SameLen.class)) {
+                slq = slq.combine(SameLenQualifier.of(anno));
             }
         }
-        AnnotationMirror res = getCombinedSameLen(values, new ArrayList<>());
-        return res;
+        AnnotationMirror result = slq.convertToAnnotation(processingEnv);
+        return result;
     }
 
     public static boolean shouldUseInAnnotation(Receiver receiver) {
@@ -230,15 +264,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
-
-                if (!Collections.disjoint(a1Val, a2Val)) {
-                    return getCombinedSameLen(a1Val, a2Val);
-                } else {
-                    return BOTTOM;
-                }
-
+                return SameLenQualifier.of(a1).glb(SameLenQualifier.of(a2), BOTTOM, processingEnv);
             } else {
                 // the glb is either one of the annotations (if the other is top), or bottom.
                 if (AnnotationUtils.areSameByClass(a1, SameLenUnknown.class)) {
@@ -254,18 +280,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /** Case 4. */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
-
-                if (!Collections.disjoint(a1Val, a2Val)) {
-                    a1Val.retainAll(a2Val);
-                    return createSameLen(a1Val.toArray(new String[0]));
-                } else {
-                    return UNKNOWN;
-                }
-
+            if (AnnotationUtils.areSameByClass(a1, SameLen.class)
+                    && AnnotationUtils.areSameByClass(a2, SameLen.class)) {
+                return SameLenQualifier.of(a1).lub(SameLenQualifier.of(a2), UNKNOWN, processingEnv);
             } else {
                 // the lub is either one of the annotations (if the other is bottom), or top.
                 if (AnnotationUtils.areSameByClass(a1, SameLenBottom.class)) {
@@ -289,14 +306,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (AnnotationUtils.areSameByClass(subAnno, PolySameLen.class)) {
                 return AnnotationUtils.areSameByClass(superAnno, PolySameLen.class);
-            } else if (AnnotationUtils.hasElementValue(subAnno, "value")
-                    && AnnotationUtils.hasElementValue(superAnno, "value")) {
-                List<String> subArrays = getValueOfAnnotationWithStringArgument(subAnno);
-                List<String> superArrays = getValueOfAnnotationWithStringArgument(superAnno);
-
-                if (subArrays.containsAll(superArrays)) {
-                    return true;
-                }
+            } else if (AnnotationUtils.areSameByClass(subAnno, SameLen.class)
+                    && AnnotationUtils.areSameByClass(superAnno, SameLen.class)) {
+                return SameLenQualifier.of(subAnno).isSubtype(SameLenQualifier.of(superAnno));
             }
             return false;
         }
@@ -358,17 +370,20 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Creates a @SameLen annotation whose values are the given strings. */
     public AnnotationMirror createSameLen(String... val) {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
-        Arrays.sort(val);
-        builder.setValue("value", val);
-        return builder.build();
+        return SameLenQualifier.of(Arrays.asList(val)).convertToAnnotation(processingEnv);
+    }
+
+    /** Creates a @SameLen annotation whose values are the given strings with the given offsets. */
+    public AnnotationMirror createSameLen(String[] val, String[] offsets) {
+        return SameLenQualifier.of(Arrays.asList(val), Arrays.asList(offsets))
+                .convertToAnnotation(processingEnv);
     }
 
     /**
      * Find all the sequences that are members of the SameLen annotation associated with the
-     * sequence named in sequenceExpression along the current path.
+     * sequence named in sequenceExpression along the current path with the given offset.
      */
-    public List<String> getSameLensFromString(
+    public @Nullable SameLenQualifier getSameLenQualifierFromString(
             String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror sameLenAnno = null;
         try {
@@ -380,8 +395,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         if (sameLenAnno == null) {
             // Could not find a more precise type, so return 0;
-            return new ArrayList<>();
+            return null;
         }
-        return getValueOfAnnotationWithStringArgument(sameLenAnno);
+        return SameLenQualifier.of(sameLenAnno);
     }
 }

@@ -17,6 +17,7 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
+import org.checkerframework.checker.index.samelen.SameLenQualifier;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -188,11 +189,11 @@ public abstract class UBQualifier {
     /**
      * Is the value with this qualifier less than the length of any of the sequences?
      *
-     * @param sequences list of sequences
+     * @param slq a SameLen type representing the sequences
      * @return whether or not the value with this qualifier is less than the length of any of the
      *     sequences
      */
-    public boolean isLessThanLengthOfAny(List<String> sequences) {
+    public boolean isLessThanLengthOfAny(SameLenQualifier slq) {
         return false;
     }
 
@@ -249,18 +250,21 @@ public abstract class UBQualifier {
         /**
          * Is a value with this type less than the length of any of the sequences?
          *
-         * @param sequences list of sequences
+         * @param slq A SameLen qualifier representing the sequences with their associated offsets
          * @return true if a value with this type is less than the length of any of the sequences
          */
         @Override
-        public boolean isLessThanLengthOfAny(List<String> sequences) {
-            for (String sequence : sequences) {
-                if (isLessThanLengthOf(sequence)) {
-                    return true;
+        public boolean isLessThanLengthOfAny(SameLenQualifier slq) {
+            for (String sequence : map.keySet()) {
+                for (OffsetEquation offset : map.get(sequence)) {
+                    if (slq.isSameLenByOffset(sequence, offset)) {
+                        return true;
+                    }
                 }
             }
             return false;
         }
+
         /**
          * Is a value with this type less than the length of the sequence?
          *
@@ -835,16 +839,28 @@ public abstract class UBQualifier {
          * replacementSequence entry in other.
          */
         public boolean isValidReplacement(
-                String sequence, String replacementSequence, LessThanLengthOf other) {
-            Set<OffsetEquation> offsets = map.get(sequence);
-            if (offsets == null) {
-                return false;
+                String sequence, SameLenQualifier slq, LessThanLengthOf other) {
+
+            boolean isValid = false;
+
+            for (String replacementSequence : slq.getSequences()) {
+
+                Set<OffsetEquation> offsets = map.get(sequence);
+                if (offsets == null) {
+                    continue;
+                }
+                Set<OffsetEquation> otherOffsets = other.map.get(replacementSequence);
+                if (otherOffsets == null) {
+                    continue;
+                }
+
+                Set<OffsetEquation> otherOffsetsMapped =
+                        slq.addOffsetToAll(replacementSequence, otherOffsets);
+
+                isValid = isValid || containsSame(offsets, otherOffsetsMapped);
             }
-            Set<OffsetEquation> otherOffsets = other.map.get(replacementSequence);
-            if (otherOffsets == null) {
-                return false;
-            }
-            return containsSame(offsets, otherOffsets);
+
+            return isValid;
         }
 
         @Override
