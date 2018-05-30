@@ -570,6 +570,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                                 Result.warning(
                                         SourceChecker.UNNEEDED_SUPPRESSION_KEY,
                                         getClass().getSimpleName(),
+                                        // Have to add quotes here so that the key not its value is printed.
                                         "\"" + keyFromAnno + "\""),
                                 swTree);
                     }

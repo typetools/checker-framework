@@ -1761,9 +1761,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public final boolean hasOption(String name) {
-        if ("warnUnneededSuppressions".equals(name)) {
-            return true;
-        }
         return getOptions().containsKey(name);
     }
 
