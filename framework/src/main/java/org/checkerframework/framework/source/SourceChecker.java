@@ -1,5 +1,6 @@
 package org.checkerframework.framework.source;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -1000,6 +1001,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Visit the attributed tree.
         try {
             visitor.visit(p);
+            warnUnneededSuppressions();
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
@@ -1009,6 +1011,115 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             // AbstractTypeProcessor.
             this.errsOnLastExit = log.nerrors;
         }
+    }
+
+    /**
+     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
+     * contains a key that would suppress a warning from this checker.
+     */
+    protected void warnUnneededSuppressions() {
+        if (!hasOption("warnUnneededSuppressions")) {
+            return;
+        }
+
+        Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
+        this.elementsWithSuppressedWarnings.clear();
+        Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
+        Set<String> errorKeys = new HashSet<>(messages.stringPropertyNames());
+        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
+        getVisitor().treesWithSuppressWarnings.clear();
+    }
+
+    /**
+     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
+     * contains a key that would suppress a warning from this checker.
+     *
+     * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
+     *     warning
+     * @param checkerKeys suppress warning keys that suppress any warning from this checker
+     * @param errorKeys error keys that can be issued by this checker
+     */
+    protected void warnUnneedSuppressions(
+            Set<Element> elementsSuppress, Set<String> checkerKeys, Set<String> errorKeys) {
+        // It's not clear for which checker this suppression is intended,
+        // so never report it as unused.
+        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
+
+        for (Tree tree : getVisitor().treesWithSuppressWarnings) {
+            Element elt = TreeUtils.elementFromTree(tree);
+            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
+            if (suppressAnno == null || elementsSuppress.contains(elt)) {
+                continue;
+            }
+            for (String keyFromAnno : suppressAnno.value()) {
+                for (String checkerKey : checkerKeys) {
+                    // KeyFromAnno may contain a checker key, but may not be equal to it in cases
+                    // where the checker key if followed by a more precise warning.
+                    // For example if keyFromAnno is "nullness:assignment.type.incompatible"
+                    if (keyFromAnno.contains(checkerKey)) {
+                        reportUnneededSuppression(tree, keyFromAnno);
+                    }
+                }
+                if (keyFromAnno.contains(":")) {
+                    // The key starts with a checker name, if that is this checker, then the warning
+                    // was issued above.  For example, if this is the Nullness Checker and the
+                    // keyForAnno is "index:override.return.invalid", then don't issue a warning.
+                    continue;
+                }
+
+                for (String errorKey : errorKeys) {
+                    // The keyFromAnno may only be a part of an error key.
+                    // For example, @SuppressWarnings("purity") suppresses errors with keys:
+                    // purity.deterministic.void.method, purity.deterministic.constructor, etc..
+                    if (errorKey.contains(keyFromAnno)) {
+                        reportUnneededSuppression(tree, keyFromAnno);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Issues a warning that the key in a {@code @SuppressWarnings} on {@code tree} isn't needed.
+     *
+     * @param tree has unneeded {@code @SuppressWarnings}
+     * @param key suppress warning key that isn't needed
+     */
+    private void reportUnneededSuppression(Tree tree, String key) {
+        Tree swTree = findSuppressWarningsTree(tree);
+        report(
+                Result.warning(
+                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
+                        getClass().getSimpleName(),
+                        "\"" + key + "\""),
+                swTree);
+    }
+
+    /**
+     * Finds the tree that is a {@code @SuppressWarnings} annotation.
+     *
+     * @param tree a class, method, or variable tree annotated with {@code @SuppressWarnings}
+     * @return tree for {@code @SuppressWarnings} or {@code default} if one isn't found
+     */
+    private Tree findSuppressWarningsTree(Tree tree) {
+        List<? extends AnnotationTree> annotations;
+        if (TreeUtils.isClassTree(tree)) {
+            annotations = ((ClassTree) tree).getModifiers().getAnnotations();
+        } else if (tree.getKind() == Tree.Kind.METHOD) {
+            annotations = ((MethodTree) tree).getModifiers().getAnnotations();
+        } else {
+            annotations = ((VariableTree) tree).getModifiers().getAnnotations();
+        }
+
+        for (AnnotationTree annotationTree : annotations) {
+            if (AnnotationUtils.areSameByClass(
+                    TreeUtils.annotationFromAnnotationTree(annotationTree),
+                    SuppressWarnings.class)) {
+                return annotationTree;
+            }
+        }
+        ErrorReporter.errorAbort("Did not find @SuppressWarnings: %s", tree);
+        return tree;
     }
 
     private CheckerError wrapThrowableAsCheckerError(

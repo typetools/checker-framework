@@ -173,9 +173,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
-    /** A set of trees that are annotated with {@code @SuppressWarnings}. */
-    /*package-private*/ final List<Tree> treesWithSuppressWarnings;
-
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
      *     TypeHierarchy#isSubtype})
@@ -189,7 +186,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.treesWithSuppressWarnings = new ArrayList<>();
 
         checkForAnnotatedJdk();
     }
@@ -203,7 +199,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.treesWithSuppressWarnings = new ArrayList<>();
 
         checkForAnnotatedJdk();
     }
@@ -293,7 +288,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // class entirely.
             return null;
         }
-        checkForSuppressWarningsAnno(classTree);
         atypeFactory.preProcessClassTree(classTree);
 
         TreePath preTreePath = visitorState.getPath();
@@ -324,21 +318,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             visitorState.setAssignmentContext(preAssCtxt);
         }
         return null;
-    }
-
-    /**
-     * If {@code tree} has a {@code @SuppressWarnings} add it to treesWithSuppressWarnings.
-     *
-     * @param tree a declaration on which a {@code @SuppressWarnings} annotation may be placed.
-     */
-    private void checkForSuppressWarningsAnno(Tree tree) {
-        if (!checker.hasOption("warnUnneededSuppressions")) {
-            return;
-        }
-        Element elt = TreeUtils.elementFromTree(tree);
-        if (elt.getAnnotation(SuppressWarnings.class) != null) {
-            treesWithSuppressWarnings.add(tree);
-        }
     }
 
     /**
@@ -491,8 +470,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @Override
     public Void visitMethod(MethodTree node, Void p) {
-        checkForSuppressWarningsAnno(node);
-
         // We copy the result from getAnnotatedType to ensure that
         // circular types (e.g. K extends Comparable<K>) are represented
         // by circular AnnotatedTypeMirrors, which avoids problems with
@@ -884,7 +861,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
-        checkForSuppressWarningsAnno(node);
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         visitorState.setAssignmentContext(
                 Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));

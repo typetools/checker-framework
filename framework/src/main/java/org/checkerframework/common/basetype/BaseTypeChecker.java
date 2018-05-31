@@ -1,12 +1,7 @@
 package org.checkerframework.common.basetype;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -33,7 +28,6 @@ import javax.tools.Diagnostic;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -41,10 +35,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -506,9 +498,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         this.errsOnLastExit = nerrorsOfAllPreviousCheckers;
         super.typeProcess(element, tree);
-        if (this.parentChecker == null) {
-            warnUnneededSuppressions();
-        }
+        if (this.parentChecker == null) {}
         if (getSubcheckers().size() > 0) {
             printCollectedMessages(tree.getCompilationUnit());
             // Update errsOnLastExit to reflect the errors issued.
@@ -520,8 +510,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
      * contains a key that would suppress a warning from this checker.
      */
-    private void warnUnneededSuppressions() {
-        if (!hasOption("warnUnneededSuppressions")) {
+    @Override
+    protected void warnUnneededSuppressions() {
+        if (parentChecker != null || !hasOption("warnUnneededSuppressions")) {
             return;
         }
         Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
@@ -535,79 +526,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             errorKeys.addAll(subChecker.messages.stringPropertyNames());
             subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
-        // It's not clear for which checker this suppression is intended,
-        // so never report it as unused.
-        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
+        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
 
-        for (Tree tree : getVisitor().treesWithSuppressWarnings) {
-            Element elt = TreeUtils.elementFromTree(tree);
-            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
-            if (suppressAnno == null || elementsSuppress.contains(elt)) {
-                continue;
-            }
-            for (String keyFromAnno : suppressAnno.value()) {
-                for (String checkerKey : checkerKeys) {
-                    // KeyFromAnno may contain a checker key, but may not be equal to it in cases
-                    // where the checker key if followed by a more precise warning.
-                    // For example if keyFromAnno is "nullness:assignment.type.incompatible"
-                    if (keyFromAnno.contains(checkerKey)) {
-                        reportUnneededSuppression(tree, keyFromAnno);
-                    }
-                }
-                if (keyFromAnno.contains(":")) {
-                    // The key starts with a checker name, if that is this checker, then the warning
-                    // was issued above.  For example, if this is the Nullness Checker and the
-                    // keyForAnno is "index:override.return.invalid", then don't issue a warning.
-                    continue;
-                }
-
-                for (String errorKey : errorKeys) {
-                    // The keyFromAnno may only be a part of an error key.
-                    // For example, @SuppressWarnings("purity") suppresses errors with keys:
-                    // purity.deterministic.void.method, purity.deterministic.constructor, etc..
-                    if (errorKey.contains(keyFromAnno)) {
-                        reportUnneededSuppression(tree, keyFromAnno);
-                    }
-                }
-            }
-        }
         getVisitor().treesWithSuppressWarnings.clear();
-    }
-
-    private void reportUnneededSuppression(Tree tree, String keyFromAnno) {
-        Tree swTree = findSuppressWarningsTree(tree);
-        report(
-                Result.warning(
-                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
-                        getClass().getSimpleName(),
-                        "\"" + keyFromAnno + "\""),
-                swTree);
-    }
-
-    /**
-     * Finds the tree that is a {@code @SuppressWarnings} annotation.
-     *
-     * @param defaultTree tree to return if {@code @SuppressWarnings} isn't found
-     * @return defaultTree for {@code @SuppressWarnings} or {@code default} if one isn't found
-     */
-    private Tree findSuppressWarningsTree(Tree defaultTree) {
-        List<? extends AnnotationTree> annotations;
-        if (TreeUtils.isClassTree(defaultTree)) {
-            annotations = ((ClassTree) defaultTree).getModifiers().getAnnotations();
-        } else if (defaultTree.getKind() == Kind.METHOD) {
-            annotations = ((MethodTree) defaultTree).getModifiers().getAnnotations();
-        } else {
-            annotations = ((VariableTree) defaultTree).getModifiers().getAnnotations();
-        }
-
-        for (AnnotationTree annotationTree : annotations) {
-            if (AnnotationUtils.areSameByClass(
-                    TreeUtils.annotationFromAnnotationTree(annotationTree),
-                    SuppressWarnings.class)) {
-                return annotationTree;
-            }
-        }
-        return defaultTree;
     }
 
     /**
