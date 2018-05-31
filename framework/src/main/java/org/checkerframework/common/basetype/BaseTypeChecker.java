@@ -498,7 +498,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         this.errsOnLastExit = nerrorsOfAllPreviousCheckers;
         super.typeProcess(element, tree);
-        if (this.parentChecker == null) {}
+
         if (getSubcheckers().size() > 0) {
             printCollectedMessages(tree.getCompilationUnit());
             // Update errsOnLastExit to reflect the errors issued.
