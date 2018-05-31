@@ -195,8 +195,9 @@ import org.checkerframework.javacutil.TreeUtils;
 
     // Warn about @SuppressWarnings annotations that do not suppress any warnings.
     // org.checkerframework.common.basetype.BaseTypeChecker.warnUnneededSuppressions
+    // org.checkerframework.framework.source.SourceChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.shouldSuppressWarnings(javax.lang.model.element.Element, java.lang.String)
-    // org.checkerframework.common.basetype.BaseTypeVisitor.checkForSuppressWarningsAnno
+    // org.checkerframework.framework.source.SourceeVisitor.checkForSuppressWarningsAnno
     "warnUnneededSuppressions",
 
     ///
@@ -1573,7 +1574,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Elements with a {@code @SuppressWarnings} that actually suppressed a warning for this
      * checker.
      */
-    public final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
+    protected final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
 
     /**
      * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns

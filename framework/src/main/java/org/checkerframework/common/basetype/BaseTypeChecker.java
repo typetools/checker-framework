@@ -509,6 +509,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     /**
      * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
      * contains a key that would suppress a warning from this checker.
+     *
+     * <p>Collects needed warning suppressions for all subcheckers.
      */
     @Override
     protected void warnUnneededSuppressions() {
