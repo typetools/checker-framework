@@ -105,7 +105,6 @@ class NNOEStaticFields {
     }
 
     static class ClassInfo1 {
-        @SuppressWarnings("contracts.precondition.not.satisfied") // TODO FIXME
         public void initViaReflection() {
             if (ChicoryPremain1.shouldDoPurity()) {
                 for (String pureMeth : ChicoryPremain1.getPureMethods()) {}
