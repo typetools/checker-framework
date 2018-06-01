@@ -148,7 +148,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *   <li>29. a GTEN1 modded by anything is GTEN1
  *   <li>30. anything right-shifted by a non-negative is non-negative
  *   <li>31. anything bitwise-anded by a non-negative is non-negative
- *   <li>32. If a and b are non-negative and a <= b and a != b, then b is pos.
+ *   <li>32. If a and b are non-negative and {@code a <= b} and {@code a != b}, then b is pos.
  * </ul>
  */
 public class LowerBoundTransfer extends IndexAbstractTransfer {
