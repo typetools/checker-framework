@@ -9,11 +9,10 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.index.qual.HasSubsequence;
+import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -156,56 +155,47 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // check that when an assignment to a variable b declared as @HasSubsequence(a, from, to)
         // occurs, to <= a.length, i.e. to is @LTEqLengthOf(a).
 
-        if (varTree.getKind() == Tree.Kind.IDENTIFIER
-                || varTree.getKind() == Tree.Kind.MEMBER_SELECT
-                || varTree.getKind() == Tree.Kind.VARIABLE) {
+        Subsequence subSeq = Subsequence.getSubsequenceFromTree(varTree, atypeFactory);
+        if (subSeq != null) {
+            AnnotationMirror anm;
+            try {
+                anm =
+                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                subSeq.to, varTree, getCurrentPath());
+            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                anm = null;
+            }
 
-            Element element = TreeUtils.elementFromTree(varTree);
-            AnnotationMirror hss =
-                    element == null
-                            ? null
-                            : atypeFactory.getDeclAnnotation(element, HasSubsequence.class);
-            if (hss != null) {
-                String from =
-                        AnnotationUtils.getElementValueArray(hss, "from", String.class, false)
-                                .get(0);
-                String to =
-                        AnnotationUtils.getElementValueArray(hss, "to", String.class, false).get(0);
-                String a =
-                        AnnotationUtils.getElementValueArray(hss, "value", String.class, false)
-                                .get(0);
-                AnnotationMirror anm;
-                try {
-                    anm =
-                            atypeFactory.getAnnotationMirrorFromJavaExpressionString(
-                                    to, varTree, getCurrentPath());
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    anm = null;
-                }
+            boolean checkFailed = true;
+            if (anm != null) {
+                UBQualifier qual = UBQualifier.createUBQualifier(anm);
+                checkFailed = !qual.isLessThanOrEqualTo(subSeq.array);
+            }
 
-                // the check fails if either anm is null or to is not LTEqLengthOf(a)
-                boolean checkFailed = anm == null;
-
-                if (!checkFailed) {
-                    UBQualifier qual = UBQualifier.createUBQualifier(anm);
-                    checkFailed = !qual.isLessThanOrEqualTo(a);
-                }
-
-                if (checkFailed) {
-                    // issue an error
-                    checker.report(
-                            Result.failure(
-                                    TO_NOT_LTEL,
-                                    to,
-                                    a,
-                                    anm == null ? "@UpperBoundUnknown" : anm,
-                                    a,
-                                    a,
-                                    a),
-                            valueTree);
-                } else {
-                    checker.report(Result.warning(HSS, a, from, from, to, to, a, a), valueTree);
-                }
+            if (checkFailed) {
+                // issue an error
+                checker.report(
+                        Result.failure(
+                                TO_NOT_LTEL,
+                                subSeq.to,
+                                subSeq.array,
+                                anm == null ? "@UpperBoundUnknown" : anm,
+                                subSeq.array,
+                                subSeq.array,
+                                subSeq.array),
+                        valueTree);
+            } else {
+                checker.report(
+                        Result.warning(
+                                HSS,
+                                subSeq.array,
+                                subSeq.from,
+                                subSeq.from,
+                                subSeq.to,
+                                subSeq.to,
+                                subSeq.array,
+                                subSeq.array),
+                        valueTree);
             }
         }
 
@@ -296,24 +286,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             rec = null;
         }
         return rec;
-    }
-
-    static AnnotationMirror getHasSubsequenceAnnotationFromReceiver(
-            FlowExpressions.Receiver rec, UpperBoundAnnotatedTypeFactory atypeFactory) {
-        AnnotationMirror anm = null;
-
-        if (rec == null) {
-            return null;
-        }
-
-        if (rec instanceof FlowExpressions.FieldAccess) {
-            FlowExpressions.FieldAccess fa = (FlowExpressions.FieldAccess) rec;
-            anm = atypeFactory.getDeclAnnotation(fa.getField(), HasSubsequence.class);
-        } else if (rec instanceof FlowExpressions.LocalVariable) {
-            FlowExpressions.LocalVariable lv = (FlowExpressions.LocalVariable) rec;
-            anm = atypeFactory.getDeclAnnotation(lv.getElement(), HasSubsequence.class);
-        }
-        return anm;
     }
 
     static FlowExpressionParseUtil.FlowExpressionContext getContextFromReceiver(
@@ -449,22 +421,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         for (String rhsSeq : rhsQual.getSequences()) {
             FlowExpressions.Receiver rec =
                     getReceiverFromJavaExpressionString(rhsSeq, atypeFactory, getCurrentPath());
-            AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec, atypeFactory);
+            Subsequence subSeq = Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
             FlowExpressionParseUtil.FlowExpressionContext context =
                     getContextFromReceiver(rec, checker);
 
-            if (anm != null) {
-                String from =
-                        AnnotationUtils.getElementValueArray(anm, "from", String.class, false)
-                                .get(0);
-                String a =
-                        AnnotationUtils.getElementValueArray(anm, "value", String.class, false)
-                                .get(0);
-
+            if (subSeq != null) {
                 // viewpoint adapt strings from HasSubsequence expression
-                from = standardizeAndViewpointAdapt(from, getCurrentPath(), context);
-
-                a = standardizeAndViewpointAdapt(a, getCurrentPath(), context);
+                String from = standardizeAndViewpointAdapt(subSeq.from, getCurrentPath(), context);
+                String a = standardizeAndViewpointAdapt(subSeq.array, getCurrentPath(), context);
 
                 if (rhsQual.hasSequenceWithOffset(rhsSeq, from)) {
                     if (varLtlQual.hasSequenceWithOffset(a, "0")) {
@@ -488,22 +452,16 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
                 FlowExpressions.Receiver rec =
                         getReceiverFromJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                AnnotationMirror anm = getHasSubsequenceAnnotationFromReceiver(rec, atypeFactory);
+                Subsequence subSeq = Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
                 FlowExpressionParseUtil.FlowExpressionContext context =
                         getContextFromReceiver(rec, checker);
 
-                if (anm != null) {
-                    String from =
-                            AnnotationUtils.getElementValueArray(anm, "from", String.class, false)
-                                    .get(0);
-                    String a =
-                            AnnotationUtils.getElementValueArray(anm, "value", String.class, false)
-                                    .get(0);
-
+                if (subSeq != null) {
                     // viewpoint adapt strings from HasSubsequence expression
-                    from = standardizeAndViewpointAdapt(from, getCurrentPath(), context);
-
-                    a = standardizeAndViewpointAdapt(a, getCurrentPath(), context);
+                    String from =
+                            standardizeAndViewpointAdapt(subSeq.from, getCurrentPath(), context);
+                    String a =
+                            standardizeAndViewpointAdapt(subSeq.array, getCurrentPath(), context);
 
                     if (expQual.hasSequenceWithOffset(a, negateString(from))) {
                         // this cast is safe because LTLs cannot contain duplicates

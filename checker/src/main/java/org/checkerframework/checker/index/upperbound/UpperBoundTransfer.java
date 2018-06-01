@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
@@ -40,7 +41,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -603,34 +603,23 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         // NPE here and doing nothing (anm will be null below) is safe.
                     }
 
-                    AnnotationMirror anm =
-                            UpperBoundVisitor.getHasSubsequenceAnnotationFromReceiver(
-                                    rec, atypeFactory);
+                    Subsequence subsequence =
+                            Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
                     FlowExpressionParseUtil.FlowExpressionContext context =
                             UpperBoundVisitor.getContextFromReceiver(
                                     rec, atypeFactory.getContext());
 
-                    if (anm != null) {
-                        String from =
-                                AnnotationUtils.getElementValueArray(
-                                                anm, "from", String.class, false)
-                                        .get(0);
-                        String to =
-                                AnnotationUtils.getElementValueArray(anm, "to", String.class, false)
-                                        .get(0);
-                        String a =
-                                AnnotationUtils.getElementValueArray(
-                                                anm, "value", String.class, false)
-                                        .get(0);
-
+                    if (subsequence != null) {
                         // viewpoint adapt strings from HasSubsequence expression
-                        from =
+                        String from =
                                 UpperBoundVisitor.standardizeAndViewpointAdapt(
-                                        from, currentPath, context);
-                        to =
+                                        subsequence.from, currentPath, context);
+                        String to =
                                 UpperBoundVisitor.standardizeAndViewpointAdapt(
-                                        to, currentPath, context);
-                        a = UpperBoundVisitor.standardizeAndViewpointAdapt(a, currentPath, context);
+                                        subsequence.to, currentPath, context);
+                        String a =
+                                UpperBoundVisitor.standardizeAndViewpointAdapt(
+                                        subsequence.array, currentPath, context);
 
                         Receiver leftOp =
                                 FlowExpressions.internalReprOf(atypeFactory, n.getLeftOperand());
