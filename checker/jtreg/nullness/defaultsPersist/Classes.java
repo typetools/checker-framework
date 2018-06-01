@@ -55,7 +55,7 @@ public class Classes {
             paramIndex = 0
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = CLASS_TYPE_PARAMETER,
             paramIndex = 0
         ),
@@ -94,7 +94,7 @@ public class Classes {
             paramIndex = 0
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = CLASS_TYPE_PARAMETER,
             paramIndex = 0
         ),
@@ -133,7 +133,7 @@ public class Classes {
             paramIndex = 0
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = CLASS_TYPE_PARAMETER,
             paramIndex = 0
         ),
@@ -172,7 +172,7 @@ public class Classes {
             paramIndex = 0
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = CLASS_TYPE_PARAMETER,
             paramIndex = 0
         ),
@@ -205,7 +205,7 @@ public class Classes {
             paramIndex = 1
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = CLASS_TYPE_PARAMETER,
             paramIndex = 1
         ),

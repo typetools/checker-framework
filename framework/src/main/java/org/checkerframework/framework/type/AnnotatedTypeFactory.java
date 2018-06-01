@@ -1860,6 +1860,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * correctly.
      */
     public AnnotatedDeclaredType getSelfType(Tree tree) {
+        if (TreeUtils.isClassTree(tree)) {
+            return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
+        }
         TreePath path = getPath(tree);
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         if (enclosingClass == null) {

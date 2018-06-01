@@ -136,7 +136,7 @@ public class Constructors {
             paramIndex = 0
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = METHOD_TYPE_PARAMETER,
             paramIndex = 0
         ),
@@ -175,7 +175,7 @@ public class Constructors {
             paramIndex = 0
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = METHOD_TYPE_PARAMETER,
             paramIndex = 0
         ),
@@ -214,7 +214,7 @@ public class Constructors {
             paramIndex = 0
         ),
         @TADescription(
-            annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+            annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
             type = METHOD_TYPE_PARAMETER,
             paramIndex = 0
         ),

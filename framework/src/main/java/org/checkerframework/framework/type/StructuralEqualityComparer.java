@@ -9,7 +9,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -27,12 +26,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * equal. One reason this class is necessary is that at the moment we compare wildcards and type
  * variables for "equality". This occurs because we do not employ capture conversion.
  *
- * <p>See also DefaultTypeHierarchy, and VisitHistory
+ * <p>See also DefaultTypeHierarchy, and SubtypeVisitHistory
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, Void> {
     protected final SubtypeVisitHistory visitHistory;
 
-    // explain this one
+    // See org.checkerframework.framework.type.DefaultTypeHierarchy.currentTop
     private AnnotationMirror currentTop = null;
 
     public StructuralEqualityComparer(SubtypeVisitHistory typeargVisitHistory) {
@@ -52,8 +51,38 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                 return true;
             }
         }
-
+        if (type1.getKind() == TypeKind.TYPEVAR || type2.getKind() == TypeKind.TYPEVAR) {
+            // TODO: Handle any remaining typevar combinations correctly.
+            return true;
+        }
+        if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
+            // If one of the types is the NULL type, compare main qualifiers only.
+            return arePrimeAnnosEqual(type1, type2);
+        }
         return super.defaultAction(type1, type2, p);
+    }
+
+    /**
+     * Called for every combination that isn't specifically handled.
+     *
+     * @return error message explaining the two types' classes are not the same
+     */
+    @Override
+    protected String defaultErrorMessage(
+            AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
+        return "AnnotatedTypeMirrors aren't structurally equal.\n"
+                + "  type1 = "
+                + type1.getClass().getSimpleName()
+                + "( "
+                + type1
+                + " )\n"
+                + "  type2 = "
+                + type2.getClass().getSimpleName()
+                + "( "
+                + type2
+                + " )\n"
+                + "  visitHistory = "
+                + visitHistory;
     }
 
     /**
@@ -156,30 +185,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * Called for every combination in which !type1.getClass().equals(type2.getClass()) except for
-     * Wildcard_Typevar.
-     *
-     * @return error message explaining the two types' classes are not the same
-     */
-    @Override
-    protected String defaultErrorMessage(
-            AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        return "AnnotatedTypeMirror classes aren't equal.\n"
-                + "type1 = "
-                + type1.getClass().getSimpleName()
-                + "( "
-                + type1
-                + " )\n"
-                + "type2 = "
-                + type2.getClass().getSimpleName()
-                + "( "
-                + type2
-                + " )\n"
-                + "visitHistory = "
-                + visitHistory;
-    }
-
-    /**
      * Two arrays are equal if:
      *
      * <ol>
@@ -266,9 +271,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * //TODO: SHOULD PRIMARY ANNOTATIONS OVERRIDE INDIVIDUAL BOUND ANNOTATIONS? //TODO: IF SO THEN
-     * WE SHOULD REMOVE THE arePrimeAnnosEqual AND FIX AnnotatedIntersectionType Two intersection
-     * types are equal if:
+     * TODO: SHOULD PRIMARY ANNOTATIONS OVERRIDE INDIVIDUAL BOUND ANNOTATIONS? IF SO THEN WE SHOULD
+     * REMOVE THE arePrimeAnnosEqual AND FIX AnnotatedIntersectionType.
+     *
+     * <p>Two intersection types are equal if:
      *
      * <ul>
      *   <li>Their sets of primary annotations are equal
@@ -287,19 +293,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         Boolean result = areAllEqual(type1.directSuperTypes(), type2.directSuperTypes());
         visitHistory.add(type1, type2, currentTop, result);
         return result;
-    }
-
-    /**
-     * Two null types are equal if:
-     *
-     * <ul>
-     *   <li>Their sets of primary annotations are equal
-     * </ul>
-     */
-    @Override
-    public Boolean visitNull_Null(
-            final AnnotatedNullType type1, final AnnotatedNullType type2, final Void p) {
-        return arePrimeAnnosEqual(type1, type2);
     }
 
     /**
@@ -510,29 +503,25 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     @Override
-    public Boolean visitTypevar_Declared(
-            AnnotatedTypeVariable type1, AnnotatedDeclaredType type2, Void p) {
-        // TODO: add proper checks
-        return true;
-    }
+    public Boolean visitDeclared_Wildcard(
+            AnnotatedDeclaredType type1, AnnotatedWildcardType type2, Void p) {
+        if (type2.atypeFactory.ignoreUninferredTypeArguments
+                && (type2.isUninferredTypeArgument())) {
+            return true;
+        }
+        final QualifierHierarchy qualifierHierarchy = type1.atypeFactory.getQualifierHierarchy();
 
-    @Override
-    public Boolean visitTypevar_Wildcard(
-            AnnotatedTypeVariable type1, AnnotatedWildcardType type2, Void p) {
         // TODO: add proper checks
-        return true;
-    }
+        // TODO: compare whole types instead of just main modifiers
+        AnnotationMirror q1 =
+                AnnotatedTypes.findEffectiveAnnotationInHierarchy(
+                        qualifierHierarchy, type1, currentTop);
+        AnnotationMirror q2 =
+                AnnotatedTypes.findEffectiveAnnotationInHierarchy(
+                        qualifierHierarchy, type2, currentTop);
 
-    @Override
-    public Boolean visitDeclared_Typevar(
-            AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, Void p) {
-        // TODO: add proper checks
-        return true;
-    }
-
-    @Override
-    public Boolean visitNull_Typevar(AnnotatedNullType type1, AnnotatedTypeVariable type2, Void p) {
-        // TODO: add proper checks
-        return true;
+        Boolean result = qualifierHierarchy.isSubtype(q1, q2);
+        visitHistory.add(type1, type2, currentTop, result);
+        return result;
     }
 }
