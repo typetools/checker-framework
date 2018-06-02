@@ -156,6 +156,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         handleReplaceOnInternalFormForNonArray(c1, c2, type);
                     } else if (receiverType.getAnnotation(BinaryNameForNonArray.class) != null) {
                         handleReplaceOnBinaryNameForNonArray(c1, c2, type);
+                    } else if (receiverType.getAnnotation(ClassGetName.class) != null) {
+                        handleReplaceOnClassGetName(c1, c2, type);
                     }
                 }
             }
