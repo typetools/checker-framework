@@ -528,7 +528,7 @@ public class PluginUtil {
     public static double getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
 
-        final Pattern versionPattern = Pattern.compile("^(\\d\\.\\d+)\\..*$");
+        final Pattern versionPattern = Pattern.compile("^(\\d+\\.\\d+)\\..*$");
         final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
 
         // For Early Access version of the JDK
