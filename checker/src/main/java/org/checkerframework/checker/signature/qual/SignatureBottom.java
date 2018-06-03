@@ -15,7 +15,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #signature-checker Signature Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
-@SubtypeOf({Identifier.class, FieldDescriptorForNonPrimitiveArray.class, MethodDescriptor.class})
+@SubtypeOf({
+    Identifier.class,
+    FieldDescriptorForArrayInUnnamedPackage.class,
+    MethodDescriptor.class
+})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)

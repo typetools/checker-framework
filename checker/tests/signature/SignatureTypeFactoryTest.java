@@ -125,11 +125,16 @@ public class SignatureTypeFactoryTest {
         sn = s3;
 
         us = s4;
+        // :: error: (assignment.type.incompatible)
         fqn = s4;
+        // :: error: (assignment.type.incompatible)
         bn = s4;
+        // :: error: (assignment.type.incompatible)
         cgn = s4;
         fd = s4;
+        // :: error: (assignment.type.incompatible)
         iform = s4;
+        // :: error: (assignment.type.incompatible)
         sn = s4;
 
         us = s5;
@@ -139,7 +144,7 @@ public class SignatureTypeFactoryTest {
         bn = s5;
         cgn = s5;
         fd = s5;
-        // :: error: (assignment.type.incompatible)
+        // s5 ("[B is a valid internal form")
         iform = s5;
         // :: error: (assignment.type.incompatible)
         sn = s5;
@@ -245,7 +250,7 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         cgn = s14;
         fd = s14;
-        // :: error: (assignment.type.incompatible)
+        // s14("[[Ljava/lang/String;") is a valid internal form
         iform = s14;
         // :: error: (assignment.type.incompatible)
         sn = s14;
@@ -300,11 +305,16 @@ public class SignatureTypeFactoryTest {
         fd = s15;
 
         us = t1;
+        // :: error: (assignment.type.incompatible)
         fqn = t1;
+        // :: error: (assignment.type.incompatible)
         bn = t1;
+        // :: error: (assignment.type.incompatible)
         cgn = t1;
         fd = t1;
+        // :: error: (assignment.type.incompatible)
         iform = t1;
+        // :: error: (assignment.type.incompatible)
         sn = t1;
 
         us = t2;
@@ -362,6 +372,7 @@ public class SignatureTypeFactoryTest {
         cgn = t6;
         // :: error: (assignment.type.incompatible)
         fd = t6;
+        // :: error: (assignment.type.incompatible)
         iform = t6;
         sn = t6;
 
@@ -372,7 +383,7 @@ public class SignatureTypeFactoryTest {
         bn = t7;
         cgn = t7;
         fd = t7;
-        // :: error: (assignment.type.incompatible)
+        // t7("[LMyClass;") is a valid internal form
         iform = t7;
         // :: error: (assignment.type.incompatible)
         sn = t7;
@@ -398,7 +409,7 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         cgn = t9;
         fd = t9;
-        // :: error: (assignment.type.incompatible)
+        // t9("[Ljava/lang/Integer;") is a valid internal form
         iform = t9;
         // :: error: (assignment.type.incompatible)
         sn = t9;
@@ -424,7 +435,7 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         cgn = t11;
         fd = t11;
-        // :: error: (assignment.type.incompatible)
+        // t11("[Lpackage/Outer$Inner;") is a valid internal form
         iform = t11;
         // :: error: (assignment.type.incompatible)
         sn = t11;
@@ -436,7 +447,7 @@ public class SignatureTypeFactoryTest {
         bn = t12;
         cgn = t12;
         fd = t12;
-        // :: error: (assignment.type.incompatible)
+        // t12 ("[[I")is a valid internal form
         iform = t12;
         // :: error: (assignment.type.incompatible)
         sn = t12;
@@ -457,6 +468,7 @@ public class SignatureTypeFactoryTest {
         cgn = t14;
         // :: error: (assignment.type.incompatible)
         fd = t14;
+        // :: error: (assignment.type.incompatible)
         iform = t14;
         sn = t14;
 
@@ -567,6 +579,7 @@ public class SignatureTypeFactoryTest {
         cgn = t23;
         // :: error: (assignment.type.incompatible)
         fd = t23;
+        // :: error: (assignment.type.incompatible)
         iform = t23;
         // :: error: (assignment.type.incompatible)
         sn = t23;
@@ -593,6 +606,7 @@ public class SignatureTypeFactoryTest {
         cgn = t25;
         // :: error: (assignment.type.incompatible)
         fd = t25;
+        // :: error: (assignment.type.incompatible)
         iform = t25;
         // :: error: (assignment.type.incompatible)
         sn = t25;
@@ -683,6 +697,7 @@ public class SignatureTypeFactoryTest {
         cgn = t32;
         // :: error: (assignment.type.incompatible)
         fd = t32;
+        // :: error: (assignment.type.incompatible)
         iform = t32;
         // :: error: (assignment.type.incompatible)
         sn = t32;
