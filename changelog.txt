@@ -3,6 +3,10 @@ Version 2.5.2, June 1, 2018
 In the Map Key Checker, null is now @UnknownKeyFor.  See the "Map Key Checker"
 chapter in the manual for more details.
 
+Closed issues:
+
+370, 469, 1701, 1916, 1922, 1959, 1976, 1978, 1981, 1983, 1984, 1991, 1992.
+
 ---------------------------------------------------------------------------
 Version 2.5.1, May 1, 2018
 
