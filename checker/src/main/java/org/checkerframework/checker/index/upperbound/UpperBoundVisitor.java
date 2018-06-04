@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
@@ -20,6 +21,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -27,6 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -38,6 +42,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     private static final @CompilerMessageKey String UPPER_BOUND_RANGE =
             "array.access.unsafe.high.range";
     private static final @CompilerMessageKey String TO_NOT_LTEL = "to.not.ltel";
+    private static final @CompilerMessageKey String NOT_FINAL = "not.final";
     private static final @CompilerMessageKey String HSS = "which.subsequence";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
@@ -157,13 +162,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 anm = null;
             }
 
-            boolean checkFailed = true;
+            boolean ltelCheckFailed = true;
             if (anm != null) {
                 UBQualifier qual = UBQualifier.createUBQualifier(anm);
-                checkFailed = !qual.isLessThanOrEqualTo(subSeq.array);
+                ltelCheckFailed = !qual.isLessThanOrEqualTo(subSeq.array);
             }
 
-            if (checkFailed) {
+            if (ltelCheckFailed) {
                 // issue an error
                 checker.report(
                         Result.failure(
@@ -175,6 +180,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                                 subSeq.array,
                                 subSeq.array),
                         valueTree);
+            } else if (checkEffectivelyFinal(subSeq.from)) {
+                checker.report(Result.failure(NOT_FINAL, subSeq.from), valueTree);
+            } else if (checkEffectivelyFinal(subSeq.to)) {
+                checker.report(Result.failure(NOT_FINAL, subSeq.to), valueTree);
+            } else if (checkEffectivelyFinal(subSeq.array)) {
+                checker.report(Result.failure(NOT_FINAL, subSeq.array), valueTree);
             } else {
                 checker.report(
                         Result.warning(
@@ -191,6 +202,26 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         super.commonAssignmentCheck(varTree, valueTree, errorKey);
+    }
+
+    /**
+     * Determines if the Java expression named by s is effectively final at the current program
+     * location.
+     */
+    private boolean checkEffectivelyFinal(String s) {
+        Receiver rec;
+        try {
+            rec = atypeFactory.getReceiverFromJavaExpressionString(s, getCurrentPath());
+        } catch (FlowExpressionParseException e) {
+            return false;
+        }
+        Element element = null;
+        if (rec instanceof LocalVariable) {
+            element = ((LocalVariable) rec).getElement();
+        } else if (rec instanceof FieldAccess) {
+            element = ((FieldAccess) rec).getField();
+        }
+        return element != null && ElementUtils.isEffectivelyFinal(element);
     }
 
     @Override

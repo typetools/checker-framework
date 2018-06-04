@@ -38,7 +38,7 @@ class BasicSubsequence {
 
     void test7(@IndexFor("#3") @LessThan("#2") int x, @IndexOrHigh("#3") int y, int[] a) {
         @HasSubsequence(value = "a", from = "x", to = "y")
-        // :: warning: which.subsequence
+        // :: error: not.final
         int[] b = a;
     }
 }

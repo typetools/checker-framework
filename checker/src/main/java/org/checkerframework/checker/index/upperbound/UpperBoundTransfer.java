@@ -595,7 +595,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         || subtractionResult.hasSequenceWithOffset(b, 0)) {
 
                     TreePath currentPath = this.atypeFactory.getPath(n.getTree());
-                    FlowExpressions.Receiver rec = null;
+                    FlowExpressions.Receiver rec;
                     try {
                         rec =
                                 UpperBoundVisitor.getReceiverFromJavaExpressionString(
@@ -603,10 +603,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     } catch (NullPointerException npe) {
                         // I have no idea why this seems to happen only on a few JDK classes.
                         // It appears to only happen during the preprocessing step - the NPE
-                        // is thrown while processing a class tree. I can't find a reproducible
+                        // is thrown while trying to find the enclosing class of a class tree,
+                        // which is null. I can't find a reproducible
                         // test case that's smaller than the size of DualPivotQuicksort.
                         // Since this refinement is optional, but useful elsewhere, catching this
-                        // NPE here and doing nothing (anm will be null below) is safe.
+                        // NPE here and returning is always safe.
+                        return createTransferResult(n, in, leftWithOffset);
                     }
 
                     FlowExpressionContext context =
