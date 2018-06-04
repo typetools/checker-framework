@@ -127,8 +127,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (leftATM.getAnnotations().size() != 1) {
             return false;
         }
-        List<String> expressions =
-                getLessThanExpressions(leftATM.getAnnotations().iterator().next());
+        return isLessThan(leftATM.getAnnotations().iterator().next(), right);
+    }
+
+    /** @return Is left less than right? */
+    public static boolean isLessThan(AnnotationMirror left, String right) {
+        List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
             return true;
         }

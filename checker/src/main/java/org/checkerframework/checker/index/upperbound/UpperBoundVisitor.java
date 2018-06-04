@@ -325,21 +325,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return true;
         }
 
-        // Take advantage of information available on a HasSubsequence(a, from, to) annotation on either:
-        // 1. the lhs qualifier (varLtlQual): this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual includes LTL(a, -from), then the LTL(b) can be removed from varLtlQual
-        // 2. the rhs qualifier (expQual): this allows us to show that iff expQual includes LTL(b, from) for some b that has HSS, and varLtlQual includes LTL(a), then the LTL(a) can be removed from varLtlQual
-        // 3. TODO: Finally, the expression "y - x" has type @LTEqLengthOf("a")
+        // Take advantage of information available on a HasSubsequence(a, from, to) annotation
+        // on the lhs qualifier (varLtlQual):
+        // this allows us to show that iff varLtlQual includes LTL(b),
+        // b has HSS, and expQual includes LTL(a, -from), then the LTL(b) can be removed from varLtlQual
 
-        // first case
         UBQualifier newLHS = processSubsequenceForLHS(varLtlQual, expQual);
-        if (newLHS.isUnknown()) {
-            return true;
-        } else {
-            varLtlQual = (LessThanLengthOf) newLHS;
-        }
-
-        // second case
-        newLHS = processSubsequenceForRHS(varLtlQual, expQual);
         if (newLHS.isUnknown()) {
             return true;
         } else {
@@ -383,38 +374,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         return true;
-    }
-
-    /* Returns the new value of the left hand side after processing the arrays named in the rhs.
-     * Iff expQual includes LTL(rhsSeq, from)
-     * for some rhsSeq that has HSS, and varLtlQual includes LTL(a), then the LTL(a) will be removed from varLtlQual
-     */
-    private UBQualifier processSubsequenceForRHS(LessThanLengthOf varLtlQual, UBQualifier expQual) {
-        UBQualifier newLHS = varLtlQual;
-        if (!expQual.isLessThanLengthQualifier()) {
-            return newLHS;
-        }
-        LessThanLengthOf rhsQual = (LessThanLengthOf) expQual;
-        for (String rhsSeq : rhsQual.getSequences()) {
-            Receiver rec =
-                    getReceiverFromJavaExpressionString(rhsSeq, atypeFactory, getCurrentPath());
-            FlowExpressionContext context = Subsequence.getContextFromReceiver(rec, checker);
-            Subsequence subSeq =
-                    Subsequence.getSubsequenceFromReceiver(
-                            rec, atypeFactory, getCurrentPath(), context);
-
-            if (subSeq != null) {
-                String from = subSeq.from;
-                String a = subSeq.array;
-
-                if (rhsQual.hasSequenceWithOffset(rhsSeq, from)) {
-                    if (varLtlQual.hasSequenceWithOffset(a, "0")) {
-                        newLHS = ((LessThanLengthOf) newLHS).removeOffset(a, 0);
-                    }
-                }
-            }
-        }
-        return newLHS;
     }
 
     /* Returns the new value of the left hand side after processing the arrays named in the lhs.

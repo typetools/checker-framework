@@ -10,6 +10,8 @@ import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.Subsequence;
+import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
+import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
@@ -580,13 +582,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             }
         }
 
-        // If the result of a numerical subtraction would be LTEL(b), and b is HSS(a, from, to),
-        // and the subtraction node itself is to - from, then the result is LTEL(a).
+        // If the result of a numerical subtraction would be LTEL(b) or LTL(b), and b is HSS(a, from, to),
+        // and the subtraction node itself is i - from where i is LTEL(b), then the result is LTEL(a).
+        // If i is LTL(b) instead, the result is LTL(a).
 
         if (leftWithOffset.isLessThanLengthQualifier()) {
+
             LessThanLengthOf subtractionResult = (LessThanLengthOf) leftWithOffset;
+
             for (String b : subtractionResult.getSequences()) {
-                if (subtractionResult.hasSequenceWithOffset(b, -1)) {
+                if (subtractionResult.hasSequenceWithOffset(b, -1)
+                        || subtractionResult.hasSequenceWithOffset(b, 0)) {
 
                     TreePath currentPath = this.atypeFactory.getPath(n.getTree());
                     FlowExpressions.Receiver rec = null;
@@ -619,9 +625,27 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                                 FlowExpressions.internalReprOf(atypeFactory, n.getLeftOperand());
                         Receiver rightOp =
                                 FlowExpressions.internalReprOf(atypeFactory, n.getRightOperand());
-                        if (leftOp.toString().equals(to) && rightOp.toString().equals(from)) {
-                            UBQualifier ltelA = UBQualifier.createUBQualifier(a, "-1");
-                            leftWithOffset = leftWithOffset.glb(ltelA);
+
+                        if (rightOp.toString().equals(from)) {
+                            AnnotationMirror lessThanType =
+                                    atypeFactory
+                                            .getLessThanAnnotatedTypeFactory()
+                                            .getAnnotatedType(n.getLeftOperand().getTree())
+                                            .getAnnotation(LessThan.class);
+
+                            if (lessThanType != null
+                                    && LessThanAnnotatedTypeFactory.isLessThan(lessThanType, to)) {
+                                UBQualifier ltlA = UBQualifier.createUBQualifier(a, "0");
+                                leftWithOffset = leftWithOffset.glb(ltlA);
+                            } else if (leftOp.toString().equals(to)
+                                    || (lessThanType != null
+                                            && LessThanAnnotatedTypeFactory.isLessThanOrEqual(
+                                                    lessThanType, to))) {
+                                // it's necessary to check if leftOp == to because LessThan doesn't infer that
+                                // things are less than or equal to themselves.
+                                UBQualifier ltelA = UBQualifier.createUBQualifier(a, "-1");
+                                leftWithOffset = leftWithOffset.glb(ltelA);
+                            }
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
+import org.checkerframework.checker.index.qual.LessThan;
 
 @SuppressWarnings("lowerbound")
 class BasicSubsequence3 {
@@ -14,11 +15,11 @@ class BasicSubsequence3 {
 
     @IndexOrHigh("array") int end;
 
-    void testStartIndex(@IndexFor("array") int x) {
+    void testStartIndex(@IndexFor("array") @LessThan("this.end") int x) {
         @IndexFor("this") int y = x - start;
     }
 
-    void testViewpointAdaption(@IndexFor("array2") int x) {
+    void testViewpointAdaption(@IndexFor("array2") @LessThan("end") int x) {
         @IndexFor("this") int y = x - start;
     }
 }
