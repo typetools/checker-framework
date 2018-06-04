@@ -159,7 +159,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Returns the minimum value of {@code expressions} at {@code tree}. */
-    public long getMinValueFromString(String expression, Tree tree, TreePath path) {
+    private long getMinValueFromString(String expression, Tree tree, TreePath path) {
         Receiver expressionRec;
         try {
             expressionRec =
