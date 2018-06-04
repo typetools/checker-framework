@@ -20,10 +20,12 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -151,7 +153,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 anm =
                         atypeFactory.getAnnotationMirrorFromJavaExpressionString(
                                 subSeq.to, varTree, getCurrentPath());
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            } catch (FlowExpressionParseException e) {
                 anm = null;
             }
 
@@ -270,19 +272,19 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * Fetches a receiver from a String using the passed type factory. Returns null if there is a
      * parse exception. This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
      */
-    static FlowExpressions.Receiver getReceiverFromJavaExpressionString(
+    static Receiver getReceiverFromJavaExpressionString(
             String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
-        FlowExpressions.Receiver rec;
+        Receiver rec;
         try {
             rec = atypeFactory.getReceiverFromJavaExpressionString(s, currentPath);
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+        } catch (FlowExpressionParseException e) {
             rec = null;
         }
         return rec;
     }
 
     /** Given a Java expression, returns the additive inverse, as a String. */
-    private String negateString(String s, FlowExpressionParseUtil.FlowExpressionContext context) {
+    private String negateString(String s, FlowExpressionContext context) {
         return Subsequence.negateString(s, getCurrentPath(), context);
     }
 
@@ -394,10 +396,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
         LessThanLengthOf rhsQual = (LessThanLengthOf) expQual;
         for (String rhsSeq : rhsQual.getSequences()) {
-            FlowExpressions.Receiver rec =
+            Receiver rec =
                     getReceiverFromJavaExpressionString(rhsSeq, atypeFactory, getCurrentPath());
-            FlowExpressionParseUtil.FlowExpressionContext context =
-                    Subsequence.getContextFromReceiver(rec, checker);
+            FlowExpressionContext context = Subsequence.getContextFromReceiver(rec, checker);
             Subsequence subSeq =
                     Subsequence.getSubsequenceFromReceiver(
                             rec, atypeFactory, getCurrentPath(), context);
@@ -426,10 +427,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // check is lhsSeq is an actual LTL
             if (varLtlQual.hasSequenceWithOffset(lhsSeq, 0)) {
 
-                FlowExpressions.Receiver rec =
+                Receiver rec =
                         getReceiverFromJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                FlowExpressionParseUtil.FlowExpressionContext context =
-                        Subsequence.getContextFromReceiver(rec, checker);
+                FlowExpressionContext context = Subsequence.getContextFromReceiver(rec, checker);
                 Subsequence subSeq =
                         Subsequence.getSubsequenceFromReceiver(
                                 rec, atypeFactory, getCurrentPath(), context);

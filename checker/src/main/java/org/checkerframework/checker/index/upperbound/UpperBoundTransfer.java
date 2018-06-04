@@ -40,7 +40,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -603,7 +603,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         // NPE here and doing nothing (anm will be null below) is safe.
                     }
 
-                    FlowExpressionParseUtil.FlowExpressionContext context =
+                    FlowExpressionContext context =
                             Subsequence.getContextFromReceiver(rec, atypeFactory.getContext());
 
                     Subsequence subsequence =

@@ -12,6 +12,8 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -56,9 +58,7 @@ public class Subsequence {
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
-            AnnotationMirror hasSub,
-            TreePath currentPath,
-            FlowExpressionParseUtil.FlowExpressionContext context) {
+            AnnotationMirror hasSub, TreePath currentPath, FlowExpressionContext context) {
         if (hasSub == null) {
             return null;
         }
@@ -91,7 +91,7 @@ public class Subsequence {
             Receiver rec,
             AnnotatedTypeFactory factory,
             TreePath currentPath,
-            FlowExpressionParseUtil.FlowExpressionContext context) {
+            FlowExpressionContext context) {
         if (rec == null) {
             return null;
         }
@@ -99,7 +99,7 @@ public class Subsequence {
         Element element;
         if (rec instanceof FieldAccess) {
             element = ((FieldAccess) rec).getField();
-        } else if (rec instanceof FlowExpressions.LocalVariable) {
+        } else if (rec instanceof LocalVariable) {
             element = ((LocalVariable) rec).getElement();
         } else {
             return null;
@@ -114,10 +114,10 @@ public class Subsequence {
      * its argument.
      */
     private static String standardizeAndViewpointAdapt(
-            String s, TreePath currentPath, FlowExpressionParseUtil.FlowExpressionContext context) {
+            String s, TreePath currentPath, FlowExpressionContext context) {
         try {
             s = FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+        } catch (FlowExpressionParseException e) {
         }
         return s;
     }
@@ -128,20 +128,19 @@ public class Subsequence {
      *
      * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
      */
-    public static FlowExpressionParseUtil.FlowExpressionContext getContextFromReceiver(
-            FlowExpressions.Receiver rec, BaseContext checker) {
+    public static FlowExpressionContext getContextFromReceiver(Receiver rec, BaseContext checker) {
         if (rec == null) {
             return null;
         }
         FlowExpressionParseUtil.FlowExpressionContext context = null;
         if (rec instanceof FlowExpressions.FieldAccess) {
-            FlowExpressions.FieldAccess fa = (FlowExpressions.FieldAccess) rec;
+            FieldAccess fa = (FlowExpressions.FieldAccess) rec;
             context =
                     new FlowExpressionParseUtil.FlowExpressionContext(
                             fa.getReceiver(), null, checker);
 
         } else if (rec instanceof FlowExpressions.LocalVariable) {
-            FlowExpressions.LocalVariable lv = (FlowExpressions.LocalVariable) rec;
+            LocalVariable lv = (FlowExpressions.LocalVariable) rec;
             context = new FlowExpressionParseUtil.FlowExpressionContext(lv, null, checker);
         }
         return context;
@@ -157,7 +156,7 @@ public class Subsequence {
      * applied.
      */
     public static String negateString(
-            String s, TreePath currentPath, FlowExpressionParseUtil.FlowExpressionContext context) {
+            String s, TreePath currentPath, FlowExpressionContext context) {
         String original = standardizeAndViewpointAdapt(s, currentPath, context);
         String result = "";
         if (!original.startsWith("-")) {
