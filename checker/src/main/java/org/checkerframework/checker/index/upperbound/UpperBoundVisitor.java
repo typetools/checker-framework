@@ -95,56 +95,46 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
         String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
         LessThanLengthOf lhsQual = (LessThanLengthOf) UBQualifier.createUBQualifier(arrName, "0");
-        if (!relaxedCommonAssignmentCheck(lhsQual, indexTree) && !checkMinLen(indexTree, arrTree)) {
+        if (relaxedCommonAssignmentCheck(lhsQual, indexTree) || checkMinLen(indexTree, arrTree)) {
+            return;
+        } // else issue errors.
 
-            // We can issue three different errors:
-            // 1. If the index is a compile-time constant, issue an error that describes the array type.
-            // 2. If the index is a compile-time range and has no upperbound qualifier,
-            //    issue an error that names the upperbound of the range and the array's type.
-            // 3. If neither of the above, issue an error that names the upper bound type.
+        // We can issue three different errors:
+        // 1. If the index is a compile-time constant, issue an error that describes the array type.
+        // 2. If the index is a compile-time range and has no upperbound qualifier,
+        //    issue an error that names the upperbound of the range and the array's type.
+        // 3. If neither of the above, issue an error that names the upper bound type.
 
-            AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
-            UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
-            Long valMax =
-                    IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+        AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
+        UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
+        ValueAnnotatedTypeFactory valueFactory = atypeFactory.getValueAnnotatedTypeFactory();
+        Long valMax = IndexUtil.getMaxValue(indexTree, valueFactory);
 
-            if (IndexUtil.getExactValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory())
-                    != null) {
-                // Note that valMax is equal to the exact value in this case.
-                checker.report(
-                        Result.failure(
-                                UPPER_BOUND_CONST,
-                                valMax,
-                                atypeFactory
-                                        .getValueAnnotatedTypeFactory()
-                                        .getAnnotatedType(arrTree)
-                                        .toString(),
-                                valMax + 1,
-                                valMax + 1),
-                        indexTree);
-            } else if (valMax != null && qualifier.isUnknown()) {
+        if (IndexUtil.getExactValue(indexTree, valueFactory) != null) {
+            // Note that valMax is equal to the exact value in this case.
+            checker.report(
+                    Result.failure(
+                            UPPER_BOUND_CONST,
+                            valMax,
+                            valueFactory.getAnnotatedType(arrTree).toString(),
+                            valMax + 1,
+                            valMax + 1),
+                    indexTree);
+        } else if (valMax != null && qualifier.isUnknown()) {
 
-                checker.report(
-                        Result.failure(
-                                UPPER_BOUND_RANGE,
-                                atypeFactory
-                                        .getValueAnnotatedTypeFactory()
-                                        .getAnnotatedType(indexTree)
-                                        .toString(),
-                                atypeFactory
-                                        .getValueAnnotatedTypeFactory()
-                                        .getAnnotatedType(arrTree)
-                                        .toString(),
-                                arrName,
-                                arrName,
-                                valMax + 1),
-                        indexTree);
-            } else {
-                checker.report(
-                        Result.failure(
-                                UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
-                        indexTree);
-            }
+            checker.report(
+                    Result.failure(
+                            UPPER_BOUND_RANGE,
+                            valueFactory.getAnnotatedType(indexTree).toString(),
+                            valueFactory.getAnnotatedType(arrTree).toString(),
+                            arrName,
+                            arrName,
+                            valMax + 1),
+                    indexTree);
+        } else {
+            checker.report(
+                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
+                    indexTree);
         }
     }
 
