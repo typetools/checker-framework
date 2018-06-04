@@ -603,23 +603,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         // NPE here and doing nothing (anm will be null below) is safe.
                     }
 
-                    Subsequence subsequence =
-                            Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
                     FlowExpressionParseUtil.FlowExpressionContext context =
-                            UpperBoundVisitor.getContextFromReceiver(
-                                    rec, atypeFactory.getContext());
+                            Subsequence.getContextFromReceiver(rec, atypeFactory.getContext());
+
+                    Subsequence subsequence =
+                            Subsequence.getSubsequenceFromReceiver(
+                                    rec, atypeFactory, currentPath, context);
 
                     if (subsequence != null) {
-                        // viewpoint adapt strings from HasSubsequence expression
-                        String from =
-                                UpperBoundVisitor.standardizeAndViewpointAdapt(
-                                        subsequence.from, currentPath, context);
-                        String to =
-                                UpperBoundVisitor.standardizeAndViewpointAdapt(
-                                        subsequence.to, currentPath, context);
-                        String a =
-                                UpperBoundVisitor.standardizeAndViewpointAdapt(
-                                        subsequence.array, currentPath, context);
+                        String from = subsequence.from;
+                        String to = subsequence.to;
+                        String a = subsequence.array;
 
                         Receiver leftOp =
                                 FlowExpressions.internalReprOf(atypeFactory, n.getLeftOperand());

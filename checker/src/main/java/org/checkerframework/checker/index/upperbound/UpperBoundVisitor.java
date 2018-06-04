@@ -23,7 +23,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -267,6 +266,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
     }
 
+    /**
+     * Fetches a receiver from a String using the passed type factory. Returns null if there is a
+     * parse exception. This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     */
     static FlowExpressions.Receiver getReceiverFromJavaExpressionString(
             String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
         FlowExpressions.Receiver rec;
@@ -278,33 +281,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return rec;
     }
 
-    static FlowExpressionParseUtil.FlowExpressionContext getContextFromReceiver(
-            FlowExpressions.Receiver rec, BaseContext checker) {
-        if (rec == null) {
-            return null;
-        }
-        FlowExpressionParseUtil.FlowExpressionContext context = null;
-        if (rec instanceof FlowExpressions.FieldAccess) {
-            FlowExpressions.FieldAccess fa = (FlowExpressions.FieldAccess) rec;
-            context =
-                    new FlowExpressionParseUtil.FlowExpressionContext(
-                            fa.getReceiver(), null, checker);
-
-        } else if (rec instanceof FlowExpressions.LocalVariable) {
-            FlowExpressions.LocalVariable lv = (FlowExpressions.LocalVariable) rec;
-            context = new FlowExpressionParseUtil.FlowExpressionContext(lv, null, checker);
-        }
-        return context;
+    /** Given a Java expression, returns the additive inverse, as a String. */
+    private String negateString(String s, FlowExpressionParseUtil.FlowExpressionContext context) {
+        return Subsequence.negateString(s, getCurrentPath(), context);
     }
 
-    private static String negateString(String s) {
-        if (s.startsWith("-")) {
-            return s.substring(1);
-        } else {
-            return "-" + s;
-        }
-    }
-
+    /*
+     *  Queries the Value Checker to determine if the maximum possible value of indexTree
+     *  is less than the minimum possible length of arrTree, and returns true if so.
+     */
     private boolean checkMinLen(ExpressionTree indexTree, ExpressionTree arrTree) {
         int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
         Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
@@ -411,14 +396,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         for (String rhsSeq : rhsQual.getSequences()) {
             FlowExpressions.Receiver rec =
                     getReceiverFromJavaExpressionString(rhsSeq, atypeFactory, getCurrentPath());
-            Subsequence subSeq = Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
             FlowExpressionParseUtil.FlowExpressionContext context =
-                    getContextFromReceiver(rec, checker);
+                    Subsequence.getContextFromReceiver(rec, checker);
+            Subsequence subSeq =
+                    Subsequence.getSubsequenceFromReceiver(
+                            rec, atypeFactory, getCurrentPath(), context);
 
             if (subSeq != null) {
-                // viewpoint adapt strings from HasSubsequence expression
-                String from = standardizeAndViewpointAdapt(subSeq.from, getCurrentPath(), context);
-                String a = standardizeAndViewpointAdapt(subSeq.array, getCurrentPath(), context);
+                String from = subSeq.from;
+                String a = subSeq.array;
 
                 if (rhsQual.hasSequenceWithOffset(rhsSeq, from)) {
                     if (varLtlQual.hasSequenceWithOffset(a, "0")) {
@@ -442,18 +428,17 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
                 FlowExpressions.Receiver rec =
                         getReceiverFromJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                Subsequence subSeq = Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
                 FlowExpressionParseUtil.FlowExpressionContext context =
-                        getContextFromReceiver(rec, checker);
+                        Subsequence.getContextFromReceiver(rec, checker);
+                Subsequence subSeq =
+                        Subsequence.getSubsequenceFromReceiver(
+                                rec, atypeFactory, getCurrentPath(), context);
 
                 if (subSeq != null) {
-                    // viewpoint adapt strings from HasSubsequence expression
-                    String from =
-                            standardizeAndViewpointAdapt(subSeq.from, getCurrentPath(), context);
-                    String a =
-                            standardizeAndViewpointAdapt(subSeq.array, getCurrentPath(), context);
+                    String from = subSeq.from;
+                    String a = subSeq.array;
 
-                    if (expQual.hasSequenceWithOffset(a, negateString(from))) {
+                    if (expQual.hasSequenceWithOffset(a, negateString(from, context))) {
                         // this cast is safe because LTLs cannot contain duplicates
                         newLHS = ((LessThanLengthOf) newLHS).removeOffset(lhsSeq, 0);
                     }
@@ -461,15 +446,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             }
         }
         return newLHS;
-    }
-
-    static String standardizeAndViewpointAdapt(
-            String s, TreePath currentPath, FlowExpressionParseUtil.FlowExpressionContext context) {
-        try {
-            s = FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-        }
-        return s;
     }
 
     /**

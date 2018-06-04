@@ -26,6 +26,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
 
         // check that when an assignment to a variable declared as @HasSubsequence(a, from, to)
         // occurs, from <= to.
+
         Subsequence subSeq = Subsequence.getSubsequenceFromTree(varTree, atypeFactory);
         if (subSeq != null) {
             AnnotationMirror anm;

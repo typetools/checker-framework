@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.qual.HasSubsequence;
@@ -9,6 +10,8 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.BaseContext;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -28,6 +31,9 @@ public class Subsequence {
      * Returns a Subsequence representing the {@link HasSubsequence} annotation on the declaration
      * of {@code varTree} or null if there is not such annotation.
      *
+     * <p>Note that this method does not standardize or viewpoint adapt the arguments to the
+     * annotation, unlike getSubsequenceFromReceiver.
+     *
      * @param varTree some tree
      * @param factory AnnotatedTypeFactory
      * @return null or a new Subsequence from the declaration of {@code varTree}
@@ -42,14 +48,17 @@ public class Subsequence {
 
         Element element = TreeUtils.elementFromTree(varTree);
         AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
-        return createSubsequence(hasSub);
+        return createSubsequence(hasSub, null, null);
     }
 
     /**
      * @param hasSub {@link HasSubsequence} annotation or null
      * @return a new Subsequence object representing {@code hasSub} or null
      */
-    private static Subsequence createSubsequence(AnnotationMirror hasSub) {
+    private static Subsequence createSubsequence(
+            AnnotationMirror hasSub,
+            TreePath currentPath,
+            FlowExpressionParseUtil.FlowExpressionContext context) {
         if (hasSub == null) {
             return null;
         }
@@ -58,6 +67,13 @@ public class Subsequence {
         String to = AnnotationUtils.getElementValueArray(hasSub, "to", String.class, false).get(0);
         String array =
                 AnnotationUtils.getElementValueArray(hasSub, "value", String.class, false).get(0);
+
+        if (context != null && currentPath != null) {
+            from = standardizeAndViewpointAdapt(from, currentPath, context);
+            to = standardizeAndViewpointAdapt(to, currentPath, context);
+            array = standardizeAndViewpointAdapt(array, currentPath, context);
+        }
+
         return new Subsequence(from, to, array);
     }
 
@@ -67,10 +83,15 @@ public class Subsequence {
      *
      * @param rec some tree
      * @param factory AnnotatedTypeFactory
+     * @param currentPath the path at which to viewpoint adapt the subsequence
+     * @param context the context in which to viewpoint adapt the subsequence
      * @return null or a new Subsequence from the declaration of {@code varTree}
      */
     public static Subsequence getSubsequenceFromReceiver(
-            Receiver rec, AnnotatedTypeFactory factory) {
+            Receiver rec,
+            AnnotatedTypeFactory factory,
+            TreePath currentPath,
+            FlowExpressionParseUtil.FlowExpressionContext context) {
         if (rec == null) {
             return null;
         }
@@ -83,6 +104,80 @@ public class Subsequence {
         } else {
             return null;
         }
-        return createSubsequence(factory.getDeclAnnotation(element, HasSubsequence.class));
+        return createSubsequence(
+                factory.getDeclAnnotation(element, HasSubsequence.class), currentPath, context);
+    }
+
+    /*
+     * Helper function to standardize and viewpoint adapt a String given a path and a context.
+     * Wraps FlowExpressionParseUtil#parse. If a parse exception is encountered, this returns
+     * its argument.
+     */
+    private static String standardizeAndViewpointAdapt(
+            String s, TreePath currentPath, FlowExpressionParseUtil.FlowExpressionContext context) {
+        try {
+            s = FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+        }
+        return s;
+    }
+
+    /**
+     * If the passed receiver is a FieldAccess or a LocalVariable, returns the context associated
+     * with it. Otherwise returns null.
+     *
+     * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
+     */
+    public static FlowExpressionParseUtil.FlowExpressionContext getContextFromReceiver(
+            FlowExpressions.Receiver rec, BaseContext checker) {
+        if (rec == null) {
+            return null;
+        }
+        FlowExpressionParseUtil.FlowExpressionContext context = null;
+        if (rec instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess fa = (FlowExpressions.FieldAccess) rec;
+            context =
+                    new FlowExpressionParseUtil.FlowExpressionContext(
+                            fa.getReceiver(), null, checker);
+
+        } else if (rec instanceof FlowExpressions.LocalVariable) {
+            FlowExpressions.LocalVariable lv = (FlowExpressions.LocalVariable) rec;
+            context = new FlowExpressionParseUtil.FlowExpressionContext(lv, null, checker);
+        }
+        return context;
+    }
+
+    /**
+     * Returns the additive inverse of the given String. That is, if the result of this method is
+     * some String s', then s + s' == 0 will evaluate to true. Note that this relies on the fact
+     * that the Flow Expression Parser cannot parse multiplication, so it naively just changes '-'
+     * to '+' and vice-versa.
+     *
+     * <p>The passed String is standardized and viewpoint adapted before this transformation is
+     * applied.
+     */
+    public static String negateString(
+            String s, TreePath currentPath, FlowExpressionParseUtil.FlowExpressionContext context) {
+        String original = standardizeAndViewpointAdapt(s, currentPath, context);
+        String result = "";
+        if (!original.startsWith("-")) {
+            result += '-';
+        }
+        for (int i = 0; i < original.length(); i++) {
+            char c = original.charAt(i);
+            if (c == '-') {
+                result += '+';
+            } else if (c == '+') {
+                result += '-';
+            } else {
+                result += c;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Subsequence(array=" + this.array + ", from=" + this.from + ", to=" + this.to + ")";
     }
 }
