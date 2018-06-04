@@ -20,11 +20,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -398,9 +400,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return true;
     }
 
-    /* Returns the new value of the left hand side after processing the arrays named in the rhs.
-     * Iff expQual includes LTL(rhsSeq, from)
-     * for some rhsSeq that has HSS, and varLtlQual includes LTL(a), then the LTL(a) will be removed from varLtlQual
+    /**
+     * Returns the new value of the left hand side after processing the arrays named in the rhs. Iff
+     * expQual includes LTL(rhsSeq, from) for some rhsSeq that has HSS, and varLtlQual includes
+     * LTL(a), then the LTL(a) will be removed from varLtlQual
      */
     private UBQualifier processSubsequenceForRHS(LessThanLengthOf varLtlQual, UBQualifier expQual) {
         UBQualifier newLHS = varLtlQual;
@@ -430,33 +433,30 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return newLHS;
     }
 
-    /* Returns the new value of the left hand side after processing the arrays named in the lhs.
-     * Iff varLtlQual includes LTL(lhsSeq),
-     * lhsSeq has HSS, and expQual includes LTL(a, -from), then the LTL(lhsSeq) will be removed from varLtlQual
+    /**
+     * If varLtlQual is @LTLength(lhsSeq) and "a" is a subsequence of lhsSeq starting at "from",
+     * then remove lhsSeq from a copy of varLtlQual and return the copy. Otherwise return
+     * varLtlQual.
      */
     private UBQualifier processSubsequenceForLHS(LessThanLengthOf varLtlQual, UBQualifier expQual) {
         UBQualifier newLHS = varLtlQual;
         for (String lhsSeq : varLtlQual.getSequences()) {
             // check is lhsSeq is an actual LTL
-            if (varLtlQual.hasSequenceWithOffset(lhsSeq, 0)) {
+            if (!varLtlQual.hasSequenceWithOffset(lhsSeq, 0)) {
+                continue;
+            }
+            Receiver rec =
+                    getReceiverFromJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
+            Subsequence subSeq = Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
+            if (subSeq != null) {
+                // viewpoint adapt strings from HasSubsequence expression
+                FlowExpressionContext context = getContextFromReceiver(rec, checker);
+                String from = standardizeAndViewpointAdapt(subSeq.from, getCurrentPath(), context);
+                String a = standardizeAndViewpointAdapt(subSeq.array, getCurrentPath(), context);
 
-                FlowExpressions.Receiver rec =
-                        getReceiverFromJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                Subsequence subSeq = Subsequence.getSubsequenceFromReceiver(rec, atypeFactory);
-                FlowExpressionParseUtil.FlowExpressionContext context =
-                        getContextFromReceiver(rec, checker);
-
-                if (subSeq != null) {
-                    // viewpoint adapt strings from HasSubsequence expression
-                    String from =
-                            standardizeAndViewpointAdapt(subSeq.from, getCurrentPath(), context);
-                    String a =
-                            standardizeAndViewpointAdapt(subSeq.array, getCurrentPath(), context);
-
-                    if (expQual.hasSequenceWithOffset(a, negateString(from))) {
-                        // this cast is safe because LTLs cannot contain duplicates
-                        newLHS = ((LessThanLengthOf) newLHS).removeOffset(lhsSeq, 0);
-                    }
+                if (expQual.hasSequenceWithOffset(a, negateString(from))) {
+                    // this cast is safe because LTLs cannot contain duplicates
+                    newLHS = ((LessThanLengthOf) newLHS).removeOffset(lhsSeq, 0);
                 }
             }
         }
@@ -464,7 +464,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     static String standardizeAndViewpointAdapt(
-            String s, TreePath currentPath, FlowExpressionParseUtil.FlowExpressionContext context) {
+            String s, TreePath currentPath, FlowExpressionContext context) {
         try {
             s = FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
