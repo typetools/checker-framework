@@ -7,7 +7,6 @@ import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.BaseContext;
@@ -103,8 +102,6 @@ public class Subsequence {
         Element element;
         if (rec instanceof FieldAccess) {
             element = ((FieldAccess) rec).getField();
-        } else if (rec instanceof LocalVariable) {
-            element = ((LocalVariable) rec).getElement();
         } else {
             return null;
         }
@@ -127,8 +124,8 @@ public class Subsequence {
     }
 
     /**
-     * If the passed receiver is a FieldAccess or a LocalVariable, returns the context associated
-     * with it. Otherwise returns null.
+     * If the passed receiver is a FieldAccess, returns the context associated with it. Otherwise
+     * returns null.
      *
      * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
      */
@@ -136,18 +133,14 @@ public class Subsequence {
         if (rec == null) {
             return null;
         }
-        FlowExpressionParseUtil.FlowExpressionContext context = null;
         if (rec instanceof FlowExpressions.FieldAccess) {
             FieldAccess fa = (FlowExpressions.FieldAccess) rec;
-            context =
-                    new FlowExpressionParseUtil.FlowExpressionContext(
-                            fa.getReceiver(), null, checker);
+            return new FlowExpressionParseUtil.FlowExpressionContext(
+                    fa.getReceiver(), null, checker);
 
-        } else if (rec instanceof FlowExpressions.LocalVariable) {
-            LocalVariable lv = (FlowExpressions.LocalVariable) rec;
-            context = new FlowExpressionParseUtil.FlowExpressionContext(lv, null, checker);
+        } else {
+            return null;
         }
-        return context;
     }
 
     /**
