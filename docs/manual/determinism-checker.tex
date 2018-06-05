@@ -55,10 +55,6 @@ The Determinism type system uses the following type qualifiers (see Figure~\ref{
   a collection will have the same elements in every execution, but in a
   possibly different order.  \<@OrderNonDet> may only be written on
   collections.
-\item[\refclass{checker/determinism/qual}{SortedDet}] May only be written on
-collections. Indicates that \textit{if sorted}, iteration returns the same values in the
-same order across executions. In other words, the collection is guaranteed to
-contain the same elements but in arbitrary order in different executions.
 \item[\refqualclass{checker/determinism/qual}{Det}] indicates that
   the expression evaluates to the same value (up to equality) on all
   executions; for a collection, iteration yields the values in the same
@@ -251,6 +247,21 @@ deterministic result.  This guarantees that a program's output will be
 deterministic, but it may be too restrictive.  You can define your own
 printing methods, some of which can take nondeterministic inputs.  You can
 also override the JDK annotations by providing a stub file.
+
+\section{Default annotations on method parameters and returns\label{determinism-param-default}}
+
+Any unannotated method parameter or return type is annotated with the \<@PolyDet> annotation.
+This is less restrictive than having \<@Det> as the default for these types. So if you
+want to type check method parameters and return types to be deterministic at the call site, you
+must anotate the method declaration appropriately.
+
+\section{Annotating local arrays and generic types\label{determinism-local-arrays}}
+
+For locally declared arrays without explicit type annotations, the array type follows the CLIMB to top rule (see Section~\ref{climb-to-top}) and
+the component type gets the default type qualifier (\<@Det> in this case).
+For example, the array declaration \<int[] a;> is annotated as \<@Det int @NonDet [] a;> by default.
+So you must explicitly annotate all local arrays.
+Similarly for all local variables with generic type parameters.
 
 
 %%  LocalWords:  DeterminismChecker HashSet InputFile NonDet Det
