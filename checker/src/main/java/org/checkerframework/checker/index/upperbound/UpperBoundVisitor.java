@@ -432,7 +432,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     String a = subSeq.array;
 
                     if (expQual.hasSequenceWithOffset(a, negateString(from, context))) {
-                        // this cast is safe because LTLs cannot contain duplicates
+                        // This cast is safe because LTLs cannot contain duplicates.
+                        // Note that this updates newLHS on each iteration from its old value,
+                        // so even if there are multiple HSS arrays the result will be correct.
                         newLHS = ((LessThanLengthOf) newLHS).removeOffset(lhsSeq, 0);
                     }
                 }
