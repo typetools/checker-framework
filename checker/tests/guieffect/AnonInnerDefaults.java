@@ -192,9 +192,6 @@ public class AnonInnerDefaults {
                 });
         callSafePolyIface(getSafePolyIface(e));
         callUIPolyIface(getUIPolyIface(e));
-
-        // ToDo: To decide, this case and whether or not we base on @PolyUIType for super type or @PolyUIEffect for
-        // overriden method.
         (new IPolyIfaceCaller() { // Anonymous inner class inference for @UI
                     @Override
                     public void call(final @UI PolyIface p) { // No global inference
