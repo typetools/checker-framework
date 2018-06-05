@@ -47,12 +47,13 @@ import org.checkerframework.framework.qual.JavaExpression;
  * in /checker/tests/index/.
  *
  * <p>Though this annotation technically permits its user to write multiple values in each of its
- * fields, writing more than one String to any of them is an error, and the behavior of the Index
- * Checker is undefined.
+ * fields, writing more than one String to any of them is an error.
+ *
+ * <p>This annotation may only be written on fields.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+@Target({ElementType.FIELD})
 public @interface HasSubsequence {
     /* The name of the subsequence. */
     @JavaExpression
