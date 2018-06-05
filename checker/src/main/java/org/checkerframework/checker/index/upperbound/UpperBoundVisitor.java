@@ -314,7 +314,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return rec;
     }
 
-    /** Given a Java expression, returns the additive inverse, as a String. */
+    /**
+     * Given a Java expression, returns the additive inverse, as a String. Assumes that
+     * FlowExpressions do not contain multiplication.
+     */
     private String negateString(String s, FlowExpressionContext context) {
         return Subsequence.negateString(s, getCurrentPath(), context);
     }
