@@ -19,14 +19,18 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /** Holds information from {@link HasSubsequence} annotations. */
 public class Subsequence {
-    public final String from;
-    public final String to;
-    public final String array;
 
-    private Subsequence(String from, String to, String array) {
+    /** Name of the Subsequence. */
+    public final String array;
+    /** First index of the subsequence in the backing sequence. */
+    public final String from;
+    /** Last index of the subsequence in the backing sequence. */
+    public final String to;
+
+    private Subsequence(String array, String from, String to) {
+        this.array = array;
         this.from = from;
         this.to = to;
-        this.array = array;
     }
 
     /**
@@ -74,7 +78,7 @@ public class Subsequence {
             array = standardizeAndViewpointAdapt(array, currentPath, context);
         }
 
-        return new Subsequence(from, to, array);
+        return new Subsequence(array, from, to);
     }
 
     /**
