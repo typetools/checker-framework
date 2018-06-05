@@ -1,6 +1,7 @@
 import java.util.List;
 
 // See also checker/nullness/generics/WildcardOverride.java
+
 interface AInterface<T> {
     public abstract int transform(List<? super T> function);
 }
