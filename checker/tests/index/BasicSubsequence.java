@@ -1,44 +1,46 @@
 import org.checkerframework.checker.index.qual.*;
 
 class BasicSubsequence {
-    void test1(int[] a) {
-        // this test doesn't work - 0 isn't a valid flow expression, apparently.
-        // int @HasSubsequence(value="a", from="0", to="a.length")[] b = a;
-    }
+    @HasSubsequence(value = "this", from = "this.x", to = "this.y")
+    int[] b;
 
-    void test2(@NonNegative @LessThan("#2.length + 1") int x, int[] a) {
-        @HasSubsequence(value = "a", from = "x", to = "a.length")
+    int x;
+    int y;
+
+    void test2(@NonNegative @LessThan("y + 1") int x1, int[] a) {
+        x = x1;
         // :: error: to.not.ltel
-        int[] b = a;
+        b = a;
     }
 
-    void test3(@NonNegative @LessThan("#2.length") int x, int[] a) {
-        @HasSubsequence(value = "a", from = "x", to = "a.length")
+    void test3(@NonNegative @LessThan("y") int x1, int[] a) {
+        x = x1;
         // :: error: to.not.ltel
-        int[] b = a;
+        b = a;
     }
 
-    void test4(@NonNegative int x, int[] a) {
-        @HasSubsequence(value = "a", from = "x", to = "a.length")
+    void test4(@NonNegative int x1, int[] a) {
+        x = x1;
         // :: error: from.gt.to :: error: to.not.ltel
-        int[] b = a;
+        b = a;
     }
 
-    void test5(@GTENegativeOne @LessThan("#2.length + 1") int x, int[] a) {
-        @HasSubsequence(value = "a", from = "x", to = "a.length")
+    void test5(@GTENegativeOne @LessThan("y + 1") int x1, int[] a) {
+        x = x1;
         // :: error: from.not.nonnegative :: error: to.not.ltel
-        int[] b = a;
+        b = a;
     }
 
-    void test6(@GTENegativeOne int x, int[] a) {
-        @HasSubsequence(value = "a", from = "x", to = "a.length")
+    void test6(@GTENegativeOne int x1, int[] a) {
+        x = x1;
         // :: error: from.not.nonnegative :: error: to.not.ltel :: error: from.gt.to
-        int[] b = a;
+        b = a;
     }
 
-    void test7(@IndexFor("#3") @LessThan("#2") int x, @IndexOrHigh("#3") int y, int[] a) {
-        @HasSubsequence(value = "a", from = "x", to = "y")
-        // :: error: not.final
-        int[] b = a;
+    void test7(@IndexFor("this") @LessThan("y") int x1, @IndexOrHigh("this") int y1, int[] a) {
+        x = x1;
+        y = y1;
+        // :: warning: which.subsequence
+        b = a;
     }
 }

@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.upperbound;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
@@ -14,6 +15,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.Subsequence;
+import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -27,6 +29,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -87,6 +90,36 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             node);
                     return null;
                 }
+            }
+        } else if (AnnotationUtils.areSameByClass(anno, HasSubsequence.class)) {
+            // Check that the arguments to a HasSubsequence annotation are valid flow expressions,
+            // and issue an error if one of them is not. Also checks that each HSS annotation
+            // has exactly one String for each of its arguments.
+            List<String> sequences =
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+            List<String> froms =
+                    AnnotationUtils.getElementValueArray(anno, "from", String.class, true);
+            List<String> tos = AnnotationUtils.getElementValueArray(anno, "to", String.class, true);
+            if (sequences.size() != 1 || froms.size() != 1 || tos.size() != 1) {
+                checker.report(
+                        Result.failure(
+                                "hss.wrong.length", sequences.size(), froms.size(), tos.size()),
+                        node);
+                return null;
+            }
+            String seq = sequences.get(0);
+            String from = froms.get(0);
+            String to = tos.get(0);
+            // check that each expression is parseable in this context
+            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            FlowExpressionContext context =
+                    FlowExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
+            try {
+                FlowExpressionParseUtil.parse(seq, context, getCurrentPath(), false);
+                FlowExpressionParseUtil.parse(from, context, getCurrentPath(), false);
+                FlowExpressionParseUtil.parse(to, context, getCurrentPath(), false);
+            } catch (FlowExpressionParseException e) {
+                checker.report(e.getResult(), node);
             }
         }
         return super.visitAnnotation(node, p);
