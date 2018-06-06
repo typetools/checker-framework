@@ -1550,41 +1550,11 @@ checker-framework-dev@googlegroups.com so we can update the manual.)
 
 JDK 8 introduced the \sunjavadoc{java/util/Optional.html}{\code{Optional}}
 class, a container that is either empty or contains a non-null value.
+The Optional Checker (see Chapter~\ref{optional-checker}) guarantees that
+programmers use \<Optional> correctly.
 
-\<Optional> has numerous problems without countervailing benefits.
-\<Optional> does not make your code more correct or robust. There is a real
-problem that \<Optional> tries to solve, but you are better off using a
-regular possibly-null Java reference and the Nullness Checker
-(see~\chapterpageref{nullness-checker}), rather than using Optional.
-
-The \<Optional> class does \emph{not} solve the problem of null pointer
-exceptions.  Changing your code to use the \<Optional> class has these effects:
-
-\begin{itemize}
-\item
-It transforms a \<NullPointerException> into a \<NoSuchElementException>,
-which still crashes your program.
-\item
-It creates new problems that were not a danger before.
-\item
-It clutters your code.
-\item
-It adds both space and time overheads.
-\item
-It does not address important sources of null pointer exceptions, such as
-partially-initialized objects and calls to \<Map.get>.
-\end{itemize}
-
-See the article
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
-  is better than Java's \<Optional> class''} for more details and
-explanation of the
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
-
-The \<Optional> class provides utility routines to reduce clutter when
-using \<Optional>.  The Nullness Checker provides an
-\refclass{checker/nullness}{Opt} class that provides all the same methods,
-but written for regular possibly-null Java references.
+Section~\ref{nullness-vs-optional} explains the relationship between
+nullness and \<Optional> and the benefits of each.
 
 
 \subsection{How does pluggable type-checking compare with JML?\label{faq-jml}}

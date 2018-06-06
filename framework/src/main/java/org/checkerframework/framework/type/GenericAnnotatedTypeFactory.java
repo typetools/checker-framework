@@ -764,11 +764,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param tree current tree
      * @param clazz the Class of the annotation
      * @return the annotation on expression or null if one does not exist
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
     public AnnotationMirror getAnnotationFromReceiver(
-            FlowExpressions.Receiver receiver, Tree tree, Class<? extends Annotation> clazz)
-            throws FlowExpressionParseException {
+            FlowExpressions.Receiver receiver, Tree tree, Class<? extends Annotation> clazz) {
 
         AnnotationMirror annotationMirror = null;
         if (CFAbstractStore.canInsertReceiver(receiver)) {

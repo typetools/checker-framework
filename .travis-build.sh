@@ -43,16 +43,17 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 
-./.travis-build-without-test.sh ${BUILDJDK}
+source ./.travis-build-without-test.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
 # subsequent command to build it except to test building it.
 
 set -e
+
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   # plume-lib-typecheck: 30 minutes
   set +e
-  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-"
-  git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-
+  echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/plume-lib.git &>-"
+  ${GITEXISTS} https://github.com/${SLUGOWNER}/plume-lib.git &>-
   if [ "$?" -ne 0 ]; then
     PLSLUGOWNER=mernst
   else
@@ -83,8 +84,8 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
   # checker-framework-inference: 18 minutes
   set +e
-  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
-  git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
+  echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
+  ${GITEXISTS} https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
   if [ "$?" -ne 0 ]; then
     CFISLUGOWNER=typetools
   else
