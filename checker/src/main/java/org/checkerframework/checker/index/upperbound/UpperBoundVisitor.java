@@ -26,6 +26,8 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -93,46 +95,47 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             }
         } else if (AnnotationUtils.areSameByClass(anno, HasSubsequence.class)) {
             // Check that the arguments to a HasSubsequence annotation are valid flow expressions,
-            // and issue an error if one of them is not. Also checks that each HSS annotation
-            // has exactly one String for each of its arguments.
-            List<String> sequences =
-                    AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
-            List<String> froms =
-                    AnnotationUtils.getElementValueArray(anno, "from", String.class, true);
-            List<String> tos = AnnotationUtils.getElementValueArray(anno, "to", String.class, true);
-            if (sequences.size() != 1 || froms.size() != 1 || tos.size() != 1) {
-                checker.report(
-                        Result.failure(
-                                "hss.wrong.length", sequences.size(), froms.size(), tos.size()),
-                        node);
-                return null;
-            }
-            String seq = sequences.get(0);
-            String from = froms.get(0);
-            String to = tos.get(0);
+            // and issue an error if one of them is not.
+
+            String seq = AnnotationUtils.getElementValue(anno, "value", String.class, true);
+            String from = AnnotationUtils.getElementValue(anno, "from", String.class, true);
+            String to = AnnotationUtils.getElementValue(anno, "to", String.class, true);
+            ;
             // check that each expression is parseable in this context
             ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
             FlowExpressionContext context =
                     FlowExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
-            try {
-                FlowExpressionParseUtil.parse(seq, context, getCurrentPath(), false);
-                FlowExpressionParseUtil.parse(from, context, getCurrentPath(), false);
-                FlowExpressionParseUtil.parse(to, context, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
-                checker.report(e.getResult(), node);
-            }
-
-            Subsequence subSeq = Subsequence.getSubsequenceFromTree(node, atypeFactory);
-
-            if (checkEffectivelyFinal(subSeq.from)) {
-                checker.report(Result.failure(NOT_FINAL, subSeq.from), node);
-            } else if (checkEffectivelyFinal(subSeq.to)) {
-                checker.report(Result.failure(NOT_FINAL, subSeq.to), node);
-            } else if (checkEffectivelyFinal(subSeq.array)) {
-                checker.report(Result.failure(NOT_FINAL, subSeq.array), node);
-            }
+            checkEffectivelyFinalAndParsable(seq, context, node);
+            checkEffectivelyFinalAndParsable(from, context, node);
+            checkEffectivelyFinalAndParsable(to, context, node);
         }
         return super.visitAnnotation(node, p);
+    }
+
+    /**
+     * Determines if the Java expression named by s is effectively final at the current program
+     * location.
+     */
+    private void checkEffectivelyFinalAndParsable(
+            String s, FlowExpressionContext context, Tree error) {
+        Receiver rec;
+        try {
+            rec = FlowExpressionParseUtil.parse(s, context, getCurrentPath(), false);
+        } catch (FlowExpressionParseException e) {
+            checker.report(e.getResult(), error);
+            return;
+        }
+        Element element = null;
+        if (rec instanceof LocalVariable) {
+            element = ((LocalVariable) rec).getElement();
+        } else if (rec instanceof FieldAccess) {
+            element = ((FieldAccess) rec).getField();
+        } else if (rec instanceof ThisReference || rec instanceof ValueLiteral) {
+            return;
+        }
+        if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
+            checker.report(Result.failure(NOT_FINAL, rec), error);
+        }
     }
 
     /**
@@ -239,26 +242,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         super.commonAssignmentCheck(varTree, valueTree, errorKey);
-    }
-
-    /**
-     * Determines if the Java expression named by s is effectively final at the current program
-     * location.
-     */
-    private boolean checkEffectivelyFinal(String s) {
-        Receiver rec;
-        try {
-            rec = atypeFactory.getReceiverFromJavaExpressionString(s, getCurrentPath());
-        } catch (FlowExpressionParseException e) {
-            return false;
-        }
-        Element element = null;
-        if (rec instanceof LocalVariable) {
-            element = ((LocalVariable) rec).getElement();
-        } else if (rec instanceof FieldAccess) {
-            element = ((FieldAccess) rec).getField();
-        }
-        return element != null && ElementUtils.isEffectivelyFinal(element);
     }
 
     @Override
