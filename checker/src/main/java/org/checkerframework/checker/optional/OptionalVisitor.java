@@ -309,8 +309,7 @@ public class OptionalVisitor
         public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
             TypeMirror tm = type.getUnderlyingType();
             if (isCollectionType(tm)) {
-                DeclaredType type1 = (DeclaredType) (type.getUnderlyingType());
-                List<? extends TypeMirror> typeArgs = type1.getTypeArguments();
+                List<? extends TypeMirror> typeArgs = ((DeclaredType) tm).getTypeArguments();
                 if (typeArgs.size() == 1) {
                     // TODO: handle collections that have more than one type parameter
                     TypeMirror typeArg = typeArgs.get(0);
@@ -319,8 +318,7 @@ public class OptionalVisitor
                     }
                 }
             } else if (isOptionalType(tm)) {
-                List<? extends TypeMirror> typeArgs =
-                        ((DeclaredType) (type.getUnderlyingType())).getTypeArguments();
+                List<? extends TypeMirror> typeArgs = ((DeclaredType) tm).getTypeArguments();
                 assert typeArgs.size() == 1;
                 TypeMirror typeArg = typeArgs.get(0);
                 if (isCollectionType(typeArg)) {

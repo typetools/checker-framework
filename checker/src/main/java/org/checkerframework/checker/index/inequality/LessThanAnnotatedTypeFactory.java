@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.LessThan;
@@ -21,8 +22,12 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -122,8 +127,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (leftATM.getAnnotations().size() != 1) {
             return false;
         }
-        List<String> expressions =
-                getLessThanExpressions(leftATM.getAnnotations().iterator().next());
+        return isLessThan(leftATM.getAnnotations().iterator().next(), right);
+    }
+
+    /** @return Is left less than right? */
+    public static boolean isLessThan(AnnotationMirror left, String right) {
+        List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
             return true;
         }
@@ -155,30 +164,51 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Returns the minimum value of {@code expressions} at {@code tree}. */
     private long getMinValueFromString(String expression, Tree tree, TreePath path) {
-        AnnotationMirror intRange = null;
+        Receiver expressionRec;
         try {
-            intRange =
+            expressionRec =
                     getValueAnnotatedTypeFactory()
-                            .getAnnotationFromJavaExpressionString(
-                                    expression, tree, path, IntRange.class);
+                            .getReceiverFromJavaExpressionString(expression, path);
         } catch (FlowExpressionParseException e) {
+            return Long.MIN_VALUE;
         }
+
+        AnnotationMirror intRange =
+                getValueAnnotatedTypeFactory()
+                        .getAnnotationFromReceiver(expressionRec, tree, IntRange.class);
         if (intRange != null) {
             return ValueAnnotatedTypeFactory.getRange(intRange).from;
         }
-        AnnotationMirror intValue = null;
-        try {
-            intValue =
-                    getValueAnnotatedTypeFactory()
-                            .getAnnotationFromJavaExpressionString(
-                                    expression, tree, path, IntVal.class);
-        } catch (FlowExpressionParseException e) {
-        }
+        AnnotationMirror intValue =
+                getValueAnnotatedTypeFactory()
+                        .getAnnotationFromReceiver(expressionRec, tree, IntVal.class);
         if (intValue != null) {
-
             List<Long> possibleValues = ValueAnnotatedTypeFactory.getIntValues(intValue);
             return Collections.min(possibleValues);
         }
+
+        if (expressionRec instanceof FieldAccess) {
+            FieldAccess fieldAccess = ((FieldAccess) expressionRec);
+            if (fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY) {
+                // array.length might not be in the store, so check for the length of the array.
+                AnnotationMirror arrayRange =
+                        getValueAnnotatedTypeFactory()
+                                .getAnnotationFromReceiver(
+                                        fieldAccess.getReceiver(), tree, ArrayLenRange.class);
+                if (arrayRange != null) {
+                    return ValueAnnotatedTypeFactory.getRange(arrayRange).from;
+                }
+                AnnotationMirror arrayLen =
+                        getValueAnnotatedTypeFactory()
+                                .getAnnotationFromReceiver(expressionRec, tree, ArrayLen.class);
+                if (arrayLen != null) {
+                    List<Integer> possibleValues =
+                            ValueAnnotatedTypeFactory.getArrayLength(arrayLen);
+                    return Collections.min(possibleValues);
+                }
+            }
+        }
+
         return Long.MIN_VALUE;
     }
 
@@ -188,8 +218,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (leftATM.getAnnotations().size() != 1) {
             return false;
         }
-        List<String> expressions =
-                getLessThanExpressions(leftATM.getAnnotations().iterator().next());
+        return isLessThanOrEqual(leftATM.getAnnotations().iterator().next(), right);
+    }
+
+    /** @return Is left less than or equal to right? */
+    public static boolean isLessThanOrEqual(AnnotationMirror left, String right) {
+        List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
             // left is bottom so it is always less than right.
             return true;

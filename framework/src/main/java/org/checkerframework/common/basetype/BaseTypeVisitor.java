@@ -290,25 +290,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         atypeFactory.preProcessClassTree(classTree);
 
+        TreePath preTreePath = visitorState.getPath();
         AnnotatedDeclaredType preACT = visitorState.getClassType();
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setClassType(atypeFactory.getAnnotatedType(classTree));
+
+        // Don't use atypeFactory.getPath, b/c that depends on the visitorState path.
+        visitorState.setPath(TreePath.getPath(root, classTree));
+        visitorState.setClassType(
+                atypeFactory.getAnnotatedType(TreeUtils.elementFromDeclaration(classTree)));
         visitorState.setClassTree(classTree);
         visitorState.setMethodReceiver(null);
         visitorState.setMethodTree(null);
         visitorState.setAssignmentContext(null);
+
         try {
             processClassTree(classTree);
             atypeFactory.postProcessClassTree(classTree);
         } finally {
-            this.visitorState.setClassType(preACT);
-            this.visitorState.setClassTree(preCT);
-            this.visitorState.setMethodReceiver(preAMT);
-            this.visitorState.setMethodTree(preMT);
-            this.visitorState.setAssignmentContext(preAssCtxt);
+            visitorState.setPath(preTreePath);
+            visitorState.setClassType(preACT);
+            visitorState.setClassTree(preCT);
+            visitorState.setMethodReceiver(preAMT);
+            visitorState.setMethodTree(preMT);
+            visitorState.setAssignmentContext(preAssCtxt);
         }
         return null;
     }

@@ -308,11 +308,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return true;
     }
 
-    // Remove, only CFI depends on it, but doesn't need it.
-    protected boolean areEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        return true; // equalityComparer.areEqual(type1, type2);
-    }
-
     protected boolean areEqualInHierarchy(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
         return equalityComparer.areEqualInHierarchy(type1, type2, currentTop);
@@ -365,7 +360,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 return false;
             }
 
-            return canBeCovariant || checkAndSubtype(outsideWc.getSuperBound(), inside);
+            AnnotatedTypeMirror lowerbound = outsideWc.getSuperBound();
+            if (lowerbound.getKind() == TypeKind.TYPEVAR) {
+                // TODO: determine correct check for (captured) type variables.
+                return true;
+            }
+            return canBeCovariant || checkAndSubtype(lowerbound, inside);
         } else if (TypesUtils.isCaptured(outside.getUnderlyingType())) {
             if (typeargVisitHistory.contains(inside, outside, currentTop)) {
                 return true;
@@ -494,41 +494,40 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
         final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeRaw || supertypeRaw);
 
-        if (!ignoreTypeArgs) {
-            final List<? extends AnnotatedTypeMirror> subtypeTypeArgs = subtype.getTypeArguments();
-            final List<? extends AnnotatedTypeMirror> supertypeTypeArgs =
-                    supertype.getTypeArguments();
+        if (ignoreTypeArgs) {
+            return true;
+        }
 
-            // TODO: IN THE ORIGINAL TYPE_HIERARCHY WE ALWAYS RETURN TRUE IF ONE OF THE LISTS IS
-            // EMPTY.  THIS SEEMS LIKE WE SHOULD ONLY RETURN TRUE HERE IF ignoreRawTypes == TRUE OR
-            // IF BOTH ARE EMPTY.  ARE WE MORE STRICT THAN JAVAC OR DO WE WANT TO FOLLOW JAVAC RAW
-            // TYPES SEMANTICS?
-            if (subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty()) {
-                return true;
-            }
+        final List<? extends AnnotatedTypeMirror> subtypeTypeArgs = subtype.getTypeArguments();
+        final List<? extends AnnotatedTypeMirror> supertypeTypeArgs = supertype.getTypeArguments();
 
-            final TypeElement supertypeElem =
-                    (TypeElement) supertype.getUnderlyingType().asElement();
-            List<Integer> covariantArgIndexes = null;
-            AnnotationMirror covam =
-                    supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
+        if (subtypeTypeArgs.size() != supertypeTypeArgs.size()) {
+            return false;
+        }
+        if (subtypeTypeArgs.isEmpty()) {
+            return true;
+        }
 
-            if (covam != null) {
-                covariantArgIndexes =
-                        AnnotationUtils.getElementValueArray(covam, "value", Integer.class, false);
-            }
+        final TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();
+        List<Integer> covariantArgIndexes = null;
+        AnnotationMirror covam =
+                supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
 
-            for (int i = 0; i < supertypeTypeArgs.size(); i++) {
-                final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
-                final AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
-                final boolean covariant =
-                        covariantArgIndexes != null && covariantArgIndexes.contains(i);
+        if (covam != null) {
+            covariantArgIndexes =
+                    AnnotationUtils.getElementValueArray(covam, "value", Integer.class, false);
+        }
 
-                Boolean result = isContainedBy(subTypeArg, superTypeArg, covariant);
+        for (int i = 0; i < supertypeTypeArgs.size(); i++) {
+            final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
+            final AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
+            final boolean covariant =
+                    covariantArgIndexes != null && covariantArgIndexes.contains(i);
 
-                if (!result) {
-                    return false;
-                }
+            Boolean result = isContainedBy(subTypeArg, superTypeArg, covariant);
+
+            if (!result) {
+                return false;
             }
         }
 
