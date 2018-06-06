@@ -8,7 +8,7 @@ public class Issue2013 {
         private @Nullable String name = null;
 
         @EnsuresNonNull("name()")
-        // :: error: ("contracts.postcondition.not.satisfied")
+        // :: error: (contracts.postcondition.not.satisfied)
         void ensureNameNonNull() {
             name = "name";
         }
@@ -25,21 +25,30 @@ public class Issue2013 {
     }
 
     static class Sub extends Super {
+        @Nullable String subname = null;
 
         @Override
-        // :: error: ("contracts.postcondition.not.satisfied")
+        // :: error: (contracts.postcondition.not.satisfied)
         void ensureNameNonNull() {
             super.ensureNameNonNull();
+            subname = "Sub";
         }
 
+        public static boolean flag;
+
         @Override
+        @RequiresNonNull("name()")
         void requiresNameNonNull() {
-            super.requiresNameNonNull();
+            if (flag) {
+                name().toString();
+            } else {
+                super.requiresNameNonNull();
+            }
         }
 
         @Override
         @Nullable String name() {
-            return null;
+            return subname;
         }
 
         void use() {
@@ -48,7 +57,16 @@ public class Issue2013 {
                 requiresNameNonNull();
             }
 
+            if (this.name() != null) {
+                requiresNameNonNull();
+            }
+
             if (super.name() != null) {
+                // :: error: (contracts.precondition.not.satisfied)
+                super.requiresNameNonNull();
+            }
+
+            if (this.name() != null) {
                 super.requiresNameNonNull();
             }
 
@@ -57,7 +75,14 @@ public class Issue2013 {
             requiresNameNonNull();
 
             super.ensureNameNonNull();
+            // :: error: (contracts.precondition.not.satisfied)
             super.requiresNameNonNull();
+
+            ensureNameNonNull();
+            super.requiresNameNonNull();
+
+            ensureNameNonNull();
+            requiresNameNonNull();
         }
     }
 
