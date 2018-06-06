@@ -4,18 +4,19 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.LessThan;
 
 class InvalidSubsequence {
-    // :: error: flowexpr.parse.error
+    // :: error: flowexpr.parse.error :: error: not.final
     @HasSubsequence(value = "banana", from = "this.from", to = "this.to")
     int[] a;
 
-    // :: error: flowexpr.parse.error
+    // :: error: flowexpr.parse.error :: error: not.final
     @HasSubsequence(value = "this", from = "banana", to = "this.to")
     int[] b;
 
-    // :: error: flowexpr.parse.error
+    // :: error: flowexpr.parse.error :: error: not.final
     @HasSubsequence(value = "this", from = "this.from", to = "banana")
     int[] c;
 
+    // :: error: not.final
     @HasSubsequence(value = "this", from = "this.from", to = "10")
     int[] e;
 
@@ -40,7 +41,7 @@ class InvalidSubsequence {
     }
 
     void assignE(int[] d) {
-        // :: error: from.gt.to
+        // :: error: from.gt.to :: error: to.not.ltel
         e = d;
     }
 }

@@ -9,9 +9,14 @@ class BasicSubsequence2 {
     @HasSubsequence(value = "this", from = "start", to = "end")
     int[] array2;
 
-    @IndexFor("array") int start;
+    final @IndexFor("array") int start;
 
-    @IndexOrHigh("array") int end;
+    final @IndexOrHigh("array") int end;
+
+    private BasicSubsequence2(@IndexFor("array") int s, @IndexOrHigh("array") int e) {
+        start = s;
+        end = e;
+    }
 
     void testStartIndex(@IndexFor("this") int x) {
         @IndexFor("array") int y = x + start;

@@ -6,9 +6,15 @@ class OnlyCheckSubsequenceWhenAssigningToArray {
     @HasSubsequence(value = "this", from = "this.start", to = "this.end")
     int[] array;
 
-    @IndexFor("array") int start;
+    final @IndexFor("array") int start;
 
-    @IndexOrHigh("array") int end;
+    final @IndexOrHigh("array") int end;
+
+    private OnlyCheckSubsequenceWhenAssigningToArray(
+            @IndexFor("array") int s, @IndexOrHigh("array") int e) {
+        start = s;
+        end = e;
+    }
 
     void testAssignmentToArrayElement(@IndexFor("this") int x, int y) {
         array[start + x] = y;

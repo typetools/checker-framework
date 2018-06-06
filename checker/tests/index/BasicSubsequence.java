@@ -1,6 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 
 class BasicSubsequence {
+    // :: error: not.final
     @HasSubsequence(value = "this", from = "this.x", to = "this.y")
     int[] b;
 
