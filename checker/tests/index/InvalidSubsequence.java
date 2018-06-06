@@ -16,7 +16,6 @@ class InvalidSubsequence {
     @HasSubsequence(value = "this", from = "this.from", to = "banana")
     int[] c;
 
-    // :: error: flowexpr.parse.error
     @HasSubsequence(value = "this", from = "this.from", to = "10")
     int[] e;
 
