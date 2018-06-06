@@ -757,30 +757,6 @@ public abstract class GenericAnnotatedTypeFactory<
                 getReceiverFromJavaExpressionString(expression, path);
         return getAnnotationFromReceiver(expressionObj, tree, clazz);
     }
-
-    /**
-     * Produces the annotation mirror that represents the given expression String in this type
-     * factory's type system.
-     *
-     * @param expression a Java expression
-     * @param tree the tree at the location to parse the expression
-     * @param currentPath location at which expression is evaluated
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
-     * @return an AnnotationMirror representing the type in the store at the given location from
-     *     this type factory's type system, or null if one is not available
-     */
-    public AnnotationMirror getAnnotationFromJavaExpressionString(
-            String expression, Tree tree, TreePath currentPath)
-            throws FlowExpressionParseException {
-        FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
-        Set<AnnotationMirror> annotations = getAnnotationsFromReceiver(rec, tree);
-        if (annotations.size() == 1) {
-            return annotations.iterator().next();
-        } else {
-            return null;
-        }
-    }
-
     /**
      * Returns the primary annotation on a receiver.
      *
@@ -791,40 +767,26 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public AnnotationMirror getAnnotationFromReceiver(
             FlowExpressions.Receiver receiver, Tree tree, Class<? extends Annotation> clazz) {
-        Set<AnnotationMirror> annotations = getAnnotationsFromReceiver(receiver, tree);
-        for (AnnotationMirror anm : annotations) {
-            if (AnnotationUtils.areSameByClass(anm, clazz)) {
-                return anm;
-            }
-        }
-        return null;
-    }
 
-    /**
-     * Returns the set of annotations on a receiver.
-     *
-     * @param receiver the receiver whose annotation is returned
-     * @param tree current tree
-     * @return a set containing the annotations on the receiver, or the empty set if none are found
-     */
-    public Set<AnnotationMirror> getAnnotationsFromReceiver(
-            FlowExpressions.Receiver receiver, Tree tree) {
+        AnnotationMirror annotationMirror = null;
         if (CFAbstractStore.canInsertReceiver(receiver)) {
             Store store = getStoreBefore(tree);
             Value value = store.getValue(receiver);
             if (value != null) {
-                return value.getAnnotations();
+                annotationMirror =
+                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
-        if (receiver instanceof LocalVariable) {
-            Element ele = ((LocalVariable) receiver).getElement();
-            return getAnnotatedType(ele).getAnnotations();
-        } else if (receiver instanceof FieldAccess) {
-            Element ele = ((FieldAccess) receiver).getField();
-            return getAnnotatedType(ele).getAnnotations();
+        if (annotationMirror == null) {
+            if (receiver instanceof LocalVariable) {
+                Element ele = ((LocalVariable) receiver).getElement();
+                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
+            } else if (receiver instanceof FieldAccess) {
+                Element ele = ((FieldAccess) receiver).getField();
+                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
+            }
         }
-
-        return Collections.emptySet();
+        return annotationMirror;
     }
 
     /**
@@ -847,6 +809,29 @@ public abstract class GenericAnnotatedTypeFactory<
                         this.getContext());
 
         return FlowExpressionParseUtil.parse(expression, context, currentPath, true);
+    }
+
+    /**
+     * Produces the annotation mirror that represents the given expression String in this type
+     * factory's type system.
+     *
+     * @param expression a Java expression
+     * @param tree the tree at the location to parse the expression
+     * @param currentPath location at which expression is evaluated
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @return an AnnotationMirror representing the type in the store at the given location from
+     *     this type factory's type system, or null if one is not available
+     */
+    public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
+            String expression, Tree tree, TreePath currentPath)
+            throws FlowExpressionParseException {
+        FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
+        if (rec == null) {
+            return null;
+        }
+        Store store = getStoreBefore(tree);
+        Value value = store.getValue(rec);
+        return value != null ? value.getAnnotations().iterator().next() : null;
     }
 
     /**

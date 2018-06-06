@@ -202,8 +202,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             AnnotationMirror anm;
             try {
                 anm =
-                        atypeFactory.getAnnotationFromJavaExpressionString(
-                                subSeq.from, varTree, getCurrentPath());
+                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
+                                subSeq.to, varTree, getCurrentPath());
             } catch (FlowExpressionParseException e) {
                 anm = null;
             }

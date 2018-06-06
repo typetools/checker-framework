@@ -74,7 +74,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
             AnnotationMirror anm;
             try {
                 anm =
-                        atypeFactory.getAnnotationFromJavaExpressionString(
+                        atypeFactory.getAnnotationMirrorFromJavaExpressionString(
                                 subSeq.from, varTree, getCurrentPath());
             } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
                 anm = null;
