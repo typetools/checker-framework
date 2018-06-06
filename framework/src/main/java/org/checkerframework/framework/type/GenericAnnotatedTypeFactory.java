@@ -754,8 +754,7 @@ public abstract class GenericAnnotatedTypeFactory<
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
             throws FlowExpressionParseException {
 
-        Receiver expressionObj =
-                getReceiverFromJavaExpressionString(expression, path);
+        Receiver expressionObj = getReceiverFromJavaExpressionString(expression, path);
         return getAnnotationFromReceiver(expressionObj, tree, clazz);
     }
     /**
@@ -798,12 +797,11 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param currentPath location at which expression is evaluated
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
-    public Receiver getReceiverFromJavaExpressionString(
-            String expression, TreePath currentPath) throws FlowExpressionParseException {
+    public Receiver getReceiverFromJavaExpressionString(String expression, TreePath currentPath)
+            throws FlowExpressionParseException {
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
-        Receiver r =
-                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
+        Receiver r = FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         r,
@@ -816,8 +814,9 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the annotation mirror from dataflow for {@code expression}.
      *
-     * This will output a different annotation than {@link #getAnnotationFromJavaExpressionString(String, Tree, TreePath, Class)},
-     * because if the specified annotation isn't found in the store, the type from the factory is used.
+     * <p>This will output a different annotation than {@link
+     * #getAnnotationFromJavaExpressionString(String, Tree, TreePath, Class)}, because if the
+     * specified annotation isn't found in the store, the type from the factory is used.
      *
      * @param expression a Java expression
      * @param tree the tree at the location to parse the expression
