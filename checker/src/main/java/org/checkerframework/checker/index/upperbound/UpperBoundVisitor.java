@@ -121,6 +121,16 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             } catch (FlowExpressionParseException e) {
                 checker.report(e.getResult(), node);
             }
+
+            Subsequence subSeq = Subsequence.getSubsequenceFromTree(node, atypeFactory);
+
+            if (checkEffectivelyFinal(subSeq.from)) {
+                checker.report(Result.failure(NOT_FINAL, subSeq.from), node);
+            } else if (checkEffectivelyFinal(subSeq.to)) {
+                checker.report(Result.failure(NOT_FINAL, subSeq.to), node);
+            } else if (checkEffectivelyFinal(subSeq.array)) {
+                checker.report(Result.failure(NOT_FINAL, subSeq.array), node);
+            }
         }
         return super.visitAnnotation(node, p);
     }
@@ -213,12 +223,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                                 subSeq.array,
                                 subSeq.array),
                         valueTree);
-            } else if (checkEffectivelyFinal(subSeq.from)) {
-                checker.report(Result.failure(NOT_FINAL, subSeq.from), valueTree);
-            } else if (checkEffectivelyFinal(subSeq.to)) {
-                checker.report(Result.failure(NOT_FINAL, subSeq.to), valueTree);
-            } else if (checkEffectivelyFinal(subSeq.array)) {
-                checker.report(Result.failure(NOT_FINAL, subSeq.array), valueTree);
             } else {
                 checker.report(
                         Result.warning(
