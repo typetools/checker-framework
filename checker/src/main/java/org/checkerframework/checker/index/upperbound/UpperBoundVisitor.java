@@ -100,7 +100,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             String seq = AnnotationUtils.getElementValue(anno, "value", String.class, true);
             String from = AnnotationUtils.getElementValue(anno, "from", String.class, true);
             String to = AnnotationUtils.getElementValue(anno, "to", String.class, true);
-            ;
+
             // check that each expression is parseable in this context
             ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
             FlowExpressionContext context =
