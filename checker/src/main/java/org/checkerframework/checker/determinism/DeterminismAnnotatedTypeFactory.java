@@ -122,58 +122,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TypesUtils.getTypeElement(receiver.getUnderlyingType()) == null) {
                 return super.visitMethodInvocation(node, p);
             }
-
-            //Type refinement for sort
-            //            TypeMirror underlyingType =
-            //                    (TypesUtils.getTypeElement(receiver.getUnderlyingType())).asType();
-            //            boolean isCollection = isCollection(underlyingType);
-            //            if (isCollection) {
-            //                String methodName = node.toString();
-            //                int startIndex = methodName.indexOf(".");
-            //                int endIndex = methodName.indexOf("(");
-            //                String methName = methodName.substring(startIndex + 1, endIndex);
-            //                if(methName.equals("sort")){
-            //                    //Check if receiver has OrderNonDet annotation
-            //                    AnnotationMirror receiverAnno = receiver.getAnnotation(OrderNonDet.class);
-            //                    if(receiverAnno != null && AnnotationUtils.areSame(receiverAnno, ORDERNONDET)){
-            //                        System.out.println("before replace: " + receiver.getAnnotations().iterator().next());
-            //                        receiver.removeAnnotation(ORDERNONDET);
-            //                        receiver.replaceAnnotation(DET);
-            //                        System.out.println("after replace: " + receiver.getAnnotations().iterator().next() + " "
-            //                        + receiver.getAnnotations().size());
-            //                    }
-            //                }
-            //            }
             return super.visitMethodInvocation(node, p);
         }
 
         @Override
         public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
-            //Annotate String variable argument as @PolyDet (Is there an easier way to do this?)
-            //            System.out.println("varargs check: " + node);
-            //            for (VariableTree param:
-            //                    node.getParameters()) {
-            //                if(param.toString().contains("...")){
-            //                    if(!p.hasExplicitAnnotation(NONDET) && !p.hasExplicitAnnotation(DET)
-            //                            && !p.hasExplicitAnnotation(ORDERNONDET)){
-            //                        p.replaceAnnotation(POLYDET);
-            //                    }
-            //                }
-            //            }
             return super.visitMethod(node, p);
         }
-
-        //        @Override
-        //        public Void visitThrow(ThrowTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-        //            System.out.println(" ************************** ");
-        //            return super.visitThrow(node, annotatedTypeMirror);
-        //        }
-        //
-        //        @Override
-        //        public Void visitCatch(CatchTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-        //            System.out.println(" ------------------------- ");
-        //            return super.visitCatch(node, annotatedTypeMirror);
-        //        }
     }
 
     public boolean isCollection(TypeMirror tm) {

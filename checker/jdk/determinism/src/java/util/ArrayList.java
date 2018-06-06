@@ -174,7 +174,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param c the collection whose elements are to be placed into this list
      * @throws NullPointerException if the specified collection is null
      */
-    public ArrayList(Collection<? extends E> c) {
+    public @PolyDet ArrayList(@PolyDet Collection<? extends @PolyDet("use") E> c) {
         elementData = c.toArray();
         if ((size = elementData.length) != 0) {
             // c.toArray might (incorrectly) not return Object[] (see 6260652)
@@ -402,7 +402,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws NullPointerException if the specified array is null
      */
     @SuppressWarnings("unchecked")
-    public <T> @PolyDet("up") T @PolyDet("up")[] toArray(T[] a) {
+    public <T> @PolyDet("up") T @PolyDet("up")[] toArray(@PolyDet ArrayList<E> this, T[] a) {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
             return (T[]) Arrays.copyOf(elementData, size, a.getClass());
@@ -574,7 +574,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") Collection<? extends E> c) {
+    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
         Object[] a = c.toArray();
         int numNew = a.length;
         ensureCapacityInternal(size + numNew);  // Increments modCount
@@ -598,7 +598,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends E> c) {
+    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
         rangeCheckForAdd(index);
 
         Object[] a = c.toArray();
@@ -1067,11 +1067,11 @@ public class ArrayList<E> extends AbstractList<E>
             this.size -= toIndex - fromIndex;
         }
 
-        public boolean addAll(@PolyDet SubList this, @PolyDet("use") Collection<? extends E> c) {
+        public boolean addAll(@PolyDet SubList this, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
             return addAll(this.size, c);
         }
 
-        public @PolyDet("down") boolean addAll(@PolyDet SubList this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends E> c) {
+        public @PolyDet("down") boolean addAll(@PolyDet SubList this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
             rangeCheckForAdd(index);
             int cSize = c.size();
             if (cSize==0)
@@ -1335,7 +1335,7 @@ public class ArrayList<E> extends AbstractList<E>
             return hi;
         }
 
-        public @PolyDet("up") ArrayListSpliterator<E> trySplit(@PolyDet ArrayListSpliterator<E> this) {
+        public @PolyDet ArrayListSpliterator<E> trySplit(@PolyDet ArrayListSpliterator<E> this) {
             int hi = getFence(), lo = index, mid = (lo + hi) >>> 1;
             return (lo >= mid) ? null : // divide range in half unless too small
                 new ArrayListSpliterator<E>(list, lo, index = mid,

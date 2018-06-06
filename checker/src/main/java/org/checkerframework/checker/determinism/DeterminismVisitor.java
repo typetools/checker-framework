@@ -13,7 +13,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
     public DeterminismVisitor(BaseTypeChecker checker) {
@@ -24,12 +23,12 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
             "invalid.parameter.type";
 
-    @Override
-    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-        Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
-        exceptionParam.add(atypeFactory.POLYDET);
-        return exceptionParam;
-    }
+    //    @Override
+    //    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+    //        Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
+    //        exceptionParam.add(atypeFactory.POLYDET);
+    //        return exceptionParam;
+    //    }
 
     @Override
     public boolean isValidUse(
@@ -52,12 +51,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             Iterator<AnnotationMirror> paramAnnotationIt = paramType.getAnnotations().iterator();
             if (paramAnnotationIt.hasNext()) {
                 AnnotationMirror paramAnnotation = paramAnnotationIt.next();
-                if (isAnnoSubType(baseAnnotation, paramAnnotation))
+                if (!isSubType(paramAnnotation, baseAnnotation)) {
                     checker.report(
                             Result.failure(
                                     INVALID_ANNOTATION_SUBTYPE, paramAnnotation, baseAnnotation),
                             tree);
-                return false;
+                    return false;
+                }
             }
         }
 
@@ -88,81 +88,36 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return false;
     }
 
-    //    public static boolean isCollection(AnnotatedTypeMirror atm, ProcessingEnvironment processingEnvironment) {
-    //        javax.lang.model.util.Types types = processingEnvironment.getTypeUtils();
-    //        //List and subclasses
-    //        TypeMirror ListTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        List.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror ArrayListTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        ArrayList.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror LinkedListTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        LinkedList.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror AbstractListTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        AbstractList.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror AbstractSequentialListTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        AbstractSequentialList.class,
-    //                        types,
-    //                        processingEnvironment.getElementUtils());
-    //        TypeMirror ArraysTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        Arrays.class, types, processingEnvironment.getElementUtils());
-    //        //Set and subclasses
-    //        TypeMirror SetTypeMirror =
-    //                TypesUtils.typeFromClass(Set.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror AbstractSetTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        AbstractSet.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror EnumSetTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        EnumSet.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror HashSetTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        HashSet.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror LinkedHashSetTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        LinkedHashSet.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror TreeSetTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        TreeSet.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror SortedSetTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        SortedSet.class, types, processingEnvironment.getElementUtils());
-    //        TypeMirror NavigableSetTypeMirror =
-    //                TypesUtils.typeFromClass(
-    //                        NavigableSet.class, types, processingEnvironment.getElementUtils());
-    //
-    //        if (types.isSubtype(tm, ListTypeMirror)
-    //                || types.isSubtype(tm, SetTypeMirror)
-    //                || types.isSubtype(tm, ArrayListTypeMirror)
-    //                || types.isSubtype(tm, HashSetTypeMirror)
-    //                || types.isSubtype(tm, AbstractListTypeMirror)
-    //                || types.isSubtype(tm, AbstractSequentialListTypeMirror)
-    //                || types.isSubtype(tm, LinkedListTypeMirror)
-    //                || types.isSubtype(tm, ArraysTypeMirror)
-    //                || types.isSubtype(tm, AbstractSetTypeMirror)
-    //                || types.isSubtype(tm, EnumSetTypeMirror)
-    //                || types.isSubtype(tm, LinkedHashSetTypeMirror)
-    //                || types.isSubtype(tm, TreeSetTypeMirror)
-    //                || types.isSubtype(tm, SortedSetTypeMirror)
-    //                || types.isSubtype(tm, NavigableSetTypeMirror)) {
-    //            System.out.println("is it really a collection??? Or is it not??? " + tm + " => true");
-    //            return true;
-    //// }
-    //        System.out.println("is it really a collection??? Or is it not??? " + tm + " => false");
-    //        return false;
-    //    }
+    private boolean isSubType(AnnotationMirror a1, AnnotationMirror a2) {
+        boolean ret;
+        ret =
+                (types.isSameType(a1.getAnnotationType(), atypeFactory.DET.getAnnotationType())
+                                && types.isSameType(
+                                        a2.getAnnotationType(),
+                                        atypeFactory.DET.getAnnotationType())
+                        || types.isSameType(
+                                        a1.getAnnotationType(),
+                                        atypeFactory.ORDERNONDET.getAnnotationType())
+                                && types.isSameType(
+                                        a2.getAnnotationType(),
+                                        atypeFactory.ORDERNONDET.getAnnotationType())
+                        || types.isSameType(
+                                        a1.getAnnotationType(),
+                                        atypeFactory.NONDET.getAnnotationType())
+                                && types.isSameType(
+                                        a2.getAnnotationType(),
+                                        atypeFactory.NONDET.getAnnotationType()));
+        return (ret || atypeFactory.getQualifierHierarchy().isSubtype(a1, a2));
+    }
 
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         Set<AnnotationMirror> annos = type.getAnnotations();
-        if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class)))
+        if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
             checker.report(Result.failure(INVALID_ANNOTATION), tree);
-        return super.isValidUse(type, tree);
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -178,12 +133,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 && type.getComponentType().getAnnotations().size() > 0) {
             arrayType = type.getAnnotations().iterator().next();
             elementType = type.getComponentType().getAnnotations().iterator().next();
-            if (isAnnoSubType(arrayType, elementType)) {
+            if (!isSubType(elementType, arrayType)) {
                 checker.report(
                         Result.failure(INVALID_ANNOTATION_SUBTYPE, elementType, arrayType), tree);
+                return false;
             }
         }
-        return super.isValidUse(type, tree);
+        return true;
     }
 
     @Override
