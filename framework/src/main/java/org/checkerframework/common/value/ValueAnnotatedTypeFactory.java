@@ -2195,14 +2195,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return ((String) sequenceLiteralValue).length();
                 }
             }
-            Set<AnnotationMirror> lengthAnnos = getAnnotationsFromReceiver(expressionObj, tree);
 
-            lengthAnno = AnnotationUtils.getAnnotationByClass(lengthAnnos, ArrayLenRange.class);
+            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLenRange.class);
             if (lengthAnno == null) {
-                lengthAnno = AnnotationUtils.getAnnotationByClass(lengthAnnos, ArrayLen.class);
+                lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLen.class);
             }
             if (lengthAnno == null) {
-                lengthAnno = AnnotationUtils.getAnnotationByClass(lengthAnnos, StringVal.class);
+                lengthAnno = getAnnotationFromReceiver(expressionObj, tree, StringVal.class);
             }
         } catch (FlowExpressionParseException e) {
             // ignore parse errors
