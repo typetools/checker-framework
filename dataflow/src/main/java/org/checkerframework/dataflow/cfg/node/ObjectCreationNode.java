@@ -19,12 +19,18 @@ public class ObjectCreationNode extends Node {
     protected final NewClassTree tree;
     protected final Node constructor;
     protected final List<Node> arguments;
+    protected final ClassDeclarationNode classbody;
 
-    public ObjectCreationNode(NewClassTree tree, Node constructor, List<Node> arguments) {
+    public ObjectCreationNode(
+            NewClassTree tree,
+            Node constructor,
+            List<Node> arguments,
+            ClassDeclarationNode classbody) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.constructor = constructor;
         this.arguments = arguments;
+        this.classbody = classbody;
     }
 
     public Node getConstructor() {
@@ -37,6 +43,10 @@ public class ObjectCreationNode extends Node {
 
     public Node getArgument(int i) {
         return arguments.get(i);
+    }
+
+    public Node getClassBody() {
+        return classbody;
     }
 
     @Override
@@ -62,6 +72,11 @@ public class ObjectCreationNode extends Node {
             needComma = true;
         }
         sb.append(")");
+        if (classbody != null) {
+            // TODO: maybe this can be done nicer...
+            sb.append(" ");
+            sb.append(classbody.toString());
+        }
         return sb.toString();
     }
 
