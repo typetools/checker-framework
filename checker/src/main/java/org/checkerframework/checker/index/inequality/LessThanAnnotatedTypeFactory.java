@@ -165,23 +165,19 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns the minimum value of {@code expressions} at {@code tree}. */
     private long getMinValueFromString(String expression, Tree tree, TreePath path) {
         Receiver expressionRec;
+        ValueAnnotatedTypeFactory valueFactory = getValueAnnotatedTypeFactory();
         try {
-            expressionRec =
-                    getValueAnnotatedTypeFactory()
-                            .getReceiverFromJavaExpressionString(expression, path);
+            expressionRec = valueFactory.getReceiverFromJavaExpressionString(expression, path);
         } catch (FlowExpressionParseException e) {
             return Long.MIN_VALUE;
         }
+        Set<AnnotationMirror> annos = valueFactory.getAnnotationsFromReceiver(expressionRec, tree);
 
-        AnnotationMirror intRange =
-                getValueAnnotatedTypeFactory()
-                        .getAnnotationFromReceiver(expressionRec, tree, IntRange.class);
+        AnnotationMirror intRange = AnnotationUtils.getAnnotationByClass(annos, IntRange.class);
         if (intRange != null) {
             return ValueAnnotatedTypeFactory.getRange(intRange).from;
         }
-        AnnotationMirror intValue =
-                getValueAnnotatedTypeFactory()
-                        .getAnnotationFromReceiver(expressionRec, tree, IntVal.class);
+        AnnotationMirror intValue = AnnotationUtils.getAnnotationByClass(annos, IntVal.class);
         if (intValue != null) {
             List<Long> possibleValues = ValueAnnotatedTypeFactory.getIntValues(intValue);
             return Collections.min(possibleValues);
@@ -191,16 +187,15 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             FieldAccess fieldAccess = ((FieldAccess) expressionRec);
             if (fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY) {
                 // array.length might not be in the store, so check for the length of the array.
+                Set<AnnotationMirror> lengthAnnos =
+                        valueFactory.getAnnotationsFromReceiver(fieldAccess.getReceiver(), tree);
                 AnnotationMirror arrayRange =
-                        getValueAnnotatedTypeFactory()
-                                .getAnnotationFromReceiver(
-                                        fieldAccess.getReceiver(), tree, ArrayLenRange.class);
+                        AnnotationUtils.getAnnotationByClass(lengthAnnos, ArrayLenRange.class);
                 if (arrayRange != null) {
                     return ValueAnnotatedTypeFactory.getRange(arrayRange).from;
                 }
                 AnnotationMirror arrayLen =
-                        getValueAnnotatedTypeFactory()
-                                .getAnnotationFromReceiver(expressionRec, tree, ArrayLen.class);
+                        AnnotationUtils.getAnnotationByClass(lengthAnnos, ArrayLen.class);
                 if (arrayLen != null) {
                     List<Integer> possibleValues =
                             ValueAnnotatedTypeFactory.getArrayLength(arrayLen);

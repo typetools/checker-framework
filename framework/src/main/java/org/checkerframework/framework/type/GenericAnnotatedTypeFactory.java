@@ -42,6 +42,7 @@ import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
@@ -753,9 +754,9 @@ public abstract class GenericAnnotatedTypeFactory<
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
             throws FlowExpressionParseException {
 
-        FlowExpressions.Receiver expressionObj =
-                getReceiverFromJavaExpressionString(expression, path);
-        return getAnnotationFromReceiver(expressionObj, tree, clazz);
+        Receiver expressionObj = getReceiverFromJavaExpressionString(expression, path);
+        Set<AnnotationMirror> annotations = getAnnotationsFromReceiver(expressionObj, tree);
+        return AnnotationUtils.getAnnotationByClass(annotations, clazz);
     }
 
     /**
@@ -772,7 +773,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath currentPath)
             throws FlowExpressionParseException {
-        FlowExpressions.Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
+        Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
         Set<AnnotationMirror> annotations = getAnnotationsFromReceiver(rec, tree);
         if (annotations.size() == 1) {
             return annotations.iterator().next();
@@ -782,33 +783,13 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the primary annotation on a receiver.
-     *
-     * @param receiver the receiver for which the annotation is returned
-     * @param tree current tree
-     * @param clazz the Class of the annotation
-     * @return the annotation on expression or null if one does not exist
-     */
-    public AnnotationMirror getAnnotationFromReceiver(
-            FlowExpressions.Receiver receiver, Tree tree, Class<? extends Annotation> clazz) {
-        Set<AnnotationMirror> annotations = getAnnotationsFromReceiver(receiver, tree);
-        for (AnnotationMirror anm : annotations) {
-            if (AnnotationUtils.areSameByClass(anm, clazz)) {
-                return anm;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns the set of annotations on a receiver.
      *
      * @param receiver the receiver whose annotation is returned
      * @param tree current tree
      * @return a set containing the annotations on the receiver, or the empty set if none are found
      */
-    public Set<AnnotationMirror> getAnnotationsFromReceiver(
-            FlowExpressions.Receiver receiver, Tree tree) {
+    public Set<AnnotationMirror> getAnnotationsFromReceiver(Receiver receiver, Tree tree) {
         if (CFAbstractStore.canInsertReceiver(receiver)) {
             Store store = getStoreBefore(tree);
             Value value = store.getValue(receiver);
@@ -834,12 +815,11 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param currentPath location at which expression is evaluated
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
-    public FlowExpressions.Receiver getReceiverFromJavaExpressionString(
-            String expression, TreePath currentPath) throws FlowExpressionParseException {
+    public Receiver getReceiverFromJavaExpressionString(String expression, TreePath currentPath)
+            throws FlowExpressionParseException {
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
-        FlowExpressions.Receiver r =
-                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
+        Receiver r = FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         r,
