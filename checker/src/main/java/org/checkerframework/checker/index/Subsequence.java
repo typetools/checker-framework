@@ -65,11 +65,9 @@ public class Subsequence {
         if (hasSub == null) {
             return null;
         }
-        String from =
-                AnnotationUtils.getElementValueArray(hasSub, "from", String.class, false).get(0);
-        String to = AnnotationUtils.getElementValueArray(hasSub, "to", String.class, false).get(0);
-        String array =
-                AnnotationUtils.getElementValueArray(hasSub, "value", String.class, false).get(0);
+        String from = AnnotationUtils.getElementValue(hasSub, "from", String.class, false);
+        String to = AnnotationUtils.getElementValue(hasSub, "to", String.class, false);
+        String array = AnnotationUtils.getElementValue(hasSub, "value", String.class, false);
 
         if (context != null && currentPath != null) {
             from = standardizeAndViewpointAdapt(from, currentPath, context);

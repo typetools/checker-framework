@@ -46,9 +46,6 @@ import org.checkerframework.framework.qual.JavaExpression;
  * <p>For an example of how this annotation is used in practice, see the test GuavaPrimitives.java
  * in /checker/tests/index/.
  *
- * <p>Though this annotation technically permits its user to write multiple values in each of its
- * fields, writing more than one String to any of them is an error.
- *
  * <p>This annotation may only be written on fields.
  *
  * @checker_framework.manual #index-checker Index Checker
@@ -57,13 +54,13 @@ import org.checkerframework.framework.qual.JavaExpression;
 public @interface HasSubsequence {
     /* The name of the subsequence. */
     @JavaExpression
-    String[] value();
+    String value();
 
     /* The first valid index into the subsequence. */
     @JavaExpression
-    String[] from();
+    String from();
 
     /* The end of the subsequence. This value is *not* an index into the subsequence. */
     @JavaExpression
-    String[] to();
+    String to();
 }
