@@ -510,7 +510,7 @@ public interface List<E> extends Collection<E> {
      * @param o the object to be compared for equality with this list
      * @return <tt>true</tt> if the specified object is equal to this list
      */
-    @PolyDet("up") boolean equals(@PolyDet List<E> this, @PolyDet Object o);
+    @PolyDet("up") boolean equals(@PolyDet List<E> this, @PolyDet("up") Object o);
 
     /**
      * Returns the hash code value for this list.  The hash code of a list

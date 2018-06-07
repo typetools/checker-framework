@@ -294,7 +294,7 @@ public final class System {
     }
 
     private static synchronized
-    void setSecurityManager0(final @Det SecurityManager s) {
+    void setSecurityManager0(final SecurityManager s) {
         SecurityManager sm = getSecurityManager();
         if (sm != null) {
             // ask the currently installed security manager if we
@@ -531,7 +531,7 @@ public final class System {
      */
 
     private static Properties props;
-    private static native Properties initProperties(@NonDet Properties props);
+    private static native Properties initProperties(Properties props);
 
     /**
      * Determines the current system properties.
@@ -650,7 +650,7 @@ public final class System {
         return lineSeparator;
     }
 
-    private static @NonDet String lineSeparator;
+    private static String lineSeparator;
 
     /**
      * Sets the system properties to the <code>Properties</code>
@@ -835,7 +835,7 @@ public final class System {
         return (String) props.remove(key);
     }
 
-    private static void checkKey(@NonDet String key) {
+    private static void checkKey(String key) {
         if (key == null) {
             throw new NullPointerException("key can't be null");
         }
@@ -1141,7 +1141,7 @@ public final class System {
     /**
      * Create PrintStream for stdout/err based on encoding.
      */
-    private static @PolyDet PrintStream newPrintStream(@PolyDet FileOutputStream fos, @PolyDet String enc) {
+    private static PrintStream newPrintStream(FileOutputStream fos, String enc) {
        if (enc != null) {
             try {
                 return new PrintStream(new BufferedOutputStream(fos, 128), true, enc);

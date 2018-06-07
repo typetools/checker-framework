@@ -124,7 +124,7 @@ public class LinkedList<E>
     /**
      * Links e as first element.
      */
-    private void linkFirst(@PolyDet LinkedList<E> this, E e) {
+    private void linkFirst(E e) {
         final Node<E> f = first;
         final Node<E> newNode = new Node<>(null, e, f);
         first = newNode;
@@ -170,7 +170,7 @@ public class LinkedList<E>
     /**
      * Unlinks non-null first node f.
      */
-    private @PolyDet("up") E unlinkFirst(@PolyDet LinkedList<E> this, @PolyDet("use") Node<E> f) {
+    private E unlinkFirst(Node<E> f) {
         // assert f == first && f != null;
         final E element = f.item;
         final Node<E> next = f.next;
@@ -189,7 +189,7 @@ public class LinkedList<E>
     /**
      * Unlinks non-null last node l.
      */
-    private @PolyDet("up") E unlinkLast(@PolyDet LinkedList<E> this, @PolyDet("use") Node<E> l) {
+    private E unlinkLast(Node<E> l) {
         // assert l == last && l != null;
         final E element = l.item;
         final Node<E> prev = l.prev;
@@ -531,7 +531,7 @@ public class LinkedList<E>
     /**
      * Tells if the argument is the index of an existing element.
      */
-    private @PolyDet("down") boolean isElementIndex(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    private boolean isElementIndex(int index) {
         return index >= 0 && index < size;
     }
 
@@ -539,7 +539,7 @@ public class LinkedList<E>
      * Tells if the argument is the index of a valid position for an
      * iterator or an add operation.
      */
-    private @PolyDet("down") boolean isPositionIndex(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    private boolean isPositionIndex(int index) {
         return index >= 0 && index <= size;
     }
 
@@ -548,16 +548,16 @@ public class LinkedList<E>
      * Of the many possible refactorings of the error handling code,
      * this "outlining" performs best with both server and client VMs.
      */
-    private @PolyDet("down") String outOfBoundsMsg(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    private String outOfBoundsMsg(int index) {
         return "Index: "+index+", Size: "+size;
     }
 
-    private void checkElementIndex(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    private void checkElementIndex(int index) {
         if (!isElementIndex(index))
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
 
-    private void checkPositionIndex(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    private void checkPositionIndex(int index) {
         if (!isPositionIndex(index))
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
@@ -565,7 +565,7 @@ public class LinkedList<E>
     /**
      * Returns the (non-null) Node at the specified element index.
      */
-    @PolyDet("up") Node<E> node(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    Node<E> node(int index) {
         // assert isElementIndex(index);
 
         if (index < (size >> 1)) {
@@ -876,17 +876,17 @@ public class LinkedList<E>
         private int nextIndex;
         private int expectedModCount = modCount;
 
-        @PolyDet ListItr(@PolyDet int index) {
+        ListItr(int index) {
             // assert isPositionIndex(index);
             next = (index == size) ? null : node(index);
             nextIndex = index;
         }
 
-        public @PolyDet("down") boolean hasNext(@PolyDet ListItr this) {
+        public boolean hasNext() {
             return nextIndex < size;
         }
 
-        public @PolyDet("up") E next(@PolyDet ListItr this) {
+        public E next() {
             checkForComodification();
             if (!hasNext())
                 throw new NoSuchElementException();
@@ -897,11 +897,11 @@ public class LinkedList<E>
             return lastReturned.item;
         }
 
-        public @PolyDet("down") boolean hasPrevious(@PolyDet ListItr this) {
+        public boolean hasPrevious() {
             return nextIndex > 0;
         }
 
-        public @PolyDet("up") E previous(@PolyDet ListItr this) {
+        public E previous() {
             checkForComodification();
             if (!hasPrevious())
                 throw new NoSuchElementException();
@@ -911,15 +911,15 @@ public class LinkedList<E>
             return lastReturned.item;
         }
 
-        public @PolyDet("up") int nextIndex(@PolyDet ListItr this) {
+        public int nextIndex() {
             return nextIndex;
         }
 
-        public @PolyDet("up") int previousIndex(@PolyDet ListItr this) {
+        public int previousIndex() {
             return nextIndex - 1;
         }
 
-        public void remove(@PolyDet ListItr this) {
+        public void remove() {
             checkForComodification();
             if (lastReturned == null)
                 throw new IllegalStateException();
@@ -934,14 +934,14 @@ public class LinkedList<E>
             expectedModCount++;
         }
 
-        public void set(@PolyDet ListItr this, @PolyDet("use") E e) {
+        public void set(E e) {
             if (lastReturned == null)
                 throw new IllegalStateException();
             checkForComodification();
             lastReturned.item = e;
         }
 
-        public void add(@PolyDet ListItr this, @PolyDet("use") E e) {
+        public void add(E e) {
             checkForComodification();
             lastReturned = null;
             if (next == null)
@@ -952,7 +952,7 @@ public class LinkedList<E>
             expectedModCount++;
         }
 
-        public void forEachRemaining(@PolyDet ListItr this, @PolyDet("use") Consumer<? super E> action) {
+        public void forEachRemaining(Consumer<? super E> action) {
             Objects.requireNonNull(action);
             while (modCount == expectedModCount && nextIndex < size) {
                 action.accept(next.item);
@@ -993,19 +993,19 @@ public class LinkedList<E>
      */
     private class DescendingIterator implements Iterator<E> {
         private final ListItr itr = new ListItr(size());
-        public @PolyDet("down") boolean hasNext(@PolyDet DescendingIterator this) {
+        public boolean hasNext() {
             return itr.hasPrevious();
         }
-        public @PolyDet("up") E next(@PolyDet DescendingIterator this) {
+        public E next() {
             return itr.previous();
         }
-        public void remove(@PolyDet DescendingIterator this) {
+        public void remove() {
             itr.remove();
         }
     }
 
     @SuppressWarnings("unchecked")
-    private @PolyDet LinkedList<E> superClone(@PolyDet LinkedList<E> this) {
+    private LinkedList<E> superClone() {
         try {
             return (LinkedList<E>) super.clone();
         } catch (CloneNotSupportedException e) {
@@ -1120,7 +1120,7 @@ public class LinkedList<E>
      *             contains) is emitted (int), followed by all of its
      *             elements (each an Object) in the proper order.
      */
-    private void writeObject(@PolyDet LinkedList<E> this, java.io.@PolyDet("use") ObjectOutputStream s)
+    private void writeObject(java.io.ObjectOutputStream s)
         throws java.io.IOException {
         // Write out any hidden serialization magic
         s.defaultWriteObject();
@@ -1138,7 +1138,7 @@ public class LinkedList<E>
      * (that is, deserializes it).
      */
     @SuppressWarnings("unchecked")
-    private void readObject(@PolyDet LinkedList<E> this, java.io.@PolyDet("use") ObjectInputStream s)
+    private void readObject(java.io.ObjectInputStream s)
         throws java.io.IOException, ClassNotFoundException {
         // Read in any hidden serialization magic
         s.defaultReadObject();
@@ -1182,13 +1182,13 @@ public class LinkedList<E>
         int expectedModCount; // initialized when est set
         int batch;            // batch size for splits
 
-        @PolyDet LLSpliterator(@PolyDet LinkedList<E> list, @PolyDet int est, @PolyDet int expectedModCount) {
+        LLSpliterator(LinkedList<E> list, int est, int expectedModCount) {
             this.list = list;
             this.est = est;
             this.expectedModCount = expectedModCount;
         }
 
-        final @PolyDet("down") int getEst(@PolyDet LLSpliterator<E> this) {
+        final int getEst(LLSpliterator<E> this) {
             int s; // force initialization
             final LinkedList<E> lst;
             if ((s = est) < 0) {
@@ -1203,9 +1203,9 @@ public class LinkedList<E>
             return s;
         }
 
-        public @PolyDet("down") long estimateSize(@PolyDet LLSpliterator<E> this) { return (long) getEst(); }
+        public long estimateSize() { return (long) getEst(); }
 
-        public @PolyDet Spliterator<E> trySplit(@PolyDet LLSpliterator<E> this) {
+        public Spliterator<E> trySplit() {
             Node<E> p;
             int s = getEst();
             if (s > 1 && (p = current) != null) {
@@ -1225,7 +1225,7 @@ public class LinkedList<E>
             return null;
         }
 
-        public void forEachRemaining(@PolyDet LLSpliterator<E> this, @PolyDet("use") Consumer<? super E> action) {
+        public void forEachRemaining(Consumer<? super E> action) {
             Node<E> p; int n;
             if (action == null) throw new NullPointerException();
             if ((n = getEst()) > 0 && (p = current) != null) {
@@ -1241,7 +1241,7 @@ public class LinkedList<E>
                 throw new ConcurrentModificationException();
         }
 
-        public @PolyDet("down") boolean tryAdvance(@PolyDet LLSpliterator<E> this, @PolyDet("use") Consumer<? super E> action) {
+        public boolean tryAdvance(Consumer<? super E> action) {
             Node<E> p;
             if (action == null) throw new NullPointerException();
             if (getEst() > 0 && (p = current) != null) {
@@ -1256,7 +1256,7 @@ public class LinkedList<E>
             return false;
         }
 
-        public @PolyDet("down") int characteristics(@PolyDet LLSpliterator<E> this) {
+        public int characteristics() {
             return Spliterator.ORDERED | Spliterator.SIZED | Spliterator.SUBSIZED;
         }
     }

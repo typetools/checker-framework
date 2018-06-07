@@ -107,7 +107,7 @@ class Random implements java.io.Serializable {
         this(seedUniquifier() ^ System.nanoTime());
     }
 
-    private static @NonDet long seedUniquifier() {
+    private static long seedUniquifier() {
         // L'Ecuyer, "Tables of Linear Congruential Generators of
         // Different Sizes and Good Lattice Structure", 1999
         for (;;) {
@@ -118,7 +118,7 @@ class Random implements java.io.Serializable {
         }
     }
 
-    private static final @NonDet AtomicLong seedUniquifier
+    private static final AtomicLong seedUniquifier
         = new AtomicLong(8682522807148012L);
 
     /**
@@ -144,7 +144,7 @@ class Random implements java.io.Serializable {
         }
     }
 
-    private static @NonDet long initialScramble(@PolyDet long seed) {
+    private static long initialScramble(long seed) {
         return (seed ^ multiplier) & mask;
     }
 
@@ -1003,28 +1003,28 @@ class Random implements java.io.Serializable {
         final long fence;
         final int origin;
         final int bound;
-        @NonDet RandomIntsSpliterator(@PolyDet Random rng, @PolyDet long index, @PolyDet long fence,
-                              @PolyDet int origin, @PolyDet int bound) {
+        RandomIntsSpliterator(Random rng, long index, long fence,
+                              int origin, int bound) {
             this.rng = rng; this.index = index; this.fence = fence;
             this.origin = origin; this.bound = bound;
         }
 
-        public @NonDet RandomIntsSpliterator trySplit() {
+        public RandomIntsSpliterator trySplit() {
             long i = index, m = (i + fence) >>> 1;
             return (m <= i) ? null :
                    new RandomIntsSpliterator(rng, i, index = m, origin, bound);
         }
 
-        public @NonDet long estimateSize(@PolyDet RandomIntsSpliterator this) {
+        public long estimateSize() {
             return fence - index;
         }
 
-        public @NonDet int characteristics(@PolyDet RandomIntsSpliterator this) {
+        public int characteristics() {
             return (Spliterator.SIZED | Spliterator.SUBSIZED |
                     Spliterator.NONNULL | Spliterator.IMMUTABLE);
         }
 
-        public @NonDet boolean tryAdvance(@PolyDet RandomIntsSpliterator this, @PolyDet IntConsumer consumer) {
+        public boolean tryAdvance(IntConsumer consumer) {
             if (consumer == null) throw new NullPointerException();
             long i = index, f = fence;
             if (i < f) {
@@ -1035,7 +1035,7 @@ class Random implements java.io.Serializable {
             return false;
         }
 
-        public void forEachRemaining(@PolyDet RandomIntsSpliterator this, @PolyDet IntConsumer consumer) {
+        public void forEachRemaining(IntConsumer consumer) {
             if (consumer == null) throw new NullPointerException();
             long i = index, f = fence;
             if (i < f) {
@@ -1058,28 +1058,28 @@ class Random implements java.io.Serializable {
         final long fence;
         final long origin;
         final long bound;
-        @NonDet RandomLongsSpliterator(@PolyDet Random rng, @PolyDet long index, @PolyDet long fence,
-                                       @PolyDet long origin, @PolyDet long bound) {
+        RandomLongsSpliterator(Random rng, long index, long fence,
+                                       long origin, long bound) {
             this.rng = rng; this.index = index; this.fence = fence;
             this.origin = origin; this.bound = bound;
         }
 
-        public @NonDet RandomLongsSpliterator trySplit(@PolyDet RandomLongsSpliterator this) {
+        public RandomLongsSpliterator trySplit() {
             long i = index, m = (i + fence) >>> 1;
             return (m <= i) ? null :
                    new RandomLongsSpliterator(rng, i, index = m, origin, bound);
         }
 
-        public @NonDet long estimateSize(@PolyDet RandomLongsSpliterator this) {
+        public long estimateSize() {
             return fence - index;
         }
 
-        public @NonDet int characteristics(@PolyDet RandomLongsSpliterator this) {
+        public int characteristics() {
             return (Spliterator.SIZED | Spliterator.SUBSIZED |
                     Spliterator.NONNULL | Spliterator.IMMUTABLE);
         }
 
-        public @NonDet boolean tryAdvance(@PolyDet RandomLongsSpliterator this, @PolyDet LongConsumer consumer) {
+        public boolean tryAdvance(LongConsumer consumer) {
             if (consumer == null) throw new NullPointerException();
             long i = index, f = fence;
             if (i < f) {
@@ -1090,7 +1090,7 @@ class Random implements java.io.Serializable {
             return false;
         }
 
-        public void forEachRemaining(@PolyDet RandomLongsSpliterator this, @PolyDet LongConsumer consumer) {
+        public void forEachRemaining(LongConsumer consumer) {
             if (consumer == null) throw new NullPointerException();
             long i = index, f = fence;
             if (i < f) {
@@ -1114,28 +1114,28 @@ class Random implements java.io.Serializable {
         final long fence;
         final double origin;
         final double bound;
-        @NonDet RandomDoublesSpliterator(@PolyDet Random rng, @PolyDet long index, @PolyDet long fence,
-                                         @PolyDet double origin, @PolyDet double bound) {
+        RandomDoublesSpliterator(Random rng, long index, long fence,
+                                         double origin, double bound) {
             this.rng = rng; this.index = index; this.fence = fence;
             this.origin = origin; this.bound = bound;
         }
 
-        public @NonDet RandomDoublesSpliterator trySplit(@PolyDet RandomDoublesSpliterator this) {
+        public RandomDoublesSpliterator trySplit(@PolyDet RandomDoublesSpliterator this) {
             long i = index, m = (i + fence) >>> 1;
             return (m <= i) ? null :
                    new RandomDoublesSpliterator(rng, i, index = m, origin, bound);
         }
 
-        public @NonDet long estimateSize(@PolyDet RandomDoublesSpliterator this) {
+        public long estimateSize() {
             return fence - index;
         }
 
-        public @NonDet int characteristics(@PolyDet RandomDoublesSpliterator this) {
+        public int characteristics() {
             return (Spliterator.SIZED | Spliterator.SUBSIZED |
                     Spliterator.NONNULL | Spliterator.IMMUTABLE);
         }
 
-        public @NonDet boolean tryAdvance(@PolyDet RandomDoublesSpliterator this, @PolyDet DoubleConsumer consumer) {
+        public boolean tryAdvance(DoubleConsumer consumer) {
             if (consumer == null) throw new NullPointerException();
             long i = index, f = fence;
             if (i < f) {
@@ -1146,7 +1146,7 @@ class Random implements java.io.Serializable {
             return false;
         }
 
-        public void forEachRemaining(@PolyDet RandomDoublesSpliterator this, @PolyDet DoubleConsumer consumer) {
+        public void forEachRemaining(DoubleConsumer consumer) {
             if (consumer == null) throw new NullPointerException();
             long i = index, f = fence;
             if (i < f) {
@@ -1170,7 +1170,7 @@ class Random implements java.io.Serializable {
      * @serialField      haveNextNextGaussian boolean
      *              nextNextGaussian is valid
      */
-    private static final @NonDet ObjectStreamField[] serialPersistentFields = {
+    private static final ObjectStreamField[] serialPersistentFields = {
         new ObjectStreamField("seed", Long.TYPE),
         new ObjectStreamField("nextNextGaussian", Double.TYPE),
         new ObjectStreamField("haveNextNextGaussian", Boolean.TYPE)
@@ -1180,7 +1180,7 @@ class Random implements java.io.Serializable {
      * Reconstitute the {@code Random} instance from a stream (that is,
      * deserialize it).
      */
-    private void readObject(@PolyDet Random this, java.io.@PolyDet ObjectInputStream s)
+    private void readObject(java.io.ObjectInputStream s)
         throws java.io.IOException, ClassNotFoundException {
 
         ObjectInputStream.GetField fields = s.readFields();
@@ -1199,7 +1199,7 @@ class Random implements java.io.Serializable {
     /**
      * Save the {@code Random} instance to a stream.
      */
-    synchronized private void writeObject(@PolyDet Random this, @PolyDet ObjectOutputStream s)
+    synchronized private void writeObject(ObjectOutputStream s)
         throws IOException {
 
         // set the values of the Serializable fields
@@ -1223,7 +1223,7 @@ class Random implements java.io.Serializable {
                 (Random.class.getDeclaredField("seed"));
         } catch (Exception ex) { throw new Error(ex); }
     }
-    private void resetSeed(@PolyDet Random this, @PolyDet long seedVal) {
+    private void resetSeed(long seedVal) {
         unsafe.putObjectVolatile(this, seedOffset, new AtomicLong(seedVal));
     }
 }
