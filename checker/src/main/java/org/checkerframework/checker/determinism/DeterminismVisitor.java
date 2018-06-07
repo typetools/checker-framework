@@ -91,22 +91,22 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     private boolean isSubType(AnnotationMirror a1, AnnotationMirror a2) {
         boolean ret;
         ret =
-                (types.isSameType(a1.getAnnotationType(), atypeFactory.DET.getAnnotationType())
+                ((types.isSameType(a1.getAnnotationType(), atypeFactory.DET.getAnnotationType())
                                 && types.isSameType(
                                         a2.getAnnotationType(),
-                                        atypeFactory.DET.getAnnotationType())
-                        || types.isSameType(
+                                        atypeFactory.DET.getAnnotationType()))
+                        || (types.isSameType(
                                         a1.getAnnotationType(),
                                         atypeFactory.ORDERNONDET.getAnnotationType())
                                 && types.isSameType(
                                         a2.getAnnotationType(),
-                                        atypeFactory.ORDERNONDET.getAnnotationType())
-                        || types.isSameType(
+                                        atypeFactory.ORDERNONDET.getAnnotationType()))
+                        || (types.isSameType(
                                         a1.getAnnotationType(),
                                         atypeFactory.NONDET.getAnnotationType())
                                 && types.isSameType(
                                         a2.getAnnotationType(),
-                                        atypeFactory.NONDET.getAnnotationType()));
+                                        atypeFactory.NONDET.getAnnotationType())));
         return (ret || atypeFactory.getQualifierHierarchy().isSubtype(a1, a2));
     }
 
