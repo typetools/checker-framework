@@ -83,6 +83,7 @@ fully-qualified type name?
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
+\\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
 \\ \ref{faq-jml}: How does pluggable type-checking compare with JML?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
@@ -1522,7 +1523,7 @@ and that is what the Eclipse documentation recommends.
 
 Eclipse assumes by default that all code is multi-threaded, which cripples its local
 type inference.  (This default can be turned off, however.)
-By contrast, the Checker Framework allows the user to
+The Checker Framework allows the user to
 specify whether code will be run concurrently or not via the
 \<-AconcurrentSemantics> command-line option (see
 Section~\ref{faq-concurrency}).
@@ -1544,6 +1545,19 @@ Its IDE integration is tighter and slicker.
 
 (If you know of other differences, please let us know at
 checker-framework-dev@googlegroups.com so we can update the manual.)
+
+
+\subsection{How does the Checker Framework compare with NullAway?\label{faq-nullaway}}
+
+\href{https://github.com/uber/NullAway}{NullAway} is a lightweight, unsound
+type-checker whose aim is similar to that of the Nullness Checker
+(\chapterpageref{nullness-checker}).  For both tools, the user writes
+nullness annotations, and then the tool checks them.
+
+NullAway is unsound:  even if NullAway issues no warnings, your code might
+crash with a null pointer exception.  NullAway ignores generics, for example.
+
+However, NullAway is faster than the Nullness Checker and may require fewer annotations.
 
 
 \subsection{How does the Checker Framework compare with the JDK's \<Optional> type?\label{faq-optional}}
