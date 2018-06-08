@@ -206,6 +206,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             ValueAnnotatedTypeFactory.getArrayLength(arrayLen);
                     return Collections.min(possibleValues);
                 }
+                // Even arrays that we know nothing about must have at least zero length.
+                return 0;
             }
         }
 
