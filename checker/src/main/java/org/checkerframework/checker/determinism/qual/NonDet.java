@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * An expression of type {@code @NonDet} may exvaluate to different values on different executions.
+ * An expression of type {@code @NonDet} may evaluate to different values on different executions.
  *
  * @checker_framework.manual #determinism-checker Determinism Checker
  */

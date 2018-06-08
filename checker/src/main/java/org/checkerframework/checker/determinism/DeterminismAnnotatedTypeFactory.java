@@ -18,22 +18,14 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    //public class DeterminismAnnotatedTypeFactory
-    //        extends InitializationAnnotatedTypeFactory<
-    //        DeterminismValue, DeterminismStore, DeterminismTransfer, DeterminismAnalysis> {
     public final AnnotationMirror POLYDET, POLYDET_USE;
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
-
-    //    public final ExecutableElement polyValueElement;
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -45,12 +37,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         builder2.setValue("value", "");
         POLYDET = builder2.build();
         postInit();
-        //        polyValueElement =
-        //                TreeUtils.getMethod(
-        //                        org.checkerframework.checker.determinism.qual.PolyDet.class.getName(),
-        //                        "value",
-        //                        0,
-        //                        processingEnv);
     }
 
     @Override
@@ -69,19 +55,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new LinkedHashSet<>(
                 Arrays.asList(Det.class, OrderNonDet.class, NonDet.class, PolyDet.class));
     }
-
-    //    @Override
-    //    public AnnotationMirror getFieldInvariantAnnotation() {
-    //        return DET;
-    //    }
-    //
-    //    @Override
-    //    protected boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type) {
-    //        AnnotationMirror invariant = getFieldInvariantAnnotation();
-    //        Set<AnnotationMirror> lowerBounds =
-    //                AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);
-    //        return AnnotationUtils.containsSame(lowerBounds, invariant);
-    //    }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
@@ -123,11 +96,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, p);
             }
             return super.visitMethodInvocation(node, p);
-        }
-
-        @Override
-        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
-            return super.visitMethod(node, p);
         }
     }
 

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression of type {@code @OrderNonDet} exvaluates to a collection containing the same values
+ * An expression of type {@code @OrderNonDet} evaluates to a collection containing the same values
  * on all executions. However, the iteration order may differ across executions. Non-collections may
  * not be annotated with this type.
  *
