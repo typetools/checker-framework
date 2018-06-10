@@ -75,6 +75,7 @@ public class NumberUtils {
                 return range.byteRange();
             case LONG:
             case CHAR:
+                return range.charRange();
             case FLOAT:
             case DOUBLE:
                 return range;

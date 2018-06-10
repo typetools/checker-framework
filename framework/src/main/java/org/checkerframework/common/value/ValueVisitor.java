@@ -236,6 +236,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
                 return p;
             }
+            if (castType.getKind() == TypeKind.CHAR && castRange.isCharEverything()) {
+                return p;
+            }
             if (castType.getKind() == TypeKind.INT && castRange.isIntEverything()) {
                 return p;
             }
@@ -253,6 +256,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         break;
                     case SHORT:
                         exprRange = exprRange.shortRange();
+                        break;
+                    case CHAR:
+                        exprRange = exprRange.charRange();
                         break;
                     case INT:
                         exprRange = exprRange.intRange();
