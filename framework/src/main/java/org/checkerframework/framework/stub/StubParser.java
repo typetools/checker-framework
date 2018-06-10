@@ -35,6 +35,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
@@ -1418,6 +1419,14 @@ public class StubParser {
             return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+        } else if (expr instanceof UnaryExpr) {
+            if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
+                int value = Integer.parseInt(expr.toString());
+                return convert(value, valueKind);
+            } else {
+                stubWarn("Unexpected annotation expression: " + expr);
+                return null;
+            }
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();
