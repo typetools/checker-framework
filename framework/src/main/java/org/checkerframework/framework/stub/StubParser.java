@@ -1423,9 +1423,6 @@ public class StubParser {
             if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
                 int value = Integer.parseInt(expr.toString());
                 return convert(value, valueKind);
-            } else {
-                stubWarn("Unexpected annotation expression: " + expr);
-                return null;
             }
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
@@ -1443,10 +1440,9 @@ public class StubParser {
         } else if (expr instanceof NullLiteralExpr) {
             stubWarn("Null found as value for %s. Null isn't allowed as an annotation value", name);
             return null;
-        } else {
-            stubWarn("Unexpected annotation expression: " + expr);
-            return null;
         }
+        stubWarn("Unexpected annotation expression: " + expr);
+        return null;
     }
 
     /**
