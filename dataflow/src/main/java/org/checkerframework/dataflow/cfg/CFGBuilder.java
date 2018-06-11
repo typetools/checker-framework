@@ -3390,19 +3390,9 @@ public class CFGBuilder {
         @Override
         public Node visitClass(ClassTree tree, Void p) {
             declaredClasses.add(tree);
-            // visitNewClass creates a Node for anonymous classes.
-            return null;
-            // TODO: also create Node for local class declarations.
-            // See false positive in
-            // checker/tests/nullness/java8/lambda/FinalLocalVariables.java
-            // Doing this currently creates other false positives in the
-            // field initialization logic, e.g. in
-            // checker/tests/nullness/KeyFors.java
-            //
-            // declaredClasses.add(tree);
-            // Node classbody = new ClassDeclarationNode(tree);
-            // extendWithNode(classbody);
-            // return classbody;
+            Node classbody = new ClassDeclarationNode(tree);
+            extendWithNode(classbody);
+            return classbody;
         }
 
         @Override
@@ -4097,20 +4087,9 @@ public class CFGBuilder {
             // See Issue 890.
             Node constructorNode = scan(tree.getIdentifier(), p);
 
-            // handle anonymous classes here and not in visitClass.
-            ClassDeclarationNode classbody;
-            {
-                ClassTree ct = tree.getClassBody();
-                if (ct != null) {
-                    declaredClasses.add(ct);
-                    classbody = new ClassDeclarationNode(ct);
-                    extendWithNode(classbody);
-                } else {
-                    classbody = null;
-                }
-            }
-            // TODO: all this logic should be in visitClass.
-            // ClassDeclarationNode classbody = scan(tree.getClassBody(), p);
+            // Handle anonymous classes in visitClass.
+            // Note that getClassBody() and therefore classbody can be null.
+            ClassDeclarationNode classbody = (ClassDeclarationNode) scan(tree.getClassBody(), p);
 
             Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
 
