@@ -1421,12 +1421,14 @@ public class StubParser {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
         } else if (expr instanceof UnaryExpr) {
             if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
-            	Expression subexpr = ((UnaryExpr) expr).getExpression();
-            	if (subexpr instanceof IntegerLiteralExpr) {
-            		return convert(-1 * ((IntegerLiteralExpr) subexpr).asInt(), valueKind);
-            	} else if (subexpr instanceof LongLiteralExpr) {
-            		return convert(-1 * ((LongLiteralExpr) subexpr).asLong(), valueKind);
-            	}
+                Expression subexpr = ((UnaryExpr) expr).getExpression();
+                if (subexpr instanceof IntegerLiteralExpr) {
+                    return convert(-1 * ((IntegerLiteralExpr) subexpr).asInt(), valueKind);
+                } else if (subexpr instanceof LongLiteralExpr) {
+                    return convert(-1 * ((LongLiteralExpr) subexpr).asLong(), valueKind);
+                } else if (subexpr instanceof DoubleLiteralExpr) {
+                    return -1 * ((DoubleLiteralExpr) subexpr).asDouble();
+                }
             }
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
