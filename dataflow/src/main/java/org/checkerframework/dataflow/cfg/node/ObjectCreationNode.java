@@ -4,6 +4,7 @@ import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -19,13 +20,15 @@ public class ObjectCreationNode extends Node {
     protected final NewClassTree tree;
     protected final Node constructor;
     protected final List<Node> arguments;
-    protected final ClassDeclarationNode classbody;
+
+    // Class body for anonymous classes, otherwise null.
+    protected final @Nullable ClassDeclarationNode classbody;
 
     public ObjectCreationNode(
             NewClassTree tree,
             Node constructor,
             List<Node> arguments,
-            ClassDeclarationNode classbody) {
+            @Nullable ClassDeclarationNode classbody) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.constructor = constructor;
@@ -45,7 +48,7 @@ public class ObjectCreationNode extends Node {
         return arguments.get(i);
     }
 
-    public Node getClassBody() {
+    public @Nullable Node getClassBody() {
         return classbody;
     }
 
