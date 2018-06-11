@@ -66,9 +66,6 @@ class LambdaEnclosing {
                             FunctionLE<String, String> f2 =
                                     s2 -> {
                                         local1.toString();
-                                        // TODO: it should be safe to also
-                                        // preserve store into inner classes.
-                                        // :: error: (dereference.of.nullable)
                                         local2.toString();
                                         local3.toString();
                                         // :: error: (dereference.of.nullable)
