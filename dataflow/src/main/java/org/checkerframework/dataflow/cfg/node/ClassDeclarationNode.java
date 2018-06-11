@@ -9,9 +9,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * A node representing a class declaration that occurs within a method, for example, an anonymous
  * class declaration. In contrast to a top-level class declaration, such a declaration has an
  * initialization store that contains captured variables.
- *
- * <p>TODO: currently only used for anonymous classes. Should also be used for classes within
- * methods, etc.
  */
 public class ClassDeclarationNode extends Node {
 
