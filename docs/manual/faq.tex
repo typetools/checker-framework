@@ -83,6 +83,7 @@ fully-qualified type name?
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
+\\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
 \\ \ref{faq-jml}: How does pluggable type-checking compare with JML?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
@@ -1522,7 +1523,7 @@ and that is what the Eclipse documentation recommends.
 
 Eclipse assumes by default that all code is multi-threaded, which cripples its local
 type inference.  (This default can be turned off, however.)
-By contrast, the Checker Framework allows the user to
+The Checker Framework allows the user to
 specify whether code will be run concurrently or not via the
 \<-AconcurrentSemantics> command-line option (see
 Section~\ref{faq-concurrency}).
@@ -1546,45 +1547,28 @@ Its IDE integration is tighter and slicker.
 checker-framework-dev@googlegroups.com so we can update the manual.)
 
 
+\subsection{How does the Checker Framework compare with NullAway?\label{faq-nullaway}}
+
+\href{https://github.com/uber/NullAway}{NullAway} is a lightweight, unsound
+type-checker whose aim is similar to that of the Nullness Checker
+(\chapterpageref{nullness-checker}).  For both tools, the user writes
+nullness annotations, and then the tool checks them.
+
+NullAway is unsound:  even if NullAway issues no warnings, your code might
+crash with a null pointer exception.  NullAway ignores generics, for example.
+
+However, NullAway is faster than the Nullness Checker and may require fewer annotations.
+
+
 \subsection{How does the Checker Framework compare with the JDK's \<Optional> type?\label{faq-optional}}
 
 JDK 8 introduced the \sunjavadoc{java/util/Optional.html}{\code{Optional}}
 class, a container that is either empty or contains a non-null value.
+The Optional Checker (see Chapter~\ref{optional-checker}) guarantees that
+programmers use \<Optional> correctly.
 
-\<Optional> has numerous problems without countervailing benefits.
-\<Optional> does not make your code more correct or robust. There is a real
-problem that \<Optional> tries to solve, but you are better off using a
-regular possibly-null Java reference and the Nullness Checker
-(see~\chapterpageref{nullness-checker}), rather than using Optional.
-
-The \<Optional> class does \emph{not} solve the problem of null pointer
-exceptions.  Changing your code to use the \<Optional> class has these effects:
-
-\begin{itemize}
-\item
-It transforms a \<NullPointerException> into a \<NoSuchElementException>,
-which still crashes your program.
-\item
-It creates new problems that were not a danger before.
-\item
-It clutters your code.
-\item
-It adds both space and time overheads.
-\item
-It does not address important sources of null pointer exceptions, such as
-partially-initialized objects and calls to \<Map.get>.
-\end{itemize}
-
-See the article
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
-  is better than Java's \<Optional> class''} for more details and
-explanation of the
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
-
-The \<Optional> class provides utility routines to reduce clutter when
-using \<Optional>.  The Nullness Checker provides an
-\refclass{checker/nullness}{Opt} class that provides all the same methods,
-but written for regular possibly-null Java references.
+Section~\ref{nullness-vs-optional} explains the relationship between
+nullness and \<Optional> and the benefits of each.
 
 
 \subsection{How does pluggable type-checking compare with JML?\label{faq-jml}}

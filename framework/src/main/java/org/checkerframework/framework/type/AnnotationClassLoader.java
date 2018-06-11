@@ -494,8 +494,7 @@ public class AnnotationClassLoader {
             // open up the directory
             File packageDir = new File(resourceURL.getFile());
             annotationNames =
-                    getAnnotationNamesFromDirectory(
-                            packageName + DOT, resourceURL.getFile(), packageDir);
+                    getAnnotationNamesFromDirectory(packageName + DOT, packageDir, packageDir);
         } else {
             // We do not support a resource URL with any other protocols, so create an empty set.
             annotationNames = Collections.emptySet();
@@ -580,7 +579,7 @@ public class AnnotationClassLoader {
     public final Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(
             final String dirName) {
         File rootDirectory = new File(dirName);
-        Set<String> annoNames = getAnnotationNamesFromDirectory("", dirName, rootDirectory);
+        Set<String> annoNames = getAnnotationNamesFromDirectory("", rootDirectory, rootDirectory);
         return loadAnnotationClasses(annoNames);
     }
 
@@ -589,7 +588,7 @@ public class AnnotationClassLoader {
      * retrieves annotation names from sub-directories.
      *
      * @param packageName a string storing the name of the package that contains the qual package
-     * @param rootDirectory a string storing the absolute path of the root directory of a set of
+     * @param rootDirectory a {@link File} object representing the root directory of a set of
      *     annotations, which is subtracted from class names to retrieve each class's fully
      *     qualified class names
      * @param currentDirectory a {@link File} object representing the current sub-directory of the
@@ -598,8 +597,11 @@ public class AnnotationClassLoader {
      *     in the root directory or its sub-directories
      */
     private final Set<String> getAnnotationNamesFromDirectory(
-            final String packageName, final String rootDirectory, final File currentDirectory) {
+            final String packageName, final File rootDirectory, final File currentDirectory) {
         Set<String> results = new LinkedHashSet<>();
+
+        // Full path to root directory
+        String rootPath = rootDirectory.getAbsolutePath();
 
         // check every file and directory within the current directory
         File[] directoryContents = currentDirectory.listFiles();
@@ -625,9 +627,9 @@ public class AnnotationClassLoader {
                         fullFileName.substring(0, fullFileName.lastIndexOf(File.separator));
                 // Package name beginning with "qual"
                 String qualPackageName = "";
-                if (!filePath.equals(rootDirectory)) {
+                if (!filePath.equals(rootPath)) {
                     qualPackageName =
-                            filePath.substring(rootDirectory.length() + 1, filePath.length())
+                            filePath.substring(rootPath.length() + 1, filePath.length())
                                             .replace(SLASH, DOT)
                                     + DOT;
                 }
