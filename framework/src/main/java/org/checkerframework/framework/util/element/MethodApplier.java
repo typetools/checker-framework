@@ -77,7 +77,12 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
             TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
             TargetType.METHOD_TYPE_PARAMETER,
             TargetType.METHOD_TYPE_PARAMETER_BOUND,
-            TargetType.METHOD_FORMAL_PARAMETER
+            TargetType.METHOD_FORMAL_PARAMETER,
+            // TODO: from generic anonymous classes; is this desired or
+            // a regression in javac 9? This annotation should only be
+            // on the anonymous class declaration, not on the method that
+            // contains the anonymous class instantiation.
+            TargetType.CLASS_EXTENDS
         };
     }
 
