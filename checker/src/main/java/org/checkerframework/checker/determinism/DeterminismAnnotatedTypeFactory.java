@@ -39,6 +39,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         postInit();
     }
 
+
     @Override
     public QualifierPolymorphism createQualifierPolymorphism() {
         return new DeterminismQualifierPolymorphism(processingEnv, this);
@@ -107,7 +108,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && node.getParameters().size() == 1
                     && node.getParameters().get(0).getType().toString().equals("String[]")
                     && node.getModifiers().toString().contains("public static")) {
-
                 ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
                 AnnotatedTypeMirror.AnnotatedArrayType annotatedType =
                         (AnnotatedTypeMirror.AnnotatedArrayType)
