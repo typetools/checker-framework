@@ -319,7 +319,7 @@ public abstract class AbstractType {
             return type;
         } else {
             for (AnnotatedTypeMirror superType : this.getAnnotatedType().directSuperTypes()) {
-                AnnotatedTypeMirror arrayType = mostSpecificArrayType(type);
+                AnnotatedTypeMirror arrayType = mostSpecificArrayType(superType);
                 if (arrayType != null) {
                     return arrayType;
                 }
