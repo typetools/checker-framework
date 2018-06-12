@@ -42,6 +42,7 @@ import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
@@ -753,8 +754,7 @@ public abstract class GenericAnnotatedTypeFactory<
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
             throws FlowExpressionParseException {
 
-        FlowExpressions.Receiver expressionObj =
-                getReceiverFromJavaExpressionString(expression, path);
+        Receiver expressionObj = getReceiverFromJavaExpressionString(expression, path);
         return getAnnotationFromReceiver(expressionObj, tree, clazz);
     }
     /**
@@ -764,11 +764,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param tree current tree
      * @param clazz the Class of the annotation
      * @return the annotation on expression or null if one does not exist
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
     public AnnotationMirror getAnnotationFromReceiver(
-            FlowExpressions.Receiver receiver, Tree tree, Class<? extends Annotation> clazz)
-            throws FlowExpressionParseException {
+            Receiver receiver, Tree tree, Class<? extends Annotation> clazz) {
 
         AnnotationMirror annotationMirror = null;
         if (CFAbstractStore.canInsertReceiver(receiver)) {
@@ -779,6 +777,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
+        // If the specific annotation wasn't in the store, look in the type factory.
         if (annotationMirror == null) {
             if (receiver instanceof LocalVariable) {
                 Element ele = ((LocalVariable) receiver).getElement();
@@ -798,12 +797,11 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param currentPath location at which expression is evaluated
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
-    public FlowExpressions.Receiver getReceiverFromJavaExpressionString(
-            String expression, TreePath currentPath) throws FlowExpressionParseException {
+    public Receiver getReceiverFromJavaExpressionString(String expression, TreePath currentPath)
+            throws FlowExpressionParseException {
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
-        FlowExpressions.Receiver r =
-                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
+        Receiver r = FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         r,
@@ -811,6 +809,32 @@ public abstract class GenericAnnotatedTypeFactory<
                         this.getContext());
 
         return FlowExpressionParseUtil.parse(expression, context, currentPath, true);
+    }
+
+    /**
+     * Returns the annotation mirror from dataflow for {@code expression}.
+     *
+     * <p>This will output a different annotation than {@link
+     * #getAnnotationFromJavaExpressionString(String, Tree, TreePath, Class)}, because if the
+     * specified annotation isn't found in the store, the type from the factory is used.
+     *
+     * @param expression a Java expression
+     * @param tree the tree at the location to parse the expression
+     * @param currentPath location at which expression is evaluated
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @return an AnnotationMirror representing the type in the store at the given location from
+     *     this type factory's type system, or null if one is not available
+     */
+    public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
+            String expression, Tree tree, TreePath currentPath)
+            throws FlowExpressionParseException {
+        Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
+        if (rec == null || !CFAbstractStore.canInsertReceiver(rec)) {
+            return null;
+        }
+        Store store = getStoreBefore(tree);
+        Value value = store.getValue(rec);
+        return value != null ? value.getAnnotations().iterator().next() : null;
     }
 
     /**
@@ -1009,12 +1033,15 @@ public abstract class GenericAnnotatedTypeFactory<
             ClassTree ct = queue.remove();
             scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
+            TreePath preTreePath = visitorState.getPath();
             AnnotatedDeclaredType preClassType = visitorState.getClassType();
             ClassTree preClassTree = visitorState.getClassTree();
             AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
             MethodTree preMT = visitorState.getMethodTree();
 
-            visitorState.setClassType(getAnnotatedType(ct));
+            // Don't use getPath, b/c that depends on the visitorState path.
+            visitorState.setPath(TreePath.getPath(this.root, ct));
+            visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
             visitorState.setClassTree(ct);
             visitorState.setMethodReceiver(null);
             visitorState.setMethodTree(null);
@@ -1138,6 +1165,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     regularExitStores.put(ct, initializationStaticStore);
                 }
             } finally {
+                visitorState.setPath(preTreePath);
                 visitorState.setClassType(preClassType);
                 visitorState.setClassTree(preClassTree);
                 visitorState.setMethodReceiver(preAMT);
@@ -1559,7 +1587,9 @@ public abstract class GenericAnnotatedTypeFactory<
             VisitorState subFactoryVisitorState = subFactory.getVisitorState();
             subFactoryVisitorState.setPath(visitorState.getPath());
             subFactoryVisitorState.setClassTree(visitorState.getClassTree());
+            subFactoryVisitorState.setClassType(visitorState.getClassType());
             subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
+            subFactoryVisitorState.setMethodReceiver(visitorState.getMethodReceiver());
         }
         return subFactory;
     }

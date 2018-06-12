@@ -12,7 +12,7 @@ class TestPolyAll2 {
         return true;
     }
 
-    public static boolean noDuplicates2(@PolyAll @Nullable String[] a) {
+    public static boolean noDuplicates2(@PolyAll @UnknownKeyFor @Nullable String[] a) {
         // nullable
         a[0] = null;
         // :: error: (dereference.of.nullable)
