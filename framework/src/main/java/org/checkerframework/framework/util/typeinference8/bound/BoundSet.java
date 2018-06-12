@@ -195,6 +195,7 @@ public class BoundSet implements ReductionResult {
 
     /** Returns the dependencies between variables. */
     public Dependencies getDependencies(Collection<Variable> additionalVars) {
+        variables.addAll(additionalVars);
         Dependencies dependencies = new Dependencies();
 
         for (CaptureBound capture : captures) {
