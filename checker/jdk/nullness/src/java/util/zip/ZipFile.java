@@ -44,6 +44,7 @@ import sun.security.action.GetPropertyAction;
 import static java.util.zip.ZipConstants64.*;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * This class is used to read entries from a zip file.
@@ -557,6 +558,7 @@ class ZipFile implements ZipConstants, Closeable {
      * @return the number of entries in the ZIP file
      * @throws IllegalStateException if the zip file has been closed
      */
+    @Pure
     public int size() {
         ensureOpen();
         return total;
