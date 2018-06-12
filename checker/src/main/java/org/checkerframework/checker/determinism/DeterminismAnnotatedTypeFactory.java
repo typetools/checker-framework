@@ -39,7 +39,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         postInit();
     }
 
-
     @Override
     public QualifierPolymorphism createQualifierPolymorphism() {
         return new DeterminismQualifierPolymorphism(processingEnv, this);
