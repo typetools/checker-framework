@@ -482,13 +482,21 @@ public class InferenceFactory {
                 List<? extends Tree> typeArgs =
                         TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
                 if (!typeArgs.isEmpty()) {
+                    ExecutableElement e = TreeUtils.constructor(newClassTree);
+                    List<? extends TypeParameterElement> typeParams =
+                            ElementUtils.enclosingClass(e).getTypeParameters();
+                    List<TypeVariable> typeVariables = new ArrayList<>();
+                    for (TypeParameterElement typeParam : typeParams) {
+                        typeVariables.add((TypeVariable) typeParam.asType());
+                    }
+
                     List<TypeMirror> args = new ArrayList<>();
                     for (Tree arg : typeArgs) {
                         args.add(TreeUtils.typeOf(arg));
                     }
 
                     return (ExecutableType)
-                            TypesUtils.substitute(type, args, type.getTypeVariables(), context.env);
+                            TypesUtils.substitute(type, typeVariables, args, context.env);
                 }
 
                 return type;
