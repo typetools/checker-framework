@@ -97,6 +97,31 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return super.visitMethodInvocation(node, p);
         }
+
+        @Override
+        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
+            //Main method parameters must be annotated @Det.
+            Void ret = super.visitMethod(node, p);
+            if (node.getName().toString().equals("main")
+                    && node.getReturnType().toString().equals("void")
+                    && node.getParameters().size() == 1
+                    && node.getParameters().get(0).getType().toString().equals("String[]")
+                    && node.getModifiers().toString().contains("public static")) {
+
+                ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
+                AnnotatedTypeMirror.AnnotatedArrayType annotatedType =
+                        (AnnotatedTypeMirror.AnnotatedArrayType)
+                                atypeFactory
+                                        .getAnnotatedType(methodElement)
+                                        .getParameterTypes()
+                                        .get(0);
+                annotatedType.replaceAnnotation(DET);
+                System.out.println(annotatedType);
+                System.out.println(
+                        atypeFactory.getAnnotatedType(methodElement).getParameterTypes().get(0));
+            }
+            return ret;
+        }
     }
 
     public boolean isCollection(TypeMirror tm) {

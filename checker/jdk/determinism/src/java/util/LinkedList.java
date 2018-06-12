@@ -116,7 +116,7 @@ public class LinkedList<E>
      * @param  c the collection whose elements are to be placed into this list
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet LinkedList(@PolyDet Collection<? extends @PolyDet("use") E> c) {
+    public @PolyDet LinkedList(@PolyDet Collection<? extends E> c) {
         this();
         addAll(c);
     }
@@ -385,7 +385,7 @@ public class LinkedList<E>
      * @return {@code true} if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet("down") boolean addAll(@PolyDet LinkedList<E> this, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
+    public @PolyDet("down") boolean addAll(@PolyDet LinkedList<E> this, @PolyDet("use") Collection<? extends E> c) {
         return addAll(size, c);
     }
 
@@ -404,7 +404,7 @@ public class LinkedList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet("down") boolean addAll(@PolyDet LinkedList<E> this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
+    public @PolyDet("down") boolean addAll(@PolyDet LinkedList<E> this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends E> c) {
         checkPositionIndex(index);
 
         Object[] a = c.toArray();

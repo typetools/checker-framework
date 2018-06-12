@@ -174,7 +174,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param c the collection whose elements are to be placed into this list
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet ArrayList(@PolyDet Collection<? extends @PolyDet("use") E> c) {
+    public @PolyDet ArrayList(@PolyDet Collection<? extends E> c) {
         elementData = c.toArray();
         if ((size = elementData.length) != 0) {
             // c.toArray might (incorrectly) not return Object[] (see 6260652)
@@ -574,7 +574,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
+    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") Collection<? extends E> c) {
         Object[] a = c.toArray();
         int numNew = a.length;
         ensureCapacityInternal(size + numNew);  // Increments modCount
@@ -598,7 +598,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends @PolyDet("use") E> c) {
+    public @PolyDet("down") boolean addAll(@PolyDet ArrayList<E> this, @PolyDet("use") int index, @PolyDet("use") Collection<? extends E> c) {
         rangeCheckForAdd(index);
 
         Object[] a = c.toArray();

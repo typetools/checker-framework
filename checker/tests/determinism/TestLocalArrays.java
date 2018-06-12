@@ -4,12 +4,12 @@ import org.checkerframework.checker.determinism.qual.*;
 public class TestLocalArrays<T> {
     void testarr(@NonDet int @NonDet [] a) {
         // :: error: (assignment.type.incompatible)
-        int b[] = a;
+        @Det int @Det [] b = a;
     }
 
     void testTypeParameters(@NonDet ArrayList<@NonDet Integer> a) {
         // :: error: (assignment.type.incompatible)
-        ArrayList<Integer> b = a;
+        @Det ArrayList<@Det Integer> b = a;
     }
 
     <@Det T> void issue392(@Det T t) {
