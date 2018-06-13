@@ -1517,21 +1517,19 @@ public class StubParser {
     }
 
     /**
-     * Converts {@code number} to {@code expectedKind} * -1 if {@code negate}.
-     * Converts {@code number} to {@code expectedKind} if not {@code negate}.
-     * <p>
+     * Converts {@code number} to {@code expectedKind} * -1 if {@code negate}. Converts {@code
+     * number} to {@code expectedKind} if not {@code negate}.
+     *
      * @param number Number value to be converted
      * @param expectedKind converts the Number to {byte, short, int, long, char, float, double}
      * @param negate converted value
-     * 
      * @return the converted Number Object
-     *
-     * */
+     */
     private Object convert(Number number, TypeKind expectedKind, boolean negate) {
-    	if (!negate) {
-    		return convert(number, expectedKind);
-    	}
-    	
+        if (!negate) {
+            return convert(number, expectedKind);
+        }
+
         switch (expectedKind) {
             case BYTE:
                 return -1 * number.byteValue();
