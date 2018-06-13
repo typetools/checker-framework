@@ -1421,13 +1421,15 @@ public class StubParser {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
         } else if (expr instanceof UnaryExpr) {
             if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
-            	Object value = getValueOfExpressionInAnnotation(name, ((UnaryExpr) expr).getExpression(), valueKind);
+                Object value =
+                        getValueOfExpressionInAnnotation(
+                                name, ((UnaryExpr) expr).getExpression(), valueKind);
                 if (value instanceof Number) {
-                    return convertMinus((Number)value, valueKind);
+                    return convertNegative((Number) value, valueKind);
                 }
             }
-        	stubWarn("Unexpected Unary annotation expression: " + expr);
-	        return null;
+            stubWarn("Unexpected Unary annotation expression: " + expr);
+            return null;
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();
@@ -1445,8 +1447,8 @@ public class StubParser {
             stubWarn("Null found as value for %s. Null isn't allowed as an annotation value", name);
             return null;
         } else {
-	        stubWarn("Unexpected annotation expression: " + expr);
-	        return null;
+            stubWarn("Unexpected annotation expression: " + expr);
+            return null;
         }
     }
 
@@ -1513,7 +1515,7 @@ public class StubParser {
                 return null;
         }
     }
-    
+
     /**
      * Converts {@code number} to {@code expectedKind} with * -1.
      * <p>
@@ -1522,7 +1524,7 @@ public class StubParser {
      *
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
      * */
-    private Object convertMinus(Number number, TypeKind expectedKind) {
+    private Object convertNegative(Number number, TypeKind expectedKind) {
         switch (expectedKind) {
             case BYTE:
                 return -1 * number.byteValue();
