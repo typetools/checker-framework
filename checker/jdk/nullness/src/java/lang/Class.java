@@ -1397,7 +1397,7 @@ public final class Class<@UnknownKeyFor T extends @Nullable Object> implements j
      * {@code null} otherwise.
      * @since 1.5
      */
-    public @Nulalble String getCanonicalName() {
+    public @Nullable String getCanonicalName() {
         if (isArray()) {
             String canonicalName = getComponentType().getCanonicalName();
             if (canonicalName != null)

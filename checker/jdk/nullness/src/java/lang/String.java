@@ -929,7 +929,6 @@ public final class String
      * @since  JDK1.1
      */
     @SideEffectFree
-    @SideEffectFree
     public byte[] getBytes(String charsetName)
             throws UnsupportedEncodingException {
         if (charsetName == null) throw new NullPointerException();
@@ -2616,7 +2615,6 @@ public final class String
      * @since   1.1
      */
     @SideEffectFree
-    @SideEffectFree
     public String toLowerCase(Locale locale) {
         if (locale == null) {
             throw new NullPointerException();
@@ -2775,7 +2773,6 @@ public final class String
      * @see     java.lang.String#toLowerCase(Locale)
      * @since   1.1
      */
-    @SideEffectFree
     @SideEffectFree
     public String toUpperCase(Locale locale) {
         if (locale == null) {
@@ -3069,7 +3066,6 @@ public final class String
      * @return  a {@code String} that contains the characters of the
      *          character array.
      */
-    @SideEffectFree
     @SideEffectFree
     public static String valueOf(char data[]) {
         return new String(data);
