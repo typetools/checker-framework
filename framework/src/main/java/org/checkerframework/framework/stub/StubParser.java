@@ -1425,7 +1425,7 @@ public class StubParser {
                         getValueOfExpressionInAnnotation(
                                 name, ((UnaryExpr) expr).getExpression(), valueKind);
                 if (value instanceof Number) {
-                    return convertNegative((Number) value, valueKind);
+                    return convert((Number) value, valueKind, true);
                 }
             }
             stubWarn("Unexpected Unary annotation expression: " + expr);
@@ -1517,14 +1517,21 @@ public class StubParser {
     }
 
     /**
-     * Converts {@code number} to {@code expectedKind} with * -1.
+     * Converts {@code number} to {@code expectedKind} * -1 if {@code negate}.
+     * Converts {@code number} to {@code expectedKind} if not {@code negate}.
      * <p>
-     * {@code @interface Anno { long value();})
-     * {@code @Anno(1)}
+     * @param number Number value to be converted
+     * @param expectedKind converts the Number to {byte, short, int, long, char, float, double}
+     * @param negate converted value
+     * 
+     * @return the converted Number Object
      *
-     * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
      * */
-    private Object convertNegative(Number number, TypeKind expectedKind) {
+    private Object convert(Number number, TypeKind expectedKind, boolean negate) {
+    	if (!negate) {
+    		return convert(number, expectedKind);
+    	}
+    	
         switch (expectedKind) {
             case BYTE:
                 return -1 * number.byteValue();
