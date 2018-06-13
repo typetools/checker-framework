@@ -40,6 +40,7 @@ import sun.misc.ASCIICaseInsensitiveComparator;
 
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * The Attributes class maps Manifest attribute names to associated string
@@ -229,6 +230,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
     /**
      * Returns the number of attributes in this Map.
      */
+    @Pure
     public int size() {
         return map.size();
     }
