@@ -36,6 +36,10 @@ public class InvocationTypeInference {
         return infer(invocation, invocationType, targetType);
     }
 
+    public Java8InferenceContext getContext() {
+        return context;
+    }
+
     /** @param target Nullable if invocation isn't assigned. */
     public List<Variable> infer(
             ExpressionTree invocation, InvocationType methodType, ProperType target) {

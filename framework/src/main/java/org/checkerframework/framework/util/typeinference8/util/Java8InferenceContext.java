@@ -54,6 +54,12 @@ public class Java8InferenceContext {
      */
     public final Map<ExpressionTree, Theta> maps;
 
+    /**
+     * Inference is requesting a proper type of a tree, if that type requires type argument
+     * inference, then use a different inference object.
+     */
+    public boolean getAnnotatedTypeOfProperType;
+
     /** Number of non-capture variables. */
     private int variableCount = 1;
 
@@ -86,6 +92,7 @@ public class Java8InferenceContext {
                         RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
         this.inferenceTypeFactory = new InferenceFactory(this);
         this.object = inferenceTypeFactory.getObject();
+        this.getAnnotatedTypeOfProperType = false;
     }
 
     /** @return the next number to use as the id for a non-capture variable */

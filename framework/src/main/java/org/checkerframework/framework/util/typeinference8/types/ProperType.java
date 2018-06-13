@@ -26,6 +26,13 @@ public class ProperType extends AbstractType {
     public ProperType(
             AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
         super(context);
+        type = verify(type, properType);
+
+        this.properType = properType;
+        this.type = type;
+    }
+
+    private static AnnotatedTypeMirror verify(AnnotatedTypeMirror type, TypeMirror properType) {
         assert properType != null && properType.getKind() != TypeKind.VOID && type != null;
         if (type.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
@@ -37,9 +44,7 @@ public class ProperType extends AbstractType {
         }
 
         assert properType.getKind() == type.getKind();
-
-        this.properType = properType;
-        this.type = type;
+        return type;
     }
 
     public static class CantCompute extends RuntimeException {
@@ -47,11 +52,24 @@ public class ProperType extends AbstractType {
     }
 
     public ProperType(ExpressionTree tree, Java8InferenceContext context) {
-        this(context.typeFactory.getAnnotatedType(tree), TreeUtils.typeOf(tree), context);
+        super(context);
+        context.getAnnotatedTypeOfProperType = true;
+        AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(tree);
+        context.getAnnotatedTypeOfProperType = false;
+
+        TypeMirror properType = TreeUtils.typeOf(tree);
+        this.type = verify(type, properType);
+        this.properType = properType;
     }
 
     public ProperType(VariableTree varTree, Java8InferenceContext context) {
-        this(context.typeFactory.getAnnotatedType(varTree), TreeUtils.typeOf(varTree), context);
+        super(context);
+        context.getAnnotatedTypeOfProperType = true;
+        AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(varTree);
+        context.getAnnotatedTypeOfProperType = false;
+        TypeMirror properType = TreeUtils.typeOf(varTree);
+        this.type = verify(type, properType);
+        this.properType = properType;
     }
 
     @Override

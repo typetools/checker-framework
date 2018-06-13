@@ -22,8 +22,10 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -238,6 +240,15 @@ public class DOTCFGVisualizer<
             srcloc.append(")::");
             srcloc.append(((JCTree) cfgm.getMethod()).pos);
             srcloc.append('>');
+        } else if (ast.getKind() == Kind.LAMBDA) {
+            CFGLambda cfgs = (CFGLambda) ast;
+            outfile.append("Lambda-");
+            outfile.append(ast.hashCode());
+
+            srcloc.append('<');
+            srcloc.append("::lambda::");
+            srcloc.append(((JCTree) cfgs.getCode()).pos);
+            srcloc.append('>');
         } else {
             ErrorReporter.errorAbort(
                     "Unexpected AST kind: " + ast.getKind() + " value: " + ast.toString());
@@ -421,7 +432,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public void visualizeStore(S store) {
-        store.visualize(this);
+        //        store.visualize(this);
     }
 
     @Override
@@ -465,7 +476,8 @@ public class DOTCFGVisualizer<
     }
 
     protected String toStringEscapeDoubleQuotes(final Object obj) {
-        return escapeDoubleQuotes(String.valueOf(obj));
+        //        return escapeDoubleQuotes(String.valueOf(obj));
+        return "";
     }
 
     @Override

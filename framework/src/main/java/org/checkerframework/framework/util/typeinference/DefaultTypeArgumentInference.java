@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -104,6 +105,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final SubtypesSolver subtypesSolver = new SubtypesSolver();
     private final ConstraintMapBuilder constraintMapBuilder = new ConstraintMapBuilder();
     private CFInvocationTypeInference java8Inference = null;
+    private final Stack<CFInvocationTypeInference> java8InferenceStack = new Stack<>();
 
     private final boolean showInferenceSteps;
 
@@ -123,15 +125,17 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (expressionTree.getKind() == Tree.Kind.METHOD_INVOCATION
                 || expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
-            if (java8Inference != null) {
+            if (java8Inference != null
+                    && !java8Inference.getContext().getAnnotatedTypeOfProperType) {
                 // Currently infering, dont infer again.
                 return Collections.emptyMap();
             }
+            java8InferenceStack.push(java8Inference);
             try {
                 java8Inference = new CFInvocationTypeInference(typeFactory, pathToExpression);
                 List<Variable> result = java8Inference.infer(expressionTree, methodType);
             } finally {
-                java8Inference = null;
+                java8Inference = java8InferenceStack.pop();
             }
             //            System.out.println("Inferred the following for: "+expressionTree);
             //            System.out.println("\t"+PluginUtil.join("\n\t", result));
