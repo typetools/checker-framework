@@ -79,6 +79,8 @@ public class RangeTest {
 
     static final long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
 
+    static final long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
+
     public RangeTest() {
         // Initialize the ranges list.
         List<Range> rangesList = new ArrayList<Range>();
@@ -282,6 +284,28 @@ public class RangeTest {
                             : String.format(
                                     "Range.byteRange failure: %s => %s; witness = %s",
                                     range, result, byteValue);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testCharRange() {
+        for (Range range : ranges) {
+            Range result = range.charRange();
+            for (long value : values) {
+                if (value < range.from + charWidth
+                        && value > range.to - charWidth
+                        && (Math.abs(range.from) - 1) / Character.MIN_VALUE
+                                == (Math.abs(range.to) - 1) / Character.MIN_VALUE) {
+                    // filter out test data that would cause Range.CharRange to return
+                    // CHAR_EVERYTHING
+                    char charValue = (char) value;
+                    assert range.contains(value) && result.contains(charValue)
+                                    || !range.contains(value) && !result.contains(charValue)
+                            : String.format(
+                                    "Range.charRange failure: %s => %s; witness = %s",
+                                    range, result, charValue);
                 }
             }
         }

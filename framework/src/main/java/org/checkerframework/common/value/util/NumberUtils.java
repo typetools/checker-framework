@@ -73,9 +73,9 @@ public class NumberUtils {
                 return range.shortRange();
             case BYTE:
                 return range.byteRange();
-            case LONG:
             case CHAR:
                 return range.charRange();
+            case LONG:
             case FLOAT:
             case DOUBLE:
                 return range;
