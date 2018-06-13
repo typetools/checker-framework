@@ -3,8 +3,8 @@ package org.checkerframework.checker.determinism;
 import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -16,6 +16,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.*;
@@ -62,6 +64,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new DeterminismTreeAnnotator(this), super.createTreeAnnotator());
     }
 
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
+        return new ListTypeAnnotator(
+                super.createTypeAnnotator(),
+                new DeterminismAnnotatedTypeFactory.DeterminismTypeAnnotator(this));
+    }
+
     private class DeterminismTreeAnnotator extends TreeAnnotator {
 
         public DeterminismTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
@@ -98,28 +107,53 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(node, p);
         }
 
+        //        @Override
+        //        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
+        //            //Main method parameters must be annotated @Det.
+        //            Void ret = super.visitMethod(node, p);
+        //            if (node.getName().toString().equals("main")
+        //                    && node.getReturnType().toString().equals("void")
+        //                    && node.getParameters().size() == 1
+        //                    && node.getParameters().get(0).getType().toString().equals("String[]")
+        //                    && node.getModifiers().toString().contains("public static")) {
+        //                ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
+        //                AnnotatedTypeMirror.AnnotatedArrayType annotatedType =
+        //                        (AnnotatedTypeMirror.AnnotatedArrayType)
+        //                                atypeFactory
+        //                                        .getAnnotatedType(methodElement)
+        //                                        .getParameterTypes()
+        //                                        .get(0);
+        //                annotatedType.replaceAnnotation(DET);
+        //                System.out.println(annotatedType);
+        //                System.out.println(
+        //                        atypeFactory.getAnnotatedType(methodElement).getParameterTypes().get(0));
+        //            }
+        //            return ret;
+        //        }
+    }
+
+    protected class DeterminismTypeAnnotator extends TypeAnnotator {
+        public DeterminismTypeAnnotator(DeterminismAnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
         @Override
-        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
-            //Main method parameters must be annotated @Det.
-            Void ret = super.visitMethod(node, p);
-            if (node.getName().toString().equals("main")
-                    && node.getReturnType().toString().equals("void")
-                    && node.getParameters().size() == 1
-                    && node.getParameters().get(0).getType().toString().equals("String[]")
-                    && node.getModifiers().toString().contains("public static")) {
-                ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
-                AnnotatedTypeMirror.AnnotatedArrayType annotatedType =
-                        (AnnotatedTypeMirror.AnnotatedArrayType)
-                                atypeFactory
-                                        .getAnnotatedType(methodElement)
-                                        .getParameterTypes()
-                                        .get(0);
-                annotatedType.replaceAnnotation(DET);
-                System.out.println(annotatedType);
-                System.out.println(
-                        atypeFactory.getAnnotatedType(methodElement).getParameterTypes().get(0));
+        public Void visitExecutable(
+                final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
+            ExecutableElement elem = t.getElement();
+            if (elem.getSimpleName().toString().equals("main")) {
+                if (elem.getModifiers().contains(Modifier.PUBLIC)
+                        && elem.getModifiers().contains(Modifier.STATIC)) {
+                    if (t.getParameterTypes().size() == 1
+                            && t.getParameterTypes().get(0).getKind() == TypeKind.ARRAY
+                            && t.getReturnType().getKind() == TypeKind.VOID) {
+                        AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
+                        paramType.replaceAnnotation(DET);
+                        System.out.println("here: " + paramType + " ==> " + t);
+                    }
+                }
             }
-            return ret;
+            return super.visitExecutable(t, p);
         }
     }
 
