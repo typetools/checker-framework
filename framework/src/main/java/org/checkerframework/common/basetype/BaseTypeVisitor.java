@@ -401,7 +401,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks that fields are declared in super class. (#2b)
         if (!fieldsNotFound.isEmpty()) {
-            String notFoundString = PluginUtil.join(", ", fieldsNotFound);
+            String notFoundString = String.join(", ", fieldsNotFound);
             checker.report(Result.failure("field.invariant.not.found", notFoundString), errorTree);
         }
 
@@ -447,7 +447,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks #2a
         if (!notFinal.isEmpty()) {
-            String notFinalString = PluginUtil.join(", ", notFinal);
+            String notFinalString = String.join(", ", notFinal);
             checker.report(Result.failure("field.invariant.not.final", notFinalString), errorTree);
         }
     }
