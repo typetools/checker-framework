@@ -1,33 +1,3 @@
-package java.util;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-
-import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-// This class allows null elements
-public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements Map<K, V>, java.io.Serializable, Cloneable {
-  private static final long serialVersionUID = 0;
-  public IdentityHashMap() { throw new RuntimeException("skeleton method"); }
-  public IdentityHashMap(int a1) { throw new RuntimeException("skeleton method"); }
-  public IdentityHashMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int size() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-  @Pure public @Nullable V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }
-  public void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable V remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public void clear() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Collection<V> values() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
-}
-
 /*
  * Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
@@ -59,6 +29,11 @@ import java.lang.reflect.Array;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+
+import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class implements the <tt>Map</tt> interface with a hash table, using
@@ -165,7 +140,8 @@ import java.util.function.Consumer;
  * @since   1.4
  */
 
-public class IdentityHashMap<K,V>
+// This class allows null elements
+public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Object>
     extends AbstractMap<K,V>
     implements Map<K,V>, java.io.Serializable, Cloneable
 {
@@ -302,6 +278,7 @@ public class IdentityHashMap<K,V>
      *
      * @return the number of key-value mappings in this map
      */
+    @Pure
     public int size() {
         return size;
     }
@@ -313,6 +290,7 @@ public class IdentityHashMap<K,V>
      * @return <tt>true</tt> if this identity hash map contains no key-value
      *         mappings
      */
+    @Pure
     public boolean isEmpty() {
         return size == 0;
     }
@@ -351,6 +329,7 @@ public class IdentityHashMap<K,V>
      * @see #put(Object, Object)
      */
     @SuppressWarnings("unchecked")
+    @Pure
     public V get(Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
@@ -375,6 +354,7 @@ public class IdentityHashMap<K,V>
      *          in this map
      * @see     #containsValue(Object)
      */
+    @Pure
     public boolean containsKey(Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
@@ -399,6 +379,7 @@ public class IdentityHashMap<K,V>
      *         specified object reference
      * @see     #containsKey(Object)
      */
+    @Pure
     public boolean containsValue(Object value) {
         Object[] tab = table;
         for (int i = 1; i < tab.length; i += 2)
@@ -666,6 +647,7 @@ public class IdentityHashMap<K,V>
      * @return <tt>true</tt> if the specified object is equal to this map
      * @see Object#equals(Object)
      */
+    @Pure
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -708,6 +690,7 @@ public class IdentityHashMap<K,V>
      * @see Object#equals(Object)
      * @see #equals(Object)
      */
+    @Pure
     public int hashCode() {
         int result = 0;
         Object[] tab = table;
@@ -728,6 +711,7 @@ public class IdentityHashMap<K,V>
      *
      * @return a shallow copy of this map
      */
+    @SideEffectFree
     public Object clone() {
         try {
             IdentityHashMap<?,?> m = (IdentityHashMap<?,?>) super.clone();
@@ -992,7 +976,8 @@ public class IdentityHashMap<K,V>
      * @see Object#equals(Object)
      * @see System#identityHashCode(Object)
      */
-    public Set<K> keySet() {
+    @SideEffectFree
+    public Set<@KeyFor("this") K> keySet() {
         Set<K> ks = keySet;
         if (ks == null) {
             ks = new KeySet();
@@ -1098,6 +1083,7 @@ public class IdentityHashMap<K,V>
      * behavior of its <tt>contains</tt>, <tt>remove</tt> and
      * <tt>containsAll</tt> methods.</b>
      */
+    @SideEffectFree
     public Collection<V> values() {
         Collection<V> vs = values;
         if (vs == null) {
@@ -1203,7 +1189,8 @@ public class IdentityHashMap<K,V>
      *
      * @return a set view of the identity-mappings contained in this map
      */
-    public Set<Map.Entry<K,V>> entrySet() {
+    @SideEffectFree
+    public Set<Map.Entry<@KeyFor("this") K,V>> entrySet() {
         Set<Map.Entry<K,V>> es = entrySet;
         if (es != null)
             return es;
