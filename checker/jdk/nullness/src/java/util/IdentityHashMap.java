@@ -1,30 +1,31 @@
 /*
- * Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package java.util;
 
+import java.io.*;
 import java.lang.reflect.Array;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -78,7 +79,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * maximum size and the number of buckets is unspecified.
  *
  * <p>If the size of the map (the number of key-value mappings) sufficiently
- * exceeds the expected maximum size, the number of buckets is increased.
+ * exceeds the expected maximum size, the number of buckets is increased
  * Increasing the number of buckets ("rehashing") may be fairly expensive, so
  * it pays to create identity hash maps with a sufficiently large expected
  * maximum size.  On the other hand, iteration over collection views requires
@@ -165,10 +166,6 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
      * The maximum capacity, used if a higher value is implicitly specified
      * by either of the constructors with arguments.
      * MUST be a power of two <= 1<<29.
-     *
-     * In fact, the map can hold no more than MAXIMUM_CAPACITY-1 items
-     * because it has to have at least one slot with the key == null
-     * in order to avoid infinite loops in get(), put(), remove()
      */
     private static final int MAXIMUM_CAPACITY = 1 << 29;
 
@@ -188,6 +185,11 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
      * The number of modifications, to support fast-fail iterators
      */
     transient int modCount;
+
+    /**
+     * The next size value at which to resize (capacity * load factor).
+     */
+    private transient int threshold;
 
     /**
      * Value representing null keys inside tables.
@@ -233,18 +235,27 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
     }
 
     /**
-     * Returns the appropriate capacity for the given expected maximum size.
-     * Returns the smallest power of two between MINIMUM_CAPACITY and
-     * MAXIMUM_CAPACITY, inclusive, that is greater than (3 *
-     * expectedMaxSize)/2, if such a number exists.  Otherwise returns
-     * MAXIMUM_CAPACITY.
+     * Returns the appropriate capacity for the specified expected maximum
+     * size.  Returns the smallest power of two between MINIMUM_CAPACITY
+     * and MAXIMUM_CAPACITY, inclusive, that is greater than
+     * (3 * expectedMaxSize)/2, if such a number exists.  Otherwise
+     * returns MAXIMUM_CAPACITY.  If (3 * expectedMaxSize)/2 is negative, it
+     * is assumed that overflow has occurred, and MAXIMUM_CAPACITY is returned.
      */
-    private static int capacity(int expectedMaxSize) {
-        // assert expectedMaxSize >= 0;
-        return
-            (expectedMaxSize > MAXIMUM_CAPACITY / 3) ? MAXIMUM_CAPACITY :
-            (expectedMaxSize <= 2 * MINIMUM_CAPACITY / 3) ? MINIMUM_CAPACITY :
-            Integer.highestOneBit(expectedMaxSize + (expectedMaxSize << 1));
+    private int capacity(int expectedMaxSize) {
+        // Compute min capacity for expectedMaxSize given a load factor of 2/3
+        int minCapacity = (3 * expectedMaxSize)/2;
+
+        // Compute the appropriate capacity
+        int result;
+        if (minCapacity > MAXIMUM_CAPACITY || minCapacity < 0) {
+            result = MAXIMUM_CAPACITY;
+        } else {
+            result = MINIMUM_CAPACITY;
+            while (result < minCapacity)
+                result <<= 1;
+        }
+        return result;
     }
 
     /**
@@ -257,6 +268,7 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
         // assert initCapacity >= MINIMUM_CAPACITY;
         // assert initCapacity <= MAXIMUM_CAPACITY;
 
+        threshold = (initCapacity * 2)/3;
         table = new Object[2 * initCapacity];
     }
 
@@ -428,58 +440,52 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
      * @see     #containsKey(Object)
      */
     public V put(K key, V value) {
-        final Object k = maskNull(key);
+        Object k = maskNull(key);
+        Object[] tab = table;
+        int len = tab.length;
+        int i = hash(k, len);
 
-        retryAfterResize: for (;;) {
-            final Object[] tab = table;
-            final int len = tab.length;
-            int i = hash(k, len);
-
-            for (Object item; (item = tab[i]) != null;
-                 i = nextKeyIndex(i, len)) {
-                if (item == k) {
-                    @SuppressWarnings("unchecked")
-                        V oldValue = (V) tab[i + 1];
-                    tab[i + 1] = value;
-                    return oldValue;
-                }
+        Object item;
+        while ( (item = tab[i]) != null) {
+            if (item == k) {
+                @SuppressWarnings("unchecked")
+                    V oldValue = (V) tab[i + 1];
+                tab[i + 1] = value;
+                return oldValue;
             }
-
-            final int s = size + 1;
-            // Use optimized form of 3 * s.
-            // Next capacity is len, 2 * current capacity.
-            if (s + (s << 1) > len && resize(len))
-                continue retryAfterResize;
-
-            modCount++;
-            tab[i] = k;
-            tab[i + 1] = value;
-            size = s;
-            return null;
+            i = nextKeyIndex(i, len);
         }
+
+        modCount++;
+        tab[i] = k;
+        tab[i + 1] = value;
+        if (++size >= threshold)
+            resize(len); // len == 2 * current capacity.
+        return null;
     }
 
     /**
-     * Resizes the table if necessary to hold given capacity.
+     * Resize the table to hold given capacity.
      *
      * @param newCapacity the new capacity, must be a power of two.
-     * @return whether a resize did in fact take place
      */
-    private boolean resize(int newCapacity) {
+    private void resize(int newCapacity) {
         // assert (newCapacity & -newCapacity) == newCapacity; // power of 2
         int newLength = newCapacity * 2;
 
         Object[] oldTable = table;
         int oldLength = oldTable.length;
-        if (oldLength == 2 * MAXIMUM_CAPACITY) { // can't expand any further
-            if (size == MAXIMUM_CAPACITY - 1)
+        if (oldLength == 2*MAXIMUM_CAPACITY) { // can't expand any further
+            if (threshold == MAXIMUM_CAPACITY-1)
                 throw new IllegalStateException("Capacity exhausted.");
-            return false;
+            threshold = MAXIMUM_CAPACITY-1;  // Gigantic map!
+            return;
         }
         if (oldLength >= newLength)
-            return false;
+            return;
 
         Object[] newTable = new Object[newLength];
+        threshold = newLength / 3;
 
         for (int j = 0; j < oldLength; j += 2) {
             Object key = oldTable[j];
@@ -495,7 +501,6 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
             }
         }
         table = newTable;
-        return true;
     }
 
     /**
@@ -510,8 +515,8 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
         int n = m.size();
         if (n == 0)
             return;
-        if (n > size)
-            resize(capacity(n)); // conservatively pre-expand
+        if (n > threshold) // conservatively pre-expand
+            resize(capacity(n));
 
         for (Entry<? extends K, ? extends V> e : m.entrySet())
             put(e.getKey(), e.getValue());
@@ -850,7 +855,7 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
     private class EntryIterator
         extends IdentityHashMapIterator<Map.Entry<K,V>>
     {
-        private Entry lastReturnedEntry;
+        private Entry lastReturnedEntry = null;
 
         public Map.Entry<K,V> next() {
             lastReturnedEntry = new Entry(nextIndex());
@@ -936,7 +941,7 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
      * view the first time this view is requested.  The view is stateless,
      * so there's no reason to create more than one.
      */
-    private transient Set<Map.Entry<K,V>> entrySet;
+    private transient Set<Map.Entry<K,V>> entrySet = null;
 
     /**
      * Returns an identity-based set view of the keys contained in this map.
@@ -979,11 +984,10 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
     @SideEffectFree
     public Set<@KeyFor("this") K> keySet() {
         Set<K> ks = keySet;
-        if (ks == null) {
-            ks = new KeySet();
-            keySet = ks;
-        }
-        return ks;
+        if (ks != null)
+            return ks;
+        else
+            return keySet = new KeySet();
     }
 
     private class KeySet extends AbstractSet<K> {
@@ -1086,11 +1090,10 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
     @SideEffectFree
     public Collection<V> values() {
         Collection<V> vs = values;
-        if (vs == null) {
-            vs = new Values();
-            values = vs;
-        }
-        return vs;
+        if (vs != null)
+            return vs;
+        else
+            return values = new Values();
     }
 
     private class Values extends AbstractCollection<V> {
@@ -1279,8 +1282,8 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
     private static final long serialVersionUID = 8188218128353913216L;
 
     /**
-     * Saves the state of the <tt>IdentityHashMap</tt> instance to a stream
-     * (i.e., serializes it).
+     * Save the state of the <tt>IdentityHashMap</tt> instance to a stream
+     * (i.e., serialize it).
      *
      * @serialData The <i>size</i> of the HashMap (the number of key-value
      *          mappings) (<tt>int</tt>), followed by the key (Object) and
@@ -1308,8 +1311,8 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
     }
 
     /**
-     * Reconstitutes the <tt>IdentityHashMap</tt> instance from a stream (i.e.,
-     * deserializes it).
+     * Reconstitute the <tt>IdentityHashMap</tt> instance from a stream (i.e.,
+     * deserialize it).
      */
     private void readObject(java.io.ObjectInputStream s)
         throws java.io.IOException, ClassNotFoundException  {
@@ -1318,10 +1321,9 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
 
         // Read in size (number of Mappings)
         int size = s.readInt();
-        if (size < 0)
-            throw new java.io.StreamCorruptedException
-                ("Illegal mappings count: " + size);
-        init(capacity(size));
+
+        // Allow for 33% growth (i.e., capacity is >= 2* size()).
+        init(capacity((size*4)/3));
 
         // Read the keys and values, and put the mappings in the table
         for (int i=0; i<size; i++) {
@@ -1338,7 +1340,7 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
      * update modCount, etc.
      */
     private void putForCreate(K key, V value)
-        throws java.io.StreamCorruptedException
+        throws IOException
     {
         Object k = maskNull(key);
         Object[] tab = table;
