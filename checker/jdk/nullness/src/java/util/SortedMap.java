@@ -115,7 +115,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface SortedMap<K extends @Nullable Object, V extends @Nullable Object> extends Map<K,V> {
+public interface SortedMap<K, V> extends Map<K,V> {
     /**
      * Returns the comparator used to order the keys in this map, or
      * {@code null} if this map uses the {@linkplain Comparable

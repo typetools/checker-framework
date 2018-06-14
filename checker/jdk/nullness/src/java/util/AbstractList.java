@@ -73,7 +73,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public abstract class AbstractList<E extends @Nullable Object> extends AbstractCollection<E> implements List<E> {
+public abstract class AbstractList<E> extends AbstractCollection<E> implements List<E> {
     /**
      * Sole constructor.  (For invocation by subclass constructors, typically
      * implicit.)

@@ -44,7 +44,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @since 1.5
  * @jls 14.14.2 The enhanced for statement
  */
-public interface Iterable<T extends @Nullable Object> {
+public interface Iterable<T> {
     /**
      * Returns an iterator over elements of type {@code T}.
      *

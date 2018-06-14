@@ -112,7 +112,7 @@ import org.checkerframework.dataflow.qual.Pure;
 // Javadoc says: "a comparator may optionally permit comparison of null
 // arguments, while maintaining the requirements for an equivalence relation."
 @FunctionalInterface
-public interface Comparator<T extends @Nullable Object> {
+public interface Comparator<T> {
     /**
      * Compares its two arguments for order.  Returns a negative integer,
      * zero, or a positive integer as the first argument is less than, equal

@@ -70,7 +70,7 @@ import org.checkerframework.dataflow.qual.Pure;
  */
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public abstract class AbstractSequentialList<E extends @Nullable Object> extends AbstractList<E> {
+public abstract class AbstractSequentialList<E> extends AbstractList<E> {
     /**
      * Sole constructor.  (For invocation by subclass constructors, typically
      * implicit.)

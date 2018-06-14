@@ -87,7 +87,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 
 // This class permits null elements
-public class LinkedList<E extends @Nullable Object>
+public class LinkedList<E>
     extends AbstractSequentialList<E>
     implements List<E>, Deque<E>, Cloneable, java.io.Serializable
 {
@@ -1106,7 +1106,7 @@ public class LinkedList<E extends @Nullable Object>
      * @throws NullPointerException if the specified array is null
      */
     @SuppressWarnings("unchecked")
-    public <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a) {
+    public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a) {
         if (a.length < size)
             a = (T[])java.lang.reflect.Array.newInstance(
                                 a.getClass().getComponentType(), size);

@@ -222,7 +222,7 @@ public interface List<E> extends Collection<E> {
      */
     // @Nullable because, if there is room in the argument a1, the method
     // puts null after the elements of this.
-    <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
+    <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
 
 
     // Modification Operations

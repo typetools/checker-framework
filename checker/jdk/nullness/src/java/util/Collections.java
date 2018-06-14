@@ -228,7 +228,7 @@ public class Collections {
      *         found to violate the {@link Comparator} contract
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <T extends @Nullable Object> void sort(List<T> list, @Nullable Comparator<? super T> c) {
+    public static <T> void sort(List<T> list, @Nullable Comparator<? super T> c) {
         Object[] a = list.toArray();
         Arrays.sort(a, (Comparator)c);
         ListIterator<T> i = list.listIterator();
@@ -4728,7 +4728,7 @@ public class Collections {
      * @param o the sole object to be stored in the returned set.
      * @return an immutable set containing only the specified object.
      */
-    public static <T extends @Nullable Object> Set<T> singleton(T o) {
+    public static <T> Set<T> singleton(T o) {
         return new SingletonSet<>(o);
     }
 

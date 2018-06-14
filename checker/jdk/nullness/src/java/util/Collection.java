@@ -146,7 +146,7 @@ import org.checkerframework.dataflow.qual.Pure;
  */
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface Collection<E extends @Nullable Object> extends Iterable<E> {
+public interface Collection<E> extends Iterable<E> {
     // Query Operations
 
     /**
@@ -257,7 +257,7 @@ public interface Collection<E extends @Nullable Object> extends Iterable<E> {
      *         this collection
      * @throws NullPointerException if the specified array is null
      */
-    <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
+    <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
 
     // Modification Operations
 

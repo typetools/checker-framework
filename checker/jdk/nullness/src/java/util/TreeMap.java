@@ -115,7 +115,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 
 // This permits null element when using a custom comparator which allows null
-public class TreeMap<K extends @Nullable Object, V extends @Nullable Object>
+public class TreeMap<K, V>
     extends AbstractMap<K,V>
     implements NavigableMap<K,V>, Cloneable, java.io.Serializable
 {

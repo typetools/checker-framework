@@ -86,7 +86,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * @since   JDK1.0
  */
 // permits nullable object
-public class Vector<E extends @Nullable Object>
+public class Vector<E>
     extends AbstractList<E>
     implements List<E>, RandomAccess, Cloneable, java.io.Serializable
 {

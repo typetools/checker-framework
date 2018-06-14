@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
+public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;
   public TreeSet() { throw new RuntimeException("skeleton method"); }
   public TreeSet(Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
