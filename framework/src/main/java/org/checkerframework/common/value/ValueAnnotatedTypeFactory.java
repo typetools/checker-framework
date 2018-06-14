@@ -640,8 +640,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return new Range(newRange.from, Byte.MAX_VALUE);
                 } else if (lubRange.to < Short.MAX_VALUE) {
                     return new Range(newRange.from, Short.MAX_VALUE);
-                } else if (lubRange.to < Character.MAX_VALUE) {
-                    return new Range(newRange.from, Character.MAX_VALUE);
                 } else if (lubRange.to < Integer.MAX_VALUE) {
                     return new Range(newRange.from, Integer.MAX_VALUE);
                 } else {
@@ -656,8 +654,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return new Range(Byte.MIN_VALUE, newRange.to);
                 } else if (lubRange.from > Short.MIN_VALUE) {
                     return new Range(Short.MIN_VALUE, newRange.to);
-                } else if (lubRange.from > Character.MIN_VALUE) {
-                    return new Range(Character.MIN_VALUE, newRange.to);
                 } else if (lubRange.from > Integer.MIN_VALUE) {
                     return new Range(Integer.MIN_VALUE, newRange.to);
                 } else {
@@ -671,9 +667,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (lubRange.isWithin(Short.MIN_VALUE + 1, Short.MAX_VALUE)
                     || lubRange.isWithin(Short.MIN_VALUE, Short.MAX_VALUE - 1)) {
                 return Range.SHORT_EVERYTHING;
-            } else if (lubRange.isWithin(Character.MIN_VALUE + 1, Character.MAX_VALUE)
-                    || lubRange.isWithin(Character.MIN_VALUE, Character.MAX_VALUE - 1)) {
-                return Range.CHAR_EVERYTHING;
             } else if (lubRange.isWithin(Long.MIN_VALUE + 1, Long.MAX_VALUE)
                     || lubRange.isWithin(Long.MIN_VALUE, Long.MAX_VALUE - 1)) {
                 return Range.INT_EVERYTHING;
