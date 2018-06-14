@@ -40,10 +40,6 @@ class LambdaEnclosing {
                 String local2 = null;
                 FunctionLE<String, String> f0 =
                         s2 -> {
-                            // TODO: There should be no error for this. It's currently hard to
-                            // differentiate local
-                            // TODO: variables from variable initializers and those in constructors.
-                            // :: error: (dereference.of.nullable)
                             local1.toString();
                             // :: error: (dereference.of.nullable)
                             local2.toString();
@@ -70,7 +66,6 @@ class LambdaEnclosing {
                             FunctionLE<String, String> f2 =
                                     s2 -> {
                                         local1.toString();
-                                        // :: error: (dereference.of.nullable)
                                         local2.toString();
                                         local3.toString();
                                         // :: error: (dereference.of.nullable)
@@ -91,7 +86,6 @@ class LambdaEnclosing {
                             FunctionLE<String, String> f2 =
                                     s2 -> {
                                         local1.toString();
-                                        // :: error: (dereference.of.nullable)
                                         local2.toString();
                                         local3.toString();
                                         // :: error: (dereference.of.nullable)

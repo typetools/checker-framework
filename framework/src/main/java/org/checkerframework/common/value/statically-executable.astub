@@ -181,8 +181,8 @@ class Integer{
     @StaticallyExecutable @PolyValue int intValue(@PolyValue Integer this);
     @StaticallyExecutable @PolyValue long longValue(@PolyValue Integer this);
     @StaticallyExecutable static int lowestOneBit(int i);
-    @StaticallyExecutable static int numberOfLeadingZeros(int i);
-    @StaticallyExecutable static int numberOfTrailingZeros(int i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 32) int numberOfLeadingZeros(int i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 32) int numberOfTrailingZeros(int i);
     @StaticallyExecutable static int parseInt(String s);
     @StaticallyExecutable static int parseInt(String s, int radix);
     @StaticallyExecutable static int reverse(int i);
@@ -218,8 +218,8 @@ class Long{
     @StaticallyExecutable @PolyValue int intValue(@PolyValue Long this);
     @StaticallyExecutable @PolyValue long longValue(@PolyValue Long this);
     @StaticallyExecutable static long lowestOneBit(long i);
-    @StaticallyExecutable static int numberOfLeadingZeros(long i);
-    @StaticallyExecutable static int numberOfTrailingZeros(long i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 64) int numberOfLeadingZeros(long i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 64) int numberOfTrailingZeros(long i);
     @StaticallyExecutable static long parseLong(String s);
     @StaticallyExecutable static long parseLong(String s, int radix);
     @StaticallyExecutable static long reverse(long i);
