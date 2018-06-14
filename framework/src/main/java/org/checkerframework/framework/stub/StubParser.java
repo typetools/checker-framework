@@ -1425,7 +1425,7 @@ public class StubParser {
                         getValueOfExpressionInAnnotation(
                                 name, ((UnaryExpr) expr).getExpression(), valueKind);
                 if (value instanceof Number) {
-                    return convert((Number) value, valueKind, true);
+                    return convertNegate((Number) value, valueKind);
                 }
             }
             stubWarn("Unexpected Unary annotation expression: " + expr);
@@ -1517,19 +1517,13 @@ public class StubParser {
     }
 
     /**
-     * Converts {@code number} to {@code expectedKind} * -1 if {@code negate}. Converts {@code
-     * number} to {@code expectedKind} if not {@code negate}.
+     * Converts {@code number} to {@code expectedKind} * -1
      *
      * @param number Number value to be converted
-     * @param expectedKind converts the Number to {byte, short, int, long, char, float, double}
-     * @param negate converted value
+     * @param expectedKind converts the Number to {byte, short, int, long, float, double}
      * @return the converted Number Object
      */
-    private Object convert(Number number, TypeKind expectedKind, boolean negate) {
-        if (!negate) {
-            return convert(number, expectedKind);
-        }
-
+    private Object convertNegate(Number number, TypeKind expectedKind) {
         switch (expectedKind) {
             case BYTE:
                 return -1 * number.byteValue();
@@ -1539,8 +1533,6 @@ public class StubParser {
                 return -1 * number.intValue();
             case LONG:
                 return -1 * number.longValue();
-            case CHAR:
-                return (char) (-1 * number.intValue());
             case FLOAT:
                 return -1 * number.floatValue();
             case DOUBLE:
