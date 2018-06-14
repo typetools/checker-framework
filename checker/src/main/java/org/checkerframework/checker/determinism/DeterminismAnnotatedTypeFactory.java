@@ -105,6 +105,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, p);
             }
 
+            //For Collections: equals on different types (Ex: List and Set) is always false
+            //Return type is @Det.
+            if (invokedMethodElement.getSimpleName().toString().equals("equals")) {
+                TypeMirror receiverType =
+                        TypesUtils.getTypeElement(receiver.getUnderlyingType()).asType();
+                if (isCollection(receiverType)) {
+                    System.out.println(invokedMethodElement.getParameters().get(0).asType());
+                }
+            }
+
             return super.visitMethodInvocation(node, p);
         }
 
@@ -213,6 +223,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 || types.isSubtype(tm, TreeSetTypeMirror)
                 || types.isSubtype(tm, SortedSetTypeMirror)
                 || types.isSubtype(tm, NavigableSetTypeMirror)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isIterator(TypeMirror tm) {
+        TypeMirror IteratorTypeMirror =
+                TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
+        if (types.isSubtype(tm, IteratorTypeMirror)) {
             return true;
         }
         return false;

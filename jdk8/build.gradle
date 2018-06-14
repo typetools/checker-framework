@@ -6,7 +6,7 @@ dependencies {
 task downloadJdk() {
     description 'Downloads jdk8.jar and copies it to checker/dist'
     // See instructions for updating the jdk.jar at https://github.com/typetools/annotated-libraries/blob/master/README.md
-    String shaHash = 'c79c787520d1febb6d46018cb5d5de60ad03ede9'
+    String shaHash = '5101913936cab85638436e9cc0738c88e4aa83e8'
     File jdk = new File(buildDir, "jdk8-${shaHash}.jar");
     onlyIf {
         !jdk.exists() || !(new File('"../checker/dist/jdk8.jar').exists())
