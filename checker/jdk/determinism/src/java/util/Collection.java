@@ -153,14 +153,14 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return the number of elements in this collection
      */
-    int size();
+    @PolyDet("down") int size(@PolyDet Collection<E> this);
 
     /**
      * Returns <tt>true</tt> if this collection contains no elements.
      *
      * @return <tt>true</tt> if this collection contains no elements
      */
-    boolean isEmpty();
+    @PolyDet("down") boolean isEmpty(@PolyDet Collection<E> this);
 
     /**
      * Returns <tt>true</tt> if this collection contains the specified element.
@@ -178,7 +178,7 @@ public interface Collection<E> extends Iterable<E> {
      *         collection does not permit null elements
      *         (<a href="#optional-restrictions">optional</a>)
      */
-    boolean contains(Object o);
+    @PolyDet("down") boolean contains(@PolyDet Collection<E> this, @PolyDet Object o);
 
     /**
      * Returns an iterator over the elements in this collection.  There are no
@@ -188,7 +188,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an <tt>Iterator</tt> over the elements in this collection
      */
-    Iterator<E> iterator();
+    @PolyDet Iterator<E> iterator(@PolyDet Collection<E> this);
 
     /**
      * Returns an array containing all of the elements in this collection.
@@ -206,7 +206,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an array containing all of the elements in this collection
      */
-    Object[] toArray();
+    @PolyDet("up") Object @PolyDet("up") [] toArray(@PolyDet Collection<E> this);
 
     /**
      * Returns an array containing all of the elements in this collection;
@@ -251,7 +251,7 @@ public interface Collection<E> extends Iterable<E> {
      *         this collection
      * @throws NullPointerException if the specified array is null
      */
-    <T> T[] toArray(T[] a);
+    <T> @PolyDet("up") T @PolyDet("up") [] toArray(@PolyDet Collection<E> this, T[] a);
 
     // Modification Operations
 
@@ -288,7 +288,7 @@ public interface Collection<E> extends Iterable<E> {
      * @throws IllegalStateException if the element cannot be added at this
      *         time due to insertion restrictions
      */
-    boolean add(E e);
+    @PolyDet("down") boolean add(@PolyDet Collection<E> this, E e);
 
     /**
      * Removes a single instance of the specified element from this
@@ -310,7 +310,7 @@ public interface Collection<E> extends Iterable<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this collection
      */
-    boolean remove(Object o);
+    @PolyDet("down") boolean remove(@PolyDet Collection<E> this, @PolyDet("use") Object o);
 
 
     // Bulk Operations
@@ -333,7 +333,7 @@ public interface Collection<E> extends Iterable<E> {
      *         or if the specified collection is null.
      * @see    #contains(Object)
      */
-    boolean containsAll(Collection<?> c);
+    @PolyDet("down") boolean containsAll(@PolyDet Collection<E> this, @PolyDet Collection<?> c);
 
     /**
      * Adds all of the elements in the specified collection to this collection
@@ -359,7 +359,7 @@ public interface Collection<E> extends Iterable<E> {
      *         this time due to insertion restrictions
      * @see #add(Object)
      */
-    boolean addAll(Collection<? extends E> c);
+    @PolyDet("down") boolean addAll(@PolyDet Collection<E> this, @PolyDet("use") Collection<? extends E> c);
 
     /**
      * Removes all of this collection's elements that are also contained in the
@@ -384,7 +384,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    @PolyDet("down") boolean removeAll(@PolyDet Collection<E> this, @PolyDet("use") Collection<?> c);
 
     /**
      * Removes all of the elements of this collection that satisfy the given
@@ -408,7 +408,7 @@ public interface Collection<E> extends Iterable<E> {
      *         supported.
      * @since 1.8
      */
-    default boolean removeIf(Predicate<? super E> filter) {
+    default @PolyDet("down") boolean removeIf(@PolyDet Collection<E> this, @PolyDet("use") Predicate<? super E> filter) {
         Objects.requireNonNull(filter);
         boolean removed = false;
         final Iterator<E> each = iterator();
@@ -443,7 +443,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean retainAll(Collection<?> c);
+    @PolyDet("down") boolean retainAll(@PolyDet Collection<E> this, @PolyDet("use") Collection<?> c);
 
     /**
      * Removes all of the elements from this collection (optional operation).
@@ -452,7 +452,7 @@ public interface Collection<E> extends Iterable<E> {
      * @throws UnsupportedOperationException if the <tt>clear</tt> operation
      *         is not supported by this collection
      */
-    void clear();
+    void clear(@PolyDet Collection<E> this);
 
 
     // Comparison and hashing
@@ -490,7 +490,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see Set#equals(Object)
      * @see List#equals(Object)
      */
-    boolean equals(Object o);
+    @PolyDet("up") boolean equals(@PolyDet Collection<E> this, @PolyDet Object o);
 
     /**
      * Returns the hash code value for this collection.  While the
@@ -507,7 +507,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see Object#hashCode()
      * @see Object#equals(Object)
      */
-    int hashCode();
+    @NonDet int hashCode(@PolyDet Collection<E> this);
 
     /**
      * Creates a {@link Spliterator} over the elements in this collection.
@@ -560,7 +560,7 @@ public interface Collection<E> extends Iterable<E> {
      * @since 1.8
      */
     @Override
-    default Spliterator<E> spliterator() {
+    default @PolyDet Spliterator<E> spliterator(@PolyDet Collection<E> this) {
         return Spliterators.spliterator(this, 0);
     }
 
@@ -579,7 +579,7 @@ public interface Collection<E> extends Iterable<E> {
      * @return a sequential {@code Stream} over the elements in this collection
      * @since 1.8
      */
-    default Stream<E> stream() {
+    default @PolyDet("up") Stream<E> stream(@PolyDet Collection<E> this) {
         return StreamSupport.stream(spliterator(), false);
     }
 
@@ -600,7 +600,7 @@ public interface Collection<E> extends Iterable<E> {
      * collection
      * @since 1.8
      */
-    default Stream<E> parallelStream() {
+    default @PolyDet("up") Stream<E> parallelStream(@PolyDet Collection<E> this) {
         return StreamSupport.stream(spliterator(), true);
     }
 }

@@ -259,7 +259,7 @@ public interface List<E> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this list
      */
-    @PolyDet("down") boolean remove(@PolyDet List<E> this, @PolyDet Object o);
+    @PolyDet("down") boolean remove(@PolyDet List<E> this, @PolyDet("use") Object o);
 
 
     // Bulk Modification Operations

@@ -26,7 +26,6 @@
 
 package java.util;
 
-import org.checkerframework.checker.determinism.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 /**
@@ -96,14 +95,14 @@ public interface Set<E> extends Collection<E> {
      *
      * @return the number of elements in this set (its cardinality)
      */
-    int size();
+    @PolyDet("down") int size(@PolyDet Set<E> this);
 
     /**
      * Returns <tt>true</tt> if this set contains no elements.
      *
      * @return <tt>true</tt> if this set contains no elements
      */
-    boolean isEmpty();
+    @PolyDet("down") boolean isEmpty(@PolyDet Set<E> this);
 
     /**
      * Returns <tt>true</tt> if this set contains the specified element.
@@ -120,7 +119,7 @@ public interface Set<E> extends Collection<E> {
      *         set does not permit null elements
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    boolean contains(Object o);
+    @PolyDet("down") boolean contains(@PolyDet Set<E> this, @PolyDet Object o);
 
     /**
      * Returns an iterator over the elements in this set.  The elements are
@@ -129,7 +128,7 @@ public interface Set<E> extends Collection<E> {
      *
      * @return an iterator over the elements in this set
      */
-    Iterator<E> iterator();
+    @PolyDet Iterator<E> iterator(@PolyDet Set<E> this);
 
     /**
      * Returns an array containing all of the elements in this set.
@@ -147,7 +146,7 @@ public interface Set<E> extends Collection<E> {
      *
      * @return an array containing all the elements in this set
      */
-    Object[] toArray();
+    @PolyDet("up") Object @PolyDet("up") [] toArray(@PolyDet Set<E> this);
 
     /**
      * Returns an array containing all of the elements in this set; the
@@ -191,7 +190,7 @@ public interface Set<E> extends Collection<E> {
      *         set
      * @throws NullPointerException if the specified array is null
      */
-    <T> T[] toArray(T[] a);
+    <T> @PolyDet("up") T @PolyDet("up") [] toArray(@PolyDet Set<E> this, T[] a);
 
 
     // Modification Operations
@@ -226,7 +225,7 @@ public interface Set<E> extends Collection<E> {
      * @throws IllegalArgumentException if some property of the specified element
      *         prevents it from being added to this set
      */
-    boolean add(E e);
+    @PolyDet("down") boolean add(@PolyDet Set<E> this, E e);
 
 
     /**
@@ -250,7 +249,7 @@ public interface Set<E> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this set
      */
-    boolean remove(Object o);
+    @PolyDet("down") boolean remove(@PolyDet Set<E> this, @PolyDet("use") Object o);
 
 
     // Bulk Operations
@@ -274,7 +273,7 @@ public interface Set<E> extends Collection<E> {
      *         or if the specified collection is null
      * @see    #contains(Object)
      */
-    boolean containsAll(Collection<?> c);
+    @PolyDet("down") boolean containsAll(@PolyDet Set<E> this, @PolyDet Collection<?> c);
 
     /**
      * Adds all of the elements in the specified collection to this set if
@@ -298,7 +297,7 @@ public interface Set<E> extends Collection<E> {
      *         specified collection prevents it from being added to this set
      * @see #add(Object)
      */
-    boolean addAll(Collection<? extends E> c);
+    @PolyDet("down") boolean addAll(@PolyDet Set<E> this, @PolyDet("use") Collection<? extends E> c);
 
     /**
      * Retains only the elements in this set that are contained in the
@@ -321,7 +320,7 @@ public interface Set<E> extends Collection<E> {
      *         or if the specified collection is null
      * @see #remove(Object)
      */
-    boolean retainAll(Collection<?> c);
+    @PolyDet("down") boolean retainAll(@PolyDet Set<E> this, @PolyDet("use") Collection<?> c);
 
     /**
      * Removes from this set all of its elements that are contained in the
@@ -344,7 +343,7 @@ public interface Set<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    @PolyDet("down") boolean removeAll(@PolyDet Set<E> this, @PolyDet("use") Collection<?> c);
 
     /**
      * Removes all of the elements from this set (optional operation).
@@ -353,7 +352,7 @@ public interface Set<E> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>clear</tt> method
      *         is not supported by this set
      */
-    void clear();
+    void clear(@PolyDet Set<E> this);
 
 
     // Comparison and hashing
@@ -370,7 +369,7 @@ public interface Set<E> extends Collection<E> {
      * @param o object to be compared for equality with this set
      * @return <tt>true</tt> if the specified object is equal to this set
      */
-    boolean equals(Object o);
+    @PolyDet("down") boolean equals(@PolyDet Set<E> this, @PolyDet Object o);
 
     /**
      * Returns the hash code value for this set.  The hash code of a set is
@@ -385,7 +384,7 @@ public interface Set<E> extends Collection<E> {
      * @see Object#equals(Object)
      * @see Set#equals(Object)
      */
-    int hashCode();
+    @NonDet int hashCode(@PolyDet Set<E> this);
 
     /**
      * Creates a {@code Spliterator} over the elements in this set.
@@ -411,7 +410,7 @@ public interface Set<E> extends Collection<E> {
      * @since 1.8
      */
     @Override
-    default Spliterator<E> spliterator() {
+    default @PolyDet Spliterator<E> spliterator(@PolyDet Set<E> this) {
         return Spliterators.spliterator(this, Spliterator.DISTINCT);
     }
 }

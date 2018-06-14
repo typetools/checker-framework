@@ -7,6 +7,11 @@ public class TestLocalArrays<T> {
         @Det int @Det [] b = a;
     }
 
+    void testelm(@NonDet int @NonDet [] a) {
+        // :: error: (assignment.type.incompatible)
+        @Det int x = a[0];
+    }
+
     void testTypeParameters(@NonDet ArrayList<@NonDet Integer> a) {
         // :: error: (assignment.type.incompatible)
         @Det ArrayList<@Det Integer> b = a;

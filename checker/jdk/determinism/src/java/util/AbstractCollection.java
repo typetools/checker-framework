@@ -279,7 +279,7 @@ public abstract class AbstractCollection<E> implements Collection<E> {
      * @throws ClassCastException            {@inheritDoc}
      * @throws NullPointerException          {@inheritDoc}
      */
-    public @PolyDet("down") boolean remove(@PolyDet AbstractCollection<E> this, @PolyDet Object o) {
+    public @PolyDet("down") boolean remove(@PolyDet AbstractCollection<E> this, @PolyDet("use") Object o) {
         Iterator<E> it = iterator();
         if (o==null) {
             while (it.hasNext()) {

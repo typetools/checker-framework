@@ -354,7 +354,7 @@ public class LinkedList<E>
      * @param o element to be removed from this list, if present
      * @return {@code true} if this list contained the specified element
      */
-    public @PolyDet("down") boolean remove(@PolyDet LinkedList<E> this, @PolyDet Object o) {
+    public @PolyDet("down") boolean remove(@PolyDet LinkedList<E> this, @PolyDet("use") Object o) {
         if (o == null) {
             for (Node<E> x = first; x != null; x = x.next) {
                 if (x.item == null) {

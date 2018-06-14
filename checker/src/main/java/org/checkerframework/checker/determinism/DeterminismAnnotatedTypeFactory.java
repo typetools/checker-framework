@@ -104,6 +104,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TypesUtils.getTypeElement(receiver.getUnderlyingType()) == null) {
                 return super.visitMethodInvocation(node, p);
             }
+
             return super.visitMethodInvocation(node, p);
         }
 
@@ -159,6 +160,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
+        //Collection
+        TypeMirror CollectionTypeMirror =
+                TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
         //List and subclasses
         TypeMirror ListTypeMirror =
                 TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
@@ -194,7 +198,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 TypesUtils.typeFromClass(
                         NavigableSet.class, types, processingEnv.getElementUtils());
 
-        if (types.isSubtype(tm, ListTypeMirror)
+        if (types.isSubtype(tm, CollectionTypeMirror)
+                || types.isSubtype(tm, ListTypeMirror)
                 || types.isSubtype(tm, SetTypeMirror)
                 || types.isSubtype(tm, ArrayListTypeMirror)
                 || types.isSubtype(tm, HashSetTypeMirror)

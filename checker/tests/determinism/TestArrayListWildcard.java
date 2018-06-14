@@ -24,7 +24,8 @@
 //    }
 //
 //    void testConstructor(@OrderNonDet ArrayList<@Det String> arList) {
-//        new ArrayList<String>(arList);
+//        @OrderNonDet Collection<@Det String> coll = arList;
+//        new ArrayList<String>(coll);
 //    }
 //
 //    void testConstructor1(@NonDet int c) {
