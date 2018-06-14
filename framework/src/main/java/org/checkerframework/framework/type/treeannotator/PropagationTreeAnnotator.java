@@ -50,7 +50,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
 
         Collection<? extends AnnotationMirror> prev = null;
-        if (tree.getInitializers() != null && tree.getInitializers().size() != 0) {
+        if (tree.getInitializers() != null && !tree.getInitializers().isEmpty()) {
             // We have initializers, either with or without an array type.
 
             for (ExpressionTree init : tree.getInitializers()) {
