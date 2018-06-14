@@ -71,7 +71,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 
 // Subclasses of this interface/class may opt to prohibit null elements.
-public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullable Object> implements Map<K,V> {
+public abstract class AbstractMap<K, V> implements Map<K,V> {
     /**
      * Sole constructor.  (For invocation by subclass constructors, typically
      * implicit.)
@@ -617,7 +617,7 @@ public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullabl
      *
      * @since 1.6
      */
-    public static class SimpleEntry<K extends @Nullable Object, V extends @Nullable Object>
+    public static class SimpleEntry<K, V>
         implements Entry<K,V>, java.io.Serializable
     {
         private static final long serialVersionUID = -8499721149061103585L;
@@ -752,7 +752,7 @@ public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullabl
      *
      * @since 1.6
      */
-    public static class SimpleImmutableEntry<K extends @Nullable Object, V extends @Nullable Object>
+    public static class SimpleImmutableEntry<K, V>
         implements Entry<K,V>, java.io.Serializable
     {
         private static final long serialVersionUID = 7138329143949025153L;

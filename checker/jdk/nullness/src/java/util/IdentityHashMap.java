@@ -142,7 +142,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 
 // This class allows null elements
-public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Object>
+public class IdentityHashMap<K, V>
     extends AbstractMap<K,V>
     implements Map<K,V>, java.io.Serializable, Cloneable
 {

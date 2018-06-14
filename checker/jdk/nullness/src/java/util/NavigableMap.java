@@ -98,7 +98,7 @@ import org.checkerframework.dataflow.qual.Pure;
  * @since 1.6
  */
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface NavigableMap<K extends @Nullable Object, V extends @Nullable Object> extends SortedMap<K,V> {
+public interface NavigableMap<K, V> extends SortedMap<K,V> {
     /**
      * Returns a key-value mapping associated with the greatest key
      * strictly less than the given key, or {@code null} if there is

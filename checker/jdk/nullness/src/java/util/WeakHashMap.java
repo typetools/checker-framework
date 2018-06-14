@@ -139,7 +139,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * @see         java.lang.ref.WeakReference
  */
 // permits null keys and values
-public class WeakHashMap<K extends @Nullable Object, V extends @Nullable Object>
+public class WeakHashMap<K, V>
     extends AbstractMap<K,V>
     implements Map<K,V> {
 

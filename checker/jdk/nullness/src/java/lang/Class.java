@@ -130,7 +130,7 @@ import org.checkerframework.framework.qual.Covariant;
 // meaning, but are unrelated by the Java type hierarchy.
 // @Covariant makes Class<@NonNull String> a subtype of Class<@Nullable String>.
 @Covariant(0)
-public final class Class<@UnknownKeyFor T extends @Nullable Object> implements java.io.Serializable,
+public final class Class<@UnknownKeyFor T> implements java.io.Serializable,
                               GenericDeclaration,
                               Type,
                               AnnotatedElement {

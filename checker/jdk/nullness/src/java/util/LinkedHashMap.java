@@ -165,7 +165,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * @see     Hashtable
  * @since   1.4
  */
-public class LinkedHashMap<K extends @Nullable Object, V extends @Nullable Object>
+public class LinkedHashMap<K, V>
     extends HashMap<K,V>
     implements Map<K,V>
 {

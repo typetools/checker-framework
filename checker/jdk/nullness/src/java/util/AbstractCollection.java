@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public abstract class AbstractCollection<E extends @Nullable Object> implements Collection<E> {
+public abstract class AbstractCollection<E> implements Collection<E> {
   protected AbstractCollection() {}
   @Override
   public abstract Iterator<E> iterator();
