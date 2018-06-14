@@ -4,6 +4,7 @@ import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.determinism.qual.*;
@@ -117,30 +118,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             return super.visitMethodInvocation(node, p);
         }
-
-        //        @Override
-        //        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
-        //            //Main method parameters must be annotated @Det.
-        //            Void ret = super.visitMethod(node, p);
-        //            if (node.getName().toString().equals("main")
-        //                    && node.getReturnType().toString().equals("void")
-        //                    && node.getParameters().size() == 1
-        //                    && node.getParameters().get(0).getType().toString().equals("String[]")
-        //                    && node.getModifiers().toString().contains("public static")) {
-        //                ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
-        //                AnnotatedTypeMirror.AnnotatedArrayType annotatedType =
-        //                        (AnnotatedTypeMirror.AnnotatedArrayType)
-        //                                atypeFactory
-        //                                        .getAnnotatedType(methodElement)
-        //                                        .getParameterTypes()
-        //                                        .get(0);
-        //                annotatedType.replaceAnnotation(DET);
-        //                System.out.println(annotatedType);
-        //                System.out.println(
-        //                        atypeFactory.getAnnotatedType(methodElement).getParameterTypes().get(0));
-        //            }
-        //            return ret;
-        //        }
     }
 
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
@@ -151,21 +128,40 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitExecutable(
                 final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
-            ExecutableElement elem = t.getElement();
-            if (elem.getSimpleName().toString().equals("main")) {
-                if (elem.getModifiers().contains(Modifier.PUBLIC)
-                        && elem.getModifiers().contains(Modifier.STATIC)) {
-                    if (t.getParameterTypes().size() == 1
-                            && t.getParameterTypes().get(0).getKind() == TypeKind.ARRAY
-                            && t.getReturnType().getKind() == TypeKind.VOID) {
-                        AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
-                        paramType.replaceAnnotation(DET);
-                        System.out.println("here: " + paramType + " ==> " + t);
-                    }
-                }
+            if (isMainMethod(t.getElement())) {
+                AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
+                paramType.replaceAnnotation(DET);
+                System.out.println("here: " + paramType + " ==> " + t);
             }
             return super.visitExecutable(t, p);
         }
+    }
+
+    /** @return true if {@code method} is a main method */
+    private static boolean isMainMethod(ExecutableElement method) {
+        if (method.getReturnType().getKind() == TypeKind.VOID
+                && method.getSimpleName().contentEquals("main")
+                && method.getParameters().size() == 1
+                && method.getParameters().get(0).asType().getKind() == TypeKind.ARRAY) {
+            ArrayType arrayType = (ArrayType) method.getParameters().get(0).asType();
+            if (TypesUtils.isString(arrayType.getComponentType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+        if (elt.getKind() == ElementKind.PARAMETER) {
+            if (elt.getEnclosingElement().getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
+                if (isMainMethod(method)) {
+                    type.addMissingAnnotations(Collections.singleton(DET));
+                }
+            }
+        }
+        super.addComputedTypeAnnotations(elt, type);
     }
 
     public boolean isCollection(TypeMirror tm) {
