@@ -27,7 +27,9 @@ public class RangeTest {
         Byte.MIN_VALUE - 10L,
         Byte.MIN_VALUE,
         Byte.MIN_VALUE + 1L,
-        0L,
+        Character.MIN_VALUE - 10L,
+        Character.MIN_VALUE, // 0L
+        Character.MIN_VALUE + 1L,
         Byte.MAX_VALUE - 1L,
         Byte.MAX_VALUE,
         Byte.MAX_VALUE + 10L,
@@ -36,6 +38,10 @@ public class RangeTest {
         Short.MAX_VALUE,
         Short.MAX_VALUE + 10L,
         Short.MAX_VALUE + 1000L,
+        Character.MAX_VALUE - 1L,
+        Character.MAX_VALUE,
+        Character.MAX_VALUE + 10L,
+        Character.MAX_VALUE + 1000L,
         Integer.MAX_VALUE - 1,
         Integer.MAX_VALUE,
         Integer.MAX_VALUE + 10L,
@@ -56,8 +62,8 @@ public class RangeTest {
         -4L,
         -2L,
         -1L,
-        0L,
-        1L,
+        Character.MIN_VALUE, // 0L
+        Character.MIN_VALUE + 1L, // 1L
         2L,
         4L,
         8L,
@@ -65,6 +71,8 @@ public class RangeTest {
         Byte.MAX_VALUE,
         Short.MAX_VALUE - 1L,
         Short.MAX_VALUE,
+        Character.MAX_VALUE - 1L,
+        Character.MAX_VALUE,
         Integer.MAX_VALUE - 1L,
         Integer.MAX_VALUE,
         Long.MAX_VALUE - 1L,
@@ -284,6 +292,28 @@ public class RangeTest {
                             : String.format(
                                     "Range.byteRange failure: %s => %s; witness = %s",
                                     range, result, byteValue);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testCharRange() {
+        for (Range range : ranges) {
+            Range result = range.charRange();
+            for (long value : values) {
+                if (value < range.from + charWidth
+                        && value > range.to - charWidth
+                        && (Math.abs(range.from) - 1) / Character.MAX_VALUE
+                                == (Math.abs(range.to) - 1) / Character.MAX_VALUE) {
+                    // filter out test data that would cause Range.CharRange to return
+                    // CHAR_EVERYTHING
+                    char charValue = (char) value;
+                    assert range.contains(value) && result.contains(charValue)
+                                    || !range.contains(value) && !result.contains(charValue)
+                            : String.format(
+                                    "Range.charRange failure: %s => %s; witness = %s",
+                                    range, result, charValue);
                 }
             }
         }
