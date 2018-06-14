@@ -1235,10 +1235,10 @@ class MyClass<T extends Object> { ... }
 \end{Verbatim}
 
 The difference is the annotation on the upper bound of the type argument
-\<T>.  They are treated in the following.
+\<T>.  They are treated in the following way.
 
 \begin{Verbatim}
-class MyClass<T>  ==  class MyClass<T extends @TOPTYPEANNO Object> { ... }
+class MyClass<T>                 ==  class MyClass<T extends @TOPTYPEANNO Object>
 class MyClass<T extends Object>  ==  class MyClass<T extends @DEFAULTANNO Object>
 \end{Verbatim}
 
@@ -1272,11 +1272,18 @@ like any other occurrence, and applies the usual defaulting rules.  Use of
 \<Object> is treated consistently with all other types in this location and
 all other occurrences of \<Object> in the program.
 
-It is uncommon for a user to write \<Object> as an upper bound with no type
-qualifier:
-\code{class C<T extends Object> \ttlcb\ ... \ttrcb}.
-It is better style to write no upper bound or to write an explicit type
-annotation on \<Object>.
+Here are some style guidelines:
+\begin{itemize}
+\item
+  Omit the \<extends> clause when possible.  To indicate no constraints on
+  type qualifiers, write \code{class MyClass<T>} rather than \code{class
+    MyClass<T extends @TOPTYPEANNO Object>}.
+\item
+  When you write an upper bound, give an explicit type annotation.  That
+  is, write \code{class C<T extends @DEFAULTANNO Object>
+    \ttlcb\ ... \ttrcb} even if it is equivalent to writing \code{class C<T
+    extends Object> \ttlcb\ ... \ttrcb}.
+\end{itemize}
 
 
 \subsection{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?\label{faq-runtime-retention}}
