@@ -2,12 +2,19 @@ package org.checkerframework.framework.util.typeinference8.util;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -73,6 +80,8 @@ public class Java8InferenceContext {
 
     public final AnnotatedTypeFactory typeFactory;
 
+    public final Set<VariableElement> lambdaParms = new HashSet<>();
+
     public Java8InferenceContext(
             AnnotatedTypeFactory factory,
             TreePath pathToExpression,
@@ -103,5 +112,19 @@ public class Java8InferenceContext {
     /** @return the next number to use as the id for a capture variable */
     public int getNextCaptureVariableId() {
         return captureVariableCount++;
+    }
+
+    public void addLambdaParms(List<? extends VariableTree> parameters) {
+        for (VariableTree tree : parameters) {
+            lambdaParms.add(TreeUtils.elementFromDeclaration(tree));
+        }
+    }
+
+    public boolean isLambdaParam(ExpressionTree expression) {
+        Element element = TreeUtils.elementFromUse(expression);
+        if (element.getKind() != ElementKind.PARAMETER) {
+            return false;
+        }
+        return lambdaParms.contains(element);
     }
 }

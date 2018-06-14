@@ -12,8 +12,9 @@ public class CaptureVariable extends Variable {
             AnnotatedTypeVariable type,
             TypeVariable typeVariableJava,
             ExpressionTree invocation,
-            Java8InferenceContext context) {
-        super(type, typeVariableJava, invocation, context, context.getNextCaptureVariableId());
+            Java8InferenceContext context,
+            Theta map) {
+        super(type, typeVariableJava, invocation, context, map, context.getNextCaptureVariableId());
     }
 
     @Override

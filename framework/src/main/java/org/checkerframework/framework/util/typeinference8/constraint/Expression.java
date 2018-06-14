@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
@@ -65,7 +66,13 @@ public class Expression extends Constraint {
         if (getT().isProper()) {
             return reduceProperType();
         } else if (TreeUtils.isStandaloneExpression(expression)) {
-            ProperType s = context.inferenceTypeFactory.getTypeOfExpression(expression);
+            AbstractType s;
+            if (!context.isLambdaParam(expression)) {
+                s = context.inferenceTypeFactory.getTypeOfExpression(expression);
+            } else {
+                AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
+                s = getT().create(atm, atm.getUnderlyingType());
+            }
             return new Typing(s, T, Constraint.Kind.TYPE_COMPATIBILITY);
         }
         switch (expression.getKind()) {
@@ -145,9 +152,14 @@ public class Expression extends Constraint {
 
             if (ps.size() == fs.size() + 1) {
                 AbstractType targetReference = ps.remove(0);
-                ProperType referenceType =
-                        context.inferenceTypeFactory.getTypeOfExpression(
-                                memRef.getQualifierExpression());
+                ExpressionTree qualifierExp = memRef.getQualifierExpression();
+                AbstractType referenceType;
+                if (context.isLambdaParam(qualifierExp)) {
+                    AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(qualifierExp);
+                    referenceType = T.create(atm, atm.getUnderlyingType());
+                } else {
+                    referenceType = context.inferenceTypeFactory.getTypeOfExpression(qualifierExp);
+                }
                 constraintSet.add(
                         new Typing(targetReference, referenceType, Constraint.Kind.SUBTYPE));
             }
@@ -230,6 +242,8 @@ public class Expression extends Constraint {
                 constraintSet.add(new Typing(fi, gi, Constraint.Kind.TYPE_EQUALITY));
             }
             constraintSet.add(new Typing(tPrime, T, Constraint.Kind.SUBTYPE));
+        } else {
+            context.addLambdaParms(lambda.getParameters());
         }
 
         AbstractType R = tPrime.getFunctionTypeReturnType();

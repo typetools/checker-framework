@@ -94,7 +94,7 @@ public class InferenceFactory {
         Iterator<? extends AnnotatedTypeVariable> iter1 =
                 methodType.getAnnotatedTypeVariables().iterator();
         for (TypeVariable pl : methodType.getTypeVariables()) {
-            Variable al = new Variable(iter1.next(), pl, invocation, context);
+            Variable al = new Variable(iter1.next(), pl, invocation, context, map);
             map.put(pl, al);
         }
         if (TreeUtils.isDiamondTree(invocation)) {
@@ -115,7 +115,7 @@ public class InferenceFactory {
                 }
                 TypeVariable pl = (TypeVariable) typeMirror;
                 AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-                Variable al = new Variable(atv, pl, invocation, context);
+                Variable al = new Variable(atv, pl, invocation, context, map);
                 map.put(pl, al);
             }
         }
@@ -151,7 +151,7 @@ public class InferenceFactory {
                 }
                 TypeVariable pl = (TypeVariable) typeMirror;
                 AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-                Variable al = new Variable(atv, pl, memRef, context);
+                Variable al = new Variable(atv, pl, memRef, context, map);
                 map.put(pl, al);
             }
         }
@@ -159,7 +159,7 @@ public class InferenceFactory {
             Iterator<? extends AnnotatedTypeVariable> iter1 =
                     methodType.getAnnotatedTypeVariables().iterator();
             for (TypeVariable pl : methodType.getTypeVariables()) {
-                Variable al = new Variable(iter1.next(), pl, memRef, context);
+                Variable al = new Variable(iter1.next(), pl, memRef, context, map);
                 map.put(pl, al);
             }
         }
@@ -182,7 +182,7 @@ public class InferenceFactory {
         for (TypeParameterElement param : typeEle.getTypeParameters()) {
             TypeVariable typeVar = (TypeVariable) param.asType();
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-            Variable ai = new Variable(atv, typeVar, lambda, context);
+            Variable ai = new Variable(atv, typeVar, lambda, context, map);
             map.put(typeVar, ai);
         }
         for (Variable v : map.values()) {
@@ -202,7 +202,7 @@ public class InferenceFactory {
         for (TypeParameterElement pEle : ele.getTypeParameters()) {
             TypeVariable pl = (TypeVariable) pEle.asType();
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-            CaptureVariable al = new CaptureVariable(atv, pl, tree, context);
+            CaptureVariable al = new CaptureVariable(atv, pl, tree, context, map);
             map.put(pl, al);
         }
         for (Variable v : map.values()) {

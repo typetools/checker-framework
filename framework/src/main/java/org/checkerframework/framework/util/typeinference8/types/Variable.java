@@ -31,12 +31,15 @@ public class Variable extends AbstractType {
     /** Type variable for which the instantiation of this variable is a type argument, */
     protected final AnnotatedTypeVariable typeVariable;
 
+    protected final Theta map;
+
     Variable(
             AnnotatedTypeVariable typeVariable,
             TypeVariable typeVariableJava,
             ExpressionTree invocation,
-            Java8InferenceContext context) {
-        this(typeVariable, typeVariableJava, invocation, context, context.getNextVariableId());
+            Java8InferenceContext context,
+            Theta map) {
+        this(typeVariable, typeVariableJava, invocation, context, map, context.getNextVariableId());
     }
 
     Variable(
@@ -44,6 +47,7 @@ public class Variable extends AbstractType {
             TypeVariable typeVariableJava,
             ExpressionTree invocation,
             Java8InferenceContext context,
+            Theta map,
             int id) {
         super(context);
         assert typeVariable != null;
@@ -51,6 +55,7 @@ public class Variable extends AbstractType {
         this.typeVariableJava = typeVariableJava;
         this.typeVariable = typeVariable;
         this.invocation = invocation;
+        this.map = map;
         this.id = id;
     }
 
@@ -88,8 +93,8 @@ public class Variable extends AbstractType {
     }
 
     @Override
-    public Variable create(AnnotatedTypeMirror atm, TypeMirror type) {
-        throw new UnsupportedOperationException();
+    public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type) {
+        return InferenceType.create(atm, type, map, context);
     }
 
     @Override
