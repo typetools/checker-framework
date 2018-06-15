@@ -891,7 +891,7 @@ public abstract class UBQualifier {
                     }
                 }
             }
-            if (sequences.size() == 0) {
+            if (sequences.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             } else {
                 return UBQualifier.createUBQualifier(sequences, offsets);

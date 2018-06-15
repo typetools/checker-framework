@@ -85,7 +85,7 @@ public class TreeBuilder {
                 ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
             Name methodName = method.getSimpleName();
 
-            if (method.getParameters().size() == 0) {
+            if (method.getParameters().isEmpty()) {
                 if (methodName.contentEquals("iterator")) {
                     iteratorMethod = (Symbol.MethodSymbol) method;
                 }
@@ -152,7 +152,7 @@ public class TreeBuilder {
                 ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
             Name methodName = method.getSimpleName();
 
-            if (method.getParameters().size() == 0) {
+            if (method.getParameters().isEmpty()) {
                 if (methodName.contentEquals("hasNext")) {
                     hasNextMethod = (Symbol.MethodSymbol) method;
                 }
@@ -188,7 +188,7 @@ public class TreeBuilder {
                 ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
             Name methodName = method.getSimpleName();
 
-            if (method.getParameters().size() == 0) {
+            if (method.getParameters().isEmpty()) {
                 if (methodName.contentEquals("next")) {
                     nextMethod = (Symbol.MethodSymbol) method;
                 }
@@ -465,7 +465,7 @@ public class TreeBuilder {
                 ElementFilter.methodsIn(elements.getAllMembers(boxedElement))) {
             Name methodName = method.getSimpleName();
 
-            if (methodName.contentEquals(primValueName) && method.getParameters().size() == 0) {
+            if (methodName.contentEquals(primValueName) && method.getParameters().isEmpty()) {
                 primValueMethod = (Symbol.MethodSymbol) method;
             }
         }

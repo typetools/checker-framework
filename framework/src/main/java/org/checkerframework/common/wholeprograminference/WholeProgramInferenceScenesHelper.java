@@ -253,7 +253,7 @@ public class WholeProgramInferenceScenesHelper {
         }
 
         // Recursively remove ignored annotations from inner types
-        if (typeEl.innerTypes.size() != 0) {
+        if (!typeEl.innerTypes.isEmpty()) {
             for (ATypeElement innerType : typeEl.innerTypes.values()) {
                 removeIgnoredAnnosFromATypeElement(innerType, loc);
             }
@@ -505,7 +505,7 @@ public class WholeProgramInferenceScenesHelper {
         }
 
         // Only update the ATypeElement if there are no explicit annotations
-        if (curATM.getExplicitAnnotations().size() == 0) {
+        if (curATM.getExplicitAnnotations().isEmpty()) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
                         newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));

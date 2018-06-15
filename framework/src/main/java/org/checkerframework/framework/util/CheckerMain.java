@@ -379,7 +379,7 @@ public class CheckerMain {
         args.add(java);
 
         args.add("-classpath");
-        args.add(PluginUtil.join(File.pathSeparator, runtimeClasspath));
+        args.add(String.join(File.pathSeparator, runtimeClasspath));
         args.add("-ea");
         // com.sun.tools needs to be enabled separately
         args.add("-ea:com.sun.tools...");
@@ -396,17 +396,15 @@ public class CheckerMain {
         // jdk[78].jar classes don't have bodies, so they won't be used at
         // run time, but other, real definitions of those classes will be
         // on the classpath at run time.
-        args.add(
-                "-Xbootclasspath/p:"
-                        + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
+        args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));
 
         if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
-            args.add(quote(PluginUtil.join(File.pathSeparator, cpOpts)));
+            args.add(quote(String.join(File.pathSeparator, cpOpts)));
         }
         if (!argsListHasProcessorPath(argListFiles)) {
             args.add("-processorpath");
-            args.add(quote(PluginUtil.join(File.pathSeparator, ppOpts)));
+            args.add(quote(String.join(File.pathSeparator, ppOpts)));
         }
 
         args.addAll(toolOpts);
@@ -612,7 +610,7 @@ public class CheckerMain {
             }
             throw new RuntimeException(
                     "The following files could not be located: "
-                            + PluginUtil.join(", ", missingAbsoluteFilenames));
+                            + String.join(", ", missingAbsoluteFilenames));
         }
     }
 

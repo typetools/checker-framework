@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.javacutil.PluginUtil;
 
 /**
  * SimpleOptionMap is a very basic Option container. The keys of the Option container are the set of
@@ -97,7 +96,7 @@ public class SimpleOptionMap {
                             "Expected a value for option: "
                                     + opt
                                     + " in option list: "
-                                    + PluginUtil.join(", ", newOptions));
+                                    + String.join(", ", newOptions));
                 }
                 this.options.put(opt, optIter.next());
 
