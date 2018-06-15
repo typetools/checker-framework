@@ -122,7 +122,7 @@ public class Java8InferenceContext {
 
     public boolean isLambdaParam(ExpressionTree expression) {
         Element element = TreeUtils.elementFromUse(expression);
-        if (element.getKind() != ElementKind.PARAMETER) {
+        if (element == null || element.getKind() != ElementKind.PARAMETER) {
             return false;
         }
         return lambdaParms.contains(element);

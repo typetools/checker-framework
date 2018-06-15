@@ -126,8 +126,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (expressionTree.getKind() == Tree.Kind.METHOD_INVOCATION
                 || expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
             if (java8Inference != null
-                    && !java8Inference.getContext().getAnnotatedTypeOfProperType) {
-                // Currently infering, dont infer again.
+                    && (!java8Inference.getContext().getAnnotatedTypeOfProperType
+                            || java8Inference.getContext().pathToExpression.getLeaf()
+                                    == pathToExpression.getLeaf())) {
+                // Currently infering, dont infer again.Java8InferenceContext.java:125
                 return Collections.emptyMap();
             }
             java8InferenceStack.push(java8Inference);

@@ -36,6 +36,7 @@ public class Expression extends Constraint {
     public Expression(ExpressionTree expressionTree, AbstractType t) {
         super(t);
         this.expression = expressionTree;
+        assert expression != null;
     }
 
     @Override
