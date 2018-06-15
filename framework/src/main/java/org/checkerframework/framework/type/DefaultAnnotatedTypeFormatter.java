@@ -22,7 +22,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
-import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
@@ -262,7 +261,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 for (AnnotatedTypeVariable atv : type.getTypeVariables()) {
                     typeVars.add(visit(atv, visiting));
                 }
-                sb.append(PluginUtil.join(", ", typeVars));
+                sb.append(String.join(", ", typeVars));
                 sb.append("> ");
             }
             if (type.getReturnType() != null) {

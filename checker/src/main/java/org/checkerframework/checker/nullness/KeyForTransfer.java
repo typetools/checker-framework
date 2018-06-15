@@ -71,7 +71,7 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
 
     /** @return the String value of a KeyFor, this will throw an exception */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
-        if (keyFor.getElementValues().size() == 0) {
+        if (keyFor.getElementValues().isEmpty()) {
             return new LinkedHashSet<>();
         }
 

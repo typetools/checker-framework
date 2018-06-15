@@ -1063,30 +1063,44 @@ tool like the Checker Framework.)
 Many null pointer exceptions occur because the programmer forgets to check
 whether a reference is null before dereferencing it.  Java 8's
 \sunjavadoc{java/util/Optional.html}{\code{Optional<T>}}
-class provides a partial solution:  you cannot
-dereference the contained value without calling the \<get> method.
+class provides a partial solution:  a programmer must call the \<get> method to
+access the value, and the designers of \<Optional> hope that the syntactic
+occurrence of the \<get> method will remind programmers to first check that
+the value is prosent.  This is still easy to forget, however.
 
-However, the use of \code{Optional} for this purpose is unsatisfactory.
-First, it adds syntactic complexity, making your code longer and harder to
-read.  (The \code{Optional} class provides some operations, such as \<map>
-and \<orElse>, that you would otherwise have to write; without these its
-code bloat would be even worse.)  Second, there is no guarantee that the
-programmer remembers to call \<isPresent> before calling \<get>.  Thus, use
-of \code{Optional} doesn't solve the underlying problem --- it merely
-converts a \code{NullPointerException} into a
-\code{NoSuchElementException} exception, and in either case your code
-crashes.
+The Checker Framework contains an Optional Checker (see
+Chapter~\ref{optional-checker}) that guarantees that programmers use
+\<Optional> correctly, such as calling \<isPresent> before calling \<get>.
 
-The Nullness Checker does not suffer these limitations.  It works with
-existing code and types, it ensures that you check for null wherever
-necessary, and it infers when the check for null is not necessary based on
-previous statements in the method.
-
-See the article
+There are some limitations to the utility of \code{Optional}, which might
+lead to you choose to use regular Java references rather than \<Optional>.
+(For more details, see the article
 \href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
-  is better than Java's \<Optional> class''} for more details and
-explanation of the
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
+  is better than Java's \<Optional> class''}.)
+
+\begin{itemize}
+\item
+  It is still possible to call \<get> on a non-present \<Optional>, leading
+  to a \code{NoSuchElementException}.  In other words, \code{Optional}
+  doesn't solve the underlying problem --- it merely converts a
+  \code{NullPointerException} into a \code{NoSuchElementException}
+  exception, and in either case your code crashes.
+\item
+  \code{NullPointerException} is still possible in code that uses \code{Optional}.
+\item
+  \code{Optional} adds syntactic complexity, making your code longer and harder to
+  read.
+\item
+  \code{Optional} adds time and space overhead.
+\item
+  \code{Optional} does not address important sources of null pointer
+  exceptions, such as partially-initialized objects and calls to \<Map.get>.
+\end{itemize}
+
+The Nullness Checker does not suffer these limitations.  Furthermore, it
+works with existing code and types, it ensures that you check for null
+wherever necessary, and it infers when the check for null is not necessary
+based on previous statements in the method.
 
 Java's \<Optional> class provides utility routines to reduce clutter when
 using \<Optional>.  The Nullness Checker provides an

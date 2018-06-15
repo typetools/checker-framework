@@ -2995,7 +2995,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 stubPathFull = base + "/" + stubPath;
             }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
-            if (stubs.size() == 0) {
+            if (stubs.isEmpty()) {
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
                     StubParser.parse(

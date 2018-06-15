@@ -141,7 +141,6 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
                     "org.springframework.lang.Nullable");
 
-    @SuppressWarnings("deprecation") // aliasing to deprecated annotation
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
 
