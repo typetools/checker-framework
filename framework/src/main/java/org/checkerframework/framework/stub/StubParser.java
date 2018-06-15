@@ -1425,7 +1425,7 @@ public class StubParser {
                         getValueOfExpressionInAnnotation(
                                 name, ((UnaryExpr) expr).getExpression(), valueKind);
                 if (value instanceof Number) {
-                    return convertNegate((Number) value, valueKind);
+                    return convert((Number) value, valueKind, true);
                 }
             }
             stubWarn("Unexpected Unary annotation expression: " + expr);
@@ -1495,48 +1495,38 @@ public class StubParser {
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
      * */
     private Object convert(Number number, TypeKind expectedKind) {
-        switch (expectedKind) {
-            case BYTE:
-                return number.byteValue();
-            case SHORT:
-                return number.shortValue();
-            case INT:
-                return number.intValue();
-            case LONG:
-                return number.longValue();
-            case CHAR:
-                return (char) number.intValue();
-            case FLOAT:
-                return number.floatValue();
-            case DOUBLE:
-                return number.doubleValue();
-            default:
-                ErrorReporter.errorAbort("Unexpected expectedKind: " + expectedKind);
-                return null;
-        }
+        return convert(number, expectedKind, false);
     }
 
     /**
-     * Converts {@code number} to {@code expectedKind} * -1
+     * Converts {@code number} to {@code expectedKind}. The value converted is multiplied by -1 if
+     * {@code negate} is true
      *
      * @param number Number value to be converted
-     * @param expectedKind converts the Number to {byte, short, int, long, float, double}
-     * @return the converted Number Object
+     * @param expectedKind converts the Number object to one of type {byte, short, int, long, char,
+     *     float, double}
+     * @param negate the value of the Number Object while converting
+     * @return the converted Object
      */
-    private Object convertNegate(Number number, TypeKind expectedKind) {
+    private Object convert(Number number, TypeKind expectedKind, boolean negate) {
+        int scalefactor = negate ? -1 : 1;
         switch (expectedKind) {
             case BYTE:
-                return -1 * number.byteValue();
+                return (byte) (number.byteValue() * scalefactor);
             case SHORT:
-                return -1 * number.shortValue();
+                return (short) (number.shortValue() * scalefactor);
             case INT:
-                return -1 * number.intValue();
+                return number.intValue() * scalefactor;
             case LONG:
-                return -1 * number.longValue();
+                return number.longValue() * scalefactor;
+            case CHAR:
+                /* char is not multiplied by the scale factor since it's not possible for `number` to be negative
+                when `expectedkind` is a CHAR and casting a negative value to char is illegal */
+                return (char) number.intValue();
             case FLOAT:
-                return -1 * number.floatValue();
+                return number.floatValue() * scalefactor;
             case DOUBLE:
-                return -1 * number.doubleValue();
+                return number.doubleValue() * scalefactor;
             default:
                 ErrorReporter.errorAbort("Unexpected expectedKind: " + expectedKind);
                 return null;
