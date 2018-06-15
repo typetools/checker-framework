@@ -1279,10 +1279,14 @@ Here are some style guidelines:
   type qualifiers, write \code{class MyClass<T>} rather than \code{class
     MyClass<T extends @TOPTYPEANNO Object>}.
 \item
-  When you write an upper bound, give an explicit type annotation.  That
-  is, write \code{class C<T extends @DEFAULTANNO Object>
-    \ttlcb\ ... \ttrcb} even if it is equivalent to writing \code{class C<T
-    extends Object> \ttlcb\ ... \ttrcb}.
+  When you write an \<Object> upper bound, give an explicit type annotation.
+  That is, write \code{class C<T extends @DEFAULTANNO Object>
+    \ttlcb\ ... \ttrcb} even though it is equivalent to writing
+  \code{class C<T extends Object> \ttlcb\ ... \ttrcb}.
+
+  If you write just \<extends Object>, then someone who is reading the code
+  might think that it is irrelevant (which it is in plain Java).  Also,
+  some IDEs will suggest removing it.
 \end{itemize}
 
 
