@@ -133,7 +133,8 @@ import org.checkerframework.framework.qual.Covariant;
  * @since 1.2
  */
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface Map<K,V> {
+@Covariant(0)
+public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
     // Query Operations
 
     /**
@@ -172,7 +173,7 @@ public interface Map<K,V> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    boolean containsKey(Object key);
+    boolean containsKey(@Nullable Object key);
 
     /**
      * Returns <tt>true</tt> if this map maps one or more keys to the
@@ -193,7 +194,7 @@ public interface Map<K,V> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    boolean containsValue(Object value);
+    boolean containsValue(@Nullable Object value);
 
     /**
      * Returns the value to which the specified key is mapped,
@@ -396,7 +397,7 @@ public interface Map<K,V> {
      * @since 1.2
      */
     @Covariant(0)
-    interface Entry<K, V> {
+    interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
         /**
          * Returns the key corresponding to this entry.
          *
