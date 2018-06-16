@@ -139,7 +139,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * @see     Hashtable
  * @since   1.2
  */
-public class HashMap<K, V> extends AbstractMap<K,V>
+public class HashMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 362498820763181265L;
@@ -559,7 +559,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
      * @see #put(Object, Object)
      */
     @Pure
-    public V get(Object key) {
+    public @Nullable V get(@Nullable Object key) {
         Node<K,V> e;
         return (e = getNode(hash(key), key)) == null ? null : e.value;
     }
@@ -600,7 +600,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
      * key.
      */
     @Pure
-    public boolean containsKey(Object key) {
+    public boolean containsKey(@Nullable Object key) {
         return getNode(hash(key), key) != null;
     }
 
@@ -882,7 +882,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
      *         specified value
      */
     @Pure
-    public boolean containsValue(Object value) {
+    public boolean containsValue(@Nullable Object value) {
         Node<K,V>[] tab; V v;
         if ((tab = table) != null && size > 0) {
             for (int i = 0; i < tab.length; ++i) {
