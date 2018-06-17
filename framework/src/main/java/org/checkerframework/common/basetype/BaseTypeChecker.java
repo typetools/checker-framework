@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -503,6 +504,33 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             // Update errsOnLastExit to reflect the errors issued.
             this.errsOnLastExit = log.nerrors;
         }
+    }
+
+    /**
+     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
+     * contains a key that would suppress a warning from this checker.
+     *
+     * <p>Collects needed warning suppressions for all subcheckers.
+     */
+    @Override
+    protected void warnUnneededSuppressions() {
+        if (parentChecker != null || !hasOption("warnUnneededSuppressions")) {
+            return;
+        }
+        Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
+        this.elementsWithSuppressedWarnings.clear();
+        Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
+        Set<String> errorKeys = new HashSet<>(messages.stringPropertyNames());
+        for (BaseTypeChecker subChecker : subcheckers) {
+            elementsSuppress.addAll(subChecker.elementsWithSuppressedWarnings);
+            subChecker.elementsWithSuppressedWarnings.clear();
+            checkerKeys.addAll(subChecker.getSuppressWarningsKeys());
+            errorKeys.addAll(subChecker.messages.stringPropertyNames());
+            subChecker.getVisitor().treesWithSuppressWarnings.clear();
+        }
+        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
+
+        getVisitor().treesWithSuppressWarnings.clear();
     }
 
     /**

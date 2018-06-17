@@ -208,6 +208,17 @@ public abstract class UBQualifier {
     }
 
     /**
+     * Returns whether or not this qualifier has sequence with the specified offset.
+     *
+     * @param sequence sequence expression
+     * @param offset the offset being looked for
+     * @return whether or not this qualifier has sequence with the specified offset
+     */
+    public boolean hasSequenceWithOffset(String sequence, String offset) {
+        return false;
+    }
+
+    /**
      * Is the value with this qualifier less than or equal to the length of sequence?
      *
      * @param sequence a String sequence
@@ -233,6 +244,16 @@ public abstract class UBQualifier {
                 return false;
             }
             return offsets.contains(OffsetEquation.createOffsetForInt(offset));
+        }
+
+        @Override
+        public boolean hasSequenceWithOffset(String sequence, String offset) {
+            Set<OffsetEquation> offsets = map.get(sequence);
+            if (offsets == null) {
+                return false;
+            }
+            OffsetEquation target = OffsetEquation.createOffsetFromJavaExpression(offset);
+            return offsets.contains(target);
         }
 
         /**
@@ -854,6 +875,27 @@ public abstract class UBQualifier {
 
         public Iterable<? extends String> getSequences() {
             return map.keySet();
+        }
+
+        /** Generates a new UBQualifer without the given sequence and offset. */
+        public UBQualifier removeOffset(String sequence, int offset) {
+            OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
+            List<String> sequences = new ArrayList<>();
+            List<String> offsets = new ArrayList<>();
+            for (String seq : this.map.keySet()) {
+                Set<OffsetEquation> offsetSet = this.map.get(seq);
+                for (OffsetEquation off : offsetSet) {
+                    if (!sequence.equals(seq) && !off.equals(offsetEq)) {
+                        sequences.add(seq);
+                        offsets.add(off.toString());
+                    }
+                }
+            }
+            if (sequences.isEmpty()) {
+                return UpperBoundUnknownQualifier.UNKNOWN;
+            } else {
+                return UBQualifier.createUBQualifier(sequences, offsets);
+            }
         }
 
         /** Functional interface that operates on {@link OffsetEquation}s */

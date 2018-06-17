@@ -22,8 +22,6 @@ public class LessThanCustomCollection {
     ) int end;
 
     private LessThanCustomCollection(int[] array) {
-        // 0 should be @LessThan(array.length + 1)
-        // :: error: (argument.type.incompatible)
         this(array, 0, array.length);
     }
 

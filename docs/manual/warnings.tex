@@ -67,6 +67,9 @@ Some type checkers can suppress warnings via
 \noindent
 The rest of this chapter explains these mechanisms in turn.
 
+You can use the \code{-AwarnUnneededSuppressions} command-line option to issue a
+warning if a \code{@SuppressWarnings} did not suppress any warnings issued by the current checker.
+
 % See the @SuppressWarningsKey annotation and the getSuppressWarningsKey method.
 
 \section{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
@@ -481,7 +484,7 @@ incorrect use of the return value.
 To suppress all errors and warnings related to multiple classes, you can use
 the regular expression alternative operator ``\code{|}'', as in
 ``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
-all warnings related to uses of classes belong to the \code{java.lang} or
+all warnings related to uses of classes that belong to the \code{java.lang} or
 \code{java.util} packages.  (Depending on your shell or other tool, you
 might need to change or remove the quoting.)
 

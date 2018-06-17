@@ -12,7 +12,6 @@ class Test {
         if (field1 != null) {
             new Object() {
                 void f() {
-                    // ::error: (dereference.of.nullable)
                     field1.toString();
                 }
             };
@@ -23,7 +22,6 @@ class Test {
         if (field2 != null) {
             new Object() {
                 void f() {
-                    // ::error: (dereference.of.nullable)
                     field2.toString();
                 }
             };

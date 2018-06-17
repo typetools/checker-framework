@@ -348,7 +348,7 @@ public class TestConfigurationBuilder {
         throw new RuntimeException(
                 "Attempted to build invalid test configuration:\n"
                         + "Errors:\n"
-                        + PluginUtil.join("\n", errors)
+                        + String.join("\n", errors)
                         + "\n"
                         + this.toString()
                         + "\n");
