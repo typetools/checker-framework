@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry excluding="testannotations/" kind="src" path="tests/src"/>
-	<classpathentry kind="src" path="tests/test-lubglb"/>
-	<classpathentry kind="src" path="tests/test-polyall"/>
-	<classpathentry exported="true" kind="lib" path="tests/junit-4.12.jar"/>
-	<classpathentry exported="true" kind="lib" path="tests/hamcrest-core-1.3.jar"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/jsr308-langtools"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/dataflow"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/javacutil"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/annotation-file-utilities"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/scene-lib"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/stubparser"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/checker-qual"/>
-	<classpathentry kind="output" path="build"/>
+	<classpathentry kind="src" output="build/classes/java/main" path="src/main/java"/>
+	<classpathentry kind="src" output="build/classes/java/test" path="src/test/java" excluding="tests/SubtypingStringPatternsPartialTest.java"/>
+	<classpathentry kind="src" output="build/classes/java/testannotations" path="src/testannotations/java"/>
+	<classpathentry kind="src" path="/dataflow" exported="true"/>
+	<classpathentry kind="src" path="/scene-lib" exported="true"/>
+	<classpathentry kind="src" path="/stubparser"/>
+	<classpathentry kind="src" path="/util" exported="true"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="/checker/dist/checker-qual.jar" sourcepath="/checker"/>
+	<classpathentry kind="output" path="build/default"/>
 </classpath>

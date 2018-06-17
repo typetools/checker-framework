@@ -1,3 +1,22 @@
+Version 2.5.2, June 1, 2018
+
+In the Map Key Checker, null is now @UnknownKeyFor.  See the "Map Key Checker"
+chapter in the manual for more details.
+
+Closed issues:
+
+370, 469, 1701, 1916, 1922, 1959, 1976, 1978, 1981, 1983, 1984, 1991, 1992.
+
+---------------------------------------------------------------------------
+Version 2.5.1, May 1, 2018
+
+Added a Maven artifact of the Checker Framework testing library, testlib.
+
+Closed issues:
+
+849, 1739, 1838, 1847, 1890, 1901, 1911, 1912, 1913, 1934, 1936, 1941, 1942,
+1945, 1946, 1948, 1949, 1952, 1953, 1956, 1958.
+
 ---------------------------------------------------------------------------
 
 Version 2.5.0, April 2, 2018

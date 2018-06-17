@@ -18,7 +18,7 @@ configurations {
 
 // Checker Framework from Maven Central
 dependencies {
-  ext.checkerFrameworkVersion = '2.5.0'
+  ext.checkerFrameworkVersion = '2.5.2'
   checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
   checkerFrameworkCheckerJar "org.checkerframework:checker:${checkerFrameworkVersion}"
   implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"

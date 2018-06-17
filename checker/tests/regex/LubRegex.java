@@ -58,8 +58,7 @@ public class LubRegex {
             s = s10;
             return;
         }
-        // TODO: s is a @Regex(10) here, but shouldn't it be a @Regex(11)?
-        // @Regex(11) String test = s;
+        @Regex(11) String test = s;
 
         // :: error: (assignment.type.incompatible)
         @Regex(12) String test2 = s;

@@ -1,12 +1,12 @@
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
+// :: error: (initialization.fields.uninitialized)
 class StaticInitializer {
 
     public static String a;
     public static String b;
 
-    // :: error: (initialization.fields.uninitialized)
     static {
         a = "";
     }
@@ -27,6 +27,31 @@ class StaticInitializer3 {
 class StaticInitializer4 {
     public static String a = "";
     public static String b;
+
+    static {
+        b = "";
+    }
+}
+
+class StaticInitializer5 {
+    public static String a = "";
+
+    static {
+        a.toString();
+    }
+
+    public static String b = "";
+}
+
+class StaticInitializer6 {
+    public static String a = "";
+
+    public static String b;
+
+    static {
+        // TODO error expected. See #556.
+        b.toString();
+    }
 
     static {
         b = "";

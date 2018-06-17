@@ -179,7 +179,9 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 \subsection{Default qualifier for unannotated types\label{defaults}}
 
 A type system designer, or an end-user programmer, can cause unannotated
-references to be treated as if they had a default annotation.
+Java types to be treated as if they had a default annotation.
+(Defaulting never applies to uses of type varables, even if they do not
+have an explicit type annotation.)
 
 There are several defaulting mechanisms, for convenience and flexibility.
 When determining the default qualifier for a use of a type, the following
@@ -285,7 +287,7 @@ example, consider these two declarations:
 \noindent
 The two declarations are treated identically by Java, and the default
 qualifier applies to the \<Object> upper bound whether it is implicit or
-explicit.  (The @NonNull default annotation applies only to the upper bound
+explicit.  (The \<@NonNull> default annotation applies only to the upper bound
 in the \<extends> clause, not to the lower bound in the inexpressible
 implicit \<super void> clause.)
 
@@ -1172,10 +1174,9 @@ The set of permitted expressions is a subset of all Java expressions:
 % indices.
 
 \item
-  a local variable.  This is not applicable for method annotations, but is
-  applicable to type annotations such as
-  \refqualclass{checker/nullness/qual}{KeyFor}.  Write the variable name.  For
-  example: \<myLocalVar>.
+  a local variable.  Write the variable name.  For example: \<myLocalVar>.
+  The variable must be in scope; for example, a method annotation on method
+  \<m> cannot mention a local variable that is declared inside \<m>.
 
 \item
   a static variable.  Write the class name and the variable, as in

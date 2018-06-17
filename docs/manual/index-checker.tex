@@ -58,6 +58,22 @@ To run the Index Checker, run the command
   javac -processor index \emph{MyJavaFile}.java
 \end{alltt}
 
+Recall that in Java, type annotations are written before the type;
+in particular,
+array annotations appear immediately before ``\<[]>''.
+Here is how to declare a length-9 array of positive integers:
+
+\begin{Verbatim}
+  @Positive int @ArrayLen(9) []
+\end{Verbatim}
+
+Multi-dimensional arrays are similar.
+Here is how to declare a length-2 array of length-4 arrays:
+
+\begin{Verbatim}
+  String @ArrayLen(2) [] @ArrayLen(4) []
+\end{Verbatim}
+
 
 \section{Index Checker structure and annotations\label{index-annotations}}
 
@@ -321,6 +337,28 @@ of a method which ensures that a certain expression is a valid index for a seque
   then the given expression (or all the given expressions)
   is less than the length of the given sequences with the given offsets.
 \end{description}
+
+The Upper Bound Checker also supports a declaration annotation
+\refqualclasswithparams{checker/index/qual}{HasSubsequence}{String[] value, String[] from, String[] to}. This annotation
+can be written on sequence declarations to indicate that a sequence has a named subsequence with the given name,
+which ranges from \code{from} to \code{to} in the annotated sequence. So, for example:
+
+\begin{Verbatim}
+  @HasSubsequence(value="this", from="this.start", to="this.end") int [] array;
+\end{Verbatim}
+
+The array declaration above indicates that the \code{this} object is a subsequence of \code{array},
+and that valid indexes to \code{this} translate to indexes \code{start} to \code{end - 1} in \code{array}.
+The length of \code{this}
+is \code{end - start}. When an array is assigned to \code{array}, three facts are checked: that \code{start}
+is non-negative, that \code{start} is less than or equal to \code{end}, and that \code{end} is less than or
+equal to the length of \code{array}. Note that this doesn't guarantee that \code{this} is in fact a subsequence,
+just that there is a such a subsequence. The programmer must manually verify that \code{this} actually refers
+to that subsequence. Such a subsequence annotation permits additional types to be inferred for binary expressions
+involving either the \code{from} or \code{to} parameter to the annotation. If \code{x} is \code{@IndexFor("this")}
+in the example above, then \code{start + x} is \code{@IndexFor("array")}. If \code{y} is \code{@IndexFor("array")} and
+\code{@LessThan("end")}, then \code{y - start} is \code{@IndexFor("this")}.
+Finally, \code{end - start} is \code{@IndexOrHigh("this")}.
 
 \section{Sequence minimum lengths\label{index-minlen}}
 

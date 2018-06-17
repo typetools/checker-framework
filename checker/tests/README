@@ -13,7 +13,7 @@ How to run all the tests for the Checker Framework
 
 Other Gradle tasks also exist to run a subset of the tests; for example,
   # Run from the checker directory:
-  ./gradlew NullnessFBCTests
+  ./gradlew NullnessFBcTest
   ./gradlew allTests
 
   # To see all tasks
@@ -55,7 +55,7 @@ whose name usually corresponds to the checker name, such as
 checker-framework/checker/tests/nullness/ .  Unless the README file in
 the test directory specifies otherwise, then the Java file must
 1. Not issue any javac errors.
-2. Not declare a class with the same (fully qualfied) name as any other class in
+2. Not declare a class with the same (fully qualified) name as any other class in
    the test directory.
 3. Not declare a class with the same (simple) name as any commonly used Java
    library class such as List.
@@ -161,7 +161,7 @@ Writing tests for a new checker or with different command-line arguments
 To create tests for a new checker, mimic some existing checker's tests:
  * create a top-level test directory, such as
    checker-framework/checker/tests/regex for the test cases
- * create a top-level JUnit test in checker-framework/checker/tests/src/tests,
+ * create a top-level JUnit test in checker-framework/checker/src/test/tests,
    such as: RegexTest.java
    It is a subclass of CheckerFrameworkPerDirectoryTest, and its list of checker
    options must include "-Anomsgtext".  (See the API documentation for

@@ -2,27 +2,7 @@ repositories {
     mavenCentral()
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src']
-            // Exclude the ManualTaglet
-            exclude '**/javacutil/dist/**'
-        }
-    }
-
-    // Source set for the ManualTaglet
-    taglet {
-        java {
-            srcDirs = ['src']
-            include '**/javacutil/dist/**'
-        }
-    }
-}
-
 dependencies {
     compile configurations.javacJar
     compileOnly project(':checker-qual')
-
-    tagletCompile configurations.toolsJar
 }
