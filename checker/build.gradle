@@ -96,7 +96,7 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 assemble.dependsOn copyJarsToDist
 
 task buildJdk(type: Jar, group: 'Build', dependsOn: copyJarsToDist) {
-    description 'Builds jdk8.jar, pass -PbuildJdk= to use built jar in other tasks.'
+    description 'Builds jdk8.jar; other tasks must pass -PbuildJdk= to use built jdk8.jar.'
 
     doLast {
         if (System.getenv('JAVA_HOME') == null) {
