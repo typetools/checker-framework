@@ -561,7 +561,7 @@ public class TypeVisualizer {
                     // TODO: More comprehensive escaping
                     annoNames.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
                 }
-                return PluginUtil.join(" ", annoNames);
+                return String.join(" ", annoNames);
             }
 
             public boolean checkOrAdd(final AnnotatedTypeMirror atm) {

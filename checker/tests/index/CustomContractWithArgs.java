@@ -32,7 +32,7 @@ public class CustomContractWithArgs {
         public String[] targetOffset();
     }
 
-    //Precondition for LTLengthOf
+    // Precondition for LTLengthOf
     @PreconditionAnnotation(qualifier = LTLengthOf.class)
     @interface RequiresLTL {
         public String[] value();

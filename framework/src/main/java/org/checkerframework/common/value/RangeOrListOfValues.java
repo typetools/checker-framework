@@ -118,7 +118,7 @@ class RangeOrListOfValues {
         if (isRange) {
             return range.toString();
         } else {
-            if (values.size() == 0) {
+            if (values.isEmpty()) {
                 return "[]";
             }
             String res = "[";
