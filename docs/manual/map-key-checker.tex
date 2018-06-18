@@ -59,6 +59,8 @@ necessarily true).
 \subsection{Default for lower bounds\label{map-key-defaults-lowerbound}}
 
 Lower bounds are defaulted to \code{@UnknownKeyFor}.
+However, in \<java.*> packages, the default for lower bounds is
+\<@KeyForBottom>.
 
 It is challenging to choose a default for lower bounds of type variables
 and wildcards.
@@ -102,15 +104,15 @@ Here is a comparison of two choices for lower bounds:
 %END LATEX
 
 
-If lower bounds are defaulted to \code{@KeyForBottom},
-then whenever \<null> is assigned to a variable whose type is a type variable,
-programmers
-must write a \<UnknownKeyFor> annotation on either the type variable
-declaration or on variable declarations, as shown in \<MyClass1> and
+If lower bounds are defaulted to \code{@KeyForBottom} (which is not
+currently the case), then whenever \<null> is assigned to a variable whose
+type is a type variable, programmers must write an \<@UnknownKeyFor>
+annotation on either the type variable declaration or on variable
+declarations, as shown in \<MyClass1> and
 \<MyClass2>.
 
-If lower bounds are defaulted to \code{@UnknownKeyFor}, then
-whenever a client might use a \<@KeyFor> type argument,
+If lower bounds are defaulted to \code{@UnknownKeyFor} (which is currently
+the case), then whenever a client might use a \<@KeyFor> type argument,
 programmers must write a \<@KeyForBottom> annotation on the type parameter,
 as in \<MySet2> (and \<Set>).
 
