@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 class InLambdaAnnotated {

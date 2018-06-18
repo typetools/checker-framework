@@ -1569,8 +1569,8 @@ public class CFGBuilder {
             // traverse AST of the method body
             Node finalNode = scan(bodyPath, null);
 
-            // If we are building the CFG for a lambda with a single expression as the body, then add an extra node
-            // for the result of that lambda
+            // If we are building the CFG for a lambda with a single expression as the body, then
+            // add an extra node for the result of that lambda
             if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
                 LambdaExpressionTree lambdaTree =
                         ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
@@ -4343,10 +4343,11 @@ public class CFGBuilder {
                 }
 
                 if (hasExceptionalPath(exceptionalFinallyLabel)) {
-                    // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-                    // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
-                    // is no successful path, it will be removed in later phase.
-                    // TODO: Don't we need a separate finally block for each kind of exception?
+                    // If an exceptional path exists, scan 'finallyBlock' for
+                    // 'exceptionalFinallyLabel', and scan copied 'finallyBlock' for 'finallyLabel'
+                    // (a successful path). If there is no successful path, it will be removed in
+                    // later phase.  TODO: Don't we need a separate finally block for each kind of
+                    // exception?
                     addLabelForNextNode(exceptionalFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
