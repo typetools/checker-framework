@@ -535,7 +535,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror annotation =
                         getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
                 // For non-negative numbers, right shift is equivalent to division by a power of two
-                // The range of the shift amount is limited to 0..30 to avoid overflows and int/long differences
+                // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
+                // differences
                 Long shiftAmount = IndexUtil.getExactValue(right, getValueAnnotatedTypeFactory());
                 if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
                     int divisor = 1 << shiftAmount;

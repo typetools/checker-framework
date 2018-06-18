@@ -2531,7 +2531,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
                 atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
-        // The type to which the member reference is assigned -- also known as the target type of the reference.
+        // The type to which the member reference is assigned -- also known as the target type of
+        // the reference.
         AnnotatedDeclaredType functionalInterface = result.first;
         // The type of the single method that is declared by the functional interface.
         AnnotatedExecutableType functionType = result.second;
@@ -2953,8 +2954,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // class instance creation expression)."
 
                     // So a member reference can only refer to an inner class constructor if a type
-                    // that encloses the inner class can be found. So either "this" is that enclosing
-                    // type or "this" has an enclosing type that is that type.
+                    // that encloses the inner class can be found. So either "this" is that
+                    // enclosing type or "this" has an enclosing type that is that type.
                     receiverDecl = overrider.getReceiverType();
                     receiverArg = atypeFactory.getSelfType(memberTree);
                     while (!TypesUtils.isErasedSubtype(
@@ -3123,7 +3124,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Sometimes when using a Java 8 compiler (not JSR308) the overridden return
                     // type of a method reference becomes a captured type.  This leads to defaulting
                     // that often makes the overriding return type invalid.  We ignore these.  This
-                    // happens in Issue403/Issue404 when running without the jsr308-langtools compiler.
+                    // happens in Issue403/Issue404 when running without the jsr308-langtools
+                    // compiler.
                     if (!success && methodReference) {
 
                         boolean isCaptureConverted =
