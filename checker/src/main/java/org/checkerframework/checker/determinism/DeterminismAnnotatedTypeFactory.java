@@ -24,7 +24,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.*;
 
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    public final AnnotationMirror POLYDET, POLYDET_USE;
+    public final AnnotationMirror POLYDET, POLYDET_USE, POLYDET_UP, POLYDET_DOWN;
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
@@ -36,6 +36,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder.setValue("value", "use");
         POLYDET_USE = builder.build();
+        AnnotationBuilder builder_up = new AnnotationBuilder(processingEnv, PolyDet.class);
+        builder_up.setValue("value", "up");
+        POLYDET_UP = builder_up.build();
+        AnnotationBuilder builder_down = new AnnotationBuilder(processingEnv, PolyDet.class);
+        builder_down.setValue("value", "down");
+        POLYDET_DOWN = builder_down.build();
         AnnotationBuilder builder2 = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder2.setValue("value", "");
         POLYDET = builder2.build();
@@ -106,18 +112,45 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, p);
             }
 
-            //For Collections: equals on different types (Ex: List and Set) is always false
+            //For Sets: "equals" on @OrderNonDet Sets without @OrderNonDet List type parameter
             //Return type is @Det.
-            if (invokedMethodElement.getSimpleName().toString().equals("equals")) {
-                TypeMirror receiverType =
-                        TypesUtils.getTypeElement(receiver.getUnderlyingType()).asType();
-                if (isCollection(receiverType)) {
-                    System.out.println(invokedMethodElement.getParameters().get(0).asType());
+            TypeElement receiverUnderlyingType =
+                    TypesUtils.getTypeElement(receiver.getUnderlyingType());
+            if (invokedMethodElement.getSimpleName().toString().equals("equals")
+                    && isSet(receiverUnderlyingType.asType())
+                    && AnnotationUtils.areSame(
+                            receiver.getAnnotations().iterator().next(), ORDERNONDET)) {
+                //Receiver does not have "@OrderNonDet List" type parameter
+                if (!hasOrderNonDetListAsTypeParameter(receiver)) {
+                    AnnotatedTypeMirror parameter =
+                            atypeFactory.getAnnotatedType(node.getArguments().get(0));
+                    if (isSet(TypesUtils.getTypeElement(parameter.getUnderlyingType()).asType())
+                            && parameter.hasAnnotation(ORDERNONDET)) {
+                        //Parameter - same type as receiver
+                        // does not have "@OrderNonDet List" type parameter
+                        if (types.isSameType(
+                                        receiver.getUnderlyingType(), parameter.getUnderlyingType())
+                                && !hasOrderNonDetListAsTypeParameter(parameter)) {
+                            p.replaceAnnotation(DET);
+                        }
+                    }
                 }
             }
-
             return super.visitMethodInvocation(node, p);
         }
+    }
+
+    private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
+        AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
+                (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
+        Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
+        while (it.hasNext()) {
+            AnnotatedTypeMirror argType = it.next();
+            if (isList(argType.getUnderlyingType()) && argType.hasAnnotation(ORDERNONDET)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
@@ -131,7 +164,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isMainMethod(t.getElement())) {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
-                System.out.println("here: " + paramType + " ==> " + t);
             }
             return super.visitExecutable(t, p);
         }
@@ -162,6 +194,67 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         super.addComputedTypeAnnotations(elt, type);
+    }
+
+    public boolean isSet(TypeMirror tm) {
+        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
+        TypeMirror SetTypeMirror =
+                TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
+        TypeMirror AbstractSetTypeMirror =
+                TypesUtils.typeFromClass(AbstractSet.class, types, processingEnv.getElementUtils());
+        TypeMirror EnumSetTypeMirror =
+                TypesUtils.typeFromClass(EnumSet.class, types, processingEnv.getElementUtils());
+        TypeMirror HashSetTypeMirror =
+                TypesUtils.typeFromClass(HashSet.class, types, processingEnv.getElementUtils());
+        TypeMirror LinkedHashSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        LinkedHashSet.class, types, processingEnv.getElementUtils());
+        TypeMirror TreeSetTypeMirror =
+                TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
+        TypeMirror SortedSetTypeMirror =
+                TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
+        TypeMirror NavigableSetTypeMirror =
+                TypesUtils.typeFromClass(
+                        NavigableSet.class, types, processingEnv.getElementUtils());
+
+        if (types.isSubtype(tm, SetTypeMirror)
+                || types.isSubtype(tm, HashSetTypeMirror)
+                || types.isSubtype(tm, AbstractSetTypeMirror)
+                || types.isSubtype(tm, EnumSetTypeMirror)
+                || types.isSubtype(tm, LinkedHashSetTypeMirror)
+                || types.isSubtype(tm, TreeSetTypeMirror)
+                || types.isSubtype(tm, SortedSetTypeMirror)
+                || types.isSubtype(tm, NavigableSetTypeMirror)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isList(TypeMirror tm) {
+        //List and subclasses
+        TypeMirror ListTypeMirror =
+                TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
+        TypeMirror ArrayListTypeMirror =
+                TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
+        TypeMirror LinkedListTypeMirror =
+                TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
+        TypeMirror AbstractListTypeMirror =
+                TypesUtils.typeFromClass(
+                        AbstractList.class, types, processingEnv.getElementUtils());
+        TypeMirror AbstractSequentialListTypeMirror =
+                TypesUtils.typeFromClass(
+                        AbstractSequentialList.class, types, processingEnv.getElementUtils());
+        TypeMirror ArraysTypeMirror =
+                TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
+        if (types.isSubtype(tm, ListTypeMirror)
+                || types.isSubtype(tm, ArrayListTypeMirror)
+                || types.isSubtype(tm, AbstractListTypeMirror)
+                || types.isSubtype(tm, AbstractSequentialListTypeMirror)
+                || types.isSubtype(tm, LinkedListTypeMirror)
+                || types.isSubtype(tm, ArraysTypeMirror)) {
+            return true;
+        }
+        return false;
     }
 
     public boolean isCollection(TypeMirror tm) {
@@ -225,6 +318,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public boolean isIterator(TypeMirror tm) {
+        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         TypeMirror IteratorTypeMirror =
                 TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
         if (types.isSubtype(tm, IteratorTypeMirror)) {

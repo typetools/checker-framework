@@ -3,6 +3,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("determinism")
 public class ForEach {
     void m1() {
         Set<? extends CharSequence> s = new HashSet<CharSequence>();

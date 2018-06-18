@@ -369,7 +369,7 @@ public interface Set<E> extends Collection<E> {
      * @param o object to be compared for equality with this set
      * @return <tt>true</tt> if the specified object is equal to this set
      */
-    @PolyDet("down") boolean equals(@PolyDet Set<E> this, @PolyDet Object o);
+    @PolyDet("up") boolean equals(@PolyDet Set<E> this, @PolyDet Object o);
 
     /**
      * Returns the hash code value for this set.  The hash code of a set is

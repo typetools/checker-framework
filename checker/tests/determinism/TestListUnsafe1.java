@@ -12,5 +12,11 @@ public class TestListUnsafe1 {
             // :: error: (assignment.type.incompatible)
             @Det boolean r = z;
         }
+        lst.clear();
+    }
+
+    void TestList1() {
+        @OrderNonDet List<@Det Integer> lst = new @OrderNonDet ArrayList<@Det Integer>();
+        @NonDet int rt = lst.remove(10);
     }
 }

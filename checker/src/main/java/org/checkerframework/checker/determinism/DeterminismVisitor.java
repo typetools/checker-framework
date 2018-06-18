@@ -2,7 +2,6 @@ package org.checkerframework.checker.determinism;
 
 import com.sun.source.tree.Tree;
 import java.util.*;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -34,18 +33,18 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         DeclaredType javaType = useType.getUnderlyingType();
-
-        ProcessingEnvironment processingEnvironment = checker.getProcessingEnvironment();
         if (useType.hasAnnotation(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
-            if (!(atypeFactory.isCollection(javaType.asElement().asType()))) {
+            if (!(atypeFactory.isCollection(javaType.asElement().asType())
+                    || atypeFactory.isIterator(javaType.asElement().asType()))) {
                 checker.report(Result.failure(INVALID_ANNOTATION), tree);
                 return false;
             }
         }
 
         //Sets and lists
-        if (atypeFactory.isCollection(javaType.asElement().asType())
-                && javaType.getTypeArguments().size() == 1) {
+        if ((atypeFactory.isCollection(javaType.asElement().asType())
+                        && javaType.getTypeArguments().size() == 1)
+                || atypeFactory.isIterator(javaType.asElement().asType())) {
             AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
             AnnotatedTypeMirror paramType = useType.getTypeArguments().iterator().next();
             Iterator<AnnotationMirror> paramAnnotationIt = paramType.getAnnotations().iterator();
