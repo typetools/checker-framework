@@ -28,7 +28,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     }
 
     /**
-     * Creates a space String of each annotation in annos separated by a single space character and
+     * Creates a String of each annotation in annos separated by a single space character and
      * terminated by a space character, obeying the printInvisible parameter.
      *
      * @param annos a collection of annotations to print
