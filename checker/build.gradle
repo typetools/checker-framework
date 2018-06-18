@@ -34,11 +34,12 @@ task downloadJdk() {
     String shaHash = '3e57e020050ee8b679622e7f864e7dff17aa8acc'
     File jdk = new File(buildDir, "jdk8-${shaHash}.jar");
     onlyIf {
-        !rootProject.hasProperty("builtJdk") && (!jdk.exists() || !(new File('"dist/jdk8.jar').exists()))
+        !rootProject.hasProperty("localJdk") && (!jdk.exists() || !(new File('"dist/jdk8.jar').exists()))
     }
 
     doLast {
-        if (rootProject.hasProperty("builtJdk")) {
+        // If localJdk is set (regardless of what value it is set to), then use jdk/jdk.jar instead of downloading.
+        if (rootProject.hasProperty("localJdk")) {
             copy {
                 from 'jdk/jdk.jar'
                 rename { String fileName ->
@@ -96,7 +97,7 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 assemble.dependsOn copyJarsToDist
 
 task buildJdk(type: Jar, group: 'Build', dependsOn: copyJarsToDist) {
-    description 'Builds jdk8.jar; other tasks must pass -PbuiltJdk= to use built jdk8.jar.'
+    description 'Builds jdk8.jar; other tasks must pass -PlocalJdk= to use built jdk8.jar.'
 
     doLast {
         if (System.getenv('JAVA_HOME') == null) {
