@@ -45,8 +45,8 @@ public class Java8Lambdas {
         }
 
         public void doEither(@PolyUI PolymorphicFunctionalInterface<UIElement> func) {
-            // In a real program some intelligent dispatch could be done here to avoid running on UI thread unless
-            // needed.
+            // In a real program some intelligent dispatch could be done here to avoid running on UI
+            // thread unless needed.
             arg.runOnUIThread(
                     new IAsyncUITask() {
                         final UIElement e2 = arg;
@@ -59,7 +59,8 @@ public class Java8Lambdas {
         }
 
         public void doUISafely(@UI PolymorphicFunctionalInterface<UIElement> func) {
-            // In a real program some intelligent dispatch could be done here to avoid running on UI thread unless
+            // In a real program some intelligent dispatch could be done here to avoid running on UI
+            // thread unless
             // needed.
             arg.runOnUIThread(
                     new IAsyncUITask() {
@@ -101,9 +102,10 @@ public class Java8Lambdas {
         runner.doUISafely(e -> e.dangerous());
         @AlwaysSafe PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
         safePolymorphicLambdaRunner.doEither(e -> e.repaint());
-        // This next two are ok for this patch since the behavior is the same (no report) for lambdas as for annon
-        // classes. However, shouldn't this be (argument.type.incompatible) just because safePolymorphicLambdaRunner
-        // is not an @UI PolymorphicLambdaRunner ? Or, failing that (call.invalid.ui) since doEither is @PolyUIEffect ?
+        // This next two are ok for this patch since the behavior is the same (no report) for
+        // lambdas as for annon classes. However, shouldn't this be (argument.type.incompatible)
+        // just because safePolymorphicLambdaRunner is not an @UI PolymorphicLambdaRunner ? Or,
+        // failing that (call.invalid.ui) since doEither is @PolyUIEffect ?
         safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
         safePolymorphicLambdaRunner.doEither(
                 new @UI PolymorphicFunctionalInterface<UIElement>() {

@@ -22,7 +22,8 @@ public class UpperBoundChecker extends BaseTypeChecker {
     private HashSet<String> collectionBaseTypeNames;
 
     public UpperBoundChecker() {
-        // These classes are bases for both mutable and immutable sequence collections, which contain methods that change the length.
+        // These classes are bases for both mutable and immutable sequence collections, which
+        // contain methods that change the length.
         // Upper bound checker warnings are skipped at uses of them.
         Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
         collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);

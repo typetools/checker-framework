@@ -1,4 +1,3 @@
-
 class InLambda {
     static class Mine<T> {
         @SuppressWarnings("nullness") // just a utility
