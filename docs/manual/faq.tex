@@ -1235,17 +1235,17 @@ class MyClass<T extends Object> { ... }
 \end{Verbatim}
 
 The difference is the annotation on the upper bound of the type argument
-\<T>.  They are treated in the following.
+\<T>.  They are treated in the following way.
 
 \begin{Verbatim}
-class MyClass<T>  ==  class MyClass<T extends @TOPTYPEANNO Object> { ... }
+class MyClass<T>                 ==  class MyClass<T extends @TOPTYPEANNO Object>
 class MyClass<T extends Object>  ==  class MyClass<T extends @DEFAULTANNO Object>
 \end{Verbatim}
 
 \noindent
 \<@TOPTYPEANNO> is the top annotation in the type qualifier hierarchy.  For
 example, for the nullness type system, the top type annotation is
-\<@Nullable>; as shown in Figure~\ref{fig-nullness-hierarchy}.
+\<@Nullable>, as shown in Figure~\ref{fig-nullness-hierarchy}.
 \<@DEFAULTANNO> is the default annotation for the type system.  For
 example, for the nullness type system, the default type annotation is
 \<@NonNull>.
@@ -1272,11 +1272,22 @@ like any other occurrence, and applies the usual defaulting rules.  Use of
 \<Object> is treated consistently with all other types in this location and
 all other occurrences of \<Object> in the program.
 
-It is uncommon for a user to write \<Object> as an upper bound with no type
-qualifier:
-\code{class C<T extends Object> \ttlcb\ ... \ttrcb}.
-It is better style to write no upper bound or to write an explicit type
-annotation on \<Object>.
+Here are some style guidelines:
+\begin{itemize}
+\item
+  Omit the \<extends> clause when possible.  To indicate no constraints on
+  type qualifiers, write \code{class MyClass<T>} rather than \code{class
+    MyClass<T extends @TOPTYPEANNO Object>}.
+\item
+  When you write an \<Object> upper bound, give an explicit type annotation.
+  That is, write \code{class C<T extends @DEFAULTANNO Object>
+    \ttlcb\ ... \ttrcb} even though it is equivalent to writing
+  \code{class C<T extends Object> \ttlcb\ ... \ttrcb}.
+
+  If you write just \<extends Object>, then someone who is reading the code
+  might think that it is irrelevant (which it is in plain Java).  Also,
+  some IDEs will suggest removing it.
+\end{itemize}
 
 
 \subsection{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?\label{faq-runtime-retention}}

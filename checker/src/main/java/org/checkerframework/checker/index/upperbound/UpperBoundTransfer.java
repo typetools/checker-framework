@@ -678,7 +678,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
 
         ArrayList<String> offsets = new ArrayList<>(sameLenSequences.size());
-        for (String s : sameLenSequences) {
+        for (@SuppressWarnings("unused") String s : sameLenSequences) {
             offsets.add("-1");
         }
 

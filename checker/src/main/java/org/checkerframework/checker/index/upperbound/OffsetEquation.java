@@ -19,7 +19,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -104,8 +103,8 @@ public class OffsetEquation {
         List<String> sortedSubs = new ArrayList<>(subtractedTerms);
         Collections.sort(sortedSubs);
 
-        String adds = PluginUtil.join(" + ", sortedAdds);
-        String minus = PluginUtil.join(" - ", sortedSubs);
+        String adds = String.join(" + ", sortedAdds);
+        String minus = String.join(" - ", sortedSubs);
         if (sortedSubs.size() == 1 && sortedAdds.isEmpty()) {
             minus = "-" + minus;
         } else if (!sortedSubs.isEmpty()) {

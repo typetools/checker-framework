@@ -1027,11 +1027,16 @@ public abstract class GenericAnnotatedTypeFactory<
             return;
         }
 
-        Queue<ClassTree> queue = new ArrayDeque<>();
+        Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
         List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
-        queue.add(classTree);
+
+        // No captured store for top-level classes.
+        queue.add(Pair.of(classTree, null));
+
         while (!queue.isEmpty()) {
-            ClassTree ct = queue.remove();
+            final Pair<ClassTree, Store> qel = queue.remove();
+            final ClassTree ct = qel.first;
+            final Store capturedStore = qel.second;
             scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
             TreePath preTreePath = visitorState.getPath();
@@ -1047,9 +1052,9 @@ public abstract class GenericAnnotatedTypeFactory<
             visitorState.setMethodReceiver(null);
             visitorState.setMethodTree(null);
 
-            // start without a initialization store
-            initializationStaticStore = null;
-            initializationStore = null;
+            // start with the captured store as initialization store
+            initializationStaticStore = capturedStore;
+            initializationStore = capturedStore;
 
             Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
@@ -1092,7 +1097,8 @@ public abstract class GenericAnnotatedTypeFactory<
                                         classTree,
                                         true,
                                         true,
-                                        isStatic);
+                                        isStatic,
+                                        capturedStore);
                                 Value value = flowResult.getValue(initializer);
                                 if (vt.getModifiers().getFlags().contains(Modifier.FINAL)
                                         && value != null) {
@@ -1107,7 +1113,8 @@ public abstract class GenericAnnotatedTypeFactory<
                         case INTERFACE:
                         case ENUM:
                             // Visit inner and nested class trees.
-                            queue.add((ClassTree) m);
+                            // TODO: Use no store for them? What can be captured?
+                            queue.add(Pair.of((ClassTree) m, capturedStore));
                             break;
                         case BLOCK:
                             BlockTree b = (BlockTree) m;
@@ -1119,7 +1126,8 @@ public abstract class GenericAnnotatedTypeFactory<
                                     ct,
                                     true,
                                     true,
-                                    b.isStatic());
+                                    b.isStatic(),
+                                    capturedStore);
                             break;
                         default:
                             assert false : "Unexpected member: " + m.getKind();
@@ -1139,7 +1147,8 @@ public abstract class GenericAnnotatedTypeFactory<
                             classTree,
                             TreeUtils.isConstructor(met.getMethod()),
                             false,
-                            false);
+                            false,
+                            capturedStore);
                 }
 
                 while (!lambdaQueue.isEmpty()) {
@@ -1185,30 +1194,10 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param ast the AST to analyze
      * @param currentClass the class we are currently looking at
      * @param isInitializationCode are we analyzing a (non-static) initializer block of a class
+     * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
      */
     protected void analyze(
-            Queue<ClassTree> queue,
-            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
-            UnderlyingAST ast,
-            List<Pair<VariableElement, Value>> fieldValues,
-            ClassTree currentClass,
-            boolean isInitializationCode,
-            boolean updateInitializationStore,
-            boolean isStatic) {
-        analyze(
-                queue,
-                lambdaQueue,
-                ast,
-                fieldValues,
-                currentClass,
-                isInitializationCode,
-                updateInitializationStore,
-                isStatic,
-                null);
-    }
-
-    protected void analyze(
-            Queue<ClassTree> queue,
+            Queue<Pair<ClassTree, Store>> queue,
             Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
             UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues,
@@ -1216,25 +1205,21 @@ public abstract class GenericAnnotatedTypeFactory<
             boolean isInitializationCode,
             boolean updateInitializationStore,
             boolean isStatic,
-            Store lambdaStore) {
+            Store capturedStore) {
         ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
 
-        if (lambdaStore != null) {
-            transfer.setFixedInitialStore(lambdaStore);
-        } else {
-            if (isInitializationCode) {
-                Store initStore = !isStatic ? initializationStore : initializationStaticStore;
-                if (initStore != null) {
-                    // we have already seen initialization code and analyzed it, and
-                    // the analysis ended with the store initStore.
-                    // use it to start the next analysis.
-                    transfer.setFixedInitialStore(initStore);
-                } else {
-                    transfer.setFixedInitialStore(null);
-                }
+        if (isInitializationCode) {
+            Store initStore = !isStatic ? initializationStore : initializationStaticStore;
+            if (initStore != null) {
+                // we have already seen initialization code and analyzed it, and
+                // the analysis ended with the store initStore.
+                // use it to start the next analysis.
+                transfer.setFixedInitialStore(initStore);
             } else {
-                transfer.setFixedInitialStore(null);
+                transfer.setFixedInitialStore(capturedStore);
             }
+        } else {
+            transfer.setFixedInitialStore(capturedStore);
         }
         analysis.performAnalysis(cfg, fieldValues);
         AnalysisResult<Value, Store> result = analysis.getResult();
@@ -1264,6 +1249,8 @@ public abstract class GenericAnnotatedTypeFactory<
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
             }
+        } else {
+            assert false : "Unexpected AST kind: " + ast.getKind();
         }
 
         if (isInitializationCode && updateInitializationStore) {
@@ -1280,15 +1267,17 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         // add classes declared in method
-        queue.addAll(cfg.getDeclaredClasses());
+        for (ClassTree cls : cfg.getDeclaredClasses()) {
+            queue.add(Pair.of(cls, getStoreBefore(cls)));
+        }
         for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
             lambdaQueue.add(Pair.of(lambda, getStoreBefore(lambda)));
         }
     }
 
     /**
-     * Handle the visualization of the CFG, by calling {@code visualizeCFG} on the first analysis.
-     * This method gets invoked in {@code analyze} if on of the visualization options is provided.
+     * Handle the visualization of the CFG, by calling {@code visualizeCFG} on the analysis. This
+     * method gets invoked in {@code analyze} if one of the visualization options is provided.
      */
     protected void handleCFGViz() {
         analysis.visualizeCFG();
