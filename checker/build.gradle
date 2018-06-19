@@ -96,7 +96,7 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 }
 assemble.dependsOn copyJarsToDist
 
-task buildJdk(type: Jar, group: 'Build', dependsOn: copyJarsToDist) {
+task buildJdk(group: 'Build', dependsOn: copyJarsToDist) {
     description 'Builds jdk8.jar; other tasks must pass -PlocalJdk= to use built jdk8.jar.'
 
     doLast {
