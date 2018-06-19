@@ -45,7 +45,7 @@ examples appear in a table below.
   A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
   \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
   for example to refer to other types.  It abbreviates primitives and
-  arrays.  It uses internal form (binary names, but with \</> instead of
+        arrays.  It uses internal form (\emph{ClassGetName}s, but with \</> instead of
   \<.>; see
   \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS
     \S 4.2}) for class names.  See examples below.
@@ -68,7 +68,7 @@ examples appear in a table below.
     \S 4.2}), such as \<package/Outer\$Inner>, is how a class name is
   actually represented in its own \<.class> file.  It is also known as the
   ``syntax of binary names that appear in class file structures''.  It is
-  the same as the binary name, but with periods (\<.>) replaced by slashes
+  the same as the ClassGetName, but with periods (\<.>) replaced by slashes
   (\</>).  Programmers more often use the binary name, leaving the internal
   form as a JVM implementation detail.
 
@@ -108,21 +108,21 @@ Here are examples of the supported formats:
 \hline
 \multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
 int                    & int                    & int                     & I                       & int                    & int            \\
-int[][]                & int[][]                & [[I                     & [[I                     & int[][]                & int[][]        \\
+int[][]                & int[][]                & [[I                     & [[I                     & [[I                    & int[][]        \\
 MyClass                & MyClass                & MyClass                 & LMyClass;               & MyClass                & MyClass        \\
-MyClass[]              & MyClass[]              & [LMyClass;              & [LMyClass;              & MyClass[]              & MyClass[]      \\
+MyClass[]              & MyClass[]              & [LMyClass;              & [LMyClass;              & [LMyClass;               & MyClass[]      \\
 \emph{n/a {\smaller
  for anonymous class}} & MyClass\$22            & MyClass\$22             & LMyClass\$22;           & MyClass\$22            & \emph{\smaller (empty string)} \\
 \emph{n/a {\smaller for
- array of anon.~class}} & MyClass\$22[]         & [LMyClass\$22;          & [LMyClass\$22;          & MyClass\$22[]          & []             \\
+ array of anon.~class}} & MyClass\$22[]         & [LMyClass\$22;          & [LMyClass\$22;          & [LMyClass\$22;           & []             \\
 java.lang.Integer      & java.lang.Integer      & java.lang.Integer       & Ljava/lang/Integer;     & java/lang/Integer      & Integer        \\
-java.lang.Integer[]    & java.lang.Integer[]    & [Ljava.lang.Integer;    & [Ljava/lang/Integer;    & java/lang/Integer[]    & Integer[]      \\
+java.lang.Integer[]    & java.lang.Integer[]    & [Ljava.lang.Integer;    & [Ljava/lang/Integer;    & [Ljava/lang/Integer;     & Integer[]      \\
 pkg.Outer.Inner    & pkg.Outer\$Inner   & pkg.Outer\$Inner    & Lpkg/Outer\$Inner;  & pkg/Outer\$Inner   & Inner          \\
-pkg.Outer.Inner[]  & pkg.Outer\$Inner[] & [Lpkg.Outer\$Inner; & [Lpkg/Outer\$Inner; & pkg/Outer\$Inner[] & Inner[]        \\
+pkg.Outer.Inner[]  & pkg.Outer\$Inner[] & [Lpkg.Outer\$Inner; & [Lpkg/Outer\$Inner; & [Lpkg/Outer\$Inner;  & Inner[]        \\
 \emph{n/a {\smaller
  for anonymous class}} & pkg.Outer\$22      & pkg.Outer\$22       & Lpkg/Outer\$22;     & pkg/Outer\$22      & \emph{\smaller (empty string)} \\
 \emph{n/a {\smaller for
- array of anon.~class}} & pkg.Outer\$22[]   & [Lpkg.Outer\$22;    & [Lpkg/Outer\$22;    & pkg/Outer\$22[]    & []             \\
+ array of anon.~class}} & pkg.Outer\$22[]   & [Lpkg.Outer\$22;    & [Lpkg/Outer\$22;    & [Lpkg/Outer\$22;     & []             \\
 \hline
 \end{tabular}
 \end{center}
