@@ -226,6 +226,9 @@ public class TestDiagnosticUtils {
             return false;
         }
         final String trimmedLine = originalLine.trim();
+        // Unlike with errors, there is no logic elsewhere for splitting multiple "warning:"s.  So,
+        // avoid concatenating them.  Also, each one must begin a line.  They are allowed to wrap to
+        // the next line, though.
         return trimmedLine.startsWith("// ") && !trimmedLine.startsWith("// warning:");
     }
 
