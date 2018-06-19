@@ -29,7 +29,7 @@ task downloadJdk() {
     }
 }
 
-task buildJdk(type: Jar, group: 'Build') {
+task buildJdk(group: 'Build') {
     description 'Builds jdk8.jar'
     dependsOn(':checker:copyJarsToDist')
 
