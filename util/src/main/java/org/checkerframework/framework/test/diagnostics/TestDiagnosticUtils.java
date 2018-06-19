@@ -226,7 +226,7 @@ public class TestDiagnosticUtils {
             return false;
         }
         final String trimmedLine = originalLine.trim();
-        return trimmedLine.startsWith("// ");
+        return trimmedLine.startsWith("// ") && !trimmedLine.startsWith("// warning:");
     }
 
     /**
