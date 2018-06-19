@@ -388,11 +388,13 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
    * @return a set view of the keys contained in this enum map
    */
   public Set<K> keySet() {
-    Set<K> ks = keySet;
-    if (ks != null)
-      return ks;
-    else
-      return keySet = new KeySet();
+    throw new RuntimeException("skeleton method");
+    // Does not compile with actual version, java.util.AbstractMap is reduced to skeleton methods
+    // Set<K> ks = keySet;
+    // if (ks != null)
+    //   return ks;
+    // else
+    //   return keySet = new KeySet();
   }
 
   private class KeySet extends AbstractSet<K> {
@@ -426,11 +428,13 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
    * @return a collection view of the values contained in this map
    */
   public Collection<V> values() {
-    Collection<V> vs = values;
-    if (vs != null)
-      return vs;
-    else
-      return values = new Values();
+    throw new RuntimeException("skeleton method");
+    // Does not compile with actual version, java.util.AbstractMap is reduced to skeleton methods
+    // Collection<V> vs = values;
+    // if (vs != null)
+    //   return vs;
+    // else
+    //   return values = new Values();
   }
 
   private class Values extends AbstractCollection<V> {
