@@ -78,7 +78,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     }
 
     @SuppressWarnings(
-            "lowerbound") // needs https://github.com/kelloggm/checker-framework/issues/227 on static indexOf method
+            "lowerbound") // https://github.com/kelloggm/checker-framework/issues/227 indexOf()
     public @IndexOrLow("this") int indexOf(Object target) {
         // Overridden to prevent a ton of boxing
         if (target instanceof Short) {
@@ -91,7 +91,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     }
 
     @SuppressWarnings(
-            "lowerbound") // needs https://github.com/kelloggm/checker-framework/issues/227 on static lastIndexOf method
+            "lowerbound") // https://github.com/kelloggm/checker-framework/issues/227 lastIndexOf()
     public @IndexOrLow("this") int lastIndexOf(Object target) {
         // Overridden to prevent a ton of boxing
         if (target instanceof Short) {
