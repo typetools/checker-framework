@@ -214,12 +214,13 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
                 return null;
             }
 
-            // Not needed - should raise error. Unfortunately, in inference we ask for bottom annotations.
+            // Not needed - should raise error. Unfortunately, in inference we ask for bottom
+            // annotations.
             // Return a dummy value that does no harm.
             @Override
             public Set<AnnotationMirror> getBottomAnnotations() {
-                // ErrorReporter.errorAbort("GeneralQualifierHierarchy.getBottomAnnotations() was called! It
-                // shouldn't be called.");
+                // ErrorReporter.errorAbort("GeneralQualifierHierarchy.getBottomAnnotations() was
+                // called! It shouldn't be called.");
                 return AnnotationUtils.createAnnotationSet();
             }
 

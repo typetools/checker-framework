@@ -25,7 +25,7 @@ public class CustomContractWithArgs {
         public int targetValue();
     }
 
-    //Precondition for LTLengthOf
+    // Precondition for LTLengthOf
     @PreconditionAnnotation(qualifier = Value.class)
     @interface RequiresValue {
         public String[] value();

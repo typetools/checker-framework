@@ -111,6 +111,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
  * AnnotatedTypeMirror}. The methods are:
