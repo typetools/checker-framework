@@ -12,6 +12,12 @@ class Underflows {
         @IntVal(127) byte maxPlus1 = (byte) (max - 1);
     }
 
+    static void chars() {
+        byte max = Character.MIN_VALUE;
+        // :: warning: (cast.unsafe)
+        @IntVal(65535) char maxPlus1 = (char) (max - 1);
+    }
+
     static void shorts() {
         short max = Short.MIN_VALUE;
         // :: warning: (cast.unsafe)

@@ -65,6 +65,19 @@ class ValueNoOverflow {
         @IntRange(from = 1) byte w = (byte) (z * z);
     }
 
+    void testChar_plus(@IntRange(from = 0) char x) {
+        @IntRange(from = 1) char y = (char) (x + 1); // IntRange(from = 0) to IntRange(from = 1)
+    }
+
+    void testChar_minus(@IntRange(to = 1) char z) {
+        @IntRange(to = 0) char w = (char) (z - 1); // Pos to NN
+    }
+
+    void testChar_mult(@IntRange(from = 0) char x, @IntRange(from = 1) char z) {
+        @IntRange(from = 0) char y = (char) (x * z);
+        @IntRange(from = 1) char w = (char) (z * z);
+    }
+
     void test_casting(@IntRange(from = 0) int i) {
         @IntRange(from = 1, to = ((long) Integer.MAX_VALUE) + 1)
         long x = i + 1;
