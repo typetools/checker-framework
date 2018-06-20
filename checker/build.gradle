@@ -28,11 +28,10 @@ jar {
     }
 }
 
-task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
-    description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
+task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
+    description 'Builds jars required by CheckerMain, except for jdk8.jar, and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
     // Also moves jdk8.jar to checker/dist
-    dependsOn ':jdk8:downloadJdk'
     doLast {
         copy {
             from file(project(':checker-qual').tasks.getByName("jar").archivePath)
@@ -51,6 +50,74 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             }
         }
     }
+}
+
+task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
+    description 'Builds jdk8.jar; other tasks must pass -PlocalJdk= to use built jdk8.jar.'
+
+    doLast {
+        if (System.getenv('JAVA_HOME') == null) {
+            throw new GradleException("Environment variable JAVA_HOME is not set.")
+        }
+        exec {
+            executable 'make'
+            environment CHECKERFRAMEWORK: "${projectDir}/..",
+                    LANGTOOLS: "${jsr308}/jsr308-langtools",
+                    ANNOTATION_TOOLS: "${afu}/..",
+                    CLASSPATH: project(':checker').tasks.getByName('shadowJar').archivePath,
+                    LT_BIN: "${jsr308}/jsr308-langtools/dist/bin"
+            args += ["-C", "../checker/jdk/"]
+        }
+
+        copy {
+            from 'jdk/jdk.jar'
+            rename { String fileName ->
+                fileName.replace(fileName, "jdk8.jar")
+            }
+            into 'jdk'
+        }
+
+        copy {
+            from 'jdk/jdk8.jar'
+            into 'dist'
+        }
+    }
+}
+
+task downloadJdk() {
+    description 'Downloads jdk8.jar and copies it to checker/dist'
+    // See instructions for updating the jdk.jar at https://github.com/typetools/annotated-libraries/blob/master/README.md
+    String shaHash = '3e57e020050ee8b679622e7f864e7dff17aa8acc'
+    File downloadedJdk = new File(buildDir, "jdk8-${shaHash}.jar");
+
+    doLast {
+        // If localJdk is set (regardless of what value it is set to), then use jdk/jdk.jar instead of downloading.
+        if (rootProject.hasProperty("localJdk")) {
+            buildJdk.execute()
+        } else {
+            if (!downloadedJdk.exists()) {
+                download {
+                    src "https://github.com/typetools/annotated-libraries/raw/${shaHash}/jdk8.jar"
+                    overwrite true
+                    dest downloadedJdk
+                }
+            }
+            copy {
+                from(downloadedJdk) {
+                    rename downloadedJdk.name, 'jdk8.jar'
+                }
+                into "dist"
+            }
+        }
+    }
+}
+
+task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
+    description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
+    dependsOn project(':checker-qual').tasks.jar
+    // Also moves jdk8.jar to checker/dist
+    dependsOn downloadJdk
+    dependsOn copyJarsOtherThanJdk8ToDist
 }
 assemble.dependsOn copyJarsToDist
 
