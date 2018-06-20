@@ -6,3 +6,7 @@ Repository:
 https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
 .  See section "Using annotated libraries" in the Checker Framework Manual
 for information on using the compiled libraries in the Central Repository.)
+
+The jdk.jar and jdk8.jar files in this directory are built from here, then
+copied to ../dist/ .  The Checker Framework always uses a jdk*.jar file
+from checker/dist/, never from here.

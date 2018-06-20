@@ -412,26 +412,14 @@ public class StubParser {
         }
     }
 
-    /** Returns the package name of the compilation unit, or null if in the default package. */
-    private String packageName(CompilationUnit cu) {
-        if (cu.getPackageDeclaration().isPresent()) {
-            return cu.getPackageDeclaration().get().getNameAsString();
-        } else {
-            return null;
-        }
-    }
-
     private void processCompilationUnit(CompilationUnit cu) {
-        final String packageName;
         final List<AnnotationExpr> packageAnnos;
 
         if (!cu.getPackageDeclaration().isPresent()) {
-            packageName = null;
             packageAnnos = null;
             parseState = new FqName(null, null);
         } else {
             PackageDeclaration pDecl = cu.getPackageDeclaration().get();
-            packageName = pDecl.getNameAsString();
             packageAnnos = pDecl.getAnnotations();
             processPackage(pDecl);
         }

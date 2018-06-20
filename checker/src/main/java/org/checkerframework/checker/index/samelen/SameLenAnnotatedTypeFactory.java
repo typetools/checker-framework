@@ -125,7 +125,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (slArrays.contains(varName)) {
                         slArrays.remove(varName);
                     }
-                    if (slArrays.size() == 0) {
+                    if (slArrays.isEmpty()) {
                         atm.replaceAnnotation(UNKNOWN);
                     } else {
                         atm.replaceAnnotation(createSameLen(slArrays.toArray(new String[0])));

@@ -111,6 +111,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
  * AnnotatedTypeMirror}. The methods are:
@@ -892,8 +893,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the AnnotatedTypeFormatter to pass to all instantiated AnnotatedTypeMirrors
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        boolean printVerboseGenerics = checker.hasOption("printVerboseGenerics");
         return new DefaultAnnotatedTypeFormatter(
-                checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+                printVerboseGenerics,
+                // -AprintVerboseGenerics implies -AprintAllQualifiers
+                printVerboseGenerics || checker.hasOption("printAllQualifiers"));
     }
 
     public AnnotatedTypeFormatter getAnnotatedTypeFormatter() {
@@ -2995,7 +2999,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 stubPathFull = base + "/" + stubPath;
             }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
-            if (stubs.size() == 0) {
+            if (stubs.isEmpty()) {
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
                     StubParser.parse(

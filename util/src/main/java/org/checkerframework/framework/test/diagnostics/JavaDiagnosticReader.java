@@ -15,7 +15,8 @@ import javax.tools.JavaFileObject;
  * A file can indicate expected javac diagnostics. There are two types of such files: Java source
  * files, and Diagnostic files.
  *
- * <p>This class contains a static method to read each type of file.
+ * <p>This class contains a static method to read each type of file. The output of each is a list of
+ * TestDiagnostic.
  */
 public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
@@ -61,6 +62,10 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         return readDiagnostics(readers);
     }
 
+    ///
+    /// end of public static methods, start of private static methods
+    ///
+
     /**
      * Returns all the diagnostics in any of the files.
      *
@@ -96,16 +101,16 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnosticLine> readDiagnosticLines(JavaDiagnosticReader reader) {
-        List<TestDiagnosticLine> lines = new ArrayList<>();
+        List<TestDiagnosticLine> diagnosticLines = new ArrayList<>();
         while (reader.hasNext()) {
             TestDiagnosticLine line = reader.next();
             if (line.hasDiagnostics()) {
-                lines.add(line);
+                diagnosticLines.add(line);
             }
         }
         reader.close();
 
-        return lines;
+        return diagnosticLines;
     }
 
     /** Converts a list of TestDiagnosticLine into a list of TestDiagnostic. */
@@ -144,6 +149,10 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
                     return TestDiagnosticUtils.fromDiagnosticFileLine(line);
                 }
             };
+
+    ///
+    /// End of static methods, start of per-instance state
+    ///
 
     private final File toRead;
     private final JavaFileObject toReadFileObject;
@@ -225,6 +234,14 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
             int currentLineNumber = nextLineNumber;
 
             advance();
+
+            if (TestDiagnosticUtils.isJavaDiagnosticLineStart(current)) {
+                while (TestDiagnosticUtils.isJavaDiagnosticLineContinuation(nextLine)) {
+                    current = current.trim() + " " + TestDiagnosticUtils.continuationPart(nextLine);
+                    currentLineNumber = nextLineNumber;
+                    advance();
+                }
+            }
 
             if (nextLine == null) {
                 close();

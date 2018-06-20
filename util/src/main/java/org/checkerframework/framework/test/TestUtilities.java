@@ -321,19 +321,19 @@ public class TestUtilities {
                             + "\n");
 
             bw.write("Expected:\n");
-            bw.write(PluginUtil.join("\n", expected));
+            bw.write(String.join("\n", expected));
             bw.newLine();
 
             bw.write("Actual:\n");
-            bw.write(PluginUtil.join("\n", actual));
+            bw.write(String.join("\n", actual));
             bw.newLine();
 
             bw.write("Missing:\n");
-            bw.write(PluginUtil.join("\n", missing));
+            bw.write(String.join("\n", missing));
             bw.newLine();
 
             bw.write("Unexpected:\n");
-            bw.write(PluginUtil.join("\n", unexpected));
+            bw.write(String.join("\n", unexpected));
             bw.newLine();
 
             bw.newLine();

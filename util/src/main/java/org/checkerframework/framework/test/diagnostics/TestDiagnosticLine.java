@@ -1,7 +1,6 @@
 package org.checkerframework.framework.test.diagnostics;
 
 import java.util.List;
-import org.checkerframework.javacutil.PluginUtil;
 
 /** Represents a list of TestDiagnostics, which was read from a file. */
 public class TestDiagnosticLine {
@@ -43,8 +42,7 @@ public class TestDiagnosticLine {
      *     extraneous whitespace.
      */
     public String asSourceString() {
-        return "// :: "
-                + PluginUtil.join(" :: ", TestDiagnosticUtils.diagnosticsToString(diagnostics));
+        return "// :: " + String.join(" :: ", TestDiagnosticUtils.diagnosticsToString(diagnostics));
     }
 
     public List<TestDiagnostic> getDiagnostics() {
