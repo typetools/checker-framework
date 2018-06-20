@@ -12,6 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
     public DeterminismVisitor(BaseTypeChecker checker) {
@@ -22,12 +23,12 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
             "invalid.parameter.type";
 
-    //    @Override
-    //    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-    //        Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
-    //        exceptionParam.add(atypeFactory.POLYDET);
-    //        return exceptionParam;
-    //    }
+    @Override
+    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
+        exceptionParam.add(atypeFactory.POLYDET);
+        return exceptionParam;
+    }
 
     @Override
     public boolean isValidUse(

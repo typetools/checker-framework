@@ -25,7 +25,8 @@ public class TestArrayListWildcard {
 
     void testConstructor(@OrderNonDet ArrayList<@Det String> arList) {
         @OrderNonDet Collection<@Det String> coll = arList;
-        new ArrayList<String>(coll);
+        // :: error: (assignment.type.incompatible)
+        @Det ArrayList<@Det String> newList = new ArrayList<String>(coll);
     }
 
     void testConstructor1(@NonDet ArrayList<@Det String> arList) {

@@ -3,12 +3,14 @@ package org.checkerframework.checker.determinism;
 import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.poly.AbstractQualifierPolymorphism;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.javacutil.TypesUtils;
 
 public class DeterminismQualifierPolymorphism
         extends DefaultQualifierPolymorphism { //AbstractQualifierPolymorphism {
@@ -54,59 +56,9 @@ public class DeterminismQualifierPolymorphism
         //        this.polyQuals.put(factory.POLYDET_USE, factory.NONDET);
     }
 
-    //    @Override
-    //    protected void replace(
-    //            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches) {
-    //        String upDownOrUse = "";
-    //        if (type.getAnnotations().size() != 0) {
-    //            AnnotationMirror typeAnnoMirror = type.getAnnotations().iterator().next();
-    //            boolean hasValue = AnnotationUtils.hasElementValue(typeAnnoMirror, "value");
-    //            if (hasValue) {
-    //                upDownOrUse =
-    //                        AnnotationUtils.getElementValue(
-    //                                typeAnnoMirror, "value", String.class, true);
-    //                if (upDownOrUse.equals("down") || upDownOrUse.equals("up")) {
-    //                    type.replaceAnnotation(POLYDET);
-    //                }
-    //            }
-    //        }
-    //        TypeMirror underlyingType = type.getUnderlyingType();
-    //        for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : matches.entrySet()) {
-    //            AnnotationMirror poly = pqentry.getKey();
-    //            if (poly != null && type.hasAnnotation(poly)) {
-    //                AnnotationMirrorSet quals;
-    //                if (AnnotationUtils.areSame(poly, POLYDET_USE)) {
-    //                    quals = matches.get(POLYDET);
-    //                } else {
-    //                    quals = pqentry.getValue();
-    //                }
-    //                if (quals != null) {
-    //                    type.removeAnnotation(poly);
-    //                    type.replaceAnnotations(quals);
-    //                    System.out.println("Replaced " + poly.getAnnotationType() + " with ");
-    //                    Iterator<AnnotationMirror> it = quals.iterator();
-    //                    while(it.hasNext()){
-    //                        System.out.println(it.next());
-    //                    }
-    //                }
-    //
-    //                if (type.hasAnnotation(factory.ORDERNONDET)) {
-    //                    if (upDownOrUse.equals("down")) type.replaceAnnotation(factory.DET);
-    //                    else if (upDownOrUse.equals("up")) type.replaceAnnotation(factory.NONDET);
-    //                    else if (!underlyingType.getKind().isPrimitive()
-    //                            && !factory.isCollection(underlyingType)
-    //                            && !factory.isIterator(underlyingType)) {
-    //                        type.replaceAnnotation(factory.DET);
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-
     @Override
     protected void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches) {
-        //        System.out.println("Replacing for type: " + type);
         boolean polyUp = false;
         boolean polyDown = false;
         if (type.hasAnnotation(POLYDET_UP)) {
@@ -118,17 +70,111 @@ public class DeterminismQualifierPolymorphism
         }
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : matches.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
-            //            System.out.println(poly.getAnnotationType() + " ==> " + pqentry.getValue().iterator().next());
             if (poly != null && (type.hasAnnotation(poly) || type.hasAnnotation(POLYDET_USE))) {
                 type.removeAnnotation(poly);
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);
 
-                if (polyUp && type.hasAnnotation(factory.ORDERNONDET)) {
-                    type.replaceAnnotation(factory.NONDET);
-                } else if (polyDown && type.hasAnnotation(factory.ORDERNONDET)) {
-                    type.replaceAnnotation(factory.DET);
+                if (type.hasAnnotation(factory.ORDERNONDET)) {
+                    if (polyUp) {
+                        replaceOrderNonDet(type, factory.NONDET);
+                    }
+                    if (polyDown) {
+                        replaceOrderNonDet(type, factory.DET);
+                    }
                 }
+
+                //                if (polyUp && type.hasAnnotation(factory.ORDERNONDET)) {
+                //                    TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+                //                    type.replaceAnnotation(factory.NONDET);
+                //                    AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
+                //                            (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
+                //                    boolean isCollIter = false;
+                //                    if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
+                //                        isCollIter = true;
+                //                    }
+                //                    while(isCollIter){
+                //                        //Replace all @OrderNonDet type parameters with @Det
+                //                        Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
+                //                        while (it.hasNext()) {
+                //                            AnnotatedTypeMirror argType = it.next();
+                //                            if (argType.hasAnnotation(factory.ORDERNONDET)) {
+                //                                argType.replaceAnnotation(factory.NONDET);
+                //                            }
+                //                        }
+                //                        TypeMirror declType = TypesUtils.getTypeElement(declaredType.getTypeArguments().get(0).getUnderlyingType()).asType();
+                //                        if(factory.isCollection(declType)
+                //                                || factory.isIterator(declType)){
+                //                            declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) declaredType.getTypeArguments().get(0);
+                //                        }
+                //                        else{
+                //                            isCollIter = false;
+                //                        }
+                //                    }
+                //                } else if (polyDown && type.hasAnnotation(factory.ORDERNONDET)) {
+                //                    TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+                //                    type.replaceAnnotation(factory.DET);
+                //                    AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
+                //                            (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
+                //                    boolean isCollIter = false;
+                //                    if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
+                //                        isCollIter = true;
+                //                    }
+                //                    while(isCollIter){
+                //                        //Replace all @OrderNonDet type parameters with @Det
+                //                        Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
+                //                        while (it.hasNext()) {
+                //                            AnnotatedTypeMirror argType = it.next();
+                //                            if (argType.hasAnnotation(factory.ORDERNONDET)) {
+                //                                argType.replaceAnnotation(factory.DET);
+                //                            }
+                //                        }
+                //                        TypeMirror declType = TypesUtils.getTypeElement(declaredType.getTypeArguments().get(0).getUnderlyingType()).asType();
+                //                        if(factory.isCollection(declType)
+                //                                || factory.isIterator(declType)){
+                //                            declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) declaredType.getTypeArguments().get(0);
+                //                        }
+                //                        else{
+                //                            isCollIter = false;
+                //                        }
+                //                    }
+                //                }
+            }
+        }
+    }
+
+    private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
+        TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+        type.replaceAnnotation(replaceType);
+        AnnotatedTypeMirror.AnnotatedDeclaredType declaredType = null;
+        boolean isCollIter = false;
+        if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
+            declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
+            isCollIter = true;
+        }
+        while (isCollIter) {
+            //Replace all @OrderNonDet type parameters with @Det or @NonDet
+            Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
+            //Iterate over all the type parameters of this collection
+            while (it.hasNext()) {
+                AnnotatedTypeMirror argType = it.next();
+                if (argType.hasAnnotation(factory.ORDERNONDET)) {
+                    argType.replaceAnnotation(replaceType);
+                }
+            }
+
+            //Assuming a single type parameter (will not work for HashMaps)
+            //TODO: Handle all type parameters
+            TypeMirror declType =
+                    TypesUtils.getTypeElement(
+                                    declaredType.getTypeArguments().get(0).getUnderlyingType())
+                            .asType();
+            if (factory.isCollection(declType) || factory.isIterator(declType)) {
+                declaredType =
+                        (AnnotatedTypeMirror.AnnotatedDeclaredType)
+                                declaredType.getTypeArguments().get(0);
+            } else {
+                isCollIter = false;
             }
         }
     }

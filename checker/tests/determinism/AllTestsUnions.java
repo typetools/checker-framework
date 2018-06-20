@@ -12,8 +12,6 @@ public class AllTestsUnions {
 
             // ::error: (type.argument.type.incompatible)
             typeVarWildcard(ex, param);
-            //TODO: Uncomment this
-            //typeVarWildcard2(ex, param);
         }
     }
 
@@ -31,8 +29,6 @@ public class AllTestsUnions {
 
             // ::error: (type.argument.type.incompatible)
             typeVarWildcard(ex, param);
-            //TODO: uncomment this
-            //typeVarWildcard2(ex, param);
         }
     }
 

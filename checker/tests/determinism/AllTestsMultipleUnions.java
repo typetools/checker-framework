@@ -15,8 +15,6 @@ public class AllTestsMultipleUnions {
                 typeVar(ex1, ex1);
                 // ::error: (type.argument.type.incompatible)
                 typeVar(ex2, ex2);
-                // See UnionCrash for version that crashes
-                // typeVar(ex1, ex2);
             }
         }
     }

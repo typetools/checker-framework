@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 public class TestOverride {
@@ -6,8 +6,12 @@ public class TestOverride {
         return a * a;
     }
 
-    protected @PolyDet ArrayList<Integer> multList(@PolyDet int a) {
+    protected @PolyDet ArrayList<Integer> newList(@PolyDet int a) {
         return new ArrayList<Integer>(a);
+    }
+
+    protected @PolyDet int getList(@PolyDet ArrayList<Integer> a) {
+        return a.get(0);
     }
 }
 
@@ -18,8 +22,14 @@ class Child extends TestOverride {
     }
 
     @Override
-    protected @Det ArrayList<@Det Integer> multList(@NonDet int a) {
+    protected @Det ArrayList<@Det Integer> newList(@NonDet int a) {
         // :: error: (return.type.incompatible)
         return new ArrayList<Integer>(a);
+    }
+
+    @Override
+    protected @PolyDet int getList(@Det ArrayList<Integer> a) {
+        // :: error: (override.param.invalid)
+        return a.get(0);
     }
 }
