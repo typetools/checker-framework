@@ -60,13 +60,13 @@ task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
         }
     }
 }
-boolean shouldForceBuildJdk = false
+
 task forceBuildJdk(group: 'Build') {
-    description 'Builds jdk.jar even if no file in the JDK has changed.'
+    description 'Builds jdk.jar even if no file in the JDK has changed.' +
+            'Use to update jdk.jar if defaulting has changed in a checker.'
     doLast {
-        shouldForceBuildJdk = true
+        delete 'jdk/jdk.jar'
         buildJdk.execute()
-        shouldForceBuildJdk = false
     }
 }
 
