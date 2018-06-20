@@ -71,7 +71,7 @@ task forceBuildJdk(group: 'Build') {
 }
 
 task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
-    description 'Builds jdk8.jar. To use this task, set jdkShaHash to 'local' in checker/build.gradle.'
+    description 'Builds jdk8.jar. Requires that jdkShaHash == 'local' in checker/build.gradle.'
 
     doLast {
         if (System.getenv('JAVA_HOME') == null) {
