@@ -1503,18 +1503,17 @@ public class StubParser {
      * {@code negate} is true
      *
      * @param number Number value to be converted
-     * @param expectedKind converts the Number object to one of type {byte, short, int, long, char,
-     *     float, double}
-     * @param negate the value of the Number Object while converting
+     * @param expectedKind one of type {byte, short, int, long, char, float, double}
+     * @param negate whether to negate the value of the Number Object while converting
      * @return the converted Object
      */
     private Object convert(Number number, TypeKind expectedKind, boolean negate) {
-        int scalefactor = negate ? -1 : 1;
+        byte scalefactor = (byte) (negate ? -1 : 1);
         switch (expectedKind) {
             case BYTE:
-                return (byte) (number.byteValue() * scalefactor);
+                return number.byteValue() * scalefactor;
             case SHORT:
-                return (short) (number.shortValue() * scalefactor);
+                return number.shortValue() * scalefactor;
             case INT:
                 return number.intValue() * scalefactor;
             case LONG:
