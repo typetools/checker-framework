@@ -12,7 +12,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // meaning, but are unrelated by the Java type hierarchy.
 // @Covariant makes Constructor<@NonNull String> a subtype of Constructor<@Nullable String>.
 @Covariant(0)
-public final class Constructor<T extends @Nullable Object> extends AccessibleObject implements GenericDeclaration, Member {
+public final class Constructor<T> extends AccessibleObject implements GenericDeclaration, Member {
     public Class<T> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
     public String getName() { throw new RuntimeException("skeleton method"); }
     public int getModifiers() { throw new RuntimeException("skeleton method"); }
