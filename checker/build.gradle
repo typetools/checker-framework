@@ -29,7 +29,7 @@ jar {
 }
 
 task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
-    description 'Builds jars required by CheckerMain, except for jdk8.jar and puts them in checker/dist.'
+    description 'Builds jars required by CheckerMain, except for jdk8.jar, and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
     // Also moves jdk8.jar to checker/dist
     doLast {
