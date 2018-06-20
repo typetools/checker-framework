@@ -80,6 +80,7 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
             throw new GradleException('jdkShaHash must be set to local to build jdk.jar. ' +
                     'Set it in checker/build.gradle ')
         }
+        delete 'dist/jdk8.jar'
         exec {
             executable 'make'
             environment CHECKERFRAMEWORK: "${projectDir}/..",
