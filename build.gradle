@@ -137,7 +137,7 @@ def createCheckTypeTask(projectName, checker, shortName) {
     project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
         description "Run the ${shortName} Checker on the main sources."
         group 'Verification'
-        dependsOn ':jdk8:downloadJdk'
+        dependsOn ':checker:downloadJdk'
         // Always run the task.
         outputs.upToDateWhen { false }
         source = project("${projectName}").sourceSets.main.java
@@ -373,7 +373,7 @@ subprojects {
                 description 'Run the jtreg tests.'
                 dependsOn('compileJava')
                 dependsOn('compileTestJava')
-                dependsOn(':jdk8:downloadJdk')
+                dependsOn(':checker:downloadJdk')
                 dependsOn('shadowJar')
 
                 String jtregOutput = "${buildDir}/jtreg"

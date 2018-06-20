@@ -1,27 +1,27 @@
 import org.checkerframework.checker.determinism.qual.*;
 
 public class TestEquals {
-    void test1(@Det Node n, @Det Node m) {
+    void test1(@Det NodeD n, @Det NodeD m) {
         @Det boolean res = n.equals(m);
     }
 
-    void test3(@Det Node n, @NonDet Node m) {
+    void test3(@Det NodeD n, @NonDet NodeD m) {
         // :: error: (assignment.type.incompatible)
         @Det boolean res = n.equals(m);
     }
 
-    void test7(@NonDet Node n, @Det Node m) {
+    void test7(@NonDet NodeD n, @Det NodeD m) {
         // :: error: (assignment.type.incompatible)
         @Det boolean res = n.equals(m);
     }
 
-    void test9(@NonDet Node n, @NonDet Node m) {
+    void test9(@NonDet NodeD n, @NonDet NodeD m) {
         // :: error: (assignment.type.incompatible)
         @Det boolean res = n.equals(m);
     }
 }
 
-class Node {
+class NodeD {
     int data;
 
     @Override

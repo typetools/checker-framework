@@ -893,8 +893,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the AnnotatedTypeFormatter to pass to all instantiated AnnotatedTypeMirrors
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        boolean printVerboseGenerics = checker.hasOption("printVerboseGenerics");
         return new DefaultAnnotatedTypeFormatter(
-                checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+                printVerboseGenerics,
+                // -AprintVerboseGenerics implies -AprintAllQualifiers
+                printVerboseGenerics || checker.hasOption("printAllQualifiers"));
     }
 
     public AnnotatedTypeFormatter getAnnotatedTypeFormatter() {

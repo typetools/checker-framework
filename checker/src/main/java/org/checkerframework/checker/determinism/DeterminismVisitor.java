@@ -1,5 +1,7 @@
 package org.checkerframework.checker.determinism;
 
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
@@ -22,6 +24,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     private static final @CompilerMessageKey String INVALID_ANNOTATION = "invalid.annotation";
     private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
             "invalid.parameter.type";
+    private static final @CompilerMessageKey String INVALID_ARRAY_ACCESS = "invalid.array.access";
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
@@ -54,7 +57,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 if (!isSubType(paramAnnotation, baseAnnotation)) {
                     checker.report(
                             Result.failure(
-                                    INVALID_ANNOTATION_SUBTYPE, paramAnnotation, baseAnnotation),
+                                    INVALID_ANNOTATION_SUBTYPE,
+                                    "parameter type(" + paramAnnotation + ")",
+                                    "base type(" + baseAnnotation + ")"),
                             tree);
                     return false;
                 }
@@ -62,30 +67,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         }
 
         return true;
-    }
-
-    private boolean isAnnoSubType(AnnotationMirror baseAnno, AnnotationMirror paramAnno) {
-        AnnotationMirror DetTypeMirror = AnnotationBuilder.fromClass(elements, Det.class);
-        AnnotationMirror OrderNonDetTypeMirror =
-                AnnotationBuilder.fromClass(elements, OrderNonDet.class);
-        AnnotationMirror NonDetTypeMirror = AnnotationBuilder.fromClass(elements, NonDet.class);
-
-        if (types.isSameType(
-                        baseAnno.getAnnotationType(), OrderNonDetTypeMirror.getAnnotationType())
-                && types.isSameType(
-                        paramAnno.getAnnotationType(), NonDetTypeMirror.getAnnotationType())) {
-            return true;
-        }
-
-        if (types.isSameType(baseAnno.getAnnotationType(), DetTypeMirror.getAnnotationType())) {
-            if (types.isSameType(
-                            paramAnno.getAnnotationType(),
-                            OrderNonDetTypeMirror.getAnnotationType())
-                    || types.isSameType(
-                            paramAnno.getAnnotationType(), NonDetTypeMirror.getAnnotationType()))
-                return true;
-        }
-        return false;
     }
 
     private boolean isSubType(AnnotationMirror a1, AnnotationMirror a2) {
@@ -124,8 +105,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     public boolean isValidUse(AnnotatedTypeMirror.AnnotatedArrayType type, Tree tree) {
         Set<AnnotationMirror> annos = type.getAnnotations();
         //TODO: Allow OrderNonDet array?
-        if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class)))
-            checker.report(Result.failure(INVALID_ANNOTATION), tree);
+        //        if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class)))
+        //            checker.report(Result.failure(INVALID_ANNOTATION), tree);
         //Do not allow arrays of type @NonDet Object @Det []
         AnnotationMirror arrayType;
         AnnotationMirror elementType;
@@ -140,6 +121,60 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             }
         }
         return true;
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            String errorKey) {
+        // Accessing elements of @OrderNonDet or @NonDet arrays returns @NonDet element
+        // even if the component type is @Det
+        if (valueTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
+            ArrayAccessTree arrTree = (ArrayAccessTree) valueTree;
+            AnnotatedTypeMirror arrExprType =
+                    atypeFactory.getAnnotatedType(arrTree.getExpression());
+            AnnotatedTypeMirror.AnnotatedArrayType arrType =
+                    (AnnotatedTypeMirror.AnnotatedArrayType) arrExprType;
+            AnnotationMirror arrTopType = arrType.getAnnotations().iterator().next();
+            if (AnnotationUtils.areSame(arrTopType, atypeFactory.ORDERNONDET)
+                    || AnnotationUtils.areSame(arrTopType, atypeFactory.NONDET)) {
+                valueType.replaceAnnotation(atypeFactory.NONDET);
+            }
+        }
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, String errorKey) {
+        // This is to prevent side-effects to arrays
+        // Example {@Code @Det int @Det [] x;}
+        // {@Code x[@NonDet int] = y} is flagged as an error
+        if (varTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
+            ArrayAccessTree arrTree = (ArrayAccessTree) varTree;
+            AnnotatedTypeMirror arrExprType =
+                    atypeFactory.getAnnotatedType(arrTree.getExpression());
+            AnnotatedTypeMirror.AnnotatedArrayType arrType =
+                    (AnnotatedTypeMirror.AnnotatedArrayType) arrExprType;
+            AnnotationMirror arrTopType = arrType.getAnnotations().iterator().next();
+            AnnotationMirror indexType =
+                    atypeFactory
+                            .getAnnotatedType(arrTree.getIndex())
+                            .getAnnotations()
+                            .iterator()
+                            .next();
+            if (!isSubType(indexType, arrTopType)) {
+                checker.report(
+                        Result.failure(
+                                INVALID_ARRAY_ACCESS,
+                                "index type(" + indexType + ")",
+                                "array type(" + arrTopType + ")"),
+                        varTree);
+                return;
+            }
+        }
+        super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
     @Override
