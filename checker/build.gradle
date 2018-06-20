@@ -1,6 +1,7 @@
 ext {
-    // See instructions for updating the jdk.jar at https://github.com/typetools/annotated-libraries/blob/master/README.md
-    // Set jdkShaHash to 'local' to use a locally build version of jdk8.jar
+    // See instructions for updating jdk8.jar at
+    // https://github.com/typetools/annotated-libraries/blob/master/README.md .
+    // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
     jdkShaHash = '8f70a2f0edf873f8be2b0273cb36cf65705e9f84'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
@@ -61,7 +62,7 @@ task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
 }
 boolean shouldForceBuildJdk = false
 task forceBuildJdk(group: 'Build') {
-    description 'Builds jdk.jar even if no jdk file has changed.'
+    description 'Builds jdk.jar even if no file in the JDK has changed.'
     doLast {
         shouldForceBuildJdk = true
         buildJdk.execute()
@@ -70,14 +71,14 @@ task forceBuildJdk(group: 'Build') {
 }
 
 task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
-    description 'Builds jdk8.jar. To use this task, set jdkShaHash to local in checker/build.gradle.'
+    description 'Builds jdk8.jar. To use this task, set jdkShaHash to 'local' in checker/build.gradle.'
 
     doLast {
         if (System.getenv('JAVA_HOME') == null) {
             throw new GradleException("Environment variable JAVA_HOME is not set.")
-        } else if (!jdkShaHash.is('local')) {
-            throw new GradleException('jdkShaHash must be set to local to build jdk.jar. ' +
-                    'Set it in checker/build.gradle ')
+        }
+        if (!jdkShaHash.is('local')) {
+            throw new GradleException('To build jdk.jar, set jdkShaHash to 'local' in checker/build.gradle ')
         }
         delete 'dist/jdk8.jar'
         exec {
