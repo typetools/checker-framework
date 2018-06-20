@@ -87,7 +87,7 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
 task downloadJdk() {
     description 'Downloads jdk8.jar and copies it to checker/dist'
     // See instructions for updating the jdk.jar at https://github.com/typetools/annotated-libraries/blob/master/README.md
-    String shaHash = 'a896b9e00e3b836a1cc1a86309f193d1ee81225d'
+    String shaHash = '8f70a2f0edf873f8be2b0273cb36cf65705e9f841'
     File downloadedJdk = new File(buildDir, "jdk8-${shaHash}.jar");
 
     doLast {
