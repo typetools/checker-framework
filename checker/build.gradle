@@ -114,10 +114,10 @@ task updateJdk() {
         if (jdkShaHash.is('local')) {
             buildJdk.execute()
         } else {
-            File downloadedJdk = new File(buildDir, "jdk8-${shaHash}.jar");
+            File downloadedJdk = new File(buildDir, "jdk8-${jdkShaHash}.jar");
             if (!downloadedJdk.exists()) {
                 download {
-                    src "https://github.com/typetools/annotated-libraries/raw/${shaHash}/jdk8.jar"
+                    src "https://github.com/typetools/annotated-libraries/raw/${jdkShaHash}/jdk8.jar"
                     overwrite true
                     dest downloadedJdk
                 }
