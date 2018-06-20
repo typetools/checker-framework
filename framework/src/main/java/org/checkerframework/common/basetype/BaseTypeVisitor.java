@@ -615,30 +615,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 msgPrefix = "purity.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
-                String reason = r.second;
-                @SuppressWarnings("CompilerMessages")
-                @CompilerMessageKey String msg = msgPrefix + reason;
-                if (reason.equals("call")) {
-                    MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-                    checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
-                } else {
-                    checker.report(Result.failure(msg), r.first);
-                }
+                reportPurityError(msgPrefix, r);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.sideeffectfree." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.sideeffectfree.", r);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.deterministic." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.deterministic.", r);
                 }
             }
+        }
+    }
+
+    /** Reports single purity error. * */
+    private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
+        String reason = r.second;
+        @SuppressWarnings("CompilerMessages")
+        @CompilerMessageKey String msg = msgPrefix + reason;
+        if (reason.equals("call")) {
+            MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+        } else {
+            checker.report(Result.failure(msg), r.first);
         }
     }
 
