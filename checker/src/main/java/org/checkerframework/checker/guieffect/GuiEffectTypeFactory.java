@@ -557,6 +557,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             super(GuiEffectTypeFactory.this);
         }
 
+        /*
         public boolean hasExplicitUIEffect(ExecutableElement methElt) {
             return GuiEffectTypeFactory.this.getDeclAnnotation(methElt, UIEffect.class) != null;
         }
@@ -574,6 +575,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     || hasExplicitSafeEffect(methElt)
                     || hasExplicitPolyUIEffect(methElt);
         }
+        */
 
         @Override
         public Void visitMethod(MethodTree node, AnnotatedTypeMirror type) {

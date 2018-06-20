@@ -1,4 +1,3 @@
-
 class StringSameLen {
     public void m(String s) {
         String t = s;

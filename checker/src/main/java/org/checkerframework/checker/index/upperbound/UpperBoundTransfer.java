@@ -582,9 +582,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             }
         }
 
-        // If the result of a numerical subtraction would be LTEL(b) or LTL(b), and b is HSS(a, from, to),
-        // and the subtraction node itself is i - from where i is LTEL(b), then the result is LTEL(a).
-        // If i is LTL(b) instead, the result is LTL(a).
+        // If the result of a numerical subtraction would be LTEL(b) or LTL(b), and b is HSS(a,
+        // from, to), and the subtraction node itself is i - from where i is LTEL(b), then the
+        // result is LTEL(a).  If i is LTL(b) instead, the result is LTL(a).
 
         if (leftWithOffset.isLessThanLengthQualifier()) {
 
@@ -643,8 +643,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                                     || (lessThanType != null
                                             && LessThanAnnotatedTypeFactory.isLessThanOrEqual(
                                                     lessThanType, to))) {
-                                // it's necessary to check if leftOp == to because LessThan doesn't infer that
-                                // things are less than or equal to themselves.
+                                // It's necessary to check if leftOp == to because LessThan doesn't
+                                // infer that things are less than or equal to themselves.
                                 UBQualifier ltelA = UBQualifier.createUBQualifier(a, "-1");
                                 leftWithOffset = leftWithOffset.glb(ltelA);
                             }
@@ -678,7 +678,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
 
         ArrayList<String> offsets = new ArrayList<>(sameLenSequences.size());
-        for (String s : sameLenSequences) {
+        for (@SuppressWarnings("unused") String s : sameLenSequences) {
             offsets.add("-1");
         }
 
@@ -836,7 +836,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CaseNode n, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
         // Refines subtrahend in the switch expression
-        // TODO: this cannot be done in strengthenAnnotationOfEqualTo, because that does not provide transfer input
+        // TODO: this cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
+        // transfer input
         Node caseNode = n.getCaseOperand();
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
         Node switchNode = assign.getExpression();

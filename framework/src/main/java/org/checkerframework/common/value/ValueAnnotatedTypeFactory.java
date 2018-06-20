@@ -239,8 +239,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        // This is a lot of code to replace annotations so that annotations that are equivalent qualifiers
-        // are the same annotation.
+        // This is a lot of code to replace annotations so that annotations that are equivalent
+        // qualifiers are the same annotation.
         return new DefaultTypeHierarchy(
                 checker,
                 getQualifierHierarchy(),
@@ -740,7 +740,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
-                    if (newValues.size() == 0) {
+                    if (newValues.isEmpty()) {
                         return BOTTOMVAL;
                     }
                     if (newValues.size() > MAX_VALUES) {
@@ -1503,7 +1503,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // For some reason null is included in the list of values,
         // so remove it so that it does not cause a NPE elsewhere.
         values.remove(null);
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             return BOTTOMVAL;
         }
 

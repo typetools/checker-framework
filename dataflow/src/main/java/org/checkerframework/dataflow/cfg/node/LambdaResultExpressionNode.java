@@ -53,8 +53,8 @@ public class LambdaResultExpressionNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        // No need to compare tree, since in a well-formed LambdaResultExpressionNode, result will be the same only
-        // when tree is the same (this is similar to ReturnNode).
+        // No need to compare tree, since in a well-formed LambdaResultExpressionNode, result will
+        // be the same only when tree is the same (this is similar to ReturnNode).
         if (obj == null || !(obj instanceof LambdaResultExpressionNode)) {
             return false;
         }
@@ -67,8 +67,8 @@ public class LambdaResultExpressionNode extends Node {
 
     @Override
     public int hashCode() {
-        // No need to incorporate tree, since in a well-formed LambdaResultExpressionNode, result will be the same only
-        // when tree is the same (this is similar to ReturnNode).
+        // No need to incorporate tree, since in a well-formed LambdaResultExpressionNode, result
+        // will be the same only when tree is the same (this is similar to ReturnNode).
         return HashCodeUtils.hash(result);
     }
 
