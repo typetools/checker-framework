@@ -79,6 +79,13 @@ public class TestLocalArrays<T> {
     }
 
     void accessLength(@NonDet int @NonDet [] a) {
+        // :: error: (assignment.type.incompatible)
         @Det int l = a.length;
     }
+
+    void methInv(@Det int @NonDet [] a, @Det int index) {
+        arrMethod(a[index]);
+    }
+
+    void arrMethod(@Det int x) {}
 }
