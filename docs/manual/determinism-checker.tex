@@ -2,16 +2,22 @@
 \chapter{Determinism Checker\label{determinism-checker}}
 
 A nondeterministic program is one that may produce different output when
-run twice on the same input.  It is easier to test a deterministic program,
+run twice on the same input.
+It is desirable for programs to be deterministic.
+It is easier to test a deterministic program,
 because nondeterminism can lead to flaky tests that sometimes succeed and
 sometimes fail.  It is easier for a user or programmer to compare two
 deterministic executions than two nondeterministic executions.  It is
 easier to reproduce a bug in a deterministic program.
-Therefore, it is desirable for programs to be deterministic.
-The Determinism Checker helps you to achieve this goal.
+
+The Determinism Checker helps you to make your programs deterministic or
+recognize when they are not.
+The Determinism Checker enables a programmer to indicate which
+computations should be the same across runs of a single-threaded program,
+and then the Determinism Checker verifies that property.
 
 Even single-threaded programs are frequently nondeterministic.
-One cause is calls to Random, Date, and Time.
+One cause is use of the \<Random>, \<Date>, and \<Time> classes.
 Another cause is use of hash tables (including \<HashSet>s and
 \<HashMap>s), whose iteration order is nondeterministic across runs.
 For example, even if the set contains the same values, the following code
@@ -22,10 +28,6 @@ may produce output in different orders:
     System.out.println(x);
   }
 \end{Verbatim}
-
-The Determinism Checker enables a programmer to indicate which
-computations should be the same across runs of a single-threaded program,
-and then the Determinism Checker verifies that property.
 
 Another common cause of nondeterminism is the operating system scheduler,
 for concurrent programs.  The Determinism Checker does not address this
@@ -57,7 +59,7 @@ The Determinism type system uses the following type qualifiers (see Figure~\ref{
   collections.
 \item[\refqualclass{checker/determinism/qual}{Det}] indicates that
   the expression evaluates to the same value (up to equality) on all
-  executions; for a collection, iteration yields the values in the same
+  executions; for a collection, iteration also yields the values in the same
   order.
   This is the default qualifier.
 \end{description}
@@ -76,20 +78,23 @@ Section~\ref{determinism-polymorphism} explains polymorphic qualifiers.
 \section{Valid collection types\label{determinism-collection-types}}
 
 The (determinism) type of a Collection must be a supertype or equal to
-the type of the type parameter.  For example, you may declare a
-deterministic list of deterministic integers, but not a deterministic
-list of nondeterministic integers.
+the type of the type parameter.
 
 For example, these types are valid:
 \begin{itemize}
-    \item \code{@Det List<@Det Integer>}
-    \item \code{@NonDet List<@OrderNonDet Set<@Det String>}\code{>}
+    \item \code{@NonDet      List<@NonDet      Integer>}
+    \item \code{@NonDet      List<@OrderNonDet Set<...>\relax >}
+    \item \code{@NonDet      List<@Det         Integer>}
+    \item \code{@Det         List<@Det         Integer>}
+    \item \code{@OrderNonDet Set <@OrderNonDet Set<...>\relax >}
+    \item \code{@OrderNonDet Set <@Det String>}
 \end{itemize}
 
 These types are invalid:
   \begin{itemize}
-    \item \code{@Det Set<@NonDet Integer>}
-    \item \code{@OrderNonDet String}
+    \item \code{@OrderNonDet Set<@NonDet Integer>}
+    \item \code{@Det         List<@NonDet Integer>}
+    \item \code{@Det         List<@OrderNonDet Set<...>\relax >}
   \end{itemize}
 
 Figure~\ref{fig-determinism-collections} illustrates the valid
@@ -98,14 +103,15 @@ relationships between collection types and type parameters.
 \begin{figure}
   \centering
   \begin{tabular}{|l|l|l|l|l|}
-    \hline
-    &   &  \multicolumn{3}{l|}{Type Parameter}                                                                       \\ \hline
-    &             & NonDet                                     & OrderNonDet              & Det \\ \cline{2-5}
-              & NonDet &                                                 &                          &     \\ \cline{2-5}
-Collection    & OrderNonDet &   invalid  &                          &     \\ \cline{2-5}
-              & Det         &   invalid               &    invalid  &     \\ \hline
+    \cline{3-5}
+    \multicolumn{2}{c|}{~}  &  \multicolumn{3}{c|}{Type Argument} \\ \cline{3-5}
+    \multicolumn{2}{c|}{~}  & NonDet     & OrderNonDet & Det \\ \hline
+              & NonDet      &   valid    &  valid      & valid  \\ \cline{2-5}
+Collection    & OrderNonDet &   invalid  &  valid      & valid  \\ \cline{2-5}
+              & Det         &   invalid  &  invalid    & invalid      \\ \hline
   \end{tabular}
-  \caption{Valid Collection declarations}
+  \caption{Valid Collection declarations.  The Collection's type qualifier
+    must be a supertype or equal to the type argument.}
   \label{fig-determinism-collections}
 \end{figure}
 
@@ -146,12 +152,12 @@ several enhancements to standard polymorphic qualifiers.
   Acts like \<@Det> when the polymorphic qualifier is instantiated as
   \<@OrderNonDet>.
   ``\<down>'' refers to the direction in the qualifier hierarchy:
-  \<@OrderNonDet> is changed to a lower qualifer that is a subtype of it.
+  \<@OrderNonDet> is changed to a lower qualifier that is a subtype of it.
 \item[\refqualclass{checker/determinism/qual}{PolyDet}\<("up")>]
   Acts like \<@NonDet> when the polymorphic qualifier is instantiated as
   \<@OrderNonDet>.
   ``\<up>'' refers to the direction in the qualifier hierarchy:
-  \<@OrderNonDet> is changed to a higher qualifer that is a supertype of it.
+  \<@OrderNonDet> is changed to a higher qualifier that is a supertype of it.
 \end{description}
 
 Ordinarily, every occurrence of \<@PolyDet> is instantiated at the same
@@ -246,23 +252,29 @@ In the JDK, printing methods such as \<println> are annotated as taking a
 deterministic result.  This guarantees that a program's output will be
 deterministic, but it may be too restrictive.  You can define your own
 printing methods, some of which can take nondeterministic inputs.  You can
-also override the JDK annotations by providing a stub file.
+also override the JDK annotations by providing a stub file
+(Section~\ref{stub}).
 
 \section{Default annotations on method parameters and returns\label{determinism-param-default}}
 
-Any unannotated method parameter or return type is annotated with the \<@PolyDet> annotation.
-This is less restrictive than having \<@Det> as the default for these types. So if you
-want to type check method parameters and return types to be deterministic at the call site, you
-must anotate the method declaration appropriately.
+Any unannotated method parameter or return type is treated as having the
+\<@PolyDet> annotation.  This permits all possible arguments.  If you wish
+to constrain method arguments to have deterministic type, you must annotate
+the method declaration.
 
-\section{Annotating local arrays and generic types\label{determinism-local-arrays}}
+\section{Defaulting for local arrays and generic types\label{determinism-local-arrays}}
 
-For locally declared arrays without explicit type annotations, the array type follows the CLIMB to top rule (see Section~\ref{climb-to-top}) and
-the component type gets the default type qualifier (\<@Det> in this case).
-For example, the array declaration \<int[] a;> is annotated as \<@Det int @NonDet [] a;> by default.
-So you must explicitly annotate all local arrays.
-Similarly for all local variables with generic type parameters.
+As with all type systems, defaulting is different for the array and
+component types in a locally-declared array or generic type without explicit type
+annotations.
+The array type defaulting follows the CLIMB to top rule (see Section~\ref{climb-to-top}) and
+the component type defaulting uses the default type qualifier (\<@Det>, for
+the Determinism Checker).
+For example, the local array declaration \<int[] a;> is defaulted to \<@Det int @NonDet [] a;>.
+The local declaration \code{MyClass<MyType> x;} is defaulted to
+\code{@NonDet MyClass<@Det MyType> x;}.
 
 
-%%  LocalWords:  DeterminismChecker HashSet InputFile NonDet Det
-%%  LocalWords:  OrderNonDet PolyDet UsePolyDet println
+
+%%  LocalWords:  DeterminismChecker HashSet InputFile NonDet Det MyClass
+%%  LocalWords:  OrderNonDet PolyDet UsePolyDet println MyType
