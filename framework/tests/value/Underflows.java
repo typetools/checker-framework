@@ -13,7 +13,7 @@ class Underflows {
     }
 
     static void chars() {
-        byte max = Character.MIN_VALUE;
+        char max = Character.MIN_VALUE;
         // :: warning: (cast.unsafe)
         @IntVal(65535) char maxPlus1 = (char) (max - 1);
     }

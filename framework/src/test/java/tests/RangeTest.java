@@ -24,6 +24,7 @@ public class RangeTest {
         Short.MIN_VALUE,
         Short.MIN_VALUE + 1L,
         Byte.MIN_VALUE - 1000L,
+        Character.MIN_VALUE - 1000L,
         Byte.MIN_VALUE - 10L,
         Byte.MIN_VALUE,
         Byte.MIN_VALUE + 1L,
@@ -277,7 +278,6 @@ public class RangeTest {
 
     @Test
     public void testByteRange() {
-        /*
         for (Range range : ranges) {
             Range result = range.byteRange();
             for (long value : values) {
@@ -296,7 +296,6 @@ public class RangeTest {
                 }
             }
         }
-        */
     }
 
     @Test
@@ -306,16 +305,21 @@ public class RangeTest {
             for (long value : values) {
                 if (value < range.from + charWidth
                         && value > range.to - charWidth
-                        && (Math.abs(range.from) - 1) / Character.MAX_VALUE
-                                == (Math.abs(range.to) - 1) / Character.MAX_VALUE) {
+                        && !result.isCharEverything()) {
                     // filter out test data that would cause Range.CharRange to return
                     // CHAR_EVERYTHING
                     char charValue = (char) value;
-                    assert range.contains(value) && result.contains(charValue)
-                                    || !range.contains(value) && !result.contains(charValue)
+                    int covert = (int) charValue;
+                    assert (range.contains(value) && result.contains(covert))
+                                    || (!range.contains(value) && !result.contains(charValue))
                             : String.format(
-                                    "Range.charRange failure: %s => %s; witness = %s",
-                                    range, result, charValue);
+                                    "Range.charRange failure: %s => %s; witness = %s %s, %s, %s",
+                                    range,
+                                    result,
+                                    covert,
+                                    value,
+                                    range.contains(value),
+                                    result.contains(covert));
                 }
             }
         }

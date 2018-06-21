@@ -14,7 +14,7 @@ class Overflows {
     }
 
     static void chars() {
-        byte max = Character.MAX_VALUE;
+        char max = Character.MAX_VALUE;
         // :: warning: (cast.unsafe)
         @IntVal(0) char maxPlus1 = (char) (max + 1);
     }
