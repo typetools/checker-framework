@@ -261,6 +261,12 @@ public class Range {
             return this;
         }
         if (IGNORE_OVERFLOW) {
+            if (to < Character.MIN_VALUE) {
+                return new Range(Character.MIN_VALUE, Character.MIN_VALUE);
+            }
+            if (from > Character.MAX_VALUE) {
+                return new Range(Character.MAX_VALUE, Character.MAX_VALUE);
+            }
             return new Range(
                     Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
         }
