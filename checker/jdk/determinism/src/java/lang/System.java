@@ -149,7 +149,7 @@ public final class System {
      *
      * @since   JDK1.1
      */
-    public static void setIn(@PolyDet InputStream in) {
+    public static void setIn(@Det InputStream in) {
         checkIO();
         setIn0(in);
     }
@@ -173,7 +173,7 @@ public final class System {
      *
      * @since   JDK1.1
      */
-    public static void setOut(@PolyDet PrintStream out) {
+    public static void setOut(@Det PrintStream out) {
         checkIO();
         setOut0(out);
     }
@@ -197,7 +197,7 @@ public final class System {
      *
      * @since   JDK1.1
      */
-    public static void setErr(@PolyDet PrintStream err) {
+    public static void setErr(@Det PrintStream err) {
         checkIO();
         setErr0(err);
     }
@@ -211,7 +211,7 @@ public final class System {
      *
      * @since   1.6
      */
-     public static @NonDet Console console() {
+     public static @Det Console console() {
          if (cons == null) {
              synchronized (System.class) {
                  cons = sun.misc.SharedSecrets.getJavaIOAccess().console();
@@ -245,7 +245,7 @@ public final class System {
      *
      * @since 1.5
      */
-    public static @NonDet Channel inheritedChannel() throws IOException {
+    public static @Det Channel inheritedChannel() throws IOException {
         return SelectorProvider.provider().inheritedChannel();
     }
 
@@ -284,7 +284,7 @@ public final class System {
      * @see java.lang.RuntimePermission
      */
     public static
-    void setSecurityManager(final @PolyDet SecurityManager s) {
+    void setSecurityManager(final @Det SecurityManager s) {
         try {
             s.checkPackageAccess("java.lang");
         } catch (Exception e) {
@@ -332,7 +332,7 @@ public final class System {
      *          otherwise, <code>null</code> is returned.
      * @see     #setSecurityManager
      */
-    public static @NonDet SecurityManager getSecurityManager() {
+    public static @Det SecurityManager getSecurityManager() {
         return security;
     }
 
@@ -492,9 +492,9 @@ public final class System {
      * @exception  NullPointerException if either <code>src</code> or
      *               <code>dest</code> is <code>null</code>.
      */
-    public static native void arraycopy(@PolyDet("use") Object src,  @PolyDet("use") int  srcPos,
-                                        @PolyDet Object dest, @PolyDet("use") int destPos,
-                                        @PolyDet("use") int length);
+    public static native void arraycopy(@Det Object src,  @Det int  srcPos,
+                                        @Det Object dest, @Det int destPos,
+                                        @Det int length);
 
     /**
      * Returns the same hash code for the given object as
@@ -507,7 +507,7 @@ public final class System {
      * @return  the hashCode
      * @since   JDK1.1
      */
-    public static native @NonDet int identityHashCode(@PolyDet Object x);
+    public static native @PolyDet int identityHashCode(@PolyDet Object x);
 
     /**
      * System properties. The following properties are guaranteed to be defined:
@@ -674,7 +674,7 @@ public final class System {
      * @see        java.lang.SecurityException
      * @see        java.lang.SecurityManager#checkPropertiesAccess()
      */
-    public static void setProperties(@PolyDet Properties props) {
+    public static void setProperties(@NonDet Properties props) {
         SecurityManager sm = getSecurityManager();
         if (sm != null) {
             sm.checkPropertiesAccess();

@@ -138,31 +138,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return super.visitMethodInvocation(node, p);
         }
-
-        @Override
-        public Void visitAssignment(AssignmentTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-            System.out.println(
-                    "assignment: "
-                            + node
-                            + " ; "
-                            + atypeFactory.getAnnotatedType(node.getExpression()));
-            return super.visitAssignment(node, annotatedTypeMirror);
-        }
-
-        @Override
-        public Void visitMemberSelect(
-                MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-            // Length of a @NonDet array is @NonDet
-            if (TreeUtils.isArrayLengthAccess(node)) {
-                AnnotatedTypeMirror.AnnotatedArrayType arrType =
-                        (AnnotatedTypeMirror.AnnotatedArrayType)
-                                atypeFactory.getAnnotatedType(node.getExpression());
-                if (AnnotationUtils.areSame(arrType.getAnnotations().iterator().next(), NONDET)) {
-                    annotatedTypeMirror.replaceAnnotation(NONDET);
-                }
-            }
-            return super.visitMemberSelect(node, annotatedTypeMirror);
-        }
     }
 
     private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
@@ -287,9 +262,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         //Collection
         TypeMirror CollectionTypeMirror =
                 TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractCollectionTypeMirror =
-                TypesUtils.typeFromClass(
-                        AbstractCollection.class, types, processingEnv.getElementUtils());
         //List and subclasses
         TypeMirror ListTypeMirror =
                 TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
@@ -326,7 +298,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         NavigableSet.class, types, processingEnv.getElementUtils());
 
         if (types.isSubtype(tm, CollectionTypeMirror)
-                || types.isSubtype(tm, AbstractCollectionTypeMirror)
                 || types.isSubtype(tm, ListTypeMirror)
                 || types.isSubtype(tm, SetTypeMirror)
                 || types.isSubtype(tm, ArrayListTypeMirror)

@@ -134,7 +134,7 @@ class Random implements java.io.Serializable {
      * @param seed the initial seed
      * @see   #setSeed(long)
      */
-    public @PolyDet Random(@PolyDet long seed) {
+    public @NonDet Random(@PolyDet long seed) {
         if (getClass() == Random.class)
             this.seed = new AtomicLong(initialScramble(seed));
         else {
@@ -197,7 +197,7 @@ class Random implements java.io.Serializable {
      *         generator's sequence
      * @since  1.1
      */
-    protected int next(int bits) {
+    protected @NonDet int next(@PolyDet Random this, @PolyDet int bits) {
         long oldseed, nextseed;
         AtomicLong seed = this.seed;
         do {
@@ -243,7 +243,7 @@ class Random implements java.io.Serializable {
      * @param bound the upper bound (exclusive), must not equal origin
      * @return a pseudorandom value
      */
-    final long internalNextLong(long origin, long bound) {
+    final @NonDet long internalNextLong(@PolyDet Random this, @PolyDet long origin, @PolyDet long bound) {
         long r = nextLong();
         if (origin < bound) {
             long n = bound - origin, m = n - 1;
@@ -274,7 +274,7 @@ class Random implements java.io.Serializable {
      * @param bound the upper bound (exclusive), must not equal origin
      * @return a pseudorandom value
      */
-    final int internalNextInt(int origin, int bound) {
+    final @NonDet int internalNextInt(@PolyDet Random this, @PolyDet int origin, @PolyDet int bound) {
         if (origin < bound) {
             int n = bound - origin;
             if (n > 0) {
@@ -300,7 +300,7 @@ class Random implements java.io.Serializable {
      * @param bound the upper bound (exclusive), must not equal origin
      * @return a pseudorandom value
      */
-    final double internalNextDouble(double origin, double bound) {
+    final @PolyDet double internalNextDouble(@PolyDet Random this, @PolyDet double origin, @PolyDet double bound) {
         double r = nextDouble();
         if (origin < bound) {
             r = r * (bound - origin) + origin;
@@ -327,7 +327,7 @@ class Random implements java.io.Serializable {
      * @return the next pseudorandom, uniformly distributed {@code int}
      *         value from this random number generator's sequence
      */
-    public @PolyDet int nextInt(@PolyDet Random this) {
+    public @NonDet int nextInt(@PolyDet Random this) {
         return next(32);
     }
 
@@ -385,7 +385,7 @@ class Random implements java.io.Serializable {
      * @throws IllegalArgumentException if bound is not positive
      * @since 1.2
      */
-    public @PolyDet int nextInt(@PolyDet Random this, @PolyDet int bound) {
+    public @NonDet int nextInt(@PolyDet Random this, @PolyDet int bound) {
         if (bound <= 0)
             throw new IllegalArgumentException(BadBound);
 
@@ -421,7 +421,7 @@ class Random implements java.io.Serializable {
      * @return the next pseudorandom, uniformly distributed {@code long}
      *         value from this random number generator's sequence
      */
-    public @PolyDet long nextLong(@PolyDet Random this) {
+    public @NonDet long nextLong(@PolyDet Random this) {
         // it's okay that the bottom word remains signed.
         return ((long)(next(32)) << 32) + next(32);
     }
@@ -446,7 +446,7 @@ class Random implements java.io.Serializable {
      *         sequence
      * @since 1.2
      */
-    public @PolyDet boolean nextBoolean(@PolyDet Random this) {
+    public @NonDet boolean nextBoolean(@PolyDet Random this) {
         return next(1) != 0;
     }
 
@@ -487,7 +487,7 @@ class Random implements java.io.Serializable {
      *         value between {@code 0.0} and {@code 1.0} from this
      *         random number generator's sequence
      */
-    public @PolyDet float nextFloat(@PolyDet Random this) {
+    public @NonDet float nextFloat(@PolyDet Random this) {
         return next(24) / ((float)(1 << 24));
     }
 
@@ -530,7 +530,7 @@ class Random implements java.io.Serializable {
      *         random number generator's sequence
      * @see Math#random
      */
-    public @PolyDet double nextDouble(@PolyDet Random this) {
+    public @NonDet double nextDouble(@PolyDet Random this) {
         return (((long)(next(26)) << 27) + next(27)) * DOUBLE_UNIT;
     }
 
@@ -582,7 +582,7 @@ class Random implements java.io.Serializable {
      *         standard deviation {@code 1.0} from this random number
      *         generator's sequence
      */
-    synchronized public @PolyDet double nextGaussian(@PolyDet Random this) {
+    synchronized public @NonDet double nextGaussian(@PolyDet Random this) {
         // See Knuth, ACP, Section 3.4.1 Algorithm C.
         if (haveNextNextGaussian) {
             haveNextNextGaussian = false;
@@ -617,7 +617,7 @@ class Random implements java.io.Serializable {
      *         less than zero
      * @since 1.8
      */
-    public @PolyDet IntStream ints(@PolyDet Random this, @PolyDet long streamSize) {
+    public @NonDet IntStream ints(@PolyDet Random this, @PolyDet long streamSize) {
         if (streamSize < 0L)
             throw new IllegalArgumentException(BadSize);
         return StreamSupport.intStream
@@ -639,7 +639,7 @@ class Random implements java.io.Serializable {
      * @return a stream of pseudorandom {@code int} values
      * @since 1.8
      */
-    public @PolyDet IntStream ints(@PolyDet Random this) {
+    public @NonDet IntStream ints(@PolyDet Random this) {
         return StreamSupport.intStream
                 (new RandomIntsSpliterator
                          (this, 0L, Long.MAX_VALUE, Integer.MAX_VALUE, 0),
@@ -678,7 +678,7 @@ class Random implements java.io.Serializable {
      *         is greater than or equal to {@code randomNumberBound}
      * @since 1.8
      */
-    public @PolyDet IntStream ints(@PolyDet Random this, @PolyDet long streamSize, @PolyDet int randomNumberOrigin,
+    public @NonDet IntStream ints(@PolyDet Random this, @PolyDet long streamSize, @PolyDet int randomNumberOrigin,
                           @PolyDet int randomNumberBound) {
         if (streamSize < 0L)
             throw new IllegalArgumentException(BadSize);
@@ -723,7 +723,7 @@ class Random implements java.io.Serializable {
      *         is greater than or equal to {@code randomNumberBound}
      * @since 1.8
      */
-    public @PolyDet IntStream ints(@PolyDet Random this, @PolyDet int randomNumberOrigin, @PolyDet int randomNumberBound) {
+    public @NonDet IntStream ints(@PolyDet Random this, @PolyDet int randomNumberOrigin, @PolyDet int randomNumberBound) {
         if (randomNumberOrigin >= randomNumberBound)
             throw new IllegalArgumentException(BadRange);
         return StreamSupport.intStream
@@ -745,7 +745,7 @@ class Random implements java.io.Serializable {
      *         less than zero
      * @since 1.8
      */
-    public @PolyDet LongStream longs(@PolyDet Random this, @PolyDet long streamSize) {
+    public @NonDet LongStream longs(@PolyDet Random this, @PolyDet long streamSize) {
         if (streamSize < 0L)
             throw new IllegalArgumentException(BadSize);
         return StreamSupport.longStream
@@ -767,7 +767,7 @@ class Random implements java.io.Serializable {
      * @return a stream of pseudorandom {@code long} values
      * @since 1.8
      */
-    public @PolyDet LongStream longs(@PolyDet Random this) {
+    public @NonDet LongStream longs(@PolyDet Random this) {
         return StreamSupport.longStream
                 (new RandomLongsSpliterator
                          (this, 0L, Long.MAX_VALUE, Long.MAX_VALUE, 0L),
@@ -811,7 +811,7 @@ class Random implements java.io.Serializable {
      *         is greater than or equal to {@code randomNumberBound}
      * @since 1.8
      */
-    public @PolyDet LongStream longs(@PolyDet Random this, @PolyDet long streamSize, @PolyDet long randomNumberOrigin,
+    public @NonDet LongStream longs(@PolyDet Random this, @PolyDet long streamSize, @PolyDet long randomNumberOrigin,
                             @PolyDet long randomNumberBound) {
         if (streamSize < 0L)
             throw new IllegalArgumentException(BadSize);
@@ -861,7 +861,7 @@ class Random implements java.io.Serializable {
      *         is greater than or equal to {@code randomNumberBound}
      * @since 1.8
      */
-    public @PolyDet LongStream longs(@PolyDet Random this, @PolyDet long randomNumberOrigin, @PolyDet long randomNumberBound) {
+    public @NonDet LongStream longs(@PolyDet Random this, @PolyDet long randomNumberOrigin, @PolyDet long randomNumberBound) {
         if (randomNumberOrigin >= randomNumberBound)
             throw new IllegalArgumentException(BadRange);
         return StreamSupport.longStream
@@ -884,7 +884,7 @@ class Random implements java.io.Serializable {
      *         less than zero
      * @since 1.8
      */
-    public @PolyDet DoubleStream doubles(@PolyDet Random this, @PolyDet long streamSize) {
+    public @NonDet DoubleStream doubles(@PolyDet Random this, @PolyDet long streamSize) {
         if (streamSize < 0L)
             throw new IllegalArgumentException(BadSize);
         return StreamSupport.doubleStream
@@ -907,7 +907,7 @@ class Random implements java.io.Serializable {
      * @return a stream of pseudorandom {@code double} values
      * @since 1.8
      */
-    public @PolyDet DoubleStream doubles(@PolyDet Random this) {
+    public @NonDet DoubleStream doubles(@PolyDet Random this) {
         return StreamSupport.doubleStream
                 (new RandomDoublesSpliterator
                          (this, 0L, Long.MAX_VALUE, Double.MAX_VALUE, 0.0),
@@ -941,7 +941,7 @@ class Random implements java.io.Serializable {
      *         is greater than or equal to {@code randomNumberBound}
      * @since 1.8
      */
-    public @PolyDet DoubleStream doubles(@PolyDet Random this, @PolyDet long streamSize, @PolyDet double randomNumberOrigin,
+    public @NonDet DoubleStream doubles(@PolyDet Random this, @PolyDet long streamSize, @PolyDet double randomNumberOrigin,
                                         @PolyDet double randomNumberBound) {
         if (streamSize < 0L)
             throw new IllegalArgumentException(BadSize);
@@ -980,7 +980,7 @@ class Random implements java.io.Serializable {
      *         is greater than or equal to {@code randomNumberBound}
      * @since 1.8
      */
-    public @PolyDet DoubleStream doubles(@PolyDet Random this, @PolyDet double randomNumberOrigin, @PolyDet double randomNumberBound) {
+    public @NonDet DoubleStream doubles(@PolyDet Random this, @PolyDet double randomNumberOrigin, @PolyDet double randomNumberBound) {
         if (!(randomNumberOrigin < randomNumberBound))
             throw new IllegalArgumentException(BadRange);
         return StreamSupport.doubleStream
