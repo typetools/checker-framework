@@ -25,7 +25,7 @@ class NodeD {
     int data;
 
     @Override
-    public @PolyDet boolean equals(@PolyDet NodeD this, @PolyDet Object o) {
-        return this.data == ((NodeD) o).data;
+    public @PolyDet boolean equals(@PolyDet Node this, @PolyDet Object o) {
+        return this.data == ((Node) o).data;
     }
 }
