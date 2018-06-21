@@ -277,9 +277,9 @@ As an example:
 
 It is an error to apply an effect instantiation qualifier to a type that is not effect-polymorphic.
 
-Note that no annotation is required on the anonymous class declaration itself (e.g. \code{new Runnable()\{...\}} 
+Note that no annotation is required on the anonymous class declaration itself (e.g. \code{new Runnable()\{...\}}
 does not require a type use annotation, although the variable, field, or argument it ends up being assigned to might).
-Instead, the GUI Effect Checker will infer the effect qualifier based on the method being called from within the 
+Instead, the GUI Effect Checker will infer the effect qualifier based on the method being called from within the
 members of that specific anonymous class.
 
 \subsection{Subclassing a specific instantiation of an effect-polymorphic type\label{guieffect-subclassing}}
