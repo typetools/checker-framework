@@ -11,6 +11,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -25,20 +26,17 @@ public class DeterminismTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
         DeterminismAnnotatedTypeFactory factory =
                 (DeterminismAnnotatedTypeFactory) analysis.getTypeFactory();
-        //Type refinement for sort
+
+        //Type refinement for List sort
         Node receiver = n.getTarget().getReceiver();
         if (receiver == null || TypesUtils.getTypeElement(receiver.getType()) == null) {
             return result;
         }
         TypeMirror underlyingType = TypesUtils.getTypeElement(receiver.getType()).asType();
 
-        boolean isCollection = factory.isCollection(underlyingType);
-        if (isCollection) {
-            String methodName = n.toString();
-            String methodnameWithoutReceiver = methodName.substring(receiver.toString().length());
-            int startIndex = methodnameWithoutReceiver.indexOf(".");
-            int endIndex = methodnameWithoutReceiver.indexOf("(");
-            String methName = methodnameWithoutReceiver.substring(startIndex + 1, endIndex);
+        boolean isList = factory.isList(underlyingType);
+        if (isList) {
+            String methName = getMethodName(n.toString(), receiver);
             if (methName.equals("sort") && receiver.getType().getAnnotationMirrors().size() > 0) {
                 //Check if receiver has OrderNonDet annotation
                 AnnotationMirror receiverAnno =
@@ -52,6 +50,33 @@ public class DeterminismTransfer extends CFTransfer {
                 }
             }
         }
+
+        boolean isArrays = factory.isArrays(underlyingType);
+        if (isArrays) {
+            String methName = getMethodName(n.toString(), receiver);
+            if (methName.equals("sort") && n.getArguments().size() == 1) {
+                AnnotatedTypeMirror firstArg =
+                        factory.getAnnotatedType(n.getTree().getArguments().get(0));
+                AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
+                //Check if receiver has first argument annotation
+                if (firstArgAnno != null
+                        && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
+                    FlowExpressions.Receiver firtArgRep =
+                            FlowExpressions.internalReprOf(factory, n.getArgument(0));
+                    result.getThenStore().insertValue(firtArgRep, factory.DET);
+                    result.getElseStore().insertValue(firtArgRep, factory.DET);
+                }
+            }
+        }
         return result;
+    }
+
+    String getMethodName(String n, Node receiver) {
+        String methodName = n.toString();
+        String methodnameWithoutReceiver = methodName.substring(receiver.toString().length());
+        int startIndex = methodnameWithoutReceiver.indexOf(".");
+        int endIndex = methodnameWithoutReceiver.indexOf("(");
+        String methName = methodnameWithoutReceiver.substring(startIndex + 1, endIndex);
+        return methName;
     }
 }

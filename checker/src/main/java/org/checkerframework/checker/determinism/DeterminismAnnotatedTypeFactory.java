@@ -269,14 +269,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         TypeMirror AbstractSequentialListTypeMirror =
                 TypesUtils.typeFromClass(
                         AbstractSequentialList.class, types, processingEnv.getElementUtils());
-        TypeMirror ArraysTypeMirror =
-                TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
         if (types.isSubtype(tm, ListTypeMirror)
                 || types.isSubtype(tm, ArrayListTypeMirror)
                 || types.isSubtype(tm, AbstractListTypeMirror)
                 || types.isSubtype(tm, AbstractSequentialListTypeMirror)
-                || types.isSubtype(tm, LinkedListTypeMirror)
-                || types.isSubtype(tm, ArraysTypeMirror)) {
+                || types.isSubtype(tm, LinkedListTypeMirror)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isArrays(TypeMirror tm) {
+        TypeMirror ArraysTypeMirror =
+                TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
+        if (types.isSubtype(tm, ArraysTypeMirror)) {
             return true;
         }
         return false;
