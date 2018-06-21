@@ -28,8 +28,8 @@ class Child extends TestOverride {
     }
 
     @Override
+    // :: error: (override.param.invalid)
     protected @PolyDet int getList(@Det ArrayList<Integer> a) {
-        // :: error: (override.param.invalid)
         return a.get(0);
     }
 }

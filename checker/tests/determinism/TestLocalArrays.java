@@ -84,6 +84,7 @@ public class TestLocalArrays<T> {
     }
 
     void methInv(@Det int @NonDet [] a, @Det int index) {
+        // :: error: (argument.type.incompatible)
         arrMethod(a[index]);
     }
 

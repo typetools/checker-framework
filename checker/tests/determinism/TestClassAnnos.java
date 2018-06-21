@@ -7,7 +7,6 @@ public class TestClassAnnos {
 
         NonDetNode nd1 = new NonDetNode();
         // :: error: (argument.type.incompatible)
-
         System.out.println(nd1.getVal());
     }
 }

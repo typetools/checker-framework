@@ -2,16 +2,14 @@ import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 public class TestTreeSet {
-    void testNewTreeSet(@OrderNonDet Set<@OrderNonDet Set<@Det Integer>> set) {
-        @OrderNonDet TreeSet treeSet = new TreeSet(set);
+    void testNewTreeSet(@OrderNonDet TreeSet treeSet) {
         Iterator it = treeSet.iterator();
         while (it.hasNext()) {
             System.out.println(it.next());
         }
     }
 
-    void testNewTreeSet1(@NonDet Set<@NonDet Integer> set) {
-        @NonDet TreeSet<@Det Integer> treeSet = new TreeSet(set);
+    void testNewTreeSet1(@NonDet TreeSet<@Det Integer> treeSet) {
         @NonDet Iterator<@Det Integer> it = treeSet.iterator();
         while (it.hasNext()) {
             // :: error: (argument.type.incompatible)
