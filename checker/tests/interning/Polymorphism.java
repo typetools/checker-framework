@@ -72,7 +72,8 @@ public class Polymorphism {
         Map m = null;
         // TODO: RAW TYPES WILL EVENTUALLY REQUIRE THAT THERE BOUNDS BE EXACTLY THE QUALIFIER
         // EXPECTED
-        // :: warning: [unchecked] unchecked method invocation: method processMap in class Polymorphism is applied to given types :: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked method invocation: method processMap in class
+        // Polymorphism is applied to given types :: warning: [unchecked] unchecked conversion
         processMap(m);
     }
 

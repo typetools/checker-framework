@@ -42,9 +42,8 @@ public class Asserts {
     }
 
     @EnsuresNonNullIf(
-        result = true,
-        expression = {"#1", "#2"}
-    )
+            result = true,
+            expression = {"#1", "#2"})
     boolean sameLength(final boolean @Nullable [] seq1, final boolean @Nullable [] seq2) {
         // don't bother with the implementation
         // :: error: (contracts.conditional.postcondition.not.satisfied)

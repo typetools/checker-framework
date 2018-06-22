@@ -15,9 +15,8 @@ public class AssertIfFalseTest2 {
 
     public class PriorityQueue1<E extends @NonNull Object> {
         @EnsuresNonNullIf(
-            result = false,
-            expression = {"peek()"}
-        )
+                result = false,
+                expression = {"peek()"})
         @Pure
         public boolean isEmpty() {
             return true;
