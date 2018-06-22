@@ -128,7 +128,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            String errorKey) {
+            @CompilerMessageKey String errorKey) {
         // Accessing elements of @OrderNonDet or @NonDet arrays returns @NonDet element
         // even if the component type is @Det
         if (valueTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
@@ -147,7 +147,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     @Override
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, String errorKey) {
+    protected void commonAssignmentCheck(
+            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         // This is to prevent side-effects to arrays
         // Example {@Code @Det int @Det [] x;}
         // {@Code x[@NonDet int] = y} is flagged as an error

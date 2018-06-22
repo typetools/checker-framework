@@ -54,7 +54,8 @@ public class DeterminismTransfer extends CFTransfer {
         boolean isArrays = factory.isArrays(underlyingType);
         if (isArrays) {
             String methName = getMethodName(n.toString(), receiver);
-            if (methName.equals("sort") && n.getArguments().size() == 1) {
+            if ((methName.equals("sort") || methName.equals("parallelSort"))
+                    && n.getArguments().size() == 1) {
                 AnnotatedTypeMirror firstArg =
                         factory.getAnnotatedType(n.getTree().getArguments().get(0));
                 AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
