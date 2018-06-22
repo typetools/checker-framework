@@ -160,7 +160,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for a particular {@link Tree.Kind}
+     * Added an implicit rule for a particular {@link com.sun.source.tree.Tree.Kind}
      *
      * @param treeKind {@code Tree.Kind} that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeKind}

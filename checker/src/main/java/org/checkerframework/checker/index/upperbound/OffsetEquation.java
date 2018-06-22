@@ -496,8 +496,8 @@ public class OffsetEquation {
      * on the value of op.
      *
      * <p>Otherwise the return equation is created by converting the node to a {@link
-     * FlowExpressions.Receiver} and then added as a term to the returned equation. If op is '-'
-     * then it is a subtracted term.
+     * org.checkerframework.dataflow.analysis.FlowExpressions.Receiver} and then added as a term to
+     * the returned equation. If op is '-' then it is a subtracted term.
      *
      * @param node the Node from which to create an offset equation
      * @param factory AnnotationTypeFactory
