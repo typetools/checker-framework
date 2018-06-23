@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
  *
  * <pre><code>
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
+ *   /** @param testFiles the files containing test code, which will be type-checked *{@literal /}
  *   public MyTest(List{@literal <}File{@literal >} testFiles) {
  *     super(testFiles, MyChecker.class, "", "Anomsgtext");
  *   }
@@ -46,6 +47,7 @@ import org.junit.runner.RunWith;
 @RunWith(PerDirectorySuite.class)
 public abstract class CheckerFrameworkPerDirectoryTest {
 
+    /** The files containing test code, which will be type-checked. */
     protected final List<File> testFiles;
 
     /** The fully-qualified class name of the checker to use for tests. */
@@ -64,6 +66,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * Iterable, Iterable, List, boolean)} adds additional checker options such as
      * -AprintErrorStack.
      *
+     * @param testFiles the files containing test code, which will be type-checked
      * @param checker the class for the checker to use
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
