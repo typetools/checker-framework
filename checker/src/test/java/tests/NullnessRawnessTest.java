@@ -9,6 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness checker (that uses the rawness type system for initialization). */
 public class NullnessRawnessTest extends CheckerFrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessRawnessTest(List<File> testFiles) {
         // TODO: remove forbidnonnullarraycomponents option once it's no
         // longer needed.  See issue #986:
