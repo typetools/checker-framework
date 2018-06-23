@@ -12,6 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class NullnessFbcTestWithAsserts extends CheckerFrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessFbcTestWithAsserts(List<File> testFiles) {
         // TODO: remove forbidnonnullarraycomponents option once it's no
         // longer needed.  See issue #986:

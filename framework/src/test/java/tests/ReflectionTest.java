@@ -10,6 +10,7 @@ import testlib.reflection.ReflectionTestChecker;
 /** Tests the reflection resolution using a toy type system. */
 public class ReflectionTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public ReflectionTest(List<File> testFiles) {
         super(testFiles, ReflectionTestChecker.class, "reflection", "-Anomsgtext");
     }

@@ -13,6 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness checker when using safe defaults for unannotated source code. */
 public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessSafeDefaultsSourceCodeTest(List<File> testFiles) {
         super(
                 testFiles,
