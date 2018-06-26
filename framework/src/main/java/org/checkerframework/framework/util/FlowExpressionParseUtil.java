@@ -55,6 +55,10 @@ import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+//imports added by me
+import static com.github.javaparser.JavaParser.*;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ParseProblemException;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted Java expression.
@@ -62,11 +66,6 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class FlowExpressionParseUtil {
 
-    /**
-     * Regular expression for an identifier. Permits '$' in the name, though that character never
-     * appears in Java source code.
-     */
-    protected static final String identifierRegex = "[a-zA-Z_$][a-zA-Z_$0-9]*";
     /** Regular expression for a formal parameter use. */
     protected static final String parameterRegex = "#([1-9][0-9]*)";
 
@@ -85,16 +84,6 @@ public class FlowExpressionParseUtil {
     // Each of the below patterns is anchored with ^...$.
     /** Matches a parameter */
     protected static final Pattern parameterPattern = anchored(parameterRegex);
-    /** Matches an identifier */
-    protected static final Pattern identifierPattern = anchored(identifierRegex);
-    /** Matches integer literals */
-    protected static final Pattern intPattern = anchored("[-+]?[0-9]+");
-    /** Matches long literals */
-    protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
-    /** Matches string literals */
-    protected static final Pattern stringPattern = anchored(stringRegex);
-    /** Matches an expression contained in matching start and end parentheses */
-    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -111,6 +100,7 @@ public class FlowExpressionParseUtil {
             TreePath localScope,
             boolean useLocalScope)
             throws FlowExpressionParseException {
+                /*Thread.dumpStack();*/
         context.useLocalScope = useLocalScope;
         FlowExpressions.Receiver result = parseHelper(expression, context, localScope);
         if (result instanceof ClassName && !expression.endsWith("class")) {
@@ -127,7 +117,6 @@ public class FlowExpressionParseUtil {
 
         ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
         Types types = env.getTypeUtils();
-
         if (isNullLiteral(expression, context)) {
             return parseNullLiteral(expression, types);
         } else if (isIntLiteral(expression, context)) {
@@ -158,45 +147,22 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isMemberSelect(String s, FlowExpressionContext context) {
-        return parseMemberSelect(s) != null;
+        Expression e = parseExpression(s);
+        if (e.getClass().equals(FieldAccessExpr.class)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     /**
-     * Matches a field access. First of returned pair is object and second is field.
+     * Breaks expression into object and field. First of returned pair is object and second is field.
      *
      * @param s expression string
      * @return pair of object and field
      */
     private static Pair<String, String> parseMemberSelect(String s) {
-        Pair<Pair<String, String>, String> method = parseMethod(s);
-        if (method != null && method.second.startsWith(".")) {
-            return Pair.of(
-                    method.first.first + "(" + method.first.second + ")",
-                    method.second.substring(1));
-        }
-
-        Pair<Pair<String, String>, String> array = parseArray(s);
-        if (array != null && array.second.startsWith(".")) {
-            return Pair.of(
-                    array.first.first + "[" + array.first.second + "]", array.second.substring(1));
-        }
-
-        Pattern memberSelectOfStringPattern = anchored("(" + stringRegex + ")" + "\\.(.*)");
-        Matcher m = memberSelectOfStringPattern.matcher(s);
-        if (m.matches()) {
-            return Pair.of(m.group(1), m.group(2));
-        }
-
-        int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
-        if (nextRParenPos != -1) {
-            if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
-                String reciever = s.substring(0, nextRParenPos + 1);
-                String remaining = s.substring(nextRParenPos + 2);
-                return Pair.of(reciever, remaining);
-            } else {
-                return null;
-            }
-        }
 
         int i = s.indexOf(".");
         if (i == -1) {
@@ -212,6 +178,7 @@ public class FlowExpressionParseUtil {
     private static Receiver parseMemberSelect(
             String s, ProcessingEnvironment env, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
+
         Pair<String, String> select = parseMemberSelect(s);
         assert select != null : "isMemberSelect must be called first";
 
@@ -266,8 +233,13 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher intMatcher = intPattern.matcher(s);
-        return intMatcher.matches();
+        Expression e = parseExpression(s);
+        if (e.getClass().equals(IntegerLiteralExpr.class)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private static Receiver parseIntLiteral(String s, Types types) {
@@ -279,8 +251,13 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher longMatcher = longPattern.matcher(s);
-        return longMatcher.matches();
+        Expression e = parseExpression(s);
+        if (e.getClass().equals(LongLiteralExpr.class)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private static Receiver parseLongLiteral(String s, Types types) {
@@ -295,8 +272,13 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher stringMatcher = stringPattern.matcher(s);
-        return stringMatcher.matches();
+        Expression e = parseExpression(s);
+        if (e.getClass().equals(StringLiteralExpr.class)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private static Receiver parseStringLiteral(String s, Types types, Elements elements) {
@@ -309,10 +291,10 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             // TODO: this is probably wrong because you could have and inner class receiver
             // Outer.this
-            return false;
         }
         // Do not allow "#0" because it's ambiguous:  a reader might assume that #0 is the first
         // formal parameter.
+        
         return s.equals("this");
     }
 
@@ -356,8 +338,12 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isIdentifier(String s, FlowExpressionContext context) {
-        Matcher identifierMatcher = identifierPattern.matcher(s);
-        return identifierMatcher.matches();
+        try {
+            SimpleName sn = parseSimpleName(s);
+        } catch(ParseProblemException e) {
+            return false;
+        }
+        return true;
     }
 
     private static Receiver parseIdentifier(
@@ -417,7 +403,6 @@ public class FlowExpressionParseUtil {
             VariableElement fieldElem)
             throws FlowExpressionParseException {
         TypeMirror receiverType = context.receiver.getType();
-
         TypeMirror fieldType = ElementUtils.getType(fieldElem);
         if (ElementUtils.isStatic(fieldElem)) {
             Element classElem = fieldElem.getEnclosingElement();
@@ -437,6 +422,7 @@ public class FlowExpressionParseUtil {
             throw constructParserException(
                     s, "a non-static field cannot have a class name as a receiver.");
         }
+
         return new FieldAccess(locationOfField, fieldType, fieldElem);
     }
 
@@ -478,43 +464,44 @@ public class FlowExpressionParseUtil {
      * @param s expression string
      * @return pair of (pair of method name and arguments) and remaining
      */
-    private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse Identifier
-        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
-        Matcher m = identParser.matcher(s);
-        if (!m.matches()) {
-            return null;
+    private static Pair<String, String> parseMethod(String s) {
+        Expression e = parseExpression(s);
+        MethodCallExpr methodCallExpr = (MethodCallExpr) e;
+        String arguments = "";
+        for (Expression exp: methodCallExpr.getArguments()) {
+            if(arguments== "")
+                arguments = exp.toString();
+            else
+                arguments = arguments + " ," + exp.toString();
         }
-        String ident = m.group(1);
-        int i = ident.length();
-
-        int rparenPos = matchingCloseParen(s, i, '(', ')');
-        if (rparenPos == -1) {
-            return null;
-        }
-
-        String arguments = s.substring(i + 1, rparenPos);
-        String remaining = s.substring(rparenPos + 1);
-        return Pair.of(Pair.of(ident, arguments), remaining);
+        
+        String methodName = methodCallExpr.getName().asString();
+        return Pair.of(methodName, arguments);
     }
 
     private static boolean isMethod(String s, FlowExpressionContext contex) {
-        Pair<Pair<String, String>, String> result = parseMethod(s);
-        return result != null && result.second.isEmpty();
+        Expression e = parseExpression(s);
+        if (e.getClass().equals(MethodCallExpr.class)) {
+            MethodCallExpr methodCallExpr = (MethodCallExpr) e;
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private static Receiver parseMethod(
             String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
             throws FlowExpressionParseException {
-        Pair<Pair<String, String>, String> method = parseMethod(s);
+        Pair<String, String> method = parseMethod(s);
         if (method == null) {
             return null;
         }
 
-        String methodName = method.first.first;
+        String methodName = method.first;
 
         // parse parameter list
-        String parameterList = method.first.second;
+        String parameterList = method.second;
         List<Receiver> parameters =
                 ParameterListParser.parseParameterList(
                         parameterList, true, context.copyAndUseOuterReceiver(), path);
@@ -1310,7 +1297,6 @@ public class FlowExpressionParseUtil {
     public static Receiver internalReprOfVariable(AnnotatedTypeFactory provider, VariableTree tree)
             throws FlowExpressionParseException {
         Element elt = TreeUtils.elementFromDeclaration(tree);
-
         if (elt.getKind() == ElementKind.LOCAL_VARIABLE
                 || elt.getKind() == ElementKind.RESOURCE_VARIABLE
                 || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
