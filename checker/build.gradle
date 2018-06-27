@@ -4,7 +4,7 @@ ext {
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
     jdkShaHash = 'local'
     if (rootProject.hasProperty("useLocalJdk")) {
-        jdkShaHash = 'local'
+        jdkShaHash = 'a198b2476aa39e489ad3380fc826418b690285ea'
     }
 }
 sourceSets {
