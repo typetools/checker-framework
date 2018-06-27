@@ -2,6 +2,10 @@ import org.checkerframework.common.value.qual.*;
 
 package java.lang;
 
+class BigInteger {
+    @StaticallyExecutable BigInteger(@IntRange(from = -1, to = 1) int signum, byte[] magnitude);
+}
+
 class Boolean{
     @StaticallyExecutable Boolean(boolean value);
     @StaticallyExecutable Boolean(String s);
