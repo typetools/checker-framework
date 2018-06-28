@@ -1,5 +1,5 @@
 public class BitsMethodsIntRange {
-    void caseInteger(int index,char val1, char val2){
+    void caseInteger(int index, char val1, char val2) {
         char[] arr1 = new char[33];
         char[] arr2 = new char[33];
         arr1[Integer.numberOfLeadingZeros(index)] = val1;
