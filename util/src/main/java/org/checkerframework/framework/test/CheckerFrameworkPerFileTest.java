@@ -68,6 +68,7 @@ public abstract class CheckerFrameworkPerFileTest {
      * Iterable, Iterable, List, boolean)} adds additional checker options such as
      * -AprintErrorStack.
      *
+     * @param testFile the file containing test code, which will be type-checked
      * @param checker the class for the checker to use
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
