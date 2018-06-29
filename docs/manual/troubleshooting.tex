@@ -1076,11 +1076,6 @@ the pre-commit hook fails
 because of improper formatting, run \<./gradlew reformat>, stage the
 changes, and try the commit operation again.
 
-If the pre-commit hook or \<./gradlew reformat> fails with an
-"Argument list too long" error, then create a \code{local.properties} file
-in the top-level directory that sets the property \code{maxparallel} to 4000.  If the error is still issued, reduce the number and
-try again.
-
 
 \section{Contributing fixes (creating a pull request)\label{pull-request}}
 
