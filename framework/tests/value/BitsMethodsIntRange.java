@@ -1,15 +1,13 @@
+import org.checkerframework.common.value.qual.IntRange;
+
 public class BitsMethodsIntRange {
-    void caseInteger(int index, char val1, char val2) {
-        char[] arr1 = new char[33];
-        char[] arr2 = new char[33];
-        arr1[Integer.numberOfLeadingZeros(index)] = val1;
-        arr2[Integer.numberOfTrailingZeros(index)] = val2;
+    void caseInteger(int integerIndex) {
+        @IntRange(from = 0, to = 32) int leadingZeros = Integer.numberOfLeadingZeros(integerIndex);
+        @IntRange(from = 0, to = 32) int trailingZeros = Integer.numberOfLeadingZeros(integerIndex);
     }
 
-    void caseLong(int index, char val1, char val2) {
-        char[] arr1 = new char[65];
-        char[] arr2 = new char[65];
-        arr1[Long.numberOfLeadingZeros(index)] = val1;
-        arr2[Long.numberOfTrailingZeros(index)] = val2;
+    void caseLong(int longIndex) {
+        @IntRange(from = 0, to = 64) int leadingZeros = Long.numberOfLeadingZeros(longIndex);
+        @IntRange(from = 0, to = 64) int trailingZeros = Long.numberOfLeadingZeros(longIndex);
     }
 }
