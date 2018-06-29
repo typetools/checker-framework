@@ -1039,7 +1039,8 @@ public class FlowExpressionParseUtil {
          *     identifiers in the flow expression with an implicit "this"
          * @param arguments used to replace parameter references, e.g. #1, in flow expressions, null
          *     if no arguments
-         * @param checkerContext used to create {@link FlowExpressions.Receiver}s
+         * @param checkerContext used to create {@link
+         *     org.checkerframework.dataflow.analysis.FlowExpressions.Receiver}s
          */
         public FlowExpressionContext(
                 Receiver receiver, List<Receiver> arguments, BaseContext checkerContext) {

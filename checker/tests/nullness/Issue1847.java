@@ -13,8 +13,7 @@ public class Issue1847 {
         // :: error: (dereference.of.nullable)
         withLookup((String myVar) -> map.get(myVar).length());
         for (Iterator<Entry<@KeyFor("map") String, String>> iterator = map.entrySet().iterator();
-                iterator.hasNext();
-                ) {
+                iterator.hasNext(); ) {
             Entry<@KeyFor("map") String, String> entry = iterator.next();
             // Problem is that myVar gets inferred as @KeyFor("map") here,
             // and this variable is not distinguished from the lambda variables of the same name,

@@ -22,7 +22,11 @@ import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
  */
 public class I18nFormatUtil {
 
-    /** Throws an exception if the format is not syntactically valid. */
+    /**
+     * Throws an exception if the format is not syntactically valid.
+     *
+     * @param format the format string to parse
+     */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         MessageFormat.format(format, (Object[]) null);
     }
@@ -30,7 +34,8 @@ public class I18nFormatUtil {
     /**
      * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
      *
-     * <p>Throws an exception if the format is not syntactically valid.
+     * @param format the format string to parse
+     * @throws IllegalFormatException if the format is not syntactically valid.
      */
     public static I18nConversionCategory[] formatParameterCategories(String format)
             throws IllegalFormatException {
@@ -62,6 +67,10 @@ public class I18nFormatUtil {
     /**
      * Returns true if the format string is satisfiable, and if the format's parameters match the
      * passed {@link I18nConversionCategory}s. Otherwise an error is thrown.
+     *
+     * @param format a format string
+     * @param cc a list of expected categories for the string's format specifiers
+     * @return true if the format string's specifiers are the given categories, in order
      */
     // TODO introduce more such functions, see RegexUtil for examples
     @I18nChecksFormat

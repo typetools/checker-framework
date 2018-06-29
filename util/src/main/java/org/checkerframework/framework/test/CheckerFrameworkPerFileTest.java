@@ -49,6 +49,7 @@ import org.junit.runner.RunWith;
 @RunWith(PerFileSuite.class)
 public abstract class CheckerFrameworkPerFileTest {
 
+    /** The file containing test code, which will be type-checked. */
     protected final File testFile;
 
     /** The fully-qualified class name of the checker to use for tests. */
