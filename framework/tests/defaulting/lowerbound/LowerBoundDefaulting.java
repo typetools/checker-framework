@@ -15,19 +15,16 @@ public class LowerBoundDefaulting {
     public <IMP1 extends String> void implicitsTypeVar() {
 
         // should fail because @LbImplicit is below @LbTop
-        @LbTop
-        MyArrayList<@LbTop ? extends @LbTop String> itLowerBoundIncompatible =
+        @LbTop MyArrayList<@LbTop ? extends @LbTop String> itLowerBoundIncompatible =
                 // :: error: (assignment.type.incompatible)
                 new MyArrayList<IMP1>();
 
         // :: error: (type.argument.type.incompatible)
-        @LbTop
-        MyArrayList<@LbExplicit ? extends @LbTop String> itLowerBoundStillIncompatible =
+        @LbTop MyArrayList<@LbExplicit ? extends @LbTop String> itLowerBoundStillIncompatible =
                 // :: error: (assignment.type.incompatible)
                 new MyArrayList<IMP1>();
 
-        @LbTop
-        MyArrayList<@LbImplicit ? extends @LbTop String> itLowerBoundCompatible =
+        @LbTop MyArrayList<@LbImplicit ? extends @LbTop String> itLowerBoundCompatible =
                 new MyArrayList<IMP1>();
     }
 
@@ -38,11 +35,9 @@ public class LowerBoundDefaulting {
         @LbTop MyArrayList<@LbTop ? extends @LbTop String> iwLowerBoundIncompatible = myArrayList;
 
         // :: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
-        @LbTop
-        MyArrayList<@LbExplicit ? extends @LbTop String> iwLowerBoundCompatible = myArrayList;
+        @LbTop MyArrayList<@LbExplicit ? extends @LbTop String> iwLowerBoundCompatible = myArrayList;
 
-        @LbTop
-        MyArrayList<@LbImplicit ? extends @LbTop String> iwLowerBoundStillCompatible = myArrayList;
+        @LbTop MyArrayList<@LbImplicit ? extends @LbTop String> iwLowerBoundStillCompatible = myArrayList;
     }
 
     public void implicitExtendBoundedWildcard(MyArrayList<? extends String> iebList) {
@@ -52,8 +47,7 @@ public class LowerBoundDefaulting {
         @LbTop MyArrayList<@LbTop ? extends @LbTop String> iebLowerBoundIncompatible = iebList;
 
         // :: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
-        @LbTop
-        MyArrayList<@LbExplicit ? extends @LbTop String> iebLowerBoundStillIncompatible = iebList;
+        @LbTop MyArrayList<@LbExplicit ? extends @LbTop String> iebLowerBoundStillIncompatible = iebList;
 
         @LbTop MyArrayList<@LbImplicit ? extends @LbTop String> iebLowerBoundCompatible = iebList;
     }
@@ -65,8 +59,7 @@ public class LowerBoundDefaulting {
         @LbTop MyArrayList<@LbTop ? super @LbTop String> iebLowerBoundIncompatible = elbList;
 
         // :: error: (type.argument.type.incompatible)
-        @LbTop
-        MyArrayList<@LbTop ? super @LbExplicit String> iebLowerBoundStillIncompatible = elbList;
+        @LbTop MyArrayList<@LbTop ? super @LbExplicit String> iebLowerBoundStillIncompatible = elbList;
 
         // :: error: (assignment.type.incompatible)
         @LbTop MyArrayList<@LbTop ? super @LbImplicit String> iebLowerBoundCompatible = elbList;

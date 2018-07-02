@@ -29,15 +29,12 @@ public class UpperBoundDefaulting {
 
         // should fail because @LbImplicit is below @UbTop
         // :: error: (type.argument.type.incompatible)
-        @UbTop
-        MyArrayList<@UbBottom ? extends @UbTop String> iwLowerBoundIncompatible = myArrayList;
+        @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iwLowerBoundIncompatible = myArrayList;
 
-        @UbTop
-        MyArrayList<@UbBottom ? extends @UbExplicit String> iwLowerBoundCompatible = myArrayList;
+        @UbTop MyArrayList<@UbBottom ? extends @UbExplicit String> iwLowerBoundCompatible = myArrayList;
 
         // :: error: (type.argument.type.incompatible)
-        @UbTop
-        MyArrayList<@UbBottom ? extends @UbImplicit String> iwLowerBoundStillCompatible =
+        @UbTop MyArrayList<@UbBottom ? extends @UbImplicit String> iwLowerBoundStillCompatible =
                 // :: error: (assignment.type.incompatible)
                 myArrayList;
     }
@@ -60,8 +57,7 @@ public class UpperBoundDefaulting {
         @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
 
         // :: error: (type.argument.type.incompatible)
-        @UbTop
-        MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible =
+        @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible =
                 // :: error: (assignment.type.incompatible)
                 elbList;
 
