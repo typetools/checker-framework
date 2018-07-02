@@ -59,16 +59,16 @@ public class CheckerMain {
         System.exit(exitStatus);
     }
 
-    /** The path to the annotated jdk jar to use */
+    /** The path to the annotated jdk jar to use. */
     protected final File jdkJar;
 
-    /** The path to the jsr308 Langtools Type Annotations Compiler */
+    /** The path to the jsr308 Langtools Type Annotations Compiler. */
     protected final File javacJar;
 
-    /** The path to the jar containing CheckerMain.class (i.e. checker.jar) */
+    /** The path to the jar containing CheckerMain.class (i.e. checker.jar). */
     protected final File checkerJar;
 
-    /** The path to checker-qual.jar */
+    /** The path to checker-qual.jar. */
     protected final File checkerQualJar;
 
     private final List<String> compilationBootclasspath;
@@ -263,7 +263,7 @@ public class CheckerMain {
 
     /**
      * A pattern to match bootclasspath prepend entries, used to construct one {@code
-     * -Xbootclasspath/p:} command-line argument
+     * -Xbootclasspath/p:} command-line argument.
      */
     protected static final Pattern BOOT_CLASS_PATH_REGEX =
             Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
@@ -281,12 +281,12 @@ public class CheckerMain {
         return extractOptWithPattern(BOOT_CLASS_PATH_REGEX, false, args);
     }
 
-    /** Matches all {@code -J} arguments */
+    /** Matches all {@code -J} arguments. */
     protected static final Pattern JVM_OPTS_REGEX = Pattern.compile("^(?:-J)(.*)$");
 
     /**
      * Remove all {@code -J} arguments from {@code args} and add them to the returned list (without
-     * the {@code -J} prefix)
+     * the {@code -J} prefix).
      *
      * @param args the arguments to extract from
      * @return all {@code -J} arguments (without the {@code -J} prefix) or an empty list if there
@@ -370,7 +370,7 @@ public class CheckerMain {
 
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath
+     * classpath.
      */
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
@@ -413,7 +413,7 @@ public class CheckerMain {
 
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath
+     * classpath.
      */
     public int invokeCompiler() {
         List<String> args = getExecArguments();
@@ -531,7 +531,7 @@ public class CheckerMain {
     }
 
     /**
-     * Find the jar file or directory containing the .class file from which cls was loaded
+     * Find the jar file or directory containing the .class file from which cls was loaded.
      *
      * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class.
      * @param errIfFromDirectory if false, throw an exception if the file was loaded from a
@@ -664,7 +664,7 @@ public class CheckerMain {
 
     /**
      * For every "-processor" argument in args, replace its immediate successor argument using
-     * unabbreviateProcessorNames
+     * unabbreviateProcessorNames.
      */
     protected void replaceShorthandProcessor(final List<String> args) {
         for (int i = 0; i < args.size(); i++) {

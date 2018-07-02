@@ -39,7 +39,7 @@ public enum I18nConversionCategory {
     /** Use if the parameter can be of any type. */
     GENERAL(null /* everything */, null),
 
-    /** Use if the parameter can be of date, time, or number types */
+    /** Use if the parameter can be of date, time, or number types. */
     DATE(new Class<?>[] {Date.class, Number.class}, new String[] {"date", "time"}),
 
     /**
@@ -65,7 +65,7 @@ public enum I18nConversionCategory {
     }
 
     /**
-     *
+     * Creates a conversion cagetogry from a string name.
      *
      * <pre>
      * I18nConversionCategory.stringToI18nConversionCategory("number") == I18nConversionCategory.NUMBER;
@@ -95,7 +95,7 @@ public enum I18nConversionCategory {
     }
 
     /**
-     * Returns the intersection of the two given I18nConversionCategories
+     * Returns the intersection of the two given I18nConversionCategories.
      *
      * <blockquote>
      *
@@ -134,15 +134,11 @@ public enum I18nConversionCategory {
     }
 
     /**
-     * Returns the union of the two given I18nConversionCategories
-     *
-     * <blockquote>
+     * Returns the union of the two given I18nConversionCategories.
      *
      * <pre>
      * I18nConversionCategory.intersect(DATE, NUMBER) == DATE;
      * </pre>
-     *
-     * </blockquote>
      */
     public static I18nConversionCategory union(I18nConversionCategory a, I18nConversionCategory b) {
         if (a == UNUSED || b == UNUSED) {

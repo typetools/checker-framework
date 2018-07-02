@@ -95,7 +95,9 @@ public class Heuristics {
                 return false;
             }
             TreePath p = path;
-            while (p.getLeaf() != stmt) p = p.getParentPath();
+            while (p.getLeaf() != stmt) {
+                p = p.getParentPath();
+            }
             assert p.getLeaf() == stmt;
 
             while (p != null && p.getLeaf() instanceof StatementTree) {

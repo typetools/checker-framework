@@ -511,7 +511,7 @@ public class DependentTypesHelper {
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
         private final FlowExpressionContext context;
         private final TreePath localScope;
-        /** Whether or not the expression might contain a variable declared in local scope */
+        /** Whether or not the expression might contain a variable declared in local scope. */
         private final boolean useLocalScope;
 
         private StandardizeTypeAnnotator(

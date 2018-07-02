@@ -48,7 +48,7 @@ public class SameLenTransfer extends CFTransfer {
 
     /**
      * Gets the receiver (sequence) of a length access node, or null if lengthNode is not a length
-     * access
+     * access.
      */
     private Node getLengthNodeReceiver(Node lengthNode) {
         if (isArrayLengthAccess(lengthNode)) {
@@ -64,7 +64,7 @@ public class SameLenTransfer extends CFTransfer {
         return null;
     }
 
-    /** Handles case 1 */
+    /** Handles case 1. */
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {

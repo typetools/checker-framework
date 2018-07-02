@@ -507,8 +507,8 @@ subprojects {
 
 assemble.dependsOn(':checker:copyJarsToDist')
 
-task checkStyle(group: 'Format') {
-    description 'Check basic style guidelines'
+task checkBasicStyle(group: 'Format') {
+    description 'Check basic style guidelines.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.idea',

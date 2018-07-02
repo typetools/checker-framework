@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
 
     /**
-     * Returns true if, by default, anno should not be printed
+     * Returns true if, by default, anno should not be printed.
      *
      * @see org.checkerframework.framework.qual.InvisibleQualifier
      * @return true if anno's declaration was qualified by InvisibleQualifier

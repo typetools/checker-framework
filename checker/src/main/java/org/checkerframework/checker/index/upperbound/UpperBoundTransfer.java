@@ -501,17 +501,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalAddition(
             NumericalAdditionNode n, TransferInput<CFValue, CFStore> in) {
-        // type of leftNode + rightNode  is  glb(T, S) where
-        // T = minusOffset(type(leftNode), rightNode) and
-        // S = minusOffset(type(rightNode), leftNode)
+        // type of leftNode + rightNode  is  glb(t, s) where
+        // t = minusOffset(type(leftNode), rightNode) and
+        // s = minusOffset(type(rightNode), leftNode)
 
         UBQualifier left = getUBQualifierForAddition(n.getLeftOperand(), in);
-        UBQualifier T = left.minusOffset(n.getRightOperand(), atypeFactory);
+        UBQualifier t = left.minusOffset(n.getRightOperand(), atypeFactory);
 
         UBQualifier right = getUBQualifierForAddition(n.getRightOperand(), in);
-        UBQualifier S = right.minusOffset(n.getLeftOperand(), atypeFactory);
+        UBQualifier s = right.minusOffset(n.getLeftOperand(), atypeFactory);
 
-        UBQualifier glb = T.glb(S);
+        UBQualifier glb = t.glb(s);
         if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
             // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and
             // expression j is less than or equal to the length of f1, then the type of i + j is
