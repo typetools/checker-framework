@@ -135,7 +135,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Is the annotation {@code anno} an initialization qualifier?
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if the argument is an initialization qualifier
      */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
@@ -198,7 +198,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Creates a {@link UnderInitialization} annotation with the given type as its type frame
      * argument.
      *
-     * @param the type down to which some value has been initialized
+     * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnderInitialization} annotation with the given argument
      */
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
@@ -212,7 +212,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Creates a {@link UnderInitialization} annotation with the given type frame.
      *
-     * @param the type down to which some value has been initialized
+     * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnderInitialization} annotation with the given argument
      */
     public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
@@ -226,7 +226,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Creates a {@link UnknownInitialization} or {@link Raw} annotation with a given type frame.
      *
-     * @param the type down to which some value has been initialized
+     * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnknownInitialization} or {@link Raw} annotation with the given argument
      */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
@@ -240,7 +240,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Creates an {@link UnknownInitialization} or {@link Raw} annotation with a given type frame.
      *
-     * @param the type down to which some value has been initialized
+     * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnknownInitialization} or {@link Raw} annotation with the given argument
      */
     public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
@@ -267,7 +267,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Is {@code anno} the {@link UnderInitialization} annotation (with any type frame)? Always
      * returns false if {@code useFbc} is false.
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} is {@link UnderInitialization}
      */
     public boolean isFree(AnnotationMirror anno) {
@@ -278,7 +278,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Is {@code anno} the {@link UnknownInitialization} annotation (with any type frame)? If {@code
      * useFbc} is false, then {@link Raw} is used in the comparison.
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} is {@link UnknownInitialization} or {@link Raw}
      */
     public boolean isUnclassified(AnnotationMirror anno) {
@@ -289,7 +289,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Is {@code anno} the bottom annotation?
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} is {@link FBCBottom} or {@link NonRaw}
      */
     public boolean isFbcBottom(AnnotationMirror anno) {
@@ -300,7 +300,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Is {@code anno} the {@link Initialized} annotation? If {@code useFbc} is false, then {@link
      * NonRaw} is used in the comparison.
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} is {@link Initialized} or {@link NonRaw}
      */
     public boolean isCommitted(AnnotationMirror anno) {
@@ -311,7 +311,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Does {@code anno} have the annotation {@link UnderInitialization} (with any type frame)?
      * Always returns false if {@code useFbc} is false.
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} has {@link UnderInitialization}
      */
     public boolean isFree(AnnotatedTypeMirror anno) {
@@ -322,7 +322,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Does {@code anno} have the annotation {@link UnknownInitialization} (with any type frame)? If
      * {@code useFbc} is false, then {@link Raw} is used in the comparison.
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} has {@link UnknownInitialization} or {@link Raw}
      */
     public boolean isUnclassified(AnnotatedTypeMirror anno) {
@@ -333,7 +333,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Does {@code anno} have the bottom annotation?
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} has {@link FBCBottom} or {@link NonRaw}
      */
     public boolean isFbcBottom(AnnotatedTypeMirror anno) {
@@ -345,7 +345,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Does {@code anno} have the annotation {@link Initialized}? If {@code useFbc} is false, then
      * {@link NonRaw} is used in the comparison.
      *
-     * @param the annotation to check
+     * @param anno the annotation to check
      * @return true if {@code anno} has {@link Initialized} or {@link NonRaw}
      */
     public boolean isCommitted(AnnotatedTypeMirror anno) {
