@@ -611,7 +611,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         AnnotationMirror initializationAnno = type.getEffectiveAnnotationInHierarchy(UNCLASSIFIED);
         TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
         Types types = processingEnv.getTypeUtils();
-        return types.isSubtype(typeFrame, frame);
+        return types.isSubtype(typeFrame, types.erasure(frame));
     }
 
     /**
