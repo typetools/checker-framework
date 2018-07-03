@@ -66,18 +66,8 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class FlowExpressionParseUtil {
 
-
-    /**
-     * Regular expression for an identifier. Permits '$' in the name, though that character never
-     * appears in Java source code.
-     */
-    protected static final String identifierRegex = "[a-zA-Z_$][a-zA-Z_$0-9]*";
     /** Regular expression for a formal parameter use. */
     protected static final String parameterRegex = "#([1-9][0-9]*)";
-
-    /** Regular expression for a string literal. */
-    // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
-    protected static final String stringRegex = "\"(?:[^\"\\\\]|\\\\.)*\"";
 
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern unanchoredParameterPattern = Pattern.compile(parameterRegex);
@@ -90,8 +80,6 @@ public class FlowExpressionParseUtil {
     // Each of the below patterns is anchored with ^...$.
     /** Matches a parameter */
     protected static final Pattern parameterPattern = anchored(parameterRegex);
-    /** Matches string literals */
-    protected static final Pattern stringPattern = anchored(stringRegex);
     /** Matches an expression contained in matching start and end parentheses */
     protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
 
@@ -160,6 +148,57 @@ public class FlowExpressionParseUtil {
         return parseMemberSelect(s, context) != null;
     }
 
+    private static Pair<String, String> parseMethod(String s, String origString, ArrayList<String> argumentList) {
+        try {
+            Expression e = parseExpression(s);
+            if(e.getClass().equals(FieldAccessExpr.class)) {
+                FieldAccessExpr fieldAccessExpr = (FieldAccessExpr) e;
+                String fieldName = fieldAccessExpr.getName().toString();
+                if(origString.indexOf(fieldName)==-1)
+                    fieldName = replaceString(fieldName, argumentList);
+                String remaining = "." + fieldName;
+                String firstPart = origString.substring(0, origString.length()-remaining.length());
+                Pair<Pair<String, String>, String> method = parseMethod(firstPart, argumentList);
+                if (method != null) {
+                    if (method.second.startsWith(".")) { 
+                        String right =  method.first.first + "(" + method.first.second + ")"
+                            + method.second.substring(1)+remaining;
+                        String leftRemain = origString.substring(0, origString.length()-right.length()-1);
+                        if(leftRemain.length()>0)
+                                return null;
+                        return Pair.of(
+                            method.first.first + "(" + method.first.second + ")",
+                            method.second.substring(1)+remaining);
+                    }
+                    else {
+                        String right =  method.first.first + "(" + method.first.second + ")" + fieldName;
+                        String leftRemain = origString.substring(0, origString.length()-right.length()-1);
+                        if(leftRemain.length()>0)
+                                return null;
+                        return Pair.of(
+                            method.first.first + "(" + method.first.second + ")", fieldName);
+                    }
+                }
+                return null;
+            }
+            if(e.getClass().equals(MethodCallExpr.class)) {
+                Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
+                if (method != null && method.second.startsWith(".")) {  
+                    String right =  method.first.first + "(" + method.first.second + ")"
+                        + method.second.substring(1);
+                    String leftRemain = origString.substring(0, origString.length()-right.length()-1);
+                    if(leftRemain.length()>0)
+                            return null;
+                    return Pair.of(
+                        method.first.first + "(" + method.first.second + ")",
+                        method.second.substring(1));
+                }
+            }
+        } catch (ParseProblemException e) {
+            return null;
+        }
+        return null;
+    }
     
     /**
      * Matches a field access. First of returned pair is object and second is field.
@@ -169,12 +208,22 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<String, String> parseMemberSelect(String s, FlowExpressionContext context) {
         
-        Pair<Pair<String, String>, String> method = parseMethod(s);
+        String sCopy = s;
+        int k = 0;
+        ArrayList<String> argumentList = new ArrayList<String>();
+        if(context.arguments!=null) {
+            for(Receiver argument : context.arguments)
+            {
+                String replaceParam = "#" + Integer.toString(k+1);
+                sCopy = sCopy.replace(replaceParam, argument.toString());
+                k++;
+                argumentList.add(argument.toString());
+            }
+        }
 
-        if (method != null && method.second.startsWith(".")) {
-            return Pair.of(
-                    method.first.first + "(" + method.first.second + ")",
-                    method.second.substring(1));
+        Pair<String, String> method = parseMethod(sCopy, s, argumentList);
+        if(method!=null) {
+            return method;
         }
 
 
@@ -184,18 +233,28 @@ public class FlowExpressionParseUtil {
                     array.first.first + "[" + array.first.second + "]", array.second.substring(1));
         }
 
-        Pattern memberSelectOfStringPattern = anchored("(" + stringRegex + ")" + "\\.(.*)");
-        Matcher m = memberSelectOfStringPattern.matcher(s);
-        if (m.matches()) {
-            return Pair.of(m.group(1), m.group(2));
+        try {
+            Expression e = parseExpression(s);
+            if(e.getClass().equals(MethodCallExpr.class)) {
+                //Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
+                MethodCallExpr mce = (MethodCallExpr) e;
+                String mceString = mce.toString();
+                String receiver = mce.getScope().get().toString();
+                int recLen = receiver.length();
+                String remaining = mceString.substring(recLen, mceString.length());
+                if (receiver.charAt(0) == '\"')
+                    return Pair.of(receiver, remaining.substring(1));
+            }
+        } catch (ParseProblemException e) {
+
         }
 
         int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
         if (nextRParenPos != -1) {
             if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
-                String reciever = s.substring(0, nextRParenPos + 1);
+                String receiver = s.substring(0, nextRParenPos + 1);
                 String remaining = s.substring(nextRParenPos + 2);
-                return Pair.of(reciever, remaining);
+                return Pair.of(receiver, remaining);
             } else {
                 return null;
             }
@@ -206,10 +265,9 @@ public class FlowExpressionParseUtil {
             return null;
         }
 
-        String reciever = s.substring(0, i);
+        String receiver = s.substring(0, i);
         String remaining = s.substring(i + 1);
-
-        return Pair.of(reciever, remaining);
+        return Pair.of(receiver, remaining);
     }
 
     private static Receiver parseMemberSelect(
@@ -502,33 +560,6 @@ public class FlowExpressionParseUtil {
         return context.arguments.get(idx - 1);
     }
 
-    /**
-     * Parse a method call. First of returned pair is a pair of method name and arguments. Second of
-     * returned pair is a remaining string.
-     *
-     * @param s expression string
-     * @return pair of (pair of method name and arguments) and remaining
-     */
-    private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse Identifier
-        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
-        Matcher m = identParser.matcher(s);
-        if (!m.matches()) {
-            return null;
-        }
-        String ident = m.group(1);
-        int i = ident.length();
-
-        int rparenPos = matchingCloseParen(s, i, '(', ')');
-        if (rparenPos == -1) {
-            return null;
-        }
-
-        String arguments = s.substring(i + 1, rparenPos);
-        String remaining = s.substring(rparenPos + 1);
-        return Pair.of(Pair.of(ident, arguments), remaining);
-    }
-
     public static String replaceString (String s, ArrayList<String> argumentList) {
         if(argumentList.contains(s)) {
             s = "#" + Integer.toString(argumentList.indexOf(s)+1);
@@ -575,7 +606,7 @@ public class FlowExpressionParseUtil {
                         if (argumentsScope == "") {
                             argumentsScope = argStr;
                         } else {
-                            argumentsScope = argumentsScope + " ," + argStr;
+                            argumentsScope = argumentsScope + ", " + argStr;
                         }
                     }
                     String scopeName = scope.getName().toString();
@@ -740,7 +771,6 @@ public class FlowExpressionParseUtil {
         if (i >= s.length()) {
             return null;
         }
-
         while (true) {
             int nextRBracketPos = matchingCloseParen(s, i, '[', ']');
             if (nextRBracketPos == -1) {
@@ -770,31 +800,31 @@ public class FlowExpressionParseUtil {
         if (s.length() <= openPos || s.charAt(openPos) != open) {
             return -1;
         }
-
-        int i = openPos + 1;
-        int depth = 1;
-        while (i < s.length()) {
-            char ch = s.charAt(i++);
-            if (ch == '"') {
-                i--;
-                // TODO: inefficient to re-compute this on every iteration, should be static
-                Pattern stringPattern = anchored("(" + stringRegex + ").*");
-                Matcher m = stringPattern.matcher(s.substring(i));
-                if (!m.matches()) {
-                    break;
-                }
-                i += m.group(1).length();
-            } else if (ch == open) {
-                depth++;
-            } else if (ch == close) {
-                depth--;
-                if (depth < 0) {
-                    break;
-                } else if (depth == 0) {
-                    return i - 1;
+        int count = -1;
+        boolean inString = false;
+        List<Integer> openBracket = new ArrayList<Integer>();
+        for(int i = openPos; i < s.length(); i++){
+            if(s.charAt(i) == open){
+                if(!inString) {
+                    count++;
+                    openBracket.add(i);
                 }
             }
+            if(s.charAt(i) == close){
+                if(!inString) {
+                   openBracket.remove(count);
+                   count--;
+                   if(openBracket.isEmpty()) {
+                    return i;
+                   }
+                }
+            }
+            if(s.charAt(i) == '\"') {
+                if(!(s.charAt(i-1)=='\\'))
+                    inString=!inString;
+            }
         }
+
         return -1;
     }
 
