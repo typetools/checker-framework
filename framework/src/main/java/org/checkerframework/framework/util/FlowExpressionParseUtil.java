@@ -148,50 +148,72 @@ public class FlowExpressionParseUtil {
         return parseMemberSelect(s, context) != null;
     }
 
-    private static Pair<String, String> parseMethod(String s, String origString, ArrayList<String> argumentList) {
+    /**
+     * Matches a field access which contain a method call either in receiver or in remaining. First
+     * of returned pair is object and second is field. The object is not a field access expression
+     * itself.  
+     *
+     * @param s expression string with replaced formal parameters
+     * @param origString expression string
+     * @param argumentList list of arguments corresponding to formal parameters
+     * @return pair of object and field
+     */
+    private static Pair<String, String> parseMethod(
+            String s, String origString, ArrayList<String> argumentList) {
         try {
             Expression e = parseExpression(s);
-            if(e.getClass().equals(FieldAccessExpr.class)) {
+            if (e.getClass().equals(FieldAccessExpr.class)) {
                 FieldAccessExpr fieldAccessExpr = (FieldAccessExpr) e;
                 String fieldName = fieldAccessExpr.getName().toString();
-                if(origString.indexOf(fieldName)==-1)
+                if (origString.indexOf(fieldName) == -1)
                     fieldName = replaceString(fieldName, argumentList);
                 String remaining = "." + fieldName;
-                String firstPart = origString.substring(0, origString.length()-remaining.length());
-                Pair<Pair<String, String>, String> method = parseMethod(firstPart, argumentList);
+                String receiver = origString.substring(0, origString.length() - remaining.length());
+                Pair<Pair<String, String>, String> method = parseMethod(receiver, argumentList);
                 if (method != null) {
-                    if (method.second.startsWith(".")) { 
-                        String right =  method.first.first + "(" + method.first.second + ")"
-                            + method.second.substring(1)+remaining;
-                        String leftRemain = origString.substring(0, origString.length()-right.length()-1);
-                        if(leftRemain.length()>0)
-                                return null;
+                    if (method.second.startsWith(".")) {
+                        String methodCall =
+                                method.first.first
+                                        + "("
+                                        + method.first.second
+                                        + ")"
+                                        + method.second.substring(1)
+                                        + remaining;
+                        String leftRemain =
+                                origString.substring(
+                                        0, origString.length() - methodCall.length() - 1);
+                        if (leftRemain.length() > 0) return null;
                         return Pair.of(
-                            method.first.first + "(" + method.first.second + ")",
-                            method.second.substring(1)+remaining);
-                    }
-                    else {
-                        String right =  method.first.first + "(" + method.first.second + ")" + fieldName;
-                        String leftRemain = origString.substring(0, origString.length()-right.length()-1);
-                        if(leftRemain.length()>0)
-                                return null;
+                                method.first.first + "(" + method.first.second + ")",
+                                method.second.substring(1) + remaining);
+                    } else {
+                        String methodCall =
+                                method.first.first + "(" + method.first.second + ")" + fieldName;
+                        String leftRemain =
+                                origString.substring(
+                                        0, origString.length() - methodCall.length() - 1);
+                        if (leftRemain.length() > 0) return null;
                         return Pair.of(
-                            method.first.first + "(" + method.first.second + ")", fieldName);
+                                method.first.first + "(" + method.first.second + ")", fieldName);
                     }
                 }
                 return null;
             }
-            if(e.getClass().equals(MethodCallExpr.class)) {
+            if (e.getClass().equals(MethodCallExpr.class)) {
                 Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
-                if (method != null && method.second.startsWith(".")) {  
-                    String right =  method.first.first + "(" + method.first.second + ")"
-                        + method.second.substring(1);
-                    String leftRemain = origString.substring(0, origString.length()-right.length()-1);
-                    if(leftRemain.length()>0)
-                            return null;
+                if (method != null && method.second.startsWith(".")) {
+                    String methodCall =
+                            method.first.first
+                                    + "("
+                                    + method.first.second
+                                    + ")"
+                                    + method.second.substring(1);
+                    String leftRemain =
+                            origString.substring(0, origString.length() - methodCall.length() - 1);
+                    if (leftRemain.length() > 0) return null;
                     return Pair.of(
-                        method.first.first + "(" + method.first.second + ")",
-                        method.second.substring(1));
+                            method.first.first + "(" + method.first.second + ")",
+                            method.second.substring(1));
                 }
             }
         } catch (ParseProblemException e) {
@@ -199,7 +221,7 @@ public class FlowExpressionParseUtil {
         }
         return null;
     }
-    
+
     /**
      * Matches a field access. First of returned pair is object and second is field.
      *
@@ -207,25 +229,26 @@ public class FlowExpressionParseUtil {
      * @return pair of object and field
      */
     private static Pair<String, String> parseMemberSelect(String s, FlowExpressionContext context) {
-        
+
+        // replace occurence of formal parameters with corresponding arguments
         String sCopy = s;
         int k = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
-        if(context.arguments!=null) {
-            for(Receiver argument : context.arguments)
-            {
-                String replaceParam = "#" + Integer.toString(k+1);
+        if (context.arguments != null) {
+            for (Receiver argument : context.arguments) {
+                String replaceParam = "#" + Integer.toString(k + 1);
                 sCopy = sCopy.replace(replaceParam, argument.toString());
                 k++;
                 argumentList.add(argument.toString());
             }
         }
 
+        // parses field accesses and method calls which contain a method call
+        // either in receiver or in remaining
         Pair<String, String> method = parseMethod(sCopy, s, argumentList);
-        if(method!=null) {
+        if (method != null) {
             return method;
         }
-
 
         Pair<Pair<String, String>, String> array = parseArray(s);
         if (array != null && array.second.startsWith(".")) {
@@ -233,22 +256,21 @@ public class FlowExpressionParseUtil {
                     array.first.first + "[" + array.first.second + "]", array.second.substring(1));
         }
 
+        // parses member selects which are strings
         try {
             Expression e = parseExpression(s);
-            if(e.getClass().equals(MethodCallExpr.class)) {
-                //Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
-                MethodCallExpr mce = (MethodCallExpr) e;
-                String mceString = mce.toString();
-                String receiver = mce.getScope().get().toString();
-                int recLen = receiver.length();
-                String remaining = mceString.substring(recLen, mceString.length());
-                if (receiver.charAt(0) == '\"')
-                    return Pair.of(receiver, remaining.substring(1));
+            if (e.getClass().equals(MethodCallExpr.class)) {
+                MethodCallExpr methodCallExpr = (MethodCallExpr) e;
+                String mceString = methodCallExpr.toString();
+                String receiver = methodCallExpr.getScope().get().toString();
+                String remaining = mceString.substring(receiver.length(), mceString.length());
+                if (receiver.charAt(0) == '\"') return Pair.of(receiver, remaining.substring(1));
             }
         } catch (ParseProblemException e) {
 
         }
 
+        // parses member selects within brackets
         int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
         if (nextRParenPos != -1) {
             if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
@@ -560,9 +582,16 @@ public class FlowExpressionParseUtil {
         return context.arguments.get(idx - 1);
     }
 
-    public static String replaceString (String s, ArrayList<String> argumentList) {
-        if(argumentList.contains(s)) {
-            s = "#" + Integer.toString(argumentList.indexOf(s)+1);
+    /**
+     * Replace string by formal parameter if it is an argument present in argument list.
+     *
+     * @param s expression string
+     * @param argumentList list of arguments corresponding to formal parameters
+     * @return string containing argument replaced back by formal parameter
+     */
+    public static String replaceString(String s, ArrayList<String> argumentList) {
+        if (argumentList.contains(s)) {
+            s = "#" + Integer.toString(argumentList.indexOf(s) + 1);
         }
         return s;
     }
@@ -572,15 +601,16 @@ public class FlowExpressionParseUtil {
      * returned pair is a remaining string.
      *
      * @param s expression string
+     * @param argumentList list of arguments corresponding to formal parameters
      * @return pair of (pair of method name and arguments) and remaining
      */
-    private static Pair<Pair<String, String>, String> parseMethod(String s, ArrayList<String> argumentList) {
-        // Parse Identifier
+    private static Pair<Pair<String, String>, String> parseMethod(
+            String s, ArrayList<String> argumentList) {
         try {
             Expression e = parseExpression(s);
-            if(e.getClass().equals(MethodCallExpr.class)) {
+            if (e.getClass().equals(MethodCallExpr.class)) {
                 MethodCallExpr methodCallExpr = (MethodCallExpr) e;
-            
+
                 String arguments = "";
                 for (Expression exp : methodCallExpr.getArguments()) {
                     String argStr = exp.toString();
@@ -591,11 +621,10 @@ public class FlowExpressionParseUtil {
                         arguments = arguments + ", " + argStr;
                     }
                 }
-                Pair<Pair<String, String>, String> myResult;
                 String methodName = methodCallExpr.getName().asString();
                 methodName = replaceString(methodName, argumentList);
                 String remaining = "";
-                if(methodCallExpr.getScope().isPresent()) {
+                if (methodCallExpr.getScope().isPresent()) {
                     remaining = "." + methodName + "(" + arguments + ")";
                     Expression scopeExpr = methodCallExpr.getScope().get();
                     MethodCallExpr scope = (MethodCallExpr) scopeExpr;
@@ -614,26 +643,23 @@ public class FlowExpressionParseUtil {
                     return Pair.of(Pair.of(scopeName, argumentsScope), remaining);
                 } else {
                     return Pair.of(Pair.of(methodName, arguments), remaining);
-                    
                 }
-            }
-            else {
+            } else {
                 return null;
             }
         } catch (Exception e) {
             return null;
-
         }
     }
 
     private static boolean isMethod(String s, FlowExpressionContext context) {
 
+        // replace occurence of formal parameters with corresponding arguments
         int i = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
-        if(context.arguments!=null) {
-            for(Receiver argument : context.arguments)
-            {
-                String replaceParam = "#" + Integer.toString(i+1);
+        if (context.arguments != null) {
+            for (Receiver argument : context.arguments) {
+                String replaceParam = "#" + Integer.toString(i + 1);
                 s = s.replace(replaceParam, argument.toString());
                 i++;
                 argumentList.add(argument.toString());
@@ -647,13 +673,12 @@ public class FlowExpressionParseUtil {
     private static Receiver parseMethod(
             String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
             throws FlowExpressionParseException {
-        
+
         int k = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
-        if(context.arguments!=null) {
-            for(Receiver argument : context.arguments)
-            {
-                String replaceParam = "#" + Integer.toString(k+1);
+        if (context.arguments != null) {
+            for (Receiver argument : context.arguments) {
+                String replaceParam = "#" + Integer.toString(k + 1);
                 s = s.replace(replaceParam, argument.toString());
                 k++;
                 argumentList.add(argument.toString());
@@ -661,7 +686,7 @@ public class FlowExpressionParseUtil {
         }
 
         Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
-        
+
         if (method == null) {
             return null;
         }
@@ -803,25 +828,25 @@ public class FlowExpressionParseUtil {
         int count = -1;
         boolean inString = false;
         List<Integer> openBracket = new ArrayList<Integer>();
-        for(int i = openPos; i < s.length(); i++){
-            if(s.charAt(i) == open){
-                if(!inString) {
+        for (int i = openPos; i < s.length(); i++) {
+            if (s.charAt(i) == open) {
+                if (!inString) {
                     count++;
                     openBracket.add(i);
                 }
             }
-            if(s.charAt(i) == close){
-                if(!inString) {
-                   openBracket.remove(count);
-                   count--;
-                   if(openBracket.isEmpty()) {
-                    return i;
-                   }
+            if (s.charAt(i) == close) {
+                if (!inString) {
+                    openBracket.remove(count);
+                    count--;
+                    if (openBracket.isEmpty()) {
+                        return i;
+                    }
                 }
             }
-            if(s.charAt(i) == '\"') {
-                if(!(s.charAt(i-1)=='\\'))
-                    inString=!inString;
+            // check if " is a part of the string
+            if (s.charAt(i) == '\"') {
+                if (!(s.charAt(i - 1) == '\\')) inString = !inString;
             }
         }
 
@@ -879,6 +904,7 @@ public class FlowExpressionParseUtil {
      * @param expression the expression string that may start with a package and class name
      * @param resolver the {@code Resolver} for the current processing environment
      * @param path the tree path to the local scope
+     * @param information about any receiver and arguments
      * @return {@code null} if the expression string did not start with a package name; otherwise a
      *     {@code Pair} containing the {@code ClassName} for the matched class, and the remaining
      *     substring of the expression (possibly null) after the package and class name.
@@ -944,6 +970,7 @@ public class FlowExpressionParseUtil {
      * @param expression the expression string that may start with a package name
      * @param resolver the {@code Resolver} for the current processing environment
      * @param path the tree path to the local scope
+     * @param information about any receiver and arguments
      * @return {@code null} if the expression string did not start with a package name; otherwise a
      *     {@code Pair} containing the {@code PackageSymbol} for the matched package, and the
      *     remaining substring of the expression (always non-null) after the package name
