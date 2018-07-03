@@ -13,12 +13,12 @@ In the [FlowExpressionParseUtil.java](https://github.com/KankshaZ/checker-framew
 - memberSelectOfStringPattern
 - pattern for indentParser
 
-These regular expressions used for matching have been replaced with calls to the JavaParser. 
+These regular expressions used for matching have been replaced with calls to the JavaParser.
 Since the unanchoredParameterPattern and parameterPattern are non-standard expressions, they have not been replaced.
 
-Run all tests with 
+Run all tests with
 
-    ./gradlew allTests 
+    ./gradlew allTests
 
 Every test gets completed.
 
@@ -43,3 +43,4 @@ Please see the Checker Framework manual ([HTML](https://checkerframework.org/man
 
 Additional documentation for Checker Framework developers
 is in directory `docs/developer/`.
+

@@ -151,7 +151,7 @@ public class FlowExpressionParseUtil {
     /**
      * Matches a field access which contain a method call either in receiver or in remaining. First
      * of returned pair is object and second is field. The object is not a field access expression
-     * itself.  
+     * itself.
      *
      * @param s expression string with replaced formal parameters
      * @param origString expression string
