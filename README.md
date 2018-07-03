@@ -13,8 +13,14 @@ In the [FlowExpressionParseUtil.java](https://github.com/KankshaZ/checker-framew
 - memberSelectOfStringPattern
 - pattern for indentParser
 
-I have replaced these regular expressions used for matching, with calls to the JavaParser. 
-Since the unanchoredParameterPattern and parameterPattern are non-standard expressions, they are yet to be replaced
+These regular expressions used for matching have been replaced with calls to the JavaParser. 
+Since the unanchoredParameterPattern and parameterPattern are non-standard expressions, they have not been replaced.
+
+Run all tests with 
+
+    ./gradlew allTests 
+
+Every test gets completed.
 
 ### Run (to see changes):
 
@@ -29,19 +35,8 @@ The JavaParser's quick API is used. Static methods parse fragments of source cod
     Expression e = parseExpression("this");
 
 
-### Pending:
-Replacement of
-- unanchoredParameterPattern
-- parameterPattern
-
-### Concerns:
-Ran all tests with 
-
-    ./gradlew allTests 
-
-161 were completed. 18 failed.
-Must see what is going wrong.
-
+### Note:
+Replacement of unanchoredParameterPattern and parameterPattern is not done since they are non-standard Java Expressions. Occurences of parameters are replaced by arguments, and then replaced back before the expression is finally returned.
 
 
 Please see the Checker Framework manual ([HTML](https://checkerframework.org/manual/), [PDF](https://checkerframework.org/manual/checker-framework-manual.pdf)).
