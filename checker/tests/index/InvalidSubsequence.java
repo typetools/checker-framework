@@ -20,8 +20,7 @@ class InvalidSubsequence {
     @HasSubsequence(value = "this", from = "this.from", to = "10")
     int[] e;
 
-    @IndexFor("a") @LessThan("to")
-    int from;
+    @IndexFor("a") @LessThan("to") int from;
 
     @IndexOrHigh("a") int to;
 

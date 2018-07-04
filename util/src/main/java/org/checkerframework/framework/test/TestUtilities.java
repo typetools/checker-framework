@@ -111,7 +111,12 @@ public class TestUtilities {
         return files;
     }
 
-    /** Traverses the directories listed looking for java test files */
+    /**
+     * Traverses the directories listed looking for Java test files.
+     *
+     * @param dirs directories in which to search for Java test files
+     * @return a list of Java test files found in the directories
+     */
     public static List<File> getJavaFilesAsArgumentList(File... dirs) {
         List<File> arguments = new ArrayList<File>();
         for (File dir : dirs) {

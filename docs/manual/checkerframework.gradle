@@ -20,7 +20,7 @@ configurations {
 // Pass -PcfLocal to use a locally-built version of the Checker Framework.
 if (!rootProject.hasProperty('cfLocal')) {
   dependencies {
-    ext.checkerFrameworkVersion = '2.5.2'
+    ext.checkerFrameworkVersion = '2.5.3'
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
     checkerFrameworkCheckerJar "org.checkerframework:checker:${checkerFrameworkVersion}"
     implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
