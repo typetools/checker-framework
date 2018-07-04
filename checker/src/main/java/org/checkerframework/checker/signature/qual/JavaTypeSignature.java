@@ -12,12 +12,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Signature of a generic reference type {@code Ljava/util/ArrayList<-LCl;>; } 4. Array of any of
  * the above {@code [[D}
  *
- * <p>see <a href=https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1>JVM
- * Specifications section 4.9.1</a>
+ * @see GenericSignature
+ *     <p>see <a
+ *     href=https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1>JVM
+ *     Specifications section 4.9.1</a>
  */
 @SubtypeOf(GenericSignature.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-// @ImplicitFor(stringPatterns =
-//
-// "^(?<RTS>[BCDFIJSZ]|T[a-zA-Z_][a-zA-Z_0-9]*;|\\[(?'RTS')|(?<CTS>L([a-zA-Z_][a-zA-Z_0-9]*/)*(?<SCTS>[a-zA-Z_][a-zA-Z_0-9]*(\\<(\\*|(\\+|-)?(?'RTS'))\\>)?)(\\.(?'SCTS'))*;))$")
 public @interface JavaTypeSignature {}
