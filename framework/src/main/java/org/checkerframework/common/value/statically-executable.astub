@@ -47,7 +47,7 @@ class BigInteger {
     @StaticallyExecutable byte[] toByteArray();
     @StaticallyExecutable String toString();
     @StaticallyExecutable String toString(int radix);
-    @StaticallyExecutable static BigInteger	valueOf(long val);
+    @StaticallyExecutable static BigInteger valueOf(long val);
     @StaticallyExecutable BigInteger xor(BigInteger val);
 }
 
