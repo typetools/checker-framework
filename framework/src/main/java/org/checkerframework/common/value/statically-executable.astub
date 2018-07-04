@@ -5,14 +5,15 @@ package java.lang;
 class BigInteger {
     @StaticallyExecutable BigInteger(@IntRange(from = -1, to = 1) int signum, byte[] magnitude);
     @StaticallyExecutable BigInteger(byte[] val);
-    @StaticallyExecutable BigInteger(int bitLength, int certainty, Random rnd)
+    @StaticallyExecutable BigInteger(int bitLength, int certainty, Random rnd);
     @StaticallyExecutable BigInteger(int numBits, Random rnd);
     @StaticallyExecutable BigInteger(String val);
     @StaticallyExecutable BigInteger(String val, @IntRange(from = 2, to = 36) int radix);
+
     @StaticallyExecutable BigInteger abs();
     @StaticallyExecutable BigInteger add(BigInteger val);
-    @StaticallyExecutable BigInteger and(BigInteger val)
-    @StaticallyExecutable BigInteger andNot(BigInteger val)
+    @StaticallyExecutable BigInteger and(BigInteger val);
+    @StaticallyExecutable BigInteger andNot(BigInteger val);
     @StaticallyExecutable int bitCount();
     @StaticallyExecutable int bitLength();
     @StaticallyExecutable BigInteger clearBit(int n);
@@ -29,7 +30,7 @@ class BigInteger {
     @StaticallyExecutable @PolyValue long longValue(@PolyValue BigInteger this);
     @StaticallyExecutable BigInteger max(BigInteger val);
     @StaticallyExecutable BigInteger mod(BigInteger m);
-    @StaticallyExecutable BigInteger modInverse(BigInteger m)
+    @StaticallyExecutable BigInteger modInverse(BigInteger m);
     @StaticallyExecutable BigInteger modPow(BigInteger exponent, BigInteger m);
     @StaticallyExecutable BigInteger multiply(BigInteger val);
     @StaticallyExecutable BigInteger negate();
