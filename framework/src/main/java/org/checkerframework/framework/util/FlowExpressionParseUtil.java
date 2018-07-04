@@ -176,25 +176,17 @@ public class FlowExpressionParseUtil {
                                 method.first.first
                                         + "("
                                         + method.first.second
-                                        + ")"
+                                        + ")."
                                         + method.second.substring(1)
                                         + remaining;
-                        if (methodCall.length()==origString.length()) return null;  
-                        String leftRemain =
-                                origString.substring(
-                                        0, origString.length() - methodCall.length() - 1);
-                        if (leftRemain.length() > 0) return null;
+                        if (methodCall.length() != origString.length()) return null;
                         return Pair.of(
                                 method.first.first + "(" + method.first.second + ")",
                                 method.second.substring(1) + remaining);
                     } else {
                         String methodCall =
-                                method.first.first + "(" + method.first.second + ")" + fieldName;
-                        if (methodCall.length()==origString.length()) return null;  
-                        String leftRemain =
-                                origString.substring(
-                                        0, origString.length() - methodCall.length() - 1);
-                        if (leftRemain.length() > 0) return null;
+                                method.first.first + "(" + method.first.second + ")." + fieldName;
+                        if (methodCall.length() != origString.length()) return null;
                         return Pair.of(
                                 method.first.first + "(" + method.first.second + ")", fieldName);
                     }
@@ -208,12 +200,9 @@ public class FlowExpressionParseUtil {
                             method.first.first
                                     + "("
                                     + method.first.second
-                                    + ")"
+                                    + ")."
                                     + method.second.substring(1);
-                    if (methodCall.length()==origString.length()) return null;    
-                    String leftRemain =
-                            origString.substring(0, origString.length() - methodCall.length() - 1);
-                    if (leftRemain.length() > 0) return null;
+                    if (methodCall.length() != origString.length()) return null;
                     return Pair.of(
                             method.first.first + "(" + method.first.second + ")",
                             method.second.substring(1));
@@ -267,7 +256,9 @@ public class FlowExpressionParseUtil {
                 String mceString = methodCallExpr.toString();
                 String receiver = methodCallExpr.getScope().get().toString();
                 String remaining = mceString.substring(receiver.length(), mceString.length());
-                if (receiver.charAt(0) == '\"') return Pair.of(receiver, remaining.substring(1));
+                if (receiver.charAt(0) == '\"') {
+                    return Pair.of(receiver, remaining.substring(1));
+                }
             }
         } catch (ParseProblemException e) {
 
