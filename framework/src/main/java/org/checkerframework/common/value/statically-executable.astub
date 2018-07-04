@@ -4,6 +4,55 @@ package java.lang;
 
 class BigInteger {
     @StaticallyExecutable BigInteger(@IntRange(from = -1, to = 1) int signum, byte[] magnitude);
+    @StaticallyExecutable BigInteger(byte[] val);
+    @StaticallyExecutable BigInteger(int signum, byte[] magnitude);
+    @StaticallyExecutable BigInteger(int bitLength, int certainty, Random rnd)
+    @StaticallyExecutable BigInteger(int numBits, Random rnd);
+    @StaticallyExecutable BigInteger(String val);
+    @StaticallyExecutable BigInteger(String val, (@IntRange(from = 2, to = 36) int radix);
+
+    @StaticallyExecutable BigInteger abs();
+    @StaticallyExecutable BigInteger add(BigInteger val);
+    @StaticallyExecutable BigInteger and(BigInteger val)
+    @StaticallyExecutable BigInteger andNot(BigInteger val)
+    @StaticallyExecutable int bitCount();
+    @StaticallyExecutable int bitLength();
+    @StaticallyExecutable BigInteger clearBit(int n);
+    @StaticallyExecutable @IntRange(from = -1, to = 1) int compareTo(BigInteger val);
+    @StaticallyExecutable BigInteger divide(BigInteger val);
+    @StaticallyExecutable BigInteger[] divideAndRemainder(BigInteger val);
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue BigInteger this);
+    @StaticallyExecutable boolean equals(Object x);
+    @StaticallyExecutable BigInteger flipBit(int n);
+    @StaticallyExecutable @PolyValue float	floatValue(@PolyValue BigInteger this);
+    @StaticallyExecutable BigInteger gcd(BigInteger val);
+    @StaticallyExecutable int getLowestSetBit();
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue BigInteger this);
+    @StaticallyExecutable boolean isProbablePrime(int certainty);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue BigInteger this);
+    @StaticallyExecutable BigInteger max(BigInteger val);
+    @StaticallyExecutable BigInteger mod(BigInteger m);
+    @StaticallyExecutable BigInteger modInverse(BigInteger m)
+    @StaticallyExecutable BigInteger modPow(BigInteger exponent, BigInteger m);
+    @StaticallyExecutable BigInteger multiply(BigInteger val);
+    @StaticallyExecutable BigInteger negate();
+    @StaticallyExecutable BigInteger nextProbablePrime();
+    @StaticallyExecutable BigInteger not();
+    @StaticallyExecutable BigInteger or(BigInteger val);
+    @StaticallyExecutable BigInteger pow(int exponent);
+    @StaticallyExecutable static BigInteger	probablePrime(int bitLength, Random rnd);
+    @StaticallyExecutable BigInteger remainder(BigInteger val);
+    @StaticallyExecutable BigInteger setBit(int n);
+    @StaticallyExecutable BigInteger shiftLeft(int n);
+    @StaticallyExecutable BigInteger shiftRight(int n);
+    @StaticallyExecutable @IntRange(from = -1, to = 1) int signum();
+    @StaticallyExecutable BigInteger subtract(BigInteger val);
+    @StaticallyExecutable boolean testBit(int n);
+    @StaticallyExecutable byte[] toByteArray();
+    @StaticallyExecutable String toString();
+    @StaticallyExecutable String toString(int radix);
+    @StaticallyExecutable static BigInteger	valueOf(long val);
+    @StaticallyExecutable BigInteger xor(BigInteger val);
 }
 
 class Boolean{
