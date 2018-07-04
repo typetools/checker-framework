@@ -179,6 +179,7 @@ public class FlowExpressionParseUtil {
                                         + ")"
                                         + method.second.substring(1)
                                         + remaining;
+                        if (methodCall.length()==origString.length()) return null;  
                         String leftRemain =
                                 origString.substring(
                                         0, origString.length() - methodCall.length() - 1);
@@ -189,6 +190,7 @@ public class FlowExpressionParseUtil {
                     } else {
                         String methodCall =
                                 method.first.first + "(" + method.first.second + ")" + fieldName;
+                        if (methodCall.length()==origString.length()) return null;  
                         String leftRemain =
                                 origString.substring(
                                         0, origString.length() - methodCall.length() - 1);
@@ -208,6 +210,7 @@ public class FlowExpressionParseUtil {
                                     + method.first.second
                                     + ")"
                                     + method.second.substring(1);
+                    if (methodCall.length()==origString.length()) return null;    
                     String leftRemain =
                             origString.substring(0, origString.length() - methodCall.length() - 1);
                     if (leftRemain.length() > 0) return null;
