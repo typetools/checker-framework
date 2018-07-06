@@ -110,7 +110,9 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             int dot = key.indexOf('.');
-            if (dot < 0) return false;
+            if (dot < 0) {
+                return false;
+            }
             key = key.substring(dot + 1);
         } while (true);
     }

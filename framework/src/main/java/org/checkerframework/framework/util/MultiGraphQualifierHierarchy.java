@@ -117,7 +117,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         /**
          * Returns an instance of {@link GraphQualifierHierarchy} that represents the hierarchy
-         * built so far
+         * built so far.
          */
         public QualifierHierarchy build() {
             assertNotBuilt();
@@ -494,7 +494,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     private final void checkAnnoInGraph(AnnotationMirror a) {
         if (AnnotationUtils.containsSame(supertypesMap.keySet(), a)
-                || AnnotationUtils.containsSame(polyQualifiers.values(), a)) return;
+                || AnnotationUtils.containsSame(polyQualifiers.values(), a)) {
+            return;
+        }
 
         if (a == null) {
             ErrorReporter.errorAbort(
@@ -694,7 +696,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /**
      * Finds and returns the Least Upper Bound (LUB) of two annotation mirrors a1 and a2 by
      * recursively climbing the qualifier hierarchy of a1 until one of them is a subtype of the
-     * other, or returns null if no subtype relationships can be found
+     * other, or returns null if no subtype relationships can be found.
      *
      * @param a1 first annotation mirror
      * @param a2 second annotation mirror

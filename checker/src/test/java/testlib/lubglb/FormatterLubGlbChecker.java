@@ -25,6 +25,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class FormatterLubGlbChecker extends FormatterChecker {
 
+    @SuppressWarnings("checkstyle:localvariablename")
     @Override
     public void initChecker() {
         super.initChecker();
@@ -39,40 +40,40 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
         builder.setValue("value", "Message");
-        AnnotationMirror InvalidFormatWithMessage = builder.build();
+        AnnotationMirror invalidFormatWithMessage = builder.build();
 
         builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
         builder.setValue("value", "Message2");
-        AnnotationMirror InvalidFormatWithMessage2 = builder.build();
+        AnnotationMirror invalidFormatWithMessage2 = builder.build();
 
         builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
         builder.setValue("value", "(\"Message\" or \"Message2\")");
-        AnnotationMirror InvalidFormatWithMessagesOred = builder.build();
+        AnnotationMirror invalidFormatWithMessagesOred = builder.build();
 
         builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
         builder.setValue("value", "(\"Message\" and \"Message2\")");
-        AnnotationMirror InvalidFormatWithMessagesAnded = builder.build();
+        AnnotationMirror invalidFormatWithMessagesAnded = builder.build();
 
         ConversionCategory[] cc = new ConversionCategory[1];
 
         cc[0] = ConversionCategory.UNUSED;
-        AnnotationMirror FormatUnusedAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatUnusedAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.GENERAL;
-        AnnotationMirror FormatGeneralAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatGeneralAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.CHAR;
-        AnnotationMirror FormatCharAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatCharAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.INT;
-        AnnotationMirror FormatIntAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatIntAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.TIME;
-        AnnotationMirror FormatTimeAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatTimeAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.FLOAT;
-        AnnotationMirror FormatFloatAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatFloatAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.CHAR_AND_INT;
-        AnnotationMirror FormatCharAndIntAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatCharAndIntAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.INT_AND_TIME;
-        AnnotationMirror FormatIntAndTimeAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatIntAndTimeAnno = treeUtil.categoriesToFormatAnnotation(cc);
         cc[0] = ConversionCategory.NULL;
-        AnnotationMirror FormatNullAnno = treeUtil.categoriesToFormatAnnotation(cc);
+        AnnotationMirror formatNullAnno = treeUtil.categoriesToFormatAnnotation(cc);
 
         QualifierHierarchy qh =
                 ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
@@ -80,307 +81,307 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         // ** GLB tests **
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatIntAndTimeAnno),
-                        FormatIntAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatIntAndTimeAnno),
+                        formatIntAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(INT_AND_TIME) is not @Format(INT)!";
 
         // GLB of UNUSED and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatGeneralAnno),
-                        FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatGeneralAnno),
+                        formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(GENERAL) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatCharAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatCharAnno), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(CHAR) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatIntAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatIntAnno), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(INT) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatTimeAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatTimeAnno), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(TIME) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatFloatAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatFloatAnno), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(FLOAT) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatCharAndIntAnno),
-                        FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatCharAndIntAnno),
+                        formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(CHAR_AND_INT) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatIntAndTimeAnno),
-                        FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatIntAndTimeAnno),
+                        formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(INT_AND_TIME) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatNullAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatNullAnno), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(NULL) is not @Format(UNUSED)!";
 
         // GLB of GENERAL and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatUnusedAnno),
-                        FormatUnusedAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatUnusedAnno),
+                        formatUnusedAnno)
                 : "GLB of @Format(GENERAL) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatGeneralAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatGeneralAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatCharAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatCharAnno), formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(CHAR) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatIntAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatIntAnno), formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(INT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatTimeAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatTimeAnno), formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatFloatAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatFloatAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(FLOAT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatCharAndIntAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatCharAndIntAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(CHAR_AND_INT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatIntAndTimeAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatIntAndTimeAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(INT_AND_TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatNullAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatNullAnno), formatGeneralAnno)
                 : "GLB of @Format(GENERAL) and @Format(NULL) is not @Format(GENERAL)!";
 
         // GLB of CHAR and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @Format(CHAR) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatGeneralAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatGeneralAnno), formatGeneralAnno)
                 : "GLB of @Format(CHAR) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatCharAnno), FormatCharAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatCharAnno), formatCharAnno)
                 : "GLB of @Format(CHAR) and @Format(CHAR) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatIntAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatIntAnno), formatGeneralAnno)
                 : "GLB of @Format(CHAR) and @Format(INT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatTimeAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatTimeAnno), formatGeneralAnno)
                 : "GLB of @Format(CHAR) and @Format(TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatFloatAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatFloatAnno), formatGeneralAnno)
                 : "GLB of @Format(CHAR) and @Format(FLOAT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatCharAndIntAnno), FormatCharAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatCharAndIntAnno), formatCharAnno)
                 : "GLB of @Format(CHAR) and @Format(CHAR_AND_INT) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatIntAndTimeAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatIntAndTimeAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(CHAR) and @Format(INT_AND_TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAnno, FormatNullAnno), FormatCharAnno)
+                        qh.greatestLowerBound(formatCharAnno, formatNullAnno), formatCharAnno)
                 : "GLB of @Format(CHAR) and @Format(NULL) is not @Format(CHAR)!";
 
         // GLB of INT and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @Format(INT) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatGeneralAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatGeneralAnno), formatGeneralAnno)
                 : "GLB of @Format(INT) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatCharAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatCharAnno), formatGeneralAnno)
                 : "GLB of @Format(INT) and @Format(CHAR) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatIntAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatIntAnno), formatIntAnno)
                 : "GLB of @Format(INT) and @Format(INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatTimeAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatTimeAnno), formatGeneralAnno)
                 : "GLB of @Format(INT) and @Format(TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatFloatAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatFloatAnno), formatGeneralAnno)
                 : "GLB of @Format(INT) and @Format(FLOAT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatCharAndIntAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatCharAndIntAnno), formatIntAnno)
                 : "GLB of @Format(INT) and @Format(CHAR_AND_INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatIntAndTimeAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatIntAndTimeAnno), formatIntAnno)
                 : "GLB of @Format(INT) and @Format(INT_AND_TIME) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAnno, FormatNullAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatIntAnno, formatNullAnno), formatIntAnno)
                 : "GLB of @Format(INT) and @Format(NULL) is not @Format(INT)!";
 
         // GLB of TIME and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @Format(TIME) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatGeneralAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatGeneralAnno), formatGeneralAnno)
                 : "GLB of @Format(TIME) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatCharAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatCharAnno), formatGeneralAnno)
                 : "GLB of @Format(TIME) and @Format(CHAR) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatIntAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatIntAnno), formatGeneralAnno)
                 : "GLB of @Format(TIME) and @Format(INT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatTimeAnno), FormatTimeAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatTimeAnno), formatTimeAnno)
                 : "GLB of @Format(TIME) and @Format(TIME) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatFloatAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatFloatAnno), formatGeneralAnno)
                 : "GLB of @Format(TIME) and @Format(FLOAT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatCharAndIntAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatCharAndIntAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(TIME) and @Format(CHAR_AND_INT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatIntAndTimeAnno), FormatTimeAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatIntAndTimeAnno), formatTimeAnno)
                 : "GLB of @Format(TIME) and @Format(INT_AND_TIME) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTimeAnno, FormatNullAnno), FormatTimeAnno)
+                        qh.greatestLowerBound(formatTimeAnno, formatNullAnno), formatTimeAnno)
                 : "GLB of @Format(TIME) and @Format(NULL) is not @Format(TIME)!";
 
         // GLB of FLOAT and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @Format(FLOAT) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatGeneralAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatGeneralAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(FLOAT) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatCharAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatCharAnno), formatGeneralAnno)
                 : "GLB of @Format(FLOAT) and @Format(CHAR) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatIntAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatIntAnno), formatGeneralAnno)
                 : "GLB of @Format(FLOAT) and @Format(INT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatTimeAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatTimeAnno), formatGeneralAnno)
                 : "GLB of @Format(FLOAT) and @Format(TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatFloatAnno), FormatFloatAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatFloatAnno), formatFloatAnno)
                 : "GLB of @Format(FLOAT) and @Format(FLOAT) is not @Format(FLOAT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatCharAndIntAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatCharAndIntAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(FLOAT) and @Format(CHAR_AND_INT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatIntAndTimeAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatIntAndTimeAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(FLOAT) and @Format(INT_AND_TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatFloatAnno, FormatNullAnno), FormatFloatAnno)
+                        qh.greatestLowerBound(formatFloatAnno, formatNullAnno), formatFloatAnno)
                 : "GLB of @Format(FLOAT) and @Format(NULL) is not @Format(FLOAT)!";
 
         // GLB of CHAR_AND_INT and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatUnusedAnno),
-                        FormatUnusedAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatUnusedAnno),
+                        formatUnusedAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatGeneralAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatGeneralAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatCharAnno), FormatCharAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatCharAnno), formatCharAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(CHAR) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatIntAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatIntAnno), formatIntAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatTimeAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatTimeAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(TIME) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatFloatAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatFloatAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(FLOAT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatCharAndIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatCharAndIntAnno),
+                        formatCharAndIntAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatIntAndTimeAnno),
-                        FormatIntAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatIntAndTimeAnno),
+                        formatIntAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(INT_AND_TIME) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatCharAndIntAnno, FormatNullAnno),
-                        FormatCharAndIntAnno)
+                        qh.greatestLowerBound(formatCharAndIntAnno, formatNullAnno),
+                        formatCharAndIntAnno)
                 : "GLB of @Format(CHAR_AND_INT) and @Format(NULL) is not @Format(CHAR_AND_INT)!";
 
         // GLB of INT_AND_TIME and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatUnusedAnno),
-                        FormatUnusedAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatUnusedAnno),
+                        formatUnusedAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatGeneralAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatGeneralAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatCharAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatCharAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(CHAR) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatIntAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatIntAnno), formatIntAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatTimeAnno), FormatTimeAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatTimeAnno), formatTimeAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(TIME) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatFloatAnno),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatFloatAnno),
+                        formatGeneralAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(FLOAT) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatCharAndIntAnno),
-                        FormatIntAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatCharAndIntAnno),
+                        formatIntAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(CHAR_AND_INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatIntAndTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatIntAndTimeAnno),
+                        formatIntAndTimeAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatIntAndTimeAnno, FormatNullAnno),
-                        FormatIntAndTimeAnno)
+                        qh.greatestLowerBound(formatIntAndTimeAnno, formatNullAnno),
+                        formatIntAndTimeAnno)
                 : "GLB of @Format(INT_AND_TIME) and @Format(NULL) is not @Format(INT_AND_TIME)!";
 
         // GLB of NULL and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @Format(NULL) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatGeneralAnno), FormatGeneralAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatGeneralAnno), formatGeneralAnno)
                 : "GLB of @Format(NULL) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatCharAnno), FormatCharAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatCharAnno), formatCharAnno)
                 : "GLB of @Format(NULL) and @Format(CHAR) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatIntAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatIntAnno), formatIntAnno)
                 : "GLB of @Format(NULL) and @Format(INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatTimeAnno), FormatTimeAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatTimeAnno), formatTimeAnno)
                 : "GLB of @Format(NULL) and @Format(TIME) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatFloatAnno), FormatFloatAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatFloatAnno), formatFloatAnno)
                 : "GLB of @Format(NULL) and @Format(FLOAT) is not @Format(FLOAT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatCharAndIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatCharAndIntAnno),
+                        formatCharAndIntAnno)
                 : "GLB of @Format(NULL) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatIntAndTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatIntAndTimeAnno),
+                        formatIntAndTimeAnno)
                 : "GLB of @Format(NULL) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatNullAnno, FormatNullAnno), FormatNullAnno)
+                        qh.greatestLowerBound(formatNullAnno, formatNullAnno), formatNullAnno)
                 : "GLB of @Format(NULL) and @Format(NULL) is not @Format(NULL)!";
 
         // Now test with two ConversionCategory at a time:
@@ -389,28 +390,28 @@ public class FormatterLubGlbChecker extends FormatterChecker {
 
         cc2[0] = ConversionCategory.CHAR_AND_INT;
         cc2[1] = ConversionCategory.FLOAT;
-        AnnotationMirror FormatTwoConvCat1 = treeUtil.categoriesToFormatAnnotation(cc2);
+        AnnotationMirror formatTwoConvCat1 = treeUtil.categoriesToFormatAnnotation(cc2);
         cc2[0] = ConversionCategory.INT;
         cc2[1] = ConversionCategory.CHAR;
-        AnnotationMirror FormatTwoConvCat2 = treeUtil.categoriesToFormatAnnotation(cc2);
+        AnnotationMirror formatTwoConvCat2 = treeUtil.categoriesToFormatAnnotation(cc2);
         cc2[0] = ConversionCategory.INT;
         cc2[1] = ConversionCategory.GENERAL;
-        AnnotationMirror FormatTwoConvCat3 = treeUtil.categoriesToFormatAnnotation(cc2);
+        AnnotationMirror formatTwoConvCat3 = treeUtil.categoriesToFormatAnnotation(cc2);
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTwoConvCat1, FormatTwoConvCat2),
-                        FormatTwoConvCat3)
+                        qh.greatestLowerBound(formatTwoConvCat1, formatTwoConvCat2),
+                        formatTwoConvCat3)
                 : "GLB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not @Format([INT,GENERAL])!";
 
         // Test that the GLB of two ConversionCategory arrays of different sizes is an array of the
         // smallest size of the two:
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatGeneralAnno, FormatTwoConvCat1),
-                        FormatGeneralAnno)
+                        qh.greatestLowerBound(formatGeneralAnno, formatTwoConvCat1),
+                        formatGeneralAnno)
                 : "GLB of @I18nFormat(GENERAL) and @I18nFormat([CHAR_AND_INT,FLOAT]) is not @I18nFormat(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatTwoConvCat2, FormatNullAnno), FormatIntAnno)
+                        qh.greatestLowerBound(formatTwoConvCat2, formatNullAnno), formatIntAnno)
                 : "GLB of @I18nFormat([INT,CHAR]) and @I18nFormat(NULL) is not @I18nFormat(INT)!";
 
         // GLB of @UnknownFormat and others
@@ -421,14 +422,14 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.greatestLowerBound(UNKNOWNFORMAT, FORMAT), FORMAT)
                 : "GLB of @UnknownFormat and @Format(null) is not @Format(null)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(UNKNOWNFORMAT, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(UNKNOWNFORMAT, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @UnknownFormat and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(UNKNOWNFORMAT, INVALIDFORMAT), INVALIDFORMAT)
                 : "GLB of @UnknownFormat and @InvalidFormat(null) is not @InvalidFormat(null)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(UNKNOWNFORMAT, InvalidFormatWithMessage),
-                        InvalidFormatWithMessage)
+                        qh.greatestLowerBound(UNKNOWNFORMAT, invalidFormatWithMessage),
+                        invalidFormatWithMessage)
                 : "GLB of @UnknownFormat and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(UNKNOWNFORMAT, FORMATBOTTOM), FORMATBOTTOM)
@@ -445,7 +446,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.greatestLowerBound(FORMAT, INVALIDFORMAT), FORMATBOTTOM)
                 : "GLB of @Format(null) and @InvalidFormat(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FORMAT, InvalidFormatWithMessage), FORMATBOTTOM)
+                        qh.greatestLowerBound(FORMAT, invalidFormatWithMessage), FORMATBOTTOM)
                 : "GLB of @Format(null) and @InvalidFormat(\"Message\") is not @FormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(FORMAT, FORMATBOTTOM), FORMATBOTTOM)
                 : "GLB of @Format(null) and @FormatBottom is not @FormatBottom!";
@@ -453,22 +454,22 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         // GLB of @Format(UNUSED) and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, UNKNOWNFORMAT), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, UNKNOWNFORMAT), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @UnknownFormat is not @Format(UNUSED)!";
         // Computing the GLB of @Format with a value and @Format(null) should never occur in
         // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.greatestLowerBound(formatUnusedAnno, formatUnusedAnno), formatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, INVALIDFORMAT), FORMATBOTTOM)
+                        qh.greatestLowerBound(formatUnusedAnno, INVALIDFORMAT), FORMATBOTTOM)
                 : "GLB of @Format(UNUSED) and @InvalidFormat(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, InvalidFormatWithMessage),
+                        qh.greatestLowerBound(formatUnusedAnno, invalidFormatWithMessage),
                         FORMATBOTTOM)
                 : "GLB of @Format(UNUSED) and @InvalidFormat(\"Message\") is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FormatUnusedAnno, FORMATBOTTOM), FORMATBOTTOM)
+                        qh.greatestLowerBound(formatUnusedAnno, FORMATBOTTOM), FORMATBOTTOM)
                 : "GLB of @Format(UNUSED) and @FormatBottom is not @FormatBottom!";
 
         // GLB of @InvalidFormat(null) and others
@@ -479,7 +480,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.greatestLowerBound(INVALIDFORMAT, FORMAT), FORMATBOTTOM)
                 : "GLB of @InvalidFormat(null) and @Format(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(INVALIDFORMAT, FormatUnusedAnno), FORMATBOTTOM)
+                        qh.greatestLowerBound(INVALIDFORMAT, formatUnusedAnno), FORMATBOTTOM)
                 : "GLB of @InvalidFormat(null) and @Format(UNUSED) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(INVALIDFORMAT, FORMATBOTTOM), FORMATBOTTOM)
@@ -488,26 +489,26 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         // GLB of @InvalidFormat("Message") and others
 
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(InvalidFormatWithMessage, UNKNOWNFORMAT),
-                        InvalidFormatWithMessage)
+                        qh.greatestLowerBound(invalidFormatWithMessage, UNKNOWNFORMAT),
+                        invalidFormatWithMessage)
                 : "GLB of @InvalidFormat(\"Message\") and @UnknownFormat is not @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(InvalidFormatWithMessage, FORMAT), FORMATBOTTOM)
+                        qh.greatestLowerBound(invalidFormatWithMessage, FORMAT), FORMATBOTTOM)
                 : "GLB of @InvalidFormat(\"Message\") and @Format(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(InvalidFormatWithMessage, FormatUnusedAnno),
+                        qh.greatestLowerBound(invalidFormatWithMessage, formatUnusedAnno),
                         FORMATBOTTOM)
                 : "GLB of @InvalidFormat(\"Message\") and @Format(UNUSED) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(InvalidFormatWithMessage, InvalidFormatWithMessage),
-                        InvalidFormatWithMessage)
+                        qh.greatestLowerBound(invalidFormatWithMessage, invalidFormatWithMessage),
+                        invalidFormatWithMessage)
                 : "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(InvalidFormatWithMessage, InvalidFormatWithMessage2),
-                        InvalidFormatWithMessagesAnded)
+                        qh.greatestLowerBound(invalidFormatWithMessage, invalidFormatWithMessage2),
+                        invalidFormatWithMessagesAnded)
                 : "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not @InvalidFormat(\"(\"Message\" and \"Message2\")\")!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(InvalidFormatWithMessage, FORMATBOTTOM), FORMATBOTTOM)
+                        qh.greatestLowerBound(invalidFormatWithMessage, FORMATBOTTOM), FORMATBOTTOM)
                 : "GLB of @InvalidFormat(\"Message\") and @FormatBottom is not @FormatBottom!";
 
         // GLB of @FormatBottom and others
@@ -518,13 +519,13 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.greatestLowerBound(FORMATBOTTOM, FORMAT), FORMATBOTTOM)
                 : "GLB of @FormatBottom and @Format(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FORMATBOTTOM, FormatUnusedAnno), FORMATBOTTOM)
+                        qh.greatestLowerBound(FORMATBOTTOM, formatUnusedAnno), FORMATBOTTOM)
                 : "GLB of @FormatBottom and @Format(UNUSED) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(FORMATBOTTOM, INVALIDFORMAT), FORMATBOTTOM)
                 : "GLB of @FormatBottom and @InvalidFormat(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
-                        qh.greatestLowerBound(FORMATBOTTOM, InvalidFormatWithMessage), FORMATBOTTOM)
+                        qh.greatestLowerBound(FORMATBOTTOM, invalidFormatWithMessage), FORMATBOTTOM)
                 : "GLB of @FormatBottom and @InvalidFormat(\"Message\") is not @FormatBottom!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(FORMATBOTTOM, FORMATBOTTOM), FORMATBOTTOM)
@@ -535,314 +536,314 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         // LUB of UNUSED and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatUnusedAnno), formatUnusedAnno)
                 : "LUB of @Format(UNUSED) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatGeneralAnno), FormatGeneralAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatGeneralAnno), formatGeneralAnno)
                 : "LUB of @Format(UNUSED) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatCharAnno), FormatCharAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatCharAnno), formatCharAnno)
                 : "LUB of @Format(UNUSED) and @Format(CHAR) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatIntAnno), FormatIntAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatIntAnno), formatIntAnno)
                 : "LUB of @Format(UNUSED) and @Format(INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatTimeAnno), FormatTimeAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatTimeAnno), formatTimeAnno)
                 : "LUB of @Format(UNUSED) and @Format(TIME) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatFloatAnno), FormatFloatAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatFloatAnno), formatFloatAnno)
                 : "LUB of @Format(UNUSED) and @Format(FLOAT) is not @Format(FLOAT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatCharAndIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatCharAndIntAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(UNUSED) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatIntAndTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatIntAndTimeAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(UNUSED) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(UNUSED) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of GENERAL and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatUnusedAnno), FormatGeneralAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatUnusedAnno), formatGeneralAnno)
                 : "LUB of @Format(GENERAL) and @Format(UNUSED) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatGeneralAnno), FormatGeneralAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatGeneralAnno), formatGeneralAnno)
                 : "LUB of @Format(GENERAL) and @Format(GENERAL) is not @Format(GENERAL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatCharAnno), FormatCharAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatCharAnno), formatCharAnno)
                 : "LUB of @Format(GENERAL) and @Format(CHAR) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatIntAnno), FormatIntAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatIntAnno), formatIntAnno)
                 : "LUB of @Format(GENERAL) and @Format(INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatTimeAnno), FormatTimeAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatTimeAnno), formatTimeAnno)
                 : "LUB of @Format(GENERAL) and @Format(TIME) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatFloatAnno), FormatFloatAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatFloatAnno), formatFloatAnno)
                 : "LUB of @Format(GENERAL) and @Format(FLOAT) is not @Format(FLOAT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatCharAndIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatCharAndIntAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(GENERAL) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatIntAndTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatIntAndTimeAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(GENERAL) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatGeneralAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(GENERAL) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of CHAR and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatUnusedAnno), FormatCharAnno)
+                        qh.leastUpperBound(formatCharAnno, formatUnusedAnno), formatCharAnno)
                 : "LUB of @Format(CHAR) and @Format(UNUSED) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatGeneralAnno), FormatCharAnno)
+                        qh.leastUpperBound(formatCharAnno, formatGeneralAnno), formatCharAnno)
                 : "LUB of @Format(CHAR) and @Format(GENERAL) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatCharAnno), FormatCharAnno)
+                        qh.leastUpperBound(formatCharAnno, formatCharAnno), formatCharAnno)
                 : "LUB of @Format(CHAR) and @Format(CHAR) is not @Format(CHAR)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatIntAnno), FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatCharAnno, formatIntAnno), formatCharAndIntAnno)
                 : "LUB of @Format(CHAR) and @Format(INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatTimeAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatCharAnno, formatTimeAnno), formatNullAnno)
                 : "LUB of @Format(CHAR) and @Format(TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatFloatAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatCharAnno, formatFloatAnno), formatNullAnno)
                 : "LUB of @Format(CHAR) and @Format(FLOAT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatCharAndIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatCharAnno, formatCharAndIntAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(CHAR) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatIntAndTimeAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatCharAnno, formatIntAndTimeAnno), formatNullAnno)
                 : "LUB of @Format(CHAR) and @Format(INT_AND_TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatCharAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(CHAR) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of INT and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatUnusedAnno), FormatIntAnno)
+                        qh.leastUpperBound(formatIntAnno, formatUnusedAnno), formatIntAnno)
                 : "LUB of @Format(INT) and @Format(UNUSED) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatGeneralAnno), FormatIntAnno)
+                        qh.leastUpperBound(formatIntAnno, formatGeneralAnno), formatIntAnno)
                 : "LUB of @Format(INT) and @Format(GENERAL) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatCharAnno), FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatIntAnno, formatCharAnno), formatCharAndIntAnno)
                 : "LUB of @Format(INT) and @Format(CHAR) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatIntAnno), FormatIntAnno)
+                        qh.leastUpperBound(formatIntAnno, formatIntAnno), formatIntAnno)
                 : "LUB of @Format(INT) and @Format(INT) is not @Format(INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatTimeAnno), FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatIntAnno, formatTimeAnno), formatIntAndTimeAnno)
                 : "LUB of @Format(INT) and @Format(TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatFloatAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatIntAnno, formatFloatAnno), formatNullAnno)
                 : "LUB of @Format(INT) and @Format(FLOAT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatCharAndIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatIntAnno, formatCharAndIntAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(INT) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatIntAndTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatIntAnno, formatIntAndTimeAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(INT) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatIntAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(INT) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of TIME and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatUnusedAnno), FormatTimeAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatUnusedAnno), formatTimeAnno)
                 : "LUB of @Format(TIME) and @Format(UNUSED) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatGeneralAnno), FormatTimeAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatGeneralAnno), formatTimeAnno)
                 : "LUB of @Format(TIME) and @Format(GENERAL) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatCharAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatCharAnno), formatNullAnno)
                 : "LUB of @Format(TIME) and @Format(CHAR) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatIntAnno), FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatIntAnno), formatIntAndTimeAnno)
                 : "LUB of @Format(TIME) and @Format(INT) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatTimeAnno), FormatTimeAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatTimeAnno), formatTimeAnno)
                 : "LUB of @Format(TIME) and @Format(TIME) is not @Format(TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatFloatAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatFloatAnno), formatNullAnno)
                 : "LUB of @Format(TIME) and @Format(FLOAT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatCharAndIntAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatCharAndIntAnno), formatNullAnno)
                 : "LUB of @Format(TIME) and @Format(CHAR_AND_INT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatIntAndTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatIntAndTimeAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(TIME) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTimeAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatTimeAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(TIME) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of FLOAT and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatUnusedAnno), FormatFloatAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatUnusedAnno), formatFloatAnno)
                 : "LUB of @Format(FLOAT) and @Format(UNUSED) is not @Format(FLOAT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatGeneralAnno), FormatFloatAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatGeneralAnno), formatFloatAnno)
                 : "LUB of @Format(FLOAT) and @Format(GENERAL) is not @Format(FLOAT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatCharAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatCharAnno), formatNullAnno)
                 : "LUB of @Format(FLOAT) and @Format(CHAR) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatIntAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatIntAnno), formatNullAnno)
                 : "LUB of @Format(FLOAT) and @Format(INT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatTimeAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatTimeAnno), formatNullAnno)
                 : "LUB of @Format(FLOAT) and @Format(TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatFloatAnno), FormatFloatAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatFloatAnno), formatFloatAnno)
                 : "LUB of @Format(FLOAT) and @Format(FLOAT) is not @Format(FLOAT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatCharAndIntAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatCharAndIntAnno), formatNullAnno)
                 : "LUB of @Format(FLOAT) and @Format(CHAR_AND_INT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatIntAndTimeAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatIntAndTimeAnno), formatNullAnno)
                 : "LUB of @Format(FLOAT) and @Format(INT_AND_TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatFloatAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatFloatAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(FLOAT) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of CHAR_AND_INT and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatUnusedAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatUnusedAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(UNUSED) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatGeneralAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatGeneralAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(GENERAL) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatCharAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatCharAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(CHAR) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatIntAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatTimeAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatTimeAnno), formatNullAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatFloatAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatFloatAnno), formatNullAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(FLOAT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatCharAndIntAnno),
-                        FormatCharAndIntAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatCharAndIntAnno),
+                        formatCharAndIntAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatIntAndTimeAnno),
-                        FormatNullAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatIntAndTimeAnno),
+                        formatNullAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(INT_AND_TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatCharAndIntAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatCharAndIntAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(CHAR_AND_INT) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of INT_AND_TIME and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatUnusedAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatUnusedAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(UNUSED) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatGeneralAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatGeneralAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(GENERAL) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatCharAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatCharAnno), formatNullAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(CHAR) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatIntAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatIntAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(INT) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatTimeAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatFloatAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatFloatAnno), formatNullAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(FLOAT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatCharAndIntAnno),
-                        FormatNullAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatCharAndIntAnno),
+                        formatNullAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(CHAR_AND_INT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatIntAndTimeAnno),
-                        FormatIntAndTimeAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatIntAndTimeAnno),
+                        formatIntAndTimeAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatIntAndTimeAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatIntAndTimeAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(NULL) is not @Format(NULL)!";
 
         // LUB of NULL and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatUnusedAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatUnusedAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(UNUSED) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatGeneralAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatGeneralAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(GENERAL) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatCharAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatCharAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(CHAR) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatIntAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatIntAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(INT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatTimeAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatTimeAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatFloatAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatFloatAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(FLOAT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatCharAndIntAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatCharAndIntAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(CHAR_AND_INT) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatIntAndTimeAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatIntAndTimeAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(INT_AND_TIME) is not @Format(NULL)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatNullAnno, FormatNullAnno), FormatNullAnno)
+                        qh.leastUpperBound(formatNullAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(NULL) and @Format(NULL) is not @Format(NULL)!";
 
         // Now test with two ConversionCategory at a time:
 
         cc2[0] = ConversionCategory.CHAR_AND_INT;
         cc2[1] = ConversionCategory.NULL;
-        AnnotationMirror FormatTwoConvCat4 = treeUtil.categoriesToFormatAnnotation(cc2);
+        AnnotationMirror formatTwoConvCat4 = treeUtil.categoriesToFormatAnnotation(cc2);
         cc2[0] = ConversionCategory.NULL;
         cc2[1] = ConversionCategory.CHAR;
-        AnnotationMirror FormatTwoConvCat5 = treeUtil.categoriesToFormatAnnotation(cc2);
+        AnnotationMirror formatTwoConvCat5 = treeUtil.categoriesToFormatAnnotation(cc2);
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTwoConvCat1, FormatTwoConvCat2), FormatTwoConvCat4)
+                        qh.leastUpperBound(formatTwoConvCat1, formatTwoConvCat2), formatTwoConvCat4)
                 : "LUB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not @Format([CHAR_AND_INT,NULL])!";
 
         // Test that the LUB of two ConversionCategory arrays of different sizes is an array of the
         // largest size of the two:
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatGeneralAnno, FormatTwoConvCat1), FormatTwoConvCat1)
+                        qh.leastUpperBound(formatGeneralAnno, formatTwoConvCat1), formatTwoConvCat1)
                 : "LUB of @I18nFormat(GENERAL) and @I18nFormat([CHAR_AND_INT,FLOAT]) is not @I18nFormat([CHAR_AND_INT,FLOAT])!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatTwoConvCat2, FormatNullAnno), FormatTwoConvCat5)
+                        qh.leastUpperBound(formatTwoConvCat2, formatNullAnno), formatTwoConvCat5)
                 : "LUB of @I18nFormat([INT,CHAR]) and @I18nFormat(NULL) is not @I18nFormat([NULL,CHAR])!";
 
         // LUB of @UnknownFormat and others
@@ -853,13 +854,13 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.leastUpperBound(UNKNOWNFORMAT, FORMAT), UNKNOWNFORMAT)
                 : "LUB of @UnknownFormat and @Format(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(UNKNOWNFORMAT, FormatUnusedAnno), UNKNOWNFORMAT)
+                        qh.leastUpperBound(UNKNOWNFORMAT, formatUnusedAnno), UNKNOWNFORMAT)
                 : "LUB of @UnknownFormat and @Format(UNUSED) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(UNKNOWNFORMAT, INVALIDFORMAT), UNKNOWNFORMAT)
                 : "LUB of @UnknownFormat and @InvalidFormat(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(UNKNOWNFORMAT, InvalidFormatWithMessage), UNKNOWNFORMAT)
+                        qh.leastUpperBound(UNKNOWNFORMAT, invalidFormatWithMessage), UNKNOWNFORMAT)
                 : "LUB of @UnknownFormat and @InvalidFormat(\"Message\") is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(UNKNOWNFORMAT, FORMATBOTTOM), UNKNOWNFORMAT)
@@ -876,7 +877,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.leastUpperBound(FORMAT, INVALIDFORMAT), UNKNOWNFORMAT)
                 : "LUB of @Format(null) and @InvalidFormat(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FORMAT, InvalidFormatWithMessage), UNKNOWNFORMAT)
+                        qh.leastUpperBound(FORMAT, invalidFormatWithMessage), UNKNOWNFORMAT)
                 : "LUB of @Format(null) and @InvalidFormat(\"Message\") is not @UnknownFormat!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(FORMAT, FORMATBOTTOM), FORMAT)
                 : "LUB of @Format(null) and @FormatBottom is not @Format(null)!";
@@ -884,22 +885,22 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         // LUB of @Format(UNUSED) and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, UNKNOWNFORMAT), UNKNOWNFORMAT)
+                        qh.leastUpperBound(formatUnusedAnno, UNKNOWNFORMAT), UNKNOWNFORMAT)
                 : "LUB of @Format(UNUSED) and @UnknownFormat is not @UnknownFormat!";
         // Computing the LUB of @Format with a value and @Format(null) should never occur in
         // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.leastUpperBound(formatUnusedAnno, formatUnusedAnno), formatUnusedAnno)
                 : "LUB of @Format(UNUSED) and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, INVALIDFORMAT), UNKNOWNFORMAT)
+                        qh.leastUpperBound(formatUnusedAnno, INVALIDFORMAT), UNKNOWNFORMAT)
                 : "LUB of @Format(UNUSED) and @InvalidFormat(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, InvalidFormatWithMessage),
+                        qh.leastUpperBound(formatUnusedAnno, invalidFormatWithMessage),
                         UNKNOWNFORMAT)
                 : "LUB of @Format(UNUSED) and @InvalidFormat(\"Message\") is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FormatUnusedAnno, FORMATBOTTOM), FormatUnusedAnno)
+                        qh.leastUpperBound(formatUnusedAnno, FORMATBOTTOM), formatUnusedAnno)
                 : "LUB of @Format(UNUSED) and @FormatBottom is not @Format(UNUSED)!";
 
         // LUB of @InvalidFormat(null) and others
@@ -910,7 +911,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.leastUpperBound(INVALIDFORMAT, FORMAT), UNKNOWNFORMAT)
                 : "LUB of @InvalidFormat(null) and @Format(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(INVALIDFORMAT, FormatUnusedAnno), UNKNOWNFORMAT)
+                        qh.leastUpperBound(INVALIDFORMAT, formatUnusedAnno), UNKNOWNFORMAT)
                 : "LUB of @InvalidFormat(null) and @Format(UNUSED) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(INVALIDFORMAT, FORMATBOTTOM), INVALIDFORMAT)
@@ -919,26 +920,26 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         // LUB of @InvalidFormat("Message") and others
 
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(InvalidFormatWithMessage, UNKNOWNFORMAT), UNKNOWNFORMAT)
+                        qh.leastUpperBound(invalidFormatWithMessage, UNKNOWNFORMAT), UNKNOWNFORMAT)
                 : "LUB of @InvalidFormat(\"Message\") and @UnknownFormat is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(InvalidFormatWithMessage, FORMAT), UNKNOWNFORMAT)
+                        qh.leastUpperBound(invalidFormatWithMessage, FORMAT), UNKNOWNFORMAT)
                 : "LUB of @InvalidFormat(\"Message\") and @Format(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(InvalidFormatWithMessage, FormatUnusedAnno),
+                        qh.leastUpperBound(invalidFormatWithMessage, formatUnusedAnno),
                         UNKNOWNFORMAT)
                 : "LUB of @InvalidFormat(\"Message\") and @Format(UNUSED) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(InvalidFormatWithMessage, InvalidFormatWithMessage),
-                        InvalidFormatWithMessage)
+                        qh.leastUpperBound(invalidFormatWithMessage, invalidFormatWithMessage),
+                        invalidFormatWithMessage)
                 : "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(InvalidFormatWithMessage, InvalidFormatWithMessage2),
-                        InvalidFormatWithMessagesOred)
+                        qh.leastUpperBound(invalidFormatWithMessage, invalidFormatWithMessage2),
+                        invalidFormatWithMessagesOred)
                 : "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not @InvalidFormat(\"(\"Message\" or \"Message2\")\")!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(InvalidFormatWithMessage, FORMATBOTTOM),
-                        InvalidFormatWithMessage)
+                        qh.leastUpperBound(invalidFormatWithMessage, FORMATBOTTOM),
+                        invalidFormatWithMessage)
                 : "LUB of @InvalidFormat(\"Message\") and @FormatBottom is not @InvalidFormat(\"Message\")!";
 
         // LUB of @FormatBottom and others
@@ -949,14 +950,14 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.leastUpperBound(FORMATBOTTOM, FORMAT), FORMAT)
                 : "LUB of @FormatBottom and @Format(null) is not @Format(null)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FORMATBOTTOM, FormatUnusedAnno), FormatUnusedAnno)
+                        qh.leastUpperBound(FORMATBOTTOM, formatUnusedAnno), formatUnusedAnno)
                 : "LUB of @FormatBottom and @Format(UNUSED) is not @Format(UNUSED)!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(FORMATBOTTOM, INVALIDFORMAT), INVALIDFORMAT)
                 : "LUB of @FormatBottom and @InvalidFormat(null) is not @InvalidFormat(null)!";
         assert AnnotationUtils.areSame(
-                        qh.leastUpperBound(FORMATBOTTOM, InvalidFormatWithMessage),
-                        InvalidFormatWithMessage)
+                        qh.leastUpperBound(FORMATBOTTOM, invalidFormatWithMessage),
+                        invalidFormatWithMessage)
                 : "LUB of @FormatBottom and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(FORMATBOTTOM, FORMATBOTTOM), FORMATBOTTOM)
                 : "LUB of @FormatBottom and @FormatBottom is not @FormatBottom!";

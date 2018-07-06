@@ -17,8 +17,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface ArrayLenRange {
-    /** Smallest value in the range, inclusive */
+    /** Smallest value in the range, inclusive. */
     int from() default 0;
-    /** Largest value in the range, inclusive */
+    /** Largest value in the range, inclusive. */
     int to() default Integer.MAX_VALUE;
 }

@@ -22,7 +22,7 @@ public abstract class AnnotatedTypeComparer<R>
     /** Compares two annotated type mirrors. */
     protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
 
-    /** Supplies the logic to reduce on how to combine two R objects */
+    /** Supplies the logic to reduce on how to combine two R objects. */
     protected abstract R combineRs(R r1, R r2);
 
     protected R scan(

@@ -527,7 +527,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Infers upper-bound annotation for {@code left >> right} and {@code left >>> right} (case
-         * 4)
+         * 4).
          */
         private void addAnnotationForRightShift(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {

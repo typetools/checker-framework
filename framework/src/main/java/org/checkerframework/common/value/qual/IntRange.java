@@ -22,8 +22,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface IntRange {
-    /** Smallest value in the range, inclusive */
+    /** Smallest value in the range, inclusive. */
     long from() default Long.MIN_VALUE;
-    /** Largest value in the range, inclusive */
+    /** Largest value in the range, inclusive. */
     long to() default Long.MAX_VALUE;
 }
