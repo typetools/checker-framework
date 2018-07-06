@@ -195,9 +195,13 @@ public class TestListSetEquals {
         @Det boolean ret = aList.equals(bList);
     }
 
-    //    void testSetSetEqualsNested(
-    //            @OrderNonDet Set<@OrderNonDet<@Det Integer>> aList, @OrderNonDet Set<@OrderNonDet<@Det Integer>> aList bList) {
-    //        // :: error: (assignment.type.incompatible)
-    //        @Det boolean ret = aList.equals(bList);
-    //    }
+    void testSetSetEqualsNested(
+            @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> aList, @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> bList) {
+        @Det boolean ret = aList.equals(bList);
+    }
+    void testSetListEqualsNested(
+            @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> aList, @OrderNonDet Set<@OrderNonDet List<@Det Integer>> bList) {
+        // :: error: (assignment.type.incompatible)
+        @Det boolean ret = aList.equals(bList);
+    }
 }
