@@ -158,8 +158,7 @@ public class StubUtil {
         sb.append(element.getSimpleName());
         sb.append("(");
         for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-                i.hasNext();
-                ) {
+                i.hasNext(); ) {
             sb.append(standarizeType(i.next().asType()));
             if (i.hasNext()) {
                 sb.append(",");

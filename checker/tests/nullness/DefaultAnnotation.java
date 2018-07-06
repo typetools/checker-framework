@@ -14,9 +14,8 @@ public class DefaultAnnotation {
 
     @DefaultQualifiers(
             @DefaultQualifier(
-                value = org.checkerframework.checker.nullness.qual.NonNull.class,
-                locations = {TypeUseLocation.ALL}
-            ))
+                    value = org.checkerframework.checker.nullness.qual.NonNull.class,
+                    locations = {TypeUseLocation.ALL}))
     public void testDefault() {
 
         // :: error: (assignment.type.incompatible)
@@ -27,9 +26,8 @@ public class DefaultAnnotation {
     }
 
     @DefaultQualifier(
-        value = org.checkerframework.checker.nullness.qual.NonNull.class,
-        locations = {TypeUseLocation.ALL}
-    )
+            value = org.checkerframework.checker.nullness.qual.NonNull.class,
+            locations = {TypeUseLocation.ALL})
     public class InnerDefault {
 
         public void testDefault() {
@@ -48,9 +46,8 @@ public class DefaultAnnotation {
     }
 
     @DefaultQualifier(
-        value = org.checkerframework.checker.nullness.qual.NonNull.class,
-        locations = {TypeUseLocation.ALL}
-    )
+            value = org.checkerframework.checker.nullness.qual.NonNull.class,
+            locations = {TypeUseLocation.ALL})
     public static class DefaultDefs {
 
         public String getNNString() {
@@ -83,9 +80,8 @@ public class DefaultAnnotation {
         }
 
         @DefaultQualifier(
-            value = org.checkerframework.checker.nullness.qual.NonNull.class,
-            locations = {TypeUseLocation.ALL}
-        )
+                value = org.checkerframework.checker.nullness.qual.NonNull.class,
+                locations = {TypeUseLocation.ALL})
         public void testDefaultArgs() {
 
             DefaultDefs d = new DefaultDefs();

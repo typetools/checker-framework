@@ -100,7 +100,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     atypeFactory.methodFromUse(node).first;
             ExecutableElement invokedMethodElement = invokedMethod.getElement();
 
-            //Static methods with no arguments: return type should be @Det, not @polyDet
+            // Static methods with no arguments: return type should be @Det, not @polyDet
             if (ElementUtils.isStatic(invokedMethodElement) && node.getArguments().size() == 0) {
                 if (!p.hasExplicitAnnotation(NONDET)
                         && !p.hasExplicitAnnotation(DET)
@@ -112,21 +112,21 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, p);
             }
 
-            //For Sets: "equals" on @OrderNonDet Sets without @OrderNonDet List type parameter
-            //Return type is @Det.
+            // For Sets: "equals" on @OrderNonDet Sets without @OrderNonDet List type parameter
+            // Return type is @Det.
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiver.getUnderlyingType());
             if (invokedMethodElement.getSimpleName().toString().equals("equals")
                     && isSet(receiverUnderlyingType.asType())
                     && AnnotationUtils.areSame(
                             receiver.getAnnotations().iterator().next(), ORDERNONDET)) {
-                //Receiver does not have "@OrderNonDet List" type parameter
+                // Receiver does not have "@OrderNonDet List" type parameter
                 if (!hasOrderNonDetListAsTypeParameter(receiver)) {
                     AnnotatedTypeMirror parameter =
                             atypeFactory.getAnnotatedType(node.getArguments().get(0));
                     if (isSet(TypesUtils.getTypeElement(parameter.getUnderlyingType()).asType())
                             && parameter.hasAnnotation(ORDERNONDET)) {
-                        //Parameter - same type as receiver
+                        // Parameter - same type as receiver
                         // does not have "@OrderNonDet List" type parameter
                         if (types.isSameType(
                                         receiver.getUnderlyingType(), parameter.getUnderlyingType())
@@ -256,7 +256,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public boolean isList(TypeMirror tm) {
-        //List and subclasses
+        // List and subclasses
         TypeMirror ListTypeMirror =
                 TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
         TypeMirror ArrayListTypeMirror =
@@ -290,13 +290,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
-        //Collection
+        // Collection
         TypeMirror CollectionTypeMirror =
                 TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
         TypeMirror AbstractCollectionTypeMirror =
                 TypesUtils.typeFromClass(
                         AbstractCollection.class, types, processingEnv.getElementUtils());
-        //List and subclasses
+        // List and subclasses
         TypeMirror ListTypeMirror =
                 TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
         TypeMirror ArrayListTypeMirror =
@@ -311,7 +311,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         AbstractSequentialList.class, types, processingEnv.getElementUtils());
         TypeMirror ArraysTypeMirror =
                 TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
-        //Set and subclasses
+        // Set and subclasses
         TypeMirror SetTypeMirror =
                 TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
         TypeMirror AbstractSetTypeMirror =

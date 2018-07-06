@@ -27,7 +27,7 @@ public class DeterminismTransfer extends CFTransfer {
         DeterminismAnnotatedTypeFactory factory =
                 (DeterminismAnnotatedTypeFactory) analysis.getTypeFactory();
 
-        //Type refinement for List sort
+        // Type refinement for List sort
         Node receiver = n.getTarget().getReceiver();
         if (receiver == null || TypesUtils.getTypeElement(receiver.getType()) == null) {
             return result;
@@ -38,7 +38,7 @@ public class DeterminismTransfer extends CFTransfer {
         if (isList) {
             String methName = getMethodName(n.toString(), receiver);
             if (methName.equals("sort") && receiver.getType().getAnnotationMirrors().size() > 0) {
-                //Check if receiver has OrderNonDet annotation
+                // Check if receiver has OrderNonDet annotation
                 AnnotationMirror receiverAnno =
                         receiver.getType().getAnnotationMirrors().iterator().next();
                 if (receiverAnno != null
@@ -59,7 +59,7 @@ public class DeterminismTransfer extends CFTransfer {
                 AnnotatedTypeMirror firstArg =
                         factory.getAnnotatedType(n.getTree().getArguments().get(0));
                 AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
-                //Check if receiver has first argument annotation
+                // Check if receiver has first argument annotation
                 if (firstArgAnno != null
                         && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
                     FlowExpressions.Receiver firtArgRep =
