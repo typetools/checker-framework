@@ -8,6 +8,7 @@ class Throw {
         }
     }
 
+    @SuppressWarnings("determinism")
     void throwWildcard(List<? extends Exception> list) {
         try {
             throw list.get(0);

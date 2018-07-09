@@ -29,7 +29,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
         Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
-        exceptionParam.add(atypeFactory.POLYDET);
+        exceptionParam.add(atypeFactory.DET);
         return exceptionParam;
     }
 

@@ -19,4 +19,5 @@ import org.checkerframework.framework.qual.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({OrderNonDet.class})
 @DefaultQualifierInHierarchy
+@DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
 public @interface Det {}

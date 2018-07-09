@@ -5,12 +5,9 @@ public class AllTestsUnions {
         try {
             bar();
         } catch (MyExceptionA | MyExceptionB ex) {
-            // ::error: (type.argument.type.incompatible)
             typeVar(ex);
-            // ::error: (type.argument.type.incompatible)
             typeVarIntersection(ex);
 
-            // ::error: (type.argument.type.incompatible)
             typeVarWildcard(ex, param);
         }
     }
@@ -19,15 +16,11 @@ public class AllTestsUnions {
         try {
             bar();
         } catch (SubMyExceptionA | SubMyExceptionA2 ex) {
-            // ::error: (type.argument.type.incompatible)
             typeVar(ex);
-            // ::error: (type.argument.type.incompatible)
             typeVar2(ex, ex);
 
-            // ::error: (type.argument.type.incompatible)
             typeVarIntersection(ex);
 
-            // ::error: (type.argument.type.incompatible)
             typeVarWildcard(ex, param);
         }
     }

@@ -11,7 +11,7 @@ class CheckThrow {
         }
     }
 
-    void throwWildcard(List<? extends Exception> list) {
+    void throwWildcard(@Det List<? extends Exception> list) {
         try {
             throw list.get(0);
         } catch (Exception e) {

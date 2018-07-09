@@ -11,7 +11,6 @@ public class AllTestsUnionCrash {
                 bar();
             } catch (SubMyExceptionA | MyExceptionB ex2) {
                 // This call cause a crash
-                // ::error: (type.argument.type.incompatible)
                 typeVar(ex1, ex2);
             }
         }
