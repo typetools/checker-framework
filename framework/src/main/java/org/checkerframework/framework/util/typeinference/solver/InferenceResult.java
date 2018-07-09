@@ -106,7 +106,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
     /**
      * Merges values in subordinate into this result, keeping the results form any type arguments
-     * that were already contained by this InferenceResult
+     * that were already contained by this InferenceResult.
      *
      * @param subordinate a result which we wish to merge into this result
      */
@@ -127,7 +127,9 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         resolveChainedTargets();
     }
 
-    /** Performs a merge for a specific target, we keep only results that lead to a concrete type */
+    /**
+     * Performs a merge for a specific target, we keep only results that lead to a concrete type.
+     */
     protected InferredType mergeTarget(
             final TypeVariable target, final InferenceResult subordinate) {
         final InferredValue inferred = this.get(target);

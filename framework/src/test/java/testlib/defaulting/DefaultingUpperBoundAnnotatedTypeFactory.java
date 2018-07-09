@@ -18,9 +18,9 @@ public class DefaultingUpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeF
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new HashSet<Class<? extends Annotation>>(
                 Arrays.asList(
-                        UpperBoundQual.UB_TOP.class,
-                        UpperBoundQual.UB_EXPLICIT.class,
-                        UpperBoundQual.UB_IMPLICIT.class,
-                        UpperBoundQual.UB_BOTTOM.class));
+                        UpperBoundQual.UbTop.class,
+                        UpperBoundQual.UbExplicit.class,
+                        UpperBoundQual.UbImplicit.class,
+                        UpperBoundQual.UbBottom.class));
     }
 }

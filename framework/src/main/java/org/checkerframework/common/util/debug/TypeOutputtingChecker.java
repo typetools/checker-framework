@@ -55,7 +55,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         return new Visitor(this);
     }
 
-    /** Prints the types of the class and all of its enclosing fields, methods, and inner classes */
+    /**
+     * Prints the types of the class and all of its enclosing fields, methods, and inner classes.
+     */
     public static class Visitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
         String currentClass;
 
@@ -116,7 +118,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         }
     }
 
-    /** Prints the types of the class and all of its enclosing fields, methods, and inner classes */
+    /**
+     * Prints the types of the class and all of its enclosing fields, methods, and inner classes.
+     */
     protected static void printClassType(TypeElement typeElt, AnnotatedTypeFactory atypeFactory) {
         assert typeElt != null;
 
@@ -130,8 +134,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             if (enclosedElt instanceof TypeElement) {
                 printClassType((TypeElement) enclosedElt, atypeFactory);
             }
-            if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement))
+            if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement)) {
                 continue;
+            }
             AnnotatedTypeMirror memberType = atypeFactory.fromElement(enclosedElt);
             System.out.println(simpleName + "." + enclosedElt + "\t\t" + memberType);
         }

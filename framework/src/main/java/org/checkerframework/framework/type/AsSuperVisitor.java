@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Implements asSuper {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
- * AnnotatedTypeMirror)}
+ * AnnotatedTypeMirror)}.
  */
 public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror, Void> {
 
@@ -196,7 +196,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return asSuperLowerBound(type, p, lowerBound);
     }
 
-    /** Same as #asSuperWildcardLowerBound, but for Typevars */
+    /** Same as #asSuperWildcardLowerBound, but for Typevars. */
     private AnnotatedTypeMirror asSuperTypevarLowerBound(
             AnnotatedTypeMirror type, AnnotatedTypeVariable superType, Void p) {
         AnnotatedTypeMirror lowerBound = superType.getLowerBound();

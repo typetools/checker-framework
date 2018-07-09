@@ -898,7 +898,7 @@ public abstract class UBQualifier {
             }
         }
 
-        /** Functional interface that operates on {@link OffsetEquation}s */
+        /** Functional interface that operates on {@link OffsetEquation}s. */
         interface OffsetEquationFunction {
             /**
              * Returns the result of the computation or null if the passed equation should be

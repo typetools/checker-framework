@@ -39,8 +39,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * known at compile time (constant propagation and folding).
      */
     private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        if (valueAtypefactory == null)
+        if (valueAtypefactory == null) {
             valueAtypefactory = getTypeFactoryOfSubchecker(ValueChecker.class);
+        }
         return valueAtypefactory;
     }
 

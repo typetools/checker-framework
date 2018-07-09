@@ -33,7 +33,7 @@ public class InferredValue {
 
     /**
      * Indicates that a corresponding target was inferred to be the field "target" in the
-     * hierarchies not overridden by additionalAnnotations
+     * hierarchies not overridden by additionalAnnotations.
      */
     public static class InferredTarget extends InferredValue {
         public final TypeVariable target;

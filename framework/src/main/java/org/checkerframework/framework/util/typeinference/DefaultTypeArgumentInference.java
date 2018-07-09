@@ -793,7 +793,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
     }
 
-    /** Convert AFConstraints to TUConstraints */
+    /** Convert AFConstraints to TUConstraints. */
     protected Set<TUConstraint> afToTuConstraints(
             Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
         final Set<TUConstraint> outgoing = new LinkedHashSet<>();
