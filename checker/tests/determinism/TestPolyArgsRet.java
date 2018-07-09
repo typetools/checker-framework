@@ -2,29 +2,29 @@ import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 public class TestPolyArgsRet {
-    // No parameters, no return
+    //No parameters, no return
     static void callee1() {}
 
-    // One parameter, no return
+    //One parameter, no return
     void callee2() {
         TestPolyArgsRet tst = this;
     }
-    // two parameters, no return
+    //two parameters, no return
     void callee3(int a) {}
 
-    // No parameters, return
+    //No parameters, return
     static int callee4() {
         return 200;
     }
-    // One parameter, return
+    //One parameter, return
     int callee5() {
         return 500;
     }
-    // two parameters, return
+    //two parameters, return
     int callee6(int a) {
         return a;
     }
-    // No receiver, one parameter, return
+    //No receiver, one parameter, return
     static int callee7(int x) {
         return x;
     }

@@ -1,6 +1,6 @@
 package determinism;
 
-// Test case for issue #775
+//Test case for issue #775
 
 public class AllTestsUnionCrash {
     void foo(MyInterface<Throwable> param) throws Throwable {

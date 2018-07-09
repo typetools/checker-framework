@@ -53,7 +53,7 @@ public class TestListSetEquals {
         @Det boolean ret = aList.equals(bList);
     }
 
-    // List equals Set
+    //List equals Set
     void testListSetEquals1(@Det List<@Det Integer> aList, @Det Set<@Det Integer> bList) {
         @Det boolean ret = aList.equals(bList);
     }
@@ -102,7 +102,7 @@ public class TestListSetEquals {
         @Det boolean ret = aList.equals(bList);
     }
 
-    // Set equals set
+    //Set equals set
     void testSetEquals1(@Det Set<@Det Integer> aList, @Det Set<@Det Integer> bList) {
         @Det boolean ret = aList.equals(bList);
     }
@@ -147,7 +147,7 @@ public class TestListSetEquals {
         @Det boolean ret = aList.equals(bList);
     }
 
-    // Set equals List
+    //Set equals List
     void testSetListEquals1(@Det Set<@Det Integer> aList, @Det List<@Det Integer> bList) {
         @Det boolean ret = aList.equals(bList);
     }
@@ -196,14 +196,11 @@ public class TestListSetEquals {
     }
 
     void testSetSetEqualsNested(
-            @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> aList,
-            @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> bList) {
+            @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> aList, @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> bList) {
         @Det boolean ret = aList.equals(bList);
     }
-
     void testSetListEqualsNested(
-            @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> aList,
-            @OrderNonDet Set<@OrderNonDet List<@Det Integer>> bList) {
+            @OrderNonDet Set<@OrderNonDet Set<@Det Integer>> aList, @OrderNonDet Set<@OrderNonDet List<@Det Integer>> bList) {
         // :: error: (assignment.type.incompatible)
         @Det boolean ret = aList.equals(bList);
     }

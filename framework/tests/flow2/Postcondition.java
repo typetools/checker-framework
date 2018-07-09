@@ -61,8 +61,9 @@ class Postcondition {
     void param1(final @Value String f) {}
 
     @EnsuresQualifier(
-            expression = {"#1", "#2"},
-            qualifier = Value.class)
+        expression = {"#1", "#2"},
+        qualifier = Value.class
+    )
     // :: error: (flowexpr.parameter.not.final)
     void param2(@Value String f, @Value String g) {
         f = g;

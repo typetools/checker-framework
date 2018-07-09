@@ -50,8 +50,9 @@ class Precondition {
     }
 
     @RequiresQualifier(
-            expression = {"#1", "#2"},
-            qualifier = Odd.class)
+        expression = {"#1", "#2"},
+        qualifier = Odd.class
+    )
     void requiresParams(String p1, String p2) {
         // :: error: (assignment.type.incompatible)
         @Value String l1 = p1;

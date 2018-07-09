@@ -13,7 +13,7 @@ import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class DeterminismQualifierPolymorphism
-        extends DefaultQualifierPolymorphism { // AbstractQualifierPolymorphism {
+        extends DefaultQualifierPolymorphism { //AbstractQualifierPolymorphism {
 
     Elements elements;
     ProcessingEnvironment env;
@@ -85,66 +85,54 @@ public class DeterminismQualifierPolymorphism
                 }
 
                 //                if (polyUp && type.hasAnnotation(factory.ORDERNONDET)) {
-                //                    TypeMirror underlyingType =
-                // TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+                //                    TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
                 //                    type.replaceAnnotation(factory.NONDET);
                 //                    AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 //                            (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
                 //                    boolean isCollIter = false;
-                //                    if (factory.isCollection(underlyingType) ||
-                // factory.isIterator(underlyingType)) {
+                //                    if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
                 //                        isCollIter = true;
                 //                    }
                 //                    while(isCollIter){
                 //                        //Replace all @OrderNonDet type parameters with @Det
-                //                        Iterator<AnnotatedTypeMirror> it =
-                // declaredType.getTypeArguments().iterator();
+                //                        Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
                 //                        while (it.hasNext()) {
                 //                            AnnotatedTypeMirror argType = it.next();
                 //                            if (argType.hasAnnotation(factory.ORDERNONDET)) {
                 //                                argType.replaceAnnotation(factory.NONDET);
                 //                            }
                 //                        }
-                //                        TypeMirror declType =
-                // TypesUtils.getTypeElement(declaredType.getTypeArguments().get(0).getUnderlyingType()).asType();
+                //                        TypeMirror declType = TypesUtils.getTypeElement(declaredType.getTypeArguments().get(0).getUnderlyingType()).asType();
                 //                        if(factory.isCollection(declType)
                 //                                || factory.isIterator(declType)){
-                //                            declaredType =
-                // (AnnotatedTypeMirror.AnnotatedDeclaredType)
-                // declaredType.getTypeArguments().get(0);
+                //                            declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) declaredType.getTypeArguments().get(0);
                 //                        }
                 //                        else{
                 //                            isCollIter = false;
                 //                        }
                 //                    }
                 //                } else if (polyDown && type.hasAnnotation(factory.ORDERNONDET)) {
-                //                    TypeMirror underlyingType =
-                // TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+                //                    TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
                 //                    type.replaceAnnotation(factory.DET);
                 //                    AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 //                            (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
                 //                    boolean isCollIter = false;
-                //                    if (factory.isCollection(underlyingType) ||
-                // factory.isIterator(underlyingType)) {
+                //                    if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
                 //                        isCollIter = true;
                 //                    }
                 //                    while(isCollIter){
                 //                        //Replace all @OrderNonDet type parameters with @Det
-                //                        Iterator<AnnotatedTypeMirror> it =
-                // declaredType.getTypeArguments().iterator();
+                //                        Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
                 //                        while (it.hasNext()) {
                 //                            AnnotatedTypeMirror argType = it.next();
                 //                            if (argType.hasAnnotation(factory.ORDERNONDET)) {
                 //                                argType.replaceAnnotation(factory.DET);
                 //                            }
                 //                        }
-                //                        TypeMirror declType =
-                // TypesUtils.getTypeElement(declaredType.getTypeArguments().get(0).getUnderlyingType()).asType();
+                //                        TypeMirror declType = TypesUtils.getTypeElement(declaredType.getTypeArguments().get(0).getUnderlyingType()).asType();
                 //                        if(factory.isCollection(declType)
                 //                                || factory.isIterator(declType)){
-                //                            declaredType =
-                // (AnnotatedTypeMirror.AnnotatedDeclaredType)
-                // declaredType.getTypeArguments().get(0);
+                //                            declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) declaredType.getTypeArguments().get(0);
                 //                        }
                 //                        else{
                 //                            isCollIter = false;
@@ -165,9 +153,9 @@ public class DeterminismQualifierPolymorphism
             isCollIter = true;
         }
         while (isCollIter) {
-            // Replace all @OrderNonDet type parameters with @Det or @NonDet
+            //Replace all @OrderNonDet type parameters with @Det or @NonDet
             Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
-            // Iterate over all the type parameters of this collection
+            //Iterate over all the type parameters of this collection
             while (it.hasNext()) {
                 AnnotatedTypeMirror argType = it.next();
                 if (argType.hasAnnotation(factory.ORDERNONDET)) {
@@ -175,8 +163,8 @@ public class DeterminismQualifierPolymorphism
                 }
             }
 
-            // Assuming a single type parameter (will not work for HashMaps)
-            // TODO: Handle all type parameters
+            //Assuming a single type parameter (will not work for HashMaps)
+            //TODO: Handle all type parameters
             TypeMirror declType =
                     TypesUtils.getTypeElement(
                                     declaredType.getTypeArguments().get(0).getUnderlyingType())

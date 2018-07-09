@@ -10,7 +10,8 @@ import org.checkerframework.common.value.qual.*;
 public class LessThanValue {
 
     void subtyping(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
-        @LessThan("x") int q = a;
+        @LessThan("x")
+        int q = a;
         @LessThan({"x", "y"})
         // :: error: (assignment.type.incompatible)
         int r = b;
@@ -19,7 +20,8 @@ public class LessThanValue {
     public static boolean flag;
 
     void lub(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
-        @LessThan("x") int r = flag ? a : b;
+        @LessThan("x")
+        int r = flag ? a : b;
         @LessThan({"x", "y"})
         // :: error: (assignment.type.incompatible)
         int s = flag ? a : b;
@@ -28,7 +30,8 @@ public class LessThanValue {
     void transitive(int a, int b, int c) {
         if (a < b) {
             if (b < c) {
-                @LessThan("c") int x = a;
+                @LessThan("c")
+                int x = a;
             }
         }
     }
@@ -64,11 +67,13 @@ public class LessThanValue {
 
     void method(@NonNegative int m) {
         boolean[] has_modulus = new boolean[m];
-        @LessThan("m") int x = foo(m);
+        @LessThan("m")
+        int x = foo(m);
         @IndexFor("has_modulus") int rem = foo(m);
     }
 
-    @LessThan("#1") @NonNegative int foo(int in) {
+    @LessThan("#1")
+    @NonNegative int foo(int in) {
         throw new RuntimeException();
     }
 

@@ -20,21 +20,24 @@ public class AnnotationWithFieldTest {
 
     void expectsSiblingWithFields(
             @SiblingWithFields(
-                            value = {"test", "test2"},
-                            value2 = "test3")
+                        value = {"test", "test2"},
+                        value2 = "test3"
+                    )
                     String s) {}
 
     void expectsSiblingWithEmptyFields(
             @SiblingWithFields(
-                            value = {},
-                            value2 = "")
+                        value = {},
+                        value2 = ""
+                    )
                     String s) {}
 
     String getSiblingWithFields() {
         // :: warning: (cast.unsafe)
         return (@SiblingWithFields(
-                        value = {"test", "test2"},
-                        value2 = "test3")
+                    value = {"test", "test2"},
+                    value2 = "test3"
+                )
                 String)
                 "";
     }
@@ -42,8 +45,9 @@ public class AnnotationWithFieldTest {
     String getSiblingWithFieldsEmpty() {
         // :: warning: (cast.unsafe)
         return (@SiblingWithFields(
-                        value = {},
-                        value2 = "")
+                    value = {},
+                    value2 = ""
+                )
                 String)
                 "";
     }

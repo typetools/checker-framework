@@ -25,10 +25,11 @@ class LTLengthOfPostcondition {
     }
 
     @EnsuresLTLengthOfIf(
-            expression = "end",
-            result = true,
-            targetValue = "array",
-            offset = "#1 - 1")
+        expression = "end",
+        result = true,
+        targetValue = "array",
+        offset = "#1 - 1"
+    )
     public boolean tryShiftIndex(@NonNegative int x) {
         int newEnd = end - x;
         if (newEnd < 0) return false;
