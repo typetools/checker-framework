@@ -32,15 +32,14 @@ public class EnsuresNonNullIfTest {
 
 class File1 {
     @EnsuresNonNullIf(
-        result = true,
-        expression = {
-            "list()",
-            "list(String)", // TODO: has no effect
-            "listFiles()",
-            "listFiles(String)", // TODO: has no effect
-            "listFiles(Double)" // TODO: has no effect
-        }
-    )
+            result = true,
+            expression = {
+                "list()",
+                "list(String)", // TODO: has no effect
+                "listFiles()",
+                "listFiles(String)", // TODO: has no effect
+                "listFiles(Double)" // TODO: has no effect
+            })
     public boolean isDirectory() {
         throw new RuntimeException("skeleton method");
     }

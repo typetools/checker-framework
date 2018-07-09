@@ -47,33 +47,29 @@ class MethodValInferenceTest {
             throws Exception {
 
         @MethodVal(
-            className = {"java.lang.Object"},
-            methodName = {"method1"},
-            params = -1
-        )
+                className = {"java.lang.Object"},
+                methodName = {"method1"},
+                params = -1)
         Method m1 = oneClass.getMethod(oneName, classArrayUnknown);
         @MethodVal(
-            className = {"java.lang.Object", "java.lang.Object"},
-            methodName = {"method1", "method2"},
-            params = {-1, -1}
-        )
+                className = {"java.lang.Object", "java.lang.Object"},
+                methodName = {"method1", "method2"},
+                params = {-1, -1})
         Method m2 = oneClass.getMethod(twoNames, classArrayUnknown);
         @MethodVal(
-            className = {"java.lang.Object", "java.lang.String"},
-            methodName = {"method1", "method1"},
-            params = {-1, -1}
-        )
+                className = {"java.lang.Object", "java.lang.String"},
+                methodName = {"method1", "method1"},
+                params = {-1, -1})
         Method m3 = twoClasses.getMethod(oneName, classArrayUnknown);
         @MethodVal(
-            className = {
-                "java.lang.Object",
-                "java.lang.String",
-                "java.lang.Object",
-                "java.lang.String"
-            },
-            methodName = {"method1", "method2", "method2", "method1"},
-            params = {-1, -1, -1, -1}
-        )
+                className = {
+                    "java.lang.Object",
+                    "java.lang.String",
+                    "java.lang.Object",
+                    "java.lang.String"
+                },
+                methodName = {"method1", "method2", "method2", "method1"},
+                params = {-1, -1, -1, -1})
         Method m4 = twoClasses.getMethod(twoNames, classArrayUnknown);
     }
 
