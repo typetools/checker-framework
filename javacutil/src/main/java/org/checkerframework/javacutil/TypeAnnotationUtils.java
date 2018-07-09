@@ -371,8 +371,10 @@ public class TypeAnnotationUtils {
             ei.setAccessible(true);
             ei.setInt(res, ei.getInt(tapos));
             // TODO: would be cleaner to use getter/setter, but something is wrong with:
-            // TypeAnnotationPosition.class.getDeclaredMethod("setExceptionIndex", int.class).invoke(res,
-            //         TypeAnnotationPosition.class.getDeclaredMethod("getExceptionIndex").invoke(tapos));
+            // TypeAnnotationPosition.class
+            //     .getDeclaredMethod("setExceptionIndex", int.class).invoke(
+            //         res, TypeAnnotationPosition.class
+            //             .getDeclaredMethod("getExceptionIndex").invoke(tapos));
             res.location = List.from(tapos.location);
             if (tapos.lvarIndex != null) {
                 res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
@@ -394,6 +396,6 @@ public class TypeAnnotationUtils {
 
     public static Type unannotatedType(final TypeMirror in) {
         final Type impl = (Type) in;
-        return impl.stripMetadataIfNeeded();
+        return impl.stripMetadata();
     }
 }
