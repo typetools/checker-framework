@@ -216,6 +216,27 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     }
 }
 
+configurations {
+    requireJavadoc
+}
+dependencies {
+    compile group: 'org.plumelib', name: 'require-javadoc', version: '0.0.7'
+}
+task requireJavadoc(type: Javadoc) {
+    description = 'Ensures that all Java elementt have Javadoc documentation.'
+    destinationDir = file("${rootDir}/docs/api")
+    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+
+    destinationDir.deleteDir()
+
+    // options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.docletpath = project.sourceSets.main.compileClasspath as List
+    options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+    // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
+}
+
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
