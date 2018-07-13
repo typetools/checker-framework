@@ -7,8 +7,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Arrays;
-import org.checkerframework.javacutil.PluginUtil;
 
 public class ExecUtil {
 
@@ -37,11 +35,9 @@ public class ExecUtil {
             return exitStatus;
 
         } catch (InterruptedException e) {
-            throw new RuntimeException(
-                    "Exception executing command: " + PluginUtil.join(" ", Arrays.asList(cmd)), e);
+            throw new RuntimeException("Exception executing command: " + String.join(" ", cmd), e);
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Exception executing command: " + PluginUtil.join(" ", Arrays.asList(cmd)), e);
+            throw new RuntimeException("Exception executing command: " + String.join(" ", cmd), e);
         }
     }
 

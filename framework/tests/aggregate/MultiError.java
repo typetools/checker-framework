@@ -11,10 +11,9 @@ public class MultiError {
     @StringVal("hello") String s = "goodbye";
 
     @MethodVal(
-        className = "c",
-        methodName = "m",
-        params = {0, 0}
-    )
+            className = "c",
+            methodName = "m",
+            params = {0, 0})
     // :: error: (invalid.methodval)
     Object o;
 }

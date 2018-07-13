@@ -18,26 +18,26 @@ public class UpperBoundQual {
     @Retention(RetentionPolicy.RUNTIME)
     @SubtypeOf({})
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UB_TOP {}
+    public static @interface UbTop {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
-    @SubtypeOf(UB_TOP.class)
+    @SubtypeOf(UbTop.class)
     @DefaultFor(TypeUseLocation.IMPLICIT_UPPER_BOUND)
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UB_IMPLICIT {}
+    public static @interface UbImplicit {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
-    @SubtypeOf(UB_TOP.class)
+    @SubtypeOf(UbTop.class)
     @DefaultFor(TypeUseLocation.EXPLICIT_UPPER_BOUND)
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UB_EXPLICIT {}
+    public static @interface UbExplicit {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
-    @SubtypeOf({UB_IMPLICIT.class, UB_EXPLICIT.class})
+    @SubtypeOf({UbImplicit.class, UbExplicit.class})
     @DefaultFor(TypeUseLocation.LOWER_BOUND)
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    public static @interface UB_BOTTOM {}
+    public static @interface UbBottom {}
 }

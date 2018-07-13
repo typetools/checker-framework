@@ -33,46 +33,46 @@ package org.checkerframework.checker.units.qual;
  * @checker_framework.manual #units-checker Units Checker
  */
 public enum Prefix {
-    /** 10^24 */
+    /** SI prefix for 10^24. */
     yotta,
-    /** 10^21 */
+    /** SI prefix for 10^21. */
     zetta,
-    /** 10^18 */
+    /** SI prefix for 10^18. */
     exa,
-    /** 10^15 */
+    /** SI prefix for 10^15. */
     peta,
-    /** 10^12 */
+    /** SI prefix for 10^12. */
     tera,
-    /** 10^9 */
+    /** SI prefix for 10^9. */
     giga,
-    /** 10^6 */
+    /** SI prefix for 10^6. */
     mega,
-    /** 10^3 */
+    /** SI prefix for 10^3. */
     kilo,
-    /** 10^2 */
+    /** SI prefix for 10^2. */
     hecto,
-    /** 10^1 */
+    /** SI prefix for 10^1. */
     deca,
-    /** 10^0, or 1 */
+    /** SI prefix for 10^0, or 1. */
     one,
-    /** 10^-1 */
+    /** SI prefix for 10^-1. */
     deci,
-    /** 10^-2 */
+    /** SI prefix for 10^-2. */
     centi,
-    /** 10^-3 */
+    /** SI prefix for 10^-3. */
     milli,
-    /** 10^-6 */
+    /** SI prefix for 10^-6. */
     micro,
-    /** 10^-9 */
+    /** SI prefix for 10^-9. */
     nano,
-    /** 10^-12 */
+    /** SI prefix for 10^-12. */
     pico,
-    /** 10^-15 */
+    /** SI prefix for 10^-15. */
     femto,
-    /** 10^-18 */
+    /** SI prefix for 10^-18. */
     atto,
-    /** 10^-21 */
+    /** SI prefix for 10^-21. */
     zepto,
-    /** 10^-24 */
+    /** SI prefix for 10^-24. */
     yocto
 }

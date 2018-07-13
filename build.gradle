@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 import org.gradle.internal.jvm.Jvm
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
     id "de.undercouch.download" version "3.3.0"
     id 'java'
     id "net.ltgt.errorprone-base" version "0.0.13"
@@ -58,7 +58,7 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.1'
+    version '2.5.3'
 
     repositories {
         mavenCentral()
@@ -89,7 +89,7 @@ allprojects {
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
                 options.tagletPath(project(':util').sourceSets.taglet.output as File[])
-                options.links = ['http://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
+                options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
@@ -137,7 +137,7 @@ def createCheckTypeTask(projectName, checker, shortName) {
     project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
         description "Run the ${shortName} Checker on the main sources."
         group 'Verification'
-        dependsOn ':jdk8:downloadJdk'
+        dependsOn ':checker:updateJdk'
         // Always run the task.
         outputs.upToDateWhen { false }
         source = project("${projectName}").sourceSets.main.java
@@ -204,18 +204,53 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
     dependsOn(':util:tagletClasses')
+    destinationDir = file("${rootDir}/docs/api")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
-    destinationDir = file("${projectDir}/docs/api")
     doLast {
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
             rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
-            into 'docs/api/'
+            into "${rootDir}/docs/api"
         }
     }
+}
+
+configurations {
+    requireJavadoc
+}
+dependencies {
+    compile group: 'org.plumelib', name: 'require-javadoc', version: '0.0.7'
+}
+task requireJavadoc(type: Javadoc, group: "Documentation") {
+    description = 'Ensures that Java elements have Javadoc documentation.'
+    destinationDir = file("${rootDir}/docs/api")
+    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+
+    destinationDir.deleteDir()
+
+    // options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.docletpath = project.sourceSets.main.compileClasspath as List
+    options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+    // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
+}
+task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
+    description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
+    destinationDir = file("${rootDir}/docs/api")
+    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+
+    destinationDir.deleteDir()
+
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.docletpath = project.sourceSets.main.compileClasspath as List
+    options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+    // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
 }
 
 task downloadJtreg(type: Download) {
@@ -288,7 +323,7 @@ subprojects {
         ignoreExitValue = true
         doLast {
             if (execResult.exitValue != 0) {
-                throw new RuntimeException('Found improper formatting, try running:  gradle reformat"')
+                throw new RuntimeException('Found improper formatting, try running:  ./gradlew reformat"')
             }
         }
     }
@@ -373,7 +408,7 @@ subprojects {
                 description 'Run the jtreg tests.'
                 dependsOn('compileJava')
                 dependsOn('compileTestJava')
-                dependsOn(':jdk8:downloadJdk')
+                dependsOn(':checker:updateJdk')
                 dependsOn('shadowJar')
 
                 String jtregOutput = "${buildDir}/jtreg"
@@ -507,8 +542,8 @@ subprojects {
 
 assemble.dependsOn(':checker:copyJarsToDist')
 
-task checkStyle(group: 'Format') {
-    description 'Check basic style guidelines'
+task checkBasicStyle(group: 'Format') {
+    description 'Check basic style guidelines.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.idea',

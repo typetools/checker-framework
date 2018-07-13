@@ -61,8 +61,7 @@ public class TestDiagnostic {
     }
 
     /**
-     * @return whether or not String representation methods should omit the parentheses around the
-     *     message
+     * @return whether or not the printed representation should omit parentheses around the message
      */
     public boolean shouldOmitParentheses() {
         return omitParentheses;

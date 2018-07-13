@@ -127,8 +127,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (leftATM.getAnnotations().size() != 1) {
             return false;
         }
-        List<String> expressions =
-                getLessThanExpressions(leftATM.getAnnotations().iterator().next());
+        return isLessThan(leftATM.getAnnotations().iterator().next(), right);
+    }
+
+    /** @return Is left less than right? */
+    public static boolean isLessThan(AnnotationMirror left, String right) {
+        List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
             return true;
         }
@@ -202,6 +206,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             ValueAnnotatedTypeFactory.getArrayLength(arrayLen);
                     return Collections.min(possibleValues);
                 }
+                // Even arrays that we know nothing about must have at least zero length.
+                return 0;
             }
         }
 
@@ -214,8 +220,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (leftATM.getAnnotations().size() != 1) {
             return false;
         }
-        List<String> expressions =
-                getLessThanExpressions(leftATM.getAnnotations().iterator().next());
+        return isLessThanOrEqual(leftATM.getAnnotations().iterator().next(), right);
+    }
+
+    /** @return Is left less than or equal to right? */
+    public static boolean isLessThanOrEqual(AnnotationMirror left, String right) {
+        List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
             // left is bottom so it is always less than right.
             return true;
@@ -265,7 +275,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Returns {@code @LessThan(expression)} */
+    /** Returns {@code @LessThan(expression)}. */
     public AnnotationMirror createLessThanQualifier(String expression) {
         return createLessThanQualifier(Collections.singletonList(expression));
     }

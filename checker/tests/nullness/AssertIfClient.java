@@ -43,9 +43,8 @@ class Proxy {
     // then response is non-null and rpcResponse() returns non-null
     @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
     @EnsuresNonNullIf(
-        expression = {"response", "rpcResponse()"},
-        result = true
-    )
+            expression = {"response", "rpcResponse()"},
+            result = true)
     boolean rpcResponseReceived() {
         return response != null;
     }

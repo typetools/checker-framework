@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Converts a field or methods tree into an AnnotatedTypeMirror
+ * Converts a field or methods tree into an AnnotatedTypeMirror.
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
@@ -99,8 +99,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
             if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
                 if (f.types.isSubtype(funcTypeParam.actualType, lambdaParam.actualType)) {
-                    // The Java types should be exactly the same, but because invocation type inference
-                    // (#979) isn't implement, check first.
+                    // The Java types should be exactly the same, but because invocation type
+                    // inference (#979) isn't implement, check first.
                     return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
                 }
                 lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());

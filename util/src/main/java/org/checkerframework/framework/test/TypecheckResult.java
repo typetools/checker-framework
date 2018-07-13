@@ -8,7 +8,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
-import org.checkerframework.javacutil.PluginUtil;
+
 /**
  * Represents the test results from typechecking one or more java files using the given
  * TestConfiguration.
@@ -99,7 +99,7 @@ public class TypecheckResult {
     public String summarize() {
         if (testFailed) {
             StringBuilder summaryBuilder = new StringBuilder();
-            summaryBuilder.append(PluginUtil.join("\n", getErrorHeaders()));
+            summaryBuilder.append(String.join("\n", getErrorHeaders()));
             summaryBuilder.append("\n");
 
             if (!missingDiagnostics.isEmpty()) {

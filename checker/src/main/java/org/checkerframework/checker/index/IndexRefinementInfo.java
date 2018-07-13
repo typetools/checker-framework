@@ -69,7 +69,7 @@ public class IndexRefinementInfo {
         if (set.size() == 1) {
             return set.iterator().next();
         }
-        if (set.size() == 0) {
+        if (set.isEmpty()) {
             return null;
         }
         Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();

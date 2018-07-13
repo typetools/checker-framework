@@ -80,7 +80,7 @@ public class LockAnnotatedTypeFactory
     /** dependent type annotation error message for when the expression is not effectively final. */
     public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
 
-    /** Annotation constants */
+    /** Annotation constants. */
     protected final AnnotationMirror LOCKHELD,
             LOCKPOSSIBLYHELD,
             SIDEEFFECTFREE,
@@ -89,9 +89,9 @@ public class LockAnnotatedTypeFactory
             GUARDEDBYBOTTOM,
             GUARDSATISFIED;
 
-    protected final Class<? extends Annotation> jcip_GuardedBy;
+    protected final Class<? extends Annotation> jcipGuardedBy;
 
-    protected final Class<? extends Annotation> javax_GuardedBy;
+    protected final Class<? extends Annotation> javaxGuardedBy;
 
     @SuppressWarnings("unchecked") // cast to generic type
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -124,7 +124,7 @@ public class LockAnnotatedTypeFactory
             // Ignore exceptions from Class.forName
             testLoad = null;
         }
-        jcip_GuardedBy = testLoad;
+        jcipGuardedBy = testLoad;
 
         try {
             testLoad =
@@ -134,7 +134,7 @@ public class LockAnnotatedTypeFactory
             // Ignore exceptions from Class.forName
             testLoad = null;
         }
-        javax_GuardedBy = testLoad;
+        javaxGuardedBy = testLoad;
 
         postInit();
     }
@@ -170,7 +170,7 @@ public class LockAnnotatedTypeFactory
                 }
 
                 // Adds logic to parse <self> expression, which only the Lock Checker uses.
-                if (LockVisitor.selfReceiverPattern.matcher(expression).matches()) {
+                if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
                     return expression;
                 }
 
@@ -711,12 +711,12 @@ public class LockAnnotatedTypeFactory
 
         AnnotationMirror anno = null;
 
-        if (jcip_GuardedBy != null) {
-            anno = getDeclAnnotation(element, jcip_GuardedBy);
+        if (jcipGuardedBy != null) {
+            anno = getDeclAnnotation(element, jcipGuardedBy);
         }
 
-        if (anno == null && javax_GuardedBy != null) {
-            anno = getDeclAnnotation(element, javax_GuardedBy);
+        if (anno == null && javaxGuardedBy != null) {
+            anno = getDeclAnnotation(element, javaxGuardedBy);
         }
 
         if (anno == null) {

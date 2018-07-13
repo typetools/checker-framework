@@ -1,5 +1,6 @@
 import testlib.nontopdefault.qual.NTDMiddle;
 import testlib.nontopdefault.qual.NTDTop;
+
 // Testcase for Issue 948:
 // https://github.com/typetools/checker-framework/issues/948
 // @skip-test

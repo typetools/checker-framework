@@ -5,9 +5,8 @@ import testlib.util.*;
 class ExtendsDefault {
 
     @DefaultQualifier(
-        value = Odd.class,
-        locations = {TypeUseLocation.UPPER_BOUND}
-    )
+            value = Odd.class,
+            locations = {TypeUseLocation.UPPER_BOUND})
     class MyOddDefault<T> {}
 
     class MyNonOddDefault<T> {}

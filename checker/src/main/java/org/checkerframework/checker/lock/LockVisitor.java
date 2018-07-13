@@ -79,7 +79,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
     private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
-    protected static final Pattern selfReceiverPattern = Pattern.compile("^<self>(\\.(.*))?$");
+    protected static final Pattern SELF_RECEIVER_PATTERN = Pattern.compile("^<self>(\\.(.*))?$");
 
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -112,10 +112,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     /**
      * Issues an error if two or more of the following annotations are present on a variable
-     * declaration:<br>
-     * {@code @org.checkerframework.checker.lock.qual.GuardedBy}<br>
-     * {@code @net.jcip.annotations.GuardedBy}<br>
-     * {@code @javax.annotation.concurrent.GuardedBy}
+     * declaration.
+     *
+     * <ul>
+     *   <li>{@code @org.checkerframework.checker.lock.qual.GuardedBy}
+     *   <li>{@code @net.jcip.annotations.GuardedBy}
+     *   <li>{@code @javax.annotation.concurrent.GuardedBy}
+     * </ul>
      *
      * @param variableTree the VariableTree for the variable declaration used to determine if
      *     multiple @GuardedBy annotations are present and to report the error via checker.report.
@@ -212,10 +215,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if two or more of the following annotations are present on a method:<br>
-     * {@code @Holding}<br>
-     * {@code @net.jcip.annotations.GuardedBy}<br>
-     * {@code @javax.annotation.concurrent.GuardedBy}
+     * Issues an error if two or more of the following annotations are present on a method.
+     *
+     * <ul>
+     *   <li>{@code @Holding}
+     *   <li>{@code @net.jcip.annotations.GuardedBy}
+     *   <li>{@code @javax.annotation.concurrent.GuardedBy}
+     * </ul>
      *
      * @param methodElement the ExecutableElement for the method call referred to by {@code node}
      * @param treeForErrorReporting the MethodTree used to report the error via checker.report.
@@ -229,15 +235,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         try {
-            if (atypeFactory.jcip_GuardedBy != null
-                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcip_GuardedBy)
+            if (atypeFactory.jcipGuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcipGuardedBy)
                             != null) {
                 lockPreconditionAnnotationCount++;
             }
 
             if (lockPreconditionAnnotationCount < 2
-                    && atypeFactory.javax_GuardedBy != null
-                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javax_GuardedBy)
+                    && atypeFactory.javaxGuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javaxGuardedBy)
                             != null) {
                 lockPreconditionAnnotationCount++;
             }
@@ -1296,7 +1302,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             return lockExpression;
         }
 
-        Matcher selfReceiverMatcher = selfReceiverPattern.matcher(expression);
+        Matcher selfReceiverMatcher = SELF_RECEIVER_PATTERN.matcher(expression);
         try {
             if (selfReceiverMatcher.matches()) {
                 String remainingExpression = selfReceiverMatcher.group(2);

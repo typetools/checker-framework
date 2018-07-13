@@ -40,6 +40,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
 public @interface DefaultQualifiers {
-    /** The default qualifier settings */
+    /** The default qualifier settings. */
     DefaultQualifier[] value() default {};
 }

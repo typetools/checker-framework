@@ -20,24 +20,24 @@ import org.checkerframework.framework.qual.TypeKind;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSignedness.class})
 @ImplicitFor(
-    types = {
-        TypeKind.BYTE,
-        TypeKind.INT,
-        TypeKind.LONG,
-        TypeKind.SHORT,
-        TypeKind.FLOAT,
-        TypeKind.DOUBLE,
-        TypeKind.CHAR
-    }
+        types = {
+            TypeKind.BYTE,
+            TypeKind.INT,
+            TypeKind.LONG,
+            TypeKind.SHORT,
+            TypeKind.FLOAT,
+            TypeKind.DOUBLE,
+            TypeKind.CHAR
+        }
 
-    // This is commented out until implicitly signed boxed types are implemented
-    // correctly.
+        // This is commented out until implicitly signed boxed types are implemented
+        // correctly.
 
-    /*,
-    typeNames = {
-        java.lang.Byte.class,
-        java.lang.Short.class,
-        java.lang.Integer.class,
-        java.lang.Long.class
-    }*/ )
+        /*,
+        typeNames = {
+            java.lang.Byte.class,
+            java.lang.Short.class,
+            java.lang.Integer.class,
+            java.lang.Long.class
+        }*/ )
 public @interface Signed {}

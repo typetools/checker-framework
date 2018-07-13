@@ -49,6 +49,7 @@ import org.junit.runner.RunWith;
 @RunWith(PerFileSuite.class)
 public abstract class CheckerFrameworkPerFileTest {
 
+    /** The file containing test code, which will be type-checked. */
     protected final File testFile;
 
     /** The fully-qualified class name of the checker to use for tests. */
@@ -67,6 +68,7 @@ public abstract class CheckerFrameworkPerFileTest {
      * Iterable, Iterable, List, boolean)} adds additional checker options such as
      * -AprintErrorStack.
      *
+     * @param testFile the file containing test code, which will be type-checked
      * @param checker the class for the checker to use
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests

@@ -168,7 +168,11 @@ public class TestConfigurationBuilder {
         shouldEmitDebugInfo = false;
     }
 
-    /** Create a builder that has all of the options in initialConfig */
+    /**
+     * Create a builder that has all of the options in initialConfig.
+     *
+     * @param initialConfig initial configuration for the newly-created builder
+     */
     public TestConfigurationBuilder(TestConfiguration initialConfig) {
         this.diagnosticFiles = new ArrayList<>(initialConfig.getDiagnosticFiles());
         this.testSourceFiles = new ArrayList<>(initialConfig.getTestSourceFiles());
@@ -321,7 +325,9 @@ public class TestConfigurationBuilder {
 
     /**
      * Creates a TestConfiguration using the settings in this builder. The settings are NOT
-     * validated first
+     * validated first.
+     *
+     * @return a TestConfiguration using the settings in this builder
      */
     public TestConfiguration build() {
         return new ImmutableTestConfiguration(
@@ -338,6 +344,7 @@ public class TestConfigurationBuilder {
      *
      * @param requireProcessors whether or not there should be at least 1 processor specified, see
      *     method validate
+     * @return a TestConfiguration using the settings in this builder
      */
     public TestConfiguration validateThenBuild(boolean requireProcessors) {
         List<String> errors = validate(requireProcessors);
@@ -348,7 +355,7 @@ public class TestConfigurationBuilder {
         throw new RuntimeException(
                 "Attempted to build invalid test configuration:\n"
                         + "Errors:\n"
-                        + PluginUtil.join("\n", errors)
+                        + String.join("\n", errors)
                         + "\n"
                         + this.toString()
                         + "\n");
@@ -407,7 +414,11 @@ public class TestConfigurationBuilder {
         return classpath + File.pathSeparator + globalclasspath;
     }
 
-    /** Uses the system property "JDK_JAR" to find the annotated JDK */
+    /**
+     * The path to the annotated JDK, looked up from the system property "JDK_JAR".
+     *
+     * @return the value of the system property "JDK_JAR".
+     */
     public static String getJdkJarPathFromProperty() {
         return System.getProperty("JDK_JAR");
     }
