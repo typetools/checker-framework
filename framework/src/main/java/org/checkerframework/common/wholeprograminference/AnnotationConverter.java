@@ -40,7 +40,9 @@ public class AnnotationConverter {
         for (ExecutableElement ee : am.getElementValues().keySet()) {
             AnnotationFieldType aft =
                     getAnnotationFieldType(ee, am.getElementValues().get(ee).getValue());
-            if (aft == null) return null;
+            if (aft == null) {
+                return null;
+            }
             // Here we just add the type of the field into fieldTypes.
             fieldTypes.put(ee.getSimpleName().toString(), aft);
         }

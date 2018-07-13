@@ -1,14 +1,21 @@
 package org.checkerframework.framework.source;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An AST visitor that provides a variety of compiler utilities and interfaces to facilitate
@@ -28,6 +35,12 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
     /** The root of the AST that this {@link SourceVisitor} will scan. */
     protected CompilationUnitTree root;
 
+    /** A set of trees that are annotated with {@code @SuppressWarnings}. */
+    public final List<Tree> treesWithSuppressWarnings;
+
+    /** Whether or not a warning should be issued for unneeded warning suppressions. * */
+    private final boolean warnUnneededSuppressions;
+
     /**
      * Creates a {@link SourceVisitor} to use for scanning a source tree.
      *
@@ -44,6 +57,9 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
         // Install the SourceChecker as the error handler
         // TODO: having this static state is ugly. Use the context to instantiate.
         ErrorReporter.setHandler(checker);
+
+        this.treesWithSuppressWarnings = new ArrayList<>();
+        this.warnUnneededSuppressions = checker.hasOption("warnUnneededSuppressions");
     }
 
     /*
@@ -77,5 +93,38 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
     public R scan(Tree tree, P p) {
         lastVisited = tree;
         return super.scan(tree, p);
+    }
+
+    @Override
+    public R visitClass(ClassTree classTree, P p) {
+        storeSuppressWarningsAnno(classTree);
+        return super.visitClass(classTree, p);
+    }
+
+    @Override
+    public R visitVariable(VariableTree variableTree, P p) {
+        storeSuppressWarningsAnno(variableTree);
+        return super.visitVariable(variableTree, p);
+    }
+
+    @Override
+    public R visitMethod(MethodTree node, P p) {
+        storeSuppressWarningsAnno(node);
+        return super.visitMethod(node, p);
+    }
+
+    /**
+     * If {@code tree} has a {@code @SuppressWarnings} add it to treesWithSuppressWarnings.
+     *
+     * @param tree a declaration on which a {@code @SuppressWarnings} annotation may be placed.
+     */
+    private void storeSuppressWarningsAnno(Tree tree) {
+        if (!warnUnneededSuppressions) {
+            return;
+        }
+        Element elt = TreeUtils.elementFromTree(tree);
+        if (elt.getAnnotation(SuppressWarnings.class) != null) {
+            treesWithSuppressWarnings.add(tree);
+        }
     }
 }

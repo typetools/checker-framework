@@ -240,7 +240,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
     /**
      * Checks to see if subtype is bottom (if a bottom exists) If there is no explicit bottom then
-     * false is returned
+     * false is returned.
      *
      * @param subtype type to isValid against bottom
      * @return true if subtype's primary annotation is bottom
@@ -937,7 +937,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // interface but that handle cases that more than one visit method shares
     // in commmon
 
-    /** An intersection is a supertype if all of its bounds are a supertype of subtype */
+    /** An intersection is a supertype if all of its bounds are a supertype of subtype. */
     protected boolean visitIntersectionSupertype(
             AnnotatedTypeMirror subtype, AnnotatedIntersectionType supertype) {
         if (visitHistory.contains(subtype, supertype, currentTop)) {
@@ -969,7 +969,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return checkAndSubtype(upperBound, supertype);
     }
 
-    /** A union type is a subtype if ALL of its alternatives are subtypes of supertype */
+    /** A union type is a subtype if ALL of its alternatives are subtypes of supertype. */
     protected Boolean visitUnionSubtype(AnnotatedUnionType subtype, AnnotatedTypeMirror supertype) {
         return areAllSubtypes(subtype.getAlternatives(), supertype);
     }
@@ -1026,7 +1026,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Calls asSuper and casts the result to the same type as the input supertype
+     * Calls asSuper and casts the result to the same type as the input supertype.
      *
      * @param subtype subtype to be transformed to supertype
      * @param supertype supertype that subtype is transformed to

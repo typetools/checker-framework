@@ -32,7 +32,7 @@ public class CustomContractWithArgs {
         public String[] targetOffset();
     }
 
-    //Precondition for LTLengthOf
+    // Precondition for LTLengthOf
     @PreconditionAnnotation(qualifier = LTLengthOf.class)
     @interface RequiresLTL {
         public String[] value();
@@ -66,11 +66,10 @@ public class CustomContractWithArgs {
         public int b, y;
 
         @EnsuresLTLIf(
-            expression = "b",
-            targetValue = {"#1", "#1"},
-            targetOffset = {"#2 + 1", "10"},
-            result = true
-        )
+                expression = "b",
+                targetValue = {"#1", "#1"},
+                targetOffset = {"#2 + 1", "10"},
+                result = true)
         boolean ltlPost(int[] a, int c) {
             if (b < a.length - c - 1 && b < a.length - 10) {
                 return true;
@@ -86,10 +85,9 @@ public class CustomContractWithArgs {
         }
 
         @RequiresLTL(
-            value = "b",
-            targetValue = {"#1", "#1"},
-            targetOffset = {"#2 + 1", "-10"}
-        )
+                value = "b",
+                targetValue = {"#1", "#1"},
+                targetOffset = {"#2 + 1", "-10"})
         void ltlPre(int[] a, int c) {
             @LTLengthOf(value = "a", offset = "c+1") int i = b;
         }
@@ -110,26 +108,23 @@ public class CustomContractWithArgs {
 
         @Override
         @EnsuresLTLIf(
-            expression = "b ",
-            targetValue = {"#1", "#1"},
-            targetOffset = {"#2 + 1", "11"},
-            result = true
-        )
+                expression = "b ",
+                targetValue = {"#1", "#1"},
+                targetOffset = {"#2 + 1", "11"},
+                result = true)
         boolean ltlPost(int[] a, int d) {
             return false;
         }
 
         @Override
         @RequiresLTL(
-            value = "b ",
-            targetValue = {"#1", "#1"},
-            targetOffset = {"#2 + 1", "-11"}
-        )
+                value = "b ",
+                targetValue = {"#1", "#1"},
+                targetOffset = {"#2 + 1", "-11"})
         void ltlPre(int[] a, int d) {
             @LTLengthOf(
-                value = {"a", "a"},
-                offset = {"d+1", "-10"}
-            )
+                    value = {"a", "a"},
+                    offset = {"d+1", "-10"})
             // :: error: (assignment.type.incompatible)
             int i = b;
         }
@@ -140,11 +135,10 @@ public class CustomContractWithArgs {
 
         @Override
         @EnsuresLTLIf(
-            expression = "b ",
-            targetValue = {"#1", "#1"},
-            targetOffset = {"#2 + 1", "9"},
-            result = true
-        )
+                expression = "b ",
+                targetValue = {"#1", "#1"},
+                targetOffset = {"#2 + 1", "9"},
+                result = true)
         // :: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean ltlPost(int[] a, int c) {
             // :: error: (contracts.conditional.postcondition.not.satisfied)
@@ -153,16 +147,14 @@ public class CustomContractWithArgs {
 
         @Override
         @RequiresLTL(
-            value = "b ",
-            targetValue = {"#1", "#1"},
-            targetOffset = {"#2 + 1", "-9"}
-        )
+                value = "b ",
+                targetValue = {"#1", "#1"},
+                targetOffset = {"#2 + 1", "-9"})
         // :: error: (contracts.precondition.override.invalid)
         void ltlPre(int[] a, int d) {
             @LTLengthOf(
-                value = {"a", "a"},
-                offset = {"d+1", "-10"}
-            )
+                    value = {"a", "a"},
+                    offset = {"d+1", "-10"})
             int i = b;
         }
     }

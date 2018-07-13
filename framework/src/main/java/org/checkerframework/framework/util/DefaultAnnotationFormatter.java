@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
 
     /**
-     * Returns true if, by default, anno should not be printed
+     * Returns true if, by default, anno should not be printed.
      *
      * @see org.checkerframework.framework.qual.InvisibleQualifier
      * @return true if anno's declaration was qualified by InvisibleQualifier
@@ -28,8 +28,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     }
 
     /**
-     * Creates a space String of each annotation in annos separated by a single space character,
-     * obeying the printInvisible parameter.
+     * Creates a String of each annotation in annos separated by a single space character and
+     * terminated by a space character, obeying the printInvisible parameter.
      *
      * @param annos a collection of annotations to print
      * @param printInvisible whether or not to print "invisible" annotation mirrors

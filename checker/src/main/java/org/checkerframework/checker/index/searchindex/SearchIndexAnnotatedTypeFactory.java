@@ -132,7 +132,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> arrayIntersection = IndexUtil.getValueOfAnnotationWithStringArgument(a1);
             arrayIntersection.retainAll(IndexUtil.getValueOfAnnotationWithStringArgument(a2));
 
-            if (arrayIntersection.size() == 0) {
+            if (arrayIntersection.isEmpty()) {
                 return UNKNOWN;
             }
 
@@ -176,7 +176,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Create a new {@code @NegativeIndexFor} annotation with the given arrays as its arguments. */
     AnnotationMirror createNegativeIndexFor(List<String> arrays) {
-        if (arrays.size() == 0) {
+        if (arrays.isEmpty()) {
             return UNKNOWN;
         }
 
@@ -190,7 +190,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Create a new {@code @SearchIndexFor} annotation with the given arrays as its arguments. */
     AnnotationMirror createSearchIndexFor(List<String> arrays) {
-        if (arrays.size() == 0) {
+        if (arrays.isEmpty()) {
             return UNKNOWN;
         }
 

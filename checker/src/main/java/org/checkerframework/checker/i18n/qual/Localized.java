@@ -17,21 +17,20 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf(UnknownLocalized.class)
 @ImplicitFor(
-    literals = {
-        /* All integer literals */
-        LiteralKind.INT,
-        LiteralKind.LONG,
-        LiteralKind.FLOAT,
-        LiteralKind.DOUBLE,
-        LiteralKind.BOOLEAN,
+        literals = {
+            /* All integer literals */
+            LiteralKind.INT,
+            LiteralKind.LONG,
+            LiteralKind.FLOAT,
+            LiteralKind.DOUBLE,
+            LiteralKind.BOOLEAN,
 
-        /* null should be the bottom type */
-        LiteralKind.NULL
+            /* null should be the bottom type */
+            LiteralKind.NULL
 
-        // CHAR_LITERAL,
-        // STRING_LITERAL,
-    }
-)
+            // CHAR_LITERAL,
+            // STRING_LITERAL,
+        })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

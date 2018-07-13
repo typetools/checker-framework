@@ -80,13 +80,34 @@ import org.checkerframework.javacutil.TypesUtils;
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The maximum number of values allowed in an annotation's array */
+    /** The maximum number of values allowed in an annotation's array. */
     protected static final int MAX_VALUES = 10;
 
     /**
      * The domain of the Constant Value Checker: the types for which it estimates possible values.
      */
-    protected static final Set<String> coveredClassStrings;
+    protected static final Set<String> COVERED_CLASS_STRINGS =
+            Collections.unmodifiableSet(
+                    new HashSet<>(
+                            Arrays.asList(
+                                    "int",
+                                    "java.lang.Integer",
+                                    "double",
+                                    "java.lang.Double",
+                                    "byte",
+                                    "java.lang.Byte",
+                                    "java.lang.String",
+                                    "char",
+                                    "java.lang.Character",
+                                    "float",
+                                    "java.lang.Float",
+                                    "boolean",
+                                    "java.lang.Boolean",
+                                    "long",
+                                    "java.lang.Long",
+                                    "short",
+                                    "java.lang.Short",
+                                    "char[]")));
 
     /** The top type for this hierarchy. */
     protected final AnnotationMirror UNKNOWNVAL;
@@ -106,29 +127,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Helper class that holds references to special methods. */
     private final ValueMethodIdentifier methods;
 
-    static {
-        Set<String> backingSet = new HashSet<>(18);
-        backingSet.add("int");
-        backingSet.add("java.lang.Integer");
-        backingSet.add("double");
-        backingSet.add("java.lang.Double");
-        backingSet.add("byte");
-        backingSet.add("java.lang.Byte");
-        backingSet.add("java.lang.String");
-        backingSet.add("char");
-        backingSet.add("java.lang.Character");
-        backingSet.add("float");
-        backingSet.add("java.lang.Float");
-        backingSet.add("boolean");
-        backingSet.add("java.lang.Boolean");
-        backingSet.add("long");
-        backingSet.add("java.lang.Long");
-        backingSet.add("short");
-        backingSet.add("java.lang.Short");
-        backingSet.add("char[]");
-        coveredClassStrings = Collections.unmodifiableSet(backingSet);
-    }
-
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -136,7 +134,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWNVAL = AnnotationBuilder.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
-        Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
+        Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         addAliasedAnnotation(
@@ -239,8 +237,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        // This is a lot of code to replace annotations so that annotations that are equivalent qualifiers
-        // are the same annotation.
+        // This is a lot of code to replace annotations so that annotations that are equivalent
+        // qualifiers are the same annotation.
         return new DefaultTypeHierarchy(
                 checker,
                 getQualifierHierarchy(),
@@ -525,7 +523,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** The qualifier hierarchy for the Value type system */
+    /** The qualifier hierarchy for the Value type system. */
     private final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         /** @param factory MultiGraphFactory to use to construct this */
@@ -740,7 +738,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
-                    if (newValues.size() == 0) {
+                    if (newValues.isEmpty()) {
                         return BOTTOMVAL;
                     }
                     if (newValues.size() > MAX_VALUES) {
@@ -1445,13 +1443,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /** Returns true iff the given type is in the domain of the Constant Value Checker. */
         private boolean handledByValueChecker(AnnotatedTypeMirror type) {
-            return coveredClassStrings.contains(type.getUnderlyingType().toString());
+            return COVERED_CLASS_STRINGS.contains(type.getUnderlyingType().toString());
         }
     }
 
     /**
      * Returns a constant value annotation for a length of an array or string type with a constant
-     * value annotation
+     * value annotation.
      */
     AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror receiverType) {
         AnnotationMirror arrayAnno = receiverType.getAnnotationInHierarchy(UNKNOWNVAL);
@@ -1503,7 +1501,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // For some reason null is included in the list of values,
         // so remove it so that it does not cause a NPE elsewhere.
         values.remove(null);
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             return BOTTOMVAL;
         }
 

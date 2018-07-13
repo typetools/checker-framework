@@ -67,13 +67,13 @@ public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
-    /** Annotation constants */
+    /** Annotation constants. */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
 
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
-    /** Cache for the nullness annotations */
+    /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
     // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
@@ -141,7 +141,6 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
                     "org.springframework.lang.Nullable");
 
-    @SuppressWarnings("deprecation") // aliasing to deprecated annotation
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
 
@@ -285,8 +284,11 @@ public class NullnessAnnotatedTypeFactory
     /** @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals */
     @Override
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        boolean printVerboseGenerics = checker.hasOption("printVerboseGenerics");
         return new NullnessAnnotatedTypeFormatter(
-                checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+                printVerboseGenerics,
+                // -AprintVerboseGenerics implies -AprintAllQualifiers
+                printVerboseGenerics || checker.hasOption("printAllQualifiers"));
     }
 
     @Override

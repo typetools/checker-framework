@@ -122,10 +122,8 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
-  ./gradlew :jdk8:buildJdk
-
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest
+  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -136,7 +134,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew checkStyle checkFormat
+  ./gradlew checkBasicStyle checkFormat
 
   # Run error-prone
   ./gradlew runErrorProne

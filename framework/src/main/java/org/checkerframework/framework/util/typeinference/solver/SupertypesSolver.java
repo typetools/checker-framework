@@ -201,7 +201,7 @@ public class SupertypesSolver {
 
     /**
      * For each target, lub all of the types/annotations in its supertypes constraints and return
-     * the lubs
+     * the lubs.
      *
      * @param remainingTargets targets that do not already have an inferred type argument
      * @param constraintMap the set of constraints for all targets
@@ -307,7 +307,7 @@ public class SupertypesSolver {
 
     /**
      * For each qualifier hierarchy in tops, take the lub of the annos in subtypeAnnos that
-     * correspond to that hierarchy place the lub in lubOfPrimaries
+     * correspond to that hierarchy place the lub in lubOfPrimaries.
      */
     protected static void lubPrimaries(
             AnnotationMirrorMap<AnnotationMirror> lubOfPrimaries,
@@ -332,7 +332,7 @@ public class SupertypesSolver {
 
     /**
      * For each type in typeToHierarchies, if that type does not have a corresponding annotation for
-     * a given hierarchy replace it with the corresponding value in lowerBoundAnnos
+     * a given hierarchy replace it with the corresponding value in lowerBoundAnnos.
      */
     public static AnnotatedTypeMirror groundMissingHierarchies(
             final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> typeToHierarchies,

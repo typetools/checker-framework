@@ -7,6 +7,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class ReportModifiersTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public ReportModifiersTest(List<File> testFiles) {
         super(
                 testFiles,

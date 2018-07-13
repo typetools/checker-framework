@@ -20,7 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 
-/** Apply annotations to the use of a type parameter declaration */
+/** Apply annotations to the use of a type parameter declaration. */
 public class TypeVarUseApplier {
 
     public static void apply(
@@ -106,7 +106,7 @@ public class TypeVarUseApplier {
 
     /**
      * Applies the bound annotations from the declaration of the type parameter and then applies the
-     * explicit annotations written on the type variable
+     * explicit annotations written on the type variable.
      */
     public void extractAndApply() {
         ElementAnnotationUtil.addAnnotationsFromElement(

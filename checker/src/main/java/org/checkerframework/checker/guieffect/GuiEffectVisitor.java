@@ -208,7 +208,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     // For assignments and local variable initialization:
-    // Check for @UI annotations on the lhs, use them to infer @UI types on lambda expressions in the rhs
+    // Check for @UI annotations on the lhs, use them to infer @UI types on lambda expressions in
+    // the rhs
     private void lambdaAssignmentCheck(
             AnnotatedTypeMirror varType,
             LambdaExpressionTree lambdaExp,
@@ -250,8 +251,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         if (node.getExpression() != null
                 && node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
 
-            // Unfortunatelly, need to duplicate a fair bit of BaseTypeVisitor.visitReturn after lambdas have been
-            // inferred.
+            // Unfortunately, need to duplicate a fair bit of BaseTypeVisitor.visitReturn after
+            // lambdas have been inferred.
             Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
             try {
                 Tree enclosing = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
@@ -321,14 +322,15 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             }
 
             callerEffect = atypeFactory.getDeclaredEffect(callerElt);
-            // Field initializers inside anonymous inner classes show up with a null current-method ---
-            // the traversal goes straight from the class to the initializer.
+            // Field initializers inside anonymous inner classes show up with a null current-method
+            // --- the traversal goes straight from the class to the initializer.
             assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
         } else if (callerTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
             callerEffect =
                     atypeFactory.getInferedEffectForLambdaExpression(
                             (LambdaExpressionTree) callerTree);
-            // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI lambda
+            // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI
+            // lambda
             if (targetEffect.isUI() && callerEffect.isPoly()) {
                 atypeFactory.constrainLambdaToUI((LambdaExpressionTree) callerTree);
                 callerEffect = new Effect(UIEffect.class);
@@ -336,7 +338,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         }
         assert callerEffect != null;
 
-        if (!Effect.LE(targetEffect, callerEffect)) {
+        if (!Effect.lessThanOrEqualTo(targetEffect, callerEffect)) {
             checker.report(Result.failure("call.invalid.ui", targetEffect, callerEffect), node);
             if (debugSpew) {
                 System.err.println("Issuing error for node: " + node);
@@ -349,7 +351,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         Void result = super.visitMethodInvocation(node, p);
 
-        // Check arguments to this method invocation for UI-lambdas, this must be re-checked after visiting the lambda
+        // Check arguments to this method invocation for UI-lambdas, this must be re-checked after
+        // visiting the lambda
         // body due to inference.
         List<? extends ExpressionTree> args = node.getArguments();
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =

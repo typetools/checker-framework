@@ -32,10 +32,12 @@ public class CompoundAssignments {
 
     public void mixedTest(@Unsigned int unsigned, @Signed int signed) {
 
-        // :: error: (compound.assignment.mixed.unsigned.variable) :: error: (compound.assignment.type.incompatible)
+        // :: error: (compound.assignment.mixed.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
         unsigned += signed;
 
-        // :: error: (compound.assignment.mixed.unsigned.expression) :: error: (compound.assignment.type.incompatible)
+        // :: error: (compound.assignment.mixed.unsigned.expression)
+        // :: error: (compound.assignment.type.incompatible)
         signed += unsigned;
     }
 }

@@ -8,6 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** Test suite for the Subtyping Checker, using a simple {@link Encrypted} annotation. */
 public class SubtypingStringPatternsFullTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public SubtypingStringPatternsFullTest(List<File> testFiles) {
         super(
                 testFiles,

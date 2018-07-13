@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class IrrelevantTypeAnnotator extends TypeAnnotator {
     /**
      * List of relevantTypes translated from classes in {@link RelevantJavaTypes} to {@link
-     * TypeMirror}s
+     * TypeMirror}s.
      */
     private List<TypeMirror> relevantTypes;
 
