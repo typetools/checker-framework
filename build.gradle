@@ -225,7 +225,7 @@ dependencies {
     compile group: 'org.plumelib', name: 'require-javadoc', version: '0.0.7'
 }
 task requireJavadoc(type: Javadoc, group: "Documentation") {
-    description = 'Ensures that all Java elements have Javadoc documentation.'
+    description = 'Ensures that Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
@@ -238,7 +238,7 @@ task requireJavadoc(type: Javadoc, group: "Documentation") {
     options.doclet = "org.plumelib.javadoc.RequireJavadoc"
     // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
 }
-task requireJavadoc(type: Javadoc, group: "Documentation") {
+task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
     description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
