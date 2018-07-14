@@ -45,6 +45,8 @@ public @interface UnderInitialization {
      * The type-frame down to which the expression (of this type) has been initialized at least
      * (inclusive). That is, an expression of type {@code @UnderInitialization(T.class)} has all
      * type-frames initialized starting at {@code Object} down to (and including) {@code T}.
+     *
+     * @return the type whose fields are fully initialized
      */
     Class<?> value() default Object.class;
 }

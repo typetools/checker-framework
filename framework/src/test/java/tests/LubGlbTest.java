@@ -8,6 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** */
 public class LubGlbTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public LubGlbTest(List<File> testFiles) {
         super(testFiles, lubglb.LubGlbChecker.class, "lubglb", "-Anomsgtext");
     }

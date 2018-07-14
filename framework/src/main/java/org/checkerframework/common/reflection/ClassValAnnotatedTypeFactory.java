@@ -77,7 +77,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns the list of classnames from {@code @ClassBound} or {@code @ClassVal} if anno is
-     * {@code @ClassBound} or {@code @ClassVal}, otherwise returns an empty list
+     * {@code @ClassBound} or {@code @ClassVal}, otherwise returns an empty list.
      *
      * @param anno any AnnotationMirror
      * @return list of classnames in anno
@@ -95,7 +95,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ClassValQualifierHierarchy(factory);
     }
 
-    /** The qualifier hierarchy for the ClassVal type system */
+    /** The qualifier hierarchy for the ClassVal type system. */
     protected class ClassValQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         public ClassValQualifierHierarchy(MultiGraphFactory f) {
@@ -199,7 +199,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Implements these type inference rules:
+     * Implements the following type inference rules.
      *
      * <pre>
      * C.class:             @ClassVal(fully qualified name of C)

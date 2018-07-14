@@ -26,7 +26,11 @@ public class SimpleOptionMap {
     /** A Map (optionName &rarr; arg) where arg is null if the option doesn't require any args. */
     private final Map<String, String> options = new LinkedHashMap<>();
 
-    /** Clears the current set of options and copies the input options to this map */
+    /**
+     * Clears the current set of options and copies the input options to this map.
+     *
+     * @param options the new options to use for this object
+     */
     public void setOptions(Map<String, String> options) {
         this.options.clear();
         this.options.putAll(options);
@@ -64,24 +68,42 @@ public class SimpleOptionMap {
         addOption(key, path);
     }
 
-    /** Adds an option that takes no argument */
+    /**
+     * Adds an option that takes no argument
+     *
+     * @param option the no-argument option to add to this object
+     */
     public void addOption(String option) {
         this.options.put(option, null);
     }
 
-    /** Adds an option that takes an argument */
+    /**
+     * Adds an option that takes an argument
+     *
+     * @param option the option to add to this object
+     * @param value the argument to the option
+     */
     public void addOption(String option, String value) {
         this.options.put(option, value);
     }
 
-    /** Adds the option only if value is a non-null, non-empty String */
+    /**
+     * Adds the option only if value is a non-null, non-empty String
+     *
+     * @param option the option to add to this object
+     * @param value the argument to the option (or null)
+     */
     public void addOptionIfValueNonEmpty(String option, String value) {
         if (value != null && !value.isEmpty()) {
             addOption(option, value);
         }
     }
 
-    /** Adds all of the options in the given map to this one */
+    /**
+     * Adds all of the options in the given map to this one
+     *
+     * @param options the options to add to this object
+     */
     public void addOptions(Map<String, String> options) {
         this.options.putAll(options);
     }
@@ -106,12 +128,20 @@ public class SimpleOptionMap {
         }
     }
 
-    /** Returns the map that backs this SimpleOptionMap */
+    /**
+     * Returns the map that backs this SimpleOptionMap.
+     *
+     * @return the options in this object
+     */
     public Map<String, String> getOptions() {
         return options;
     }
 
-    /** Creates a "flat" list representation of these options */
+    /**
+     * Creates a "flat" list representation of these options.
+     *
+     * @return a list of the string representations of the options in this object
+     */
     public List<String> getOptionsAsList() {
         return TestUtilities.optionMapToList(options);
     }

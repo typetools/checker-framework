@@ -56,7 +56,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     /**
      * Note: This is not meant to be used in apply explicitly unlike all other AnnotationAppliers it
      * is intended to be used for annotate super types via the static annotateSuper method, hence
-     * the private constructor
+     * the private constructor.
      */
     SuperTypeApplier(
             final AnnotatedTypeMirror supertype,
@@ -76,11 +76,11 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     /** @return the type_index of anno's TypeAnnotationPosition */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
-        int type_index = anno.getPosition().type_index;
+        int typeIndex = anno.getPosition().type_index;
         // TODO: this is a workaround of a bug in langtools
         // https://bugs.openjdk.java.net/browse/JDK-8164519
         // This bug is fixed in Java 9.
-        return type_index == 0xffff ? -1 : type_index;
+        return typeIndex == 0xffff ? -1 : typeIndex;
     }
 
     /** @return TargetType.CLASS_EXTENDS */

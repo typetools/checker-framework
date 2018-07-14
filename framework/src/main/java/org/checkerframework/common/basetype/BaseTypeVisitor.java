@@ -615,30 +615,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 msgPrefix = "purity.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
-                String reason = r.second;
-                @SuppressWarnings("CompilerMessages")
-                @CompilerMessageKey String msg = msgPrefix + reason;
-                if (reason.equals("call")) {
-                    MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-                    checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
-                } else {
-                    checker.report(Result.failure(msg), r.first);
-                }
+                reportPurityError(msgPrefix, r);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.sideeffectfree." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.sideeffectfree.", r);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.deterministic." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.deterministic.", r);
                 }
             }
+        }
+    }
+
+    /** Reports single purity error. * */
+    private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
+        String reason = r.second;
+        @SuppressWarnings("CompilerMessages")
+        @CompilerMessageKey String msg = msgPrefix + reason;
+        if (reason.equals("call")) {
+            MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+        } else {
+            checker.report(Result.failure(msg), r.first);
         }
     }
 
@@ -782,7 +783,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Check that the expression's type is annotated with {@code annotation} at every regular exit
-     * that returns {@code result}
+     * that returns {@code result}.
      *
      * @param node tree of method with the postcondition
      * @param annotation expression's type must have this annotation
@@ -1152,7 +1153,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The tyoe of java.util.Vector. */
     private AnnotatedDeclaredType vectorType;
 
-    /** Returns true if the method symbol represents {@code Vector.copyInto} */
+    /** Returns true if the method symbol represents {@code Vector.copyInto}. */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
         if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1) {
@@ -2759,7 +2760,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         /**
-         * Perform the check
+         * Perform the check.
          *
          * @return true if the override is allowed
          */
@@ -3554,7 +3555,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Overriding to avoid visit part of the tree
     // **********************************************************************
 
-    /** Override Compilation Unit so we won't visit package names or imports */
+    /** Override Compilation Unit so we won't visit package names or imports. */
     @Override
     public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
         Void r = scan(node.getPackageAnnotations(), p);

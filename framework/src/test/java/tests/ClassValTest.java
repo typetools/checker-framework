@@ -8,6 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** Tests the ClassVal Checker. */
 public class ClassValTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public ClassValTest(List<File> testFiles) {
         super(
                 testFiles,

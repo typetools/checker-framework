@@ -26,13 +26,13 @@ import org.junit.Assert;
 
 public class TestUtilities {
 
-    public static final boolean isAtLeast9Jvm;
+    public static final boolean IS_AT_LEAST_9_JVM;
 
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        isAtLeast9Jvm = PluginUtil.getJreVersion() >= 1.9d;
+        IS_AT_LEAST_9_JVM = PluginUtil.getJreVersion() >= 1.9d;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {
@@ -111,7 +111,12 @@ public class TestUtilities {
         return files;
     }
 
-    /** Traverses the directories listed looking for java test files */
+    /**
+     * Traverses the directories listed looking for Java test files.
+     *
+     * @param dirs directories in which to search for Java test files
+     * @return a list of Java test files found in the directories
+     */
     public static List<File> getJavaFilesAsArgumentList(File... dirs) {
         List<File> arguments = new ArrayList<File>();
         for (File dir : dirs) {
@@ -167,7 +172,7 @@ public class TestUtilities {
 
         // We could implement special filtering based on directory names,
         // but I prefer using @below-java9-jdk-skip-test
-        // if (!isAtLeast9Jvm && file.getAbsolutePath().contains("java9")) {
+        // if (!IS_AT_LEAST_9_JVM && file.getAbsolutePath().contains("java9")) {
         //     return false;
         // }
 
@@ -181,7 +186,7 @@ public class TestUtilities {
         while (in.hasNext()) {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test")
-                    || (!isAtLeast9Jvm && nextLine.contains("@below-java9-jdk-skip-test"))) {
+                    || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))) {
                 in.close();
                 return false;
             }

@@ -131,7 +131,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     /** Parses a string that was written as a comment in a Java file. */
-    private static DiagnosticCodec JAVA_COMMENT_CODEC =
+    private static final DiagnosticCodec JAVA_COMMENT_CODEC =
             new DiagnosticCodec() {
                 @Override
                 public TestDiagnosticLine convertLine(
@@ -141,7 +141,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
             };
 
     /** Parses a string that was written as a line in a Diagnostic File. */
-    private static DiagnosticCodec DIAGNOSTIC_FILE_CODEC =
+    private static final DiagnosticCodec DIAGNOSTIC_FILE_CODEC =
             new DiagnosticCodec() {
                 @Override
                 public TestDiagnosticLine convertLine(

@@ -54,7 +54,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Default implementation of {@link ReflectionResolver}, which resolves calls to:
+ * Default implementation of {@link ReflectionResolver}. It resolves calls to:
  *
  * <ul>
  *   <li>{@link Method#invoke(Object, Object...)}
@@ -614,7 +614,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
     /**
      * Reports debug information about the reflection resolution iff the corresponding debug flag is
-     * set
+     * set.
      *
      * @param msg the debug message
      */

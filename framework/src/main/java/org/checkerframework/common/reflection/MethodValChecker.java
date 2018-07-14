@@ -7,7 +7,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
 
 /**
- * The MethodVal Checker provides a sound estimate of the signature of Method objects
+ * The MethodVal Checker provides a sound estimate of the signature of Method objects.
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */

@@ -76,7 +76,7 @@ public class AnnotatedTypeCopier
 
     /**
      * Creates an AnnotatedTypeCopier that copies both the structure and annotations of the source
-     * AnnotatedTypeMirror
+     * AnnotatedTypeMirror.
      *
      * @see #AnnotatedTypeCopier(boolean)
      */
