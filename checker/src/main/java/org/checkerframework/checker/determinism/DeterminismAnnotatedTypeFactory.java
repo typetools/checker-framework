@@ -288,6 +288,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    public boolean isCollections(TypeMirror tm) {
+        TypeMirror CollectionsTypeMirror =
+                TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
+        if (types.isSubtype(tm, CollectionsTypeMirror)) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         // Collection

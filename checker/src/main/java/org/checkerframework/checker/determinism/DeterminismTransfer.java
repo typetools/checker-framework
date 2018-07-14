@@ -51,6 +51,7 @@ public class DeterminismTransfer extends CFTransfer {
             }
         }
 
+        // Type refinement for Arrays sort
         boolean isArrays = factory.isArrays(underlyingType);
         if (isArrays) {
             String methName = getMethodName(n.toString(), receiver);
@@ -67,6 +68,38 @@ public class DeterminismTransfer extends CFTransfer {
                     result.getThenStore().insertValue(firtArgRep, factory.DET);
                     result.getElseStore().insertValue(firtArgRep, factory.DET);
                 }
+            }
+        }
+
+        // Type refinement for Collections
+        boolean isCollections = factory.isCollections(underlyingType);
+        if (isCollections) {
+            String methName = getMethodName(n.toString(), receiver);
+            // refinement for sort
+            if (methName.equals("sort")) {
+                AnnotatedTypeMirror firstArg =
+                        factory.getAnnotatedType(n.getTree().getArguments().get(0));
+                AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
+                // Check if receiver has first argument annotation
+                if (firstArgAnno != null
+                        && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
+                    FlowExpressions.Receiver firtArgRep =
+                            FlowExpressions.internalReprOf(factory, n.getArgument(0));
+                    result.getThenStore().insertValue(firtArgRep, factory.DET);
+                    result.getElseStore().insertValue(firtArgRep, factory.DET);
+                }
+            }
+
+            // refinement for shuffle
+            if (methName.equals("shuffle")) {
+                AnnotatedTypeMirror firstArg =
+                        factory.getAnnotatedType(n.getTree().getArguments().get(0));
+                AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
+                // Check if receiver has first argument annotation
+                FlowExpressions.Receiver firtArgRep =
+                        FlowExpressions.internalReprOf(factory, n.getArgument(0));
+                result.getThenStore().insertValue(firtArgRep, factory.NONDET);
+                result.getElseStore().insertValue(firtArgRep, factory.NONDET);
             }
         }
         return result;
