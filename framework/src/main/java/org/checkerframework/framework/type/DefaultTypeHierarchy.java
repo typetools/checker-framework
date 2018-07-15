@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -965,6 +966,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         if (TypesUtils.isBoxedPrimitive(upperBound.getUnderlyingType())
                 && supertype instanceof AnnotatedPrimitiveType) {
             upperBound = supertype.atypeFactory.getUnboxedType((AnnotatedDeclaredType) upperBound);
+        }
+        if (supertype.getKind() == TypeKind.DECLARED
+                && TypesUtils.getTypeElement(supertype.getUnderlyingType()).getKind()
+                        == ElementKind.INTERFACE) {
+            // If the supertype is an interface, only compare the primary annotations.
+            // The actual type argument could implement the interface and the bound of
+            // the type variable must not implement the interface.
+            return this.isPrimarySubtype(upperBound, supertype);
         }
         return checkAndSubtype(upperBound, supertype);
     }
