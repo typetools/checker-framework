@@ -90,6 +90,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
+        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
+            for (VariableTree param:
+                    node.getParameters()) {
+                if(param.getType().getKind() == Tree.Kind.ARRAY_TYPE){
+                    AnnotatedTypeMirror.AnnotatedArrayType paramAnno = (AnnotatedTypeMirror.AnnotatedArrayType)getAnnotatedType(param);
+                    if(paramAnno.getExplicitAnnotations().size() == 0){
+                        paramAnno.getComponentType().replaceAnnotation(POLYDET);
+                    }
+                }
+            }
+            return super.visitMethod(node, p);
+        }
+
+        @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
             if (node == null) return super.visitMethodInvocation(node, p);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
@@ -102,14 +116,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // Static methods with no arguments: return type should be @Det, not @polyDet
             if (ElementUtils.isStatic(invokedMethodElement) && node.getArguments().size() == 0) {
-                if (!p.hasExplicitAnnotation(NONDET)
-                        && !p.hasExplicitAnnotation(DET)
-                        && !p.hasExplicitAnnotation(ORDERNONDET)) {
+                if (p.getExplicitAnnotations().size() == 0) {
                     p.replaceAnnotation(DET);
                 }
             }
             if (TypesUtils.getTypeElement(receiver.getUnderlyingType()) == null) {
                 return super.visitMethodInvocation(node, p);
+            }
+
+            //If return type (non-array) resolves to @OrderNonDet, replace it with @NonDet
+            if(p.getAnnotations().contains(ORDERNONDET) &&
+                    !(p.getUnderlyingType().getKind() == TypeKind.ARRAY) &&
+                    !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType())) &&
+                    !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))){
+                p.replaceAnnotation(NONDET);
             }
 
             // For Sets: "equals" on @OrderNonDet Sets without @OrderNonDet List type parameter
