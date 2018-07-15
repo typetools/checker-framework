@@ -91,11 +91,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
-            for (VariableTree param:
-                    node.getParameters()) {
-                if(param.getType().getKind() == Tree.Kind.ARRAY_TYPE){
-                    AnnotatedTypeMirror.AnnotatedArrayType paramAnno = (AnnotatedTypeMirror.AnnotatedArrayType)getAnnotatedType(param);
-                    if(paramAnno.getExplicitAnnotations().size() == 0){
+            for (VariableTree param : node.getParameters()) {
+                if (param.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
+                    AnnotatedTypeMirror.AnnotatedArrayType paramAnno =
+                            (AnnotatedTypeMirror.AnnotatedArrayType) getAnnotatedType(param);
+                    if (paramAnno.getExplicitAnnotations().size() == 0) {
                         paramAnno.getComponentType().replaceAnnotation(POLYDET);
                     }
                 }
@@ -124,11 +124,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, p);
             }
 
-            //If return type (non-array) resolves to @OrderNonDet, replace it with @NonDet
-            if(p.getAnnotations().contains(ORDERNONDET) &&
-                    !(p.getUnderlyingType().getKind() == TypeKind.ARRAY) &&
-                    !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType())) &&
-                    !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))){
+            // If return type (non-array) resolves to @OrderNonDet, replace it with @NonDet
+            if (p.getAnnotations().contains(ORDERNONDET)
+                    && !(p.getUnderlyingType().getKind() == TypeKind.ARRAY)
+                    && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
+                    && !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))) {
                 p.replaceAnnotation(NONDET);
             }
 
