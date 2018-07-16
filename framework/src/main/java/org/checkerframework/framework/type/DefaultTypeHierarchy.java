@@ -590,8 +590,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     @Override
     public Boolean visitIntersection_Declared(
             AnnotatedIntersectionType subtype, AnnotatedDeclaredType supertype, Void p) {
+        Types types = checker.getTypeUtils();
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            Types types = checker.getTypeUtils();
             if (TypesUtils.isErasedSubtype(
                             subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype, currentTop)) {
@@ -645,8 +645,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     public Boolean visitIntersection_Typevar(
             AnnotatedIntersectionType subtype, AnnotatedTypeVariable supertype, Void p) {
         // this can occur through capture conversion/comparing bounds
+        Types types = checker.getTypeUtils();
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            Types types = checker.getTypeUtils();
             if (TypesUtils.isErasedSubtype(
                             subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype, currentTop)) {
@@ -973,7 +973,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             // If the supertype is an interface, only compare the primary annotations.
             // The actual type argument could implement the interface and the bound of
             // the type variable must not implement the interface.
-            return this.isPrimarySubtype(upperBound, supertype);
+            if (upperBound.getKind() == TypeKind.INTERSECTION) {
+                Types types = checker.getTypeUtils();
+                for (AnnotatedTypeMirror ub :
+                        ((AnnotatedIntersectionType) upperBound).directSuperTypes()) {
+                    if (TypesUtils.isErasedSubtype(
+                                    ub.getUnderlyingType(), supertype.getUnderlyingType(), types)
+                            && isPrimarySubtype(ub, supertype)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return isPrimarySubtype(upperBound, supertype);
         }
         return checkAndSubtype(upperBound, supertype);
     }
