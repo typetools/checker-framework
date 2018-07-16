@@ -274,7 +274,7 @@ public class BoundsInitializer {
     private static class InitializerVisitor implements AnnotatedTypeVisitor<Void, Void> {
         /**
          * The BoundStructure starting from the first wildcard or type variable bound initialization
-         * that kicked this visitation off
+         * that kicked this visitation off.
          */
         private final BoundStructure topLevelStructure;
 
@@ -725,7 +725,7 @@ public class BoundsInitializer {
 
         /**
          * A mapping of paths to the type that should be placed at the end of that path for all atvs
-         * that of sourceType
+         * that of sourceType.
          */
         @SuppressWarnings("serial")
         private static class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
@@ -841,7 +841,7 @@ public class BoundsInitializer {
 
         /**
          * A mapping of all BoundPaths to TypeVariables for all type variables contained within
-         * annotatedTypeVar
+         * annotatedTypeVar.
          */
         public final Map<BoundPath, TypeVariable> pathToTypeVar = new LinkedHashMap<>();
 
@@ -857,7 +857,7 @@ public class BoundsInitializer {
     private static class WildcardStructure extends BoundStructure {}
 
     private static class TypeVariableStructure extends BoundStructure {
-        /** The type variable whose structure is being described */
+        /** The type variable whose structure is being described. */
         public final TypeVariable typeVar;
 
         /**
@@ -867,7 +867,7 @@ public class BoundsInitializer {
          */
         public final AnnotatedTypeVariable annotatedTypeVar;
 
-        /** The boundStructure that was active before this one */
+        /** The boundStructure that was active before this one. */
         private final BoundStructure parent;
 
         /**
@@ -898,7 +898,7 @@ public class BoundsInitializer {
         }
     }
 
-    /** A linked list of BoundPathNodes whose equals method is a referential equality check */
+    /** A linked list of BoundPathNodes whose equals method is a referential equality check. */
     @SuppressWarnings({"serial", "JdkObsolete"})
     private static class BoundPath extends LinkedList<BoundPathNode> {
 

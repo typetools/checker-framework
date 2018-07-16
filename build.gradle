@@ -209,11 +209,34 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
-    copy {
-        from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
-        rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
-        into "${rootDir}/docs/api"
+    doLast {
+        copy {
+            from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
+            rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
+            into "${rootDir}/docs/api"
+        }
     }
+}
+
+configurations {
+    requireJavadoc
+}
+dependencies {
+    compile group: 'org.plumelib', name: 'require-javadoc', version: '0.0.7'
+}
+task requireJavadoc(type: Javadoc, group: "Documentation") {
+    description = 'Ensures that all Java elementt have Javadoc documentation.'
+    destinationDir = file("${rootDir}/docs/api")
+    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+
+    destinationDir.deleteDir()
+
+    // options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.docletpath = project.sourceSets.main.compileClasspath as List
+    options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+    // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
 }
 
 task downloadJtreg(type: Download) {
@@ -505,8 +528,8 @@ subprojects {
 
 assemble.dependsOn(':checker:copyJarsToDist')
 
-task checkStyle(group: 'Format') {
-    description 'Check basic style guidelines'
+task checkBasicStyle(group: 'Format') {
+    description 'Check basic style guidelines.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.idea',

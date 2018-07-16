@@ -23,7 +23,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
 
     /**
      * Constructs various AnnotationMirrors representing specific checker-framework provided Units
-     * involved in the rules resolved in this UnitsRelations implementation
+     * involved in the rules resolved in this UnitsRelations implementation.
      */
     @Override
     public UnitsRelations init(ProcessingEnvironment env) {
@@ -50,7 +50,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
 
     /**
      * Provides rules for resolving the result Unit of the multiplication of checker-framework
-     * provided Units
+     * provided Units.
      */
     @Override
     public @Nullable AnnotationMirror multiplication(
@@ -97,7 +97,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
 
     /**
      * Provides rules for resolving the result Unit of the division of checker-framework provided
-     * Units
+     * Units.
      */
     @Override
     public @Nullable AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
@@ -134,7 +134,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     /**
-     * Checks to see if both lhtPrefix and rhtPrefix have the same prefix as specificPrefix
+     * Checks to see if both lhtPrefix and rhtPrefix have the same prefix as specificPrefix.
      *
      * @param lhtPrefix left hand side prefix
      * @param rhtPrefix right hand side prefix
@@ -151,7 +151,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     /**
-     * Checks to see if lht has the unit ul and if rht has the unit ur all at the same time
+     * Checks to see if lht has the unit ul and if rht has the unit ur all at the same time.
      *
      * @param lht left hand annotated type
      * @param ul left hand unit
@@ -169,7 +169,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     /**
-     * Checks to see if lht and rht have the pair of units u1 and u2 regardless of order
+     * Checks to see if lht and rht have the pair of units u1 and u2 regardless of order.
      *
      * @param lht left hand annotated type
      * @param u1 unit 1

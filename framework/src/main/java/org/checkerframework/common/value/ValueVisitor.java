@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Visitor for the Constant Value type-system */
+/** Visitor for the Constant Value type system. */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     public ValueVisitor(BaseTypeChecker checker) {
@@ -242,8 +242,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
                 return p;
             }
-            if (Range.IGNORE_OVERFLOW) {
-                // Range.IGNORE_OVERFLOW is only set if this checker is ignoring overflow.
+            if (Range.ignoreOverflow) {
+                // Range.ignoreOverflow is only set if this checker is ignoring overflow.
                 // In that case, do not warn if the range of the expression encompasses
                 // the whole type being casted to (i.e. the warning is actually about overflow).
                 Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);

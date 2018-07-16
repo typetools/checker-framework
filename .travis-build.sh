@@ -134,7 +134,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew checkStyle checkFormat
+  ./gradlew checkBasicStyle checkFormat
 
   # Run error-prone
   ./gradlew runErrorProne

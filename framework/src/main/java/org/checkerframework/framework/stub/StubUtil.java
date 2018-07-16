@@ -36,7 +36,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
-/** Utility class for stub files */
+/** Utility class for stub files. */
 public class StubUtil {
 
     /*package-scope*/ static TypeDeclaration<?> findDeclaration(
