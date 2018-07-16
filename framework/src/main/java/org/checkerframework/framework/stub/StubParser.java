@@ -967,6 +967,8 @@ public class StubParser {
             AnnotationMirror annoMirror = getAnnotation(annotation, allStubAnnotations);
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
+            } else {
+                stubWarnNotFound("Unknown annotation: " + annotation);
             }
         }
     }
