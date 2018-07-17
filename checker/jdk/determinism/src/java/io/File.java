@@ -1153,7 +1153,7 @@ public class File
      *
      * @see java.nio.file.Files#newDirectoryStream(Path,String)
      */
-    public @NonDet String @NonDet [] list(@PolyDet File this, @PolyDet FilenameFilter filter) {
+    public @NonDet String @NonDet[] list(@PolyDet File this, @PolyDet FilenameFilter filter) {
         String names[] = list();
         if ((names == null) || (filter == null)) {
             return names;
@@ -1205,7 +1205,7 @@ public class File
      *
      * @since  1.2
      */
-    public @NonDet File @NonDet [] listFiles(@PolyDet File this) {
+    public @NonDet File @NonDet[] listFiles(@PolyDet File this) {
         String[] ss = list();
         if (ss == null) return null;
         int n = ss.length;
@@ -1246,7 +1246,7 @@ public class File
      * @since  1.2
      * @see java.nio.file.Files#newDirectoryStream(Path,String)
      */
-    public @NonDet File @NonDet [] listFiles(@PolyDet File this, @PolyDet FilenameFilter filter) {
+    public @NonDet File @NonDet[] listFiles(@PolyDet File this, @PolyDet FilenameFilter filter) {
         String ss[] = list();
         if (ss == null) return null;
         ArrayList<File> files = new ArrayList<>();
@@ -1284,7 +1284,7 @@ public class File
      * @since  1.2
      * @see java.nio.file.Files#newDirectoryStream(Path,java.nio.file.DirectoryStream.Filter)
      */
-    public @NonDet File @NonDet [] listFiles(@PolyDet File this, @PolyDet FileFilter filter) {
+    public @NonDet File @NonDet[] listFiles(@PolyDet File this, @PolyDet FileFilter filter) {
         String ss[] = list();
         if (ss == null) return null;
         ArrayList<File> files = new ArrayList<>();
@@ -1774,7 +1774,7 @@ public class File
      * @since  1.2
      * @see java.nio.file.FileStore
      */
-    public static @NonDet File @NonDet [] listRoots() {
+    public static @NonDet File @NonDet[] listRoots() {
         return fs.listRoots();
     }
 

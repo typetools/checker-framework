@@ -1488,7 +1488,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public @NonDet Class<?> @NonDet [] getClasses(@PolyDet Class<T> this) {
+    public @Det Class<?> @OrderNonDet[] getClasses(@PolyDet Class<T> this) {
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), false);
 
         // Privileged so this implementation can look at DECLARED classes,
@@ -1554,7 +1554,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public @NonDet Field @NonDet [] getFields(@PolyDet Class<T> this) throws SecurityException {
+    public @Det Field @OrderNonDet[] getFields(@PolyDet Class<T> this) throws SecurityException {
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyFields(privateGetPublicFields(null));
     }
@@ -1612,7 +1612,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public @NonDet Method @NonDet [] getMethods(@PolyDet Class<T> this) throws SecurityException {
+    public @Det Method @OrderNonDet[] getMethods(@PolyDet Class<T> this) throws SecurityException {
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyMethods(privateGetPublicMethods());
     }
@@ -1648,7 +1648,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public @NonDet Constructor<?> @NonDet [] getConstructors(@PolyDet Class<T> this) throws SecurityException {
+    public @Det Constructor<?> @OrderNonDet[] getConstructors(@PolyDet Class<T> this) throws SecurityException {
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyConstructors(privateGetDeclaredConstructors(true));
     }
@@ -1864,7 +1864,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public @NonDet Class<?> @NonDet [] getDeclaredClasses(@PolyDet Class<T> this) throws SecurityException {
+    public @Det Class<?> @OrderNonDet[] getDeclaredClasses(@PolyDet Class<T> this) throws SecurityException {
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), false);
         return getDeclaredClasses0();
     }
@@ -1913,7 +1913,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public @NonDet Field @NonDet [] getDeclaredFields(@PolyDet Class<T> this) throws SecurityException {
+    public @Det Field @OrderNonDet[] getDeclaredFields(@PolyDet Class<T> this) throws SecurityException {
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return copyFields(privateGetDeclaredFields(false));
     }
@@ -1972,7 +1972,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public @NonDet Method @NonDet [] getDeclaredMethods(@PolyDet Class<T> this) throws SecurityException {
+    public @Det Method @OrderNonDet[] getDeclaredMethods(@PolyDet Class<T> this) throws SecurityException {
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return copyMethods(privateGetDeclaredMethods(false));
     }
@@ -2017,7 +2017,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public @NonDet Constructor<?> @NonDet [] getDeclaredConstructors(@PolyDet Class<T> this) throws SecurityException {
+    public @Det Constructor<?> @OrderNonDet[] getDeclaredConstructors(@PolyDet Class<T> this) throws SecurityException {
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return copyConstructors(privateGetDeclaredConstructors(false));
     }

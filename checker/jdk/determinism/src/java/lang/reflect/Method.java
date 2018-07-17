@@ -637,7 +637,7 @@ public final class Method extends Executable {
      * @since 1.5
      */
     @Override
-    public @NonDet Annotation @NonDet [] @NonDet [] getParameterAnnotations(@PolyDet Method this) {
+    public @Det Annotation @OrderNonDet[] @OrderNonDet[] getParameterAnnotations(@PolyDet Method this) {
         return sharedGetParameterAnnotations(parameterTypes, parameterAnnotations);
     }
 

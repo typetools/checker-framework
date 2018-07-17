@@ -427,7 +427,7 @@ public abstract class Collator
      * @return An array of locales for which localized
      *         <code>Collator</code> instances are available.
      */
-    public static synchronized @NonDet Locale @NonDet [] getAvailableLocales() {
+    public static synchronized @Det Locale @OrderNonDet[] getAvailableLocales() {
         LocaleServiceProviderPool pool =
             LocaleServiceProviderPool.getPool(CollatorProvider.class);
         return pool.getAvailableLocales();

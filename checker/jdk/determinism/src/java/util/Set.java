@@ -146,7 +146,7 @@ public interface Set<E> extends Collection<E> {
      *
      * @return an array containing all the elements in this set
      */
-    @PolyDet("up") Object @PolyDet("up") [] toArray(@PolyDet Set<E> this);
+    @PolyDet("down") Object @PolyDet[] toArray(@PolyDet Set<E> this);
 
     /**
      * Returns an array containing all of the elements in this set; the
@@ -190,7 +190,7 @@ public interface Set<E> extends Collection<E> {
      *         set
      * @throws NullPointerException if the specified array is null
      */
-    <T> @PolyDet("up") T @PolyDet("up") [] toArray(@PolyDet Set<E> this, T[] a);
+    <T> @PolyDet("down") T @PolyDet[] toArray(@PolyDet Set<E> this, T[] a);
 
 
     // Modification Operations

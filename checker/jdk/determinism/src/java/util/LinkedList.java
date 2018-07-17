@@ -1048,7 +1048,7 @@ public class LinkedList<E>
      * @return an array containing all of the elements in this list
      *         in proper sequence
      */
-    public @PolyDet("up") Object @PolyDet("up")[] toArray(@PolyDet LinkedList<E> this) {
+    public @PolyDet("down") Object @PolyDet[] toArray(@PolyDet LinkedList<E> this) {
         Object[] result = new Object[size];
         int i = 0;
         for (Node<E> x = first; x != null; x = x.next)
@@ -1095,7 +1095,7 @@ public class LinkedList<E>
      * @throws NullPointerException if the specified array is null
      */
     @SuppressWarnings("unchecked")
-    public <T> @PolyDet("up") T @PolyDet("up")[] toArray(@PolyDet LinkedList<E> this, T[] a) {
+    public <T> @PolyDet("down") T @PolyDet[] toArray(@PolyDet LinkedList<E> this, T[] a) {
         if (a.length < size)
             a = (T[])java.lang.reflect.Array.newInstance(
                                 a.getClass().getComponentType(), size);

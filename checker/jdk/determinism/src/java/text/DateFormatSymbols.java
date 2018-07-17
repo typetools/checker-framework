@@ -302,7 +302,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      *         <code>DateFormatSymbols</code> instances are available.
      * @since 1.6
      */
-    public static @NonDet Locale @NonDet [] getAvailableLocales() {
+    public static @Det Locale @OrderNonDet[] getAvailableLocales() {
         LocaleServiceProviderPool pool=
             LocaleServiceProviderPool.getPool(DateFormatSymbolsProvider.class);
         return pool.getAvailableLocales();
@@ -539,7 +539,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @return the time zone strings.
      * @see #setZoneStrings(String[][])
      */
-    public @NonDet String @NonDet [] @NonDet [] getZoneStrings(@PolyDet DateFormatSymbols this) {
+    public @Det String @OrderNonDet[] @OrderNonDet[] getZoneStrings(@PolyDet DateFormatSymbols this) {
         return getZoneStringsImpl(true);
     }
 

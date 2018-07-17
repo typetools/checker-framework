@@ -373,7 +373,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return an array containing all of the elements in this list in
      *         proper sequence
      */
-    public @PolyDet("up") Object @PolyDet("up")[] toArray(@PolyDet ArrayList<E> this) {
+    public @PolyDet("down") Object @PolyDet[] toArray(@PolyDet ArrayList<E> this) {
         return Arrays.copyOf(elementData, size);
     }
 
@@ -402,7 +402,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws NullPointerException if the specified array is null
      */
     @SuppressWarnings("unchecked")
-    public <T> @PolyDet("up") T @PolyDet("up")[] toArray(@PolyDet ArrayList<E> this, T[] a) {
+    public <T> @PolyDet("down") T @PolyDet[] toArray(@PolyDet ArrayList<E> this, T[] a) {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
             return (T[]) Arrays.copyOf(elementData, size, a.getClass());

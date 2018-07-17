@@ -1137,7 +1137,7 @@ class Field extends AccessibleObject implements Member {
     /**
      * {@inheritDoc}
      */
-    public @NonDet Annotation @NonDet [] getDeclaredAnnotations(@PolyDet Field this)  {
+    public @Det Annotation @OrderNonDet[] getDeclaredAnnotations(@PolyDet Field this)  {
         return AnnotationParser.toArray(declaredAnnotations());
     }
 

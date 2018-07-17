@@ -589,7 +589,7 @@ public abstract class NumberFormat extends Format  {
      * @return An array of locales for which localized
      *         <code>NumberFormat</code> instances are available.
      */
-    public static @NonDet Locale @NonDet [] getAvailableLocales() {
+    public static @Det Locale @OrderNonDet[] getAvailableLocales() {
         LocaleServiceProviderPool pool =
             LocaleServiceProviderPool.getPool(NumberFormatProvider.class);
         return pool.getAvailableLocales();
