@@ -11,20 +11,24 @@ public class BigIntegerTest {
         BigInteger value = new BigInteger(val, radix);
     }
 
-    void getDoubleVal(BigInteger val) {
+    @PolyValue double getDoubleVal(BigInteger val) {
         @PolyValue double dval = val.doubleValue();
+        return dval;
     }
 
-    void getIntVal(BigInteger val) {
+    @PolyValue int getIntVal(BigInteger val) {
         @PolyValue int ival = val.intValue();
+        return ival;
     }
 
-    void getFloatVal(BigInteger val) {
+    @PolyValue float getFloatVal(BigInteger val) {
         @PolyValue float fval = val.floatValue();
+        return fval;
     }
 
-    void getLongVal(BigInteger val) {
-        @PolyValue double lval = val.longValue();
+    @PolyValue long getLongVal(BigInteger val) {
+        @PolyValue long lval = val.longValue();
+        return lval;
     }
 
     void compareTo(BigInteger val, BigInteger to) {
