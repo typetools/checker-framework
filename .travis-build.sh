@@ -144,6 +144,15 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ./gradlew javadocPrivate
   make -C docs/manual all
 
+  echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
+  # (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
+  # The change to TRAVIS_COMMIT_RANGE is due to travis-ci/travis-ci#4596 .
+  (git diff "${TRAVIS_COMMIT_RANGE/.../..}" > /tmp/diff.txt 2>&1) || true
+  (./gradlew requireJavadocPrivate > /tmp/rjp-output.txt 2>&1) || true
+  [ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty" && false)
+  wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
+  python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
+
   # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
   # Not just "make" because the invocations of "hevea -exec xxcharset.exe" fail.
   # I cannot reproduce the problem locally and it isn't important enough to fix.
