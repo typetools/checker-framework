@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
@@ -165,10 +166,23 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** chars are unsigned implies chars are non-negative. See JLS 4.2. */
     private void ensureCharNonNegative(AnnotatedTypeMirror type) {
-        if (type.getUnderlyingType().getKind() == TypeKind.CHAR) {
-            if (qualHierarchy.isSubtype(NN, type.getAnnotationInHierarchy(UNKNOWN))) {
-                type.replaceAnnotation(NN);
-            }
+        TypeMirror typeMirror = type.getUnderlyingType();
+        TypeKind typeKind = typeMirror.getKind();
+        switch (typeKind) {
+            case CHAR:
+                if (qualHierarchy.isSubtype(NN, type.getAnnotationInHierarchy(UNKNOWN)))
+                    type.replaceAnnotation(NN);
+                break;
+            case ARRAY:
+                AnnotatedTypeMirror componentType;
+                AnnotatedTypeMirror.AnnotatedArrayType annotatedArrayType =
+                        ((AnnotatedTypeMirror.AnnotatedArrayType) type);
+                componentType = annotatedArrayType.getComponentType();
+                if (componentType != null) {
+                    ensureCharNonNegative(componentType);
+                    componentType = annotatedArrayType.getComponentType();
+                }
+                break;
         }
     }
 
