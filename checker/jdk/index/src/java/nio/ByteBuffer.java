@@ -679,13 +679,15 @@ public abstract class ByteBuffer
      *          If the preconditions on the <tt>offset</tt> and <tt>length</tt>
      *          parameters do not hold
      */
+    @SuppressWarnings("upperbound:array.access.unsafe.high")/* if `offset + length` > dst.length, checkBounds() throws
+    IndexOutOfBoundsException(); */
     public ByteBuffer get(byte[] dst, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) {
         checkBounds(offset, length, dst.length);
         if (length > remaining())
             throw new BufferUnderflowException();
         int end = offset + length;
         for (int i = offset; i < end; i++)
-            dst[i] = get();
+            dst[i] = get();//(1)
         return this;
     }
 
@@ -820,7 +822,9 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public ByteBuffer put(byte[] src, int offset, int length) {
+    @SuppressWarnings("upperbound:array.access.unsafe.high")/* if `offset + length` > dst.length, checkBounds() throws
+    IndexOutOfBoundsException(); */
+    public ByteBuffer put(byte[] src, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) {
         checkBounds(offset, length, src.length);
         if (length > remaining())
             throw new BufferOverflowException();
