@@ -75,6 +75,7 @@ import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -1654,7 +1655,9 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      * @throws RuntimeException or Error if the mappingFunction does so,
      *         in which case the mapping is left unestablished
      */
-    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+    public @PolyNull V computeIfAbsent(
+            K key,
+            Function<? super K, ? extends @PolyNull V> mappingFunction) {
         if (key == null || mappingFunction == null)
             throw new NullPointerException();
         int h = spread(key.hashCode());
@@ -1755,7 +1758,9 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      * @throws RuntimeException or Error if the remappingFunction does so,
      *         in which case the mapping is unchanged
      */
-    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public @PolyNull V computeIfPresent(
+            K key,
+            BiFunction<? super K, ? super V, ? extends @PolyNull V> remappingFunction) {
         if (key == null || remappingFunction == null)
             throw new NullPointerException();
         int h = spread(key.hashCode());
@@ -1845,8 +1850,9 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      * @throws RuntimeException or Error if the remappingFunction does so,
      *         in which case the mapping is unchanged
      */
-    public V compute(K key,
-                     BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public @PolyNull V compute(
+            K key,
+            BiFunction<? super K, ? super V, ? extends @PolyNull V> remappingFunction) {
         if (key == null || remappingFunction == null)
             throw new NullPointerException();
         int h = spread(key.hashCode());
