@@ -1852,7 +1852,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      */
     public @PolyNull V compute(
             K key,
-            BiFunction<? super K, ? super V, ? extends @PolyNull V> remappingFunction) {
+            BiFunction<? super K, ? super @Nullable V, ? extends @PolyNull V> remappingFunction) {
         if (key == null || remappingFunction == null)
             throw new NullPointerException();
         int h = spread(key.hashCode());
