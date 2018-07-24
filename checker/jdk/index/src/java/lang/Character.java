@@ -121,7 +121,7 @@ import java.util.Locale;
  * @since   1.0
  */
 public final
-@NonNegative class Character implements java.io.Serializable, Comparable<Character> {
+@NonNegative class Character extends @NonNegative Object implements java.io.Serializable, Comparable<Character> {
     /**
      * The minimum radix available for conversion to and from strings.
      * The constant value of this field is the smallest value permitted
@@ -156,7 +156,7 @@ public final
      *
      * @since   1.0.2
      */
-    public static final char MIN_VALUE = '\u0000';
+    public static final @NonNegative char MIN_VALUE = '\u0000';
 
     /**
      * The constant value of this field is the largest value of type
@@ -164,7 +164,7 @@ public final
      *
      * @since   1.0.2
      */
-    public static final char MAX_VALUE = '\uFFFF';
+    public static final @NonNegative char MAX_VALUE = '\uFFFF';
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -173,7 +173,7 @@ public final
      * @since   1.1
      */
     @SuppressWarnings("unchecked")
-    public static final Class<Character> TYPE = Class.getPrimitiveClass("char");
+    public static final Class<@NonNegative Character> TYPE = Class.getPrimitiveClass("char");
 
     /*
      * Normative general types
