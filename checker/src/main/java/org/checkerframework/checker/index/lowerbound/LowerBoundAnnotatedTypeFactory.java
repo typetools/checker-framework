@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
@@ -162,7 +163,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Handles cases 1, 2, and 3. */
+    /** chars are unsigned implies chars are non-negative. See JLS 4.2. */
+    private void ensureCharNonNegative(AnnotatedTypeMirror type) {
+        if (type.getUnderlyingType().getKind() == TypeKind.CHAR) {
+            if (qualHierarchy.isSubtype(NN, type.getAnnotationInHierarchy(UNKNOWN))) {
+                type.replaceAnnotation(NN);
+            }
+        }
+    }
+
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
         super.addComputedTypeAnnotations(element, type);
@@ -171,6 +180,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     getValueAnnotatedTypeFactory().getAnnotatedType(element);
             addLowerBoundTypeFromValueType(valueType, type);
         }
+        ensureCharNonNegative(type);
     }
 
     /** Handles cases 1, 2, and 3. */
@@ -184,6 +194,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             addLowerBoundTypeFromValueType(valueType, type);
         }
+        ensureCharNonNegative(type);
     }
 
     /** Returns the Value Checker's annotated type factory. */
