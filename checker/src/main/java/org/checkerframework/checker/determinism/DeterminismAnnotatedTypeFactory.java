@@ -90,20 +90,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
-            for (VariableTree param : node.getParameters()) {
-                if (param.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
-                    AnnotatedTypeMirror.AnnotatedArrayType paramAnno =
-                            (AnnotatedTypeMirror.AnnotatedArrayType) getAnnotatedType(param);
-                    if (paramAnno.getExplicitAnnotations().size() == 0) {
-                        paramAnno.getComponentType().replaceAnnotation(POLYDET);
-                    }
-                }
-            }
-            return super.visitMethod(node, p);
-        }
-
-        @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
             if (node == null) return super.visitMethodInvocation(node, p);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
@@ -235,6 +221,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
                 if (isMainMethod(method)) {
                     type.addMissingAnnotations(Collections.singleton(DET));
+                } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
+                    ((AnnotatedTypeMirror.AnnotatedArrayType) type)
+                            .getComponentType()
+                            .addMissingAnnotations(Collections.singleton(POLYDET));
+                    type.addMissingAnnotations(Collections.singleton(POLYDET));
                 }
             }
         }

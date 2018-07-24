@@ -57,14 +57,14 @@ class Issue8 {
     //        return argsArray;
     //    }
 
-    //    public static @PolyDet List<@PolyDet String> copyList(@PolyDet List<@PolyDet String>
+    //        public static @PolyDet List<@PolyDet String> copyList(@PolyDet List<@PolyDet String>
     // strings) {
-    //        List<String> copy = new ArrayList<String>();
-    //        for (String s : strings) {
-    //            copy.add(s);
+    //            @NonDet List<@NonDet String> copy = new @NonDet ArrayList<@NonDet String>();
+    //            for (String s : strings) {
+    //                copy.add(s);
+    //            }
+    //            return copy;
     //        }
-    //        return copy;
-    //    }
 
     //    public static @PolyDet List<@PolyDet String> copyList1(@PolyDet List<@PolyDet String>
     // strings, @PolyDet List<@PolyDet String> copy) {

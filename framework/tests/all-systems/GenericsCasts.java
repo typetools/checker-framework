@@ -43,6 +43,7 @@ class GenericsCasts {
         }
     }
 
+    @SuppressWarnings("determinism")
     public static <T extends Object> int indexOf(T[] a) {
         return indexOfEq(a);
     }

@@ -9,6 +9,7 @@ class AssignmentContext {
         String[] s = b ? new String[] {""} : null;
     }
 
+    @SuppressWarnings("determinism")
     void t2(boolean b) {
         foo(b ? new String[] {""} : null);
     }

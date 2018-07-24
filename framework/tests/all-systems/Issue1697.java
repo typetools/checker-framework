@@ -25,6 +25,7 @@ class Issue1697 {
         private W(T proto) {}
     }
 
+    @SuppressWarnings("determinism")
     <T extends C<T, ?>> W<T> i(G<T> j, byte[] k) {
         return new W<>(j.h(k));
     }
