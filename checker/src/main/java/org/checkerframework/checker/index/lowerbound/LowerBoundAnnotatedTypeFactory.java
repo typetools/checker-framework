@@ -174,13 +174,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(NN);
                 break;
             case ARRAY:
-                AnnotatedTypeMirror componentType;
                 AnnotatedTypeMirror.AnnotatedArrayType annotatedArrayType =
                         ((AnnotatedTypeMirror.AnnotatedArrayType) type);
-                componentType = annotatedArrayType.getComponentType();
+                AnnotatedTypeMirror componentType = annotatedArrayType.getComponentType();
                 if (componentType != null) {
                     ensureCharNonNegative(componentType);
-                    componentType = annotatedArrayType.getComponentType();
                 }
                 break;
         }
