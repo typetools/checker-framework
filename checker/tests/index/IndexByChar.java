@@ -6,7 +6,7 @@ public class IndexByChar {
     // adapted from Guava
     public int m(char c) {
         int[] i = new int[128];
-        if (c < 128) return i[c]; // line 5
+        if (c < 128) return i[c];
         else return -1;
     }
 

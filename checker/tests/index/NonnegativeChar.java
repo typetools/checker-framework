@@ -13,26 +13,26 @@ public class NonnegativeChar {
 
     @SuppressWarnings("cast.unsafe")
     char conversion(int i) {
-        return (char) i; // line 15
+        return (char) i;
     }
 
     public void takeList(ArrayList<Character> z) {}
 
     public void passList() {
-        takeList(new ArrayList<Character>()); // line 20
+        takeList(new ArrayList<Character>());
     }
 
     static class CustomList extends ArrayList<Character> {}
 
     public void passCustomList() {
-        takeList(new CustomList()); // line 25
+        takeList(new CustomList());
     }
 
     public @LowerBoundBottom char bottomLB(@LowerBoundBottom char c) {
-        return c; // line 29
+        return c;
     }
 
     public @PolyLowerBound char polyLB(@PolyLowerBound char c) {
-        return c; // line 32
+        return c;
     }
 }
