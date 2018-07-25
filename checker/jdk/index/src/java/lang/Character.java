@@ -173,7 +173,7 @@ public final
      * @since   1.1
      */
     @SuppressWarnings("unchecked")
-    public static final Class<@NonNegative Character> TYPE = Class.getPrimitiveClass("char");
+    public static final Class<Character> TYPE = Class.getPrimitiveClass("char");
 
     /*
      * Normative general types
