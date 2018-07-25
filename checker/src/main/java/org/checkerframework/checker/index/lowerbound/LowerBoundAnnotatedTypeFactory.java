@@ -181,6 +181,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     ensureCharNonNegative(componentType);
                 }
                 break;
+            default:
+                // Nothing to do.
         }
     }
 
