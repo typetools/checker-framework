@@ -4,11 +4,11 @@ import org.checkerframework.checker.index.qual.PolyLowerBound;
 
 public class NonnegativeChar {
     void foreach(char[] array) {
-        for (char value : array) ; // line 7
+        for (char value : array) ;
     }
 
     char constant() {
-        return Character.MAX_VALUE; // line 11
+        return Character.MAX_VALUE;
     }
 
     @SuppressWarnings("cast.unsafe")
