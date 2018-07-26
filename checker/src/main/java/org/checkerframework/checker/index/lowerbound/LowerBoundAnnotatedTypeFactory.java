@@ -170,8 +170,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         TypeKind typeKind = typeMirror.getKind();
         switch (typeKind) {
             case CHAR:
-                if (qualHierarchy.isSubtype(NN, type.getAnnotationInHierarchy(UNKNOWN)))
+                if (qualHierarchy.isSubtype(NN, type.getAnnotationInHierarchy(UNKNOWN))) {
                     type.replaceAnnotation(NN);
+                }
                 break;
             case ARRAY:
                 AnnotatedTypeMirror.AnnotatedArrayType annotatedArrayType =
