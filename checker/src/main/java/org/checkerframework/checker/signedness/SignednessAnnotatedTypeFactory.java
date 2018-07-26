@@ -11,9 +11,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.signedness.qual.Constant;
-import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
-import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -32,8 +30,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
-    private final AnnotationMirror UNSIGNED;
-    private final AnnotationMirror SIGNED;
     private final AnnotationMirror CONSTANT;
 
     private ValueAnnotatedTypeFactory valueAtypefactory;
@@ -43,8 +39,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * known at compile time (constant propagation and folding).
      */
     private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        if (valueAtypefactory == null)
+        if (valueAtypefactory == null) {
             valueAtypefactory = getTypeFactoryOfSubchecker(ValueChecker.class);
+        }
         return valueAtypefactory;
     }
 
@@ -60,8 +57,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
-        UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
-        SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
         CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
         postInit();

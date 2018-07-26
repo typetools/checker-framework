@@ -7,7 +7,6 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.PluginUtil;
 
 /**
  * Represents field invariants. A list of fields that have a specific qualifier in a class where
@@ -93,7 +92,7 @@ public class FieldInvariants {
             List<String> missingFields = new ArrayList<>(superInvar.fields);
             missingFields.removeAll(fields);
             return Result.failure(
-                    "field.invariant.not.found.superclass", PluginUtil.join(", ", missingFields));
+                    "field.invariant.not.found.superclass", String.join(", ", missingFields));
         }
 
         for (String field : superInvar.fields) {

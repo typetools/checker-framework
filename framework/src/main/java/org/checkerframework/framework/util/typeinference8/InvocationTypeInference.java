@@ -66,7 +66,8 @@ public class InvocationTypeInference {
         if (b4.isUncheckedConversion()) {
             // If unchecked conversion was necessary for the method to be applicable during
             // constraint set reduction in 18.5.1, then the parameter types of the invocation type
-            // of m are obtained by applying thetaPrime to the parameter types of m's type, and the return
+            // of m are obtained by applying thetaPrime to the parameter types of m's type, and the
+            // return
             // type and thrown types of the invocation type of m are given by the erasure of the
             // return type and thrown types of m's type.
             // TODO: the erasure of the return type should happen were the inferred type arguments
@@ -101,7 +102,8 @@ public class InvocationTypeInference {
         BoundSet b0 = BoundSet.initialBounds(map, context);
 
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
-        // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound set, B1.
+        // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
+        // set, B1.
         for (AbstractType thrownType : methodType.getThrownTypes(map)) {
             if (thrownType.isVariable()) {
                 ((Variable) thrownType).getBounds().setHasThrowsBound(true);
@@ -138,7 +140,8 @@ public class InvocationTypeInference {
         BoundSet b0 = BoundSet.initialBounds(map, context);
 
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
-        // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound set, B1.
+        // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
+        // set, B1.
         for (AbstractType thrownType : methodType.getThrownTypes(map)) {
             if (thrownType.isVariable()) {
                 ((Variable) thrownType).getBounds().setHasThrowsBound(true);
@@ -226,22 +229,27 @@ public class InvocationTypeInference {
             boolean compatiblity = false;
             // T is a reference type, but is not a wildcard-parameterized type, and either
             if (!target.isWildcardParameterizedType()) {
-                // i) B2 contains a bound of one of the forms alpha = S or S <: alpha, where S is a wildcard-parameterized type, or
+                // i) B2 contains a bound of one of the forms alpha = S or S <: alpha, where S is a
+                // wildcard-parameterized type, or
                 compatiblity = alpha.getBounds().hasWildcardParameterizedLowerOrEqualBound();
                 if (!compatiblity) {
-                    // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1 and S2
-                    // have supertypes that are two different parameterizations of the same generic class or interface.
+                    // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1
+                    // and S2
+                    // have supertypes that are two different parameterizations of the same generic
+                    // class or interface.
                     compatiblity = alpha.getBounds().hasLowerBoundDifferentParam();
                 }
             }
             if (target.isParameterizedType()) {
                 // T is a parameterization of a generic class or interface, G, and B2 contains a
-                // bound of one of the forms alpha = S or S <: alpha, where there exists no type of the form
+                // bound of one of the forms alpha = S or S <: alpha, where there exists no type of
+                // the form
                 // G<...> that is a supertype of S, but the raw type |G<...>| is a supertype of S.
                 compatiblity = alpha.getBounds().hasRawTypeLowerOrEqualBound(target);
             }
             if (target.getTypeKind().isPrimitive()) {
-                // T is a primitive type, and one of the primitive wrapper classes mentioned in 5.1.7
+                // T is a primitive type, and one of the primitive wrapper classes mentioned in
+                // 5.1.7
                 // is an instantiation, upper bound, or lower bound for alpha in B2.
                 compatiblity = alpha.getBounds().hasPrimitiveWrapperBound();
             }

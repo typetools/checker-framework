@@ -11,7 +11,7 @@ import org.junit.Test;
 public class I18nFormatterUnitTest {
 
     @Test
-    public void StringToI18nConversionCategoryTest() {
+    public void stringToI18nConversionCategoryTest() {
         assertEquals(
                 I18nConversionCategory.NUMBER,
                 I18nConversionCategory.stringToI18nConversionCategory("number"));
@@ -33,7 +33,7 @@ public class I18nFormatterUnitTest {
     }
 
     @Test
-    public void IsSubsetTest() {
+    public void isSubsetTest() {
 
         assertTrue(
                 I18nConversionCategory.isSubsetOf(

@@ -9,6 +9,7 @@ import testlib.nontopdefault.NTDChecker;
 /** Tests the NonTopDefault Checker. */
 public class NonTopDefaultTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public NonTopDefaultTest(List<File> testFiles) {
         super(testFiles, NTDChecker.class, "nontopdefault", "-Anomsgtext");
     }

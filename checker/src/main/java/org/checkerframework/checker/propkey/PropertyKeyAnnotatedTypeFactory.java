@@ -110,12 +110,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             int dot = key.indexOf('.');
-            if (dot < 0) return false;
+            if (dot < 0) {
+                return false;
+            }
             key = key.substring(dot + 1);
         } while (true);
     }
 
-    /** Returns a set of the valid keys that can be used. */
+    /**
+     * Returns a set of the valid keys that can be used.
+     *
+     * @return the valid keys that can be used
+     */
     public Set<String> getLookupKeys() {
         return this.lookupKeys;
     }

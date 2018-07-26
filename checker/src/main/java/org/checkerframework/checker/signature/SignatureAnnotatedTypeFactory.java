@@ -96,7 +96,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * String.replace, when called with specific constant arguments, converts between internal
-         * form and binary name:
+         * form and binary name.
          *
          * <pre><code>
          * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');

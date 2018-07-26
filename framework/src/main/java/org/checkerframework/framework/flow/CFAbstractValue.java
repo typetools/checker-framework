@@ -96,7 +96,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     /**
-     * Returns whether or not the set of annotations can be missing an annotation for any hierarchy
+     * Returns whether or not the set of annotations can be missing an annotation for any hierarchy.
      *
      * @return whether or not the set of annotations can be missing an annotation
      */

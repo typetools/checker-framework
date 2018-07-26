@@ -214,6 +214,32 @@ public class TestDiagnosticUtils {
         return Pair.of(categoryEnum, isFixable);
     }
 
+    /** Return true if this line in a Java file indicates an expected diagnostic. */
+    public static boolean isJavaDiagnosticLineStart(String originalLine) {
+        final String trimmedLine = originalLine.trim();
+        return trimmedLine.startsWith("// ::") || trimmedLine.startsWith("// warning:");
+    }
+
+    /** Return true if this line in a Java file continues an expected diagnostic. */
+    public static boolean isJavaDiagnosticLineContinuation(String originalLine) {
+        if (originalLine == null) {
+            return false;
+        }
+        final String trimmedLine = originalLine.trim();
+        // Unlike with errors, there is no logic elsewhere for splitting multiple "warning:"s.  So,
+        // avoid concatenating them.  Also, each one must begin a line.  They are allowed to wrap to
+        // the next line, though.
+        return trimmedLine.startsWith("// ") && !trimmedLine.startsWith("// warning:");
+    }
+
+    /**
+     * Return the continuation part. The argument is such that {@link
+     * #isJavaDiagnosticLineContinuation} returns true.
+     */
+    public static String continuationPart(String originalLine) {
+        return originalLine.trim().substring(2).trim();
+    }
+
     /** Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine */
     public static TestDiagnosticLine fromJavaSourceLine(
             String filename, String originalLine, long lineNumber) {
@@ -277,8 +303,9 @@ public class TestDiagnosticUtils {
             if (diagnosticString.contains("uses unchecked or unsafe operations.")
                     || diagnosticString.contains("Recompile with -Xlint:unchecked for details.")
                     || diagnosticString.endsWith(" declares unsafe vararg methods.")
-                    || diagnosticString.contains("Recompile with -Xlint:varargs for details."))
+                    || diagnosticString.contains("Recompile with -Xlint:varargs for details.")) {
                 continue;
+            }
 
             diagnostics.add(
                     TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString, noMsgText));

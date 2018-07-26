@@ -299,7 +299,10 @@ public abstract class CFAbstractTransfer<
         } else if (underlyingAST.getKind() == Kind.LAMBDA) {
             // Create a copy and keep only the field values (nothing else applies).
             info = analysis.createCopiedStore(fixedInitialStore);
-            info.localVariableValues.clear();
+            // Allow that local variables are retained; they are effectively final,
+            // otherwise Java wouldn't allow access from within the lambda.
+            // TODO: what about the other information? Can code further down be simplified?
+            // info.localVariableValues.clear();
             info.classValues.clear();
             info.arrayValues.clear();
             info.methodValues.clear();
@@ -421,7 +424,9 @@ public abstract class CFAbstractTransfer<
                     receiver = new ThisReference(classType);
                 }
                 V value = analysis.createAbstractValue(type);
-                if (value == null) continue;
+                if (value == null) {
+                    continue;
+                }
                 if (TreeUtils.isConstructor(methodTree)) {
                     // if we are in a constructor,
                     // then we can still use the static type, but only

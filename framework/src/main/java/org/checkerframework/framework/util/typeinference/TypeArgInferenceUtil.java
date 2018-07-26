@@ -106,7 +106,7 @@ public class TypeArgInferenceUtil {
 
     /**
      * Given an AnnotatedExecutableType return a set of type variables that represents the generic
-     * type parameters of that method
+     * type parameters of that method.
      */
     public static Set<TypeVariable> methodTypeToTargets(final AnnotatedExecutableType methodType) {
         final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
@@ -160,7 +160,7 @@ public class TypeArgInferenceUtil {
             // TODO: if you called it from places like the TreeAnnotator.
             res = null;
 
-            // FIXME: This may cause infinite loop
+            // TODO: This may cause infinite loop
             //            AnnotatedTypeMirror type =
             //                    atypeFactory.getAnnotatedType((NewArrayTree)assignmentContext);
             //            type = AnnotatedTypes.innerMostType(type);
@@ -351,7 +351,7 @@ public class TypeArgInferenceUtil {
 
     /**
      * Take a set of annotations and separate them into a mapping of ({@code hierarchy top &rArr;
-     * annotations in hierarchy})
+     * annotations in hierarchy}).
      */
     public static AnnotationMirrorMap<AnnotationMirror> createHierarchyMap(
             final AnnotationMirrorSet annos, final QualifierHierarchy qualifierHierarchy) {
@@ -381,7 +381,7 @@ public class TypeArgInferenceUtil {
 
     /**
      * Used to detect if the visited type contains one of the type variables in the typeVars
-     * parameter
+     * parameter.
      */
     private static class TypeVariableFinder
             extends AnnotatedTypeScanner<Boolean, Collection<TypeVariable>> {
@@ -439,7 +439,9 @@ public class TypeArgInferenceUtil {
 
     /**
      * Replace all uses of typeVariable with substitution in a copy of toModify using the normal
-     * substitution rules, (@see TypeVariableSubstitutor).Return the copy
+     * substitution rules. Return the copy
+     *
+     * @see TypeVariableSubstitutor
      */
     public static AnnotatedTypeMirror substitute(
             final TypeVariable typeVariable,

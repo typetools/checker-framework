@@ -193,7 +193,8 @@ public class Typing extends Constraint {
             return set;
         } else {
             // TODO: Annotated types.
-            // The constraint reduces to true if T is among the supertypes of S, and false otherwise.
+            // The constraint reduces to true if T is among the supertypes of S, and false
+            // otherwise.
             return ConstraintSet.TRUE;
         }
     }

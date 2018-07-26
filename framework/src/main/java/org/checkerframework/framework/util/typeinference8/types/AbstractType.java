@@ -235,7 +235,7 @@ public abstract class AbstractType {
             }
             AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) pn;
             if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
-                //› If Ai is a upper-bounded wildcard ? extends Ui, then Ti = glb(Ui, Bi)
+                // › If Ai is a upper-bounded wildcard ? extends Ui, then Ti = glb(Ui, Bi)
                 newTypeArgs.add(
                         AnnotatedTypes.greatestLowerBound(
                                 typeFactory,

@@ -8,6 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Optional Checker, which has the {@code @Present} annotation. */
 public class OptionalTest extends CheckerFrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public OptionalTest(List<File> testFiles) {
         super(
                 testFiles,

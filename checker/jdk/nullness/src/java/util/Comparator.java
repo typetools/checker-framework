@@ -1,26 +1,26 @@
 /*
  * Copyright (c) 1997, 2014, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package java.util;
@@ -32,8 +32,8 @@ import java.util.function.ToLongFunction;
 import java.util.function.ToDoubleFunction;
 import java.util.Comparators;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
@@ -109,6 +109,8 @@ import org.checkerframework.dataflow.qual.Pure;
  * @see java.io.Serializable
  * @since 1.2
  */
+// Javadoc says: "a comparator may optionally permit comparison of null
+// arguments, while maintaining the requirements for an equivalence relation."
 @FunctionalInterface
 public interface Comparator<T> {
     /**
@@ -176,7 +178,7 @@ public interface Comparator<T> {
      * @see Object#hashCode()
      */
     @Pure
-    boolean equals(Object obj);
+    boolean equals(@Nullable Object obj);
 
     /**
      * Returns a comparator that imposes the reverse ordering of this
@@ -358,7 +360,7 @@ public interface Comparator<T> {
      * @since 1.8
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable<? super T>> Comparator<@NonNull T> naturalOrder() {
+    public static <T extends Comparable<@NonNull ? super @NonNull T>> Comparator<T> naturalOrder() {
         return (Comparator<T>) Comparators.NaturalOrderComparator.INSTANCE;
     }
 
@@ -379,7 +381,7 @@ public interface Comparator<T> {
      *         {@code Comparator}.
      * @since 1.8
      */
-    public static <T> Comparator<@Nullable T> nullsFirst(Comparator<? super T> comparator) {
+    public static <T> Comparator<@Nullable T> nullsFirst(Comparator<@Nullable ? super T> comparator) {
         return new Comparators.NullComparator<>(true, comparator);
     }
 
@@ -400,7 +402,7 @@ public interface Comparator<T> {
      *         {@code Comparator}.
      * @since 1.8
      */
-    public static <T> Comparator<@Nullable T> nullsLast(Comparator<? super T> comparator) {
+    public static <T> Comparator<@Nullable T> nullsLast(Comparator<@Nullable ? super T> comparator) {
         return new Comparators.NullComparator<>(false, comparator);
     }
 

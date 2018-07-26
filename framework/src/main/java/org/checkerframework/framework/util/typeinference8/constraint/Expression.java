@@ -108,7 +108,8 @@ public class Expression extends Constraint {
         // javac.
 
         // TODO: This should return false in some cases.
-        // com.sun.tools.javac.code.Types.isConvertible(com.sun.tools.javac.code.Type, com.sun.tools.javac.code.Type)
+        // com.sun.tools.javac.code.Types.isConvertible(com.sun.tools.javac.code.Type,
+        // com.sun.tools.javac.code.Type)
         return new ConstraintSet();
     }
 
@@ -282,7 +283,8 @@ public class Expression extends Constraint {
             return explicitlyTypedLambdaWithWildcard(t, lambda, context);
         } else {
             // If T is a wildcard-parameterized functional interface type and the lambda expression
-            // is implicitly typed, then the ground target type is the non-wildcard parameterization (9.9) of T.
+            // is implicitly typed, then the ground target type is the non-wildcard parameterization
+            // (9.9) of T.
             // https://docs.oracle.com/javase/specs/jls/se8/html/jls-9.html#jls-9.9-200-C
             return Pair.of(nonWildcardParameterization(t, context), null);
         }
@@ -319,14 +321,16 @@ public class Expression extends Constraint {
     private Pair<AbstractType, BoundSet> explicitlyTypedLambdaWithWildcard(
             AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
         // Where a lambda expression with explicit parameter types P1, ..., Pn targets a functional
-        // interface type F<A1, ..., Am> with at least one wildcard type argument, then a parameterization
+        // interface type F<A1, ..., Am> with at least one wildcard type argument, then a
+        // parameterization
         // of F may be derived as the ground target type of the lambda expression as follows.
         List<ProperType> ps = new ArrayList<>();
         for (VariableTree paramTree : lambda.getParameters()) {
             ps.add(context.inferenceTypeFactory.getTypeOfVariable(paramTree));
         }
 
-        // Let Q1, ..., Qk be the parameter types of the function type of the type F<alpha1, ..., alpham>,
+        // Let Q1, ..., Qk be the parameter types of the function type of the type F<alpha1, ...,
+        // alpham>,
         // where alpha1, ..., alpham are fresh inference variables.
         Theta map = context.inferenceTypeFactory.createTheta(lambda, t);
         List<Variable> alphas = new ArrayList<>(map.values());
@@ -348,7 +352,8 @@ public class Expression extends Constraint {
         assert !b.containsFalse()
                 : "Bound set contains false during Functional Interface Parameterization Inference";
 
-        // A new parameterization of the functional interface type, F<A'1, ..., A'm>, is constructed as follows, for 1 <= i <= m:
+        // A new parameterization of the functional interface type, F<A'1, ..., A'm>, is constructed
+        // as follows, for 1 <= i <= m:
         List<AbstractType> APrimes = new ArrayList<>();
         Iterator<Variable> alphaIter = alphas.iterator();
         boolean hasWildcard = false;
@@ -366,7 +371,8 @@ public class Expression extends Constraint {
         }
 
         // The inferred parameterization is either F<A'1, ..., A'm>, if all the type arguments
-        // are types, or the non-wildcard parameterization (9.9) of F<A'1, ..., A'm>, if one or more type arguments are still wildcards.
+        // are types, or the non-wildcard parameterization (9.9) of F<A'1, ..., A'm>, if one or more
+        // type arguments are still wildcards.
 
         AbstractType target = t.replaceTypeArgs(APrimes);
         if (hasWildcard) {

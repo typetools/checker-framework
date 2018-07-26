@@ -648,8 +648,9 @@ public final class TreeUtils {
      *     constructor
      */
     public static final boolean containsThisConstructorInvocation(MethodTree node) {
-        if (!TreeUtils.isConstructor(node) || node.getBody().getStatements().isEmpty())
+        if (!TreeUtils.isConstructor(node) || node.getBody().getStatements().isEmpty()) {
             return false;
+        }
 
         StatementTree st = node.getBody().getStatements().get(0);
         if (!(st instanceof ExpressionStatementTree)
@@ -1290,8 +1291,9 @@ public final class TreeUtils {
 
         if (newArray.dimAnnotations.length() > 0
                 && (level >= 0)
-                && (level < newArray.dimAnnotations.size()))
+                && (level < newArray.dimAnnotations.size())) {
             return annotationsFromTypeAnnotationTrees(newArray.dimAnnotations.get(level));
+        }
 
         return Collections.emptyList();
     }
@@ -1378,7 +1380,8 @@ public final class TreeUtils {
      */
     public static boolean isExactMethodReference(MemberReferenceTree ref) {
         // Seems like overloaded means the same thing as inexact.
-        // overloadKind is set com.sun.tools.javac.comp.DeferredAttr.DeferredChecker.visitReference()
+        // overloadKind is set
+        // com.sun.tools.javac.comp.DeferredAttr.DeferredChecker.visitReference()
         // IsExact: https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1-400
         return ((JCMemberReference) ref).overloadKind != OverloadKind.OVERLOADED;
     }

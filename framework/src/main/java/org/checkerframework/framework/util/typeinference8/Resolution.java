@@ -101,7 +101,8 @@ public class Resolution {
             }
 
             if (smallestDependencySet.size() == 1) {
-                // If the size is 1, then alpha has the smallest possible set of unresolved dependencies.
+                // If the size is 1, then alpha has the smallest possible set of unresolved
+                // dependencies.
                 // (A variable is always dependent on itself.) So, stop looking for smaller ones.
                 break;
             }

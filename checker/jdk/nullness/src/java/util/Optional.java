@@ -63,7 +63,7 @@ import org.checkerframework.framework.qual.Covariant;
 // meaning, but are unrelated by the Java type hierarchy.
 // @Covariant makes Optional<@NonNull String> a subtype of Optional<@Nullable String>.
 @Covariant(0)
-public final @NonNull class Optional<T extends @Nullable Object> {
+public final @NonNull class Optional<T> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -96,7 +96,7 @@ public final @NonNull class Optional<T extends @Nullable Object> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static <T extends @Nullable Object> Optional<T> empty() {
+    public static <T> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -120,7 +120,7 @@ public final @NonNull class Optional<T extends @Nullable Object> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T extends @Nullable Object> Optional<T> of(@NonNull T value) {
+    public static <T> Optional<T> of(@NonNull T value) {
         return new Optional<>(value);
     }
 
@@ -133,7 +133,7 @@ public final @NonNull class Optional<T extends @Nullable Object> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T extends @Nullable Object> Optional<T> ofNullable(@Nullable T value) {
+    public static <T> Optional<T> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 

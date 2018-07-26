@@ -401,7 +401,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks that fields are declared in super class. (#2b)
         if (!fieldsNotFound.isEmpty()) {
-            String notFoundString = PluginUtil.join(", ", fieldsNotFound);
+            String notFoundString = String.join(", ", fieldsNotFound);
             checker.report(Result.failure("field.invariant.not.found", notFoundString), errorTree);
         }
 
@@ -447,7 +447,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks #2a
         if (!notFinal.isEmpty()) {
-            String notFinalString = PluginUtil.join(", ", notFinal);
+            String notFinalString = String.join(", ", notFinal);
             checker.report(Result.failure("field.invariant.not.final", notFinalString), errorTree);
         }
     }
@@ -615,30 +615,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 msgPrefix = "purity.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
-                String reason = r.second;
-                @SuppressWarnings("CompilerMessages")
-                @CompilerMessageKey String msg = msgPrefix + reason;
-                if (reason.equals("call")) {
-                    MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-                    checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
-                } else {
-                    checker.report(Result.failure(msg), r.first);
-                }
+                reportPurityError(msgPrefix, r);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.sideeffectfree." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.sideeffectfree.", r);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.deterministic." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.deterministic.", r);
                 }
             }
+        }
+    }
+
+    /** Reports single purity error. * */
+    private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
+        String reason = r.second;
+        @SuppressWarnings("CompilerMessages")
+        @CompilerMessageKey String msg = msgPrefix + reason;
+        if (reason.equals("call")) {
+            MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+        } else {
+            checker.report(Result.failure(msg), r.first);
         }
     }
 
@@ -782,7 +783,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Check that the expression's type is annotated with {@code annotation} at every regular exit
-     * that returns {@code result}
+     * that returns {@code result}.
      *
      * @param node tree of method with the postcondition
      * @param annotation expression's type must have this annotation
@@ -1152,7 +1153,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The tyoe of java.util.Vector. */
     private AnnotatedDeclaredType vectorType;
 
-    /** Returns true if the method symbol represents {@code Vector.copyInto} */
+    /** Returns true if the method symbol represents {@code Vector.copyInto}. */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
         if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1) {
@@ -2531,7 +2532,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
                 atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
-        // The type to which the member reference is assigned -- also known as the target type of the reference.
+        // The type to which the member reference is assigned -- also known as the target type of
+        // the reference.
         AnnotatedDeclaredType functionalInterface = result.first;
         // The type of the single method that is declared by the functional interface.
         AnnotatedExecutableType functionType = result.second;
@@ -2759,7 +2761,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         /**
-         * Perform the check
+         * Perform the check.
          *
          * @return true if the override is allowed
          */
@@ -2953,8 +2955,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // class instance creation expression)."
 
                     // So a member reference can only refer to an inner class constructor if a type
-                    // that encloses the inner class can be found. So either "this" is that enclosing
-                    // type or "this" has an enclosing type that is that type.
+                    // that encloses the inner class can be found. So either "this" is that
+                    // enclosing type or "this" has an enclosing type that is that type.
                     receiverDecl = overrider.getReceiverType();
                     receiverArg = atypeFactory.getSelfType(memberTree);
                     while (!TypesUtils.isErasedSubtype(
@@ -3123,7 +3125,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Sometimes when using a Java 8 compiler (not JSR308) the overridden return
                     // type of a method reference becomes a captured type.  This leads to defaulting
                     // that often makes the overriding return type invalid.  We ignore these.  This
-                    // happens in Issue403/Issue404 when running without the jsr308-langtools compiler.
+                    // happens in Issue403/Issue404 when running without the jsr308-langtools
+                    // compiler.
                     if (!success && methodReference) {
 
                         boolean isCaptureConverted =
@@ -3553,7 +3556,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Overriding to avoid visit part of the tree
     // **********************************************************************
 
-    /** Override Compilation Unit so we won't visit package names or imports */
+    /** Override Compilation Unit so we won't visit package names or imports. */
     @Override
     public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
         Void r = scan(node.getPackageAnnotations(), p);

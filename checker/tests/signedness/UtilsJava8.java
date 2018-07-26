@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.signedness.qual.*;
 
 // Test Java 8 unsigned utils

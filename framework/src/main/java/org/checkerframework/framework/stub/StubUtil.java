@@ -36,7 +36,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
-/** Utility class for stub files */
+/** Utility class for stub files. */
 public class StubUtil {
 
     /*package-scope*/ static TypeDeclaration<?> findDeclaration(
@@ -158,8 +158,7 @@ public class StubUtil {
         sb.append(element.getSimpleName());
         sb.append("(");
         for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-                i.hasNext();
-                ) {
+                i.hasNext(); ) {
             sb.append(standarizeType(i.next().asType()));
             if (i.hasNext()) {
                 sb.append(",");

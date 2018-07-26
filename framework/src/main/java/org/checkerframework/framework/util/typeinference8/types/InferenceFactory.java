@@ -554,7 +554,8 @@ public class InferenceFactory {
             enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
             if (enclosingType.getKind() == TypeKind.DECLARED
                     && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
-                // The member reference is HashMap::new so the type arguments for HashMap must be inferred.
+                // The member reference is HashMap::new so the type arguments for HashMap must be
+                // inferred.
                 // So use the type declared type.
                 TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
                 enclosingType = typeFactory.getAnnotatedType(typeEle);

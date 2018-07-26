@@ -158,4 +158,7 @@ public interface NodeVisitor<R, P> {
 
     // Marker nodes
     R visitMarker(MarkerNode n, P p);
+
+    // Anonymous/inner/nested class declaration within a method
+    R visitClassDeclaration(ClassDeclarationNode classDeclarationNode, P p);
 }
