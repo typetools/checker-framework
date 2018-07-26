@@ -11,7 +11,6 @@ public class NonnegativeChar {
         return Character.MAX_VALUE;
     }
 
-    @SuppressWarnings("cast.unsafe")
     char conversion(int i) {
         return (char) i;
     }
