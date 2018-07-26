@@ -304,7 +304,7 @@ public abstract class ByteBuffer
      * @throws  IllegalArgumentException
      *          If the <tt>capacity</tt> is a negative integer
      */
-    public static ByteBuffer allocateDirect(int capacity) {
+    public static ByteBuffer allocateDirect(@NonNegative int capacity) {
         return new DirectByteBuffer(capacity);
     }
 
