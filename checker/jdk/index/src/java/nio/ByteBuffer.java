@@ -28,8 +28,8 @@
 package java.nio;
 
 
+import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
-import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 
@@ -364,7 +364,7 @@ public abstract class ByteBuffer
      *          parameters do not hold
      */
     public static ByteBuffer wrap(byte[] array,
-                                  int offset, int length)
+                                  @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1",offset = "#2 - 1") int length)
     {
         try {
             return new HeapByteBuffer(array, offset, length);
@@ -588,7 +588,7 @@ public abstract class ByteBuffer
      *          If <tt>index</tt> is negative
      *          or not smaller than the buffer's limit
      */
-    public abstract byte get(int index);
+    public abstract byte get(@NonNegative int index);
 
 
 
@@ -624,7 +624,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract ByteBuffer put(int index, byte b);
+    public abstract ByteBuffer put(@NonNegative int index, byte b);
 
 
     // -- Bulk get operations --
@@ -679,9 +679,7 @@ public abstract class ByteBuffer
      *          If the preconditions on the <tt>offset</tt> and <tt>length</tt>
      *          parameters do not hold
      */
-    @SuppressWarnings("upperbound:array.access.unsafe.high")/* if `offset + length` > dst.length, checkBounds() throws
-    IndexOutOfBoundsException(); */
-    public ByteBuffer get(byte[] dst, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) {
+    public ByteBuffer get(byte[] dst, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length) {
         checkBounds(offset, length, dst.length);
         if (length > remaining())
             throw new BufferUnderflowException();
@@ -822,9 +820,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    @SuppressWarnings("upperbound:array.access.unsafe.high")/* if `offset + length` > dst.length, checkBounds() throws
-    IndexOutOfBoundsException(); */
-    public ByteBuffer put(byte[] src, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) {
+    public ByteBuffer put(byte[] src, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length) {
         checkBounds(offset, length, src.length);
         if (length > remaining())
             throw new BufferOverflowException();
@@ -1536,7 +1532,7 @@ public abstract class ByteBuffer
      *          or not smaller than the buffer's limit,
      *          minus one
      */
-    public abstract char getChar(int index);
+    public abstract char getChar(@NonNegative int index);
 
     /**
      * Absolute <i>put</i> method for writing a char
@@ -1561,7 +1557,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract ByteBuffer putChar(int index, char value);
+    public abstract ByteBuffer putChar(@NonNegative int index, char value);
 
     /**
      * Creates a view of this byte buffer as a char buffer.
@@ -1635,7 +1631,7 @@ public abstract class ByteBuffer
      *          or not smaller than the buffer's limit,
      *          minus one
      */
-    public abstract short getShort(int index);
+    public abstract short getShort(@NonNegative int index);
 
     /**
      * Absolute <i>put</i> method for writing a short
@@ -1660,7 +1656,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract ByteBuffer putShort(int index, short value);
+    public abstract ByteBuffer putShort(@NonNegative int index, short value);
 
     /**
      * Creates a view of this byte buffer as a short buffer.
@@ -1734,7 +1730,7 @@ public abstract class ByteBuffer
      *          or not smaller than the buffer's limit,
      *          minus three
      */
-    public abstract int getInt(int index);
+    public abstract int getInt(@NonNegative int index);
 
     /**
      * Absolute <i>put</i> method for writing an int
@@ -1759,7 +1755,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract ByteBuffer putInt(int index, int value);
+    public abstract ByteBuffer putInt(@NonNegative int index, int value);
 
     /**
      * Creates a view of this byte buffer as an int buffer.
@@ -1833,7 +1829,7 @@ public abstract class ByteBuffer
      *          or not smaller than the buffer's limit,
      *          minus seven
      */
-    public abstract long getLong(int index);
+    public abstract long getLong(@NonNegative int index);
 
     /**
      * Absolute <i>put</i> method for writing a long
@@ -1858,7 +1854,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract ByteBuffer putLong(int index, long value);
+    public abstract ByteBuffer putLong(@NonNegative int index, long value);
 
     /**
      * Creates a view of this byte buffer as a long buffer.
@@ -1932,7 +1928,7 @@ public abstract class ByteBuffer
      *          or not smaller than the buffer's limit,
      *          minus three
      */
-    public abstract float getFloat(int index);
+    public abstract float getFloat(@NonNegative int index);
 
     /**
      * Absolute <i>put</i> method for writing a float
@@ -1957,7 +1953,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract ByteBuffer putFloat(int index, float value);
+    public abstract ByteBuffer putFloat(@NonNegative int index, float value);
 
     /**
      * Creates a view of this byte buffer as a float buffer.
@@ -2031,7 +2027,7 @@ public abstract class ByteBuffer
      *          or not smaller than the buffer's limit,
      *          minus seven
      */
-    public abstract double getDouble(int index);
+    public abstract double getDouble(@NonNegative int index);
 
     /**
      * Absolute <i>put</i> method for writing a double
@@ -2056,7 +2052,7 @@ public abstract class ByteBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract ByteBuffer putDouble(int index, double value);
+    public abstract ByteBuffer putDouble(@NonNegative int index, double value);
 
     /**
      * Creates a view of this byte buffer as a double buffer.
