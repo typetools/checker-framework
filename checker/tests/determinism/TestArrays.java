@@ -11,5 +11,6 @@ class TestArrays {
 
     void testArr1(@Det int @Det [] a) {
         @Det int i = a[0];
+        @Det String str = "rash";
     }
 }
