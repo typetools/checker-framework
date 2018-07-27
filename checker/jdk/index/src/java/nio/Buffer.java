@@ -25,6 +25,9 @@
 
 package java.nio;
 
+import org.checkerframework.checker.index.qual.GTENegativeOne;
+import org.checkerframework.checker.index.qual.LessThan;
+import org.checkerframework.checker.index.qual.NonNegative;
 import java.util.Spliterator;
 
 /**
@@ -194,7 +197,7 @@ public abstract class Buffer {
     // Creates a new buffer with the given mark, position, limit, and capacity,
     // after checking invariants.
     //
-    Buffer(int mark, int pos, int lim, int cap) {       // package-private
+    Buffer(@GTENegativeOne @LessThan("#2 + 1") int mark, @NonNegative @LessThan("#3 + 1") int pos, @NonNegative @LessThan("#4 + 1") int lim, @NonNegative int cap) {       // package-private
         if (cap < 0)
             throw new IllegalArgumentException("Negative capacity: " + cap);
         this.capacity = cap;
@@ -222,7 +225,7 @@ public abstract class Buffer {
      *
      * @return  The position of this buffer
      */
-    public final int position() {
+    public final @NonNegative @LessThan("this.limit + 1") int position() {
         return position;
     }
 
@@ -239,7 +242,7 @@ public abstract class Buffer {
      * @throws  IllegalArgumentException
      *          If the preconditions on <tt>newPosition</tt> do not hold
      */
-    public final Buffer position(int newPosition) {
+    public final Buffer position(@NonNegative @LessThan("this.limit + 1") int newPosition) {
         if ((newPosition > limit) || (newPosition < 0))
             throw new IllegalArgumentException();
         position = newPosition;
@@ -252,7 +255,7 @@ public abstract class Buffer {
      *
      * @return  The limit of this buffer
      */
-    public final int limit() {
+    public final @NonNegative @LessThan("this.capacity + 1") int limit() {
         return limit;
     }
 
@@ -270,7 +273,7 @@ public abstract class Buffer {
      * @throws  IllegalArgumentException
      *          If the preconditions on <tt>newLimit</tt> do not hold
      */
-    public final Buffer limit(int newLimit) {
+    public final Buffer limit(@NonNegative @LessThan("this.capacity + 1") int newLimit) {
         if ((newLimit > capacity) || (newLimit < 0))
             throw new IllegalArgumentException();
         limit = newLimit;
@@ -547,7 +550,7 @@ public abstract class Buffer {
         return i;
     }
 
-    final int markValue() {                             // package-private
+    final @GTENegativeOne @LessThan("this.position + 1") int markValue() {                             // package-private
         return mark;
     }
 
