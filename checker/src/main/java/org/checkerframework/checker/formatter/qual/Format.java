@@ -38,6 +38,8 @@ public @interface Format {
      * An array of {@link ConversionCategory}, indicating the types of legal remaining arguments
      * when a value of the annotated type is used as the first argument to {@link
      * java.util.Formatter#format(String, Object...) Formatter.format} and similar methods.
+     *
+     * @return types that can be used as values when a value of this type is the format string
      */
     ConversionCategory[] value();
 }

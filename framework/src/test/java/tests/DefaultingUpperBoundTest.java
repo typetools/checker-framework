@@ -9,6 +9,7 @@ import testlib.defaulting.DefaultingUpperBoundChecker;
 /** Created by jburke on 9/29/14. */
 public class DefaultingUpperBoundTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public DefaultingUpperBoundTest(List<File> testFiles) {
         super(testFiles, DefaultingUpperBoundChecker.class, "defaulting", "-Anomsgtext");
     }

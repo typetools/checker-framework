@@ -13,6 +13,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 /**
  * The bottom type in the Map Key type system. Programmers should rarely write this type.
  *
+ * <p>There are no values of this type (not even {@code null}).
+ *
  * @checker_framework.manual #map-key-checker Map Key Checker
  * @checker_framework.manual #bottom-type the bottom type
  */

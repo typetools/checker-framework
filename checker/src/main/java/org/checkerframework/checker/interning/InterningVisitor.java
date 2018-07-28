@@ -60,7 +60,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     private final AnnotationMirror INTERNED;
     /** The @InternedDistinct annotation. */
     private final AnnotationMirror INTERNED_DISTINCT;
-    /** See method typeToCheck() */
+    /** See method typeToCheck(). */
     private final DeclaredType typeToCheck;
 
     public InterningVisitor(BaseTypeChecker checker) {
@@ -77,7 +77,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *     Checker checks</a>
      */
     private boolean shouldCheckExpression(ExpressionTree tree) {
-        if (typeToCheck == null) return true;
+        if (typeToCheck == null) {
+            return true;
+        }
 
         TypeMirror type = TreeUtils.typeOf(tree);
         return types.isSubtype(type, typeToCheck) || types.isSubtype(typeToCheck, type);
@@ -195,8 +197,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
             if (this.checker.getLintOption("dotequals", true)
                     && recv.hasEffectiveAnnotation(INTERNED)
-                    && comp.hasEffectiveAnnotation(INTERNED))
+                    && comp.hasEffectiveAnnotation(INTERNED)) {
                 checker.report(Result.warning("unnecessary.equals"), node);
+            }
         }
 
         return super.visitMethodInvocation(node, p);
@@ -270,7 +273,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // Helper methods
     // **********************************************************************
 
-    /** Returns true if a class overrides Object.equals */
+    /** Returns true if a class overrides Object.equals. */
     private boolean overridesEquals(ClassTree node) {
         List<? extends Tree> members = node.getMembers();
         for (Tree member : members) {
@@ -350,8 +353,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         Tree right = node.getRightOperand();
 
         // Only valid if we're comparing identifiers.
-        if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER))
+        if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER)) {
             return false;
+        }
 
         // If we're not directly in an if statement in a method (ignoring
         // parens and blocks), terminate.
@@ -383,7 +387,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         assert methodTree != null;
 
         StatementTree stmnt = methodTree.getBody().getStatements().get(0);
-        // The call to Heuristics.matchParents already ensured the enclosing method has at least one statement (an if statement) in the body
+        // The call to Heuristics.matchParents already ensured the enclosing method has at least one
+        // statement (an if statement) in the body
         assert stmnt != null;
 
         if (stmnt != ifStatementTree) {

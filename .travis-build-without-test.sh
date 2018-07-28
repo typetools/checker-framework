@@ -83,7 +83,7 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 # Two options: rebuild the JDK or download a prebuilt JDK.
 if [[ "${BUILDJDK}" == "buildjdk" ]]; then
   echo "running \"./gradlew assemble buildJdk\" for checker-framework"
-   ./gradlew assemble buildJdk
+   ./gradlew assemble -PuseLocalJdk
 fi
 
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then

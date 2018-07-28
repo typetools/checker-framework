@@ -91,12 +91,6 @@ public class OptionalVisitor
         return TreeUtils.isMethodInvocation(expression, this.isPresent, env);
     }
 
-    /** @return true iff expression is a call to java.util.Optional.of */
-    private boolean isCallToOf(ExpressionTree expression) {
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-        return TreeUtils.isMethodInvocation(expression, this.of, env);
-    }
-
     /** @return true iff expression is a call to Optional creation: of, ofNullable. */
     private boolean isOptionalCreation(MethodInvocationTree methInvok) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
@@ -161,7 +155,7 @@ public class OptionalVisitor
                             receiver,
                             // The literal "CONTAININGCLASS::" is gross.
                             // TODO: add this to the error message.
-                            //ElementUtils.getQualifiedClassName(ele);
+                            // ElementUtils.getQualifiedClassName(ele);
                             ele.getSimpleName(),
                             falseExpr),
                     node);

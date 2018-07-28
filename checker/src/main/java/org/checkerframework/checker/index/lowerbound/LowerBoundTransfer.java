@@ -617,9 +617,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             int val, AnnotationMirror leftAnno) {
         if (val == 0) {
             // Reaching this indicates a divide by zero error. If the value is zero, then this is
-            // division by zero. Division by zero is treated as bottom so that users
-            // aren't warned about dead code that's dividing by zero. This code assumes that non-dead
-            // code won't include literal divide by zeros...
+            // division by zero. Division by zero is treated as bottom so that users aren't warned
+            // about dead code that's dividing by zero. This code assumes that non-dead code won't
+            // include literal divide by zeros...
             return aTypeFactory.BOTTOM;
         } else if (val == 1) {
             return leftAnno;
@@ -632,7 +632,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * getAnnotationForDivide handles these cases (21-26):
+     * getAnnotationForDivide handles the following cases (21-26).
      *
      * <pre>
      *      lit 0 / * &rarr; nn (=0)

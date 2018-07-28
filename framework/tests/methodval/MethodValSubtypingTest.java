@@ -6,17 +6,15 @@ public class MethodValSubtypingTest {
     @MethodVal(className = "class", methodName = "method", params = 0) Object classMethod0Dup = null;
 
     @MethodVal(
-        className = {"class", "class2"},
-        methodName = {"method", "method2"},
-        params = {0, 1}
-    )
+            className = {"class", "class2"},
+            methodName = {"method", "method2"},
+            params = {0, 1})
     Object classClass2Method0 = null;
 
     @MethodVal(
-        className = {"class2", "class"},
-        methodName = {"method", "method2"},
-        params = {0, 1}
-    )
+            className = {"class2", "class"},
+            methodName = {"method", "method2"},
+            params = {0, 1})
     Object class2classMethod0 = null;
 
     Object unknown = null;
@@ -45,24 +43,21 @@ public class MethodValSubtypingTest {
     }
 
     @MethodVal(
-        className = {"aclass", "aclass", "aclass"},
-        methodName = {"amethod", "amethod", "amethod"},
-        params = {0, 1, 2}
-    )
+            className = {"aclass", "aclass", "aclass"},
+            methodName = {"amethod", "amethod", "amethod"},
+            params = {0, 1, 2})
     Object triple = null;
 
     @MethodVal(
-        className = {"aclass", "aclass", "aclass"},
-        methodName = {"amethod", "amethod", "amethod"},
-        params = {2, 1, 0}
-    )
+            className = {"aclass", "aclass", "aclass"},
+            methodName = {"amethod", "amethod", "amethod"},
+            params = {2, 1, 0})
     Object tripleAgain = null;
 
     @MethodVal(
-        className = {"aclass"},
-        methodName = {"amethod"},
-        params = {2}
-    )
+            className = {"aclass"},
+            methodName = {"amethod"},
+            params = {2})
     Object one = null;
 
     void test() {

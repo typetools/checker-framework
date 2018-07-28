@@ -28,7 +28,7 @@ build: classes
 
 ############## Validate annotated jdk against missing methods ##############
 
-SOURCES = $(shell find src/java src/javax src/org -name '*.java' | sort)
+SOURCES = $(shell find src/java src/javax src/org -name '[A-Za-z_]*.java' | sort)
 # CLASSES = $(shell find src/java src/javax src/org -name '*.class' | sort)
 DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 

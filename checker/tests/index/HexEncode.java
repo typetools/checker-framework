@@ -1,4 +1,3 @@
-
 @SuppressWarnings("array.access.unsafe.high")
 public class HexEncode {
     private static final char[] digits = {

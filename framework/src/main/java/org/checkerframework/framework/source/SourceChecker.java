@@ -357,7 +357,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
 
-    /** Keys for warning suppressions specified on the command line */
+    /** Keys for warning suppressions specified on the command line. */
     private String @Nullable [] suppressWarnings;
 
     /**
@@ -394,10 +394,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private Pattern onlyDefsPattern;
 
-    /** The supported lint options */
+    /** The supported lint options. */
     private Set<String> supportedLints;
 
-    /** The enabled lint options */
+    /** The enabled lint options. */
     private Set<String> activeLints;
 
     /**
@@ -420,7 +420,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private static final String OPTION_SEPARATOR = "_";
 
-    /** The line separator */
+    /** The line separator. */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
     /**
@@ -915,7 +915,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
     }
 
-    /** Print resource usage statistics */
+    /** Print resource usage statistics. */
     protected void printStats() {
         List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
         for (MemoryPoolMXBean memoryPool : memoryPools) {
@@ -1541,7 +1541,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Should unchecked code defaults be used for the kind of code indicated by the parameter
+     * Should unchecked code defaults be used for the kind of code indicated by the parameter.
      *
      * @param kindOfCode source or bytecode
      * @return whether unchecked code defaults should be used
@@ -2188,7 +2188,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * A helper function to parse a Properties file
+     * A helper function to parse a Properties file.
      *
      * @param cls the class whose location is the base of the file path
      * @param filePath the name/path of the file to be read

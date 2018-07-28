@@ -17,9 +17,8 @@ public class LessThanCustomCollection {
     private final int[] array;
     private final @IndexOrHigh("array") @LessThan("end + 1") int start;
     private final @LTLengthOf(
-        value = {"array", "this"},
-        offset = {" - 1", "- start"}
-    ) int end;
+            value = {"array", "this"},
+            offset = {" - 1", "- start"}) int end;
 
     private LessThanCustomCollection(int[] array) {
         this(array, 0, array.length);

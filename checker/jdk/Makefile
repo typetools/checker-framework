@@ -6,18 +6,24 @@ CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
 CHECKER_DIRS = index lock nullness optional
 
-all: clean classes
+JAVA_FILES := $(shell find $(CHECKER_DIRS) -name '*.java' | sort)
+
+jdk.jar: $(JAVA_FILES)
+	$(MAKE) jdk.jar-unconditionally
+
+# Remakes the annotated JDK, regardless of whether it is out of date.
+jdk.jar-unconditionally: clean classes
 # Extracts unannotated .class files from $(CTSYM)
 	$(MAKE) unmodified
 # Insert annotations in those files.
 	$(MAKE) jaifs annotated
 # Put those annotated .class files back in jdk.jar.
-	$(MAKE) jdk.jar
+	$(MAKE) jdk.jar-insertion
 
-## DO NOT INVOKE DIRECTLY.  USE "make all" INSTEAD.
+# Does the final step of making jdk.jar.
 # jdk.jar only contains those classes with annotations, not every class from
 # the original JDK.
-jdk.jar:
+jdk.jar-insertion:
 	echo Checker-Framework-Version: `git rev-parse --short HEAD` > manifest.txt
 	echo Creation-Date: `date` >> manifest.txt
 	cd annotated; jar cfm ../jdk.jar ../manifest.txt .

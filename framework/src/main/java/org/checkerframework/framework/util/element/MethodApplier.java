@@ -37,7 +37,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
     private final AnnotatedTypeFactory typeFactory;
 
-    /** Method being annotated, this symbol contains all relevant annotations */
+    /** Method being annotated, this symbol contains all relevant annotations. */
     private final Symbol.MethodSymbol methodSymbol;
 
     private final AnnotatedExecutableType methodType;
@@ -160,7 +160,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         }
     }
 
-    /** For each thrown type, collect all the annotations for that type and apply them */
+    /** For each thrown type, collect all the annotations for that type and apply them. */
     private void applyThrowsAnnotations(final List<Attribute.TypeCompound> annos) {
         final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
         if (thrown.isEmpty()) {
@@ -199,7 +199,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
     /**
      * If the return type is a use of a type variable first apply the bound annotations from the
-     * type variables declaration
+     * type variables declaration.
      */
     private void applyTypeVarUseOnReturnType() {
         new TypeVarUseApplier(methodType.getReturnType(), methodSymbol, typeFactory)

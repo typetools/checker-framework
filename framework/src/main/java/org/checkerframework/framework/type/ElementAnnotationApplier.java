@@ -110,7 +110,7 @@ public class ElementAnnotationApplier {
 
     /**
      * Annotate the list of supertypes using the annotations on the TypeElement representing a class
-     * or interface
+     * or interface.
      *
      * @param supertypes types representing supertype declarations of TypeElement
      * @param subtypeElement an element representing the declaration of the class which is a subtype

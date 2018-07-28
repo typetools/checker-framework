@@ -32,6 +32,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public final class Opt {
 
+    /** The Opt class cannot be instantiated. */
     private Opt() {
         throw new AssertionError("shouldn't be instantiated");
     }
@@ -39,6 +40,9 @@ public final class Opt {
     /**
      * If primary is non-null, returns it, otherwise throws NoSuchElementException.
      *
+     * @param primary a non-null value to return
+     * @return {@code primary} if it is non-null
+     * @throws NoSuchElementException if primary is null
      * @see java.util.Optional#get()
      */
     public static <T> @NonNull T get(T primary) {

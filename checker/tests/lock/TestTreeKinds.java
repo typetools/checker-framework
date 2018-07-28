@@ -156,7 +156,7 @@ public class TestTreeKinds {
         // TODO: uncomment: Hits a bug in dataflow:
         // do {
         //     break;
-        // } while (foo.field != null); // access to guarded object in while condition of do/while loop
+        // } while (foo.field != null); // access to guarded object in condition of do/while loop
         // :: error: (lock.not.held)
         for (foo = new MyClass(); foo.field != null; foo = new MyClass()) {
             break;

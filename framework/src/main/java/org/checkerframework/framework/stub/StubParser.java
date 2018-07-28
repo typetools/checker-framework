@@ -35,6 +35,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
@@ -155,7 +156,7 @@ public class StubParser {
     /** Output variable: .... */
     Map<String, Set<AnnotationMirror>> declAnnos;
 
-    /** The line separator */
+    /** The line separator. */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
     /**
@@ -411,26 +412,14 @@ public class StubParser {
         }
     }
 
-    /** Returns the package name of the compilation unit, or null if in the default package. */
-    private String packageName(CompilationUnit cu) {
-        if (cu.getPackageDeclaration().isPresent()) {
-            return cu.getPackageDeclaration().get().getNameAsString();
-        } else {
-            return null;
-        }
-    }
-
     private void processCompilationUnit(CompilationUnit cu) {
-        final String packageName;
         final List<AnnotationExpr> packageAnnos;
 
         if (!cu.getPackageDeclaration().isPresent()) {
-            packageName = null;
             packageAnnos = null;
             parseState = new FqName(null, null);
         } else {
             PackageDeclaration pDecl = cu.getPackageDeclaration().get();
-            packageName = pDecl.getNameAsString();
             packageAnnos = pDecl.getAnnotations();
             processPackage(pDecl);
         }
@@ -978,6 +967,8 @@ public class StubParser {
             AnnotationMirror annoMirror = getAnnotation(annotation, allStubAnnotations);
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
+            } else {
+                stubWarnNotFound("Unknown annotation: " + annotation);
             }
         }
     }
@@ -1418,6 +1409,17 @@ public class StubParser {
             return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+        } else if (expr instanceof UnaryExpr) {
+            if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
+                Object value =
+                        getValueOfExpressionInAnnotation(
+                                name, ((UnaryExpr) expr).getExpression(), valueKind);
+                if (value instanceof Number) {
+                    return convert((Number) value, valueKind, true);
+                }
+            }
+            stubWarn("Unexpected Unary annotation expression: " + expr);
+            return null;
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();
@@ -1483,21 +1485,37 @@ public class StubParser {
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
      * */
     private Object convert(Number number, TypeKind expectedKind) {
+        return convert(number, expectedKind, false);
+    }
+
+    /**
+     * Converts {@code number} to {@code expectedKind}. The value converted is multiplied by -1 if
+     * {@code negate} is true
+     *
+     * @param number Number value to be converted
+     * @param expectedKind one of type {byte, short, int, long, char, float, double}
+     * @param negate whether to negate the value of the Number Object while converting
+     * @return the converted Object
+     */
+    private Object convert(Number number, TypeKind expectedKind, boolean negate) {
+        byte scalefactor = (byte) (negate ? -1 : 1);
         switch (expectedKind) {
             case BYTE:
-                return number.byteValue();
+                return number.byteValue() * scalefactor;
             case SHORT:
-                return number.shortValue();
+                return number.shortValue() * scalefactor;
             case INT:
-                return number.intValue();
+                return number.intValue() * scalefactor;
             case LONG:
-                return number.longValue();
+                return number.longValue() * scalefactor;
             case CHAR:
+                /* char is not multiplied by the scale factor since it's not possible for `number` to be negative
+                when `expectedkind` is a CHAR and casting a negative value to char is illegal */
                 return (char) number.intValue();
             case FLOAT:
-                return number.floatValue();
+                return number.floatValue() * scalefactor;
             case DOUBLE:
-                return number.doubleValue();
+                return number.doubleValue() * scalefactor;
             default:
                 ErrorReporter.errorAbort("Unexpected expectedKind: " + expectedKind);
                 return null;
@@ -1648,16 +1666,16 @@ public class StubParser {
             // Search importedConstants for full annotation name.
             for (String imp : importedConstants) {
                 // TODO: should this use StubUtil.partitionQualifiedName?
-                String[] import_delimited = imp.split("\\.");
-                if (import_delimited[import_delimited.length - 1].equals(
+                String[] importDelimited = imp.split("\\.");
+                if (importDelimited[importDelimited.length - 1].equals(
                         faexpr.getScope().toString())) {
-                    StringBuilder full_annotation = new StringBuilder();
-                    for (int i = 0; i < import_delimited.length - 1; i++) {
-                        full_annotation.append(import_delimited[i]);
-                        full_annotation.append('.');
+                    StringBuilder fullAnnotation = new StringBuilder();
+                    for (int i = 0; i < importDelimited.length - 1; i++) {
+                        fullAnnotation.append(importDelimited[i]);
+                        fullAnnotation.append('.');
                     }
-                    full_annotation.append(faexpr.getScope().toString());
-                    rcvElt = elements.getTypeElement(full_annotation);
+                    fullAnnotation.append(faexpr.getScope().toString());
+                    rcvElt = elements.getTypeElement(fullAnnotation);
                     break;
                 }
             }

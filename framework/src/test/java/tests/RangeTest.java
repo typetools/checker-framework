@@ -73,11 +73,11 @@ public class RangeTest {
 
     Range[] ranges;
 
-    static final long intWidth = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
+    static final long INT_WIDTH = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
 
-    static final long shortWidth = Short.MAX_VALUE - Short.MIN_VALUE + 1;
+    static final long SHORT_WIDTH = Short.MAX_VALUE - Short.MIN_VALUE + 1;
 
-    static final long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
+    static final long BYTE_WIDTH = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
 
     public RangeTest() {
         // Initialize the ranges list.
@@ -183,7 +183,7 @@ public class RangeTest {
 
         public ValuesInRangeIterator(Range range) {
             this.range = range;
-            Range.IGNORE_OVERFLOW = false;
+            Range.ignoreOverflow = false;
         }
 
         @Override
@@ -227,8 +227,8 @@ public class RangeTest {
         for (Range range : ranges) {
             Range result = range.intRange();
             for (long value : values) {
-                if (value < range.from + intWidth
-                        && value > range.to - intWidth
+                if (value < range.from + INT_WIDTH
+                        && value > range.to - INT_WIDTH
                         && (Math.abs(range.from) - 1) / Integer.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Integer.MIN_VALUE) {
                     // filter out test data that would cause Range.intRange to return INT_EVERYTHING
@@ -248,8 +248,8 @@ public class RangeTest {
         for (Range range : ranges) {
             Range result = range.shortRange();
             for (long value : values) {
-                if (value < range.from + shortWidth
-                        && value > range.to - shortWidth
+                if (value < range.from + SHORT_WIDTH
+                        && value > range.to - SHORT_WIDTH
                         && (Math.abs(range.from) - 1) / Short.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Short.MIN_VALUE) {
                     // filter out test data that would cause Range.shortRange to return
@@ -270,8 +270,8 @@ public class RangeTest {
         for (Range range : ranges) {
             Range result = range.byteRange();
             for (long value : values) {
-                if (value < range.from + byteWidth
-                        && value > range.to - byteWidth
+                if (value < range.from + BYTE_WIDTH
+                        && value > range.to - BYTE_WIDTH
                         && (Math.abs(range.from) - 1) / Byte.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Byte.MIN_VALUE) {
                     // filter out test data that would cause Range.ByteRange to return

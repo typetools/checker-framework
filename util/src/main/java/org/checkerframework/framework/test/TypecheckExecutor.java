@@ -47,7 +47,7 @@ public class TypecheckExecutor {
         // Therefore, we now add them to the beginning of the options list.
         final List<String> options = new ArrayList<String>();
         options.add("-processor");
-        options.add(PluginUtil.join(",", configuration.getProcessors()));
+        options.add(String.join(",", configuration.getProcessors()));
         List<String> nonJvmOptions = new ArrayList<String>();
         for (String option : configuration.getFlatOptions()) {
             if (!option.startsWith("-J-")) {
@@ -69,7 +69,7 @@ public class TypecheckExecutor {
             System.out.println("Running test using the following invocation:");
             System.out.println(
                     "javac "
-                            + PluginUtil.join(" ", options)
+                            + String.join(" ", options)
                             + " "
                             + PluginUtil.join(" ", configuration.getTestSourceFiles()));
         }

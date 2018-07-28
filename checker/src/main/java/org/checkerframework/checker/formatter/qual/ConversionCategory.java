@@ -145,7 +145,7 @@ public enum ConversionCategory {
     }
 
     /**
-     * Use this function to get the intersection of two categories. This is seldomly needed.
+     * Returns the intersection of two categories. This is seldomly needed.
      *
      * <blockquote>
      *
@@ -154,6 +154,10 @@ public enum ConversionCategory {
      * </pre>
      *
      * </blockquote>
+     *
+     * @param a a category
+     * @param b a category
+     * @return the intersection of the two categories (their greatest lower bound)
      */
     public static ConversionCategory intersect(ConversionCategory a, ConversionCategory b) {
         if (a == UNUSED) {
@@ -186,7 +190,7 @@ public enum ConversionCategory {
     }
 
     /**
-     * Use this function to get the union of two categories. This is seldomly needed.
+     * Returns the union of two categories. This is seldomly needed.
      *
      * <blockquote>
      *
@@ -195,6 +199,10 @@ public enum ConversionCategory {
      * </pre>
      *
      * </blockquote>
+     *
+     * @param a a category
+     * @param b a category
+     * @return the union of the two categories (their least upper bound)
      */
     public static ConversionCategory union(ConversionCategory a, ConversionCategory b) {
         if (a == UNUSED || b == UNUSED) {
