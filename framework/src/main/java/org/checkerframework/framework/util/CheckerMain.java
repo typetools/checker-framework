@@ -156,7 +156,7 @@ public class CheckerMain {
     protected List<String> createCpOpts(final List<String> argsList) {
         final List<String> extractedOpts = extractCpOpts(argsList);
         extractedOpts.add(0, this.checkerQualJar.getAbsolutePath());
-        return extractedOps;
+        return extractedOpts;
     }
 
     // Assumes that createCpOpts has already been run.
