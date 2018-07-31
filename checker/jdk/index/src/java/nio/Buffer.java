@@ -216,7 +216,7 @@ public abstract class Buffer {
      *
      * @return  The capacity of this buffer
      */
-    public final int capacity() {
+    public final @NonNegative int capacity() {
         return capacity;
     }
 
@@ -225,7 +225,7 @@ public abstract class Buffer {
      *
      * @return  The position of this buffer
      */
-    public final @NonNegative @LessThan("this.limit + 1") int position() {
+    public final @NonNegative int position() {
         return position;
     }
 
@@ -242,7 +242,7 @@ public abstract class Buffer {
      * @throws  IllegalArgumentException
      *          If the preconditions on <tt>newPosition</tt> do not hold
      */
-    public final Buffer position(@NonNegative @LessThan("this.limit + 1") int newPosition) {
+    public final Buffer position(@NonNegative int newPosition) {
         if ((newPosition > limit) || (newPosition < 0))
             throw new IllegalArgumentException();
         position = newPosition;
@@ -255,7 +255,7 @@ public abstract class Buffer {
      *
      * @return  The limit of this buffer
      */
-    public final @NonNegative @LessThan("this.capacity + 1") int limit() {
+    public final @NonNegative int limit() {
         return limit;
     }
 
@@ -273,7 +273,7 @@ public abstract class Buffer {
      * @throws  IllegalArgumentException
      *          If the preconditions on <tt>newLimit</tt> do not hold
      */
-    public final Buffer limit(@NonNegative @LessThan("this.capacity + 1") int newLimit) {
+    public final Buffer limit(@NonNegative int newLimit) {
         if ((newLimit > capacity) || (newLimit < 0))
             throw new IllegalArgumentException();
         limit = newLimit;
@@ -390,7 +390,7 @@ public abstract class Buffer {
      *
      * @return  The number of elements remaining in this buffer
      */
-    public final int remaining() {
+    public final  @NonNegative int remaining() {
         return limit - position;
     }
 
@@ -476,7 +476,7 @@ public abstract class Buffer {
      *
      * @since 1.6
      */
-    public abstract int arrayOffset();
+    public abstract @NonNegative int arrayOffset();
 
     /**
      * Tells whether or not this buffer is
@@ -550,7 +550,7 @@ public abstract class Buffer {
         return i;
     }
 
-    final @GTENegativeOne @LessThan("this.position + 1") int markValue() {                             // package-private
+    final @GTENegativeOne int markValue() {                             // package-private
         return mark;
     }
 

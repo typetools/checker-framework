@@ -326,7 +326,7 @@ public abstract class ByteBuffer
      * @throws  IllegalArgumentException
      *          If the <tt>capacity</tt> is a negative integer
      */
-    public static ByteBuffer allocate(int capacity) {
+    public static ByteBuffer allocate(@NonNegative int capacity) {
         if (capacity < 0)
             throw new IllegalArgumentException();
         return new HeapByteBuffer(capacity, capacity);
@@ -1014,7 +1014,7 @@ public abstract class ByteBuffer
      * @throws  UnsupportedOperationException
      *          If this buffer is not backed by an accessible array
      */
-    public final int arrayOffset() {
+    public final @NonNegative int arrayOffset() {
         if (hb == null)
             throw new UnsupportedOperationException();
         if (isReadOnly)
