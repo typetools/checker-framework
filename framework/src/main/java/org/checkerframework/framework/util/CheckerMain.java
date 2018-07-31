@@ -418,6 +418,54 @@ public class CheckerMain {
         return args;
     }
 
+    /** Given a list of paths, concatenate them to form a single path. Also expand wildcards. */
+    private String concatenatePaths(List<String> paths) {
+        List<String> elements = new ArrayList();
+        for (String path : paths) {
+            for (String element : path.split(File.pathSeparator, path)) {
+                elements.add(expandWildcards(element));
+            }
+        }
+        return String.join(File.pathSeparator, elements);
+    }
+
+    /** The string "/*" (on Unix). */
+    private static final String FILESEP_STAR = File.separator + "*";
+
+    /**
+     * Given a path element that might be a wildcard, return a list of the elements it expands to.
+     * If the element isn't a wildcard, return a singleton list containing the argument.
+     */
+    private List<String> expandWildcards(String pathElement) {
+        if (pathElement.equals("*")) {
+            return jarFiles(".");
+        } else if (pathElement.endsWith(FILESEP_STAR)) {
+            return jarFiles(pathElement.substring(0, pathElement.size() - 1));
+        } else if (pathElement.equals("")) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return Collections.singletonList(pathElement);
+        }
+    }
+
+    /** Return all the .jar and .JAR files in the given directory. */
+    private List<String> jarFiles(String directory) {
+        File dir = new File(directory);
+        File[] jarFiles =
+                dir.listFiles(
+                        new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                return name.endsWith(".jar") || name.endsWith(".JAR");
+                            }
+                        });
+        List<String> result = new ArrayList<>(jarFiles.length);
+        for (File jarFile : jarFiles) {
+            result.add(jarFile.toString());
+        }
+        return result;
+    }
+
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
      * classpath.
