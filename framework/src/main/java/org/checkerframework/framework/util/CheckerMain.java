@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -11,6 +12,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
@@ -156,7 +158,7 @@ public class CheckerMain {
     protected List<String> createCpOpts(final List<String> argsList) {
         final List<String> extractedOpts = extractCpOpts(argsList);
         extractedOpts.add(0, this.checkerQualJar.getAbsolutePath());
-        return extractedOps;
+        return extractedOpts;
     }
 
     // Assumes that createCpOpts has already been run.
@@ -420,10 +422,10 @@ public class CheckerMain {
 
     /** Given a list of paths, concatenate them to form a single path. Also expand wildcards. */
     private String concatenatePaths(List<String> paths) {
-        List<String> elements = new ArrayList();
+        List<String> elements = new ArrayList<>();
         for (String path : paths) {
-            for (String element : path.split(File.pathSeparator, path)) {
-                elements.add(expandWildcards(element));
+            for (String element : path.split(File.pathSeparator)) {
+                elements.addAll(expandWildcards(element));
             }
         }
         return String.join(File.pathSeparator, elements);
@@ -440,9 +442,9 @@ public class CheckerMain {
         if (pathElement.equals("*")) {
             return jarFiles(".");
         } else if (pathElement.endsWith(FILESEP_STAR)) {
-            return jarFiles(pathElement.substring(0, pathElement.size() - 1));
+            return jarFiles(pathElement.substring(0, pathElement.length() - 1));
         } else if (pathElement.equals("")) {
-            return Collections.EMPTY_LIST;
+            return Collections.<String>emptyList();
         } else {
             return Collections.singletonList(pathElement);
         }
