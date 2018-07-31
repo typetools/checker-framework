@@ -409,11 +409,11 @@ public class CheckerMain {
 
         if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
-            args.add(quote(String.join(File.pathSeparator, cpOpts)));
+            args.add(quote(concatenatePaths(cpOpts)));
         }
         if (!argsListHasProcessorPath(argListFiles)) {
             args.add("-processorpath");
-            args.add(quote(String.join(File.pathSeparator, ppOpts)));
+            args.add(quote(concatenatePaths(ppOpts)));
         }
 
         args.addAll(toolOpts);
