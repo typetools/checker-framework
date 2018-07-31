@@ -77,6 +77,11 @@ public class CheckerMain {
 
     private final List<String> jvmOpts;
 
+    /**
+     * Each element is either a classpath element (a directory or jar file) or is a classpath
+     * (containing elements separated by File.pathSeparator). To produce the final classpath,
+     * concatenate them all (separated by File.pathSeparator).
+     */
     private final List<String> cpOpts;
 
     private final List<String> ppOpts;
@@ -149,8 +154,8 @@ public class CheckerMain {
     }
 
     protected List<String> createCpOpts(final List<String> argsList) {
-        final List<String> extractedOps = extractCpOpts(argsList);
-        extractedOps.add(0, this.checkerQualJar.getAbsolutePath());
+        final List<String> extractedOpts = extractCpOpts(argsList);
+        extractedOpts.add(0, this.checkerQualJar.getAbsolutePath());
         return extractedOps;
     }
 
@@ -297,40 +302,42 @@ public class CheckerMain {
     }
 
     /**
-     * Remove the {@code -cp} and {@code -classpath} options and their arguments from args. Return
-     * the last argument. If no {@code -cp} or {@code -classpath} arguments were present then return
-     * the CLASSPATH environment variable followed by the current directory.
+     * Return the last {@code -cp} or {@code -classpath} option. If no {@code -cp} or {@code
+     * -classpath} arguments were present, then return the CLASSPATH environment variable (if set)
+     * followed by the current directory.
      *
-     * @param args a list of arguments to extract from
-     * @return the arguments that should be put on the classpath when calling javac.jar
+     * <p>Also removes all {@code -cp} and {@code -classpath} options from args.
+     *
+     * @param args a list of arguments to extract from; is side-effected by this
+     * @return collection of classpaths to concatenate to use when calling javac.jar
      */
     protected static List<String> extractCpOpts(final List<String> args) {
         List<String> actualArgs = new ArrayList<>();
 
-        String path = null;
+        String lastCpArg = null;
 
         for (int i = 0; i < args.size(); i++) {
             if ((args.get(i).equals("-cp") || args.get(i).equals("-classpath"))
                     && (i + 1 < args.size())) {
                 args.remove(i);
-                path = args.remove(i);
+                // Every classpath entry overrides the one before it.
+                lastCpArg = args.remove(i);
                 // re-process whatever is currently at element i
                 i--;
             }
         }
 
-        // The logic below is exactly what the javac script does.
-        // If it's empty use the "CLASSPATH" environment variable followed by the current directory.
-        if (path == null) {
+        // The logic below is exactly what the javac script does.  If no command-line classpath is
+        // specified, use the "CLASSPATH" environment variable followed by the current directory.
+        if (lastCpArg == null) {
             final String systemClassPath = System.getenv("CLASSPATH");
             if (systemClassPath != null && !systemClassPath.trim().isEmpty()) {
-                actualArgs.add(System.getenv("CLASSPATH"));
+                actualArgs.add(systemClassPath.trim());
             }
 
             actualArgs.add(".");
         } else {
-            // Every classpath entry overrides the one before it and CLASSPATH.
-            actualArgs.add(path);
+            actualArgs.add(lastCpArg);
         }
 
         return actualArgs;
