@@ -129,7 +129,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     && (!java8Inference.getContext().getAnnotatedTypeOfProperType
                             || java8Inference.getContext().pathToExpression.getLeaf()
                                     == pathToExpression.getLeaf())) {
-                // Currently infering, dont infer again.Java8InferenceContext.java:125
+                // Currently inferring, dont infer again.
                 return Collections.emptyMap();
             }
             java8InferenceStack.push(java8Inference);
