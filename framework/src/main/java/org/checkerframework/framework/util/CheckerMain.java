@@ -149,22 +149,22 @@ public class CheckerMain {
     }
 
     protected List<String> createCpOpts(final List<String> argsList) {
-        final List<String> extractedOps = extractCpOpts(argsList);
-        extractedOps.add(0, this.checkerQualJar.getAbsolutePath());
-        return extractedOps;
+        final List<String> extractedOpts = extractCpOpts(argsList);
+        extractedOpts.add(0, this.checkerQualJar.getAbsolutePath());
+        return extractedOpts;
     }
 
     // Assumes that createCpOpts has already been run.
     protected List<String> createPpOpts(final List<String> argsList) {
-        final List<String> extractedOps = extractPpOpts(argsList);
-        if (extractedOps.isEmpty()) {
+        final List<String> extractedOpts = extractPpOpts(argsList);
+        if (extractedOpts.isEmpty()) {
             // If processorpath is not provided, then javac uses the classpath.
             // CheckerMain always supplies a processorpath, so if the user
             // didn't specify a processorpath, then use the classpath.
-            extractedOps.addAll(this.cpOpts);
+            extractedOpts.addAll(this.cpOpts);
         }
-        extractedOps.add(0, this.checkerJar.getAbsolutePath());
-        return extractedOps;
+        extractedOpts.add(0, this.checkerJar.getAbsolutePath());
+        return extractedOpts;
     }
 
     /**
