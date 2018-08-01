@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -454,13 +453,7 @@ public class CheckerMain {
     private List<String> jarFiles(String directory) {
         File dir = new File(directory);
         File[] jarFiles =
-                dir.listFiles(
-                        new FilenameFilter() {
-                            @Override
-                            public boolean accept(File dir, String name) {
-                                return name.endsWith(".jar") || name.endsWith(".JAR");
-                            }
-                        });
+                dir.listFiles((dir, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
         List<String> result = new ArrayList<>(jarFiles.length);
         for (File jarFile : jarFiles) {
             result.add(jarFile.toString());
