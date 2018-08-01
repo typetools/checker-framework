@@ -11,6 +11,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
@@ -407,15 +408,57 @@ public class CheckerMain {
 
         if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
-            args.add(quote(String.join(File.pathSeparator, cpOpts)));
+            args.add(quote(concatenatePaths(cpOpts)));
         }
         if (!argsListHasProcessorPath(argListFiles)) {
             args.add("-processorpath");
-            args.add(quote(String.join(File.pathSeparator, ppOpts)));
+            args.add(quote(concatenatePaths(ppOpts)));
         }
 
         args.addAll(toolOpts);
         return args;
+    }
+
+    /** Given a list of paths, concatenate them to form a single path. Also expand wildcards. */
+    private String concatenatePaths(List<String> paths) {
+        List<String> elements = new ArrayList<>();
+        for (String path : paths) {
+            for (String element : path.split(File.pathSeparator)) {
+                elements.addAll(expandWildcards(element));
+            }
+        }
+        return String.join(File.pathSeparator, elements);
+    }
+
+    /** The string "/*" (on Unix). */
+    private static final String FILESEP_STAR = File.separator + "*";
+
+    /**
+     * Given a path element that might be a wildcard, return a list of the elements it expands to.
+     * If the element isn't a wildcard, return a singleton list containing the argument.
+     */
+    private List<String> expandWildcards(String pathElement) {
+        if (pathElement.equals("*")) {
+            return jarFiles(".");
+        } else if (pathElement.endsWith(FILESEP_STAR)) {
+            return jarFiles(pathElement.substring(0, pathElement.length() - 1));
+        } else if (pathElement.equals("")) {
+            return Collections.<String>emptyList();
+        } else {
+            return Collections.singletonList(pathElement);
+        }
+    }
+
+    /** Return all the .jar and .JAR files in the given directory. */
+    private List<String> jarFiles(String directory) {
+        File dir = new File(directory);
+        File[] jarFiles =
+                dir.listFiles((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
+        List<String> result = new ArrayList<>(jarFiles.length);
+        for (File jarFile : jarFiles) {
+            result.add(jarFile.toString());
+        }
+        return result;
     }
 
     /**
