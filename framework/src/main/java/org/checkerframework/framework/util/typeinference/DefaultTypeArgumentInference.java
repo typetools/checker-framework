@@ -136,11 +136,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             try {
                 java8Inference = new CFInvocationTypeInference(typeFactory, pathToExpression);
                 List<Variable> result = java8Inference.infer(expressionTree, methodType);
+                if (result != null) {
+                    System.out.println("Inferred the following for: " + expressionTree);
+                    System.out.println("\t" + PluginUtil.join("\n\t", result));
+                }
             } finally {
                 java8Inference = java8InferenceStack.pop();
             }
-            //            System.out.println("Inferred the following for: "+expressionTree);
-            //            System.out.println("\t"+PluginUtil.join("\n\t", result));
         }
         if (methodType == null) {
             return new HashMap<>();
