@@ -453,7 +453,7 @@ public class CheckerMain {
     private List<String> jarFiles(String directory) {
         File dir = new File(directory);
         File[] jarFiles =
-                dir.listFiles((dir, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
+                dir.listFiles((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
         List<String> result = new ArrayList<>(jarFiles.length);
         for (File jarFile : jarFiles) {
             result.add(jarFile.toString());
