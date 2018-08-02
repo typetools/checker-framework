@@ -334,6 +334,20 @@ class String{
     @StaticallyExecutable static String valueOf(Object obj) ;
 }
 
+package java.math;
+
+class BigInteger {
+    BigInteger(@IntRange(from = -1, to = 1) int signum, byte[] magnitude);
+    BigInteger(String val, @IntRange(from = 2, to = 36) int radix);
+
+    @IntRange(from = -1, to = 1) int compareTo(BigInteger val);
+    @PolyValue double doubleValue(@PolyValue BigInteger this);
+    @PolyValue float floatValue(@PolyValue BigInteger this);
+    @PolyValue int intValue(@PolyValue BigInteger this);
+    @PolyValue long longValue(@PolyValue BigInteger this);
+    @IntRange(from = -1, to = 1) int signum();
+}
+
 package java.util.regex;
 
 class Pattern {
