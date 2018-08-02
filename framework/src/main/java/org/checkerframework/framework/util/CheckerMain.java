@@ -443,7 +443,7 @@ public class CheckerMain {
         } else if (pathElement.endsWith(FILESEP_STAR)) {
             return jarFiles(pathElement.substring(0, pathElement.length() - 1));
         } else if (pathElement.equals("")) {
-            return Collections.<String>emptyList();
+            return Collections.emptyList();
         } else {
             return Collections.singletonList(pathElement);
         }
