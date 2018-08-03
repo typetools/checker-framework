@@ -95,6 +95,14 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
   (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
+  BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+  git show-branch remotes/origin/$BRANCH > /dev/null 2>&1
+  if [ "$?" -eq 0 ]; then
+    echo "Running:  (cd ../checker-framework && git checkout $BRANCH)"
+    (cd ../checker-framework && git checkout $BRANCH)
+    echo "... done: (cd ../checker-framework && git checkout $BRANCH)"
+  fi
+
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && ./gradlew dist test)
