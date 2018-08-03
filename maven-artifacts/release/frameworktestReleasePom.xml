@@ -7,11 +7,11 @@
     <name>Checker Framework Testing Library</name>
     <url>https://checkerframework.org</url>
     <description>
-        Testlib is a collection of utility classes for testing checkers that use the Checker Framework.
+        Framework-Test is a collection of utility classes for testing checkers that use the Checker Framework.
     </description>
 
     <groupId>org.checkerframework</groupId>
-    <artifactId>testlib</artifactId>
+    <artifactId>framework-test</artifactId>
 
     <licenses>
         <license>

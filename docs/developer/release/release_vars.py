@@ -160,10 +160,10 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
-TESTLIB_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "util", "build", "libs")
-TESTLIB_BINARY = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+".jar")
-TESTLIB_SOURCE_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-source.jar")
-TESTLIB_JAVADOC_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-javadoc.jar")
+FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
+FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
+FRAMEWORKTEST_SOURCE_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-source.jar")
+FRAMEWORKTEST_JAVADOC_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-javadoc.jar")
 
 JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
@@ -200,7 +200,7 @@ CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompat
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
-TESTLIB_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'testlibReleasePom.xml')
+FRAMEWORKTEST_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworktestReleasePom.xml')
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
 INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)
