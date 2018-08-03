@@ -81,7 +81,7 @@ jobs:
               SLUGOWNER=typetools
             fi
 
-            curl -LO --retry 3 https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+            curl -LO --retry 3 https://raw.github.com/plume-lib/trigger-travis/master/trigger-travis.sh
 
             git ls-remote https://github.com/${SLUGOWNER}/checker-framework.demos.git &>-
             if [ "$?" -eq 0 ]; then
