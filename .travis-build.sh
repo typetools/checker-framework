@@ -8,7 +8,7 @@ if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
   echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc, plume-lib."
   exit 1
 fi
@@ -75,12 +75,10 @@ if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   ./gradlew :checker:exampleTests
 fi
 
-if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
-  ## downstream tests:  projects that depend on the Checker Framework.
-  ## These are here so they can be run by pull requests.  (Pull requests
-  ## currently don't trigger downstream jobs.)
-  ## Not done in the Travis build, but triggered as a separate Travis project:
-  ##  * daikon-typecheck: (takes 2 hours)
+if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
+  ## checker-framework-inference is a downstream test, but run it in its
+  ## own group because it is most likely to fail, and it's helpful to see
+  ## that only it, not other downstream tests, failed.
 
   # checker-framework-inference: 18 minutes
   set +e
@@ -98,6 +96,15 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && ./gradlew dist test)
+
+fi
+
+if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
+  ## downstream tests:  projects that depend on the Checker Framework.
+  ## These are here so they can be run by pull requests.  (Pull requests
+  ## currently don't trigger downstream jobs.)
+  ## Not done in the Travis build, but triggered as a separate Travis project:
+  ##  * daikon-typecheck: (takes 2 hours)
 
   # Checker Framework demos
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
