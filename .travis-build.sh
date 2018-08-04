@@ -83,26 +83,10 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ##  * daikon-typecheck: (takes 2 hours)
 
   # checker-framework-inference: 18 minutes
-  set +e
-  echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
-  ${GITEXISTS} https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
-  if [ "$?" -ne 0 ]; then
-    CFISLUGOWNER=typetools
-  else
-    CFISLUGOWNER=${SLUGOWNER}
-  fi
-  set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
-  echo "BRANCH=$BRANCH"
-  (cd ../checker-framework-inference && git show-branch remotes/origin/$BRANCH > /dev/null 2>&1)
-  if [ "$?" -eq 0 ]; then
-    echo "Running:  (cd ../checker-framework-inference && git checkout $BRANCH)"
-    (cd ../checker-framework-inference && git checkout $BRANCH)
-    echo "... done: (cd ../checker-framework-inference && git checkout $BRANCH)"
-  fi
+  (cd .. && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  REPO=`../plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework-inference`
+  BRANCH=`../plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
