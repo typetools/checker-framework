@@ -51,18 +51,10 @@ set -e
 
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   # plume-lib-typecheck: 30 minutes
-  set +e
-  echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/plume-lib.git &>-"
-  ${GITEXISTS} https://github.com/${SLUGOWNER}/plume-lib.git &>-
-  if [ "$?" -ne 0 ]; then
-    PLSLUGOWNER=mernst
-  else
-    PLSLUGOWNER=${SLUGOWNER}
-  fi
-  set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
-  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git) || (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} mernst plume-lib`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
   export CHECKERFRAMEWORK=`pwd`
   (cd ../plume-lib/java && make check-types)
