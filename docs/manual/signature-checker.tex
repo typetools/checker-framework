@@ -44,8 +44,8 @@ examples appear in a table below.
 \item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
   A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
   \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
-  for example to refer to other types.  It abbreviates primitives and
-  arrays.  It uses internal form (binary names, but with \</> instead of
+  for example to refer to other types.  It abbreviates primitive types and
+  array types.  It uses internal form (binary names, but with \</> instead of
   \<.>; see
   \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS
     \S 4.2}) for class names.  See examples below.
@@ -108,7 +108,7 @@ Here are examples of the supported formats:
 \begin{center}
 \begin{tabular}{|l|l|l|l|l|l|}
 \hline
-\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
+\multicolumn{1}{|c|}{fully qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
 int                    & int                    & int                     & I                       & int                    & int            \\
 int[][]                & int[][]                & [[I                     & [[I                     & int[][]                & int[][]        \\
 MyClass                & MyClass                & MyClass                 & LMyClass;               & MyClass                & MyClass        \\
