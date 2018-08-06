@@ -115,18 +115,18 @@ Here are examples of the supported formats:
 \begin{tabular}{|l|l|l|l|l|l|}
 \hline
 \multicolumn{1}{|c|}{fully qualified name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
-int                 & int                  & I                    & int                 & int                 & int            \\
-int[][]             & [[I                  & [[I                  & int[][]             & int[][]             & int[][]        \\
+int                 & int                  & I                    & \naforprim          & \naforprim          & int            \\
+int[][]             & [[I                  & [[I                  & \naforarray         & \naforarray         & int[][]        \\
 MyClass             & MyClass              & LMyClass;            & MyClass             & MyClass             & MyClass        \\
-MyClass[]           & [LMyClass;           & [LMyClass;           & MyClass[]           & MyClass[]           & MyClass[]      \\
+MyClass[]           & [LMyClass;           & [LMyClass;           & \naforarray         & \naforarray         & MyClass[]      \\
 \naforanon          & MyClass\$22          & LMyClass\$22;        & MyClass\$22         & MyClass\$22         & \emptystring \\
-\naforanonarray     & [LMyClass\$22;       & [LMyClass\$22;       & MyClass\$22[]       & MyClass\$22[]       & []             \\
+\naforanonarray     & [LMyClass\$22;       & [LMyClass\$22;       & \naforarray[]       & \naforarray[]       & []             \\
 java.lang.Integer   & java.lang.Integer    & Ljava/lang/Integer;  & java.lang.Integer   & java/lang/Integer   & Integer        \\
-java.lang.Integer[] & [Ljava.lang.Integer; & [Ljava/lang/Integer; & java.lang.Integer[] & java/lang/Integer[] & Integer[]      \\
+java.lang.Integer[] & [Ljava.lang.Integer; & [Ljava/lang/Integer; & \naforarray         & \naforarray         & Integer[]      \\
 pkg.Outer.Inner     & pkg.Outer\$Inner     & Lpkg/Outer\$Inner;   & pkg.Outer\$Inner    & pkg/Outer\$Inner    & Inner          \\
-pkg.Outer.Inner[]   & [Lpkg.Outer\$Inner;  & [Lpkg/Outer\$Inner;  & pkg.Outer\$Inner[]  & pkg/Outer\$Inner[]  & Inner[]        \\
+pkg.Outer.Inner[]   & [Lpkg.Outer\$Inner;  & [Lpkg/Outer\$Inner;  & \naforarray         & \naforarray         & Inner[]        \\
 \naforanon          & pkg.Outer\$22        & Lpkg/Outer\$22;      & pkg.Outer\$22       & pkg/Outer\$22       & \emptystring \\
-\naforanonarray     & [Lpkg.Outer\$22;     & [Lpkg/Outer\$22;     & pkg.Outer\$22[]     & pkg/Outer\$22[]     & []             \\
+\naforanonarray     & [Lpkg.Outer\$22;     & [Lpkg/Outer\$22;     & \naforarray         & \naforarray         & []             \\
 \hline
 \end{tabular}
 \end{center}
