@@ -8,7 +8,7 @@ if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
   echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc, plume-lib."
   exit 1
 fi
@@ -51,18 +51,10 @@ set -e
 
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   # plume-lib-typecheck: 30 minutes
-  set +e
-  echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/plume-lib.git &>-"
-  ${GITEXISTS} https://github.com/${SLUGOWNER}/plume-lib.git &>-
-  if [ "$?" -ne 0 ]; then
-    PLSLUGOWNER=mernst
-  else
-    PLSLUGOWNER=${SLUGOWNER}
-  fi
-  set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
-  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git) || (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} mernst plume-lib`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
   export CHECKERFRAMEWORK=`pwd`
   (cd ../plume-lib/java && make check-types)
@@ -75,29 +67,29 @@ if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   ./gradlew :checker:exampleTests
 fi
 
+if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
+  ## checker-framework-inference is a downstream test, but run it in its
+  ## own group because it is most likely to fail, and it's helpful to see
+  ## that only it, not other downstream tests, failed.
+
+  # checker-framework-inference: 18 minutes
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework-inference`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
+
+  export AFU=`pwd`/../annotation-tools/annotation-file-utilities
+  export PATH=$AFU/scripts:$PATH
+  (cd ../checker-framework-inference && ./gradlew dist test)
+
+fi
+
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## downstream tests:  projects that depend on the Checker Framework.
   ## These are here so they can be run by pull requests.  (Pull requests
   ## currently don't trigger downstream jobs.)
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
-
-  # checker-framework-inference: 18 minutes
-  set +e
-  echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
-  ${GITEXISTS} https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
-  if [ "$?" -ne 0 ]; then
-    CFISLUGOWNER=typetools
-  else
-    CFISLUGOWNER=${SLUGOWNER}
-  fi
-  set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  export AFU=`pwd`/../annotation-tools/annotation-file-utilities
-  export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test)
 
   # Checker Framework demos
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then

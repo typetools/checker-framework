@@ -5,5 +5,5 @@ include 'dataflow'
 include 'framework'
 include 'checker-qual'
 include 'jdk8'
-include 'util'
+include 'framework-test'
 

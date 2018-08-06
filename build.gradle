@@ -82,13 +82,13 @@ allprojects {
         // Also, build and use ManualTaglet as a taglet.
         tasks.withType(Javadoc) {
             dependsOn(':checker:shadowJar')
-            dependsOn(':util:tagletClasses')
+            dependsOn(':framework-test:tagletClasses')
             doFirst {
                 options.encoding = 'UTF-8'
                 options.memberLevel = javadocMemberLevel
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
-                options.tagletPath(project(':util').sourceSets.taglet.output as File[])
+                options.tagletPath(project(':framework-test').sourceSets.taglet.output as File[])
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
@@ -203,7 +203,7 @@ task htmlValidate(type: Exec) {
 task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
-    dependsOn(':util:tagletClasses')
+    dependsOn(':framework-test:tagletClasses')
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
@@ -292,7 +292,7 @@ task tags {
     description 'Create Emacs TAGS table'
     doLast {
         exec {
-            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "javacutil/TAGS", "-i", "util/TAGS", "-i", "docs/manual/TAGS"
+            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
         }
         exec {
             commandLine "make", "-C", "docs/manual", "tags"
@@ -654,3 +654,6 @@ task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
 }
+
+// Don't create an empty checker-framework-VERSION.jar
+jar.onlyIf {false}
