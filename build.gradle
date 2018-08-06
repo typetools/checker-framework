@@ -653,3 +653,6 @@ task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
 }
+
+// Don't create an empty checker-framework-VERSION.jar
+jar.onlyIf {false}
