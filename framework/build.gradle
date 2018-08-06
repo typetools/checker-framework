@@ -31,6 +31,9 @@ shadowJar {
     description 'Creates the "fat" framework.jar in dist'
     destinationDir = file("${projectDir}/dist")
     archiveName = "framework.jar"
+    manifest {
+        attributes('Automatic-Module-Name': "org.checkerframework.framework")
+    }
 }
 
 createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")
