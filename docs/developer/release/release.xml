@@ -190,11 +190,11 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checker.binary.poms}/testlibPom.xml"
+        <update file="${checker.binary.poms}/frameworktestPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checker.release.poms}/testlibReleasePom.xml"
+        <update file="${checker.release.poms}/frameworktestReleasePom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
