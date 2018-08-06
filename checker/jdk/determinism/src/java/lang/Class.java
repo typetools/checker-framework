@@ -3444,7 +3444,7 @@ public final class Class<T> implements java.io.Serializable,
     /**
      * @since 1.5
      */
-    public @NonDet Annotation @NonDet [] getAnnotations(@PolyDet Class<T> this) {
+    public @Det Annotation @OrderNonDet [] getAnnotations(@PolyDet Class<T> this) {
         return AnnotationParser.toArray(annotationData().annotations);
     }
 
@@ -3475,7 +3475,7 @@ public final class Class<T> implements java.io.Serializable,
     /**
      * @since 1.5
      */
-    public @NonDet Annotation @NonDet [] getDeclaredAnnotations(@PolyDet Class<T> this)  {
+    public @Det Annotation @OrderNonDet [] getDeclaredAnnotations(@PolyDet Class<T> this)  {
         return AnnotationParser.toArray(annotationData().declaredAnnotations);
     }
 
