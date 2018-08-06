@@ -738,6 +738,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     @Override
+    public Boolean visitPrimitive_Typevar(
+            AnnotatedPrimitiveType subtype, AnnotatedTypeVariable supertype, Void p) {
+        return AtmCombo.accept(subtype, supertype.getUpperBound(), null, this);
+    }
+
+    @Override
     public Boolean visitPrimitive_Wildcard(
             AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
         if (supertype.atypeFactory.ignoreUninferredTypeArguments

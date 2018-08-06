@@ -58,7 +58,7 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.3'
+    version '2.5.4'
 
     repositories {
         mavenCentral()
@@ -653,3 +653,6 @@ task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
 }
+
+// Don't create an empty checker-framework-VERSION.jar
+jar.onlyIf {false}
