@@ -156,13 +156,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         handleReplaceOnInternalForm(c1, c2, type);
                     }
                 }
-            } else if (TreeUtils.isMethodInvocation(tree, containsCharSequence, processingEnv)) {
-                ExpressionTree arg = tree.getArguments().get(0);
-                if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
-                    String argStr = (String) ((LiteralTree) arg).getValue();
-                }
             }
-
             return super.visitMethodInvocation(tree, type);
         }
 
@@ -173,6 +167,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private void handleReplaceOnBinaryName(char c1, char c2, AnnotatedTypeMirror type) {
             if (c1 == '.' && c2 == '/') {
                 type.replaceAnnotation(INTERNAL_FORM);
+            } else if (c1 == '$' && c2 == '.') {
+                type.replaceAnnotation(FULLY_QUALIFIED_NAME);
             }
         }
 
