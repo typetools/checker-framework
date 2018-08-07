@@ -195,18 +195,30 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isMainMethod(t.getElement())) {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
-            }
-            // Array return types should be annotated as @PolyDet[@PolyDet]
-            else {
+            } else {
+                // Array return types should be annotated as @PolyDet[@PolyDet]
                 AnnotatedTypeMirror retType = t.getReturnType();
                 if (retType.getKind() == TypeKind.ARRAY) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) retType;
                     if (arrRetType.getAnnotations().size() == 0
-                            || (arrRetType.hasAnnotation(POLYDET)
-                                    && arrRetType.getComponentType().hasAnnotation(DET))) {
+                    /*|| (arrRetType.hasAnnotation(POLYDET)
+                    && arrRetType.getComponentType().hasAnnotation(DET))*/ ) {
                         arrRetType.replaceAnnotation(POLYDET);
                         arrRetType.getComponentType().replaceAnnotation(POLYDET);
+                    }
+                }
+
+                // Array parameter types should be annotated as @PolyDet[@PolyDet]
+                List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
+                for (AnnotatedTypeMirror paramType : paramTypes) {
+                    if (paramType.getKind() == TypeKind.ARRAY) {
+                        AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
+                                (AnnotatedTypeMirror.AnnotatedArrayType) paramType;
+                        if (arrParamType.getAnnotations().size() == 0) {
+                            arrParamType.replaceAnnotation(POLYDET);
+                            arrParamType.getComponentType().replaceAnnotation(POLYDET);
+                        }
                     }
                 }
             }

@@ -4,6 +4,7 @@
 import java.util.stream.Stream;
 
 public class Issue1334 {
+    @SuppressWarnings("determinism")
     private void test() {
         Stream<Integer> stream = Stream.of(new byte[][] {}).map(b -> 1);
     }

@@ -9,8 +9,8 @@
 //    void testSort1(@Det int @OrderNonDet [] a) {
 //        // :: error: (argument.type.incompatible)
 //        System.out.println(a[0]);
+////        System.out.println(a[0]);
 //        Arrays.sort(a);
-//        System.out.println(a[0]);
 //    }
 //
 //    void testSort2(@Det Integer @OrderNonDet [] a) {
@@ -20,10 +20,13 @@
 //        Arrays.sort(a, c);
 //        System.out.println(a[0]);
 //    }
+// }
 //
-//    class IntComparator implements Comparator<@PolyDet Integer> {
-//        public int compare(Integer i1, Integer i2) {
-//            return 0;
-//        }
-//    }
+// class IntComparator implements Comparator<Integer> {
+//     public @PolyDet IntComparator(){
+//
+//     }
+//     public int compare(Integer i1, Integer i2) {
+//         return 0;
+//     }
 // }

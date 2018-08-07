@@ -13,6 +13,7 @@ public class Issue1681 {
 
     void foo(StrReturn[] p) {}
 
+    @SuppressWarnings("determinism")
     void bar() {
         foo(new StrReturn[] {() -> "test", () -> "boo"});
     }

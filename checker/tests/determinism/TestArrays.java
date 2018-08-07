@@ -5,8 +5,8 @@ import org.checkerframework.checker.determinism.qual.*;
 
 class TestArrays {
     // Tests whether array parameters have correct defaults when passed.
-    void testArrParam() {
-        int[] arr = new int[0];
+    void testArrParam(@PolyDet int @PolyDet [] arr) {
+        int[] a = new int[] {10};
         takeArr(arr);
     }
 
