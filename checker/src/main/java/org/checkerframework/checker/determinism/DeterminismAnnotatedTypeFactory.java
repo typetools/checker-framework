@@ -196,6 +196,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             }
+            // Array return types should be annotated as @PolyDet[@PolyDet]
+            else {
+                AnnotatedTypeMirror retType = t.getReturnType();
+                if (retType.getKind() == TypeKind.ARRAY) {
+                    AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
+                            (AnnotatedTypeMirror.AnnotatedArrayType) retType;
+                    if (arrRetType.getAnnotations().size() == 0
+                            || (arrRetType.hasAnnotation(POLYDET)
+                                    && arrRetType.getComponentType().hasAnnotation(DET))) {
+                        arrRetType.replaceAnnotation(POLYDET);
+                        arrRetType.getComponentType().replaceAnnotation(POLYDET);
+                    }
+                }
+            }
             return super.visitExecutable(t, p);
         }
     }

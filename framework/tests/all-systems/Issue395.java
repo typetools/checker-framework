@@ -3,6 +3,7 @@
 
 import java.util.ArrayList;
 
+@SuppressWarnings("determinism")
 class Issue395 {
 
     Object[] testMethod() {

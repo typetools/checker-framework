@@ -14,6 +14,7 @@ class AssignmentContext {
         foo(b ? new String[] {""} : null);
     }
 
+    @SuppressWarnings("determinism")
     String[] t3(boolean b) {
         return b ? new String[] {""} : null;
     }

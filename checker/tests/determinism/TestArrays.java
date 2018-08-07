@@ -6,25 +6,31 @@ import org.checkerframework.checker.determinism.qual.*;
 class TestArrays {
     // Tests whether array parameters have correct defaults when passed.
     void testArrParam() {
-        @PolyDet int @PolyDet [] arr = new @PolyDet int @PolyDet [0];
-        takeArry(arr);
+        int[] arr = new int[0];
+        takeArr(arr);
     }
 
     // Tests whether array return values have correct defaults.
     void testArrRet() {
         // :: error: (assignment.type.incompatible)
         @Det int i = returnArr()[0];
+        @Det int j = returnArrExplicit()[0];
     }
     // Tests whether returned arrays have correct defaults within methods.
     int[] testArrRetInternal() {
         @PolyDet int @PolyDet [] arr = new @PolyDet int @PolyDet [0];
         // This should fail if @Det int [] @PolyDet is expected, which it
         // should't be.
-        return new int[0];
+        return new @PolyDet int @PolyDet [0];
     }
 
     int[] returnArr() {
-        return new int[] {0};
+        return new @PolyDet int @PolyDet [] {0};
+    }
+
+    @Det
+    int @Det [] returnArrExplicit() {
+        return new @Det int @Det [] {0};
     }
 
     void takeArr(int[] a) {}
