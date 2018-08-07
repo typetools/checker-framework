@@ -1,0 +1,23 @@
+digraph G {
+BinaryNameInUnnamedPackage -> BinaryName
+BinaryNameInUnnamedPackage -> InternalForm
+BinaryName -> ClassGetName
+ClassGetName -> SignatureUnknown
+ClassGetSimpleName -> SignatureUnknown
+FieldDescriptorForArray -> ClassGetName
+FieldDescriptorForArray -> FieldDescriptor
+FieldDescriptor -> SignatureUnknown
+FullyQualifiedName -> SignatureUnknown
+Identifier -> SourceNameForNonArrayNonInner
+Identifier -> BinaryNameInUnnamedPackage
+Identifier -> IdentifierOrArray
+IdentifierOrArray -> FullyQualifiedName
+IdentifierOrArray -> ClassGetSimpleName
+InternalForm -> SignatureUnknown
+MethodDescriptor -> SignatureUnknown
+SignatureBottom -> Identifier
+SignatureBottom -> FieldDescriptorForArray
+SignatureBottom -> MethodDescriptor
+SourceNameForNonArrayNonInner -> FullyQualifiedName
+SourceNameForNonArrayNonInner -> BinaryName
+}

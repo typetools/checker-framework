@@ -1,0 +1,39 @@
+diff --git a/checker/src/main/java/org/checkerframework/checker/signature/qual/BinaryNameInUnnamedPackage.java b/checker/src/main/java/org/checkerframework/checker/signature/qual/BinaryNameInUnnamedPackage.java
+index 47be61a40..24009db65 100644
+--- a/checker/src/main/java/org/checkerframework/checker/signature/qual/BinaryNameInUnnamedPackage.java
++++ b/checker/src/main/java/org/checkerframework/checker/signature/qual/BinaryNameInUnnamedPackage.java
+@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
+  *
+  * @checker_framework.manual #signature-checker Signature Checker
+  */
+-@SubtypeOf({BinaryName.class, InternalForm.class})
++@SubtypeOf({BinaryName.class})
+ @ImplicitFor(stringPatterns = "^[A-Za-z_][A-Za-z_0-9]*(\\$[A-Za-z_0-9]+)*(\\[\\])*$")
+ @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+ public @interface BinaryNameInUnnamedPackage {}
+diff --git a/checker/src/main/java/org/checkerframework/checker/signature/qual/InternalForm.java b/checker/src/main/java/org/checkerframework/checker/signature/qual/InternalForm.java
+index cf133c3d0..40c33d66d 100644
+--- a/checker/src/main/java/org/checkerframework/checker/signature/qual/InternalForm.java
++++ b/checker/src/main/java/org/checkerframework/checker/signature/qual/InternalForm.java
+@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
+ @SubtypeOf(SignatureUnknown.class)
+ @ImplicitFor(
+     stringPatterns =
+-            "^[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*(\\[\\])*$"
++            "(^[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*$)|^\\[+([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*;)$"
+ )
+ @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+ public @interface InternalForm {}
+diff --git a/checker/src/main/java/org/checkerframework/checker/signature/qual/SignatureBottom.java b/checker/src/main/java/org/checkerframework/checker/signature/qual/SignatureBottom.java
+index 3125c291f..b69d8afbb 100644
+--- a/checker/src/main/java/org/checkerframework/checker/signature/qual/SignatureBottom.java
++++ b/checker/src/main/java/org/checkerframework/checker/signature/qual/SignatureBottom.java
+@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
+  * @checker_framework.manual #signature-checker Signature Checker
+  * @checker_framework.manual #bottom-type the bottom type
+  */
+-@SubtypeOf({Identifier.class, FieldDescriptorForArray.class, MethodDescriptor.class})
++@SubtypeOf({Identifier.class, FieldDescriptorForNonPrimitiveArray.class, MethodDescriptor.class})
+ @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+ @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+ @ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
