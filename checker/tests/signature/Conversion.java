@@ -3,11 +3,11 @@ import org.checkerframework.checker.signature.qual.*;
 public class Conversion {
 
     class CharChar {
-        @InternalForm String binaryNameToInternalForm(@BinaryName String bn) {
-            return bn.replace('.', '/');
+        @InternalForm String binaryNameToInternalForm(@ClassGetName String cgn) {
+            return cgn.replace('.', '/');
         }
 
-        @BinaryName String internalFormToBinaryName(@InternalForm String iform) {
+        @ClassGetName String internalFormToBinaryName(@InternalForm String iform) {
             return iform.replace('/', '.');
         }
 
@@ -43,11 +43,11 @@ public class Conversion {
     }
 
     class CharSequenceCharSequence {
-        @InternalForm String binaryNameToInternalForm(@BinaryName String bn) {
-            return bn.replace(".", "/");
+        @InternalForm String binaryNameToInternalForm(@ClassGetName String cgn) {
+            return cgn.replace(".", "/");
         }
 
-        @BinaryName String internalFormToBinaryName(@InternalForm String iform) {
+        @ClassGetName String internalFormToBinaryName(@InternalForm String iform) {
             return iform.replace("/", ".");
         }
 

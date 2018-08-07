@@ -2,11 +2,10 @@ package org.checkerframework.checker.signature.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a field descriptor (JVM type format) as defined in the <a
+ * Represents a field descriptor or a method descriptor (JVM type format) as defined in the <a
  * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2">Java Virtual
  * Machine Specification, section 4.3.2</a>.
  *
@@ -16,6 +15,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *  package org.checkerframework.checker.signature;
  *  public class SignatureChecker {
  *    private class Inner {}
+ *
+ *    void func(int a, String b) {
+ *      // ...
+ *    }
  *  }
  * </pre>
  *
@@ -23,11 +26,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Lorg/checkerframework/checker/signature/SignatureChecker; and
  * Lorg/checkerframework/checker/signature/SignatureChecker$Inner; .
  *
+ * <p>and the method descriptor for {@code func} is: (ILjava/lang/String;)V
+ *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@SubtypeOf(FieldOrMethodDescriptor.class)
-@ImplicitFor(
-        stringPatterns =
-                "^\\[*([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*;)$")
+@SubtypeOf(SignatureUnknown.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface FieldDescriptor {}
+public @interface FieldOrMethodDescriptor {}
