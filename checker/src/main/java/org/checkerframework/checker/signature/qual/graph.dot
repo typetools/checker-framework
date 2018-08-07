@@ -6,6 +6,8 @@ ClassGetName -> SignatureUnknown
 ClassGetSimpleName -> SignatureUnknown
 FieldDescriptorForArray -> ClassGetName
 FieldDescriptorForArray -> FieldDescriptor
+FieldDescriptorForPrimitive -> FieldDescriptorForArray
+FieldDescriptorForPrimitive -> Identifier
 FieldDescriptor -> SignatureUnknown
 FullyQualifiedName -> SignatureUnknown
 Identifier -> SourceNameForNonArrayNonInner
@@ -15,8 +17,7 @@ IdentifierOrArray -> FullyQualifiedName
 IdentifierOrArray -> ClassGetSimpleName
 InternalForm -> SignatureUnknown
 MethodDescriptor -> SignatureUnknown
-SignatureBottom -> Identifier
-SignatureBottom -> FieldDescriptorForArray
+SignatureBottom -> FieldDescriptorForPrimitive
 SignatureBottom -> MethodDescriptor
 SourceNameForNonArrayNonInner -> FullyQualifiedName
 SourceNameForNonArrayNonInner -> BinaryName
