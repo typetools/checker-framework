@@ -1,9 +1,10 @@
 #!/bin/sh
 # Add favicon to header of HTML files.  A favicon is a favorites icon,
 # which appears in a browser tab that is visiting the given HTML file.
+# One use case is for javadoc-generated API documentation.
 #
 # Usage:
-#   add-favicon <directory> <favicon.png>
+#   html-add-favicon <directory> <favicon.png>
 # The arguments should be paths relative to the current working directory.
 # Once this has been run, running it again has no effect (and does no harm).
 
