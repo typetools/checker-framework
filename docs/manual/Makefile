@@ -59,7 +59,7 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 # Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
 	imagen manual
 	./add-favicon-to-manual
-# The following three lines are only necessary when using Hevea before version 2.04
+# The following three lines are only necessary when using Hevea before version 2.04.
 # With version 2.04 they have no effect but do no harm.
 	\mv -f manual.html manual.html-with-htoc
 	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
