@@ -16,6 +16,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
+import com.sun.tools.javac.comp.Resolve.RecoveryLoadClass;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -488,9 +489,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<Symbol> result = new ArrayList<>();
         try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
+            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class, RecoveryLoadClass.class);
             loadClass.setAccessible(true);
-            Symbol sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+            Symbol sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className), null);
             if (!sym.exists()) {
                 debugReflection("Unable to resolve class: " + className);
                 return Collections.emptyList();
@@ -544,9 +545,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<Symbol> result = new ArrayList<>();
         try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
+            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class, RecoveryLoadClass.class);
             loadClass.setAccessible(true);
-            Symbol symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+            Symbol symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className), null);
             if (!symClass.exists()) {
                 debugReflection("Unable to resolve class: " + className);
                 return Collections.emptyList();
