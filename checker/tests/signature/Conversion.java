@@ -40,6 +40,14 @@ public class Conversion {
             // :: error: (return.type.incompatible)
             return iform.replace('/', '.');
         }
+
+        @SourceNameForNonArrayNonInner String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+            return bn.replace('$', '.');
+        }
+
+        @FullyQualifiedName String fullyQualifiedNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+            return bn.replace('$', '.');
+        }
     }
 
     class CharSequenceCharSequence {
@@ -79,6 +87,14 @@ public class Conversion {
         @BinaryName String internalFormToBinaryNameWRONG3(String iform) {
             // :: error: (return.type.incompatible)
             return iform.replace("/", ".");
+        }
+
+        @SourceNameForNonArrayNonInner String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+            return bn.replace("$", ".");
+        }
+
+        @FullyQualifiedName String fullyQualifiedNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+            return bn.replace("$", ".");
         }
     }
 }
