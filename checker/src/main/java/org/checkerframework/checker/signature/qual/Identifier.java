@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({
     SourceNameForNonArrayNonInner.class,
     BinaryNameInUnnamedPackage.class,
-    ClassGetSimpleName.class
+    IdentifierOrArray.class
 })
 @ImplicitFor(stringPatterns = "^([A-Za-z_][A-Za-z_0-9]*)$")
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

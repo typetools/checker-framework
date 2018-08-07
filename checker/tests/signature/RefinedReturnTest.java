@@ -13,12 +13,12 @@ public class RefinedReturnTest {
 
     public class Sub extends Super {
         @Override
-        public @ClassGetSimpleName String aString() {
+        public @IdentifierOrArray String aString() {
             return "Integer[]";
         }
     }
 
     void m() {
-        @ClassGetSimpleName String s = new Sub().aString();
+        @IdentifierOrArray String s = new Sub().aString();
     }
 }
