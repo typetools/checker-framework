@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, all-tests, jdk.jar, downstream, misc, plume-lib
-# If it is omitted, this script does everything.
+#   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
+# It defaults to "all".
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
 if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc, plume-lib."
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
   exit 1
 fi
 
