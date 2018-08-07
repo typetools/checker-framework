@@ -1,4 +1,3 @@
-// this is from plume-lib
 class TypeVarAndArrayRefinement {
 
     private <T extends Enum<T>> T getEnumValue(Class<T> enumType, String name) {

@@ -50,14 +50,14 @@ source ./.travis-build-without-test.sh ${BUILDJDK}
 set -e
 
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
-  # plume-lib-typecheck: 30 minutes
+  # plume-lib-typecheck: 15 minutes
   [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
-  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} mernst plume-lib`
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetests plume-lib-typecheck`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
   export CHECKERFRAMEWORK=`pwd`
-  (cd ../plume-lib/java && make check-types)
+  (cd ../plume-lib-typecheck && ./travis-build.sh)
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
