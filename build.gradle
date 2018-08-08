@@ -201,7 +201,7 @@ task htmlValidate(type: Exec) {
 }
 
 
-// `gradle allJavadoc` builds the Javadoc for all modules in ;docs/api`.
+// `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
 //   This is what is published to checkerframework.org.
 // `gradle javadoc` builds the Javadoc for each sub-project in <subproject>/build/docs/javadoc/ .
 //   It's needed to create the Javadoc jars that we release in Maven Central. In a subproject,
