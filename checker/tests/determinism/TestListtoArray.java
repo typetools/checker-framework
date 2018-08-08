@@ -15,7 +15,7 @@ public class TestListtoArray {
     }
 
     void ListToObjectArray3(@Det List<@Det String> detList) {
-        String [] objArr = detList.toArray(new @Det String @Det[10]);
+        String[] objArr = detList.toArray(new @Det String @Det [10]);
     }
 
     void ListToObjectArray4(@OrderNonDet List<@Det String> ondetList) {
