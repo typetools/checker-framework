@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, all-tests, jdk.jar, downstream, misc, plume-lib
-# If it is omitted, this script does everything.
+#   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
+# It defaults to "all".
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
 if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc, plume-lib."
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
   exit 1
 fi
 
@@ -61,10 +61,10 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew allTests
+  ./gradlew --console=plain allTests
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
-  ./gradlew :checker:exampleTests
+  ./gradlew --console=plain :checker:exampleTests
 fi
 
 if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
@@ -80,7 +80,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test)
+  (cd ../checker-framework-inference && ./gradlew --console=plain dist test)
 
 fi
 
@@ -95,7 +95,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew :checker:demosTests
+    ./gradlew --console=plain :checker:demosTests
   fi
 
   # sparta: 1 minute, but the command is "true"!
@@ -115,7 +115,7 @@ fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk
+  ./gradlew --console=plain IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -126,21 +126,21 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew checkBasicStyle checkFormat
+  ./gradlew --console=plain checkBasicStyle checkFormat
 
   # Run error-prone
-  ./gradlew runErrorProne
+  ./gradlew --console=plain runErrorProne
 
   # Documentation
-  ./gradlew allJavadoc
-  ./gradlew javadocPrivate
+  ./gradlew --console=plain allJavadoc
+  ./gradlew --console=plain javadocPrivate
   make -C docs/manual all
 
   echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
   # (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
   # The change to TRAVIS_COMMIT_RANGE is due to travis-ci/travis-ci#4596 .
   (git diff "${TRAVIS_COMMIT_RANGE/.../..}" > /tmp/diff.txt 2>&1) || true
-  (./gradlew requireJavadocPrivate > /tmp/rjp-output.txt 2>&1) || true
+  (./gradlew requireJavadocPrivate --console=plain > /tmp/rjp-output.txt 2>&1) || true
   [ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty" && false)
   wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
   python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
@@ -152,6 +152,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   make -C ../jsr308-langtools/doc pdf
 
   # HTML legality
-  ./gradlew htmlValidate
+  ./gradlew --console=plain htmlValidate
 
 fi
