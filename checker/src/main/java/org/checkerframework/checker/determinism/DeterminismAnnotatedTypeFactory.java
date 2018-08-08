@@ -201,9 +201,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (retType.getKind() == TypeKind.ARRAY) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) retType;
-                    if (arrRetType.getAnnotations().size() == 0
-                    /*|| (arrRetType.hasAnnotation(POLYDET)
-                    && arrRetType.getComponentType().hasAnnotation(DET))*/ ) {
+                    if (arrRetType.getAnnotations().size() == 0) {
                         arrRetType.replaceAnnotation(POLYDET);
                         arrRetType.getComponentType().replaceAnnotation(POLYDET);
                     }

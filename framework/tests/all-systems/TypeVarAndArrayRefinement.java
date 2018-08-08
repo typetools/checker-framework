@@ -1,6 +1,7 @@
 // this is from plume-lib
 class TypeVarAndArrayRefinement {
 
+    @SuppressWarnings("determinism")
     private <T extends Enum<T>> T getEnumValue(Class<T> enumType, String name) {
         T[] constants = enumType.getEnumConstants();
         if (constants == null) {

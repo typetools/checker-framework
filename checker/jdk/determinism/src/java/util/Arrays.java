@@ -1106,7 +1106,7 @@ public class Arrays {
      * @since 1.8
      */
     @SuppressWarnings("unchecked")
-    public static <@PolyDet T> void parallelSort(T @PolyDet[] a, @PolyDet("use") Comparator<? super T> cmp) {
+    public static <T> void parallelSort(T @PolyDet[] a, @PolyDet("use") Comparator<? super T> cmp) {
         if (cmp == null)
             cmp = NaturalOrder.INSTANCE;
         int n = a.length, p, g;
@@ -1165,7 +1165,7 @@ public class Arrays {
      * @since 1.8
      */
     @SuppressWarnings("unchecked")
-    public static <@PolyDet T> void parallelSort(T @PolyDet [] a, @PolyDet("use") int fromIndex, @PolyDet("use") int toIndex,
+    public static <T> void parallelSort(T @PolyDet [] a, @PolyDet("use") int fromIndex, @PolyDet("use") int toIndex,
                                                  @PolyDet("use") Comparator<? super T> cmp) {
         rangeCheck(a.length, fromIndex, toIndex);
         if (cmp == null)
@@ -1430,7 +1430,7 @@ public class Arrays {
      * @throws IllegalArgumentException (optional) if the comparator is
      *         found to violate the {@link Comparator} contract
      */
-    public static <@PolyDet T> void sort(T @PolyDet[] a, @PolyDet("use") Comparator<? super T> c) {
+    public static <T> void sort(T @PolyDet[] a, @PolyDet("use") Comparator<? super T> c) {
         if (c == null) {
             sort(a);
         } else {
@@ -1502,7 +1502,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException if {@code fromIndex < 0} or
      *         {@code toIndex > a.length}
      */
-    public static <@PolyDet T> void sort(T @PolyDet[] a, @PolyDet("use") int fromIndex, @PolyDet("use") int toIndex,
+    public static <T> void sort(T @PolyDet[] a, @PolyDet("use") int fromIndex, @PolyDet("use") int toIndex,
                                          @PolyDet("use") Comparator<? super T> c) {
         if (c == null) {
             sort(a, fromIndex, toIndex);
@@ -1590,7 +1590,7 @@ public class Arrays {
      * @throws NullPointerException if the specified array or function is null
      * @since 1.8
      */
-    public static <@PolyDet T> void parallelPrefix(T @PolyDet[] array, @PolyDet("use") BinaryOperator<T> op) {
+    public static <T> void parallelPrefix(T @PolyDet[] array, @PolyDet("use") BinaryOperator<T> op) {
         Objects.requireNonNull(op);
         if (array.length > 0)
             new ArrayPrefixHelpers.CumulateTask<>
@@ -1613,7 +1613,7 @@ public class Arrays {
      * @throws NullPointerException if the specified array or function is null
      * @since 1.8
      */
-    public static <@PolyDet T> void parallelPrefix(T @PolyDet[] array, @PolyDet("use") int fromIndex,
+    public static <T> void parallelPrefix(T @PolyDet[] array, @PolyDet("use") int fromIndex,
                                                    @PolyDet("use") int toIndex, @PolyDet("use") BinaryOperator<T> op) {
         Objects.requireNonNull(op);
         rangeCheck(array.length, fromIndex, toIndex);
@@ -2480,7 +2480,7 @@ public class Arrays {
      *         or the search key is not comparable to the
      *         elements of the array using this comparator.
      */
-    public static <@PolyDet T> @PolyDet("down") int binarySearch(T @PolyDet[] a, T key, @PolyDet Comparator<? super T> c) {
+    public static <T> @PolyDet("down") int binarySearch(T @PolyDet[] a, T key, @PolyDet Comparator<? super T> c) {
         return binarySearch0(a, 0, a.length, key, c);
     }
 
@@ -2526,7 +2526,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static <@PolyDet T> @PolyDet("down") int binarySearch(T @PolyDet[] a, @PolyDet int fromIndex, @PolyDet int toIndex,
+    public static <T> @PolyDet("down") int binarySearch(T @PolyDet[] a, @PolyDet int fromIndex, @PolyDet int toIndex,
                                        T key, @PolyDet Comparator<? super T> c) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key, c);
@@ -3179,7 +3179,7 @@ public class Arrays {
      * @since 1.6
      */
     @SuppressWarnings("unchecked")
-    public static <@PolyDet T> T @PolyDet[] copyOf(T @PolyDet[] original, @PolyDet int newLength) {
+    public static <T> T @PolyDet[] copyOf(T @PolyDet[] original, @PolyDet int newLength) {
         return (T[]) copyOf(original, newLength, original.getClass());
     }
 
@@ -3439,7 +3439,7 @@ public class Arrays {
      * @since 1.6
      */
     @SuppressWarnings("unchecked")
-    public static <@PolyDet T> T @PolyDet[] copyOfRange(T @PolyDet[] original, @PolyDet int from, @PolyDet int to) {
+    public static <T> T @PolyDet[] copyOfRange(T @PolyDet[] original, @PolyDet int from, @PolyDet int to) {
         return copyOfRange(original, from, to, (Class<? extends T[]>) original.getClass());
     }
 

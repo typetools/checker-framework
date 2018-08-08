@@ -1,9 +1,9 @@
-// package determinism;
+//package determinism;
 //
-// import java.util.*;
-// import org.checkerframework.checker.determinism.qual.*;
+//import java.util.*;
+//import org.checkerframework.checker.determinism.qual.*;
 //
-// class Issue7 {
+//class Issue7 {
 //    // Tests whether this.method is treated correctly.
 //    int testDotThis() {
 //        return this.returnZero();
@@ -14,7 +14,11 @@
 //        return super.toString();
 //    }
 //
+//    int testWithoutThis() {
+//        return returnZero();
+//    }
+//
 //    int returnZero() {
 //        return 0;
 //    }
-// }
+//}
