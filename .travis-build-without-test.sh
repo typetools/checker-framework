@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Entering checker-framework/.travis-build-without-test.sh"
+
 # Fail the whole script if any command fails
 set -e
 

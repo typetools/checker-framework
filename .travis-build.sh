@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Entering checker-framework/.travis-build.sh"
+
 # Optional argument $1 is one of:
 #   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
 # It defaults to "all".
