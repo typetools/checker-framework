@@ -7,6 +7,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -312,6 +313,18 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else { // GTEN1 and UNKNOWN both become UNKNOWN.
                 typeDst.replaceAnnotation(UNKNOWN);
             }
+        }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror atm) {
+            AnnotatedTypeMirror expressionType = getAnnotatedType(tree.getExpression());
+            if (tree.getType().getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                TypeMirror type = TreeUtils.typeOf(tree.getType());
+                if (type.getKind() == TypeKind.CHAR) {
+                    expressionType.replaceAnnotation(NN);
+                }
+            }
+            return super.visitTypeCast(tree, atm);
         }
 
         /** Call increment and decrement helper functions. Handles cases 4, 5 and 6. */
