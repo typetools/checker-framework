@@ -54,6 +54,8 @@ source ./.travis-build-without-test.sh ${BUILDJDK}
 
 set -e
 
+echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
+
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   # plume-lib-typecheck: 15 minutes
   [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
@@ -62,7 +64,6 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   echo "REPO=$REPO, BRANCH=$BRANCH"
   pwd
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
-  ls -l ../plume-lib-typecheck
 
   ls -al ../plume-lib-typecheck
   cat ../plume-lib-typecheck/README
