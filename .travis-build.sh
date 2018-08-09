@@ -164,3 +164,5 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ./gradlew --console=plain htmlValidate
 
 fi
+
+echo "Exiting checker-framework/.travis-build.sh"

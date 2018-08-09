@@ -67,3 +67,5 @@ if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
   ./gradlew --console=plain assemble
 fi
+
+echo "Exitinging checker-framework/.travis-build-without-test.sh"
