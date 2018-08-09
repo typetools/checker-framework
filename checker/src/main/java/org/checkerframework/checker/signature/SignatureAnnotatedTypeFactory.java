@@ -29,9 +29,13 @@ import org.checkerframework.javacutil.TreeUtils;
 
 public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    /** Annotation mirror for {@literal @}SignatureUnknown annotation */
     protected final AnnotationMirror SIGNATURE_UNKNOWN;
+    /** Annotation mirror for {@literal @}BinaryName annotation */
     protected final AnnotationMirror BINARY_NAME;
+    /** Annotation mirror for {@literal @}InternalForm annotation */
     protected final AnnotationMirror INTERNAL_FORM;
+    /** Annotation mirror for {@literal @}SourceNameForNonArrayNonInner annotation */
     protected final AnnotationMirror SOURCE_NAME_FOR_NON_ARRAY_NON_INNER;
 
     /** The {@link String#replace(char, char)} method. */
@@ -43,6 +47,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@link String#contains(CharSequence)} method. */
     private final ExecutableElement containsCharSequence;
 
+    /** Main Constructor */
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         SIGNATURE_UNKNOWN = AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
