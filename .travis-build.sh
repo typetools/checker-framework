@@ -45,6 +45,9 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 
+export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+
 source ./.travis-build-without-test.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
 # subsequent command to build it except to test building it.
@@ -61,8 +64,6 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
   ls -l ../plume-lib-typecheck
 
-  export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
-  echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
   ls -al ../plume-lib-typecheck
   cat ../plume-lib-typecheck/README
   (cd ../plume-lib-typecheck && ./.travis-build.sh)
