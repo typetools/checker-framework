@@ -52,6 +52,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Default implementation of {@link ReflectionResolver}. It resolves calls to:
@@ -487,10 +488,20 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Names names = Names.instance(context);
 
         List<Symbol> result = new ArrayList<>();
+        Method loadClass = null;
+        Symbol sym = null;
         try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
+            loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
-            Symbol sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+            sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+        } catch (SecurityException
+                | NoSuchMethodException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            ErrorReporter.errorAbort("Error in obtaining reflective method.");
+        }
+        try {
             if (!sym.exists()) {
                 debugReflection("Unable to resolve class: " + className);
                 return Collections.emptyList();
@@ -520,11 +531,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             if (result.isEmpty()) {
                 debugReflection("Unable to resolve method: " + className + "@" + methodName);
             }
-        } catch (SecurityException
-                | NoSuchMethodException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
+        } catch (SecurityException e) {
             debugReflection("Exception during resolution of reflective method: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -543,10 +550,20 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Names names = Names.instance(context);
 
         List<Symbol> result = new ArrayList<>();
+        Method loadClass = null;
+        Symbol symClass = null;
         try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
+            loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
-            Symbol symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+            symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+        } catch (SecurityException
+                | NoSuchMethodException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            ErrorReporter.errorAbort("Error in obtaining reflective method.");
+        }
+        try {
             if (!symClass.exists()) {
                 debugReflection("Unable to resolve class: " + className);
                 return Collections.emptyList();
@@ -566,11 +583,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             if (result.isEmpty()) {
                 debugReflection("Unable to resolve constructor!");
             }
-        } catch (SecurityException
-                | NoSuchMethodException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
+        } catch (SecurityException e) {
             debugReflection(
                     "Exception during resolution of reflective constructor: " + e.getMessage());
             return Collections.emptyList();
