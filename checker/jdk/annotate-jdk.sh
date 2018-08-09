@@ -55,7 +55,7 @@ export JAIFDIR="${WD}/jaifs" # directory for generated JAIFs
 export PATCH=${SCRIPTDIR}/ad-hoc.diff
 
 # parameters derived from environment
-export JSR308=`[ -d "${CHECKERFRAMEWORK}" ] && cd "${CHECKERFRAMEWORK}/.." && pwd`
+export JSR308=`readlink -e "${CHECKERFRAMEWORK}/.."`
 export AFU="${JSR308}/annotation-tools"
 export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities.jar"
 export CFJAR="${CHECKERFRAMEWORK}/checker/dist/checker.jar"
