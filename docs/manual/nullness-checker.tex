@@ -620,16 +620,8 @@ code:
   the argument is \<null>.  However, it is not intended for general defensive
   programming; see Section~\ref{defensive-programming}.
 
-  A potential disadvantage of using the \<castNonNull> method is that your
-  code becomes dependent on the Checker Framework at run time as well as at
-  compile time:  you need to include \<checker-qual.jar>
-  on your classpath at run time.
-  If this is a problem, you can copy the implementation of
-  \<castNonNull> into your own code, and possibly renaming it if you do not
-  like the name.  Be sure to retain the documentation that indicates that
-  your copy is intended for use only to suppress warnings and not for
-  defensive programming.  See Section~\ref{defensive-programming} for an
-  explanation of the distinction.
+  To use the \<castNonNull> method, the \<checker-qual.jar> file
+  must be on the classpath at run time.
 
 \begin{sloppypar}
 The Nullness Checker introduces a new method, rather than re-using an
