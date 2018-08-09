@@ -61,9 +61,9 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
 
   export CHECKERFRAMEWORK=`pwd`
   echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
-  ls -l ../plume-lib-typecheck
-  more ../plume-lib-typecheck/README
-  (cd ../plume-lib-typecheck && ./travis-build.sh)
+  ls -al ../plume-lib-typecheck
+  cat ../plume-lib-typecheck/README
+  (cd ../plume-lib-typecheck && ./.travis-build.sh)
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
