@@ -57,6 +57,8 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
   export CHECKERFRAMEWORK=`pwd`
+  echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+  ls -l ../plume-lib-typecheck
   (cd ../plume-lib-typecheck && ./travis-build.sh)
 fi
 
