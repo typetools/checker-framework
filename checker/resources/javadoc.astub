@@ -101,3 +101,10 @@ public interface RootDoc extends Doc, DocErrorReporter {
     PackageDoc packageNamed(String name);
     ClassDoc classNamed(String qualifiedName);
 }
+
+public interface SourcePosition {
+    @SideEffectFree File file();
+    @Pure int line();
+    @Pure int column();
+    @SideEffectFree String toString();
+}
