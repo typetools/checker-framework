@@ -56,7 +56,7 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
-  export CHECKERFRAMEWORK=`pwd`
+  export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
   (cd ../plume-lib-typecheck && ./travis-build.sh)
 fi
 
@@ -78,7 +78,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
-  export AFU=`pwd`/../annotation-tools/annotation-file-utilities
+  export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && ./gradlew --console=plain dist test)
 
@@ -108,7 +108,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
   (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  export CHECKERFRAMEWORK=$ROOT/checker-framework
+  export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
   (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
 fi
