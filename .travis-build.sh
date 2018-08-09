@@ -54,11 +54,15 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetests plume-lib-typecheck`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  echo "REPO=$REPO, BRANCH=$BRANCH"
+  pwd
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
+  ls -l ../plume-lib-typecheck
 
   export CHECKERFRAMEWORK=`pwd`
   echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
   ls -l ../plume-lib-typecheck
+  more ../plume-lib-typecheck/README
   (cd ../plume-lib-typecheck && ./travis-build.sh)
 fi
 
