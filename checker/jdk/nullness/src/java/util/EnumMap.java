@@ -522,8 +522,8 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
                 a[size] = null;
             return (T[]) fillEntryArray(a);
         }
-        @SuppressWarnings("nullness:argument.type.incompatible") // Value returned by unmaskNull will be
-        // of type V for mapped value
+        @SuppressWarnings("nullness:argument.type.incompatible") // Value returned by unmaskNull
+        // will be of type V (not @Nullable V) for mapped value
         private Object[] fillEntryArray(Object[] a) {
             int j = 0;
             for (int i = 0; i < vals.length; i++)
@@ -573,8 +573,8 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
     }
 
     private class ValueIterator extends EnumMapIterator<V> {
-        @SuppressWarnings("nullness:return.type.incompatible") // Value returned by unmaskNull will be
-        // of type V for mapped value
+        @SuppressWarnings("nullness:return.type.incompatible") // Value returned by unmaskNull
+        // will be of type V (not @Nullable V) for mapped value
         public V next() {
             if (!hasNext())
                 throw new NoSuchElementException();
@@ -615,14 +615,14 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
                 return keyUniverse[index];
             }
 
-            @SuppressWarnings("nullness:return.type.incompatible") // Value returned by unmaskNull will be
-            // of type V for mapped value
+            @SuppressWarnings("nullness:return.type.incompatible") // Value returned by unmaskNull
+            // will be of type V (not @Nullable V) for mapped value
             public V getValue() {
                 checkIndexForEntryUse();
                 return unmaskNull(vals[index]);
             }
-            @SuppressWarnings("nullness:return.type.incompatible") // Value returned by unmaskNull will be
-            // of type V for mapped value
+            @SuppressWarnings("nullness:return.type.incompatible") // Value returned by unmaskNull
+            // will be of type V (not @Nullable V) for mapped value
             public V setValue(V value) {
                 checkIndexForEntryUse();
                 V oldValue = unmaskNull(vals[index]);
