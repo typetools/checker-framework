@@ -222,7 +222,7 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<String, String> parseMemberSelect(String s, FlowExpressionContext context) {
 
-        // replace occurence of formal parameters with corresponding arguments
+        // replace occurence of formal parameters, such as "#2", with corresponding arguments
         String sCopy = s;
         int k = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
