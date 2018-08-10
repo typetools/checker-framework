@@ -24,8 +24,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * as {@code @PolyDet("up") or @PolyDet("down")}. {@code @PolyDet("use")} should be the annotation
  * on method parameters that you do not want instantiated. For example, a method that is annotated
  * as {@code void method_name (@PolyDet a, @PolyDet("use") b)} would not be instantiated as {@code
- * void method_name (@Det a, @NonDet b)}. This is especially useful in preventing methods to
- * non-deterministically modify the state of a deterministic receiver.
+ * void method_name (@Det a, @NonDet b)}. This is especially useful in preventing methods from
+ * non-deterministically modifying the state of a deterministic receiver.
  *
  * @checker_framework.manual #determinism-checker Nullness Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism

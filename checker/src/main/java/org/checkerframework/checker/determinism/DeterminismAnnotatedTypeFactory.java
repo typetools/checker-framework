@@ -33,6 +33,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
+        AnnotationBuilder builder2 = new AnnotationBuilder(processingEnv, PolyDet.class);
+        builder2.setValue("value", "");
+        POLYDET = builder2.build();
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder.setValue("value", "use");
         POLYDET_USE = builder.build();
@@ -42,9 +45,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationBuilder builder_down = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder_down.setValue("value", "down");
         POLYDET_DOWN = builder_down.build();
-        AnnotationBuilder builder2 = new AnnotationBuilder(processingEnv, PolyDet.class);
-        builder2.setValue("value", "");
-        POLYDET = builder2.build();
+
         postInit();
     }
 
@@ -91,14 +92,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
-            if (node == null) return super.visitMethodInvocation(node, p);
-            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
-            if (receiver == null) {
+            if (node == null) {
                 return super.visitMethodInvocation(node, p);
             }
+            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
             AnnotatedTypeMirror.AnnotatedExecutableType invokedMethod =
                     atypeFactory.methodFromUse(node).first;
             ExecutableElement invokedMethodElement = invokedMethod.getElement();
+            if (receiver == null) {
+                return super.visitMethodInvocation(node, p);
+            }
 
             // Static methods with no arguments: return type should be @Det, not @polyDet
             if (ElementUtils.isStatic(invokedMethodElement) && node.getArguments().size() == 0) {
@@ -118,41 +121,34 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 p.replaceAnnotation(NONDET);
             }
 
-            // For Sets: "equals" on @OrderNonDet Sets without @OrderNonDet List type parameter
-            // Return type is @Det.
+            // For Sets: "equals" method should return @Det boolean
+            // if the Set is @OrderNonDet and it does not have @OrderNonDet List type parameter.
+            // Example {@Code @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
+            //                @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s2;
+            //                s1.equals(s2) is @Det}
+            // {@Code @OrderNonDet Set<@Det List<@Det Integer>> s1;
+            //  @OrderNonDet Set<@Det List<@Det Integer>> s2;
+            //  s1.equals(s2) is @NonDet}
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiver.getUnderlyingType());
-            if (invokedMethodElement.getSimpleName().toString().equals("equals")
+            if (isEqualsMethod(invokedMethodElement)
                     && isSet(receiverUnderlyingType.asType())
                     && AnnotationUtils.areSame(
                             receiver.getAnnotations().iterator().next(), ORDERNONDET)) {
-                // Receiver does not have "@OrderNonDet List" type parameter
+                // Check that the receiver does not have "@OrderNonDet List" type parameter
                 if (!hasOrderNonDetListAsTypeParameter(receiver)) {
                     AnnotatedTypeMirror parameter =
                             atypeFactory.getAnnotatedType(node.getArguments().get(0));
                     if (isSet(TypesUtils.getTypeElement(parameter.getUnderlyingType()).asType())
                             && parameter.hasAnnotation(ORDERNONDET)) {
-                        // Parameter - same type as receiver
-                        // does not have "@OrderNonDet List" type parameter
-                        if (types.isSameType(
-                                        receiver.getUnderlyingType(), parameter.getUnderlyingType())
-                                && !hasOrderNonDetListAsTypeParameter(parameter)) {
+                        // Check that the parameter does not have "@OrderNonDet List" type parameter
+                        if (!hasOrderNonDetListAsTypeParameter(parameter)) {
                             p.replaceAnnotation(DET);
                         }
                     }
                 }
             }
             return super.visitMethodInvocation(node, p);
-        }
-
-        @Override
-        public Void visitAssignment(AssignmentTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-            System.out.println(
-                    "assignment: "
-                            + node
-                            + " ; "
-                            + atypeFactory.getAnnotatedType(node.getExpression()));
-            return super.visitAssignment(node, annotatedTypeMirror);
         }
 
         @Override
@@ -174,9 +170,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
-        Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
-        while (it.hasNext()) {
-            AnnotatedTypeMirror argType = it.next();
+        for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
             if (isList(argType.getUnderlyingType()) && argType.hasAnnotation(ORDERNONDET)) {
                 return true;
             }
@@ -224,8 +218,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** @return true if {@code method} is equals */
+    public static boolean isEqualsMethod(ExecutableElement method) {
+        if (method.getReturnType().getKind() == TypeKind.BOOLEAN
+                && method.getSimpleName().contentEquals("equals")
+                && method.getParameters().size() == 1
+                && method.getParameters().size() == 1
+                && TypesUtils.isObject(method.getParameters().get(0).asType())) {
+            return true;
+        }
+        return false;
+    }
+
     /** @return true if {@code method} is a main method */
-    private static boolean isMainMethod(ExecutableElement method) {
+    public static boolean isMainMethod(ExecutableElement method) {
         if (method.getReturnType().getKind() == TypeKind.VOID
                 && method.getSimpleName().contentEquals("main")
                 && method.getParameters().size() == 1
@@ -257,34 +263,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public boolean isSet(TypeMirror tm) {
-        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
-        TypeMirror SetTypeMirror =
+        TypeMirror SetInterfaceTypeMirror =
                 TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractSetTypeMirror =
-                TypesUtils.typeFromClass(AbstractSet.class, types, processingEnv.getElementUtils());
-        TypeMirror EnumSetTypeMirror =
-                TypesUtils.typeFromClass(EnumSet.class, types, processingEnv.getElementUtils());
-        TypeMirror HashSetTypeMirror =
-                TypesUtils.typeFromClass(HashSet.class, types, processingEnv.getElementUtils());
-        TypeMirror LinkedHashSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        LinkedHashSet.class, types, processingEnv.getElementUtils());
-        TypeMirror TreeSetTypeMirror =
-                TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
-        TypeMirror SortedSetTypeMirror =
-                TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
-        TypeMirror NavigableSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        NavigableSet.class, types, processingEnv.getElementUtils());
-
-        if (types.isSubtype(tm, SetTypeMirror)
-                || types.isSubtype(tm, HashSetTypeMirror)
-                || types.isSubtype(tm, AbstractSetTypeMirror)
-                || types.isSubtype(tm, EnumSetTypeMirror)
-                || types.isSubtype(tm, LinkedHashSetTypeMirror)
-                || types.isSubtype(tm, TreeSetTypeMirror)
-                || types.isSubtype(tm, SortedSetTypeMirror)
-                || types.isSubtype(tm, NavigableSetTypeMirror)) {
+        if (types.isSubtype(types.erasure(tm), types.erasure(SetInterfaceTypeMirror))) {
             return true;
         }
         return false;
@@ -292,23 +273,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public boolean isList(TypeMirror tm) {
         // List and subclasses
-        TypeMirror ListTypeMirror =
+        TypeMirror ListInterfaceTypeMirror =
                 TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
-        TypeMirror ArrayListTypeMirror =
-                TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
-        TypeMirror LinkedListTypeMirror =
-                TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractListTypeMirror =
-                TypesUtils.typeFromClass(
-                        AbstractList.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractSequentialListTypeMirror =
-                TypesUtils.typeFromClass(
-                        AbstractSequentialList.class, types, processingEnv.getElementUtils());
-        if (types.isSubtype(tm, ListTypeMirror)
-                || types.isSubtype(tm, ArrayListTypeMirror)
-                || types.isSubtype(tm, AbstractListTypeMirror)
-                || types.isSubtype(tm, AbstractSequentialListTypeMirror)
-                || types.isSubtype(tm, LinkedListTypeMirror)) {
+        if (types.isSubtype(types.erasure(tm), types.erasure(ListInterfaceTypeMirror))) {
             return true;
         }
         return false;
@@ -334,63 +301,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
-        // Collection
-        TypeMirror CollectionTypeMirror =
+        TypeMirror CollectionInterfaceTypeMirror =
                 TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractCollectionTypeMirror =
-                TypesUtils.typeFromClass(
-                        AbstractCollection.class, types, processingEnv.getElementUtils());
-        // List and subclasses
-        TypeMirror ListTypeMirror =
-                TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
-        TypeMirror ArrayListTypeMirror =
-                TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
-        TypeMirror LinkedListTypeMirror =
-                TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractListTypeMirror =
-                TypesUtils.typeFromClass(
-                        AbstractList.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractSequentialListTypeMirror =
-                TypesUtils.typeFromClass(
-                        AbstractSequentialList.class, types, processingEnv.getElementUtils());
-        TypeMirror ArraysTypeMirror =
-                TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
-        // Set and subclasses
-        TypeMirror SetTypeMirror =
-                TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
-        TypeMirror AbstractSetTypeMirror =
-                TypesUtils.typeFromClass(AbstractSet.class, types, processingEnv.getElementUtils());
-        TypeMirror EnumSetTypeMirror =
-                TypesUtils.typeFromClass(EnumSet.class, types, processingEnv.getElementUtils());
-        TypeMirror HashSetTypeMirror =
-                TypesUtils.typeFromClass(HashSet.class, types, processingEnv.getElementUtils());
-        TypeMirror LinkedHashSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        LinkedHashSet.class, types, processingEnv.getElementUtils());
-        TypeMirror TreeSetTypeMirror =
-                TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
-        TypeMirror SortedSetTypeMirror =
-                TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
-        TypeMirror NavigableSetTypeMirror =
-                TypesUtils.typeFromClass(
-                        NavigableSet.class, types, processingEnv.getElementUtils());
-
-        if (types.isSubtype(tm, CollectionTypeMirror)
-                || types.isSubtype(tm, AbstractCollectionTypeMirror)
-                || types.isSubtype(tm, ListTypeMirror)
-                || types.isSubtype(tm, SetTypeMirror)
-                || types.isSubtype(tm, ArrayListTypeMirror)
-                || types.isSubtype(tm, HashSetTypeMirror)
-                || types.isSubtype(tm, AbstractListTypeMirror)
-                || types.isSubtype(tm, AbstractSequentialListTypeMirror)
-                || types.isSubtype(tm, LinkedListTypeMirror)
-                || types.isSubtype(tm, ArraysTypeMirror)
-                || types.isSubtype(tm, AbstractSetTypeMirror)
-                || types.isSubtype(tm, EnumSetTypeMirror)
-                || types.isSubtype(tm, LinkedHashSetTypeMirror)
-                || types.isSubtype(tm, TreeSetTypeMirror)
-                || types.isSubtype(tm, SortedSetTypeMirror)
-                || types.isSubtype(tm, NavigableSetTypeMirror)) {
+        if (types.isSubtype(types.erasure(tm), types.erasure(CollectionInterfaceTypeMirror))) {
             return true;
         }
         return false;

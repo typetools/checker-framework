@@ -26,4 +26,12 @@ public class TestTreeSet {
                     TreeSet<@OrderNonDet TreeSet<@OrderNonDet TreeSet<@Det Integer>>> treeSet) {
         @Det NavigableSet<@Det TreeSet<@Det TreeSet<@Det Integer>>> nSet = treeSet.descendingSet();
     }
+
+    void testTreeSetEquals(@Det TreeSet<@Det Integer> t, @Det TreeSet<@Det Integer> q) {
+        t.equals(q);
+    }
+
+    void testTreeSetEquals(@Det HashSet<@Det Integer> t, @Det HashSet<@Det Integer> q) {
+        t.equals(q);
+    }
 }

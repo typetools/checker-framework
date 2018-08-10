@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
     public DeterminismVisitor(BaseTypeChecker checker) {
@@ -38,7 +39,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         DeclaredType javaType = useType.getUnderlyingType();
         if (useType.hasAnnotation(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
-            if (!(atypeFactory.isCollection(javaType.asElement().asType())
+            if (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                     || atypeFactory.isIterator(javaType.asElement().asType()))) {
                 checker.report(Result.failure(INVALID_ANNOTATION), tree);
                 return false;
@@ -46,7 +47,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         }
 
         // Sets and lists
-        if ((atypeFactory.isCollection(javaType.asElement().asType())
+        if ((atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                         && javaType.getTypeArguments().size() == 1)
                 || atypeFactory.isIterator(javaType.asElement().asType())) {
             AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();

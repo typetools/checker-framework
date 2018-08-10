@@ -258,7 +258,9 @@ also override the JDK annotations by providing a stub file
 \section{Default annotations on method parameters and returns\label{determinism-param-default}}
 
 Any unannotated method parameter or return type is treated as having the
-\<@PolyDet> annotation.  This permits all possible arguments.  If you wish
+\<@PolyDet> annotation.  This permits all possible arguments. We make an exception to this
+rule in the case of static methods without paramateres. The return type of such methods is treated
+as having the \<@Det> annotation. If you wish
 to constrain method arguments to have deterministic type, you must annotate
 the method declaration.
 
