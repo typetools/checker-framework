@@ -1582,7 +1582,7 @@ public abstract class ClassLoader {
     protected Package definePackage(String name, @Nullable String specTitle,
                                     @Nullable String specVersion, @Nullable String specVendor,
                                     @Nullable String implTitle, @Nullable String implVersion,
-                                    String implVendor, @Nullable URL sealBase)
+                                    @Nullable String implVendor, @Nullable URL sealBase)
         throws IllegalArgumentException
     {
         synchronized (packages) {
