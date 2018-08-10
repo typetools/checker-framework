@@ -133,8 +133,8 @@ public class FlowExpressionParseUtil {
             return parseParameter(expression, context);
         } else if (isArray(expression, context)) {
             return parseArray(expression, context, path);
-        } else if (isMethod(expression, context)) {
-            return parseMethod(expression, context, path, env);
+        } else if (isMethodCall(expression, context)) {
+            return parseMethodCall(expression, context, path, env);
         } else if (isMemberSelect(expression, context)) {
             return parseMemberSelect(expression, env, context, path);
         } else if (isParentheses(expression, context)) {
@@ -149,7 +149,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Matches a field access which contain a method call either in receiver or in remaining. First
+     * Matches a field access which contains a method call either in receiver or in remaining. First
      * of returned pair is object and second is field. The object is not a field access expression
      * itself.
      *
@@ -158,7 +158,7 @@ public class FlowExpressionParseUtil {
      * @param argumentList list of arguments corresponding to formal parameters
      * @return pair of object and field
      */
-    private static Pair<String, String> parseMethod(
+    private static Pair<String, String> parseMethodCall(
             String s, String origString, ArrayList<String> argumentList) {
         try {
             Expression e = parseExpression(s);
@@ -169,7 +169,7 @@ public class FlowExpressionParseUtil {
                     fieldName = replaceString(fieldName, argumentList);
                 String remaining = "." + fieldName;
                 String receiver = origString.substring(0, origString.length() - remaining.length());
-                Pair<Pair<String, String>, String> method = parseMethod(receiver, argumentList);
+                Pair<Pair<String, String>, String> method = parseMethodCall(receiver, argumentList);
                 if (method != null) {
                     if (method.second.startsWith(".")) {
                         String methodCall =
@@ -194,7 +194,7 @@ public class FlowExpressionParseUtil {
                 return null;
             }
             if (e.getClass().equals(MethodCallExpr.class)) {
-                Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
+                Pair<Pair<String, String>, String> method = parseMethodCall(s, argumentList);
                 if (method != null && method.second.startsWith(".")) {
                     String methodCall =
                             method.first.first
@@ -237,7 +237,7 @@ public class FlowExpressionParseUtil {
 
         // parses field accesses and method calls which contain a method call
         // either in receiver or in remaining
-        Pair<String, String> method = parseMethod(sCopy, s, argumentList);
+        Pair<String, String> method = parseMethodCall(sCopy, s, argumentList);
         if (method != null) {
             return method;
         }
@@ -599,7 +599,7 @@ public class FlowExpressionParseUtil {
      * @param argumentList list of arguments corresponding to formal parameters
      * @return pair of (pair of method name and arguments) and remaining
      */
-    private static Pair<Pair<String, String>, String> parseMethod(
+    private static Pair<Pair<String, String>, String> parseMethodCall(
             String s, ArrayList<String> argumentList) {
         try {
             Expression e = parseExpression(s);
@@ -647,7 +647,7 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    private static boolean isMethod(String s, FlowExpressionContext context) {
+    private static boolean isMethodCall(String s, FlowExpressionContext context) {
 
         // replace occurence of formal parameters with corresponding arguments
         int i = 0;
@@ -661,11 +661,11 @@ public class FlowExpressionParseUtil {
             }
         }
 
-        Pair<Pair<String, String>, String> result = parseMethod(s, argumentList);
+        Pair<Pair<String, String>, String> result = parseMethodCall(s, argumentList);
         return result != null && result.second.isEmpty();
     }
 
-    private static Receiver parseMethod(
+    private static Receiver parseMethodCall(
             String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
             throws FlowExpressionParseException {
 
@@ -680,7 +680,7 @@ public class FlowExpressionParseUtil {
             }
         }
 
-        Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
+        Pair<Pair<String, String>, String> method = parseMethodCall(s, argumentList);
 
         if (method == null) {
             return null;
