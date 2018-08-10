@@ -197,7 +197,9 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
         }
         // Currently does not compile with Orcale-Jdk, missing URLClassPath constructor with AccessControlContext
         // as second argument, replaced it with null
-        //ucp = new URLClassPath(urls, factory);
+        /*
+        ucp = new URLClassPath(urls, factory);
+        */
         ucp = new URLClassPath(urls, null);
         acc = AccessController.getContext();
     }
@@ -767,14 +769,16 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     }
 
     static {
-//        sun.misc.SharedSecrets.setJavaNetAccess (
-//            new sun.misc.JavaNetAccess() {
-//                public URLClassPath getURLClassPath (URLClassLoader u) {
-//                    return u.ucp;
-//                }
-//            }
-//        );
-//        ClassLoader.registerAsParallelCapable();
+        /*
+        sun.misc.SharedSecrets.setJavaNetAccess (
+            new sun.misc.JavaNetAccess() {
+                public URLClassPath getURLClassPath (URLClassLoader u) {
+                    return u.ucp;
+                }
+            }
+        );
+        ClassLoader.registerAsParallelCapable();
+        */
     }
 }
 
