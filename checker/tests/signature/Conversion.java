@@ -46,7 +46,7 @@ public class Conversion {
             return bn.replace('$', '.');
         }
 
-        @FullyQualifiedName String fullyQualifiedNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+        @FullyQualifiedName String binaryNameToFullyQualifiedName(@BinaryName String bn) {
             return bn.replace('$', '.');
         }
     }
@@ -95,7 +95,7 @@ public class Conversion {
             return bn.replace("$", ".");
         }
 
-        @FullyQualifiedName String fullyQualifiedNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+        @FullyQualifiedName String binaryNameToFullyQualifiedName(@BinaryName String bn) {
             return bn.replace("$", ".");
         }
     }
