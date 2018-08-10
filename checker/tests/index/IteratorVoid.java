@@ -1,6 +1,5 @@
 import java.util.Iterator;
 
-// From plume-lib's OrderedPairIterator class.
 // If quals are configured incorrectly, there will be an
 // incompatible assignment error; this ensures that Void
 // is given the Positive type.

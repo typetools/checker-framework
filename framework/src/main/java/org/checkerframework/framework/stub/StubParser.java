@@ -156,7 +156,7 @@ public class StubParser {
     /** Output variable: .... */
     Map<String, Set<AnnotationMirror>> declAnnos;
 
-    /** The line separator */
+    /** The line separator. */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
     /**
@@ -967,6 +967,8 @@ public class StubParser {
             AnnotationMirror annoMirror = getAnnotation(annotation, allStubAnnotations);
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
+            } else {
+                stubWarnNotFound("Unknown annotation: " + annotation);
             }
         }
     }
@@ -1664,16 +1666,16 @@ public class StubParser {
             // Search importedConstants for full annotation name.
             for (String imp : importedConstants) {
                 // TODO: should this use StubUtil.partitionQualifiedName?
-                String[] import_delimited = imp.split("\\.");
-                if (import_delimited[import_delimited.length - 1].equals(
+                String[] importDelimited = imp.split("\\.");
+                if (importDelimited[importDelimited.length - 1].equals(
                         faexpr.getScope().toString())) {
-                    StringBuilder full_annotation = new StringBuilder();
-                    for (int i = 0; i < import_delimited.length - 1; i++) {
-                        full_annotation.append(import_delimited[i]);
-                        full_annotation.append('.');
+                    StringBuilder fullAnnotation = new StringBuilder();
+                    for (int i = 0; i < importDelimited.length - 1; i++) {
+                        fullAnnotation.append(importDelimited[i]);
+                        fullAnnotation.append('.');
                     }
-                    full_annotation.append(faexpr.getScope().toString());
-                    rcvElt = elements.getTypeElement(full_annotation);
+                    fullAnnotation.append(faexpr.getScope().toString());
+                    rcvElt = elements.getTypeElement(fullAnnotation);
                     break;
                 }
             }

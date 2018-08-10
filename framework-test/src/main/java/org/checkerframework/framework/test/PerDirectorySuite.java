@@ -45,7 +45,11 @@ public class PerDirectorySuite extends Suite {
         return runners;
     }
 
-    /** Only called reflectively. Do not use programmatically. */
+    /**
+     * Only called reflectively. Do not use programmatically.
+     *
+     * @param klass the class whose tests to run
+     */
     public PerDirectorySuite(Class<?> klass) throws Throwable {
         super(klass, Collections.emptyList());
         final TestClass testClass = getTestClass();

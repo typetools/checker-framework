@@ -67,10 +67,10 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 public class FlowExpressionParseUtil {
 
     /** Regular expression for a formal parameter use. */
-    protected static final String parameterRegex = "#([1-9][0-9]*)";
+    protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
     /** Unanchored; can be used to find all formal parameter uses. */
-    protected static final Pattern unanchoredParameterPattern = Pattern.compile(parameterRegex);
+    protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /** Returns a Pattern, anchored at the beginning and end, for the regex. */
     private static Pattern anchored(String regex) {
@@ -78,10 +78,10 @@ public class FlowExpressionParseUtil {
     }
 
     // Each of the below patterns is anchored with ^...$.
-    /** Matches a parameter */
-    protected static final Pattern parameterPattern = anchored(parameterRegex);
-    /** Matches an expression contained in matching start and end parentheses */
-    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
+    /** Matches a parameter. */
+    protected static final Pattern PARAMETER_PATTERN = anchored(PARAMETER_REGEX);
+    /** Matches an expression contained in matching start and end parentheses. */
+    protected static final Pattern PARENTHESES_PATTERN = anchored("\\((.*)\\)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -283,6 +283,7 @@ public class FlowExpressionParseUtil {
 
         String receiver = s.substring(0, i);
         String remaining = s.substring(i + 1);
+
         return Pair.of(receiver, remaining);
     }
 
@@ -549,13 +550,13 @@ public class FlowExpressionParseUtil {
         if (contex.parsingMember) {
             return false;
         }
-        Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
         return parameterMatcher.matches();
     }
 
     private static Receiver parseParameter(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
-        Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
         if (!parameterMatcher.matches()) {
             return null;
         }
@@ -785,7 +786,9 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<Pair<String, String>, String> parseArray(String s) {
         int i = 0;
-        while (i < s.length() && s.charAt(i) != '[') i++;
+        while (i < s.length() && s.charAt(i) != '[') {
+            i++;
+        }
 
         if (i >= s.length()) {
             return null;
@@ -1179,7 +1182,7 @@ public class FlowExpressionParseUtil {
      */
     public static List<Integer> parameterIndices(String s) {
         List<Integer> result = new ArrayList<>();
-        Matcher matcher = unanchoredParameterPattern.matcher(s);
+        Matcher matcher = UNANCHORED_PARAMETER_PATTERN.matcher(s);
         while (matcher.find()) {
             int idx = Integer.parseInt(matcher.group(1));
             result.add(idx);

@@ -632,7 +632,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * getAnnotationForDivide handles these cases (21-26):
+     * getAnnotationForDivide handles the following cases (21-26).
      *
      * <pre>
      *      lit 0 / * &rarr; nn (=0)

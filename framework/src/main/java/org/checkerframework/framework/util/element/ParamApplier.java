@@ -27,7 +27,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         new ParamApplier(type, element, typeFactory).extractAndApply();
     }
 
-    public static int RECEIVER_PARAM_INDEX = Integer.MIN_VALUE;
+    public static final int RECEIVER_PARAM_INDEX = Integer.MIN_VALUE;
 
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return element.getKind() == ElementKind.PARAMETER;
@@ -207,7 +207,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
     /**
      * Return the enclosing MethodSymbol of the given element, throwing an exception of the symbol's
-     * enclosing element is not a MethodSymbol
+     * enclosing element is not a MethodSymbol.
      *
      * @param methodChildElem some element that is a child of a method typeDeclaration (e.g. a
      *     parameter or return type)

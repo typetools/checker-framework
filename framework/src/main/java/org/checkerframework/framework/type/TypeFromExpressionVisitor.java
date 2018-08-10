@@ -40,7 +40,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Converts ExpressionTrees into AnnotatedTypeMirrors */
+/** Converts ExpressionTrees into AnnotatedTypeMirrors. */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     @Override
@@ -178,8 +178,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // array type!
         AnnotatedArrayType result = (AnnotatedArrayType) f.type(node);
 
-        if (node.getType() == null) // e.g., byte[] b = {(byte)1, (byte)2};
-        return result;
+        if (node.getType() == null) { // e.g., byte[] b = {(byte)1, (byte)2};
+            return result;
+        }
 
         annotateArrayAsArray(result, node, f);
 
@@ -203,7 +204,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror typeElem = descendBy(result, hasInit ? 1 : node.getDimensions().size());
         while (true) {
             typeElem.addAnnotations(treeElem.getAnnotations());
-            if (!(treeElem instanceof AnnotatedArrayType)) break;
+            if (!(treeElem instanceof AnnotatedArrayType)) {
+                break;
+            }
             assert typeElem instanceof AnnotatedArrayType;
             treeElem = ((AnnotatedArrayType) treeElem).getComponentType();
             typeElem = ((AnnotatedArrayType) typeElem).getComponentType();

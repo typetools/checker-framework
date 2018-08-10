@@ -19,7 +19,7 @@ public abstract class FrameworkPerDirectoryTest extends CheckerFrameworkPerDirec
      *
      * <p>These tests do not require the annotated jdk.
      *
-     * @param testFiles the file containing test code, which will be type-checked
+     * @param testFiles the files containing test code, which will be type-checked
      * @param checker the class for the checker to use
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests

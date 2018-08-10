@@ -201,7 +201,9 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
-        if (tree == null || type == null) return null;
+        if (tree == null || type == null) {
+            return null;
+        }
 
         // If this tree's kind is in treeKinds, annotate the type.
         // If this tree's class or any of its interfaces are in treeClasses,
