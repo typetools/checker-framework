@@ -50,9 +50,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Default implementation of {@link ReflectionResolver}. It resolves calls to:
@@ -493,47 +493,45 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         try {
             loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
-            sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
-        } catch (SecurityException
-                | NoSuchMethodException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException e) {
             ErrorReporter.errorAbort("Error in obtaining reflective method.");
         }
         try {
-            if (!sym.exists()) {
-                debugReflection("Unable to resolve class: " + className);
-                return Collections.emptyList();
-            }
+            sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+        } catch (SecurityException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            ErrorReporter.errorAbort("Error in invoking reflective method.");
+        }
+        if (!sym.exists()) {
+            debugReflection("Unable to resolve class: " + className);
+            return Collections.emptyList();
+        }
 
-            ClassSymbol classSym = (ClassSymbol) sym;
-            while (classSym != null) {
-                for (Symbol s : classSym.getEnclosedElements()) {
-                    // check all member methods
-                    if (s.getKind() == ElementKind.METHOD) {
-                        // Check for method name and number of arguments
-                        if (names.fromString(methodName).equals(s.name)
-                                && ((MethodSymbol) s).getParameters().size() == paramLength) {
-                            result.add(s);
-                        }
+        ClassSymbol classSym = (ClassSymbol) sym;
+        while (classSym != null) {
+            for (Symbol s : classSym.getEnclosedElements()) {
+                // check all member methods
+                if (s.getKind() == ElementKind.METHOD) {
+                    // Check for method name and number of arguments
+                    if (names.fromString(methodName).equals(s.name)
+                            && ((MethodSymbol) s).getParameters().size() == paramLength) {
+                        result.add(s);
                     }
                 }
-                if (!result.isEmpty()) {
-                    break;
-                }
-                Type t = classSym.getSuperclass();
-                if (!t.hasTag(CLASS) || t.isErroneous()) {
-                    break;
-                }
-                classSym = (ClassSymbol) t.tsym;
             }
-            if (result.isEmpty()) {
-                debugReflection("Unable to resolve method: " + className + "@" + methodName);
+            if (!result.isEmpty()) {
+                break;
             }
-        } catch (SecurityException e) {
-            debugReflection("Exception during resolution of reflective method: " + e.getMessage());
-            return Collections.emptyList();
+            Type t = classSym.getSuperclass();
+            if (!t.hasTag(CLASS) || t.isErroneous()) {
+                break;
+            }
+            classSym = (ClassSymbol) t.tsym;
+        }
+        if (result.isEmpty()) {
+            debugReflection("Unable to resolve method: " + className + "@" + methodName);
         }
         return result;
     }
@@ -555,38 +553,35 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         try {
             loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
-            symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
-        } catch (SecurityException
-                | NoSuchMethodException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException e) {
             ErrorReporter.errorAbort("Error in obtaining reflective method.");
         }
         try {
-            if (!symClass.exists()) {
-                debugReflection("Unable to resolve class: " + className);
-                return Collections.emptyList();
-            }
+            symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+        } catch (SecurityException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            ErrorReporter.errorAbort("Error in invoking reflective method.");
+        }
+        if (!symClass.exists()) {
+            debugReflection("Unable to resolve class: " + className);
+            return Collections.emptyList();
+        }
 
-            ElementFilter.constructorsIn(symClass.getEnclosedElements());
+        ElementFilter.constructorsIn(symClass.getEnclosedElements());
 
-            for (Symbol s : symClass.getEnclosedElements()) {
-                // Check all constructors
-                if (s.getKind() == ElementKind.CONSTRUCTOR) {
-                    // Check for number of parameters
-                    if (((MethodSymbol) s).getParameters().size() == paramLength) {
-                        result.add(s);
-                    }
+        for (Symbol s : symClass.getEnclosedElements()) {
+            // Check all constructors
+            if (s.getKind() == ElementKind.CONSTRUCTOR) {
+                // Check for number of parameters
+                if (((MethodSymbol) s).getParameters().size() == paramLength) {
+                    result.add(s);
                 }
             }
-            if (result.isEmpty()) {
-                debugReflection("Unable to resolve constructor!");
-            }
-        } catch (SecurityException e) {
-            debugReflection(
-                    "Exception during resolution of reflective constructor: " + e.getMessage());
-            return Collections.emptyList();
+        }
+        if (result.isEmpty()) {
+            debugReflection("Unable to resolve constructor!");
         }
         return result;
     }
