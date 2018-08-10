@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * and org.checkerframework.checker.signature.SignatureChecker$Inner.
  *
  * <p>Binary names and {@linkplain InternalForm internal form} only differ by the use of '.' vs. '/'
- * as package separator
+ * as package separator.
  *
  * <p>The binary name should not be confused with the {@linkplain InternalForm internal form}, which
  * is a variant of the binary name that actually appears in the class file.
