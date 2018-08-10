@@ -742,7 +742,7 @@
          x="1140"
          y="639.84998"
          id="tspan122"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">@FieldDescriptorForArray</tspan>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">@FieldDescriptorForPrimitiveOrArrayInUnnamedPackage</tspan>
       <tspan
          x="1140"
          y="659.84998"
