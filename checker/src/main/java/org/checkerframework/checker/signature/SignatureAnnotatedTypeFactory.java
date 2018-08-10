@@ -46,7 +46,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final ExecutableElement replaceCharSequenceCharSequence;
 
     /** The {@link String#contains(CharSequence)} method. */
-    private final ExecutableElement containsCharSequence;
+    private final ExecutableElement stringContains;
 
     /** Main Constructor */
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -67,7 +67,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         "java.lang.CharSequence",
                         "java.lang.CharSequence");
 
-        containsCharSequence =
+        stringContains =
                 TreeUtils.getMethod(
                         java.lang.String.class.getName(),
                         "contains",
