@@ -166,7 +166,7 @@ public class FlowExpressionParseUtil {
                 FieldAccessExpr fieldAccessExpr = (FieldAccessExpr) e;
                 String fieldName = fieldAccessExpr.getName().toString();
                 if (origString.indexOf(fieldName) == -1)
-                    fieldName = replaceString(fieldName, argumentList);
+                    fieldName = asFormalParameter(fieldName, argumentList);
                 String remaining = "." + fieldName;
                 String receiver = origString.substring(0, origString.length() - remaining.length());
                 Pair<Pair<String, String>, String> method = parseMethodCall(receiver, argumentList);
@@ -578,17 +578,19 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Replace string by formal parameter if it is an argument present in argument list.
+     * If the argument is in the list, return a corresponding formal paramter such as "#2".
+     * Otherwise, return the argument unchanged.
      *
      * @param s expression string
      * @param argumentList list of arguments corresponding to formal parameters
-     * @return string containing argument replaced back by formal parameter
+     * @return a formal parameter such as "#2", or the argument string
      */
-    public static String replaceString(String s, ArrayList<String> argumentList) {
+    public static String asFormalParameter(String s, ArrayList<String> argumentList) {
         if (argumentList.contains(s)) {
-            s = "#" + Integer.toString(argumentList.indexOf(s) + 1);
+            return "#" + Integer.toString(argumentList.indexOf(s) + 1);
+        } else {
+            return s;
         }
-        return s;
     }
 
     /**
@@ -609,15 +611,15 @@ public class FlowExpressionParseUtil {
                 String arguments = "";
                 for (Expression exp : methodCallExpr.getArguments()) {
                     String argStr = exp.toString();
-                    argStr = replaceString(argStr, argumentList);
-                    if (arguments == "") {
+                    argStr = asFormalParameter(argStr, argumentList);
+                    if (arguments == "") { // interned: initialized to literal string
                         arguments = argStr;
                     } else {
                         arguments = arguments + ", " + argStr;
                     }
                 }
                 String methodName = methodCallExpr.getName().asString();
-                methodName = replaceString(methodName, argumentList);
+                methodName = asFormalParameter(methodName, argumentList);
                 String remaining = "";
                 if (methodCallExpr.getScope().isPresent()) {
                     remaining = "." + methodName + "(" + arguments + ")";
@@ -626,15 +628,15 @@ public class FlowExpressionParseUtil {
                     String argumentsScope = "";
                     for (Expression exp : scope.getArguments()) {
                         String argStr = exp.toString();
-                        argStr = replaceString(argStr, argumentList);
-                        if (argumentsScope == "") {
+                        argStr = asFormalParameter(argStr, argumentList);
+                        if (argumentsScope == "") { // interned: initialized to literal string
                             argumentsScope = argStr;
                         } else {
                             argumentsScope = argumentsScope + ", " + argStr;
                         }
                     }
                     String scopeName = scope.getName().toString();
-                    scopeName = replaceString(scopeName, argumentList);
+                    scopeName = asFormalParameter(scopeName, argumentList);
                     return Pair.of(Pair.of(scopeName, argumentsScope), remaining);
                 } else {
                     return Pair.of(Pair.of(methodName, arguments), remaining);
@@ -901,7 +903,7 @@ public class FlowExpressionParseUtil {
      * @param expression the expression string that may start with a package and class name
      * @param resolver the {@code Resolver} for the current processing environment
      * @param path the tree path to the local scope
-     * @param information about any receiver and arguments
+     * @param context information about any receiver and arguments
      * @return {@code null} if the expression string did not start with a package name; otherwise a
      *     {@code Pair} containing the {@code ClassName} for the matched class, and the remaining
      *     substring of the expression (possibly null) after the package and class name.
