@@ -38,7 +38,7 @@ dependencies {
     checkerFrameworkAnnotatedJDK fileTree(dir: "${ext.checkerframeworkdist}", include: "jdk8.jar")
     checkerFrameworkJavac "org.checkerframework:compiler:2.4.0"
     checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
-    compile fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
+    implementation fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
   }
 }
 

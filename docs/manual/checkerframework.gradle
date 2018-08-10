@@ -32,7 +32,7 @@ dependencies {
     ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
     checkerFrameworkAnnotatedJDK fileTree(dir: "${ext.checkerframeworkdist}", include: "jdk8.jar")
     checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
-    compile fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
+    implementation fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
   }
 }
 

@@ -200,6 +200,13 @@ task htmlValidate(type: Exec) {
     ]
 }
 
+
+// `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
+//   This is what is published to checkerframework.org.
+// `gradle javadoc` builds the Javadoc for each sub-project in <subproject>/build/docs/javadoc/ .
+//   It's needed to create the Javadoc jars that we release in Maven Central. In a subproject,
+//   ./gradlew javadoc` (or `./gradlew :checker:javadoc` in the top-level directory) makes javadoc
+//   for only one subproject.
 task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
