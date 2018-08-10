@@ -190,9 +190,9 @@ public class FlowExpressionParseUtil {
         int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
         if (nextRParenPos != -1) {
             if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
-                String reciever = s.substring(0, nextRParenPos + 1);
+                String receiver = s.substring(0, nextRParenPos + 1);
                 String remaining = s.substring(nextRParenPos + 2);
-                return Pair.of(reciever, remaining);
+                return Pair.of(receiver, remaining);
             } else {
                 return null;
             }
@@ -203,10 +203,10 @@ public class FlowExpressionParseUtil {
             return null;
         }
 
-        String reciever = s.substring(0, i);
+        String receiver = s.substring(0, i);
         String remaining = s.substring(i + 1);
 
-        return Pair.of(reciever, remaining);
+        return Pair.of(receiver, remaining);
     }
 
     private static Receiver parseMemberSelect(
