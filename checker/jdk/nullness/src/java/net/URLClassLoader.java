@@ -52,8 +52,9 @@ import java.util.jar.Manifest;
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
 import sun.misc.Resource;
-  import sun.misc.URLClassPath;
+import sun.misc.URLClassPath;
 import sun.net.www.ParseUtil;
 import sun.security.util.SecurityConstants;
 
