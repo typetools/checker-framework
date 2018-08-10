@@ -109,24 +109,7 @@ public final class TreeUtils {
     }
 
     protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
-        @Nullable ExpressionTree mst = tree.getMethodSelect();
-        assert mst != null; /*nninvariant*/
-
-        if (mst.getKind() == Tree.Kind.IDENTIFIER) {
-            return ((IdentifierTree) mst).getName().contentEquals(name);
-        }
-
-        if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
-            MemberSelectTree selectTree = (MemberSelectTree) mst;
-
-            if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
-                return false;
-            }
-
-            return ((IdentifierTree) selectTree.getExpression()).getName().contentEquals(name);
-        }
-
-        return false;
+        return getMethodName(tree.getMethodSelect()).equals(name);
     }
 
     /**
