@@ -63,6 +63,9 @@ task compatQualJavadoc(type: Javadoc) {
 task compatQualJar(type: Jar, dependsOn: compileCompatQualJava) {
     baseName = 'checker-compat-qual'
     from compileCompatQualJava.outputs
+    manifest {
+        attributes('Automatic-Module-Name': "org.checkerframework.checker.qual")
+    }
 }
 
 task compatQualSourcesJar(type: Jar) {

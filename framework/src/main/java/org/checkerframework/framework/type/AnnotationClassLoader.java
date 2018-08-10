@@ -76,7 +76,7 @@ public class AnnotationClassLoader {
      */
     protected final ProcessingEnvironment processingEnv;
 
-    /** The resource URL of the qual directory of a checker class */
+    /** The resource URL of the qual directory of a checker class. */
     private final URL resourceURL;
 
     /** The class loader used to load annotation classes. */
@@ -150,7 +150,7 @@ public class AnnotationClassLoader {
     /**
      * Scans all classpaths and returns the resource URL to the jar which contains the checker's
      * qual package, or the qual package directory if it exists, or null if no jar or directory
-     * contains the package
+     * contains the package.
      *
      * @return a URL to the jar that contains the qual package, or to the qual package's directory,
      *     or null if no jar or directory contains the qual package
@@ -216,7 +216,7 @@ public class AnnotationClassLoader {
 
     /**
      * Checks to see if the jar or directory referred by the URL contains the qual package of a
-     * specific checker
+     * specific checker.
      *
      * @param url a URL referring to either a jar or a directory
      * @return true if the jar or the directory contains the qual package, false otherwise
@@ -246,7 +246,7 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Checks to see if the jar file contains the qual package of a specific checker
+     * Checks to see if the jar file contains the qual package of a specific checker.
      *
      * @param jar a jar file
      * @return true if the jar file contains the qual package, false otherwise
@@ -275,7 +275,7 @@ public class AnnotationClassLoader {
      * Checks to see if the current directory contains the qual package through recursion currentDir
      * starts at the root directory (a directory passed in as part of the classpaths), the iterator
      * goes through each segment of the fully qualified package name (each segment is separated by a
-     * dot)
+     * dot).
      *
      * <p>Each step of the recursion checks to see if there's a subdirectory in the current
      * directory that has a name matching the package name segment, if so, it recursively descends
@@ -325,7 +325,7 @@ public class AnnotationClassLoader {
 
     /**
      * Given an absolute path to a directory, this method will return a URL reference to that
-     * directory
+     * directory.
      *
      * @param absolutePathToDirectory an absolute path to a directory
      * @return a URL reference to the directory, or null if the URL is malformed
@@ -348,7 +348,7 @@ public class AnnotationClassLoader {
 
     /**
      * Given an absolute path to a jar file, this method will return a URL reference to that jar
-     * file
+     * file.
      *
      * @param absolutePathToJarFile an absolute path to a jar file
      * @return a URL reference to the jar file, or null if the URL is malformed
@@ -369,7 +369,7 @@ public class AnnotationClassLoader {
 
     /**
      * Obtains and returns a set of the classpaths from compiler options, system environment
-     * variables, and by examining the classloader to see what paths it has access to
+     * variables, and by examining the classloader to see what paths it has access to.
      *
      * <p>The classpaths will be obtained in the order of:
      *
@@ -407,7 +407,7 @@ public class AnnotationClassLoader {
 
     /**
      * Obtains the classloader used to load the checker class, if that isn't available then it will
-     * try to obtain the system classloader
+     * try to obtain the system classloader.
      *
      * @return the classloader used to load the checker class, or the system classloader, or null if
      *     both are unavailable
@@ -416,7 +416,7 @@ public class AnnotationClassLoader {
         return (URLClassLoader) InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
-    /** Debug Use: Displays all classpaths examined by the class loader */
+    /** Debug Use: Displays all classpaths examined by the class loader. */
     @SuppressWarnings("unused") // for debugging
     protected final void printPaths() {
         // all paths in Xbootclasspath
@@ -494,8 +494,7 @@ public class AnnotationClassLoader {
             // open up the directory
             File packageDir = new File(resourceURL.getFile());
             annotationNames =
-                    getAnnotationNamesFromDirectory(
-                            packageName + DOT, resourceURL.getFile(), packageDir);
+                    getAnnotationNamesFromDirectory(packageName + DOT, packageDir, packageDir);
         } else {
             // We do not support a resource URL with any other protocols, so create an empty set.
             annotationNames = Collections.emptySet();
@@ -580,7 +579,7 @@ public class AnnotationClassLoader {
     public final Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(
             final String dirName) {
         File rootDirectory = new File(dirName);
-        Set<String> annoNames = getAnnotationNamesFromDirectory("", dirName, rootDirectory);
+        Set<String> annoNames = getAnnotationNamesFromDirectory("", rootDirectory, rootDirectory);
         return loadAnnotationClasses(annoNames);
     }
 
@@ -589,7 +588,7 @@ public class AnnotationClassLoader {
      * retrieves annotation names from sub-directories.
      *
      * @param packageName a string storing the name of the package that contains the qual package
-     * @param rootDirectory a string storing the absolute path of the root directory of a set of
+     * @param rootDirectory a {@link File} object representing the root directory of a set of
      *     annotations, which is subtracted from class names to retrieve each class's fully
      *     qualified class names
      * @param currentDirectory a {@link File} object representing the current sub-directory of the
@@ -598,8 +597,11 @@ public class AnnotationClassLoader {
      *     in the root directory or its sub-directories
      */
     private final Set<String> getAnnotationNamesFromDirectory(
-            final String packageName, final String rootDirectory, final File currentDirectory) {
+            final String packageName, final File rootDirectory, final File currentDirectory) {
         Set<String> results = new LinkedHashSet<>();
+
+        // Full path to root directory
+        String rootPath = rootDirectory.getAbsolutePath();
 
         // check every file and directory within the current directory
         File[] directoryContents = currentDirectory.listFiles();
@@ -625,9 +627,9 @@ public class AnnotationClassLoader {
                         fullFileName.substring(0, fullFileName.lastIndexOf(File.separator));
                 // Package name beginning with "qual"
                 String qualPackageName = "";
-                if (!filePath.equals(rootDirectory)) {
+                if (!filePath.equals(rootPath)) {
                     qualPackageName =
-                            filePath.substring(rootDirectory.length() + 1, filePath.length())
+                            filePath.substring(rootPath.length() + 1, filePath.length())
                                             .replace(SLASH, DOT)
                                     + DOT;
                 }

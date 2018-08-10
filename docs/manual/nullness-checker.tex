@@ -527,7 +527,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
 \item
-  \href{https://www.juliasoft.com/solutions/}{Julia analyzer},
+  \href{https://juliasoft.com/solutions/}{Julia analyzer},
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
@@ -620,16 +620,8 @@ code:
   the argument is \<null>.  However, it is not intended for general defensive
   programming; see Section~\ref{defensive-programming}.
 
-  A potential disadvantage of using the \<castNonNull> method is that your
-  code becomes dependent on the Checker Framework at run time as well as at
-  compile time:  you need to include \<checker-qual.jar>
-  on your classpath at run time.
-  If this is a problem, you can copy the implementation of
-  \<castNonNull> into your own code, and possibly renaming it if you do not
-  like the name.  Be sure to retain the documentation that indicates that
-  your copy is intended for use only to suppress warnings and not for
-  defensive programming.  See Section~\ref{defensive-programming} for an
-  explanation of the distinction.
+  To use the \<castNonNull> method, the \<checker-qual.jar> file
+  must be on the classpath at run time.
 
 \begin{sloppypar}
 The Nullness Checker introduces a new method, rather than re-using an
@@ -692,10 +684,9 @@ Some libraries that are annotated with nullness qualifiers are:
 The Nullness Checker itself.
 
 \item
-The
-\href{https://mernst.github.io/plume-lib/}{Plume-lib library}.
-Run the command \code{make check-nullness}.
-
+The Java projects in the \href{plume-lib GitHub
+organization}{https://github.com/plume-lib/}.
+Type-checking occurs on each build.
 
 \item
 The
@@ -1066,7 +1057,7 @@ whether a reference is null before dereferencing it.  Java 8's
 class provides a partial solution:  a programmer must call the \<get> method to
 access the value, and the designers of \<Optional> hope that the syntactic
 occurrence of the \<get> method will remind programmers to first check that
-the value is prosent.  This is still easy to forget, however.
+the value is present.  This is still easy to forget, however.
 
 The Checker Framework contains an Optional Checker (see
 Chapter~\ref{optional-checker}) that guarantees that programmers use
@@ -1207,7 +1198,7 @@ helper routine that is called by constructor.  For example:
     }
 
     // Verify that the representation invariants are satisfied.
-    // Works as long as the MyClass fields are initialized, even if the reciever's
+    // Works as long as the MyClass fields are initialized, even if the receiver's
     // class is a subclass of MyClass and not all of the subclass fields are initialized.
     private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
       ...
@@ -2422,7 +2413,7 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  nonnull EnsuresNonNull arg orElse isPresent bField qual ccc
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
-% LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum
+% LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
 % LocalWords:  NullnessChecker redundantNullComparison instanceof
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray

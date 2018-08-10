@@ -115,7 +115,7 @@ INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 # The central repositories for Checker Framework related projects
 LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
-LIVE_PLUME_LIB = "https://github.com/mernst/plume-lib"
+LIVE_PLUME_SCRIPTS = "https://github.com/plume-lib/plume-scripts"
 LIVE_CHECKLINK = "https://github.com/plume-lib/checklink"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
 LIVE_STUBPARSER = "https://github.com/typetools/stubparser"
@@ -160,10 +160,10 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
-TESTLIB_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "util", "build", "libs")
-TESTLIB_BINARY = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+".jar")
-TESTLIB_SOURCE_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-source.jar")
-TESTLIB_JAVADOC_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-javadoc.jar")
+FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
+FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
+FRAMEWORKTEST_SOURCE_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-source.jar")
+FRAMEWORKTEST_JAVADOC_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-javadoc.jar")
 
 JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
@@ -177,7 +177,7 @@ AFU_CHANGELOG = os.path.join(ANNO_FILE_UTILITIES, 'changelog.html')
 AFU_TAG_PREFIXES = [""]
 AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
 
-PLUME_LIB = os.path.join(BUILD_DIR, 'plume-lib')
+PLUME_SCRIPTS = os.path.join(BUILD_DIR, 'plume-scripts')
 CHECKLINK = os.path.join(BUILD_DIR, 'checklink')
 PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
 STUBPARSER = os.path.join(BUILD_DIR, 'stubparser')
@@ -200,7 +200,7 @@ CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompat
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
-TESTLIB_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'testlibReleasePom.xml')
+FRAMEWORKTEST_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworktestReleasePom.xml')
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
 INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)
@@ -232,7 +232,7 @@ os.environ['JSR308'] = BUILD_DIR
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 # Environment variables for tools needed during the build
-os.environ['PLUME_LIB'] = PLUME_LIB
+os.environ['PLUME_SCRIPTS'] = PLUME_SCRIPTS
 os.environ['CHECKLINK'] = CHECKLINK
 os.environ['BIBINPUTS'] = '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] = '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
@@ -249,7 +249,7 @@ if EDITOR is None:
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
 PATH = PATH + ":/usr/bin:"
-PATH = PATH + ":" + PLUME_LIB + "/bin"
+PATH = PATH + ":" + PLUME_SCRIPTS
 PATH = PATH + ":" + CHECKLINK
 PATH = PATH + ":/homes/gws/mernst/.local/bin/:." # for html5validator
 os.environ['PATH'] = PATH

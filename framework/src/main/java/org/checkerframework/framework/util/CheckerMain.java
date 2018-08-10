@@ -11,6 +11,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
@@ -59,16 +60,16 @@ public class CheckerMain {
         System.exit(exitStatus);
     }
 
-    /** The path to the annotated jdk jar to use */
+    /** The path to the annotated jdk jar to use. */
     protected final File jdkJar;
 
-    /** The path to the jsr308 Langtools Type Annotations Compiler */
+    /** The path to the jsr308 Langtools Type Annotations Compiler. */
     protected final File javacJar;
 
-    /** The path to the jar containing CheckerMain.class (i.e. checker.jar) */
+    /** The path to the jar containing CheckerMain.class (i.e. checker.jar). */
     protected final File checkerJar;
 
-    /** The path to checker-qual.jar */
+    /** The path to checker-qual.jar. */
     protected final File checkerQualJar;
 
     private final List<String> compilationBootclasspath;
@@ -77,6 +78,11 @@ public class CheckerMain {
 
     private final List<String> jvmOpts;
 
+    /**
+     * Each element is either a classpath element (a directory or jar file) or is a classpath
+     * (containing elements separated by File.pathSeparator). To produce the final classpath,
+     * concatenate them all (separated by File.pathSeparator).
+     */
     private final List<String> cpOpts;
 
     private final List<String> ppOpts;
@@ -149,22 +155,22 @@ public class CheckerMain {
     }
 
     protected List<String> createCpOpts(final List<String> argsList) {
-        final List<String> extractedOps = extractCpOpts(argsList);
-        extractedOps.add(0, this.checkerQualJar.getAbsolutePath());
-        return extractedOps;
+        final List<String> extractedOpts = extractCpOpts(argsList);
+        extractedOpts.add(0, this.checkerQualJar.getAbsolutePath());
+        return extractedOpts;
     }
 
     // Assumes that createCpOpts has already been run.
     protected List<String> createPpOpts(final List<String> argsList) {
-        final List<String> extractedOps = extractPpOpts(argsList);
-        if (extractedOps.isEmpty()) {
+        final List<String> extractedOpts = extractPpOpts(argsList);
+        if (extractedOpts.isEmpty()) {
             // If processorpath is not provided, then javac uses the classpath.
             // CheckerMain always supplies a processorpath, so if the user
             // didn't specify a processorpath, then use the classpath.
-            extractedOps.addAll(this.cpOpts);
+            extractedOpts.addAll(this.cpOpts);
         }
-        extractedOps.add(0, this.checkerJar.getAbsolutePath());
-        return extractedOps;
+        extractedOpts.add(0, this.checkerJar.getAbsolutePath());
+        return extractedOpts;
     }
 
     /**
@@ -263,7 +269,7 @@ public class CheckerMain {
 
     /**
      * A pattern to match bootclasspath prepend entries, used to construct one {@code
-     * -Xbootclasspath/p:} command-line argument
+     * -Xbootclasspath/p:} command-line argument.
      */
     protected static final Pattern BOOT_CLASS_PATH_REGEX =
             Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
@@ -281,12 +287,12 @@ public class CheckerMain {
         return extractOptWithPattern(BOOT_CLASS_PATH_REGEX, false, args);
     }
 
-    /** Matches all {@code -J} arguments */
+    /** Matches all {@code -J} arguments. */
     protected static final Pattern JVM_OPTS_REGEX = Pattern.compile("^(?:-J)(.*)$");
 
     /**
      * Remove all {@code -J} arguments from {@code args} and add them to the returned list (without
-     * the {@code -J} prefix)
+     * the {@code -J} prefix).
      *
      * @param args the arguments to extract from
      * @return all {@code -J} arguments (without the {@code -J} prefix) or an empty list if there
@@ -297,40 +303,42 @@ public class CheckerMain {
     }
 
     /**
-     * Remove the {@code -cp} and {@code -classpath} options and their arguments from args. Return
-     * the last argument. If no {@code -cp} or {@code -classpath} arguments were present then return
-     * the CLASSPATH environment variable followed by the current directory.
+     * Return the last {@code -cp} or {@code -classpath} option. If no {@code -cp} or {@code
+     * -classpath} arguments were present, then return the CLASSPATH environment variable (if set)
+     * followed by the current directory.
      *
-     * @param args a list of arguments to extract from
-     * @return the arguments that should be put on the classpath when calling javac.jar
+     * <p>Also removes all {@code -cp} and {@code -classpath} options from args.
+     *
+     * @param args a list of arguments to extract from; is side-effected by this
+     * @return collection of classpaths to concatenate to use when calling javac.jar
      */
     protected static List<String> extractCpOpts(final List<String> args) {
         List<String> actualArgs = new ArrayList<>();
 
-        String path = null;
+        String lastCpArg = null;
 
         for (int i = 0; i < args.size(); i++) {
             if ((args.get(i).equals("-cp") || args.get(i).equals("-classpath"))
                     && (i + 1 < args.size())) {
                 args.remove(i);
-                path = args.remove(i);
+                // Every classpath entry overrides the one before it.
+                lastCpArg = args.remove(i);
                 // re-process whatever is currently at element i
                 i--;
             }
         }
 
-        // The logic below is exactly what the javac script does.
-        // If it's empty use the "CLASSPATH" environment variable followed by the current directory.
-        if (path == null) {
+        // The logic below is exactly what the javac script does.  If no command-line classpath is
+        // specified, use the "CLASSPATH" environment variable followed by the current directory.
+        if (lastCpArg == null) {
             final String systemClassPath = System.getenv("CLASSPATH");
             if (systemClassPath != null && !systemClassPath.trim().isEmpty()) {
-                actualArgs.add(System.getenv("CLASSPATH"));
+                actualArgs.add(systemClassPath.trim());
             }
 
             actualArgs.add(".");
         } else {
-            // Every classpath entry overrides the one before it and CLASSPATH.
-            actualArgs.add(path);
+            actualArgs.add(lastCpArg);
         }
 
         return actualArgs;
@@ -370,7 +378,7 @@ public class CheckerMain {
 
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath
+     * classpath.
      */
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
@@ -379,7 +387,7 @@ public class CheckerMain {
         args.add(java);
 
         args.add("-classpath");
-        args.add(PluginUtil.join(File.pathSeparator, runtimeClasspath));
+        args.add(String.join(File.pathSeparator, runtimeClasspath));
         args.add("-ea");
         // com.sun.tools needs to be enabled separately
         args.add("-ea:com.sun.tools...");
@@ -396,26 +404,66 @@ public class CheckerMain {
         // jdk[78].jar classes don't have bodies, so they won't be used at
         // run time, but other, real definitions of those classes will be
         // on the classpath at run time.
-        args.add(
-                "-Xbootclasspath/p:"
-                        + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
+        args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));
 
         if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
-            args.add(quote(PluginUtil.join(File.pathSeparator, cpOpts)));
+            args.add(quote(concatenatePaths(cpOpts)));
         }
         if (!argsListHasProcessorPath(argListFiles)) {
             args.add("-processorpath");
-            args.add(quote(PluginUtil.join(File.pathSeparator, ppOpts)));
+            args.add(quote(concatenatePaths(ppOpts)));
         }
 
         args.addAll(toolOpts);
         return args;
     }
 
+    /** Given a list of paths, concatenate them to form a single path. Also expand wildcards. */
+    private String concatenatePaths(List<String> paths) {
+        List<String> elements = new ArrayList<>();
+        for (String path : paths) {
+            for (String element : path.split(File.pathSeparator)) {
+                elements.addAll(expandWildcards(element));
+            }
+        }
+        return String.join(File.pathSeparator, elements);
+    }
+
+    /** The string "/*" (on Unix). */
+    private static final String FILESEP_STAR = File.separator + "*";
+
+    /**
+     * Given a path element that might be a wildcard, return a list of the elements it expands to.
+     * If the element isn't a wildcard, return a singleton list containing the argument.
+     */
+    private List<String> expandWildcards(String pathElement) {
+        if (pathElement.equals("*")) {
+            return jarFiles(".");
+        } else if (pathElement.endsWith(FILESEP_STAR)) {
+            return jarFiles(pathElement.substring(0, pathElement.length() - 1));
+        } else if (pathElement.equals("")) {
+            return Collections.emptyList();
+        } else {
+            return Collections.singletonList(pathElement);
+        }
+    }
+
+    /** Return all the .jar and .JAR files in the given directory. */
+    private List<String> jarFiles(String directory) {
+        File dir = new File(directory);
+        File[] jarFiles =
+                dir.listFiles((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
+        List<String> result = new ArrayList<>(jarFiles.length);
+        for (File jarFile : jarFiles) {
+            result.add(jarFile.toString());
+        }
+        return result;
+    }
+
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath
+     * classpath.
      */
     public int invokeCompiler() {
         List<String> args = getExecArguments();
@@ -533,7 +581,7 @@ public class CheckerMain {
     }
 
     /**
-     * Find the jar file or directory containing the .class file from which cls was loaded
+     * Find the jar file or directory containing the .class file from which cls was loaded.
      *
      * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class.
      * @param errIfFromDirectory if false, throw an exception if the file was loaded from a
@@ -612,7 +660,7 @@ public class CheckerMain {
             }
             throw new RuntimeException(
                     "The following files could not be located: "
-                            + PluginUtil.join(", ", missingAbsoluteFilenames));
+                            + String.join(", ", missingAbsoluteFilenames));
         }
     }
 
@@ -666,7 +714,7 @@ public class CheckerMain {
 
     /**
      * For every "-processor" argument in args, replace its immediate successor argument using
-     * unabbreviateProcessorNames
+     * unabbreviateProcessorNames.
      */
     protected void replaceShorthandProcessor(final List<String> args) {
         for (int i = 0; i < args.size(); i++) {

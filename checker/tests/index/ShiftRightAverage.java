@@ -1,5 +1,6 @@
 // Test case for kelloggm 217
 // https://github.com/kelloggm/checker-framework/issues/217
+
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 

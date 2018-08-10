@@ -93,17 +93,19 @@ probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
 In particular, qualifiers in method bodies are extremely rare.
 
-Most of this section is applicable only to source code that is being
-checked by a checker.
+(Most of this section is applicable only to source code that is being
+checked by a checker.  This paragraph and
+Section~\ref{defaults-classfile} are about reading an already-compiled
+class file (say, \<A.class>).
 %
-When the compiler reads a \<.class> file that was checked by a
-checker, the \<.class> file contains the explicit or defaulted
+If the checker ran during the compilation that created \<A.class>,
+then \<A.class> contains the explicit or defaulted
 annotations from the source code and no defaulting is necessary.
 %
-When the compiler reads a \<.class> file that was not checked by a
-checker, the \<.class> file contains only explicit annotations and
+If the checker did not  run during the compilation that created \<A.class>,
+then \<A.class> file contains only explicit annotations and
 defaulting might be necessary; see Section~\ref{defaults-classfile}
-for these rules.
+for these rules.)
 
   The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
@@ -287,7 +289,7 @@ example, consider these two declarations:
 \noindent
 The two declarations are treated identically by Java, and the default
 qualifier applies to the \<Object> upper bound whether it is implicit or
-explicit.  (The @NonNull default annotation applies only to the upper bound
+explicit.  (The \<@NonNull> default annotation applies only to the upper bound
 in the \<extends> clause, not to the lower bound in the inexpressible
 implicit \<super void> clause.)
 

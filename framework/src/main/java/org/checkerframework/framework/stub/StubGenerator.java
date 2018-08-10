@@ -29,16 +29,16 @@ import org.checkerframework.javacutil.TypesUtils;
  * @checker_framework.manual #stub Using stub classes
  */
 public class StubGenerator {
-    /** The indentation for the class */
+    /** The indentation for the class. */
     private static final String INDENTION = "    ";
 
-    /** The output stream */
+    /** The output stream. */
     private final PrintStream out;
 
-    /** the current indentation for the line being processed */
+    /** the current indentation for the line being processed. */
     private String currentIndention = "";
 
-    /** the package of the class being processed */
+    /** the package of the class being processed. */
     private String currentPackage = null;
 
     /** Constructs an instanceof {@code IndexGenerator} that outputs to {@code System.out}. */
@@ -119,7 +119,9 @@ public class StubGenerator {
 
         // only output stub for classes or interfaces.  not enums
         if (typeElement.getKind() != ElementKind.CLASS
-                && typeElement.getKind() != ElementKind.INTERFACE) return;
+                && typeElement.getKind() != ElementKind.INTERFACE) {
+            return;
+        }
 
         String newPackageName =
                 ElementUtils.getVerboseName(ElementUtils.enclosingPackage(typeElement));
@@ -227,7 +229,7 @@ public class StubGenerator {
         }
     }
 
-    /** Helper method that outputs the declaration of the member */
+    /** Helper method that outputs the declaration of the member. */
     private void printMember(Element member, List<TypeElement> innerClass) {
         if (member.getKind().isField()) {
             printFieldDecl((VariableElement) member);
@@ -303,7 +305,9 @@ public class StubGenerator {
 
         boolean isFirst = true;
         for (VariableElement param : method.getParameters()) {
-            if (!isFirst) out.print(", ");
+            if (!isFirst) {
+                out.print(", ");
+            }
             out.print(formatType(param.asType()));
             out.print(' ');
             out.print(param.getSimpleName());
@@ -319,13 +323,13 @@ public class StubGenerator {
         out.println(';');
     }
 
-    /** Indent the current line */
+    /** Indent the current line. */
     private void indent() {
         out.print(currentIndention);
     }
 
     /**
-     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}
+     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}.
      *
      * <p>instead of the default representation, {@code [item1, item2, item3, ...]}
      */
@@ -333,28 +337,31 @@ public class StubGenerator {
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (Object o : lst) {
-            if (!isFirst) sb.append(", ");
+            if (!isFirst) {
+                sb.append(", ");
+            }
             sb.append(o);
             isFirst = false;
         }
         return sb.toString();
     }
 
-    /** Returns true if the element is public or protected element */
+    /** Returns true if the element is public or protected element. */
     private boolean isPublicOrProtected(Element element) {
         return element.getModifiers().contains(Modifier.PUBLIC)
                 || element.getModifiers().contains(Modifier.PROTECTED);
     }
 
-    /** outputs the simple name of the type */
+    /** Outputs the simple name of the type. */
     private String formatType(Object typeRep) {
         StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
         StringBuilder sb = new StringBuilder();
 
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            if (token.length() == 1 || token.lastIndexOf('.') == -1) sb.append(token);
-            else {
+            if (token.length() == 1 || token.lastIndexOf('.') == -1) {
+                sb.append(token);
+            } else {
                 int index = token.lastIndexOf('.');
                 sb.append(token.substring(index + 1));
             }

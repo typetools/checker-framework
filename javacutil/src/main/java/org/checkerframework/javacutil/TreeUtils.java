@@ -627,8 +627,9 @@ public final class TreeUtils {
      *     constructor
      */
     public static final boolean containsThisConstructorInvocation(MethodTree node) {
-        if (!TreeUtils.isConstructor(node) || node.getBody().getStatements().isEmpty())
+        if (!TreeUtils.isConstructor(node) || node.getBody().getStatements().isEmpty()) {
             return false;
+        }
 
         StatementTree st = node.getBody().getStatements().get(0);
         if (!(st instanceof ExpressionStatementTree)
@@ -1255,8 +1256,9 @@ public final class TreeUtils {
 
         if (newArray.dimAnnotations.length() > 0
                 && (level >= 0)
-                && (level < newArray.dimAnnotations.size()))
+                && (level < newArray.dimAnnotations.size())) {
             return annotationsFromTypeAnnotationTrees(newArray.dimAnnotations.get(level));
+        }
 
         return Collections.emptyList();
     }

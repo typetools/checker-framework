@@ -27,7 +27,7 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
                 && element.getEnclosingElement() instanceof Symbol.ClassSymbol;
     }
 
-    /** The class that holds the type parameter element */
+    /** The class that holds the type parameter element. */
     private final Symbol.ClassSymbol enclosingClass;
 
     ClassTypeParamApplier(

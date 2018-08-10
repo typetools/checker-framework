@@ -37,7 +37,7 @@ licensing restrictions.
 
 Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
 annotations.  (See
-\url{https://developer.android.com/studio/write/java8-support.html}
+\url{https://developer.android.com/studio/write/java8-support}
 for more details.)  This section explains how to configure your Andriod
 project to use the Checker Framework.  All the changes should be made to
 the module's \<build.gradle> file --- not the app's \<build.gradle> file.
@@ -93,7 +93,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.5.2'
+    ext.checkerFrameworkVersion = '2.5.4'
     implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
@@ -405,14 +405,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.5.2/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.5.4/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.2
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.4
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -436,7 +436,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.2
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.4
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -446,7 +446,7 @@ use the last one.
    run checker.jar via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
-  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" ...
+  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" -processor nullness MyFile.java
 \end{Verbatim}
 
     You can simplify the above command by introducing an alias.  Then,
@@ -455,11 +455,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.2
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.4
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.5.2\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.5.4\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 

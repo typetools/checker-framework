@@ -18,7 +18,7 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
         super(type, element);
     }
 
-    /** The index of element in the list of elements that contains it */
+    /** The index of element in the list of elements that contains it. */
     public abstract int getElementIndex();
 
     /**

@@ -5,7 +5,8 @@ import org.checkerframework.common.value.qual.MinLen;
 
 class StartsEndsWith {
 
-    // This particular test is here rather than in the framework tests because it depends on purity annotations for these particular JDK methods.
+    // This particular test is here rather than in the framework tests because it depends on purity
+    // annotations for these particular JDK methods.
     void refineStartsConditional(String str, String prefix) {
         if (prefix.length() > 10 && str.startsWith(prefix)) {
             @MinLen(11) String s11 = str;

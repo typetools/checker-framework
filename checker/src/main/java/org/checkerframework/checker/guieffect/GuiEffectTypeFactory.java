@@ -159,7 +159,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Calling context annotations
+     * Calling context annotations.
      *
      * <p>To make anon-inner-classes work, I need to climb the inheritance DAG, until I:
      *
@@ -351,9 +351,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             boolean issueConflictWarning,
             Tree errorNode) {
         assert (declaringType != null);
-        ExecutableElement ui_override = null;
-        ExecutableElement safe_override = null;
-        ExecutableElement poly_override = null;
+        ExecutableElement uiOverride = null;
+        ExecutableElement safeOverride = null;
+        ExecutableElement polyOverride = null;
 
         // We must account for explicit annotation, type declaration annotations, and package
         // annotations
@@ -374,14 +374,14 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 assert (eff != null);
                 if (eff.isSafe()) {
                     // found a safe override
-                    safe_override = overrides;
+                    safeOverride = overrides;
                     if (isUI && issueConflictWarning) {
                         checker.report(
                                 Result.failure(
                                         "override.effect.invalid",
                                         overridingMethod,
                                         declaringType,
-                                        safe_override,
+                                        safeOverride,
                                         superclass),
                                 errorNode);
                     }
@@ -391,16 +391,16 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                         "override.effect.invalid.polymorphic",
                                         overridingMethod,
                                         declaringType,
-                                        safe_override,
+                                        safeOverride,
                                         superclass),
                                 errorNode);
                     }
                 } else if (eff.isUI()) {
                     // found a ui override
-                    ui_override = overrides;
+                    uiOverride = overrides;
                 } else {
                     assert (eff.isPoly());
-                    poly_override = overrides;
+                    polyOverride = overrides;
                     // TODO: Is this right? is the supertype covered by the
                     // directSuperTypes() method all I need? Or should I be
                     // using that utility method that returns a set of
@@ -435,14 +435,14 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 Effect eff = getDeclaredEffect(overrides);
                 if (eff.isSafe()) {
                     // found a safe override
-                    safe_override = overrides;
+                    safeOverride = overrides;
                     if (isUI && issueConflictWarning) {
                         checker.report(
                                 Result.failure(
                                         "override.effect.invalid",
                                         overridingMethod,
                                         declaringType,
-                                        safe_override,
+                                        safeOverride,
                                         ty),
                                 errorNode);
                     }
@@ -452,16 +452,16 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                         "override.effect.invalid.polymorphic",
                                         overridingMethod,
                                         declaringType,
-                                        safe_override,
+                                        safeOverride,
                                         ty),
                                 errorNode);
                     }
                 } else if (eff.isUI()) {
                     // found a ui override
-                    ui_override = overrides;
+                    uiOverride = overrides;
                 } else {
                     assert (eff.isPoly());
-                    poly_override = overrides;
+                    polyOverride = overrides;
                     if (isUI && issueConflictWarning) {
                         AnnotatedTypeMirror.AnnotatedDeclaredType supdecl = ty;
                         // Need to special case an anonymous class with @UI on
@@ -476,7 +476,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                             "override.effect.invalid.nonui",
                                             overridingMethod,
                                             declaringType,
-                                            poly_override,
+                                            polyOverride,
                                             supdecl),
                                     errorNode);
                         }
@@ -486,7 +486,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // We don't need to issue warnings for inheriting from poly and a concrete effect.
-        if (ui_override != null && safe_override != null && issueConflictWarning) {
+        if (uiOverride != null && safeOverride != null && issueConflictWarning) {
             // There may be more than two parent methods, but for now it's
             // enough to know there are at least 2 in conflict
             checker.report(
@@ -494,25 +494,25 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                             "override.effect.warning.inheritance",
                             overridingMethod,
                             declaringType,
-                            ui_override.toString(),
-                            ui_override.getEnclosingElement().asType().toString(),
-                            safe_override.toString(),
-                            safe_override.getEnclosingElement().asType().toString()),
+                            uiOverride.toString(),
+                            uiOverride.getEnclosingElement().asType().toString(),
+                            safeOverride.toString(),
+                            safeOverride.getEnclosingElement().asType().toString()),
                     errorNode);
         }
 
         Effect min =
-                (safe_override != null
+                (safeOverride != null
                         ? new Effect(SafeEffect.class)
-                        : (poly_override != null
+                        : (polyOverride != null
                                 ? new Effect(PolyUIEffect.class)
-                                : (ui_override != null ? new Effect(UIEffect.class) : null)));
+                                : (uiOverride != null ? new Effect(UIEffect.class) : null)));
         Effect max =
-                (ui_override != null
+                (uiOverride != null
                         ? new Effect(UIEffect.class)
-                        : (poly_override != null
+                        : (polyOverride != null
                                 ? new Effect(PolyUIEffect.class)
-                                : (safe_override != null ? new Effect(SafeEffect.class) : null)));
+                                : (safeOverride != null ? new Effect(SafeEffect.class) : null)));
         if (debugSpew) {
             System.err.println(
                     "Found "
@@ -557,6 +557,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             super(GuiEffectTypeFactory.this);
         }
 
+        /*
         public boolean hasExplicitUIEffect(ExecutableElement methElt) {
             return GuiEffectTypeFactory.this.getDeclAnnotation(methElt, UIEffect.class) != null;
         }
@@ -574,6 +575,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     || hasExplicitSafeEffect(methElt)
                     || hasExplicitPolyUIEffect(methElt);
         }
+        */
 
         @Override
         public Void visitMethod(MethodTree node, AnnotatedTypeMirror type) {

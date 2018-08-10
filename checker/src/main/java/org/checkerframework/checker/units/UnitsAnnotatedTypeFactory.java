@@ -368,7 +368,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** A class for adding annotations based on tree */
+    /** A class for adding annotations based on tree. */
     private class UnitsTreeAnnotator extends TreeAnnotator {
 
         UnitsTreeAnnotator(UnitsAnnotatedTypeFactory atypeFactory) {

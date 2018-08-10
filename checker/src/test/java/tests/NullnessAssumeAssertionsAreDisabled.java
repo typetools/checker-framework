@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class NullnessAssumeAssertionsAreDisabled extends CheckerFrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessAssumeAssertionsAreDisabled(List<File> testFiles) {
         super(
                 testFiles,

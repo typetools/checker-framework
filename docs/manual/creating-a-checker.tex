@@ -685,7 +685,8 @@ programmer didn't write a type qualifier explicitly.
 \subsection{Completeness of the type hierarchy\label{creating-bottom-and-top-qualifier}}
 
 When you define a type system, its type hierarchy must be a
-complete lattice --- that is, there must be a top type that is a
+lattice:  every set of types has a unique least upper bound and a unique
+greatest lower bound.  This implies that there must be a top type that is a
 supertype of all other types, and there must be a bottom type that is a
 subtype of all other types.
 Furthermore, it is best if the top type and bottom type are defined
@@ -1752,8 +1753,8 @@ qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 
 \item \code{-AprintVerboseGenerics}: print more information about type
-  parameters and wildcards when they appear in warning messages.  This
-  produces a subset of the information than \code{-AprintAllQualifiers} does.
+  parameters and wildcards when they appear in warning messages.  Supplying
+  this also implies \code{-AprintAllQualifiers}.
 
 \item \code{-Adetailedmsgtext}: Output error/warning messages in a
   stylized format that is easy for tools to parse.  This is useful for

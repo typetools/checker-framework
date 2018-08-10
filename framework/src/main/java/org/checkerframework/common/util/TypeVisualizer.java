@@ -49,7 +49,7 @@ import org.checkerframework.javacutil.PluginUtil;
 public class TypeVisualizer {
 
     /**
-     * Creates a dot file at dest that contains a digraph for the structure of type
+     * Creates a dot file at dest that contains a digraph for the structure of {@code type}.
      *
      * @param dest the destination dot file
      * @param type the type to be written
@@ -60,7 +60,7 @@ public class TypeVisualizer {
     }
 
     /**
-     * Creates a dot file at dest that contains a digraph for the structure of type
+     * Creates a dot file at dest that contains a digraph for the structure of {@code type}.
      *
      * @param dest the destination dot file, this string will be directly passed to new File(dest)
      * @param type the type to be written
@@ -119,7 +119,7 @@ public class TypeVisualizer {
 
     /**
      * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
-     * to a dot file at directory/varName.dot
+     * to a dot file at {@code directory/varName}.
      *
      * @return true if the type variable was printed, otherwise false
      */
@@ -132,7 +132,7 @@ public class TypeVisualizer {
 
     /**
      * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
-     * to a png file at directory/varName.png
+     * to a png file at {@code directory/varName.png}.
      *
      * @return true if the type variable was printed, otherwise false
      */
@@ -202,7 +202,7 @@ public class TypeVisualizer {
      * structures to hold the intermediate dot information before printing.
      */
     private static class Drawing {
-        /** A map from Node (type) to a dot string declaring that node */
+        /** A map from Node (type) to a dot string declaring that node. */
         private final Map<Node, String> nodes = new LinkedHashMap<>();
 
         /** list of connections between nodes. Lines will refer to identifiers in nodes.values() */
@@ -210,7 +210,7 @@ public class TypeVisualizer {
 
         private final String graphName;
 
-        /** The type being drawn */
+        /** The type being drawn. */
         private final AnnotatedTypeMirror type;
 
         /** Used to identify nodes uniquely. This field is monotonically increasing. */
@@ -561,7 +561,7 @@ public class TypeVisualizer {
                     // TODO: More comprehensive escaping
                     annoNames.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
                 }
-                return PluginUtil.join(" ", annoNames);
+                return String.join(" ", annoNames);
             }
 
             public boolean checkOrAdd(final AnnotatedTypeMirror atm) {

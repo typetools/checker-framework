@@ -17,13 +17,10 @@ public class LessThanCustomCollection {
     private final int[] array;
     private final @IndexOrHigh("array") @LessThan("end + 1") int start;
     private final @LTLengthOf(
-        value = {"array", "this"},
-        offset = {" - 1", "- start"}
-    ) int end;
+            value = {"array", "this"},
+            offset = {" - 1", "- start"}) int end;
 
     private LessThanCustomCollection(int[] array) {
-        // 0 should be @LessThan(array.length + 1)
-        // :: error: (argument.type.incompatible)
         this(array, 0, array.length);
     }
 

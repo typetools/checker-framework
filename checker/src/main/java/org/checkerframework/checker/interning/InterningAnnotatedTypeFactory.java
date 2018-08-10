@@ -91,7 +91,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(element, type);
     }
 
-    /** A class for adding annotations based on tree */
+    /** A class for adding annotations based on tree. */
     private class InterningTreeAnnotator extends TreeAnnotator {
 
         InterningTreeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {

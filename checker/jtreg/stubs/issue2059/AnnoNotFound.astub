@@ -1,0 +1,9 @@
+// Import at least one supported annotation.
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+package java.lang;
+
+class Object {
+  // Annotation not imported.
+  @Nullable String toString() { throw new RuntimeException("skeleton method"); }
+}

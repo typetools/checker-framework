@@ -334,6 +334,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     }
 
     @Override
+    public R visitClassDeclaration(ClassDeclarationNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    @Override
     public R visitMemberReference(FunctionalInterfaceNode n, P p) {
         return visitNode(n, p);
     }

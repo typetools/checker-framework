@@ -49,7 +49,7 @@ import scenelib.annotations.io.IndexFileWriter;
  * my.package.MyClass.jaif}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #jaifFilesPath} directory. Having more information in those initial .jaif files means that the
+ * #JAIF_FILES_PATH} directory. Having more information in those initial .jaif files means that the
  * precision achieved by the whole-program inference analysis will be better. {@link
  * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
  */
@@ -65,13 +65,13 @@ public class WholeProgramInferenceScenesHelper {
      * Directory where .jaif files will be written to and read from. This directory is relative to
      * where the CF's javac command is executed.
      */
-    public static final String jaifFilesPath =
+    public static final String JAIF_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
     /** Indicates whether assignments where the rhs is null should be ignored. */
     private final boolean ignoreNullAssignments;
 
-    /** Maps .jaif file paths (Strings) to Scenes. Relatives to jaifFilesPath. */
+    /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
     private final Map<String, AScene> scenes = new HashMap<>();
 
     /**
@@ -96,7 +96,7 @@ public class WholeProgramInferenceScenesHelper {
      */
     public void writeScenesToJaif() {
         // Create .jaif files directory if it doesn't exist already.
-        File jaifDir = new File(jaifFilesPath);
+        File jaifDir = new File(JAIF_FILES_PATH);
         if (!jaifDir.exists()) {
             jaifDir.mkdirs();
         }
@@ -126,7 +126,7 @@ public class WholeProgramInferenceScenesHelper {
 
     /** Returns the String representing the .jaif path of a class given its name. */
     protected String getJaifPath(String className) {
-        String jaifPath = jaifFilesPath + className + ".jaif";
+        String jaifPath = JAIF_FILES_PATH + className + ".jaif";
         return jaifPath;
     }
 
@@ -253,7 +253,7 @@ public class WholeProgramInferenceScenesHelper {
         }
 
         // Recursively remove ignored annotations from inner types
-        if (typeEl.innerTypes.size() != 0) {
+        if (!typeEl.innerTypes.isEmpty()) {
             for (ATypeElement innerType : typeEl.innerTypes.values()) {
                 removeIgnoredAnnosFromATypeElement(innerType, loc);
             }
@@ -347,8 +347,12 @@ public class WholeProgramInferenceScenesHelper {
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
         Target target = elt.getAnnotation(Target.class);
-        if (target != null && target.value().length == 0) return true;
-        if (elt.getAnnotation(InvisibleQualifier.class) != null) return true;
+        if (target != null && target.value().length == 0) {
+            return true;
+        }
+        if (elt.getAnnotation(InvisibleQualifier.class) != null) {
+            return true;
+        }
 
         // Checks if am is default
         if (elt.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
@@ -505,7 +509,7 @@ public class WholeProgramInferenceScenesHelper {
         }
 
         // Only update the ATypeElement if there are no explicit annotations
-        if (curATM.getExplicitAnnotations().size() == 0) {
+        if (curATM.getExplicitAnnotations().isEmpty()) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
                         newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));

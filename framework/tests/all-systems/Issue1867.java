@@ -1,5 +1,6 @@
 // Test case for Issue 1867
 // https://github.com/typetools/checker-framework/issues/1867
+
 import java.util.List;
 
 public abstract class Issue1867 {

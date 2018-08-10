@@ -120,7 +120,7 @@ public class GlbUtil {
         return glbType;
     }
 
-    /** Returns an AnnotatedNullType with the given annotations as primaries */
+    /** Returns an AnnotatedNullType with the given annotations as primaries. */
     private static AnnotatedNullType createBottom(
             final AnnotatedTypeFactory typeFactory, final Set<? extends AnnotationMirror> annos) {
         return typeFactory.getAnnotatedNullType(annos);

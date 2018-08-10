@@ -14,10 +14,9 @@ public class NullnessReflectionExampleTest {
             throws NoSuchMethodException, SecurityException, IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
         @MethodVal(
-            className = "NullnessReflectionExampleTest",
-            methodName = "getCurrentLocation",
-            params = 0
-        )
+                className = "NullnessReflectionExampleTest",
+                methodName = "getCurrentLocation",
+                params = 0)
         Method toLowerCase = getClass().getMethod("getCurrentLocation");
         Location currentLocation = (Location) toLowerCase.invoke(this);
         return currentLocation.nameOfCity();

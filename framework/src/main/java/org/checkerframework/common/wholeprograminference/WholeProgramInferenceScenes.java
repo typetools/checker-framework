@@ -309,7 +309,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // TODO: Anonymous classes
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
-        if (classSymbol == null) return;
+        if (classSymbol == null) {
+            return;
+        }
 
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -472,7 +474,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
-        if (classSymbol == null) return; // TODO: Handle anonymous classes.
+        if (classSymbol == null) { // TODO: Handle anonymous classes.
+            return;
+        }
         String className = classSymbol.flatname.toString();
 
         String jaifPath = helper.getJaifPath(className);
