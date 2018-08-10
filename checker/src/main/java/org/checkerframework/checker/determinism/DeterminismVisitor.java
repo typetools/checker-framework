@@ -17,16 +17,24 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** Visitor for the determinism type-system. */
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
     public DeterminismVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 
+    /** Error message keys. */
     private static final @CompilerMessageKey String INVALID_ANNOTATION = "invalid.annotation";
+
     private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
             "invalid.parameter.type";
     private static final @CompilerMessageKey String INVALID_ARRAY_ACCESS = "invalid.array.access";
 
+    /**
+     * Sets the lower bound for exception parameters to be {@code @Det}.
+     *
+     * @return Set of lower bound annotations for exception parameters.
+     */
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
         Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
@@ -34,10 +42,22 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return exceptionParam;
     }
 
+    /**
+     * Reports errors for the following invalid annotations: 1) When a non-collection is annotated
+     * as {@code @OrderNonDet}. 2) When the annotation on type parameter of a collection is a
+     * supertype of the annotation on the collection. Example: {@code @Det List<@OrderNonDet
+     * String>}.
+     *
+     * @param declarationType the type of the class (TypeElement)
+     * @param useType the use of the class (instance type)
+     * @param tree the tree where the type is used
+     * @return true if the annotation is valid and false otherwise.
+     */
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         DeclaredType javaType = useType.getUnderlyingType();
+        // checks for @OrderNonDet on non-collections
         if (useType.hasAnnotation(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
             if (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                     || atypeFactory.isIterator(javaType.asElement().asType()))) {
@@ -46,7 +66,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             }
         }
 
-        // Sets and lists
+        // For collections, check if annotation on the type parameter is a supertype of
+        // the annotation on the collection.
         if ((atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                         && javaType.getTypeArguments().size() == 1)
                 || atypeFactory.isIterator(javaType.asElement().asType())) {
@@ -55,7 +76,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             Iterator<AnnotationMirror> paramAnnotationIt = paramType.getAnnotations().iterator();
             if (paramAnnotationIt.hasNext()) {
                 AnnotationMirror paramAnnotation = paramAnnotationIt.next();
-                if (!isSubType(paramAnnotation, baseAnnotation)) {
+                if (!atypeFactory
+                        .getQualifierHierarchy()
+                        .isSubtype(paramAnnotation, baseAnnotation)) {
                     checker.report(
                             Result.failure(
                                     INVALID_ANNOTATION_SUBTYPE,
@@ -70,28 +93,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return true;
     }
 
-    private boolean isSubType(AnnotationMirror a1, AnnotationMirror a2) {
-        boolean ret;
-        ret =
-                ((types.isSameType(a1.getAnnotationType(), atypeFactory.DET.getAnnotationType())
-                                && types.isSameType(
-                                        a2.getAnnotationType(),
-                                        atypeFactory.DET.getAnnotationType()))
-                        || (types.isSameType(
-                                        a1.getAnnotationType(),
-                                        atypeFactory.ORDERNONDET.getAnnotationType())
-                                && types.isSameType(
-                                        a2.getAnnotationType(),
-                                        atypeFactory.ORDERNONDET.getAnnotationType()))
-                        || (types.isSameType(
-                                        a1.getAnnotationType(),
-                                        atypeFactory.NONDET.getAnnotationType())
-                                && types.isSameType(
-                                        a2.getAnnotationType(),
-                                        atypeFactory.NONDET.getAnnotationType())));
-        return (ret || atypeFactory.getQualifierHierarchy().isSubtype(a1, a2));
-    }
-
+    /**
+     * Reports an error if {@code @OrderNonDet} is used with a primitive type.
+     *
+     * @param type the use of the primitive type
+     * @param tree the tree where the type is used
+     * @return true if the annotation is valid and false otherwise.
+     */
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         Set<AnnotationMirror> annos = type.getAnnotations();
@@ -102,20 +110,23 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return true;
     }
 
+    /**
+     * Reports an error if the component type of an array has an annotation that is a supertype of
+     * the array annotation Example: {@code @NonDet int @Det[]} is invalid.
+     *
+     * @param type the array type use
+     * @param tree the tree where the type is used
+     * @return true if the annotation is valid and false otherwise.
+     */
     @Override
     public boolean isValidUse(AnnotatedTypeMirror.AnnotatedArrayType type, Tree tree) {
-        Set<AnnotationMirror> annos = type.getAnnotations();
-        // TODO: Allow OrderNonDet array?
-        //        if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class)))
-        //            checker.report(Result.failure(INVALID_ANNOTATION), tree);
-        // Do not allow arrays of type @NonDet Object @Det []
         AnnotationMirror arrayType;
         AnnotationMirror elementType;
         if (type.getAnnotations().size() > 0
                 && type.getComponentType().getAnnotations().size() > 0) {
             arrayType = type.getAnnotations().iterator().next();
             elementType = type.getComponentType().getAnnotations().iterator().next();
-            if (!isSubType(elementType, arrayType)) {
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(elementType, arrayType)) {
                 checker.report(
                         Result.failure(INVALID_ANNOTATION_SUBTYPE, elementType, arrayType), tree);
                 return false;
@@ -124,6 +135,15 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return true;
     }
 
+    /**
+     * When an element of {@code @OrderNonDet} or {@code @NonDet} array is accessed, this method
+     * annotates the type of that element as {@code @Det}
+     *
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     */
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
@@ -147,12 +167,18 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
+    /**
+     * Checks for invalid assignment to an array element and reports an error. This is to prevent
+     * side-effects to arrays. Example {@Code @Det int @Det [] x; @NonDet int i; x[i] = y} is
+     * flagged as an error
+     *
+     * @param varTree the AST node for the lvalue (usually a variable)
+     * @param valueExp the AST node for the rvalue (the new value)
+     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     */
     @Override
     protected void commonAssignmentCheck(
             Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
-        // This is to prevent side-effects to arrays
-        // Example {@Code @Det int @Det [] x;}
-        // {@Code x[@NonDet int] = y} is flagged as an error
         if (varTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
             ArrayAccessTree arrTree = (ArrayAccessTree) varTree;
             AnnotatedTypeMirror arrExprType =
@@ -166,7 +192,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                             .getAnnotations()
                             .iterator()
                             .next();
-            if (!isSubType(indexType, arrTopType)) {
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(indexType, arrTopType)) {
                 checker.report(
                         Result.failure(
                                 INVALID_ARRAY_ACCESS,

@@ -6,14 +6,12 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.poly.AbstractQualifierPolymorphism;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class DeterminismQualifierPolymorphism
-        extends DefaultQualifierPolymorphism { // AbstractQualifierPolymorphism {
+public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphism {
 
     Elements elements;
     ProcessingEnvironment env;
@@ -22,27 +20,6 @@ public class DeterminismQualifierPolymorphism
     AnnotationMirror POLYDET;
     AnnotationMirror POLYDET_UP;
     AnnotationMirror POLYDET_DOWN;
-    /**
-     * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
-     * querying type qualifiers and the given factory for getting annotated types. Subclass need to
-     * add polymorphic qualifiers to {@code polyQual}.
-     *
-     * @param env the processing environment
-     * @param factory the factory for the current checker
-     */
-    //    public DeterminismQualifierPolymorphism(
-    //            ProcessingEnvironment env, DeterminismAnnotatedTypeFactory factory) {
-    //        super(env, factory);
-    //        this.env = env;
-    //        this.factory = factory;
-    //        elements = env.getElementUtils();
-    //        POLYDET = factory.POLYDET;
-    //        POLYDET_USE = factory.POLYDET_USE;
-    //        polyQuals.put(POLYDET, factory.NONDET);
-    //        polyQuals.put(POLYDET_USE, factory.NONDET);
-    //        polyQuals.put(POLYDET_UP, factory.POLYDET_UP);
-    //        polyQuals.put(POLYDET_DOWN, factory.POLYDET_DOWN);
-    //    }
 
     public DeterminismQualifierPolymorphism(
             ProcessingEnvironment env, DeterminismAnnotatedTypeFactory factory) {
