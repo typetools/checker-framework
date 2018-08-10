@@ -11,10 +11,10 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.checker.signature.qual.SignatureBottom;
 import org.checkerframework.checker.signature.qual.SignatureUnknown;
-import org.checkerframework.checker.signature.qual.SourceNameForNonArrayNonInner;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -36,8 +36,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror BINARY_NAME;
     /** Annotation mirror for {@literal @}InternalForm annotation */
     protected final AnnotationMirror INTERNAL_FORM;
-    /** Annotation mirror for {@literal @}SourceNameForNonArrayNonInner annotation */
-    protected final AnnotationMirror SOURCE_NAME_FOR_NON_ARRAY_NON_INNER;
+    /** Annotation mirror for {@literal @}DotSeparatedIdentifiers annotation */
+    protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS;
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar;
@@ -54,8 +54,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         SIGNATURE_UNKNOWN = AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
         BINARY_NAME = AnnotationBuilder.fromClass(elements, BinaryName.class);
         INTERNAL_FORM = AnnotationBuilder.fromClass(elements, InternalForm.class);
-        SOURCE_NAME_FOR_NON_ARRAY_NON_INNER =
-                AnnotationBuilder.fromClass(elements, SourceNameForNonArrayNonInner.class);
+        DOT_SEPARATED_IDENTIFIERS =
+                AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
         replaceCharChar =
                 TreeUtils.getMethod(
                         java.lang.String.class.getName(), "replace", processingEnv, "char", "char");
@@ -171,7 +171,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (c1 == '.' && c2 == '/') {
                 type.replaceAnnotation(INTERNAL_FORM);
             } else if (c1 == '$' && c2 == '.') {
-                type.replaceAnnotation(SOURCE_NAME_FOR_NON_ARRAY_NON_INNER);
+                type.replaceAnnotation(DOT_SEPARATED_IDENTIFIERS);
             }
         }
 

@@ -17,7 +17,7 @@ public class SignatureTypeFactoryTest {
     //     BinaryNameForNonArray.class,
     //     FieldDescriptorForArray.class,
     //
-    //     SourceNameForNonArrayNonInner.class,
+    //     DotSeparatedIdentifiers.class,
     //     IdentifierOrArray.class,
     //
     //     Identifier,

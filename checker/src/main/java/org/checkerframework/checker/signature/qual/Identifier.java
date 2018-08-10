@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #signature-checker Signature Checker
  */
 @SubtypeOf({
-    SourceNameForNonArrayNonInner.class,
+    DotSeparatedIdentifiers.class,
     BinaryNameInUnnamedPackage.class,
     IdentifierOrArray.class
 })

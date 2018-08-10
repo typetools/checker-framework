@@ -41,7 +41,8 @@ public class Conversion {
             return iform.replace('/', '.');
         }
 
-        @SourceNameForNonArrayNonInner String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+        @DotSeparatedIdentifiers
+        String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
             return bn.replace('$', '.');
         }
 
@@ -89,7 +90,8 @@ public class Conversion {
             return iform.replace("/", ".");
         }
 
-        @SourceNameForNonArrayNonInner String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+        @DotSeparatedIdentifiers
+        String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
             return bn.replace("$", ".");
         }
 
