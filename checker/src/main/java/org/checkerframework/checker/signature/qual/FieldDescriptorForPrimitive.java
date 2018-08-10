@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2">Java Virtual
  * Machine Specification, section 4.3.2</a>.
  *
- * <p>Must be one of B,C,D,F,I,J,S,Z
+ * <p>Must be one of B, C, D, F, I, J, S, Z.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
