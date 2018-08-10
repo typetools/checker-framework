@@ -651,7 +651,7 @@ public class FlowExpressionParseUtil {
 
     private static boolean isMethodCall(String s, FlowExpressionContext context) {
 
-        // replace occurence of formal parameters with corresponding arguments
+        // replace occurence of formal parameters, such as "#2", with corresponding arguments
         int i = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
         if (context.arguments != null) {
