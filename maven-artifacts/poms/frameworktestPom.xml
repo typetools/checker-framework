@@ -5,7 +5,7 @@
     <packaging>jar</packaging>
     <name>Checker Framework Testing Library</name>
     <groupId>org.checkerframework</groupId>
-    <artifactId>testlib</artifactId>
+    <artifactId>framework-test</artifactId>
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->

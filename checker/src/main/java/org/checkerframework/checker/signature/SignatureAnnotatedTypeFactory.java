@@ -26,6 +26,7 @@ import org.checkerframework.javacutil.TreeUtils;
 // TODO: Does not yet handle method signature annotations, such as
 // @MethodDescriptor.
 
+/** Accounts for the effects of certain calls to String.replace. */
 public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror SIGNATURE_UNKNOWN;
