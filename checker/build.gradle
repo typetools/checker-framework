@@ -143,6 +143,8 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist.'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker.jar"
+    // To see what files are incorporated into the shadow jar file:
+    // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
     archives shadowJar
