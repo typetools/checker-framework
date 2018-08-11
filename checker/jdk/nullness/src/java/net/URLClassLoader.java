@@ -770,7 +770,8 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
 
     static {
         /*
-        Reason
+        Jdk-8 expects reference to class implementing JavaNetAccess interface to provide an
+        implementation for getOriginalHostName along with the implementation for getURLClassPath
         sun.misc.SharedSecrets.setJavaNetAccess (
             new sun.misc.JavaNetAccess() {
                 public URLClassPath getURLClassPath (URLClassLoader u) {
