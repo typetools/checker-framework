@@ -182,7 +182,7 @@ public class Package implements java.lang.reflect.AnnotatedElement {
      * vendor or company that provided this implementation.
      * @return the vendor that implemented this package..
      */
-    public String getImplementationVendor() {
+    public @Nullable String getImplementationVendor() {
         return implVendor;
     }
 
