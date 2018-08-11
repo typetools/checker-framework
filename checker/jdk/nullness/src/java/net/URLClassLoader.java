@@ -392,7 +392,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * If non-null, verify the package using the specified code
      * source and manifest.
      */
-    private @Nullable Package getAndVerifyPackage(@Nullable String pkgname,
+    private @Nullable Package getAndVerifyPackage(String pkgname,
                                         Manifest man, URL url) {
         Package pkg = getPackage(pkgname);
         if (pkg != null) {

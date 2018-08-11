@@ -51,6 +51,8 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import sun.misc.CompoundEnumeration;
 import sun.misc.Resource;
 import sun.misc.URLClassPath;
@@ -187,7 +189,7 @@ public abstract class ClassLoader {
     // The parent class loader for delegation
     // Note: VM hardcoded the offset of this field, thus all new fields
     // must be added *after* it.
-    private final ClassLoader parent;
+    @Nullable private final ClassLoader parent;
 
     /**
      * Encapsulates the set of parallel capable loader types.
@@ -239,7 +241,7 @@ public abstract class ClassLoader {
     // class loader is parallel capable.
     // Note: VM also uses this field to decide if the current class loader
     // is parallel capable and the appropriate lock object for class loading.
-    private final ConcurrentHashMap<String, Object> parallelLockMap;
+    private final @Nullable ConcurrentHashMap<String, Object> parallelLockMap;
 
     // Hashtable that maps packages to certs
     private final Map <String, Certificate[]> package2certs;
@@ -270,7 +272,7 @@ public abstract class ClassLoader {
     // @GuardedBy("<self>")
     private final HashMap<String, Package> packages = new HashMap<>();
 
-    private static Void checkCreateClassLoader() {
+    private static @Nullable Void checkCreateClassLoader() {
         SecurityManager security = System.getSecurityManager();
         if (security != null) {
             security.checkCreateClassLoader();
@@ -501,6 +503,8 @@ public abstract class ClassLoader {
             if (i != -1) {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
                     public Void run() {
+                        assert sm != null
+                            : "@AssumeAssertion(nullness) : Control reaches here only if sm is not null";
                         sm.checkPackageAccess(name.substring(0, i));
                         return null;
                     }
@@ -649,8 +653,8 @@ public abstract class ClassLoader {
         - signer of this class matches signers for the rest of the classes in
           package.
     */
-    private ProtectionDomain preDefineClass(String name,
-                                            ProtectionDomain pd)
+    private ProtectionDomain preDefineClass(@Nullable String name,
+                                            @Nullable ProtectionDomain pd)
     {
         if (!checkName(name))
             throw new NoClassDefFoundError("IllegalName: " + name);
@@ -669,7 +673,7 @@ public abstract class ClassLoader {
         return pd;
     }
 
-    private String defineClassSourceLocation(ProtectionDomain pd)
+    private @Nullable String defineClassSourceLocation(ProtectionDomain pd)
     {
         CodeSource cs = pd.getCodeSource();
         String source = null;
@@ -679,6 +683,8 @@ public abstract class ClassLoader {
         return source;
     }
 
+    @SuppressWarnings("nullness:dereference.of.nullable") // pd.getCodeSource is de-referenced only
+    // when it is known to be non-null
     private void postDefineClass(Class<?> c, ProtectionDomain pd)
     {
         if (pd.getCodeSource() != null) {
@@ -853,18 +859,18 @@ public abstract class ClassLoader {
         return c;
     }
 
-    private native Class<?> defineClass0(String name, byte[] b, int off, int len,
-                                         ProtectionDomain pd);
+    private native Class<?> defineClass0(@Nullable String name, byte[] b, int off, int len,
+                                         @Nullable ProtectionDomain pd);
 
-    private native Class<?> defineClass1(String name, byte[] b, int off, int len,
-                                         ProtectionDomain pd, String source);
+    private native Class<?> defineClass1(@Nullable String name, byte[] b, int off, int len,
+                                         @Nullable ProtectionDomain pd, @Nullable String source);
 
-    private native Class<?> defineClass2(String name, java.nio.ByteBuffer b,
-                                         int off, int len, ProtectionDomain pd,
-                                         String source);
+    private native Class<?> defineClass2(@Nullable String name, java.nio.ByteBuffer b,
+                                         int off, int len, @Nullable ProtectionDomain pd,
+                                         @Nullable String source);
 
     // true if the name is null or has the potential to be a valid binary name
-    private boolean checkName(String name) {
+    private boolean checkName(@Nullable String name) {
         if ((name == null) || (name.length() == 0))
             return true;
         if ((name.indexOf('/') != -1)
@@ -873,7 +879,7 @@ public abstract class ClassLoader {
         return true;
     }
 
-    private void checkCerts(String name, CodeSource cs) {
+    private void checkCerts(String name, @Nullable CodeSource cs) {
         int i = name.lastIndexOf('.');
         String pname = (i == -1) ? "" : name.substring(0, i);
 
@@ -904,7 +910,7 @@ public abstract class ClassLoader {
      * the certs for the first class inserted in the package (pcerts)
      */
     private boolean compareCerts(Certificate[] pcerts,
-                                 Certificate[] certs)
+                                 Certificate @Nullable [] certs)
     {
         // certs can be null, indicating no certs.
         if ((certs == null) || (certs.length == 0)) {
@@ -1007,7 +1013,7 @@ public abstract class ClassLoader {
      * Returns a class loaded by the bootstrap class loader;
      * or return null if not found.
      */
-    private Class<?> findBootstrapClassOrNull(String name)
+    private @Nullable Class<?> findBootstrapClassOrNull(String name)
     {
         if (!checkName(name)) return null;
 
@@ -1015,7 +1021,7 @@ public abstract class ClassLoader {
     }
 
     // return null if not found
-    private native Class<?> findBootstrapClass(String name);
+    private native @Nullable Class<?> findBootstrapClass(String name);
 
     /**
      * Returns the class with the given <a href="#name">binary name</a> if this
@@ -1262,7 +1268,7 @@ public abstract class ClassLoader {
     /**
      * Find resources from the VM's built-in classloader.
      */
-    private static URL getBootstrapResource(String name) {
+    private static @Nullable URL getBootstrapResource(String name) {
         URLClassPath ucp = getBootstrapClassPath();
         Resource res = ucp.getResource(name);
         return res != null ? res.getURL() : null;
@@ -1492,7 +1498,7 @@ public abstract class ClassLoader {
     // class loader 'from' is same as class loader 'to' or an ancestor
     // of 'to'.  The class loader in a system domain can access
     // any class loader.
-    private static boolean needsClassLoaderPermissionCheck(ClassLoader from,
+    private static boolean needsClassLoaderPermissionCheck(@Nullable ClassLoader from,
                                                            ClassLoader to)
     {
         if (from == to)
@@ -1505,7 +1511,7 @@ public abstract class ClassLoader {
     }
 
     // Returns the class's class loader, or null if none.
-    static ClassLoader getClassLoader(Class<?> caller) {
+    static @Nullable ClassLoader getClassLoader(Class<?> caller) {
         // This can be null if the VM is requesting it
         if (caller == null) {
             return null;
@@ -1529,7 +1535,7 @@ public abstract class ClassLoader {
 
     // The class loader for the system
     // @GuardedBy("ClassLoader.class")
-    private static ClassLoader scl;
+    private static @Nullable ClassLoader scl;
 
     // Set to true once the system class loader has been set
     // @GuardedBy("ClassLoader.class")
@@ -1594,6 +1600,7 @@ public abstract class ClassLoader {
             // pkg = new Package(name, specTitle, specVersion, specVendor,
             //                   implTitle, implVersion, implVendor,
             //                   sealBase, this);
+            assert pkg != null : "@AssumeAssertion(nullness) : Above commented code ensures pkg to be non-null";
             packages.put(name, pkg);
             return pkg;
         }
@@ -1646,6 +1653,8 @@ public abstract class ClassLoader {
      *
      * @since  1.2
      */
+    @SuppressWarnings("nullness:return.type.incompatible") // The size of array passed to toArray
+    // method is of exact same size as of the map for which toArray method is invoked
     protected Package[] getPackages() {
         Map<String, Package> map;
         synchronized (packages) {
@@ -1778,8 +1787,8 @@ public abstract class ClassLoader {
     private static Stack<NativeLibrary> nativeLibraryContext = new Stack<>();
 
     // The paths searched for libraries
-    private static String usr_paths[];
-    private static String sys_paths[];
+    private static String usr_paths @Nullable [];
+    private static String sys_paths @Nullable [];
 
     private static String[] initializePath(String propname) {
         String ldpath = System.getProperty(propname, "");
@@ -1814,6 +1823,8 @@ public abstract class ClassLoader {
     }
 
     // Invoked in the java.lang.Runtime class to implement load and loadLibrary.
+    @SuppressWarnings("nullness:dereference.of.nullable") // usr_paths and sys_paths are initialized
+    // by intializePath method if they are null
     static void loadLibrary(Class<?> fromClass, String name,
                             boolean isAbsolute) {
         ClassLoader loader =
@@ -1875,8 +1886,8 @@ public abstract class ClassLoader {
         boolean isBuiltin = (name != null);
         if (!isBuiltin) {
             boolean exists = AccessController.doPrivileged(
-                new PrivilegedAction<Object>() {
-                    public Object run() {
+                new PrivilegedAction<@Nullable Object>() {
+                    public @Nullable Object run() {
                         return file.exists() ? Boolean.TRUE : null;
                     }})
                 != null;
@@ -1953,7 +1964,7 @@ public abstract class ClassLoader {
     }
 
     // Invoked in the VM class linking code.
-    static long findNative(ClassLoader loader, String name) {
+    static long findNative(@Nullable ClassLoader loader, String name) {
         Vector<NativeLibrary> libs =
             loader != null ? loader.nativeLibraries : systemNativeLibraries;
         synchronized (libs) {
@@ -1983,14 +1994,14 @@ public abstract class ClassLoader {
     // none of this ClassLoader's assertion status modification methods have
     // been invoked.
     // @GuardedBy("assertionLock")
-    private Map<String, Boolean> packageAssertionStatus = null;
+    private @Nullable Map<@Nullable String, Boolean> packageAssertionStatus = null;
 
     // Maps String fullyQualifiedClassName to Boolean assertionStatus If this
     // field is null then we are delegating assertion status queries to the VM,
     // i.e., none of this ClassLoader's assertion status modification methods
     // have been invoked.
     // @GuardedBy("assertionLock")
-    Map<String, Boolean> classAssertionStatus = null;
+    @Nullable Map<String, Boolean> classAssertionStatus = null;
 
     /**
      * Sets the default assertion status for this class loader.  This setting
@@ -2137,6 +2148,7 @@ public abstract class ClassLoader {
      *
      * @since  1.4
      */
+    @RequiresNonNull({"classAssertionStatus", "packageAssertionStatus"})
     boolean desiredAssertionStatus(String className) {
         synchronized (assertionLock) {
             // assert classAssertionStatus   != null;
@@ -2169,6 +2181,8 @@ public abstract class ClassLoader {
 
     // Set up the assertions with information provided by the VM.
     // Note: Should only be called inside a synchronized block
+    @SuppressWarnings("contracts.postcondition.not.satisfied")
+    @EnsuresNonNull({"classAssertionStatus", "packageAssertionStatus"})
     private void initializeJavaAssertionMaps() {
         // assert Thread.holdsLock(assertionLock);
 
@@ -2176,10 +2190,13 @@ public abstract class ClassLoader {
         packageAssertionStatus = new HashMap<>();
         AssertionStatusDirectives directives = retrieveDirectives();
 
+        assert classAssertionStatus != null
+            : "@AssumeAssertion(nullness): classAssertionStatus is initialized to a non-null HashMap";
         for(int i = 0; i < directives.classes.length; i++)
             classAssertionStatus.put(directives.classes[i],
                                      directives.classEnabled[i]);
-
+        assert packageAssertionStatus != null
+            : "@AssumeAssertion(nullness): packageAssertionStatus is initialized to a non-null HashMap";
         for(int i = 0; i < directives.packages.length; i++)
             packageAssertionStatus.put(directives.packages[i],
                                        directives.packageEnabled[i]);
@@ -2193,14 +2210,14 @@ public abstract class ClassLoader {
 
 
 class SystemClassLoaderAction
-    implements PrivilegedExceptionAction<ClassLoader> {
+    implements PrivilegedExceptionAction<@Nullable ClassLoader> {
     private @Nullable ClassLoader parent;
 
     SystemClassLoaderAction(@Nullable ClassLoader parent) {
         this.parent = parent;
     }
 
-    public ClassLoader run() throws Exception {
+    public @Nullable ClassLoader run() throws Exception {
         String cls = System.getProperty("java.system.class.loader");
         if (cls == null) {
             return parent;
