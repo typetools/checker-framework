@@ -26,8 +26,10 @@
 package java.util;
 
 import java.util.Map.Entry;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
 import sun.misc.SharedSecrets;
 
@@ -168,8 +170,6 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *     <tt>EnumMap</tt> instance and contains no mappings
      * @throws NullPointerException if <tt>m</tt> is null
      */
-    @SuppressWarnings("nullness:method.invocation.invalid") // All the fields required by putAll method
-    // are already initialized before making a call.
     public EnumMap(Map<K, ? extends V> m) {
         if (m instanceof EnumMap) {
             EnumMap<K, ? extends V> em = (EnumMap<K, ? extends V>) m;
@@ -207,7 +207,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * @return <tt>true</tt> if this map maps one or more keys to this value
      */
     @Pure
-    public boolean containsValue(Object value) {
+    public boolean containsValue(@Nullable Object value) {
         value = maskNull(value);
 
         for (Object val : vals)
@@ -226,7 +226,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *            key
      */
     @Pure
-    public boolean containsKey(Object key) {
+    public boolean containsKey(@Nullable Object key) {
         return isValidKey(key) && vals[((Enum<?>)key).ordinal()] != null;
     }
 
@@ -319,7 +319,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * enum map.
      */
     @EnsuresNonNullIf(expression="#1", result=true)
-    private boolean isValidKey(Object key) {
+    private boolean isValidKey(@Nullable Object key) {
         if (key == null)
             return false;
 
@@ -339,7 +339,10 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * @throws NullPointerException the specified map is null, or if
      *     one or more keys in the specified map are null
      */
-    public void putAll(Map<? extends K, ? extends V> m) {
+    @SuppressWarnings("nullness:contracts.precondition.override.invalid") // Variables keyUniverse and
+    // vals are private class members for EnumMap and are absent in AbstractMap.
+    @RequiresNonNull({"keyUniverse", "vals"})
+    public void putAll(@UnknownInitialization EnumMap<K, V> this, Map<? extends K, ? extends V> m) {
         if (m instanceof EnumMap) {
             EnumMap<?, ?> em = (EnumMap<?, ?>)m;
             if (em.keyType != keyType) {
@@ -401,10 +404,12 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
         public Iterator<K> iterator() {
             return new KeyIterator();
         }
-        @Pure public int size() {
+        @Pure
+        public int size() {
             return size;
         }
-        @Pure public boolean contains(@Nullable Object o) {
+        @Pure
+        public boolean contains(@Nullable Object o) {
             return containsKey(o);
         }
         public boolean remove(@Nullable Object o) {
@@ -510,7 +515,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
         @SuppressWarnings({
             "unchecked",
             "nullness:argument.type.incompatible", // 'a' is known to be of array class type
-            "nullness:override.param.invalid" // Annotation for to Array are technically incorrect. Refer
+            "nullness:override.param.invalid" // Annotation for toArray are technically incorrect. Refer
              // to note on toArray in Collection.java
          })
         public <T> @Nullable T[] toArray(@Nullable T[] a) {
@@ -593,12 +598,13 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
             return lastReturnedEntry;
         }
 
-        @SuppressWarnings("nullness:dereference.of.nullable") // super.remove throws a NullPointerException
-        // in case the lastReturnedIndex is non-positive which is the case if lastReturnedEntry is null.
         public void remove() {
             lastReturnedIndex =
                 ((null == lastReturnedEntry) ? -1 : lastReturnedEntry.index);
             super.remove();
+            assert lastReturnedEntry != null
+                : "@AssumeAssertion(nullness) : super.remove throws a NullPointerException in case the"
+                + "lastReturnedIndex is non-positive which is the case if lastReturnedEntry is null";
             lastReturnedEntry.index = lastReturnedIndex;
             lastReturnedEntry = null;
         }
