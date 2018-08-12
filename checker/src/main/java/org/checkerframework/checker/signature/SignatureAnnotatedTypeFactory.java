@@ -11,7 +11,11 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.BinaryNameForNonArray;
+import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.checker.signature.qual.InternalForm;
+import org.checkerframework.checker.signature.qual.InternalFormForNonArray;
 import org.checkerframework.checker.signature.qual.SignatureBottom;
 import org.checkerframework.checker.signature.qual.SignatureUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -32,6 +36,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror SIGNATURE_UNKNOWN;
     protected final AnnotationMirror BINARY_NAME;
     protected final AnnotationMirror INTERNAL_FORM;
+    protected final AnnotationMirror FULLY_QUALIFIED_NAME;
+    protected final AnnotationMirror CLASS_GET_NAME;
+    protected final AnnotationMirror BINARY_NAME_FOR_NON_ARRAY;
+    protected final AnnotationMirror INTERNAL_FORM_FOR_NON_ARRAY;
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar;
@@ -44,6 +52,12 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         SIGNATURE_UNKNOWN = AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
         BINARY_NAME = AnnotationBuilder.fromClass(elements, BinaryName.class);
         INTERNAL_FORM = AnnotationBuilder.fromClass(elements, InternalForm.class);
+        FULLY_QUALIFIED_NAME = AnnotationBuilder.fromClass(elements, FullyQualifiedName.class);
+        CLASS_GET_NAME = AnnotationBuilder.fromClass(elements, ClassGetName.class);
+        BINARY_NAME_FOR_NON_ARRAY =
+                AnnotationBuilder.fromClass(elements, BinaryNameForNonArray.class);
+        INTERNAL_FORM_FOR_NON_ARRAY =
+                AnnotationBuilder.fromClass(elements, InternalFormForNonArray.class);
 
         replaceCharChar =
                 TreeUtils.getMethod(
@@ -106,47 +120,89 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)) {
-                ExpressionTree arg0 = tree.getArguments().get(0);
-                ExpressionTree arg1 = tree.getArguments().get(1);
-                if (arg0.getKind() == Tree.Kind.CHAR_LITERAL
-                        && arg1.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    char const0 = (char) ((LiteralTree) arg0).getValue();
-                    char const1 = (char) ((LiteralTree) arg1).getValue();
-                    ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-                    final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
-                    if (const0 == '.'
-                            && const1 == '/'
-                            && receiverType.getAnnotation(BinaryName.class) != null) {
-                        type.replaceAnnotation(INTERNAL_FORM);
-                    } else if (const0 == '/'
-                            && const1 == '.'
-                            && receiverType.getAnnotation(InternalForm.class) != null) {
-                        type.replaceAnnotation(BINARY_NAME);
+            if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)
+                    || TreeUtils.isMethodInvocation(
+                            tree, replaceCharSequenceCharSequence, processingEnv)) {
+                char c1 = ' ';
+                char c2 = ' ';
+                if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)) {
+                    ExpressionTree arg0 = tree.getArguments().get(0);
+                    ExpressionTree arg1 = tree.getArguments().get(1);
+                    if (arg0.getKind() == Tree.Kind.CHAR_LITERAL
+                            && arg1.getKind() == Tree.Kind.CHAR_LITERAL) {
+                        c1 = (char) ((LiteralTree) arg0).getValue();
+                        c2 = (char) ((LiteralTree) arg1).getValue();
+                    }
+                } else {
+                    ExpressionTree arg0 = tree.getArguments().get(0);
+                    ExpressionTree arg1 = tree.getArguments().get(1);
+                    if (arg0.getKind() == Tree.Kind.STRING_LITERAL
+                            && arg1.getKind() == Tree.Kind.STRING_LITERAL) {
+                        String const0 = (String) ((LiteralTree) arg0).getValue();
+                        String const1 = (String) ((LiteralTree) arg1).getValue();
+                        if (const0.length() == 1 && const1.length() == 1) {
+                            c1 = const0.charAt(0);
+                            c2 = const1.charAt(0);
+                        }
                     }
                 }
-            } else if (TreeUtils.isMethodInvocation(
-                    tree, replaceCharSequenceCharSequence, processingEnv)) {
-                ExpressionTree arg0 = tree.getArguments().get(0);
-                ExpressionTree arg1 = tree.getArguments().get(1);
-                if (arg0.getKind() == Tree.Kind.STRING_LITERAL
-                        && arg1.getKind() == Tree.Kind.STRING_LITERAL) {
-                    String const0 = (String) ((LiteralTree) arg0).getValue();
-                    String const1 = (String) ((LiteralTree) arg1).getValue();
+                if (!(c1 == ' ' || c2 == ' ')) {
                     ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
                     final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
-                    if (const0.equals(".")
-                            && const1.equals("/")
-                            && receiverType.getAnnotation(BinaryName.class) != null) {
-                        type.replaceAnnotation(INTERNAL_FORM);
-                    } else if (const0.equals("/")
-                            && const1.equals(".")
-                            && receiverType.getAnnotation(InternalForm.class) != null) {
-                        type.replaceAnnotation(BINARY_NAME);
+                    if (receiverType.getAnnotation(BinaryName.class) != null) {
+                        handleReplaceOnBinaryName(c1, c2, type);
+                    } else if (receiverType.getAnnotation(InternalForm.class) != null) {
+                        handleReplaceOnInternalForm(c1, c2, type);
+                    } else if (receiverType.getAnnotation(InternalFormForNonArray.class) != null) {
+                        handleReplaceOnInternalFormForNonArray(c1, c2, type);
+                    } else if (receiverType.getAnnotation(BinaryNameForNonArray.class) != null) {
+                        handleReplaceOnBinaryNameForNonArray(c1, c2, type);
                     }
                 }
             }
             return super.visitMethodInvocation(tree, type);
+        }
+
+        /**
+         * Handles String.replace calls when the receiver is a {@link
+         * org.checkerframework.checker.signature.qual.BinaryName}
+         */
+        private void handleReplaceOnBinaryName(char c1, char c2, AnnotatedTypeMirror type) {
+            if (c1 == '.' && c2 == '/') {
+                type.replaceAnnotation(INTERNAL_FORM);
+            }
+        }
+
+        /**
+         * Handles String.replace calls when the receiver is a {@link
+         * org.checkerframework.checker.signature.qual.BinaryNameForNonArray}
+         */
+        private void handleReplaceOnBinaryNameForNonArray(
+                char c1, char c2, AnnotatedTypeMirror type) {
+            if (c1 == '.' && c2 == '/') {
+                type.replaceAnnotation(INTERNAL_FORM_FOR_NON_ARRAY);
+            }
+        }
+
+        /**
+         * Handles String.replace calls when the receiver is a {@link
+         * org.checkerframework.checker.signature.qual.InternalFormForNonArray}
+         */
+        private void handleReplaceOnInternalFormForNonArray(
+                char c1, char c2, AnnotatedTypeMirror type) {
+            if (c1 == '/' && c2 == '.') {
+                type.replaceAnnotation(BINARY_NAME_FOR_NON_ARRAY);
+            }
+        }
+
+        /**
+         * Handles String.replace calls when the receiver is a {@link
+         * org.checkerframework.checker.signature.qual.InternalForm}
+         */
+        private void handleReplaceOnInternalForm(char c1, char c2, AnnotatedTypeMirror type) {
+            if (c1 == '/' && c2 == '.') {
+                type.replaceAnnotation(BINARY_NAME);
+            }
         }
     }
 }
