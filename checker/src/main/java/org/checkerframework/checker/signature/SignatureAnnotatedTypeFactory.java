@@ -36,7 +36,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror BINARY_NAME;
     /** {@literal @}InternalForm annotation. */
     protected final AnnotationMirror INTERNAL_FORM;
-    /** {@literal @}DotSeparatedIdentifiers annotation */
+    /** {@literal @}DotSeparatedIdentifiers annotation. */
     protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS;
 
     /** The {@link String#replace(char, char)} method. */
@@ -66,7 +66,6 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         processingEnv,
                         "java.lang.CharSequence",
                         "java.lang.CharSequence");
-
         stringContains =
                 TreeUtils.getMethod(
                         java.lang.String.class.getName(),
