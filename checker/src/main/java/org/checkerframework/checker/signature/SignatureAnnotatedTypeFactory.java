@@ -126,15 +126,15 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)
                     || TreeUtils.isMethodInvocation(
                             tree, replaceCharSequenceCharSequence, processingEnv)) {
-                char c1 = ' ';
-                char c2 = ' ';
+                char oldChar = ' '; // initial dummy value
+                char newChar = ' '; // initial dummy value
                 if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)) {
                     ExpressionTree arg0 = tree.getArguments().get(0);
                     ExpressionTree arg1 = tree.getArguments().get(1);
                     if (arg0.getKind() == Tree.Kind.CHAR_LITERAL
                             && arg1.getKind() == Tree.Kind.CHAR_LITERAL) {
-                        c1 = (char) ((LiteralTree) arg0).getValue();
-                        c2 = (char) ((LiteralTree) arg1).getValue();
+                        oldChar = (char) ((LiteralTree) arg0).getValue();
+                        newChar = (char) ((LiteralTree) arg1).getValue();
                     }
                 } else {
                     ExpressionTree arg0 = tree.getArguments().get(0);
@@ -144,44 +144,22 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         String const0 = (String) ((LiteralTree) arg0).getValue();
                         String const1 = (String) ((LiteralTree) arg1).getValue();
                         if (const0.length() == 1 && const1.length() == 1) {
-                            c1 = const0.charAt(0);
-                            c2 = const1.charAt(0);
+                            oldChar = const0.charAt(0);
+                            newChar = const1.charAt(0);
                         }
                     }
                 }
-                if (!(c1 == ' ' || c2 == ' ')) {
-                    ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-                    final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
-                    if (receiverType.getAnnotation(BinaryName.class) != null) {
-                        handleReplaceOnBinaryName(c1, c2, type);
-                    } else if (receiverType.getAnnotation(InternalForm.class) != null) {
-                        handleReplaceOnInternalForm(c1, c2, type);
-                    }
+                ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+                final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
+                if ((oldChar == '.' && newChar == '/')
+                        && receiverType.getAnnotation(BinaryName.class)) {
+                    type.replaceAnnotation(INTERNAL_FORM);
+                } else if ((oldChar == '/' && newChar == '.')
+                        && receiverType.getAnnotation(InternalForm.class)) {
+                    type.replaceAnnotation(BINARY_NAME);
                 }
             }
             return super.visitMethodInvocation(tree, type);
-        }
-
-        /**
-         * Handles String.replace calls when the receiver is a {@link
-         * org.checkerframework.checker.signature.qual.BinaryName}
-         */
-        private void handleReplaceOnBinaryName(char c1, char c2, AnnotatedTypeMirror type) {
-            if (c1 == '.' && c2 == '/') {
-                type.replaceAnnotation(INTERNAL_FORM);
-            } else if (c1 == '$' && c2 == '.') {
-                type.replaceAnnotation(DOT_SEPARATED_IDENTIFIERS);
-            }
-        }
-
-        /**
-         * Handles String.replace calls when the receiver is a {@link
-         * org.checkerframework.checker.signature.qual.InternalForm}
-         */
-        private void handleReplaceOnInternalForm(char c1, char c2, AnnotatedTypeMirror type) {
-            if (c1 == '/' && c2 == '.') {
-                type.replaceAnnotation(BINARY_NAME);
-            }
         }
     }
 }
