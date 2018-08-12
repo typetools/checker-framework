@@ -391,13 +391,11 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * @return a set view of the keys contained in this enum map
      */
     public Set<K> keySet() {
-        throw new RuntimeException("skeleton method");
-        // Does not compile with actual version, java.util.AbstractMap is reduced to skeleton methods
-        // Set<K> ks = keySet;
-        // if (ks != null)
-        //     return ks;
-        // else
-        //     return keySet = new KeySet();
+        Set<K> ks = keySet;
+        if (ks != null)
+            return ks;
+        else
+            return keySet = new KeySet();
     }
 
     private class KeySet extends AbstractSet<K> {
