@@ -66,16 +66,16 @@ public class FlowExpressionParseUtil {
      * Regular expression for an identifier. Permits '$' in the name, though that character never
      * appears in Java source code.
      */
-    protected static final String identifierRegex = "[a-zA-Z_$][a-zA-Z_$0-9]*";
+    protected static final String IDENTIFIER_REGEX = "[a-zA-Z_$][a-zA-Z_$0-9]*";
     /** Regular expression for a formal parameter use. */
-    protected static final String parameterRegex = "#([1-9][0-9]*)";
+    protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
     /** Regular expression for a string literal. */
     // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
-    protected static final String stringRegex = "\"(?:[^\"\\\\]|\\\\.)*\"";
+    protected static final String STRING_REGEX = "\"(?:[^\"\\\\]|\\\\.)*\"";
 
     /** Unanchored; can be used to find all formal parameter uses. */
-    protected static final Pattern unanchoredParameterPattern = Pattern.compile(parameterRegex);
+    protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /** Returns a Pattern, anchored at the beginning and end, for the regex. */
     private static Pattern anchored(String regex) {
@@ -83,18 +83,18 @@ public class FlowExpressionParseUtil {
     }
 
     // Each of the below patterns is anchored with ^...$.
-    /** Matches a parameter */
-    protected static final Pattern parameterPattern = anchored(parameterRegex);
-    /** Matches an identifier */
-    protected static final Pattern identifierPattern = anchored(identifierRegex);
-    /** Matches integer literals */
-    protected static final Pattern intPattern = anchored("[-+]?[0-9]+");
-    /** Matches long literals */
-    protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
-    /** Matches string literals */
-    protected static final Pattern stringPattern = anchored(stringRegex);
-    /** Matches an expression contained in matching start and end parentheses */
-    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
+    /** Matches a parameter. */
+    protected static final Pattern PARAMETER_PATTERN = anchored(PARAMETER_REGEX);
+    /** Matches an identifier. */
+    protected static final Pattern IDENTIFIER_PATTERN = anchored(IDENTIFIER_REGEX);
+    /** Matches integer literals. */
+    protected static final Pattern INT_PATTERN = anchored("[-+]?[0-9]+");
+    /** Matches long literals. */
+    protected static final Pattern LONG_PATTERN = anchored("[-+]?[0-9]+[Ll]");
+    /** Matches string literals. */
+    protected static final Pattern STRING_PATTERN = anchored(STRING_REGEX);
+    /** Matches an expression contained in matching start and end parentheses. */
+    protected static final Pattern PARENTHESES_PATTERN = anchored("\\((.*)\\)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -146,8 +146,8 @@ public class FlowExpressionParseUtil {
             return parseParameter(expression, context);
         } else if (isArray(expression, context)) {
             return parseArray(expression, context, path);
-        } else if (isMethod(expression, context)) {
-            return parseMethod(expression, context, path, env);
+        } else if (isMethodCall(expression, context)) {
+            return parseMethodCall(expression, context, path, env);
         } else if (isMemberSelect(expression, context)) {
             return parseMemberSelect(expression, env, context, path);
         } else if (isParentheses(expression, context)) {
@@ -168,7 +168,7 @@ public class FlowExpressionParseUtil {
      * @return pair of object and field
      */
     private static Pair<String, String> parseMemberSelect(String s) {
-        Pair<Pair<String, String>, String> method = parseMethod(s);
+        Pair<Pair<String, String>, String> method = parseMethodCall(s);
         if (method != null && method.second.startsWith(".")) {
             return Pair.of(
                     method.first.first + "(" + method.first.second + ")",
@@ -181,7 +181,7 @@ public class FlowExpressionParseUtil {
                     array.first.first + "[" + array.first.second + "]", array.second.substring(1));
         }
 
-        Pattern memberSelectOfStringPattern = anchored("(" + stringRegex + ")" + "\\.(.*)");
+        Pattern memberSelectOfStringPattern = anchored("(" + STRING_REGEX + ")" + "\\.(.*)");
         Matcher m = memberSelectOfStringPattern.matcher(s);
         if (m.matches()) {
             return Pair.of(m.group(1), m.group(2));
@@ -190,9 +190,9 @@ public class FlowExpressionParseUtil {
         int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
         if (nextRParenPos != -1) {
             if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
-                String reciever = s.substring(0, nextRParenPos + 1);
+                String receiver = s.substring(0, nextRParenPos + 1);
                 String remaining = s.substring(nextRParenPos + 2);
-                return Pair.of(reciever, remaining);
+                return Pair.of(receiver, remaining);
             } else {
                 return null;
             }
@@ -203,10 +203,10 @@ public class FlowExpressionParseUtil {
             return null;
         }
 
-        String reciever = s.substring(0, i);
+        String receiver = s.substring(0, i);
         String remaining = s.substring(i + 1);
 
-        return Pair.of(reciever, remaining);
+        return Pair.of(receiver, remaining);
     }
 
     private static Receiver parseMemberSelect(
@@ -266,7 +266,7 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher intMatcher = intPattern.matcher(s);
+        Matcher intMatcher = INT_PATTERN.matcher(s);
         return intMatcher.matches();
     }
 
@@ -279,7 +279,7 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher longMatcher = longPattern.matcher(s);
+        Matcher longMatcher = LONG_PATTERN.matcher(s);
         return longMatcher.matches();
     }
 
@@ -295,7 +295,7 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher stringMatcher = stringPattern.matcher(s);
+        Matcher stringMatcher = STRING_PATTERN.matcher(s);
         return stringMatcher.matches();
     }
 
@@ -356,7 +356,7 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isIdentifier(String s, FlowExpressionContext context) {
-        Matcher identifierMatcher = identifierPattern.matcher(s);
+        Matcher identifierMatcher = IDENTIFIER_PATTERN.matcher(s);
         return identifierMatcher.matches();
     }
 
@@ -444,13 +444,13 @@ public class FlowExpressionParseUtil {
         if (contex.parsingMember) {
             return false;
         }
-        Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
         return parameterMatcher.matches();
     }
 
     private static Receiver parseParameter(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
-        Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
         if (!parameterMatcher.matches()) {
             return null;
         }
@@ -478,9 +478,9 @@ public class FlowExpressionParseUtil {
      * @param s expression string
      * @return pair of (pair of method name and arguments) and remaining
      */
-    private static Pair<Pair<String, String>, String> parseMethod(String s) {
+    private static Pair<Pair<String, String>, String> parseMethodCall(String s) {
         // Parse Identifier
-        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
+        Pattern identParser = Pattern.compile("^(" + IDENTIFIER_REGEX + ").*$");
         Matcher m = identParser.matcher(s);
         if (!m.matches()) {
             return null;
@@ -498,15 +498,15 @@ public class FlowExpressionParseUtil {
         return Pair.of(Pair.of(ident, arguments), remaining);
     }
 
-    private static boolean isMethod(String s, FlowExpressionContext contex) {
-        Pair<Pair<String, String>, String> result = parseMethod(s);
+    private static boolean isMethodCall(String s, FlowExpressionContext contex) {
+        Pair<Pair<String, String>, String> result = parseMethodCall(s);
         return result != null && result.second.isEmpty();
     }
 
-    private static Receiver parseMethod(
+    private static Receiver parseMethodCall(
             String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
             throws FlowExpressionParseException {
-        Pair<Pair<String, String>, String> method = parseMethod(s);
+        Pair<Pair<String, String>, String> method = parseMethodCall(s);
         if (method == null) {
             return null;
         }
@@ -611,7 +611,9 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<Pair<String, String>, String> parseArray(String s) {
         int i = 0;
-        while (i < s.length() && s.charAt(i) != '[') i++;
+        while (i < s.length() && s.charAt(i) != '[') {
+            i++;
+        }
 
         if (i >= s.length()) {
             return null;
@@ -654,7 +656,7 @@ public class FlowExpressionParseUtil {
             if (ch == '"') {
                 i--;
                 // TODO: inefficient to re-compute this on every iteration, should be static
-                Pattern stringPattern = anchored("(" + stringRegex + ").*");
+                Pattern stringPattern = anchored("(" + STRING_REGEX + ").*");
                 Matcher m = stringPattern.matcher(s.substring(i));
                 if (!m.matches()) {
                     break;
@@ -1004,7 +1006,7 @@ public class FlowExpressionParseUtil {
      */
     public static List<Integer> parameterIndices(String s) {
         List<Integer> result = new ArrayList<>();
-        Matcher matcher = unanchoredParameterPattern.matcher(s);
+        Matcher matcher = UNANCHORED_PARAMETER_PATTERN.matcher(s);
         while (matcher.find()) {
             int idx = Integer.parseInt(matcher.group(1));
             result.add(idx);
@@ -1039,7 +1041,8 @@ public class FlowExpressionParseUtil {
          *     identifiers in the flow expression with an implicit "this"
          * @param arguments used to replace parameter references, e.g. #1, in flow expressions, null
          *     if no arguments
-         * @param checkerContext used to create {@link FlowExpressions.Receiver}s
+         * @param checkerContext used to create {@link
+         *     org.checkerframework.dataflow.analysis.FlowExpressions.Receiver}s
          */
         public FlowExpressionContext(
                 Receiver receiver, List<Receiver> arguments, BaseContext checkerContext) {

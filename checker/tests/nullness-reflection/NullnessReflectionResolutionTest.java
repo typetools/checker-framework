@@ -11,10 +11,9 @@ public class NullnessReflectionResolutionTest {
 
     void testReturnNonNull(
             @MethodVal(
-                        className = "NullnessReflectionResolutionTest",
-                        methodName = "returnNonNull",
-                        params = 0
-                    )
+                            className = "NullnessReflectionResolutionTest",
+                            methodName = "returnNonNull",
+                            params = 0)
                     Method m)
             throws Exception {
         @NonNull Object o = m.invoke(this);
@@ -24,10 +23,9 @@ public class NullnessReflectionResolutionTest {
 
     void testParamNullable(
             @MethodVal(
-                        className = "NullnessReflectionResolutionTest",
-                        methodName = "paramNullable",
-                        params = 2
-                    )
+                            className = "NullnessReflectionResolutionTest",
+                            methodName = "paramNullable",
+                            params = 2)
                     Method m)
             throws Exception {
         @NonNull Object o = m.invoke(this, null, null);
@@ -40,10 +38,9 @@ public class NullnessReflectionResolutionTest {
 
     void testParamAndReturnNonNullStatic(
             @MethodVal(
-                        className = "NullnessReflectionResolutionTest",
-                        methodName = "paramAndReturnNonNullStatic",
-                        params = 2
-                    )
+                            className = "NullnessReflectionResolutionTest",
+                            methodName = "paramAndReturnNonNullStatic",
+                            params = 2)
                     Method m)
             throws Exception {
         @NonNull Object o1 = m.invoke(this, null, null);

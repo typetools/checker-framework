@@ -19,7 +19,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @ImplicitFor(
-    literals = LiteralKind.NULL,
-    types = {TypeKind.NULL}
-)
+        literals = LiteralKind.NULL,
+        types = {TypeKind.NULL})
 public @interface SignednessBottom {}

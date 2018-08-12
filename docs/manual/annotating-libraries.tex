@@ -363,7 +363,10 @@ option.
 
 \item
 Build the annotated JDK:
-	run \<./gradlew buildJdk>
+\begin{enumerate}
+\item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
+\item run \<./gradlew buildJdk>
+\end{enumerate}
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively
@@ -516,6 +519,7 @@ automatically, with no need for the user to supply a command-line option.
 Every Java file is a valid stub file.  However, you can omit information
 that is not relevant to pluggable type-checking; this makes the stub file
 smaller and easier for people to read and write.
+Also note that the stub file's extension must be \<.astub>, not \<.java>.
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -576,8 +580,8 @@ in the same directory as the checker's \<.java> source code.
 
 \subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
 
-Every Java file is a stub file.  If you have access to the Java file, then
-you can use the Java file as the stub file.  Just add
+Every Java file is a stub file.  If you have access to the Java file,
+rename file \<A.java> to \<A.astub>.  You can add
 annotations to the signatures, leaving the method bodies unchanged.
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the \<import> statement.

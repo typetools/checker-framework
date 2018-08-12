@@ -87,20 +87,6 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ExecutableElement partialRegexValue;
 
-    /**
-     * Class names that contain an {@code asRegex(String, int)} method. These asRegex methods will
-     * return a {@code @Regex String} with the same group count as the second parameter to the
-     * asRegex call.
-     *
-     * @see RegexUtil#asRegex(String, int)
-     */
-    /*package-scope*/ static final String[] regexUtilClasses =
-            new String[] {
-                "org.checkerframework.checker.regex.RegexUtil",
-                "plume.RegexUtil",
-                "daikon.util.RegexUtil"
-            };
-
     protected final AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX, POLYREGEX;
     protected final ExecutableElement regexValueElement;
 

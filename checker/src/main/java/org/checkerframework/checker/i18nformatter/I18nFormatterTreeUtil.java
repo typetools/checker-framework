@@ -62,7 +62,7 @@ public class I18nFormatterTreeUtil {
         this.processingEnv = checker.getProcessingEnvironment();
     }
 
-    /** Describe the format annotation type */
+    /** Describe the format annotation type. */
     public enum FormatType {
         I18NINVALID,
         I18NFORMAT,

@@ -41,7 +41,7 @@ public final class Result {
     /** The type of result (success, warning, failure). */
     private final Type type;
 
-    /** The messages for the results */
+    /** The messages for the results. */
     private final List<DiagMessage> messages;
 
     /** The success result. */

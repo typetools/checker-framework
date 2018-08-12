@@ -31,14 +31,14 @@
         <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>checker-qual</artifactId>
-            <version><!-- checker-framework-version -->2.5.2<!-- /checker-framework-version --></version>
+            <version><!-- checker-framework-version -->2.5.4<!-- /checker-framework-version --></version>
             <type>jar</type>
         </dependency>
     </dependencies>
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->2.5.2<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.5.4<!-- /checker-framework-version --></version>
 
     <scm>
         <url>https://github.com/typetools/checker-framework.git</url>

@@ -199,7 +199,7 @@ public class ElementAnnotationUtil {
         /** Whether or not wildcard has an explicit super bound. */
         private final boolean isSuperBounded;
 
-        /** Whether or not wildcard has NO explicit bound whatsoever */
+        /** Whether or not wildcard has NO explicit bound whatsoever. */
         private final boolean isUnbounded;
 
         WildcardBoundAnnos(AnnotatedWildcardType wildcard) {
@@ -243,7 +243,7 @@ public class ElementAnnotationUtil {
 
         /**
          * Apply the annotations to wildcard according to the rules outlined in the comment at the
-         * beginning of this class
+         * beginning of this class.
          */
         void apply() {
             final AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
@@ -365,7 +365,7 @@ public class ElementAnnotationUtil {
 
     /**
      * Given a TypePath into a type, return the component type that is located at the end of the
-     * TypePath
+     * TypePath.
      *
      * @param type a type containing the type specified by location
      * @param location a type path into type
@@ -418,7 +418,7 @@ public class ElementAnnotationUtil {
 
     /**
      * Given a TypePath into a declared type, return the component type that is located at the end
-     * of the TypePath
+     * of the TypePath.
      *
      * @param type a type containing the type specified by location
      * @param location a type path into type

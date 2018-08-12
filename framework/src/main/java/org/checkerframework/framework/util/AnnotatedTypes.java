@@ -441,7 +441,7 @@ public class AnnotatedTypes {
 
     /**
      * A utility method that takes a Method element and returns a set of all elements that this
-     * method overrides (as {@link ExecutableElement}s)
+     * method overrides (as {@link ExecutableElement}s).
      *
      * @param method the overriding method
      * @return an unmodifiable set of {@link ExecutableElement}s representing the elements that
@@ -749,8 +749,9 @@ public class AnnotatedTypes {
     // The innermost *array* type.
     public static AnnotatedTypeMirror innerMostType(AnnotatedTypeMirror t) {
         AnnotatedTypeMirror inner = t;
-        while (inner.getKind() == TypeKind.ARRAY)
+        while (inner.getKind() == TypeKind.ARRAY) {
             inner = ((AnnotatedArrayType) inner).getComponentType();
+        }
         return inner;
     }
 
@@ -831,7 +832,7 @@ public class AnnotatedTypes {
 
     /**
      * Sees if the passed in array of {@link ElementType} values have the correct set of values
-     * which defines a type qualifier
+     * which defines a type qualifier.
      *
      * @param elements an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
@@ -1163,7 +1164,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Get's the lowest primary annotation of all bounds in the intersection
+     * Gets the lowest primary annotation of all bounds in the intersection.
      *
      * @param isect the intersection for which we are glbing bounds
      * @param qualifierHierarchy the qualifier used to get the hierarchies in which to glb

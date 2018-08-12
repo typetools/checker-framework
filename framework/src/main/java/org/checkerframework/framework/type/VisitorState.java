@@ -13,14 +13,14 @@ import org.checkerframework.javacutil.Pair;
  * the visitor.
  */
 public class VisitorState {
-    /** The type of the enclosing class tree */
+    /** The type of the enclosing class tree. */
     private AnnotatedDeclaredType act;
-    /** The enclosing class tree */
+    /** The enclosing class tree. */
     private ClassTree ct;
 
-    /** The receiver type of the enclosing method tree */
+    /** The receiver type of the enclosing method tree. */
     private AnnotatedDeclaredType mrt;
-    /** The enclosing method tree */
+    /** The enclosing method tree. */
     private MethodTree mt;
 
     /** The assignment context is a tree as well as its type. */
@@ -29,22 +29,22 @@ public class VisitorState {
     /** The visitor's current tree path. */
     private TreePath path;
 
-    /** Updates the type of the class currently visited */
+    /** Updates the type of the class currently visited. */
     public void setClassType(AnnotatedDeclaredType act) {
         this.act = act;
     }
 
-    /** Updates the tree of the class currently visited */
+    /** Updates the tree of the class currently visited. */
     public void setClassTree(ClassTree ct) {
         this.ct = ct;
     }
 
-    /** Updates the method receiver type currently visited */
+    /** Updates the method receiver type currently visited. */
     public void setMethodReceiver(AnnotatedDeclaredType mrt) {
         this.mrt = mrt;
     }
 
-    /** Updates the method currently visited */
+    /** Updates the method currently visited. */
     public void setMethodTree(MethodTree mt) {
         this.mt = mt;
     }

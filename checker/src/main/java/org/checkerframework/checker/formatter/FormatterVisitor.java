@@ -41,17 +41,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         if (tu.isFormatCall(node, atypeFactory)) {
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
-            Result<String> err_missing_format = fc.hasFormatAnnotation();
-            if (err_missing_format != null) {
+            Result<String> errMissingFormat = fc.hasFormatAnnotation();
+            if (errMissingFormat != null) {
                 // The string's type has no @Format annotation.
                 if (isWrappedFormatCall(fc)) {
                     // Nothing to do, because call is legal.
                 } else {
                     // I.1
-                    tu.failure(
-                            err_missing_format,
-                            "format.string.invalid",
-                            err_missing_format.value());
+                    tu.failure(errMissingFormat, "format.string.invalid", errMissingFormat.value());
                 }
             } else {
                 // The string has a @Format annotation.

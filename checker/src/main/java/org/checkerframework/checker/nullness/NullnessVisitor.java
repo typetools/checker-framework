@@ -217,7 +217,7 @@ public class NullnessVisitor
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
-    /** Case 1: Check for null dereferencing */
+    /** Case 1: Check for null dereferencing. */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         boolean isType = node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE;
@@ -227,14 +227,14 @@ public class NullnessVisitor
         return super.visitMemberSelect(node, p);
     }
 
-    /** Case 2: Check for implicit {@code .iterator} call */
+    /** Case 2: Check for implicit {@code .iterator} call. */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
         checkForNullability(node.getExpression(), ITERATING_NULLABLE);
         return super.visitEnhancedForLoop(node, p);
     }
 
-    /** Case 3: Check for array dereferencing */
+    /** Case 3: Check for array dereferencing. */
     @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
         checkForNullability(node.getExpression(), ACCESSING_NULLABLE);
@@ -321,13 +321,13 @@ public class NullnessVisitor
         return ((IdentifierTree) rcvsize).getName() == ((IdentifierTree) rcvtoarray).getName();
     }
 
-    /** Case 4: Check for thrown exception nullness */
+    /** Case 4: Check for thrown exception nullness. */
     @Override
     protected void checkThrownExpression(ThrowTree node) {
         checkForNullability(node.getExpression(), THROWING_NULLABLE);
     }
 
-    /** Case 5: Check for synchronizing locks */
+    /** Case 5: Check for synchronizing locks. */
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
         checkForNullability(node.getExpression(), LOCKING_NULLABLE);
@@ -385,15 +385,17 @@ public class NullnessVisitor
         if ((node.getKind() == Tree.Kind.EQUAL_TO || node.getKind() == Tree.Kind.NOT_EQUAL_TO)) {
             AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
-            if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && right.hasEffectiveAnnotation(NONNULL))
+            if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
+                    && right.hasEffectiveAnnotation(NONNULL)) {
                 checker.report(Result.warning(KNOWN_NONNULL, rightOp.toString()), node);
-            else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && left.hasEffectiveAnnotation(NONNULL))
+            } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
+                    && left.hasEffectiveAnnotation(NONNULL)) {
                 checker.report(Result.warning(KNOWN_NONNULL, leftOp.toString()), node);
+            }
         }
     }
 
-    /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations */
+    /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations. */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
         final ExpressionTree leftOp = node.getLeftOperand();
@@ -409,14 +411,14 @@ public class NullnessVisitor
         return super.visitBinary(node, p);
     }
 
-    /** Case 7: unboxing case: primitive operation */
+    /** Case 7: unboxing case: primitive operation. */
     @Override
     public Void visitUnary(UnaryTree node, Void p) {
         checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE);
         return super.visitUnary(node, p);
     }
 
-    /** Case 7: unboxing case: primitive operation */
+    /** Case 7: unboxing case: primitive operation. */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         // ignore String concatenation
@@ -427,7 +429,7 @@ public class NullnessVisitor
         return super.visitCompoundAssignment(node, p);
     }
 
-    /** Case 7: unboxing case: casting to a primitive */
+    /** Case 7: unboxing case: casting to a primitive. */
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         if (isPrimitive(node) && !isPrimitive(node.getExpression())) {

@@ -117,7 +117,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         /**
          * Returns an instance of {@link GraphQualifierHierarchy} that represents the hierarchy
-         * built so far
+         * built so far.
          */
         public QualifierHierarchy build() {
             assertNotBuilt();
@@ -249,8 +249,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             } else {
                 // otherwise, display each supertype in its own row
                 for (Iterator<AnnotationMirror> iterator = supertypes.iterator();
-                        iterator.hasNext();
-                        ) {
+                        iterator.hasNext(); ) {
                     // new line and tabbing
                     sb.append("\n\t\t");
                     // display the supertype
@@ -495,7 +494,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     private final void checkAnnoInGraph(AnnotationMirror a) {
         if (AnnotationUtils.containsSame(supertypesMap.keySet(), a)
-                || AnnotationUtils.containsSame(polyQualifiers.values(), a)) return;
+                || AnnotationUtils.containsSame(polyQualifiers.values(), a)) {
+            return;
+        }
 
         if (a == null) {
             ErrorReporter.errorAbort(
@@ -695,7 +696,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /**
      * Finds and returns the Least Upper Bound (LUB) of two annotation mirrors a1 and a2 by
      * recursively climbing the qualifier hierarchy of a1 until one of them is a subtype of the
-     * other, or returns null if no subtype relationships can be found
+     * other, or returns null if no subtype relationships can be found.
      *
      * @param a1 first annotation mirror
      * @param a2 second annotation mirror
@@ -743,36 +744,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                                 + ". Please ensure that the checker knows about all type qualifiers.");
             }
         }
-        if (outset.size() == 1) {
-            return outset.iterator().next();
-        }
-        if (outset.size() > 1) {
-            // outset is created by climbing the supertypes of the left type, which can go higher in
-            // the lattice than needed findSmallestTypes will remove the unnecessary supertypes of
-            // supertypes, retaining only the least upper bound(s)
-            outset = findSmallestTypes(outset);
-
-            // picks the first qualifier that isn't a polymorphic qualifier
-            // the outset should only have 1 qualifier that isn't polymorphic
-            Iterator<AnnotationMirror> outsetIterator = outset.iterator();
-
-            AnnotationMirror anno;
-            do {
-                anno = outsetIterator.next();
-            } while (isPolymorphicQualifier(anno));
-
-            // TODO: more than one, incomparable supertypes. Just pick the first one.
-            // if (outset.size()>1) { System.out.println("Still more than one LUB!"); }
-            return anno;
-        }
-
-        ErrorReporter.errorAbort(
-                "GraphQualifierHierarchy could not determine LUB for "
-                        + a1
-                        + " and "
-                        + a2
-                        + ". Please ensure that the checker knows about all type qualifiers.");
-        return null;
+        return requireSingleton(outset, a1, a2, /*lub=*/ true);
     }
 
     private AnnotationMirror findLubWithPoly(AnnotationMirror poly, AnnotationMirror other) {
@@ -879,24 +851,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 }
             }
         }
-        if (outset.size() == 1) {
-            return outset.iterator().next();
-        }
-        if (outset.size() > 1) {
-            outset = findGreatestTypes(outset);
-            // More than one, incomparable greatest subtypes. Pick the first one.
-            // TODO: Is that the right approach?
-            // if (outset.size()>1) { System.out.println("Still more than one GLB!"); }
-            return outset.iterator().next();
-        }
-
-        ErrorReporter.errorAbort(
-                "MultiGraphQualifierHierarchy could not determine GLB for "
-                        + a1
-                        + " and "
-                        + a2
-                        + ". Please ensure that the checker knows about all type qualifiers.");
-        return null;
+        return requireSingleton(outset, a1, a2, /*lub=*/ false);
     }
 
     private AnnotationMirror findGlbWithPoly(AnnotationMirror poly, AnnotationMirror other) {
@@ -925,11 +880,70 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return outset;
     }
 
+    /**
+     * Require that outset is a singleton set, after polymorphic qualifiers have been removed. If
+     * not, report a bug: the type hierarchy is not a lattice.
+     *
+     * @param outset the set of upper or lower bounds of a1 and a2 (depending on whether lub==true)
+     * @param a1 the first annotation being lubbed or glbed
+     * @param a2 the second annotation being lubbed or glbed
+     * @param lub true if computing lub(a1, a2), false if computing glb(a1, a2)
+     * @return the unique element of outset; issues an error if outset.size() != 1
+     */
+    private AnnotationMirror requireSingleton(
+            Set<AnnotationMirror> outset, AnnotationMirror a1, AnnotationMirror a2, boolean lub) {
+        if (outset.size() == 0) {
+            ErrorReporter.errorAbort(
+                    "MultiGraphQualifierHierarchy could not determine "
+                            + (lub ? "LUB" : "GLB")
+                            + " for "
+                            + a1
+                            + " and "
+                            + a2
+                            + ". Please ensure that the checker knows about all type qualifiers.");
+            return null;
+        } else if (outset.size() == 1) {
+            return outset.iterator().next();
+        } else {
+            // outset.size() > 1
+
+            outset = lub ? findSmallestTypes(outset) : findGreatestTypes(outset);
+
+            AnnotationMirror result = null;
+            for (AnnotationMirror anno : outset) {
+                if (isPolymorphicQualifier(anno)) {
+                    continue;
+                } else if (result == null) {
+                    result = anno;
+                } else {
+                    ErrorReporter.errorAbort(
+                            String.format(
+                                    "Bug in checker implementation:  type hierarchy is not a lattice.%n"
+                                            + "There is no unique "
+                                            + (lub ? "lub" : "glb")
+                                            + "(%s, %s).%n"
+                                            + "Two incompatible candidates are: %s %s",
+                                    a1,
+                                    a2,
+                                    result,
+                                    anno));
+                    return null;
+                }
+            }
+            return result;
+        }
+    }
+
+    /** Two annotations; used for caching the result of calls to lub and glb. */
     private static class AnnotationPair {
+        /** The first annotation. */
         public final AnnotationMirror a1;
+        /** The second annotation. */
         public final AnnotationMirror a2;
+        /** The cached hashCode of this; -1 until computed. */
         private int hashCode = -1;
 
+        /** Create a new AnnotationPair. */
         public AnnotationPair(AnnotationMirror a1, AnnotationMirror a2) {
             this.a1 = a1;
             this.a2 = a2;

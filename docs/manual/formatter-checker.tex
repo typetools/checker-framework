@@ -593,10 +593,9 @@ try {
 System.out.printf(format, "hello", 1337);
 \end{Verbatim}
 
-\noindent A potential disadvantage of using the \code{FormatUtil} class is that your code becomes
-dependent on the Checker Framework at run time as well as at compile time. You
-can avoid this by adding the Checker Framework to your project, or by copying
-the \code{FormatUtil} class into your own code.
+\noindent
+To use the \<FormatUtil> class, the \<checker-qual.jar> file
+must be on the classpath at run time.
 
 %  LocalWords:  printf InvalidFormat Formatter FormatBottom specifier's
 %  LocalWords:  ConversionCategory isValidCodePoint BigInteger BigDecimal

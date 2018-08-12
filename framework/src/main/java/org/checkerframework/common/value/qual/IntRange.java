@@ -8,13 +8,15 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * An expression with this type evaluates to an integral value (byte, short, char, int, or long) in
- * the given range. The bounds are inclusive; for example, {@code @IntRange(from=6, to=9)}
- * represents the four values 6, 7, 8, and 9.
+ * the given range. The bounds are inclusive. For example, the following declaration allows the 12
+ * values 0, 1, ..., 11:
+ *
+ * <pre>{@code @IntRange(from=0, to=11) int month;}</pre>
  *
  * <p>If only one of the {@code to} and {@code from} fields is set, then the other will default to
- * the max/min value of the underlying type of the variable that is annotated. Note that there must
- * be "default" values (Long.MIN_VALUE and Long.MAX_VALUE below) even though they will be replaced
- * in order to prevent javac from issuing warnings when only one of the values is set by a user.
+ * the max/min value of the type of the variable that is annotated. (In other words, the defaults
+ * {@code Long.MIN_VALUE} and {@code Long.MAX_VALUE} are used only for \code{long}; appropriate
+ * values are used for other types.)
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
@@ -22,8 +24,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface IntRange {
-    /** Smallest value in the range, inclusive */
+    /** Smallest value in the range, inclusive. */
     long from() default Long.MIN_VALUE;
-    /** Largest value in the range, inclusive */
+    /** Largest value in the range, inclusive. */
     long to() default Long.MAX_VALUE;
 }

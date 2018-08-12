@@ -26,6 +26,7 @@ import org.checkerframework.javacutil.TreeUtils;
 // TODO: Does not yet handle method signature annotations, such as
 // @MethodDescriptor.
 
+/** Accounts for the effects of certain calls to String.replace. */
 public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror SIGNATURE_UNKNOWN;
@@ -96,7 +97,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * String.replace, when called with specific constant arguments, converts between internal
-         * form and binary name:
+         * form and binary name.
          *
          * <pre><code>
          * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');
