@@ -13,8 +13,6 @@ public class SignatureTypeFactoryTest {
     //     InternalForm.class,
     //     ClassGetSimpleName.class,
     //
-    //     SourceNameForNonInner.class,
-    //     BinaryNameForNonArray.class,
     //     FieldDescriptorForPrimitiveOrArrayInUnnamedPackage.class,
     //
     //     DotSeparatedIdentifiers.class,
