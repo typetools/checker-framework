@@ -2,14 +2,15 @@ package org.checkerframework.framework.util;
 
 import static com.github.javaparser.JavaParser.parseExpression;
 import static com.github.javaparser.JavaParser.parseSimpleName;
+
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -156,12 +157,14 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Matches field accesses whose receiver is a method call expression. First of returned
-     * pair is a method call expression and the second is a field or method call expression. 
+     * Matches field accesses whose receiver is a method call expression. First of returned pair is
+     * a method call expression and the second is a field or method call expression.
      *
-     * @param sWithFormalParamNames expression string with replaced occurence of one-based parameter index of with formal parameter names
+     * @param sWithFormalParamNames expression string with replaced occurences of one-based
+     *     parameter index of with formal parameter names
      * @param s expression string
-     * @param argumentList list of formal parameter names corresponding to index of formal parameters in the method call that is in s
+     * @param argumentList list of formal parameter names corresponding to index of formal
+     *     parameters in the method call that is in s
      * @return pair of method call expression and field, or two method call expressions
      */
     private static Pair<String, String> parseMethod(
@@ -175,8 +178,7 @@ public class FlowExpressionParseUtil {
         if (e.getClass().equals(FieldAccessExpr.class)) {
             FieldAccessExpr fieldAccessExpr = (FieldAccessExpr) e;
             String fieldName = fieldAccessExpr.getName().toString();
-            if (s.indexOf(fieldName) == -1)
-                fieldName = replaceString(fieldName, argumentList);
+            if (s.indexOf(fieldName) == -1) fieldName = replaceString(fieldName, argumentList);
             String remaining = "." + fieldName;
             String receiver = s.substring(0, s.length() - remaining.length());
             Pair<Pair<String, String>, String> method = parseMethod(receiver, argumentList);
@@ -197,8 +199,7 @@ public class FlowExpressionParseUtil {
                     String methodCall =
                             method.first.first + "(" + method.first.second + ")." + fieldName;
                     if (methodCall.length() != s.length()) return null;
-                    return Pair.of(
-                            method.first.first + "(" + method.first.second + ")", fieldName);
+                    return Pair.of(method.first.first + "(" + method.first.second + ")", fieldName);
                 }
             }
             return null;
@@ -230,14 +231,16 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<String, String> parseMemberSelect(String s, FlowExpressionContext context) {
 
-        // replace occurence of one-based parameter index of formal parameters with formal parameter names
+        // replace occurence of one-based parameter index of formal parameters with formal parameter
+        // names
         String sWithFormalParamNames = s;
         int k = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
         if (context.arguments != null) {
             for (Receiver argument : context.arguments) {
                 String replaceParam = "#" + Integer.toString(k + 1);
-                sWithFormalParamNames = sWithFormalParamNames.replace(replaceParam, argument.toString());
+                sWithFormalParamNames =
+                        sWithFormalParamNames.replace(replaceParam, argument.toString());
                 k++;
                 argumentList.add(argument.toString());
             }
@@ -576,7 +579,8 @@ public class FlowExpressionParseUtil {
      * Replace string by formal parameter if it is an argument present in argument list.
      *
      * @param s expression string
-     * @param argumentList list of formal parameter names corresponding to index of formal parameters in the method call that is in s
+     * @param argumentList list of formal parameter names corresponding to index of formal
+     *     parameters in the method call that is in s
      * @return string containing argument replaced back by formal parameter
      */
     public static String replaceString(String s, ArrayList<String> argumentList) {
@@ -587,18 +591,19 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Indentify and parse a method call. First of returned pair is a pair of method name and arguments. Second of
-     * returned pair is a remaining string.
+     * Indentify and parse a method call. First of returned pair is a pair of method name and
+     * arguments. Second of returned pair is a remaining string.
      *
      * @param s expression string with index of formal parameters replaced by formal parameter names
-     * @param argumentList list of formal parameter names corresponding to index of formal parameters in the method call that is in s
+     * @param argumentList list of formal parameter names corresponding to index of formal
+     *     parameters in the method call that is in s
      * @return pair of (pair of method name and arguments) and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(
             String s, ArrayList<String> argumentList) {
         Expression e = new Expression();
         try {
-            e = parseExpression(s);  
+            e = parseExpression(s);
         } catch (Exception e) {
             return null;
         }
