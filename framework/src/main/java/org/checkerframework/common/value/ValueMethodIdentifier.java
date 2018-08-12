@@ -8,11 +8,11 @@ import org.checkerframework.javacutil.TreeUtils;
 /** Stores methods that have special handling in the value checker. */
 class ValueMethodIdentifier {
 
-    /** String.length() method */
+    /** String.length() method. */
     private final ExecutableElement lengthMethod;
-    /** String.startsWith(String) method */
+    /** String.startsWith(String) method. */
     private final ExecutableElement startsWithMethod;
-    /** String.endsWith(String) method */
+    /** String.endsWith(String) method. */
     private final ExecutableElement endsWithMethod;
 
     public ValueMethodIdentifier(ProcessingEnvironment processingEnv) {

@@ -6,7 +6,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 
 /**
  * {@link TypeAnnotator} is an abstract AnnotatedTypeScanner to be used with {@link
- * ListTypeAnnotator}
+ * ListTypeAnnotator}.
  *
  * @see org.checkerframework.framework.type.typeannotator.ListTypeAnnotator
  * @see org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator

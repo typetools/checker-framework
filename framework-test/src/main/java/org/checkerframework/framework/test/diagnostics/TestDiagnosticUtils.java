@@ -303,8 +303,9 @@ public class TestDiagnosticUtils {
             if (diagnosticString.contains("uses unchecked or unsafe operations.")
                     || diagnosticString.contains("Recompile with -Xlint:unchecked for details.")
                     || diagnosticString.endsWith(" declares unsafe vararg methods.")
-                    || diagnosticString.contains("Recompile with -Xlint:varargs for details."))
+                    || diagnosticString.contains("Recompile with -Xlint:varargs for details.")) {
                 continue;
+            }
 
             diagnostics.add(
                     TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString, noMsgText));

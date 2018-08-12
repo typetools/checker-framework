@@ -424,7 +424,9 @@ public abstract class CFAbstractTransfer<
                     receiver = new ThisReference(classType);
                 }
                 V value = analysis.createAbstractValue(type);
-                if (value == null) continue;
+                if (value == null) {
+                    continue;
+                }
                 if (TreeUtils.isConstructor(methodTree)) {
                     // if we are in a constructor,
                     // then we can still use the static type, but only

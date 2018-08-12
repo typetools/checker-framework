@@ -75,10 +75,10 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 public class FlowExpressionParseUtil {
 
     /** Regular expression for a formal parameter use. */
-    protected static final String parameterRegex = "#([1-9][0-9]*)";
+    protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
     /** Unanchored; can be used to find all formal parameter uses. */
-    protected static final Pattern unanchoredParameterPattern = Pattern.compile(parameterRegex);
+    protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
     /** Returns a Pattern, anchored at the beginning and end, for the regex. */
     private static Pattern anchored(String regex) {
@@ -86,10 +86,10 @@ public class FlowExpressionParseUtil {
     }
 
     // Each of the below patterns is anchored with ^...$.
-    /** Matches a parameter */
-    protected static final Pattern parameterPattern = anchored(parameterRegex);
-    /** Matches an expression contained in matching start and end parentheses */
-    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
+    /** Matches a parameter. */
+    protected static final Pattern PARAMETER_PATTERN = anchored(PARAMETER_REGEX);
+    /** Matches an expression contained in matching start and end parentheses. */
+    protected static final Pattern PARENTHESES_PATTERN = anchored("\\((.*)\\)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -141,8 +141,8 @@ public class FlowExpressionParseUtil {
             return parseParameter(expression, context);
         } else if (isArray(expression, context)) {
             return parseArray(expression, context, path);
-        } else if (isMethod(expression, context)) {
-            return parseMethod(expression, context, path, env);
+        } else if (isMethodCall(expression, context)) {
+            return parseMethodCall(expression, context, path, env);
         } else if (isMemberSelect(expression, context)) {
             return parseMemberSelect(expression, env, context, path);
         } else if (isParentheses(expression, context)) {
@@ -167,7 +167,7 @@ public class FlowExpressionParseUtil {
      *     parameters in the method call that is in s
      * @return pair of method call expression and field, or two method call expressions
      */
-    private static Pair<String, String> parseMethod(
+    private static Pair<String, String> parseMethodCall(
             String sWithFormalParamNames, String s, ArrayList<String> argumentList) {
         Expression e = new Expression();
         try {
@@ -178,10 +178,10 @@ public class FlowExpressionParseUtil {
         if (e.getClass().equals(FieldAccessExpr.class)) {
             FieldAccessExpr fieldAccessExpr = (FieldAccessExpr) e;
             String fieldName = fieldAccessExpr.getName().toString();
-            if (s.indexOf(fieldName) == -1) fieldName = replaceString(fieldName, argumentList);
+            if (s.indexOf(fieldName) == -1) fieldName = asFormalParameter(fieldName, argumentList);
             String remaining = "." + fieldName;
             String receiver = s.substring(0, s.length() - remaining.length());
-            Pair<Pair<String, String>, String> method = parseMethod(receiver, argumentList);
+            Pair<Pair<String, String>, String> method = parseMethodCall(receiver, argumentList);
             if (method != null) {
                 if (method.second.startsWith(".")) {
                     String methodCall =
@@ -205,7 +205,7 @@ public class FlowExpressionParseUtil {
             return null;
         }
         if (e.getClass().equals(MethodCallExpr.class)) {
-            Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
+            Pair<Pair<String, String>, String> method = parseMethodCall(s, argumentList);
             if (method != null && method.second.startsWith(".")) {
                 String methodCall =
                         method.first.first
@@ -231,8 +231,7 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<String, String> parseMemberSelect(String s, FlowExpressionContext context) {
 
-        // replace occurence of one-based parameter index of formal parameters with formal parameter
-        // names
+        // replace occurence of formal parameters, such as "#2", with corresponding arguments
         String sWithFormalParamNames = s;
         int k = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
@@ -247,7 +246,7 @@ public class FlowExpressionParseUtil {
         }
 
         // parses member select whose receiver is a method call expression
-        Pair<String, String> method = parseMethod(sWithFormalParamNames, s, argumentList);
+        Pair<String, String> method = parseMethodCall(sWithFormalParamNames, s, argumentList);
         if (method != null) {
             return method;
         }
@@ -294,6 +293,7 @@ public class FlowExpressionParseUtil {
 
         String receiver = s.substring(0, i);
         String remaining = s.substring(i + 1);
+
         return Pair.of(receiver, remaining);
     }
 
@@ -548,13 +548,13 @@ public class FlowExpressionParseUtil {
         if (contex.parsingMember) {
             return false;
         }
-        Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
         return parameterMatcher.matches();
     }
 
     private static Receiver parseParameter(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
-        Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
         if (!parameterMatcher.matches()) {
             return null;
         }
@@ -576,18 +576,20 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Replace string by formal parameter if it is an argument present in argument list.
+     * If the argument is in the list, return a corresponding formal paramter such as "#2".
+     * Otherwise, return the argument unchanged.
      *
-     * @param s expression string
-     * @param argumentList list of formal parameter names corresponding to index of formal
-     *     parameters in the method call that is in s
-     * @return string containing argument replaced back by formal parameter
+     * @param s argument string
+     * @param argumentList list of argument strings corresponding to formal parameters such as "#2"
+     *     in the method call that is currently being parsed
+     * @return a formal parameter such as "#2", or the argument string
      */
-    public static String replaceString(String s, ArrayList<String> argumentList) {
+    public static String asFormalParameter(String s, ArrayList<String> argumentList) {
         if (argumentList.contains(s)) {
-            s = "#" + Integer.toString(argumentList.indexOf(s) + 1);
+            return "#" + Integer.toString(argumentList.indexOf(s) + 1);
+        } else {
+            return s;
         }
-        return s;
     }
 
     /**
@@ -599,7 +601,7 @@ public class FlowExpressionParseUtil {
      *     parameters in the method call that is in s
      * @return pair of (pair of method name and arguments) and remaining
      */
-    private static Pair<Pair<String, String>, String> parseMethod(
+    private static Pair<Pair<String, String>, String> parseMethodCall(
             String s, ArrayList<String> argumentList) {
         Expression e = new Expression();
         try {
@@ -613,15 +615,15 @@ public class FlowExpressionParseUtil {
             String arguments = "";
             for (Expression exp : methodCallExpr.getArguments()) {
                 String argStr = exp.toString();
-                argStr = replaceString(argStr, argumentList);
-                if (arguments == "") {
+                argStr = asFormalParameter(argStr, argumentList);
+                if (arguments == "") { // interned: initialized to literal string
                     arguments = argStr;
                 } else {
                     arguments = arguments + ", " + argStr;
                 }
             }
             String methodName = methodCallExpr.getName().asString();
-            methodName = replaceString(methodName, argumentList);
+            methodName = asFormalParameter(methodName, argumentList);
             String remaining = "";
             if (methodCallExpr.getScope().isPresent()) {
                 remaining = "." + methodName + "(" + arguments + ")";
@@ -630,15 +632,15 @@ public class FlowExpressionParseUtil {
                 String argumentsScope = "";
                 for (Expression exp : scope.getArguments()) {
                     String argStr = exp.toString();
-                    argStr = replaceString(argStr, argumentList);
-                    if (argumentsScope == "") {
+                    argStr = asFormalParameter(argStr, argumentList);
+                    if (argumentsScope == "") { // interned: initialized to literal string
                         argumentsScope = argStr;
                     } else {
                         argumentsScope = argumentsScope + ", " + argStr;
                     }
                 }
                 String scopeName = scope.getName().toString();
-                scopeName = replaceString(scopeName, argumentList);
+                scopeName = asFormalParameter(scopeName, argumentList);
                 return Pair.of(Pair.of(scopeName, argumentsScope), remaining);
             } else {
                 return Pair.of(Pair.of(methodName, arguments), remaining);
@@ -648,9 +650,9 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    private static boolean isMethod(String s, FlowExpressionContext context) {
+    private static boolean isMethodCall(String s, FlowExpressionContext context) {
 
-        // replace occurence of formal parameters with corresponding arguments
+        // replace occurence of formal parameters, such as "#2", with corresponding arguments
         int i = 0;
         ArrayList<String> argumentList = new ArrayList<String>();
         if (context.arguments != null) {
@@ -662,11 +664,11 @@ public class FlowExpressionParseUtil {
             }
         }
 
-        Pair<Pair<String, String>, String> result = parseMethod(s, argumentList);
+        Pair<Pair<String, String>, String> result = parseMethodCall(s, argumentList);
         return result != null && result.second.isEmpty();
     }
 
-    private static Receiver parseMethod(
+    private static Receiver parseMethodCall(
             String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
             throws FlowExpressionParseException {
 
@@ -681,7 +683,7 @@ public class FlowExpressionParseUtil {
             }
         }
 
-        Pair<Pair<String, String>, String> method = parseMethod(s, argumentList);
+        Pair<Pair<String, String>, String> method = parseMethodCall(s, argumentList);
 
         if (method == null) {
             return null;
@@ -787,7 +789,9 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<Pair<String, String>, String> parseArray(String s) {
         int i = 0;
-        while (i < s.length() && s.charAt(i) != '[') i++;
+        while (i < s.length() && s.charAt(i) != '[') {
+            i++;
+        }
 
         if (i >= s.length()) {
             return null;
@@ -897,7 +901,7 @@ public class FlowExpressionParseUtil {
      * @param expression the expression string that may start with a package and class name
      * @param resolver the {@code Resolver} for the current processing environment
      * @param path the tree path to the local scope
-     * @param information about any receiver and arguments
+     * @param context information about any receiver and arguments
      * @return {@code null} if the expression string did not start with a package name; otherwise a
      *     {@code Pair} containing the {@code ClassName} for the matched class, and the remaining
      *     substring of the expression (possibly null) after the package and class name.
@@ -1178,7 +1182,7 @@ public class FlowExpressionParseUtil {
      */
     public static List<Integer> parameterIndices(String s) {
         List<Integer> result = new ArrayList<>();
-        Matcher matcher = unanchoredParameterPattern.matcher(s);
+        Matcher matcher = UNANCHORED_PARAMETER_PATTERN.matcher(s);
         while (matcher.find()) {
             int idx = Integer.parseInt(matcher.group(1));
             result.add(idx);

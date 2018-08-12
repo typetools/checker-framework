@@ -5,14 +5,14 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
- * Converts AnnotationMirrors to Strings For converting AnnotatedTypeMirrors:
+ * Converts AnnotationMirrors to Strings For converting AnnotatedTypeMirrors.
  *
  * @see org.checkerframework.framework.type.AnnotatedTypeFormatter
  */
 public interface AnnotationFormatter {
 
     /**
-     * Converts a collection of annotation mirrors into a String
+     * Converts a collection of annotation mirrors into a String.
      *
      * @param annos a collection of annotations to print
      * @param printInvisible whether or not to print "invisible" annotation mirrors
@@ -24,7 +24,7 @@ public interface AnnotationFormatter {
             Collection<? extends AnnotationMirror> annos, boolean printInvisible);
 
     /**
-     * Converts an individual annotation mirror into a String
+     * Converts an individual annotation mirror into a String.
      *
      * @param anno the annotation mirror to convert
      * @return a String representation of anno

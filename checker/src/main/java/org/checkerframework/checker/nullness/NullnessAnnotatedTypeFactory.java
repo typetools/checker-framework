@@ -67,13 +67,13 @@ public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
-    /** Annotation constants */
+    /** Annotation constants. */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
 
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
-    /** Cache for the nullness annotations */
+    /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
     // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex

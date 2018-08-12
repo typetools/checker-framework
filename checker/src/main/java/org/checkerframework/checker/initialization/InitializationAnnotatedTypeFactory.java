@@ -72,19 +72,19 @@ public abstract class InitializationAnnotatedTypeFactory<
                 Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
         extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
-    /** {@link UnknownInitialization} or {@link Raw} */
+    /** {@link UnknownInitialization} or {@link Raw}. */
     protected final AnnotationMirror UNCLASSIFIED;
 
-    /** {@link Initialized} or {@link NonRaw} */
+    /** {@link Initialized} or {@link NonRaw}. */
     protected final AnnotationMirror COMMITTED;
 
-    /** {@link UnderInitialization} or null */
+    /** {@link UnderInitialization} or null. */
     protected final AnnotationMirror FREE;
 
-    /** {@link NotOnlyInitialized} or null */
+    /** {@link NotOnlyInitialized} or null. */
     protected final AnnotationMirror NOT_ONLY_COMMITTED;
 
-    /** {@link FBCBottom} or {@link NonRaw} */
+    /** {@link FBCBottom} or {@link NonRaw}. */
     protected final AnnotationMirror FBCBOTTOM;
 
     /**
@@ -611,7 +611,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         AnnotationMirror initializationAnno = type.getEffectiveAnnotationInHierarchy(UNCLASSIFIED);
         TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
         Types types = processingEnv.getTypeUtils();
-        return types.isSubtype(typeFrame, frame);
+        return types.isSubtype(typeFrame, types.erasure(frame));
     }
 
     /**

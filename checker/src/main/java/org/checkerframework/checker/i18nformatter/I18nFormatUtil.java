@@ -42,7 +42,7 @@ public class I18nFormatUtil {
         tryFormatSatisfiability(format);
         I18nConversion[] cs = MessageFormatParser.parse(format);
 
-        int max_index = -1;
+        int maxIndex = -1;
         Map<Integer, I18nConversionCategory> conv = new HashMap<>();
 
         for (I18nConversion c : cs) {
@@ -54,11 +54,11 @@ public class I18nFormatUtil {
                             conv.containsKey(index)
                                     ? conv.get(index)
                                     : I18nConversionCategory.UNUSED));
-            max_index = Math.max(max_index, index);
+            maxIndex = Math.max(maxIndex, index);
         }
 
-        I18nConversionCategory[] res = new I18nConversionCategory[max_index + 1];
-        for (int i = 0; i <= max_index; i++) {
+        I18nConversionCategory[] res = new I18nConversionCategory[maxIndex + 1];
+        for (int i = 0; i <= maxIndex; i++) {
             res[i] = conv.containsKey(i) ? conv.get(i) : I18nConversionCategory.UNUSED;
         }
         return res;
@@ -129,7 +129,7 @@ public class I18nFormatUtil {
          */
         private static List<Integer> argumentIndices;
 
-        /** The number of subformats */
+        /** The number of subformats. */
         private static int numFormat;
 
         // Indices for segments

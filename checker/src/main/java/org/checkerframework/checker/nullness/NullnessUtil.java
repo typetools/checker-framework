@@ -22,9 +22,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>To eliminate this dependency, you can simply copy this class into your own project.
  */
-// Nullness utilities are trusted regarding nullness.
-// Casts look redundant if Nullness Checker is not run.
-@SuppressWarnings({"nullness", "cast"})
+@SuppressWarnings({
+    "nullness", // Nullness utilities are trusted regarding nullness.
+    "cast" // Casts look redundant if Nullness Checker is not run.
+})
 public final class NullnessUtil {
 
     private NullnessUtil() {

@@ -19,7 +19,7 @@ public final class Effect {
         annotClass = cls;
     }
 
-    public static boolean LE(Effect left, Effect right) {
+    public static boolean lessThanOrEqualTo(Effect left, Effect right) {
         assert (left != null && right != null);
         boolean leftBottom = left.annotClass.equals(SafeEffect.class);
         boolean rightTop = right.annotClass.equals(UIEffect.class);
@@ -27,7 +27,7 @@ public final class Effect {
     }
 
     public static Effect min(Effect l, Effect r) {
-        if (LE(l, r)) {
+        if (lessThanOrEqualTo(l, r)) {
             return l;
         } else {
             return r;
