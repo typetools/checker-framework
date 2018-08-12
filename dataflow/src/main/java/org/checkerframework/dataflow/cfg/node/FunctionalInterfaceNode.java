@@ -59,7 +59,7 @@ public class FunctionalInterfaceNode extends Node {
         } else {
             // This should never happen.
             ErrorReporter.errorAbort("Invalid tree in FunctionalInterfaceNode");
-            return null; // Dead code
+            throw new Error(); // unreachable
         }
     }
 

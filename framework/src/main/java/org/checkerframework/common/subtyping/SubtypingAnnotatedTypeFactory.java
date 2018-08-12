@@ -34,7 +34,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (qualNames == null && qualDirectories == null) {
             checker.userErrorAbort(
                     "SubtypingChecker: missing required option. Use -Aquals or -AqualDirs");
-            throw new Error("This can't happen"); // dead code
+            throw new Error("This can't happen"); // unreachable
         }
 
         // load individually named qualifiers

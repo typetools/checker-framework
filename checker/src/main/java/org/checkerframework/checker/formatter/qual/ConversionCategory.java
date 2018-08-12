@@ -133,7 +133,7 @@ public enum ConversionCategory {
                 return v;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Bad conversion character " + c);
     }
 
     private static <E> Set<E> arrayToSet(E[] a) {
@@ -185,8 +185,7 @@ public enum ConversionCategory {
                 return v;
             }
         }
-        // this should never happen
-        throw new RuntimeException();
+        throw new RuntimeException(); // unreachable
     }
 
     /**

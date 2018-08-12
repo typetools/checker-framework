@@ -417,7 +417,7 @@ public class FlowExpressions {
             default:
                 ErrorReporter.errorAbort(
                         "Unexpected element kind: %s element: %s", ele.getKind(), ele);
-                return null;
+                throw new Error(); // unreachable
         }
     }
 

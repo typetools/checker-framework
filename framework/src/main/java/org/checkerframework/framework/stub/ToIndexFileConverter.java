@@ -569,7 +569,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                                 return "S";
                             default:
                                 throw new IllegalArgumentException(
-                                        "baseTypeName(): unknown primitive type " + type);
+                                        "unknown primitive type " + type); // unreachable
                         }
                     }
 

@@ -241,7 +241,7 @@ public class DOTCFGVisualizer<
         } else {
             ErrorReporter.errorAbort(
                     "Unexpected AST kind: " + ast.getKind() + " value: " + ast.toString());
-            return null;
+            throw new Error(); // unreachable
         }
         outfile.append('-');
         outfile.append(checkerName);

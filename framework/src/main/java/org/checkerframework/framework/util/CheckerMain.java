@@ -207,7 +207,7 @@ public class CheckerMain {
             return alternative;
         } else if (i == args.size() - 1) {
             throw new RuntimeException(
-                    "Argument " + argumentName + " specified but given no value!");
+                    "Command line contains " + argumentName + " but no value following it");
         } else {
             args.remove(i);
             return args.remove(i);
@@ -667,7 +667,9 @@ public class CheckerMain {
     private static String quote(final String str) {
         if (str.contains(" ")) {
             if (str.contains("\"")) {
-                throw new RuntimeException("Don't know how to quote " + str);
+                throw new RuntimeException(
+                        "Don't know how to quote a string containing a double-quote character "
+                                + str);
             }
             return "\"" + str + "\"";
         }

@@ -179,6 +179,7 @@ import org.checkerframework.dataflow.util.MostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -3907,8 +3908,7 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
-                        throw new IllegalArgumentException(
-                                "unexpected element kind : " + element.getKind());
+                        throw new Error("bad element kind " + element.getKind()); // unreachable
                 }
             }
             extendWithNode(node);
@@ -4841,14 +4841,14 @@ public class CFGBuilder {
 
         @Override
         public Node visitWildcard(WildcardTree tree, Void p) {
-            assert false : "WildcardTree is unexpected in AST to CFG translation";
-            return null;
+            ErrorReporter.errorAbort("WildcardTree is unexpected in AST to CFG translation");
+            throw new Error(); // unreachable
         }
 
         @Override
         public Node visitOther(Tree tree, Void p) {
-            assert false : "Unknown AST element encountered in AST to CFG translation.";
-            return null;
+            ErrorReporter.errorAbort("Unknown AST element encountered in AST to CFG translation.");
+            throw new Error(); // unreachable
         }
     }
 

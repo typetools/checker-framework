@@ -611,7 +611,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotationMirror typeQualifierAnno =
                     AnnotationBuilder.fromClass(elements, typeQualifier);
             if (typeQualifierAnno == null) {
-                throw new Error("Cannot load annotation " + typeQualifier);
+                ErrorReporter.errorAbort("Cannot load annotation " + typeQualifier);
             }
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.

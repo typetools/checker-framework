@@ -1922,7 +1922,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.userErrorAbort(
                 String.format(
                         "Value of %s option should be a boolean, but is \"%s\".", name, value));
-        throw new Error("Dead code");
+        throw new Error(); // unreachable
     }
 
     /**

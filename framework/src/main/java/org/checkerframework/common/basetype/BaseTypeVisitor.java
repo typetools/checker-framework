@@ -1037,7 +1037,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 args = ((NewClassTree) tree).getArguments();
                 break;
             default:
-                throw new AssertionError("Unexpected kind of tree: " + tree);
+                throw new AssertionError("Unexpected kind of tree: " + tree); // unreachable
         }
         if (numFormals == args.size()) {
             AnnotatedTypeMirror lastArgType =

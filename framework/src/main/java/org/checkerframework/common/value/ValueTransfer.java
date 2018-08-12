@@ -689,7 +689,7 @@ public class ValueTransfer extends CFTransfer {
                     break;
                 default:
                     ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                    throw new RuntimeException("this can't happen");
+                    throw new Error(); // unreachable
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during
             // operations.
@@ -948,7 +948,7 @@ public class ValueTransfer extends CFTransfer {
                     break;
                 default:
                     ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                    throw new RuntimeException("this can't happen");
+                    throw new Error(); // unreachable
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during
             // operations.
@@ -1092,7 +1092,7 @@ public class ValueTransfer extends CFTransfer {
                         break;
                     default:
                         ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                        throw new RuntimeException("this can't happen");
+                        throw new RuntimeException("this can't happen"); // unreachable
                 }
                 resultValues.add(result);
                 if (result) {
@@ -1173,7 +1173,7 @@ public class ValueTransfer extends CFTransfer {
                 break;
             default:
                 ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                throw new RuntimeException("this is impossible, but javac issues a warning");
+                throw new Error(); // unreachable
         }
 
         createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
@@ -1418,7 +1418,7 @@ public class ValueTransfer extends CFTransfer {
                 return resultValues;
         }
         ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-        throw new RuntimeException("this can't happen");
+        throw new Error(); // unreachable
     }
 
     @Override

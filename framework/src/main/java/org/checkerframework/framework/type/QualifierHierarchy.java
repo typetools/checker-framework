@@ -188,7 +188,7 @@ public abstract class QualifierHierarchy {
                             + annos2);
         }
         if (annos1.isEmpty()) {
-            throw new Error(
+            ErrorReporter.errorAbort(
                     "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets!");
         }
 
