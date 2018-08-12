@@ -8,6 +8,7 @@ import testlib.aggregate.AggregateOfCompoundChecker;
 
 public class AggregateTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public AggregateTest(List<File> testFiles) {
         super(
                 testFiles,

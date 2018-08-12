@@ -174,7 +174,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Represent the type relations. */
     protected TypeHierarchy typeHierarchy;
 
-    /** performs whole program inference */
+    /** performs whole program inference. */
     private WholeProgramInference wholeProgramInference;
 
     /**
@@ -196,7 +196,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeVariableSubstitutor typeVarSubstitutor;
 
-    /** Provides utility method to infer type arguments */
+    /** Provides utility method to infer type arguments. */
     protected TypeArgumentInference typeArgumentInference;
 
     /**
@@ -454,8 +454,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * This method is called only when {@code -Ainfer} is passed as an option. It checks if another
      * option that should not occur simultaneously with the whole-program inference is also passed
      * as argument, and aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with unchecked code defaults. (Subclasses may
-     * override this method to add more options.)
+     * inference process was not designed to work with unchecked code defaults.
+     *
+     * <p>Subclasses may override this method to add more options.
      */
     protected void checkInvalidOptionsInferSignatures() {
         // See Issue 683
@@ -609,8 +610,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
                     AnnotationBuilder.fromClass(elements, typeQualifier);
-            assert typeQualifierAnno != null
-                    : "Loading annotation \"" + typeQualifier + "\" failed!";
+            if (typeQualifierAnno == null) {
+                throw new Error("Cannot load annotation " + typeQualifier);
+            }
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.
@@ -893,8 +895,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the AnnotatedTypeFormatter to pass to all instantiated AnnotatedTypeMirrors
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        boolean printVerboseGenerics = checker.hasOption("printVerboseGenerics");
         return new DefaultAnnotatedTypeFormatter(
-                checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+                printVerboseGenerics,
+                // -AprintVerboseGenerics implies -AprintAllQualifiers
+                printVerboseGenerics || checker.hasOption("printAllQualifiers"));
     }
 
     public AnnotatedTypeFormatter getAnnotatedTypeFormatter() {
@@ -931,7 +936,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
 
-    /** Mapping from a Tree to its TreePath */
+    /** Mapping from a Tree to its TreePath. */
     private final TreePathCacher treePathCache = new TreePathCacher();
 
     /**
@@ -1087,7 +1092,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an AnnotatedTypeMirror for {@code elt} that includes: annotations explicitly written
-     * on the element and annotations from stub files
+     * on the element and annotations from stub files.
      *
      * @param elt the element
      * @return AnnotatedTypeMirror of the element with explicitly-written and stub file annotations
@@ -1146,7 +1151,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Adds @FromByteCode to methods, constructors, and fields declared in class files that are not
-     * already annotated with @FromStubFile
+     * already annotated with @FromStubFile.
      */
     private void addFromByteCode(Element elt) {
         if (declAnnosFromStubFiles == null) { // || trees.getTree(elt) != null) {
@@ -1458,10 +1463,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<? extends AnnotationTree> annoTrees) {
         List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
         for (int i = 0; i < annos.size(); i++) {
-            for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations())
+            for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations()) {
                 if (AnnotationUtils.areSameByClass(annos.get(i), clazz)) {
                     return annoTrees.get(i);
                 }
+            }
         }
         return null;
     }
@@ -2374,7 +2380,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return narrowed;
     }
 
-    /** Returns the VisitorState instance used by the factory to infer types */
+    /** Returns the VisitorState instance used by the factory to infer types. */
     public VisitorState getVisitorState() {
         return this.visitorState;
     }
@@ -3081,7 +3087,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns true if the element appears in a stub file (Currently only works for methods,
-     * constructors, and fields)
+     * constructors, and fields).
      */
     public boolean isFromStubFile(Element element) {
         return this.getDeclAnnotation(element, FromStubFile.class) != null;
@@ -3089,10 +3095,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns true if the element is from bytecode and the if the element did not appear in a stub
-     * file (Currently only works for methods, constructors, and fields)
+     * file (Currently only works for methods, constructors, and fields).
      */
     public boolean isFromByteCode(Element element) {
-        if (isFromStubFile(element)) return false;
+        if (isFromStubFile(element)) {
+            return false;
+        }
         return this.getDeclAnnotation(element, FromByteCode.class) != null;
     }
 
@@ -3785,7 +3793,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Check that a wildcard is an extends wildcard
+     * Check that a wildcard is an extends wildcard.
      *
      * @param awt the wildcard type
      * @return true if awt is an extends wildcard

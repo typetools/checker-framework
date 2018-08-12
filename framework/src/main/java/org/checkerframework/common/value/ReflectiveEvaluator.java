@@ -158,7 +158,7 @@ public class ReflectiveEvaluator {
 
     /**
      * Method for reflectively obtaining a method object so it can (potentially) be statically
-     * executed by the checker for constant propagation
+     * executed by the checker for constant propagation.
      *
      * @return the Method object corresponding to the method being invoke in tree
      */

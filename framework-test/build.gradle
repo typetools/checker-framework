@@ -1,0 +1,14 @@
+sourceSets {
+    taglet
+}
+
+dependencies {
+    // If this version changes, then the version in maven-artifacts/poms/frameworktestPom.xml
+    // and maven-artifacts/release/frameworktestReleasePom.xml must be changed, too.
+    compile  group: 'junit', name: 'junit', version: '4.12'
+    compile project(':javacutil')
+
+    tagletCompile configurations.toolsJar
+}
+
+jar.baseName = 'framework-test'

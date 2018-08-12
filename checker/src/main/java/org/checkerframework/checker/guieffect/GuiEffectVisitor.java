@@ -338,7 +338,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         }
         assert callerEffect != null;
 
-        if (!Effect.LE(targetEffect, callerEffect)) {
+        if (!Effect.lessThanOrEqualTo(targetEffect, callerEffect)) {
             checker.report(Result.failure("call.invalid.ui", targetEffect, callerEffect), node);
             if (debugSpew) {
                 System.err.println("Issuing error for node: " + node);

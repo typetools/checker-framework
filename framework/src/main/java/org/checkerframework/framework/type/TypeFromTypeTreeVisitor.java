@@ -36,7 +36,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Converts type trees into AnnotatedTypeMirrors
+ * Converts type trees into AnnotatedTypeMirrors.
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
@@ -47,8 +47,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = visit(node.getUnderlyingType(), f);
-        if (type == null) // e.g., for receiver type
-        type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
+        if (type == null) { // e.g., for receiver type
+            type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
+        }
         assert AnnotatedTypeFactory.validAnnotatedType(type);
         List<? extends AnnotationMirror> annos = TreeUtils.annotationsFromTree(node);
 

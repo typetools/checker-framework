@@ -231,7 +231,7 @@ Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  ./gradlew  buildJdk assemble
+  ./gradlew buildJdk assemble
 \end{Verbatim}
 
 \noindent
@@ -1069,17 +1069,12 @@ Code in this project follows the
 \ahref{https://google.github.io/styleguide/javaguide.html}{Google Java Style
 Guide} except 4 spaces are used for indentation.  If you commit changes to the
 Git repository, then a pre-commit hook verifies that the changes follow the
-style by running \<ant check-format> in the top-level directory.
+style by running \<./gradlew checkFormat> in the top-level directory.
 
 If
 the pre-commit hook fails
-because of improper formatting, run \<ant reformat>, stage the
+because of improper formatting, run \<./gradlew reformat>, stage the
 changes, and try the commit operation again.
-
-If the pre-commit hook or \<ant reformat> fails with an
-"Argument list too long" error, then create a \code{local.properties} file
-in the top-level directory that sets the property \code{maxparallel} to 4000.  If the error is still issued, reduce the number and
-try again.
 
 
 \section{Contributing fixes (creating a pull request)\label{pull-request}}
@@ -1294,44 +1289,79 @@ Checker Framework distribution and is also available on the web at
 
 Developers who have contributed code to the Checker Framework include
 %
+% To generote the below, run:
+% git log | grep ^Author: | sed 's/Author: \(.*\) <.*>/\1,/' | sort | uniq | sed -f contributors.sed | sort | uniq | sed '$ s/,$/./' > contributors.txt
+%
 Abraham Lin,
+Alvin Abdagic,
 Anatoly Kupriyanov,
+Arie van Deursen,
+Arthur Baars,
+Ashish Rana,
 Asumu Takikawa,
+Atul Dada,
+Basil Peace,
 Bohdan Sharipov,
+Brian Corcoran,
+Calvin Loncaric,
+Charles Chen,
 Charlie Garrett,
-Chris Mackie,
-Colin Gordon,
+Christopher Mackie,
+Colin S. Gordon,
 Dan Brotherston,
 Dan Brown,
 David Lazar,
 David McArthur,
 Eric Spishak,
+Felipe R. Monteiro,
 Google Inc.\ (via @wmdietlGC),
+Haaris Ahmed,
 Javier Thaine,
 Jeff Luo,
+Jenny Xiang,
+Jianchu Li,
 Jiasen (Jason) Xu,
+Joe Schafer,
+John Vandenberg,
 Jonathan Burke,
+Jonathan Nieder,
 Kivanc Muslu,
 Konstantin Weitz,
+L\'azaro Clapp,
+Liam Miller-Cushon,
+Luqman Aden,
 Mahmood Ali,
+Manu Sridharan,
 Mark Roberts,
+Martin Kellogg,
 Matt Mullen,
 Michael Bayne,
 Michael Coblenz,
 Michael Ernst,
 Michael Sloan,
-Paul Vines,
+Mier Ta,
+Nhat Dinh,
+Nikhil Shinde,
+Pascal Wittmann,
+Patrick Meiring,
 Paulo Barros,
+Paul Vines,
 Philip Lai,
+Ravi Roshan,
 Renato Athaydes,
 Ren\'e Just,
+Ruturaj Mohanty,
 Ryan Oblak,
+Sadaf Tajik,
 Shinya Yoshida,
 Stefan Heule,
 Steph Dietzel,
 Stuart Pernsteiner,
 Suzanne Millstein,
+Tony Wang,
 Trask Stalnaker,
+Utsav Oza,
+Vatsal Sura,
 Vlastimil Dort,
 Werner Dietl.
 %

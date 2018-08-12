@@ -36,20 +36,6 @@ examples appear in a table below.
   \<package.Outer.Inner>, is used in Java code and in messages to
   the user.
 
-\item[\refqualclass{checker/signature/qual}{BinaryName}]
-  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
-  \<package.Outer\$Inner>, is
-  the conceptual name of a type in its own \<.class> file.
-
-\item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
-  A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
-  \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
-  for example to refer to other types.  It abbreviates primitives and
-  arrays.  It uses internal form (binary names, but with \</> instead of
-  \<.>; see
-  \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS
-    \S 4.2}) for class names.  See examples below.
-
 \item[\refqualclass{checker/signature/qual}{ClassGetName}]
 \begin{sloppypar}
   The type representation used by the
@@ -61,6 +47,20 @@ examples appear in a table below.
     field descriptor}, but using
   ``\<.>''~where the field descriptor uses ``\</>''.  See examples below.
 \end{sloppypar}
+
+\item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
+  A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
+  \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
+  for example to refer to other types.  It abbreviates primitive types and
+  array types.  It uses internal form (binary names, but with \</> instead of
+  \<.>; see
+  \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS
+    \S 4.2}) for class names.  See examples below.
+
+\item[\refqualclass{checker/signature/qual}{BinaryName}]
+  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
+  \<package.Outer\$Inner>, is
+  the conceptual name of a type in its own \<.class> file.
 
 \item[\refqualclass{checker/signature/qual}{InternalForm}]
   The \emph{internal form}
@@ -101,28 +101,32 @@ Java also defines other string formats for a type:  qualified names
   \S 6.7}).  The Signature Checker does not include annotations for these.
 
 Here are examples of the supported formats:
+\label{signature-annotations-examples}
+
+
+\newcommand{\naforanon}{\emph{n/a {\smaller for anonymous class}}}
+\newcommand{\naforanonarray}{\emph{n/a {\smaller for array of anon.~class}}}
+\newcommand{\naforprim}{\emph{n/a {\smaller for primitive type}}}
+\newcommand{\naforarray}{\emph{n/a {\smaller for array type}}}
+\newcommand{\emptystring}{\emph{\smaller (empty string)}}
 
 \begin{small}
 \begin{center}
 \begin{tabular}{|l|l|l|l|l|l|}
 \hline
-\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
-int                    & int                    & int                     & I                       & int                    & int            \\
-int[][]                & int[][]                & [[I                     & [[I                     & int[][]                & int[][]        \\
-MyClass                & MyClass                & MyClass                 & LMyClass;               & MyClass                & MyClass        \\
-MyClass[]              & MyClass[]              & [LMyClass;              & [LMyClass;              & MyClass[]              & MyClass[]      \\
-\emph{n/a {\smaller
- for anonymous class}} & MyClass\$22            & MyClass\$22             & LMyClass\$22;           & MyClass\$22            & \emph{\smaller (empty string)} \\
-\emph{n/a {\smaller for
- array of anon.~class}} & MyClass\$22[]         & [LMyClass\$22;          & [LMyClass\$22;          & MyClass\$22[]          & []             \\
-java.lang.Integer      & java.lang.Integer      & java.lang.Integer       & Ljava/lang/Integer;     & java/lang/Integer      & Integer        \\
-java.lang.Integer[]    & java.lang.Integer[]    & [Ljava.lang.Integer;    & [Ljava/lang/Integer;    & java/lang/Integer[]    & Integer[]      \\
-pkg.Outer.Inner    & pkg.Outer\$Inner   & pkg.Outer\$Inner    & Lpkg/Outer\$Inner;  & pkg/Outer\$Inner   & Inner          \\
-pkg.Outer.Inner[]  & pkg.Outer\$Inner[] & [Lpkg.Outer\$Inner; & [Lpkg/Outer\$Inner; & pkg/Outer\$Inner[] & Inner[]        \\
-\emph{n/a {\smaller
- for anonymous class}} & pkg.Outer\$22      & pkg.Outer\$22       & Lpkg/Outer\$22;     & pkg/Outer\$22      & \emph{\smaller (empty string)} \\
-\emph{n/a {\smaller for
- array of anon.~class}} & pkg.Outer\$22[]   & [Lpkg.Outer\$22;    & [Lpkg/Outer\$22;    & pkg/Outer\$22[]    & []             \\
+\multicolumn{1}{|c|}{fully qualified name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
+int                 & int                  & I                    & int                 & int                 & int            \\
+int[][]             & [[I                  & [[I                  & int[][]             & int[][]             & int[][]        \\
+MyClass             & MyClass              & LMyClass;            & MyClass             & MyClass             & MyClass        \\
+MyClass[]           & [LMyClass;           & [LMyClass;           & MyClass[]           & MyClass[]           & MyClass[]      \\
+\naforanon          & MyClass\$22          & LMyClass\$22;        & MyClass\$22         & MyClass\$22         & \emptystring \\
+\naforanonarray     & [LMyClass\$22;       & [LMyClass\$22;       & MyClass\$22[]       & MyClass\$22[]       & []             \\
+java.lang.Integer   & java.lang.Integer    & Ljava/lang/Integer;  & java.lang.Integer   & java/lang/Integer   & Integer        \\
+java.lang.Integer[] & [Ljava.lang.Integer; & [Ljava/lang/Integer; & java.lang.Integer[] & java/lang/Integer[] & Integer[]      \\
+pkg.Outer.Inner     & pkg.Outer\$Inner     & Lpkg/Outer\$Inner;   & pkg.Outer\$Inner    & pkg/Outer\$Inner    & Inner          \\
+pkg.Outer.Inner[]   & [Lpkg.Outer\$Inner;  & [Lpkg/Outer\$Inner;  & pkg.Outer\$Inner[]  & pkg/Outer\$Inner[]  & Inner[]        \\
+\naforanon          & pkg.Outer\$22        & Lpkg/Outer\$22;      & pkg.Outer\$22       & pkg/Outer\$22       & \emptystring \\
+\naforanonarray     & [Lpkg.Outer\$22;     & [Lpkg/Outer\$22;     & pkg.Outer\$22[]     & pkg/Outer\$22[]     & []             \\
 \hline
 \end{tabular}
 \end{center}

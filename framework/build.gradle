@@ -23,7 +23,7 @@ dependencies {
     compileOnly project(':checker-qual')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':util')
+    testCompile project(':framework-test')
     testCompile sourceSets.testannotations.output
 }
 
@@ -31,6 +31,9 @@ shadowJar {
     description 'Creates the "fat" framework.jar in dist'
     destinationDir = file("${projectDir}/dist")
     archiveName = "framework.jar"
+    manifest {
+        attributes('Automatic-Module-Name': "org.checkerframework.framework")
+    }
 }
 
 createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")

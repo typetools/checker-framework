@@ -46,6 +46,8 @@ public @interface UnknownInitialization {
      * The type-frame down to which the expression (of this type) has been initialized at least
      * (inclusive). That is, an expression of type {@code @UnknownInitialization(T.class)} has all
      * type-frames initialized starting at {@code Object} down to (and including) {@code T}.
+     *
+     * @return the type whose fields are fully initialized
      */
     Class<?> value() default Object.class;
 }

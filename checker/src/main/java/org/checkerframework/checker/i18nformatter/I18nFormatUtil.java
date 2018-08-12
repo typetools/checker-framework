@@ -22,7 +22,11 @@ import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
  */
 public class I18nFormatUtil {
 
-    /** Throws an exception if the format is not syntactically valid. */
+    /**
+     * Throws an exception if the format is not syntactically valid.
+     *
+     * @param format the format string to parse
+     */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         MessageFormat.format(format, (Object[]) null);
     }
@@ -30,14 +34,15 @@ public class I18nFormatUtil {
     /**
      * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
      *
-     * <p>Throws an exception if the format is not syntactically valid.
+     * @param format the format string to parse
+     * @throws IllegalFormatException if the format is not syntactically valid.
      */
     public static I18nConversionCategory[] formatParameterCategories(String format)
             throws IllegalFormatException {
         tryFormatSatisfiability(format);
         I18nConversion[] cs = MessageFormatParser.parse(format);
 
-        int max_index = -1;
+        int maxIndex = -1;
         Map<Integer, I18nConversionCategory> conv = new HashMap<>();
 
         for (I18nConversion c : cs) {
@@ -49,11 +54,11 @@ public class I18nFormatUtil {
                             conv.containsKey(index)
                                     ? conv.get(index)
                                     : I18nConversionCategory.UNUSED));
-            max_index = Math.max(max_index, index);
+            maxIndex = Math.max(maxIndex, index);
         }
 
-        I18nConversionCategory[] res = new I18nConversionCategory[max_index + 1];
-        for (int i = 0; i <= max_index; i++) {
+        I18nConversionCategory[] res = new I18nConversionCategory[maxIndex + 1];
+        for (int i = 0; i <= maxIndex; i++) {
             res[i] = conv.containsKey(i) ? conv.get(i) : I18nConversionCategory.UNUSED;
         }
         return res;
@@ -62,6 +67,10 @@ public class I18nFormatUtil {
     /**
      * Returns true if the format string is satisfiable, and if the format's parameters match the
      * passed {@link I18nConversionCategory}s. Otherwise an error is thrown.
+     *
+     * @param format a format string
+     * @param cc a list of expected categories for the string's format specifiers
+     * @return true if the format string's specifiers are the given categories, in order
      */
     // TODO introduce more such functions, see RegexUtil for examples
     @I18nChecksFormat
@@ -120,7 +129,7 @@ public class I18nFormatUtil {
          */
         private static List<Integer> argumentIndices;
 
-        /** The number of subformats */
+        /** The number of subformats. */
         private static int numFormat;
 
         // Indices for segments

@@ -160,7 +160,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for a particular {@link Tree.Kind}
+     * Added an implicit rule for a particular {@link com.sun.source.tree.Tree.Kind}
      *
      * @param treeKind {@code Tree.Kind} that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeKind}
@@ -201,7 +201,9 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
-        if (tree == null || type == null) return null;
+        if (tree == null || type == null) {
+            return null;
+        }
 
         // If this tree's kind is in treeKinds, annotate the type.
         // If this tree's class or any of its interfaces are in treeClasses,

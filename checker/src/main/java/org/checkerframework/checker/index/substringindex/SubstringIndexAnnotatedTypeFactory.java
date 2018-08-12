@@ -25,9 +25,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The top qualifier of the Substring Index hierarchy */
+    /** The top qualifier of the Substring Index hierarchy. */
     public final AnnotationMirror UNKNOWN;
-    /** The bottom qualifier of the Substring Index hierarchy */
+    /** The bottom qualifier of the Substring Index hierarchy. */
     public final AnnotationMirror BOTTOM;
 
     public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
