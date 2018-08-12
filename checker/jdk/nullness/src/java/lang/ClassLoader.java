@@ -1,26 +1,26 @@
 /*
  * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 package java.lang;
 
@@ -55,7 +55,7 @@ import sun.misc.CompoundEnumeration;
 import sun.misc.Resource;
 import sun.misc.URLClassPath;
 import sun.misc.VM;
-//import sun.reflect.CallerSensitive;
+import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 import sun.reflect.misc.ReflectUtil;
 import sun.security.util.SecurityConstants;
@@ -489,12 +489,12 @@ public abstract class ClassLoader {
     private void checkPackageAccess(Class<?> cls, ProtectionDomain pd) {
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
-            /*if (ReflectUtil.isNonPublicProxyClass(cls)) {
+            if (ReflectUtil.isNonPublicProxyClass(cls)) {
                 for (Class<?> intf: cls.getInterfaces()) {
                     checkPackageAccess(intf, pd);
                 }
                 return;
-            }*/
+            }
 
             final String name = cls.getName();
             final int i = name.lastIndexOf('.');
@@ -1052,8 +1052,7 @@ public abstract class ClassLoader {
      * @since  1.1
      */
     protected final void setSigners(Class<?> c, Object[] signers) {
-        // Does not compile in Java 7 at present.
-        // c.setSigners(signers);
+        c.setSigners(signers);
     }
 
 
@@ -1178,9 +1177,7 @@ public abstract class ClassLoader {
      * @since  1.2
      */
     protected Enumeration<URL> findResources(String name) throws IOException {
-        // Does not compile in Java 7 at present.
-        // return java.util.Collections.emptyEnumeration();
-        return new Vector<URL>().elements();
+        return java.util.Collections.emptyEnumeration();
     }
 
     /**
@@ -1200,12 +1197,11 @@ public abstract class ClassLoader {
      *
      * @since   1.7
      */
-//    @CallerSensitive
+    @CallerSensitive
     protected static boolean registerAsParallelCapable() {
-        /*Class<? extends ClassLoader> callerClass =
+        Class<? extends ClassLoader> callerClass =
             Reflection.getCallerClass().asSubclass(ClassLoader.class);
-        return ParallelLoaders.register(callerClass);*/
-        return true;
+        return ParallelLoaders.register(callerClass);
     }
 
     /**
@@ -1365,14 +1361,14 @@ public abstract class ClassLoader {
      *
      * @since  1.2
      */
-//    @CallerSensitive
+    @CallerSensitive
     public final @Nullable ClassLoader getParent() {
         if (parent == null)
             return null;
         SecurityManager sm = System.getSecurityManager();
-        /*if (sm != null) {
+        if (sm != null) {
             checkClassLoaderPermission(this, Reflection.getCallerClass());
-        }*/
+        }
         return parent;
     }
 
@@ -1431,16 +1427,16 @@ public abstract class ClassLoader {
      *
      * @revised  1.4
      */
-//    @CallerSensitive
+    @CallerSensitive
     public static @Nullable ClassLoader getSystemClassLoader() {
         initSystemClassLoader();
         if (scl == null) {
             return null;
         }
         SecurityManager sm = System.getSecurityManager();
-        /*if (sm != null) {
+        if (sm != null) {
             checkClassLoaderPermission(scl, Reflection.getCallerClass());
-        }*/
+        }
         return scl;
     }
 
@@ -1511,9 +1507,7 @@ public abstract class ClassLoader {
             return null;
         }
         // Circumvent security check since this is package-private
-        // Does not compile in Java 7 at present.
-        // return caller.getClassLoader0();
-        return null;
+        return caller.getClassLoader0();
     }
 
     static void checkClassLoaderPermission(ClassLoader cl, Class<?> caller) {
@@ -1582,7 +1576,7 @@ public abstract class ClassLoader {
     protected Package definePackage(String name, @Nullable String specTitle,
                                     @Nullable String specVersion, @Nullable String specVendor,
                                     @Nullable String implTitle, @Nullable String implVersion,
-                                    String implVendor, @Nullable URL sealBase)
+                                    @Nullable String implVendor, @Nullable URL sealBase)
         throws IllegalArgumentException
     {
         synchronized (packages) {
@@ -1590,10 +1584,9 @@ public abstract class ClassLoader {
             if (pkg != null) {
                 throw new IllegalArgumentException(name);
             }
-            // Does not compile in Java 7 at present.
-            // pkg = new Package(name, specTitle, specVersion, specVendor,
-            //                   implTitle, implVersion, implVendor,
-            //                   sealBase, this);
+            pkg = new Package(name, specTitle, specVersion, specVendor,
+                              implTitle, implVersion, implVendor,
+                              sealBase, this);
             packages.put(name, pkg);
             return pkg;
         }
@@ -1620,8 +1613,7 @@ public abstract class ClassLoader {
             if (parent != null) {
                 pkg = parent.getPackage(name);
             } else {
-                // Does not compile in Java 7 at present.
-                // pkg = Package.getSystemPackage(name);
+                pkg = Package.getSystemPackage(name);
             }
             if (pkg != null) {
                 synchronized (packages) {
@@ -1655,9 +1647,7 @@ public abstract class ClassLoader {
         if (parent != null) {
             pkgs = parent.getPackages();
         } else {
-            // Does not compile in Java 7 at present
-            // pkgs = Package.getSystemPackages();
-            pkgs = null;
+            pkgs = Package.getSystemPackages();
         }
         if (pkgs != null) {
             for (int i = 0; i < pkgs.length; i++) {
@@ -1847,10 +1837,10 @@ public abstract class ClassLoader {
             if (loadLibrary0(fromClass, libfile)) {
                 return;
             }
-            /*libfile = ClassLoaderHelper.mapAlternativeName(libfile);
+            libfile = ClassLoaderHelper.mapAlternativeName(libfile);
             if (libfile != null && loadLibrary0(fromClass, libfile)) {
                 return;
-            }*/
+            }
         }
         if (loader != null) {
             for (int i = 0 ; i < usr_paths.length ; i++) {
@@ -1859,10 +1849,10 @@ public abstract class ClassLoader {
                 if (loadLibrary0(fromClass, libfile)) {
                     return;
                 }
-                /*libfile = ClassLoaderHelper.mapAlternativeName(libfile);
+                libfile = ClassLoaderHelper.mapAlternativeName(libfile);
                 if (libfile != null && loadLibrary0(fromClass, libfile)) {
                     return;
-                }*/
+                }
             }
         }
         // Oops, it failed

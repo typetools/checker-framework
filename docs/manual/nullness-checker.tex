@@ -1198,7 +1198,7 @@ helper routine that is called by constructor.  For example:
     }
 
     // Verify that the representation invariants are satisfied.
-    // Works as long as the MyClass fields are initialized, even if the reciever's
+    // Works as long as the MyClass fields are initialized, even if the receiver's
     // class is a subclass of MyClass and not all of the subclass fields are initialized.
     private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
       ...

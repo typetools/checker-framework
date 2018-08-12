@@ -6,10 +6,14 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a {@link FieldDescriptor field descriptor} (JVM type format) as defined in the <a
+ * Represents a {@link FieldDescriptor field descriptor} for a primitive or for an array of whose
+ * base type is primitive or in the unnamed package.
+ *
+ * <p>Examples: I, [[J, MyClass, [LMyClass;
+ *
+ * <p>Field descriptor (JVM type format) is defined in the <a
  * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2">Java Virtual
- * Machine Specification, section 4.3.2</a>, but <b>not</b> for all array types: only for an array
- * type whose base type is either a primitive or in the unnamed package. Also non-array primitives.
+ * Machine Specification, section 4.3.2</a>.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
