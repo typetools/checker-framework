@@ -737,6 +737,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     @Override
+    public Boolean visitPrimitive_Typevar(
+            AnnotatedPrimitiveType subtype, AnnotatedTypeVariable supertype, Void p) {
+        return AtmCombo.accept(subtype, supertype.getUpperBound(), null, this);
+    }
+
+    @Override
     public Boolean visitPrimitive_Wildcard(
             AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
         if (supertype.atypeFactory.ignoreUninferredTypeArguments
@@ -970,6 +976,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         if (supertype.getKind() == TypeKind.DECLARED
                 && TypesUtils.getTypeElement(supertype.getUnderlyingType()).getKind()
                         == ElementKind.INTERFACE) {
+            // Make sure the upper bound is no wildcard or type variable
+            while (upperBound.getKind() == TypeKind.TYPEVAR
+                    || upperBound.getKind() == TypeKind.WILDCARD) {
+                if (upperBound.getKind() == TypeKind.TYPEVAR) {
+                    upperBound = ((AnnotatedTypeVariable) upperBound).getUpperBound();
+                }
+                if (upperBound.getKind() == TypeKind.WILDCARD) {
+                    upperBound = ((AnnotatedWildcardType) upperBound).getExtendsBound();
+                }
+            }
             // If the supertype is an interface, only compare the primary annotations.
             // The actual type argument could implement the interface and the bound of
             // the type variable must not implement the interface.

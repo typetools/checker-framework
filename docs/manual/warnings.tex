@@ -164,7 +164,8 @@ sometimes desirable to refactor the code.  You might extract an expression
 into a local variable, so that warnings can be suppressed just for that
 local variable's initializer expression.  Likewise, you might extract some
 code into a separate method, so that warnings can be suppressed just for
-its body.
+its body.  Or, you can use \<@AssumeAssertion> on an \<assert> statement;
+see Section~\ref{assumeassertion}.
 
 As an example, consider suppressing a warning at a cast that you know is
 safe.  Here is an example that uses the Tainting Checker
@@ -268,7 +269,7 @@ the \<@SuppressWarnings> annotation.  It will also help you audit your code
 to verify all the warning suppressions.  (The code is correct only if the
 checker issues no warnings \emph{and} each \<@SuppressWarnings> is correct.)
 
-Here are some terse examples from \href{https://mernst.github.io/plume-lib/}{plume-lib}:
+Here are some terse examples from libraries in \href{https://github.com/plume-lib/}{plume-lib}:
 
 \begin{Verbatim}
 @SuppressWarnings("purity") // side effect to local state of type BitSet

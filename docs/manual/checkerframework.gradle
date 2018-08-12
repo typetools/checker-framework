@@ -18,19 +18,21 @@ configurations {
 
 // By default, use Checker Framework from Maven Central.
 // Pass -PcfLocal to use a locally-built version of the Checker Framework.
-if (!rootProject.hasProperty('cfLocal')) {
-  dependencies {
-    ext.checkerFrameworkVersion = '2.5.3'
+dependencies {
+  if (!rootProject.hasProperty('cfLocal')) {
+    ext.checkerFrameworkVersion = '2.5.4'
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
     checkerFrameworkCheckerJar "org.checkerframework:checker:${checkerFrameworkVersion}"
     implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-  }
-} else {
-  dependencies {
+  } else if (System.getenv("CHECKERFRAMEWORK") == null) {
+    throw new GradleException("Environment variable CHECKERFRAMEWORK is not set")
+  } else if (! file(System.getenv("CHECKERFRAMEWORK")).exists()) {
+    throw new GradleException("Environment variable CHECKERFRAMEWORK is set to non-existent directory " + System.getenv("CHECKERFRAMEWORK"));
+  } else {
     ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
     checkerFrameworkAnnotatedJDK fileTree(dir: "${ext.checkerframeworkdist}", include: "jdk8.jar")
     checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
-    compile fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
+    implementation fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
   }
 }
 
