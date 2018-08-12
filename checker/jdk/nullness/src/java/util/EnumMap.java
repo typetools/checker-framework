@@ -433,13 +433,11 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * @return a collection view of the values contained in this map
      */
     public Collection<V> values() {
-        throw new RuntimeException("skeleton method");
-        // Does not compile with actual version, java.util.AbstractMap is reduced to skeleton methods
-        // Collection<V> vs = values;
-        // if (vs != null)
-        //     return vs;
-        // else
-        //     return values = new Values();
+        Collection<V> vs = values;
+        if (vs != null)
+            return vs;
+        else
+            return values = new Values();
     }
 
     private class Values extends AbstractCollection<V> {
