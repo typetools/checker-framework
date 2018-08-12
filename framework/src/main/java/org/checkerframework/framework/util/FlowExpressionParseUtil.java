@@ -169,10 +169,10 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<String, String> parseMethodCall(
             String sWithFormalParamNames, String s, ArrayList<String> argumentList) {
-        Expression e = new Expression();
+        Expression e;
         try {
             e = parseExpression(sWithFormalParamNames);
-        } catch (ParseProblemException e) {
+        } catch (ParseProblemException pe) {
             return null;
         }
         if (e.getClass().equals(FieldAccessExpr.class)) {
@@ -258,20 +258,19 @@ public class FlowExpressionParseUtil {
         }
 
         // parses member select whose receiver is a string literal
-        Expression e = new Expression();
         try {
-            e = parseExpression(s);
-        } catch (ParseProblemException e) {
-            // if format of the expression is such that it cannot be parsed by JavaParser
-        }
-        if (e.getClass().equals(MethodCallExpr.class)) {
-            MethodCallExpr methodCallExpr = (MethodCallExpr) e;
-            String mceString = methodCallExpr.toString();
-            String receiver = methodCallExpr.getScope().get().toString();
-            String remaining = mceString.substring(receiver.length(), mceString.length());
-            if (receiver.charAt(0) == '\"') {
-                return Pair.of(receiver, remaining.substring(1));
+            Expression e = parseExpression(s);
+            if (e.getClass().equals(MethodCallExpr.class)) {
+                MethodCallExpr methodCallExpr = (MethodCallExpr) e;
+                String mceString = methodCallExpr.toString();
+                String receiver = methodCallExpr.getScope().get().toString();
+                String remaining = mceString.substring(receiver.length(), mceString.length());
+                if (receiver.charAt(0) == '\"') {
+                    return Pair.of(receiver, remaining.substring(1));
+                }
             }
+        } catch (ParseProblemException pe) {
+            // if format of the expression is such that it cannot be parsed by JavaParser
         }
 
         // parses member selects within brackets
@@ -356,7 +355,7 @@ public class FlowExpressionParseUtil {
         }
         try {
             Expression e = parseExpression(s);
-        } catch (ParseProblemException e) {
+        } catch (ParseProblemException pe) {
             return false;
         }
         return parseExpression(s).getClass().equals(IntegerLiteralExpr.class);
@@ -373,7 +372,7 @@ public class FlowExpressionParseUtil {
         }
         try {
             Expression e = parseExpression(s);
-        } catch (ParseProblemException e) {
+        } catch (ParseProblemException pe) {
             return false;
         }
         return parseExpression(s).getClass().equals(LongLiteralExpr.class);
@@ -393,7 +392,7 @@ public class FlowExpressionParseUtil {
         }
         try {
             Expression e = parseExpression(s);
-        } catch (ParseProblemException e) {
+        } catch (ParseProblemException pe) {
             return false;
         }
         return parseExpression(s).getClass().equals(StringLiteralExpr.class);
@@ -458,7 +457,7 @@ public class FlowExpressionParseUtil {
     private static boolean isIdentifier(String s, FlowExpressionContext context) {
         try {
             SimpleName sn = parseSimpleName(s);
-        } catch (ParseProblemException e) {
+        } catch (ParseProblemException pe) {
             return false;
         }
         return true;
@@ -603,15 +602,14 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<Pair<String, String>, String> parseMethodCall(
             String s, ArrayList<String> argumentList) {
-        Expression e = new Expression();
+        Expression e;
         try {
             e = parseExpression(s);
-        } catch (Exception e) {
+        } catch (Exception pe) {
             return null;
         }
         if (e.getClass().equals(MethodCallExpr.class)) {
             MethodCallExpr methodCallExpr = (MethodCallExpr) e;
-
             String arguments = "";
             for (Expression exp : methodCallExpr.getArguments()) {
                 String argStr = exp.toString();
@@ -628,20 +626,24 @@ public class FlowExpressionParseUtil {
             if (methodCallExpr.getScope().isPresent()) {
                 remaining = "." + methodName + "(" + arguments + ")";
                 Expression scopeExpr = methodCallExpr.getScope().get();
-                MethodCallExpr scope = (MethodCallExpr) scopeExpr;
-                String argumentsScope = "";
-                for (Expression exp : scope.getArguments()) {
-                    String argStr = exp.toString();
-                    argStr = asFormalParameter(argStr, argumentList);
-                    if (argumentsScope == "") { // interned: initialized to literal string
-                        argumentsScope = argStr;
-                    } else {
-                        argumentsScope = argumentsScope + ", " + argStr;
+                if (scopeExpr.getClass().equals(MethodCallExpr.class)) {
+                    MethodCallExpr scope = (MethodCallExpr) scopeExpr;
+                    String argumentsScope = "";
+                    for (Expression exp : scope.getArguments()) {
+                        String argStr = exp.toString();
+                        argStr = asFormalParameter(argStr, argumentList);
+                        if (argumentsScope == "") { // interned: initialized to literal string
+                            argumentsScope = argStr;
+                        } else {
+                            argumentsScope = argumentsScope + ", " + argStr;
+                        }
                     }
+                    String scopeName = scope.getName().toString();
+                    scopeName = asFormalParameter(scopeName, argumentList);
+                    return Pair.of(Pair.of(scopeName, argumentsScope), remaining);
+                } else {
+                    return null;
                 }
-                String scopeName = scope.getName().toString();
-                scopeName = asFormalParameter(scopeName, argumentList);
-                return Pair.of(Pair.of(scopeName, argumentsScope), remaining);
             } else {
                 return Pair.of(Pair.of(methodName, arguments), remaining);
             }
