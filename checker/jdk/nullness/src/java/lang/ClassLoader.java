@@ -683,8 +683,6 @@ public abstract class ClassLoader {
         return source;
     }
 
-    @SuppressWarnings("nullness:dereference.of.nullable") // pd.getCodeSource is de-referenced only
-    // when it is known to be non-null
     private void postDefineClass(Class<?> c, ProtectionDomain pd)
     {
         if (pd.getCodeSource() != null) {
