@@ -212,6 +212,9 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an array containing all of the elements in this collection
      */
+    // The Nullness Checker does NOT use this signature; rather, the checker has hard-coded rules
+    // for toArray(), because the most useful type for toArray() is not expressible in the surface
+    // syntax that the nullness annotations support.
     Object[] toArray();
 
     /**
@@ -257,6 +260,9 @@ public interface Collection<E> extends Iterable<E> {
      *         this collection
      * @throws NullPointerException if the specified array is null
      */
+    // The Nullness Checker does NOT use this signature; rather, the checker has hard-coded rules
+    // for toArray(), because the most useful type for toArray() is not expressible in the surface
+    // syntax that the nullness annotations support.
     <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
 
     // Modification Operations
