@@ -1,5 +1,7 @@
 package org.checkerframework.checker.guieffect;
 
+import static org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -352,12 +354,10 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         Void result = super.visitMethodInvocation(node, p);
 
         // Check arguments to this method invocation for UI-lambdas, this must be re-checked after
-        // visiting the lambda
-        // body due to inference.
+        // visiting the lambda body due to inference.
         List<? extends ExpressionTree> args = node.getArguments();
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.methodType;
         List<AnnotatedTypeMirror> argsTypes =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         for (int i = 0; i < args.size(); ++i) {

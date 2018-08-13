@@ -1,5 +1,7 @@
 package org.checkerframework.common.basetype;
 
+import static org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -954,10 +956,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitMethodInvocation(node, p);
         }
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
-        List<AnnotatedTypeMirror> typeargs = mfuPair.second;
+        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.methodType;
+        List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
 
         if (!atypeFactory.ignoreUninferredTypeArguments) {
             for (AnnotatedTypeMirror typearg : typeargs) {
@@ -1237,10 +1238,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitNewClass(node, p);
         }
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse =
-                atypeFactory.constructorFromUse(node);
-        AnnotatedExecutableType constructor = fromUse.first;
-        List<AnnotatedTypeMirror> typeargs = fromUse.second;
+        ParameterizedMethodType fromUse = atypeFactory.constructorFromUse(node);
+        AnnotatedExecutableType constructor = fromUse.methodType;
+        List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
         List<AnnotatedTypeMirror> params =
@@ -2590,7 +2590,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invocationType =
                 atypeFactory.methodFromUse(
                                 memberReferenceTree, compileTimeDeclaration, enclosingType)
-                        .first;
+                        .methodType;
 
         if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
             // Type argument inference is required, skip check.

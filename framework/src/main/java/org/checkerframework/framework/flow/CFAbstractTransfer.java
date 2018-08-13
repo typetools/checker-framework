@@ -898,7 +898,10 @@ public abstract class CFAbstractTransfer<
     public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
         if (shouldPerformWholeProgramInference(n.getTree())) {
             ExecutableElement constructorElt =
-                    analysis.getTypeFactory().constructorFromUse(n.getTree()).first.getElement();
+                    analysis.getTypeFactory()
+                            .constructorFromUse(n.getTree())
+                            .methodType
+                            .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()
                     .updateInferredConstructorParameterTypes(
