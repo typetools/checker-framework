@@ -26,12 +26,13 @@
 package java.util;
 
 import java.util.Map.Entry;
+import sun.misc.SharedSecrets;
+
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
-import sun.misc.SharedSecrets;
 
 /**
  * A specialized {@link Map} implementation for use with enum type keys.  All
@@ -339,8 +340,8 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * @throws NullPointerException the specified map is null, or if
      *     one or more keys in the specified map are null
      */
-    @SuppressWarnings("nullness:contracts.precondition.override.invalid") // Variables keyUniverse and
-    // vals are private class members for EnumMap and are absent in AbstractMap.
+    @SuppressWarnings("nullness:contracts.precondition.override.invalid") // Variables keyUniverse
+    // and vals are private class members for EnumMap and are absent in AbstractMap.
     @RequiresNonNull({"keyUniverse", "vals"})
     public void putAll(@UnknownInitialization EnumMap<K, V> this, Map<? extends K, ? extends V> m) {
         if (m instanceof EnumMap) {
