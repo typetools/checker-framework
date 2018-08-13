@@ -5,9 +5,15 @@ uses PDF conversions of each SVG.
 SVG can be edited using a variety of tools, such as Inkscape, Visio, and
 LibreOffice/OpenOffice.
 
+https://www.draw.io is a good tool for easily editing these figures, but
+the svg files it exports don't convert to pdf with correct formatting if
+they have multiline text, and the figures might require fine tuning with
+inkscape afterwards.
+
 To create a new image, please copy an existing SVG and make modifications
 to it, so that the boxes and arrows you create have the same size and font
 as in other SVGs.
+
 
 To include an image in your chapter, use for example:
 
