@@ -26,9 +26,9 @@ import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -866,17 +866,17 @@ public class FlowExpressionParseUtil {
             return -1;
         }
         boolean inString = false;
-        Stack<Integer> openBracket = new Stack<Integer>();
+        ArrayDeque<Integer> openBracket = new ArrayDeque<Integer>();
         for (int i = openPos; i < s.length(); i++) {
             if (s.charAt(i) == open) {
                 if (!inString) {
-                    openBracket.push(i);
+                    openBracket.addFirst(i);
                 }
             }
             if (s.charAt(i) == close) {
                 if (!inString) {
-                    openBracket.pop();
-                    if (openBracket.empty()) {
+                    openBracket.removeFirst();
+                    if (openBracket.isEmpty()) {
                         return i;
                     }
                 }
