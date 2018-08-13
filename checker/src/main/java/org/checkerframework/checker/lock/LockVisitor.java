@@ -1,5 +1,6 @@
 package org.checkerframework.checker.lock;
 
+import static org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import static org.checkerframework.javacutil.TreeUtils.getReceiverTree;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -65,7 +66,6 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -635,9 +635,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // matches
         // those in corresponding locations on the method call site.
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.methodType;
 
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());

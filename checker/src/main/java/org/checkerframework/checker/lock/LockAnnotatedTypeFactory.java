@@ -1,5 +1,7 @@
 package org.checkerframework.checker.lock;
 
+import static org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -569,13 +571,12 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
+    public ParameterizedMethodType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree, methodElt, receiverType);
+        ParameterizedMethodType mType = super.methodFromUse(tree, methodElt, receiverType);
 
         if (tree.getKind() != Kind.METHOD_INVOCATION) {
-            return mfuPair;
+            return mType;
         }
 
         // If a method's formal return type is annotated with @GuardSatisfied(index), look for the
@@ -584,17 +585,17 @@ public class LockAnnotatedTypeFactory
         // the call site (e.g. @GuardedBy("someLock") and replace the return type at the call site
         // with this type.
 
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        AnnotatedExecutableType invokedMethod = mType.methodType;
 
         if (invokedMethod.getElement().getKind() == ElementKind.CONSTRUCTOR) {
-            return mfuPair;
+            return mType;
         }
 
         AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType();
 
         if (methodDefinitionReturn == null
                 || !methodDefinitionReturn.hasAnnotation(GuardSatisfied.class)) {
-            return mfuPair;
+            return mType;
         }
 
         int returnGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReturn);
@@ -604,7 +605,7 @@ public class LockAnnotatedTypeFactory
         // index, an error is reported by LockVisitor.visitMethod.
 
         if (returnGuardSatisfiedIndex == -1) {
-            return mfuPair;
+            return mType;
         }
 
         // Find the receiver or first parameter whose @GS index matches that of the return type.
@@ -617,7 +618,7 @@ public class LockAnnotatedTypeFactory
                         invokedMethod.getReceiverType() /* the method definition receiver*/,
                         returnGuardSatisfiedIndex,
                         receiverType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
-            return mfuPair;
+            return mType;
         }
 
         List<? extends ExpressionTree> methodInvocationTreeArguments =
@@ -632,11 +633,11 @@ public class LockAnnotatedTypeFactory
                     returnGuardSatisfiedIndex,
                     getAnnotatedType(methodInvocationTreeArguments.get(i))
                             .getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
-                return mfuPair;
+                return mType;
             }
         }
 
-        return mfuPair;
+        return mType;
     }
 
     /**
