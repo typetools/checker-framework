@@ -354,8 +354,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         Void result = super.visitMethodInvocation(node, p);
 
         // Check arguments to this method invocation for UI-lambdas, this must be re-checked after
-        // visiting the lambda
-        // body due to inference.
+        // visiting the lambda body due to inference.
         List<? extends ExpressionTree> args = node.getArguments();
         ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
         AnnotatedExecutableType invokedMethod = mType.methodType;
