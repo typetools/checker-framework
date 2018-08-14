@@ -19,18 +19,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * Determines the nullness type of calls to {@link java.util.Collection#toArray()}.
  *
  * <p>The semantics of {@link Collection#toArray()} and {@link Collection#toArray(Object[])
- * Collection.toArray(T[])} cannot be captured by the nullness type system syntax. Namely, the
- * nullness of the returned array component depends on the receiver type argument. So
+ * Collection.toArray(T[])} cannot be captured by the nullness type system syntax.
  *
- * <pre>{@code
- * Collection<@NonNull String> c1 = ...;
- * c1.toArray();    // returns @NonNull Object []
- *
- * Collection<@Nullable String> c2 = ...;
- * c2.toArray();    // returns @Nullable Object []
- * }</pre>
- *
- * In the case of {@link Collection#toArray(Object[]) Collection.toArray(T[])}, the type of the
+ * <p>In the case of {@link Collection#toArray(Object[]) Collection.toArray(T[])}, the type of the
  * returned array depends on the passed parameter as well as its size. In particular, the returned
  * array component is of type {@code @NonNull} if the following conditions hold:
  *
@@ -79,11 +70,7 @@ public class CollectionToArrayHeuristics {
      * @param method invoked method type
      */
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
-        if (TreeUtils.isMethodInvocation(tree, collectionToArrayObject, processingEnv)) {
-            // simple case of collection.toArray()
-            boolean receiverIsNonNull = isNonNullReceiver(tree);
-            setComponentNullness(receiverIsNonNull, method.getReturnType());
-        } else if (TreeUtils.isMethodInvocation(tree, collectionToArrayE, processingEnv)) {
+        if (TreeUtils.isMethodInvocation(tree, collectionToArrayE, processingEnv)) {
             assert !tree.getArguments().isEmpty() : tree;
             Tree argument = tree.getArguments().get(0);
             boolean argIsArrayCreation =
