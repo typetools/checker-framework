@@ -1,7 +1,6 @@
 package org.checkerframework.common.reflection;
 
 import static com.sun.tools.javac.code.TypeTag.CLASS;
-import static org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -46,6 +45,7 @@ import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -139,9 +139,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 debugReflection(
                         "Spoofed tree's arguments did not match declaration"
                                 + resolvedTree.toString());
-                // Calling methodFromUse on these sorts of trees will cause an
-                // assertion to fail
-                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
+                // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
             ParameterizedMethodType resolvedResult = factory.methodFromUse(resolvedTree);
@@ -272,9 +271,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 debugReflection(
                         "Spoofed tree's arguments did not match declaration"
                                 + resolvedTree.toString());
-                // Calling methodFromUse on these sorts of trees will cause an
-                // assertion to fail
-                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
+                // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
             ParameterizedMethodType resolvedResult = factory.constructorFromUse(resolvedTree);
