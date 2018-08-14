@@ -139,9 +139,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 debugReflection(
                         "Spoofed tree's arguments did not match declaration"
                                 + resolvedTree.toString());
-                // Calling methodFromUse on these sorts of trees will cause an
-                // assertion to fail
-                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
+                // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
             ParameterizedMethodType resolvedResult = factory.methodFromUse(resolvedTree);
@@ -272,9 +271,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 debugReflection(
                         "Spoofed tree's arguments did not match declaration"
                                 + resolvedTree.toString());
-                // Calling methodFromUse on these sorts of trees will cause an
-                // assertion to fail
-                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
+                // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
             ParameterizedMethodType resolvedResult = factory.constructorFromUse(resolvedTree);
