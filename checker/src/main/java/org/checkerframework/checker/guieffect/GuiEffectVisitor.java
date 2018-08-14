@@ -474,9 +474,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             case METHOD_INVOCATION:
                 MethodInvocationTree invocationTree = (MethodInvocationTree) tree;
                 List<? extends ExpressionTree> args = invocationTree.getArguments();
-                Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                        atypeFactory.methodFromUse(invocationTree);
-                AnnotatedExecutableType invokedMethod = mfuPair.first;
+                ParameterizedMethodType mType = atypeFactory.methodFromUse(invocationTree);
+                AnnotatedExecutableType invokedMethod = mType.methodType;
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(
                                 atypeFactory, invokedMethod, invocationTree.getArguments());

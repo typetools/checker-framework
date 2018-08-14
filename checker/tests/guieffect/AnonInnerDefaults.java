@@ -213,8 +213,8 @@ public class AnonInnerDefaults {
                                 e.dangerous(); // should be okay
                             }
                         });
-        // :: error: (assignment.type.incompatible)
         PolyIface maybeUIInstance =
+                // :: error: (assignment.type.incompatible)
                 (maybe()
                         ? new PolyIface() { // Anonymous inner class inference for @UI
                             @Override
