@@ -27,7 +27,7 @@ env:
 #TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=jdk.jar
 #TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=downstream
 #TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=plume-lib
-    - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
+#    - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
