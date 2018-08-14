@@ -18,12 +18,10 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Determines the nullness type of calls to {@link java.util.Collection#toArray()}.
  *
- * <p>The semantics of {@link Collection#toArray()} and {@link Collection#toArray(Object[])
- * Collection.toArray(T[])} cannot be captured by the nullness type system syntax.
- *
- * <p>In the case of {@link Collection#toArray(Object[]) Collection.toArray(T[])}, the type of the
- * returned array depends on the passed parameter as well as its size. In particular, the returned
- * array component is of type {@code @NonNull} if the following conditions hold:
+ * <p>The semantics of {@link Collection#toArray(Object[]) Collection.toArray(T[])} cannot be
+ * captured by the nullness type system syntax. The nullness type of the returned array depends on
+ * the size of the passed parameter. In particular, the returned array component is of type
+ * {@code @NonNull} if the following conditions hold:
  *
  * <ol>
  *   <li value="1">The receiver collection type argument is {@code NonNull}, and
