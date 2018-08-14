@@ -43,10 +43,12 @@ public class Conversion {
 
         @DotSeparatedIdentifiers
         String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+            // :: error: (return.type.incompatible)
             return bn.replace('$', '.');
         }
 
         @FullyQualifiedName String binaryNameToFullyQualifiedName(@BinaryName String bn) {
+            // :: error: (return.type.incompatible)
             return bn.replace('$', '.');
         }
     }
@@ -92,10 +94,12 @@ public class Conversion {
 
         @DotSeparatedIdentifiers
         String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+            // :: error: (return.type.incompatible)
             return bn.replace("$", ".");
         }
 
         @FullyQualifiedName String binaryNameToFullyQualifiedName(@BinaryName String bn) {
+            // :: error: (return.type.incompatible)
             return bn.replace("$", ".");
         }
     }

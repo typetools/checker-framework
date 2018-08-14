@@ -157,9 +157,6 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if ((oldChar == '/' && newChar == '.')
                         && receiverType.getAnnotation(InternalForm.class) != null) {
                     type.replaceAnnotation(BINARY_NAME);
-                } else if ((oldChar == '$' && newChar == '.')
-                        && receiverType.getAnnotation(BinaryName.class) != null) {
-                    type.replaceAnnotation(DOT_SEPARATED_IDENTIFIERS);
                 }
             }
             return super.visitMethodInvocation(tree, type);
