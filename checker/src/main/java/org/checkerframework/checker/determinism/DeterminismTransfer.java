@@ -16,6 +16,20 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/**
+ * Transfer function for the determinism type-system.
+ *
+ * <p>Performs type refinement for the following:
+ *
+ * <ol>
+ *   <li>When sort is called on {@code @OrderNonDet List}, the receiver is type refined as
+ *       {@code @Det}.
+ *   <li>The first argument of Arrays.sort() and Arrays.parallelSort is type refined
+ *       from @OrderNonDet to @Det.
+ *   <li>The first argument of Collections.sort() and Collections.shuffle is type refined
+ *       from @OrderNonDet to @Det.
+ * </ol>
+ */
 public class DeterminismTransfer extends CFTransfer {
     public DeterminismTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
@@ -37,7 +51,7 @@ public class DeterminismTransfer extends CFTransfer {
 
         boolean isList = factory.isList(underlyingType);
         if (isList) {
-            String methName = getMethodName(n.toString(), receiver);
+            String methName = getMethodName(n, receiver);
             if (methName.equals("sort") && receiver.getType().getAnnotationMirrors().size() > 0) {
                 // Check if receiver has OrderNonDet annotation
                 AnnotationMirror receiverAnno =
@@ -55,7 +69,7 @@ public class DeterminismTransfer extends CFTransfer {
         // Type refinement for Arrays sort
         boolean isArrays = factory.isArrays(underlyingType);
         if (isArrays) {
-            String methName = getMethodName(n.toString(), receiver);
+            String methName = getMethodName(n, receiver);
             if ((methName.equals("sort") || methName.equals("parallelSort"))) {
                 AnnotatedTypeMirror firstArg =
                         factory.getAnnotatedType(n.getTree().getArguments().get(0));
@@ -86,7 +100,7 @@ public class DeterminismTransfer extends CFTransfer {
         // Type refinement for Collections
         boolean isCollections = factory.isCollections(underlyingType);
         if (isCollections) {
-            String methName = getMethodName(n.toString(), receiver);
+            String methName = getMethodName(n, receiver);
             // refinement for sort
             if (methName.equals("sort")) {
                 AnnotatedTypeMirror firstArg =
@@ -117,7 +131,14 @@ public class DeterminismTransfer extends CFTransfer {
         return result;
     }
 
-    String getMethodName(String n, Node receiver) {
+    /**
+     * Extracts just the method name from MethodInvocationNode.
+     *
+     * @param n MethodInvocationNode
+     * @param receiver Node
+     * @return String method name
+     */
+    String getMethodName(MethodInvocationNode n, Node receiver) {
         String methodName = n.toString();
         String methodnameWithoutReceiver = methodName.substring(receiver.toString().length());
         int startIndex = methodnameWithoutReceiver.indexOf(".");

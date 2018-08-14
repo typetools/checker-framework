@@ -43,10 +43,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Reports errors for the following invalid annotations: 1) When a non-collection is annotated
-     * as {@code @OrderNonDet}. 2) When the annotation on type parameter of a collection is a
-     * supertype of the annotation on the collection. Example: {@code @Det List<@OrderNonDet
-     * String>}.
+     * Reports errors for the following invalid annotations:
+     *
+     * <ol>
+     *   <li>When a non-collection is annotated as {@code @OrderNonDet}.
+     *   <li>When the annotation on type parameter of a collection is a supertype of the annotation
+     *       on the collection. Example: {@code @Det List<@OrderNonDet String>}.
+     * </ol>
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)
@@ -142,7 +145,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
-     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     * @param errorKey the error message to use if the check fails (must be a compiler message key)
      */
     @Override
     protected void commonAssignmentCheck(
@@ -170,11 +173,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     /**
      * Checks for invalid assignment to an array element and reports an error. This is to prevent
      * side-effects to arrays. Example {@Code @Det int @Det [] x; @NonDet int i; x[i] = y} is
-     * flagged as an error
+     * flagged as an error.
      *
      * @param varTree the AST node for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
-     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     * @param errorKey the error message to use if the check fails (must be a compiler message key)
      */
     @Override
     protected void commonAssignmentCheck(
