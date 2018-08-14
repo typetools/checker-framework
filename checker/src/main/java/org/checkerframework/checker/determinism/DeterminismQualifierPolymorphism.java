@@ -11,16 +11,25 @@ import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** Resolves polymorphic annotations for the determinism type-system. */
 public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphism {
 
     Elements elements;
     ProcessingEnvironment env;
     DeterminismAnnotatedTypeFactory factory;
-    AnnotationMirror POLYDET_USE;
     AnnotationMirror POLYDET;
+    AnnotationMirror POLYDET_USE;
     AnnotationMirror POLYDET_UP;
     AnnotationMirror POLYDET_DOWN;
 
+    /**
+     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the determinism checker for
+     * querying type qualifiers and the {@link DeterminismAnnotatedTypeFactory} for getting
+     * annotated types.
+     *
+     * @param env the processing environment
+     * @param factory the factory for the current checker
+     */
     public DeterminismQualifierPolymorphism(
             ProcessingEnvironment env, DeterminismAnnotatedTypeFactory factory) {
         super(env, factory);
@@ -30,9 +39,16 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         POLYDET_USE = factory.POLYDET_USE;
         POLYDET_UP = factory.POLYDET_UP;
         POLYDET_DOWN = factory.POLYDET_DOWN;
-        //        this.polyQuals.put(factory.POLYDET_USE, factory.NONDET);
     }
 
+    /**
+     * Replaces {@code @PolyDet("up")} with{@code @NonDet} if it resolves to {@code OrderNonDet}.
+     * Replaces {@code @PolyDet("down")} with{@code @Det} if it resolves to {@code OrderNonDet}.
+     * Replaces {@code @PolyDet("use")} with the same annotation that {@code @PolyDet} resolves to.
+     *
+     * @param type The polymorphic type to be replaced
+     * @param matches The Set of AnnotationMirrors that can replace 'type'
+     */
     @Override
     protected void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches) {
@@ -64,6 +80,13 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
     }
 
+    /**
+     * Helper method that replaces {@code @OrderNonDet} with either {@code @Det} (in case of
+     * {@code @PolyDet("up")}) or {@code @NonDet} (in case of {@code @PolyDet("down")}).
+     *
+     * @param type The polymorphic type to be replaced
+     * @param replaceType The type to be replaced with
+     */
     private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
         type.replaceAnnotation(replaceType);
@@ -74,9 +97,9 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             isCollIter = true;
         }
         while (isCollIter) {
-            // Replace all @OrderNonDet type parameters with @Det or @NonDet
             Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
-            // Iterate over all the type parameters of this collection
+            // Iterate over all the type parameters of this collection and
+            // replace all @OrderNonDet type parameters with 'replaceType'.
             while (it.hasNext()) {
                 AnnotatedTypeMirror argType = it.next();
                 if (argType.hasAnnotation(factory.ORDERNONDET)) {
@@ -98,29 +121,5 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
                 isCollIter = false;
             }
         }
-    }
-
-    @Override
-    protected AnnotationMirrorSet combine(
-            AnnotationMirror polyQual, AnnotationMirrorSet a1Annos, AnnotationMirrorSet a2Annos) {
-        if (a1Annos == null) {
-            if (a2Annos == null) {
-                return new AnnotationMirrorSet();
-            }
-            return a2Annos;
-        } else if (a2Annos == null) {
-            return a1Annos;
-        }
-
-        AnnotationMirrorSet lubSet = new AnnotationMirrorSet();
-        for (AnnotationMirror top : topQuals) {
-            AnnotationMirror a1 = qualhierarchy.findAnnotationInHierarchy(a1Annos, top);
-            AnnotationMirror a2 = qualhierarchy.findAnnotationInHierarchy(a2Annos, top);
-            AnnotationMirror lub = qualhierarchy.leastUpperBoundTypeVariable(a1, a2);
-            if (lub != null) {
-                lubSet.add(lub);
-            }
-        }
-        return lubSet;
     }
 }

@@ -24,10 +24,10 @@ import org.checkerframework.javacutil.TypesUtils;
  * <ol>
  *   <li>When sort is called on {@code @OrderNonDet List}, the receiver is type refined as
  *       {@code @Det}.
- *   <li>The first argument of Arrays.sort() and Arrays.parallelSort is type refined
- *       from @OrderNonDet to @Det.
- *   <li>The first argument of Collections.sort() and Collections.shuffle is type refined
- *       from @OrderNonDet to @Det.
+ *   <li>The first argument of Arrays.sort() and Arrays.parallelSort is type refined from
+ *       {@code @OrderNonDet} to {@code @Det}.
+ *   <li>The first argument of Collections.sort() and Collections.shuffle is type refined from
+ *       {@code @OrderNonDet} to {@code @Det}.
  * </ol>
  */
 public class DeterminismTransfer extends CFTransfer {
