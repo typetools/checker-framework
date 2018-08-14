@@ -97,16 +97,13 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             isCollIter = true;
         }
         while (isCollIter) {
-            Iterator<AnnotatedTypeMirror> it = declaredType.getTypeArguments().iterator();
             // Iterate over all the type parameters of this collection and
             // replace all @OrderNonDet type parameters with 'replaceType'.
-            while (it.hasNext()) {
-                AnnotatedTypeMirror argType = it.next();
+            for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
                 if (argType.hasAnnotation(factory.ORDERNONDET)) {
                     argType.replaceAnnotation(replaceType);
                 }
             }
-
             // Assuming a single type parameter (will not work for HashMaps)
             // TODO: Handle all type parameters
             TypeMirror declType =
