@@ -1,3 +1,4 @@
+import java.util.Random;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
 import org.checkerframework.checker.guieffect.qual.PolyUIType;
@@ -7,6 +8,12 @@ import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.checker.guieffect.qual.UIType;
 
 public class AnonInnerDefaults {
+
+    private static Random random;
+
+    private static boolean maybe() {
+        return random.nextBoolean();
+    }
 
     public static interface SafeIface {
         public void doStuff();
@@ -205,6 +212,20 @@ public class AnonInnerDefaults {
                                 // Safe due to anonymous inner class effect inference
                                 e.dangerous(); // should be okay
                             }
+                        });
+        // :: error: (assignment.type.incompatible)
+        PolyIface maybeUIInstance =
+                (maybe()
+                        ? new PolyIface() { // Anonymous inner class inference for @UI
+                            @Override
+                            public void doStuff() {
+                                // Safe due to anonymous inner class effect inference
+                                e.dangerous(); // should be okay
+                            }
+                        }
+                        : new PolyIface() {
+                            @Override
+                            public void doStuff() {}
                         });
     }
 }
