@@ -47,10 +47,7 @@ figures-all:
 	${MAKE} -C figures all
 
 manual.pdf: bib-update figures-all check-labels
-	pdflatex manual.tex
-	bibtex -min-crossrefs=9999 manual
-	pdflatex manual.tex
-	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
+	latexmk -silent manual.tex || latexmk -gg manual.tex
 
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
