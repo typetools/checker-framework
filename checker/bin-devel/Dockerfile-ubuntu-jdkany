@@ -28,6 +28,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
 && apt-get -qqy install \
   dia \
   hevea \
+  latexmk \
   librsvg2-bin \
   maven \
   python-pip \
