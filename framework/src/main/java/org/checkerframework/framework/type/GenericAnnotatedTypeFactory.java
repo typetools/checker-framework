@@ -1,7 +1,5 @@
 package org.checkerframework.framework.type;
 
-import static org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
-
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -78,6 +76,7 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
