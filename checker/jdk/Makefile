@@ -59,8 +59,9 @@ annotated: $(addsuffix .annotated, $(CHECKER_DIRS))
 annotated/%.class:
 	mkdir -p annotated
 # Extract exactly one file from $(CTSYM)
-	cd annotated; unzip $(CTSYM) 'META-INF/sym/rt.jar/$*.class' > /dev/null
-	cp -R annotated/META-INF/sym/rt.jar/* annotated/
+# Ignore errors for now; the annotated JDK doesn't have the same inner classes as the real JDK.
+	-cd annotated; unzip $(CTSYM) 'META-INF/sym/rt.jar/$*.class' > /dev/null
+	-cp -R annotated/META-INF/sym/rt.jar/* annotated/
 	rm -rf annotated/META-INF
 
 
