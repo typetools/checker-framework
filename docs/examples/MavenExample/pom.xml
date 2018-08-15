@@ -28,8 +28,6 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <!-- Use checker-qual7 if targeting Java 7 -->
-      <!-- <artifactId>checker-qual7</artifactId> -->
       <version>${checkerFrameworkVersion}</version>
     </dependency>
     <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
