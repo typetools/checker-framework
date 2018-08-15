@@ -199,6 +199,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationMirror targetSafeP = getDeclAnnotation(methodElt, SafeEffect.class);
         AnnotationMirror targetPolyP = getDeclAnnotation(methodElt, PolyUIEffect.class);
         TypeElement targetClassElt = (TypeElement) methodElt.getEnclosingElement();
+        boolean hasMainThreadAnnot =
+                getDeclAnnotations(methodElt)
+                        .toString()
+                        .contains("@android.support.annotation.MainThread");
 
         if (debugSpew) {
             System.err.println("targetClassElt found");
@@ -210,7 +214,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 System.err.println("Method marked @SafeEffect");
             }
             return new Effect(SafeEffect.class);
-        } else if (targetUIP != null) {
+        } else if (targetUIP != null || hasMainThreadAnnot) {
             if (debugSpew) {
                 System.err.println("Method marked @UIEffect");
             }
