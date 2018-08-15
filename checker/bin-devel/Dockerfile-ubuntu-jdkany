@@ -14,7 +14,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
   software-properties-common \
+&& add-apt-repository ppa:openjdk-r/ppa \
 && apt-get -qqy update \
+&& apt-get -qqy install oracle-java8-installer oracle-java8-set-default \
 && apt-get -qqy install \
   ant \
   cpp \
@@ -33,7 +35,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   latexmk \
   librsvg2-bin \
   maven \
-  openjdk-8-jdk \
   python-pip \
   texlive-fonts-recommended \
   texlive-latex-base \
