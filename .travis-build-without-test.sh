@@ -55,8 +55,6 @@ echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
-./gradlew -version
-ls -al ~/.gradle/caches/4.5
 
 ## Compile
 # Two options: rebuild the JDK or download a prebuilt JDK.
