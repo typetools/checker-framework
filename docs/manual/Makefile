@@ -47,7 +47,7 @@ figures-all:
 	${MAKE} -C figures all
 
 manual.pdf: bib-update figures-all check-labels
-	latexmk -silent manual.tex || latexmk -gg manual.tex
+	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api

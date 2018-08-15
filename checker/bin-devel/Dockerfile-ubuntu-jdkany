@@ -16,7 +16,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
   software-properties-common \
+&& add-apt-repository -y ppa:webupd8team/java \
 && apt-get -qqy update \
+&& echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections \
+&& echo debconf shared/accepted-oracle-license-v1-1 seen true | /usr/bin/debconf-set-selections \
+&& echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections \
+&& apt-get -qqy install oracle-java8-installer \
+&& apt-get -qqy install oracle-java8-set-default \
 && apt-get -qqy install \
   ant \
   cpp \
@@ -35,7 +41,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   latexmk \
   librsvg2-bin \
   maven \
-  openjdk-8-jdk \
   python-pip \
   texlive-font-utils \
   texlive-fonts-recommended \
