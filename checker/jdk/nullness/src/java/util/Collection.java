@@ -212,7 +212,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an array containing all of the elements in this collection
      */
-    @PolyNull Object[] toArray(Collection<@PolyNull T> this);
+    @PolyNull Object[] toArray(Collection<@PolyNull E> this);
 
     /**
      * Returns an array containing all of the elements in this collection;
