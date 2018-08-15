@@ -375,8 +375,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             return typeMirror;
         }
         // Check if this an @UI anonymous class or lambda due to inference, or an expression
-        // containing such
-        // class/lambda
+        // containing such class/lambda
         if (isDirectlyMarkedUIThroughInference(tree)) {
             typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
         } else if (tree.getKind().equals(Tree.Kind.PARENTHESIZED)) {
@@ -396,7 +395,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
             }
         }
-        // ToDo: Do we need to support other expression here?
+        // TODO: Do we need to support other expression here?
         // (i.e. are there any other operators that take new or lambda expressions as operands)
         return typeMirror;
     }
