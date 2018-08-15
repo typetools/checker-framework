@@ -146,8 +146,8 @@ public class FlowExpressionParseUtil {
             return parseParameter(expression, context);
         } else if (isArray(expression, context)) {
             return parseArray(expression, context, path);
-        } else if (isMethod(expression, context)) {
-            return parseMethod(expression, context, path, env);
+        } else if (isMethodCall(expression, context)) {
+            return parseMethodCall(expression, context, path, env);
         } else if (isMemberSelect(expression, context)) {
             return parseMemberSelect(expression, env, context, path);
         } else if (isParentheses(expression, context)) {
@@ -168,7 +168,7 @@ public class FlowExpressionParseUtil {
      * @return pair of object and field
      */
     private static Pair<String, String> parseMemberSelect(String s) {
-        Pair<Pair<String, String>, String> method = parseMethod(s);
+        Pair<Pair<String, String>, String> method = parseMethodCall(s);
         if (method != null && method.second.startsWith(".")) {
             return Pair.of(
                     method.first.first + "(" + method.first.second + ")",
@@ -190,9 +190,9 @@ public class FlowExpressionParseUtil {
         int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
         if (nextRParenPos != -1) {
             if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
-                String reciever = s.substring(0, nextRParenPos + 1);
+                String receiver = s.substring(0, nextRParenPos + 1);
                 String remaining = s.substring(nextRParenPos + 2);
-                return Pair.of(reciever, remaining);
+                return Pair.of(receiver, remaining);
             } else {
                 return null;
             }
@@ -203,10 +203,10 @@ public class FlowExpressionParseUtil {
             return null;
         }
 
-        String reciever = s.substring(0, i);
+        String receiver = s.substring(0, i);
         String remaining = s.substring(i + 1);
 
-        return Pair.of(reciever, remaining);
+        return Pair.of(receiver, remaining);
     }
 
     private static Receiver parseMemberSelect(
@@ -478,7 +478,7 @@ public class FlowExpressionParseUtil {
      * @param s expression string
      * @return pair of (pair of method name and arguments) and remaining
      */
-    private static Pair<Pair<String, String>, String> parseMethod(String s) {
+    private static Pair<Pair<String, String>, String> parseMethodCall(String s) {
         // Parse Identifier
         Pattern identParser = Pattern.compile("^(" + IDENTIFIER_REGEX + ").*$");
         Matcher m = identParser.matcher(s);
@@ -498,15 +498,15 @@ public class FlowExpressionParseUtil {
         return Pair.of(Pair.of(ident, arguments), remaining);
     }
 
-    private static boolean isMethod(String s, FlowExpressionContext contex) {
-        Pair<Pair<String, String>, String> result = parseMethod(s);
+    private static boolean isMethodCall(String s, FlowExpressionContext contex) {
+        Pair<Pair<String, String>, String> result = parseMethodCall(s);
         return result != null && result.second.isEmpty();
     }
 
-    private static Receiver parseMethod(
+    private static Receiver parseMethodCall(
             String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
             throws FlowExpressionParseException {
-        Pair<Pair<String, String>, String> method = parseMethod(s);
+        Pair<Pair<String, String>, String> method = parseMethodCall(s);
         if (method == null) {
             return null;
         }

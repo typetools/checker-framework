@@ -1,5 +1,4 @@
-// Test case for a mysterious compilation failure
-// when compiling plume-lib.
+// Test case for a mysterious compilation failure.
 // The underlying reason was that the GeneralATF
 // tried storing defaulted declaration annotations.
 

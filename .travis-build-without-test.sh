@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Entering checker-framework/.travis-build-without-test.sh" in `pwd`
+
 # Fail the whole script if any command fails
 set -e
 
@@ -65,3 +67,5 @@ if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
   ./gradlew --console=plain assemble
 fi
+
+echo "Exiting checker-framework/.travis-build-without-test.sh" in `pwd`
