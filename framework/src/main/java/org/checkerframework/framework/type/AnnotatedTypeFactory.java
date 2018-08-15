@@ -295,7 +295,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean shouldCache;
 
-    /** Keep track of current compilation unit across multiple type factories that share caches */
+    /** Keep track of current compilation unit across multiple type factories that share caches. */
     private static int currentCompilationUnitHash = -1;
 
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
