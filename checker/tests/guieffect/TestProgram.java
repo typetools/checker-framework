@@ -62,8 +62,8 @@ public class TestProgram {
                 new IGenericTask() {
                     @Override
                     public void doGenericStuff() {
-                        // Safe here due to anonymous inner class effect inference, but will trigger an error above
-                        // due to safecons.runAsync not taking an @UI IGenericTask
+                        // Safe here due to anonymous inner class effect inference, but will trigger
+                        // an error above due to safecons.runAsync not taking an @UI IGenericTask.
                         UIByPackageDecl.implicitlyUI();
                     }
                 });
