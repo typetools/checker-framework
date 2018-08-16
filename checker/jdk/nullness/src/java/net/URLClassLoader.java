@@ -79,7 +79,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     private final URLClassPath ucp;
 
     /* The context to be used when loading classes and resources */
-    @Nullable private final AccessControlContext acc;
+    private final AccessControlContext acc;
 
     /**
      * Constructs a new URLClassLoader for the given URLs. The URLs will be
@@ -112,7 +112,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     }
 
     URLClassLoader(URL[] urls, @Nullable ClassLoader parent,
-                   @Nullable AccessControlContext acc) {
+                   AccessControlContext acc) {
         super(parent);
         // this is to make the stack depth consistent with 1.1
         SecurityManager security = System.getSecurityManager();
@@ -480,7 +480,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *              of its ancestors
      * @return the newly defined Package object
      */
-    protected Package definePackage(String name, Manifest man, URL url)
+    protected Package definePackage(String name, Manifest man, @Nullable URL url)
         throws IllegalArgumentException
     {
         String path = name.replace('.', '/').concat("/");
@@ -647,8 +647,6 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * @exception NullPointerException if {@code codesource} is {@code null}.
      * @return the permissions granted to the codesource
      */
-    @SuppressWarnings("dereference.of.nullable") // sm.checkPermission is being called after checking
-    // for nullness of sm
     protected PermissionCollection getPermissions(CodeSource codesource)
     {
         PermissionCollection perms = super.getPermissions(codesource);
@@ -706,6 +704,8 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
                 final Permission fp = p;
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
                     public Void run() throws SecurityException {
+                        assert sm != null
+                            : "@AssumeAssertion(nullness) : Control reaches here only if sm is non-null";
                         sm.checkPermission(fp);
                         return null;
                     }
@@ -770,6 +770,8 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
 
     static {
         /*
+        Jdk-8 expects reference to class implementing JavaNetAccess interface to provide an
+        implementation for getOriginalHostName along with the implementation for getURLClassPath
         sun.misc.SharedSecrets.setJavaNetAccess (
             new sun.misc.JavaNetAccess() {
                 public URLClassPath getURLClassPath (URLClassLoader u) {
