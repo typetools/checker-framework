@@ -426,7 +426,7 @@ public class DelayQueue<E extends @NonNull Delayed> extends AbstractQueue<E>
      *
      * @return an array containing all of the elements in this queue
      */
-    public Object[] toArray() {
+    public @PolyNull Object[] toArray(DelayQueue<@PolyNull E> this) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {

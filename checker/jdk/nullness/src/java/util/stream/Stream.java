@@ -33,7 +33,7 @@ public interface Stream<T> extends BaseStream<T,Stream<T>> {
     Stream<T> skip(long arg0);
     void forEach(Consumer<? super T> arg0);
     void forEachOrdered(Consumer<? super T> arg0);
-    Object[] toArray();
+    public @PolyNull Object[] toArray(Stream<@PolyNull T> this);
     <A> A[] toArray(IntFunction<A[]> arg0);
     T reduce(T arg0, BinaryOperator<T> arg1);
     Optional<T> reduce(BinaryOperator<T> arg0);

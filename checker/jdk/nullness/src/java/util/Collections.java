@@ -1095,7 +1095,7 @@ public class Collections {
         public int size()                   {return c.size();}
         public boolean isEmpty()            {return c.isEmpty();}
         public boolean contains(Object o)   {return c.contains(o);}
-        public Object[] toArray()           {return c.toArray();}
+        public @PolyNull Object[] toArray(UnmodifiableCollection<@PolyNull E> this) {return c.toArray();}
         public <T> T[] toArray(T[] a)       {return c.toArray(a);}
         public String toString()            {return c.toString();}
 
@@ -2085,7 +2085,7 @@ public class Collections {
         public boolean contains(Object o) {
             synchronized (mutex) {return c.contains(o);}
         }
-        public Object[] toArray() {
+        public @PolyNull Object[] toArray(SynchronizedCollection<@PolyNull E> this) {
             synchronized (mutex) {return c.toArray();}
         }
         public <T> T[] toArray(T[] a) {
@@ -3116,7 +3116,7 @@ public class Collections {
         public int size()                 { return c.size(); }
         public boolean isEmpty()          { return c.isEmpty(); }
         public boolean contains(Object o) { return c.contains(o); }
-        public Object[] toArray()         { return c.toArray(); }
+        public @PolyNull Object[] toArray(CheckedCollection<@PolyNull E> this) { return c.toArray(); }
         public <T> T[] toArray(T[] a)     { return c.toArray(a); }
         public String toString()          { return c.toString(); }
         public boolean remove(Object o)   { return c.remove(o); }
@@ -4386,7 +4386,7 @@ public class Collections {
         public boolean contains(Object obj) {return false;}
         public boolean containsAll(Collection<?> c) { return c.isEmpty(); }
 
-        public Object[] toArray() { return new Object[0]; }
+        public @PolyNull Object[] toArray(EmptySet<@PolyNull E> this) { return new Object[0]; }
 
         public <T> T[] toArray(T[] a) {
             if (a.length > 0)
@@ -4507,7 +4507,7 @@ public class Collections {
         public boolean contains(Object obj) {return false;}
         public boolean containsAll(Collection<?> c) { return c.isEmpty(); }
 
-        public Object[] toArray() { return new Object[0]; }
+        public @PolyNull Object[] toArray(EmptyList<@PolyNull E> this) { return new Object[0]; }
 
         public <T> T[] toArray(T[] a) {
             if (a.length > 0)
@@ -5091,7 +5091,7 @@ public class Collections {
             return element;
         }
 
-        public Object[] toArray() {
+        public @PolyNull Object[] toArray(CopiesList<@PolyNull E> this) {
             final Object[] a = new Object[n];
             if (element != null)
                 Arrays.fill(a, 0, n, element);
@@ -5525,7 +5525,7 @@ public class Collections {
         public boolean remove(Object o)   { return m.remove(o) != null; }
         public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
         public Iterator<E> iterator()     { return s.iterator(); }
-        public Object[] toArray()         { return s.toArray(); }
+        public @PolyNull Object[] toArray(SetFromMap<@PolyNull E> this) { return s.toArray(); }
         public <T> T[] toArray(T[] a)     { return s.toArray(a); }
         public String toString()          { return s.toString(); }
         public int hashCode()             { return s.hashCode(); }
@@ -5604,7 +5604,7 @@ public class Collections {
         public boolean contains(Object o) { return q.contains(o); }
         public boolean remove(Object o)   { return q.remove(o); }
         public Iterator<E> iterator()     { return q.iterator(); }
-        public Object[] toArray()         { return q.toArray(); }
+        public @PolyNull Object[] toArray(AsLIFOQueue<@PolyNull E> this) { return q.toArray(); }
         public <T> T[] toArray(T[] a)     { return q.toArray(a); }
         public String toString()          { return q.toString(); }
         public boolean containsAll(Collection<?> c) {return q.containsAll(c);}
