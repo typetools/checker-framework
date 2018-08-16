@@ -88,10 +88,15 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      * @param replaceType The type to be replaced with
      */
     private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
-        TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
         type.replaceAnnotation(replaceType);
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType = null;
         boolean isCollIter = false;
+
+        // This happens for @OrderNonDet Set<T> (Generic types)
+        if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
+            return;
+        }
+        TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
         if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
             declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
             isCollIter = true;
