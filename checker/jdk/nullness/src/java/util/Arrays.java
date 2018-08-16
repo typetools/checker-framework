@@ -3827,7 +3827,7 @@ public class Arrays {
         }
 
         @Override
-        public Object[] toArray() {
+        public @PolyNull Object[] toArray(ArrayList<@PolyNull E> this) {
             return a.clone();
         }
 

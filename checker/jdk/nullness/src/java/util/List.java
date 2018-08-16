@@ -179,7 +179,7 @@ public interface List<E> extends Collection<E> {
     // Element annotation should be the same as that on the type parameter E.
     // It's @Nullable here because that is most lenient.
     // Eventually, figure out how to express this, or hard-code in the checker.
-    Object[] toArray();
+    public @PolyNull Object[] toArray(List<@PolyNull E> this);
 
     /**
      * Returns an array containing all of the elements in this list in
