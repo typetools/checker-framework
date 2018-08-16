@@ -195,8 +195,8 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
         if (security != null) {
             security.checkCreateClassLoader();
         }
-        // Currently does not compile with Orcale-Jdk, missing URLClassPath constructor with AccessControlContext
-        // as second argument, replaced it with null
+        // Currently does not compile with Oracle JDK, missing URLClassPath constructor with
+        // AccessControlContext as second argument, replaced it with null.
         /*
         ucp = new URLClassPath(urls, factory);
         */
