@@ -15,6 +15,8 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
 
+import org.checkerframework.checker.nullness.qual.PolyNull;
+
 public interface Stream<T> extends BaseStream<T,Stream<T>> {
     Stream<T> filter(Predicate<? super T> arg0);
     <R> Stream<R> map(Function<? super T,? extends R> arg0);
