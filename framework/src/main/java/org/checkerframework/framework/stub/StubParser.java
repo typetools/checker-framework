@@ -464,8 +464,8 @@ public class StubParser {
         if (typeElt == null) {
             if (debugStubParser
                     || (!hasNoStubParserWarning(typeDecl.getAnnotations())
-                                    && !hasNoStubParserWarning(packageAnnos))
-                            && !warnIfNotFoundIgnoresClasses) {
+                            && !hasNoStubParserWarning(packageAnnos)
+                            && !warnIfNotFoundIgnoresClasses)) {
                 stubWarnNotFound("Type not found: " + fqTypeName);
             }
             return;
