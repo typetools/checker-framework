@@ -44,4 +44,17 @@ class TestArrays {
         @Det int i = a[0];
         @Det String str = "rash";
     }
+
+    void testArrayLength(@Det int @Det [] a) {
+        System.out.println(a.length);
+    }
+
+    void testArrayLength1(@Det int @NonDet [] a) {
+        // :: error: (argument.type.incompatible)
+        System.out.println(a.length);
+    }
+
+    void testArrayLength2(@Det int @OrderNonDet [] a) {
+        System.out.println(a.length);
+    }
 }

@@ -23,11 +23,14 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.*;
 
+/** The annotated type factory for the determinism type-system. */
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    /** Annotation constants. */
     public final AnnotationMirror POLYDET, POLYDET_USE, POLYDET_UP, POLYDET_DOWN;
+
+    public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
-    public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -85,35 +88,45 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        @Override
-        public Void visitReturn(ReturnTree node, AnnotatedTypeMirror p) {
-            return super.visitReturn(node, p);
-        }
-
+        /**
+         * Replaces the annotation on the return type of method invocation as follows:
+         *
+         * <ol>
+         *   <li>The return type for static methods without any argument is {@code @Det}.
+         *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
+         *       array or a collection, it is replaced with {@code @NonDet}.
+         *   <li>Return type of equals() called on an {@code OrderNonDet Set} gets the {@code @Det}
+         *       annotation.
+         * </ol>
+         *
+         * @param node Method invocation tree
+         * @param p Annotated return type
+         * @return Void
+         */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
-            if (node == null) {
-                return super.visitMethodInvocation(node, p);
-            }
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
-            AnnotatedTypeMirror.AnnotatedExecutableType invokedMethod =
-                    atypeFactory.methodFromUse(node).first;
-            ExecutableElement invokedMethodElement = invokedMethod.getElement();
+
+            // Receiver is null for abstract classes
+            // (Example: Ordering.natural() in tests/all-systems/PolyCollectorTypeVars.java)
             if (receiver == null) {
                 return super.visitMethodInvocation(node, p);
             }
 
-            // Static methods with no arguments: return type should be @Det, not @polyDet
+            AnnotatedTypeMirror.AnnotatedExecutableType invokedMethod =
+                    atypeFactory.methodFromUse(node).first;
+            ExecutableElement invokedMethodElement = invokedMethod.getElement();
+
+            // For static methods with no arguments, return type is annotated as @Det, not the
+            // default @PolyDet
             if (ElementUtils.isStatic(invokedMethodElement) && node.getArguments().size() == 0) {
                 if (p.getExplicitAnnotations().size() == 0) {
                     p.replaceAnnotation(DET);
                 }
             }
-            if (TypesUtils.getTypeElement(receiver.getUnderlyingType()) == null) {
-                return super.visitMethodInvocation(node, p);
-            }
 
-            // If return type (non-array) resolves to @OrderNonDet, replace it with @NonDet
+            // If return type (non-array and non-collection) resolves to @OrderNonDet, replace it
+            // with @NonDet
             if (p.getAnnotations().contains(ORDERNONDET)
                     && !(p.getUnderlyingType().getKind() == TypeKind.ARRAY)
                     && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
@@ -129,6 +142,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // {@Code @OrderNonDet Set<@Det List<@Det Integer>> s1;
             //  @OrderNonDet Set<@Det List<@Det Integer>> s2;
             //  s1.equals(s2) is @NonDet}
+            // TODO: this can be more precise (@Det receiver and @OrderNonDet parameter)
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiver.getUnderlyingType());
             if (isEqualsMethod(invokedMethodElement)
@@ -151,6 +165,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(node, p);
         }
 
+        /** Annotates the length property of a {@code @NonDet} array as {@code @NonDet}. */
         @Override
         public Void visitMemberSelect(
                 MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
@@ -167,6 +182,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Checks if {@code OrderNonDet List} appears as a type parameter in the argument. */
     private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
@@ -183,6 +199,14 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        /**
+         *
+         *
+         * <ol>
+         *   <li>Annotates the main method parameters as {@code Det}.
+         *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}
+         * </ol>
+         */
         @Override
         public Void visitExecutable(
                 final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
@@ -244,6 +268,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Adds implicit annotations for main method parameters ({@code @Det}) and array parameters
+     * ({@code @PolyDet[@PolyDet]}).
+     */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         if (elt.getKind() == ElementKind.PARAMETER) {
@@ -262,6 +290,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(elt, type);
     }
 
+    /** @return true if {@code tm} is a Set or any of its subtype. */
     public boolean isSet(TypeMirror tm) {
         TypeMirror SetInterfaceTypeMirror =
                 TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
@@ -271,6 +300,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /** @return true if {@code tm} is a List or any of its subtype. */
     public boolean isList(TypeMirror tm) {
         // List and subclasses
         TypeMirror ListInterfaceTypeMirror =
@@ -281,24 +311,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    public boolean isArrays(TypeMirror tm) {
-        TypeMirror ArraysTypeMirror =
-                TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
-        if (types.isSubtype(tm, ArraysTypeMirror)) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isCollections(TypeMirror tm) {
-        TypeMirror CollectionsTypeMirror =
-                TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
-        if (types.isSubtype(tm, CollectionsTypeMirror)) {
-            return true;
-        }
-        return false;
-    }
-
+    /** @return true if {@code tm} is a Collection or any of its subtype. */
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         TypeMirror CollectionInterfaceTypeMirror =
@@ -309,11 +322,32 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /** @return true if {@code tm} is an Iterator. */
     public boolean isIterator(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         TypeMirror IteratorTypeMirror =
                 TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
         if (types.isSubtype(tm, IteratorTypeMirror)) {
+            return true;
+        }
+        return false;
+    }
+
+    /** @return true if {@code tm} is a subtype of the Arrays class. */
+    public boolean isArrays(TypeMirror tm) {
+        TypeMirror ArraysTypeMirror =
+                TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
+        if (types.isSubtype(tm, ArraysTypeMirror)) {
+            return true;
+        }
+        return false;
+    }
+
+    /** @return true if {@code tm} is a subtype of the Collections class. */
+    public boolean isCollections(TypeMirror tm) {
+        TypeMirror CollectionsTypeMirror =
+                TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
+        if (types.isSubtype(tm, CollectionsTypeMirror)) {
             return true;
         }
         return false;
@@ -331,6 +365,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(f, bottom);
         }
 
+        /**
+         * Treat {@code @PolyDet} with values as {@code @PolyDet} without values in the qualifier
+         * hierarchy.
+         */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSameIgnoringValues(subAnno, POLYDET)) {
