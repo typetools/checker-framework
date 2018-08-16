@@ -369,7 +369,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return an array containing all of the elements in this list in
      *         proper sequence
      */
-    public @Nullable Object[] toArray() {
+    public @PolyNull Object[] toArray(ArrayList<@PolyNull E> this) {
         return Arrays.copyOf(elementData, size);
     }
 
