@@ -160,19 +160,20 @@ public class FlowExpressionParseUtil {
     /**
      * Matches expressions containing a dot (.) and a method call. If expression contains a method
      * call whose caller is a method call as well (method chain), first of the returned pair is the
-     * caller, and second of the pair is the method invoked. For e.g. myMethod().myMethod2.get(0)
-     * returns Pair(myMethod().myMethod2(), get(0)) If expression is a field select whose receiver
-     * is a method call, first of the returned pair is the receiver expression, and second is the
-     * field For e.g. myMethod().field returns Pair(myMethod(), field) Null is returned otherwise.
+     * caller, and second of the pair is the method invoked. For example.
+     * myMethod().myMethod2.get(0) returns Pair(myMethod().myMethod2(), get(0)). If expression is a
+     * field select whose receiver is a method call, first of the returned pair is the receiver
+     * expression, and second is the field. For example. myMethod().field returns Pair(myMethod(),
+     * field). Null is returned otherwise.
      *
-     * @param exprWithNumberedParameters expression string which can contain occurence of formal
-     *     parameters, such as "#2"
-     * @param exprWithNamedParameters exprWithNumberedParameters with replaced occurences of formal
-     *     parameters, such as "#2" with formal parameter names
+     * @param exprWithNumberedParameters expression string which can contain occurence of numbered
+     *     formal parameters, such as "#2"
+     * @param exprWithNamedParameters same as exprWithNumberedParameters, but with formal parameter
+     *     names instead of numbers
      * @param argumentList list of formal parameter names if numbered parameters such as "#2" are
-     *     present in exprWithNumberedParameters Like a dictionary where the index of the formal
+     *     present in exprWithNumberedParameters. Like a dictionary where the index of the formal
      *     parameter name is one less than the number it corresponds to. For example, if index of
-     *     paramName in argumentList is 1, it corresponds to formal parameter '#2'
+     *     paramName in argumentList is 1, it corresponds to formal parameter '#2'.
      * @return Pair of the left hand side of the dot (receiver or caller), and the right hand side
      *     of it (can be field or method call). Returns null if expression does not contain both a
      *     dot and method call.
