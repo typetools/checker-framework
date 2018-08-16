@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '98819d21643236074184421ade9771cd5d254e9c'
+    jdkShaHash = '5fd7eef28e3c9656fdb2737f06a17258bd66c568'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -71,7 +71,7 @@ task forceBuildJdk(group: 'Build') {
 }
 
 task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
-    description 'Builds jdk8.jar. Requires that jdkShaHash == \'local\' in checker/build.gradle.'
+    description 'Builds jdk8.jar. Requires -PuseLocalJdk, or that jdkShaHash == \'local\' in checker/build.gradle.'
 
     doLast {
         if (System.getenv('JAVA_HOME') == null) {
@@ -143,6 +143,8 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist.'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker.jar"
+    // To see what files are incorporated into the shadow jar file:
+    // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
     archives shadowJar

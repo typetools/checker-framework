@@ -686,6 +686,8 @@ Partially-annotated libraries
   List of stub files or directories; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
+\item \<-AstubWarnIfNotFoundIgnoresClasses>
+  Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
 \item \<-AstubWarnIfOverwritesBytecode>
   Warn if a stub file entry overwrite bytecode information; see
   Section~\ref{stub-using}.
@@ -936,7 +938,7 @@ affect the soundness guarantee, but a user may need to examine more
 warnings after fixing the first ones identified.  (More often, at least in
 our experience to date, a single fix corrects all the warnings.)
 
-% It might be worthwhile to permit a user to see every warning -- though I
+% It might be worthwhile to permit a user to see every warning --- though I
 % would not advocate this setting for daily use.
 
 If you find that a checker fails to issue a warning that it
