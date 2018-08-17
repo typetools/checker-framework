@@ -362,6 +362,7 @@ public class FlowExpressionParseUtil {
     }
 
     // ########
+
     /** Return true iff s is a null literal. */
     private static boolean isNullLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
@@ -732,6 +733,7 @@ public class FlowExpressionParseUtil {
         if (method == null) {
             return null;
         }
+
         String methodName = method.first.first;
 
         // parse parameter list
@@ -839,6 +841,7 @@ public class FlowExpressionParseUtil {
         if (i >= s.length()) {
             return null;
         }
+
         while (true) {
             int nextRBracketPos = matchingCloseParen(s, i, '[', ']');
             if (nextRBracketPos == -1) {
