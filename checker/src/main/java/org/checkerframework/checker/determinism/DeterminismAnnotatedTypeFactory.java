@@ -227,7 +227,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (retType.getKind() == TypeKind.ARRAY) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) retType;
-                    if (arrRetType.getAnnotations().size() == 0) {
+                    if (arrRetType.getAnnotations().size() == 0
+                            && arrRetType.getComponentType().getUnderlyingType().getKind()
+                                    != TypeKind.TYPEVAR) {
                         arrRetType.replaceAnnotation(POLYDET);
                         arrRetType.getComponentType().replaceAnnotation(POLYDET);
                     }
@@ -236,7 +238,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Array parameter types should be annotated as @PolyDet[@PolyDet]
                 List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
                 for (AnnotatedTypeMirror paramType : paramTypes) {
-                    if (paramType.getKind() == TypeKind.ARRAY) {
+                    if (paramType.getKind() == TypeKind.ARRAY
+                            && paramType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
                         AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
                                 (AnnotatedTypeMirror.AnnotatedArrayType) paramType;
                         if (arrParamType.getAnnotations().size() == 0) {
@@ -288,10 +291,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (isMainMethod(method)) {
                     type.addMissingAnnotations(Collections.singleton(DET));
                 } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
-                    ((AnnotatedTypeMirror.AnnotatedArrayType) type)
-                            .getComponentType()
-                            .addMissingAnnotations(Collections.singleton(POLYDET));
-                    type.addMissingAnnotations(Collections.singleton(POLYDET));
+                    AnnotatedTypeMirror.AnnotatedArrayType arrType =
+                            (AnnotatedTypeMirror.AnnotatedArrayType) type;
+                    if (arrType.getComponentType().getKind() != TypeKind.TYPEVAR) {
+                        arrType.getComponentType()
+                                .addMissingAnnotations(Collections.singleton(POLYDET));
+                        type.addMissingAnnotations(Collections.singleton(POLYDET));
+                    }
                 }
             }
         }
