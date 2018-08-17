@@ -47,8 +47,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      *
      * <ol>
      *   <li>When a non-collection is annotated as {@code @OrderNonDet}.
-     *   <li>When the annotation on type parameter of a collection is a supertype of the annotation
-     *       on the collection. Example: {@code @Det List<@OrderNonDet String>}.
+     *   <li>When the annotation on type parameter of a Collection is a supertype of the annotation
+     *       on the Collection. Example: {@code @Det List<@OrderNonDet String>}.
      * </ol>
      *
      * @param declarationType the type of the class (TypeElement)

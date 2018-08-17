@@ -89,7 +89,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Replaces the annotation on the return type of method invocation as follows:
+         * Replaces the annotation on the return type of a method invocation as follows:
          *
          * <ol>
          *   <li>The return type for static methods without any argument is {@code @Det}.
@@ -178,7 +178,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMemberSelect(
                 MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-            // Length of a @NonDet array is @NonDet
             if (TreeUtils.isArrayLengthAccess(node)) {
                 AnnotatedTypeMirror.AnnotatedArrayType arrType =
                         (AnnotatedTypeMirror.AnnotatedArrayType)
@@ -191,7 +190,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Checks if {@code OrderNonDet List} appears as a type parameter in the argument. */
+    /** Checks if {@code OrderNonDet List} appears as a type parameter in {@code atm}. */
     private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
@@ -299,7 +298,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(elt, type);
     }
 
-    /** @return true if {@code tm} is a Set or any of its subtype. */
+    /** @return true if {@code tm} is a Set or a subtype of Set. */
     public boolean isSet(TypeMirror tm) {
         TypeMirror SetInterfaceTypeMirror =
                 TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
@@ -309,7 +308,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    /** @return true if {@code tm} is a List or any of its subtype. */
+    /** @return true if {@code tm} is a List or a subtype of List. */
     public boolean isList(TypeMirror tm) {
         // List and subclasses
         TypeMirror ListInterfaceTypeMirror =
@@ -320,7 +319,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    /** @return true if {@code tm} is a Collection or any of its subtype. */
+    /** @return true if {@code tm} is a Collection or a subtype of Collection. */
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         TypeMirror CollectionInterfaceTypeMirror =

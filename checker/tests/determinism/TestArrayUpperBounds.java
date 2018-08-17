@@ -5,7 +5,7 @@ import org.checkerframework.checker.determinism.qual.*;
 
 // @skip-test
 class TestArrayUpperBounds {
-    public static <T> T[] newArray() {
+    public static <@Det T extends @PolyDet Object> T[] newArray() {
         T[] arr = (T[]) new Object[0];
         return arr;
     }
