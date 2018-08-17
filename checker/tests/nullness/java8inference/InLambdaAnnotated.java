@@ -1,5 +1,3 @@
-// @below-java8-jdk-skip-test
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 class InLambdaAnnotated {

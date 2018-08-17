@@ -13,9 +13,8 @@ public class ArrayAssignmentSameLen {
     void test1(int[] a, int[] b, @LTEqLengthOf("#1") int index) {
         int[] array = a;
         @LTLengthOf(
-            value = {"array", "b"},
-            offset = {"0", "-3"}
-        )
+                value = {"array", "b"},
+                offset = {"0", "-3"})
         // :: error: (assignment.type.incompatible)
         int i = index;
     }
@@ -31,9 +30,8 @@ public class ArrayAssignmentSameLen {
         int[] c1 = a;
         // See useTest3 for an example of why this assignment should fail.
         @LTLengthOf(
-            value = {"c1", "c1"},
-            offset = {"0", "x"}
-        )
+                value = {"c1", "c1"},
+                offset = {"0", "x"})
         // :: error: (assignment.type.incompatible)
         int z = i;
     }
@@ -41,16 +39,14 @@ public class ArrayAssignmentSameLen {
     void test4(
             int[] a,
             @LTLengthOf(
-                        value = {"#1", "#1"},
-                        offset = {"0", "#3"}
-                    )
+                            value = {"#1", "#1"},
+                            offset = {"0", "#3"})
                     int i,
             @NonNegative int x) {
         int[] c1 = a;
         @LTLengthOf(
-            value = {"c1", "c1"},
-            offset = {"0", "x"}
-        )
+                value = {"c1", "c1"},
+                offset = {"0", "x"})
         int z = i;
     }
 

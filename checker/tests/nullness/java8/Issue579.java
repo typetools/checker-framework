@@ -1,6 +1,5 @@
 // Test case for Issue579
 // https://github.com/typetools/checker-framework/issues/579
-// @below-java8-jdk-skip-test
 
 import java.util.Comparator;
 
@@ -19,7 +18,7 @@ class Issue570<T> implements Comparator<T> {
 
     @Override
     public Comparator<T> thenComparing(Comparator<? super T> other) {
-        // :: error: (argument.type.incompatible) :: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         return new Issue570<>(real == null ? other : real.thenComparing(other));
     }
 }

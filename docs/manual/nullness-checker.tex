@@ -52,8 +52,7 @@ The checker issues a warning in these cases:
   As a special case of an of \refqualclass{checker/nullness/qual}{NonNull}
   type becoming null, the checker also warns whenever a field of
   \refqualclass{checker/nullness/qual}{NonNull} type is not initialized in a
-  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
-  command-line option below.
+  constructor.
 
 \end{enumerate}
 
@@ -81,7 +80,7 @@ command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
 
-\label{lint-nulltest-section}\label{lint-uninitialized-section}
+\label{lint-nulltest-section}
 \begin{enumerate}
 \item
   Options that control soundness:
@@ -109,19 +108,6 @@ command-line option.)
   unnecessary and might indicate a programmer error or misunderstanding.
   The lint option is disabled by default because sometimes such checks are
   part of ordinary defensive programming.
-
-\item
-  \label{lint-uninitialized-item}%
-  If you supply the \code{-Alint=uninitialized} command-line option, then
-  the checker warns if a constructor fails to initialize any field,
-  including \refqualclass{checker/nullness/qual}{Nullable} types and primitive
-  types.  Such a warning is unrelated to whether your code might throw a
-  null pointer exception.  However, you might want to enable this warning
-  because it is better code style to supply an explicit initializer, even
-  if there is a default value such as \code{0} or \code{false}.
-  This command-line option does not affect the Nullness Checker's tests
-  that fields of \refqualclass{checker/nullness/qual}{NonNull} type are
-  initialized --- such initialization is mandatory, not optional.
 \end{itemize}
 
 \end{enumerate}
@@ -541,7 +527,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
 \item
-  \href{https://www.juliasoft.com/eng}{Julia analyzer},
+  \href{https://juliasoft.com/solutions/}{Julia analyzer},
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
@@ -634,16 +620,8 @@ code:
   the argument is \<null>.  However, it is not intended for general defensive
   programming; see Section~\ref{defensive-programming}.
 
-  A potential disadvantage of using the \<castNonNull> method is that your
-  code becomes dependent on the Checker Framework at run time as well as at
-  compile time:  you need to include \<checker-qual.jar>
-  or \<checker.jar> on your classpath at run time.
-  If this is a problem, you can copy the implementation of
-  \<castNonNull> into your own code, and possibly renaming it if you do not
-  like the name.  Be sure to retain the documentation that indicates that
-  your copy is intended for use only to suppress warnings and not for
-  defensive programming.  See Section~\ref{defensive-programming} for an
-  explanation of the distinction.
+  To use the \<castNonNull> method, the \<checker-qual.jar> file
+  must be on the classpath at run time.
 
 \begin{sloppypar}
 The Nullness Checker introduces a new method, rather than re-using an
@@ -706,43 +684,14 @@ Some libraries that are annotated with nullness qualifiers are:
 The Nullness Checker itself.
 
 \item
-The
-\href{https://mernst.github.io/plume-lib/}{Plume-lib library}.
-Run the command \code{make check-nullness}.
-
+The Java projects in the \href{plume-lib GitHub
+organization}{https://github.com/plume-lib/}.
+Type-checking occurs on each build.
 
 \item
 The
 \href{http://plse.cs.washington.edu/daikon/}{Daikon invariant detector}.
 Run the command \code{make check-nullness}.
-
-% \item
-% The annotation scene library.
-% To run the Nullness Checker on the annotation scene library,
-% % TODO: how does one do this?
-% first download the scene library suite (which includes build
-% dependencies for the scene library as well as its source code) and extract it
-% into your Checker Framework installation. The checker can then be run on the annotation
-% scene library with Apache Ant using the following commands:
-%
-% \begin{Verbatim}
-%   cd checkers
-%   ant -f scene-lib-test.xml
-% \end{Verbatim}
-%
-% % \noindent
-% % where \code{checkers} is the location of the Checker Framework installation.
-%
-% You can view the annotated source code, which contains \refqualclass{checker/nullness/qual}{NonNull} annotations, in
-% the
-% %BEGIN LATEX
-% \begin{smaller}
-% %END LATEX
-% \code{checkers/scene-lib-test/src/annotations/}
-% %BEGIN LATEX
-% \end{smaller}
-% %END LATEX
-% directory.
 
 \end{itemize}
 
@@ -791,9 +740,9 @@ corresponding annotation:
   argument type):
   change the argument type to \<@Nullable Object>; for \<remove>, also change
   the return type to \<@Nullable Object>.
-% Emacs code for the argument types:
-% ;;NOT: (tags-query-replace " apply(Object " " apply(/*@Nullable*/ Object ")
-% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(/*@Nullable*/ Object ")
+% Emacs code that adds annotations to the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(@Nullable Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(@Nullable Object ")
 
 \end{itemize}
 
@@ -857,8 +806,10 @@ code.
 If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
-exactly as if you had written the corresponding annotation from the
+as if you had written the corresponding annotation from the
 Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
 
 
 % These lists should be kept in sync with
@@ -964,14 +915,6 @@ example, if you use both \<android.annotation.NonNull> and
 \<lombok.NonNull> in your source code, then you must write at least one of
 them in fully-qualified form, as \<@android.annotation.NonNull> rather than
 as \<@NonNull>.
-
-Note that some older tools interpret array and varargs declarations
-inconsistently with the Java specification.  For example, they might
-interpret \<@NonNull Object []> as ``non-null array of objects'', rather
-than as ``array of non-null objects'' which is the correct Java
-interpretation.  Such an interpretation is unfortunate and confusing.  See
-Section~\ref{faq-array-syntax-meaning} for some more details about this
-issue.
 
 
 \subsection{Which tool is right for you?\label{choosing-nullness-tool}}
@@ -1111,30 +1054,44 @@ tool like the Checker Framework.)
 Many null pointer exceptions occur because the programmer forgets to check
 whether a reference is null before dereferencing it.  Java 8's
 \sunjavadoc{java/util/Optional.html}{\code{Optional<T>}}
-class provides a partial solution:  you cannot
-dereference the contained value without calling the \<get> method.
+class provides a partial solution:  a programmer must call the \<get> method to
+access the value, and the designers of \<Optional> hope that the syntactic
+occurrence of the \<get> method will remind programmers to first check that
+the value is present.  This is still easy to forget, however.
 
-However, the use of \code{Optional} for this purpose is unsatisfactory.
-First, it adds syntactic complexity, making your code longer and harder to
-read.  (The \code{Optional} class provides some operations, such as \<map>
-and \<orElse>, that you would otherwise have to write; without these its
-code bloat would be even worse.)  Second, there is no guarantee that the
-programmer remembers to call \<isPresent> before calling \<get>.  Thus, use
-of \code{Optional} doesn't solve the underlying problem --- it merely
-converts a \code{NullPointerException} into a
-\code{NoSuchElementException} exception, and in either case your code
-crashes.
+The Checker Framework contains an Optional Checker (see
+Chapter~\ref{optional-checker}) that guarantees that programmers use
+\<Optional> correctly, such as calling \<isPresent> before calling \<get>.
 
-The Nullness Checker does not suffer these limitations.  It works with
-existing code and types, it ensures that you check for null wherever
-necessary, and it infers when the check for null is not necessary based on
-previous statements in the method.
-
-See the article
+There are some limitations to the utility of \code{Optional}, which might
+lead to you choose to use regular Java references rather than \<Optional>.
+(For more details, see the article
 \href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
-  is better than Java's \<Optional> class''} for more details and
-explanation of the
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
+  is better than Java's \<Optional> class''}.)
+
+\begin{itemize}
+\item
+  It is still possible to call \<get> on a non-present \<Optional>, leading
+  to a \code{NoSuchElementException}.  In other words, \code{Optional}
+  doesn't solve the underlying problem --- it merely converts a
+  \code{NullPointerException} into a \code{NoSuchElementException}
+  exception, and in either case your code crashes.
+\item
+  \code{NullPointerException} is still possible in code that uses \code{Optional}.
+\item
+  \code{Optional} adds syntactic complexity, making your code longer and harder to
+  read.
+\item
+  \code{Optional} adds time and space overhead.
+\item
+  \code{Optional} does not address important sources of null pointer
+  exceptions, such as partially-initialized objects and calls to \<Map.get>.
+\end{itemize}
+
+The Nullness Checker does not suffer these limitations.  Furthermore, it
+works with existing code and types, it ensures that you check for null
+wherever necessary, and it infers when the check for null is not necessary
+based on previous statements in the method.
 
 Java's \<Optional> class provides utility routines to reduce clutter when
 using \<Optional>.  The Nullness Checker provides an
@@ -1241,7 +1198,7 @@ helper routine that is called by constructor.  For example:
     }
 
     // Verify that the representation invariants are satisfied.
-    // Works as long as the MyClass fields are initialized, even if the reciever's
+    // Works as long as the MyClass fields are initialized, even if the receiver's
     // class is a subclass of MyClass and not all of the subclass fields are initialized.
     private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
       ...
@@ -1251,20 +1208,14 @@ helper routine that is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
-\end{Verbatim}
-
 % Most readers can
 % skip this section on first reading; you can return to it once you have
 % mastered the rest of the Nullness Checker.
 
-Note that it would not be sound to type {@code this} as fully {@link Initialized} anywhere in
-a constructor (with the exception of final classes, for which the set
-of all fields is known),
-because there might be subclasses with uninitialized fields. The following example shows why:
+At the end of the constructor, the type is not fully initialized. Rather,
+it is \<@UnderInitialization(\emph{supertype})>.
+The reason is that there might be subclasses with uninitialized fields.
+The following example illustrates:
 
 \begin{Verbatim}
 class A {
@@ -1438,10 +1389,6 @@ your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
 \refqualclass{checker/nullness/qual}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
-It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
-to indicate that a primitive field has its value set in a helper method,
-which is relevant when you supply the \code{-Alint=uninitialized}
-command-line option (see Section~\ref{lint-uninitialized-section}).
 
 % TODO:
 % We need an
@@ -1495,7 +1442,7 @@ Consider what happens during execution of \<new B()>.
 \item \<B>'s constructor completes.  The object is initialized when treated
   as an \<A> or a \<B>.  (And, the object is fully initialized
    if \<B>'s constructor was invoked via a \<new B()>.  But the type system
-   cannot assume that -- there might be a \<class C extends B \{
+   cannot assume that --- there might be a \<class C extends B \{
   ... \}>, and \<B>'s constructor might have been invoked from that.)
 \end{enumerate}
 
@@ -1821,8 +1768,13 @@ consider a doubly linked list:
 
 \subsection{How to handle warnings\label{initialization-warnings}}
 
-There are several ways to address a warning ``error:  the constructor does
-not initialize fields: \ldots''.
+
+\subsubsection{``error:  the constructor does not initialize fields: \ldots''\label{initialization-warnings-constructor}}
+
+Like any warning, ``error:  the constructor does not initialize fields:
+\ldots'' indicates that either your annotations are incorrect or your code
+is buggy.  You can fix either the annotations or the code.
+
 \begin{itemize}
 \item
   Declare the field as \refqualclass{checker/nullness/qual}{Nullable}.  Recall
@@ -1847,6 +1799,8 @@ not initialize fields: \ldots''.
   NullPointerException into a more obscure error.
 \end{itemize}
 
+\subsubsection{``call to \ldots\ is not allowed on the given receiver''\label{initialization-warnings-receiver}}
+
 If your code calls an instance method from a constructor, you may see a
 message such as the following:
 
@@ -1864,7 +1818,9 @@ but the receiver formal parameter (Section~\ref{faq-receiver}) of method
 \refqualclass{checker/initialization/qual}{Initialized}.  If
 \<initHelper()> doesn't depend on its receiver being initialized --- that
 is, it's OK to call \<x.initHelper> even if \<x> is not initialized ---
-then you can indicate that:
+then you can indicate that by using
+\refqualclass{checker/initialization/qual}{UnderInitialization} or
+\refqualclass{checker/initialization/qual}{UnknownInitialization}.
 
 \begin{Verbatim}
 class MyClass {
@@ -1873,19 +1829,9 @@ class MyClass {
 \end{Verbatim}
 
 \noindent
-If you are using annotations in comments, you would write:
-
-\begin{Verbatim}
-class MyClass {
-  void initHelper(/*>>>@UnknownInitialization MyClass this,*/ String param1) { ... }
-}
-\end{Verbatim}
-
-\noindent
 You are likely to want to annotate \<initHelper()> with
 \refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
-
 
 You may get the ``call to \ldots\ is not allowed on the given receiver''
 error even if your constructor has already initialized all the fields.
@@ -1947,13 +1893,6 @@ nullness checking as well as all initialization checking.  (That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers
 that are aggregated together.)
-
-
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{initialization-checking-all-fields}}
-
-When the \code{-Alint=uninitialized} command-line option is provided, then
-an object is considered uninitialized until \emph{all} its fields are assigned, not
-just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
 \paragraph{Use of method annotations\label{initialization-checking-method-annotations}}
@@ -2087,12 +2026,6 @@ is called by constructor.  For example:
       field3 = new Object();
     }
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>> @Raw MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can
@@ -2234,10 +2167,6 @@ your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
 \refqualclass{checker/nullness/qual}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
-It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
-to indicate that a primitive field has its value set in a helper method,
-which is relevant when you supply the \code{-Alint=uninitialized}
-command-line option (see Section~\ref{lint-uninitialized-section}).
 
 % TODO:
 % We need an
@@ -2449,13 +2378,6 @@ You can suppress warnings related to partially-initialized objects with
 \end{sloppypar}
 
 
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{rawness-checking-checking-all-fields}}
-
-When the \code{-Alint=uninitialized} command-line option is provided, then
-an object is considered raw until \emph{all} its fields are assigned, not
-just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
-
-
 \paragraph{Use of method annotations\label{rawness-checking-method-annotations}}
 
 A method with a raw receiver often assumes that a few fields (but not all
@@ -2491,7 +2413,7 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  nonnull EnsuresNonNull arg orElse isPresent bField qual ccc
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
-% LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum
+% LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
 % LocalWords:  NullnessChecker redundantNullComparison instanceof
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray

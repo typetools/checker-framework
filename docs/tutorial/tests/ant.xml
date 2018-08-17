@@ -99,7 +99,7 @@
 
         <!-- ignore version of Checker Framework javac -->
         <arg value="-I"/>
-        <arg value="^javac 1.8.0-jsr308"/>
+        <arg value="^javac 1.8"/>
 
         <!-- ignore paths -->
         <arg value="-I"/>
@@ -151,8 +151,6 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
     <sequential>
       <exec executable="ant" failonerror="false"
           resultproperty="property.ignore">
-        <arg value="-Dcompiler.lib=${javac.lib}"/>
-        <arg value="-Dchecker.lib=${checker.lib}"/>
         <arg value="-e"/>
         <arg value="-l"/>
         <arg value="@{logfile}"/>

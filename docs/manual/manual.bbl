@@ -83,26 +83,11 @@ Michael~D. Ernst.
 \newblock {Type Annotations} specification ({JSR} 308).
 \newblock \url{https://checkerframework.org/jsr308/}, September~12, 2008.
 
-\bibitem[Eva96]{Evans96}
-David Evans.
-\newblock Static detection of dynamic memory errors.
-\newblock In {\em PLDI '96: Proceedings of the SIGPLAN '96 Conference on
-  Programming Language Design and Implementation}, pages 44--53, Philadelphia,
-  PA, USA, May 1996.
-
 \bibitem[FL03]{FahndrichL2003}
 Manuel F{\"a}hndrich and K.~Rustan~M. Leino.
 \newblock Declaring and checking non-null types in an object-oriented language.
 \newblock In {\em OOPSLA 2003, Object-Oriented Programming Systems, Languages,
   and Applications}, pages 302--312, Anaheim, CA, USA, November 2003.
-
-\bibitem[FLL{\etalchar{+}}02]{FlanaganLLNSS02}
-Cormac Flanagan, K.~Rustan~M. Leino, Mark Lillibridge, Greg Nelson, James~B.
-  Saxe, and Raymie Stata.
-\newblock Extended static checking for {Java}.
-\newblock In {\em PLDI 2002: Proceedings of the {ACM} {SIGPLAN} 2002 Conference
-  on Programming Language Design and Implementation}, pages 234--245, Berlin,
-  Germany, June 2002.
 
 \bibitem[GDEG13]{GordonDEG2013}
 Colin~S. Gordon, Werner Dietl, Michael~D. Ernst, and Dan Grossman.

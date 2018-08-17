@@ -1,6 +1,5 @@
 // Test case for Issue 1417.
 // https://github.com/typetools/checker-framework/issues/1417
-// @below-java8-jdk-skip-test
 
 class Issue1417 {
     interface Bar {}

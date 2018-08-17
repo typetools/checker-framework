@@ -1,6 +1,5 @@
 // Test case for Issue 1408.
 // https://github.com/typetools/checker-framework/issues/1408
-// @below-java8-jdk-skip-test
 abstract class Issue1408 {
     interface Demo {}
 

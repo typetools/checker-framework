@@ -34,9 +34,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.framework.qual.Covariant;
 
-// Note: Methods with references to java 8 classes have been commented out
-// because it breaks the annotated jdk build when running java 7.
-
 /**
  * A container object which may or may not contain a non-null value.
  * If a value is present, {@code isPresent()} will return {@code true} and
@@ -66,7 +63,7 @@ import org.checkerframework.framework.qual.Covariant;
 // meaning, but are unrelated by the Java type hierarchy.
 // @Covariant makes Optional<@NonNull String> a subtype of Optional<@Nullable String>.
 @Covariant(0)
-public final @NonNull class Optional<T extends @Nullable Object> {
+public final @NonNull class Optional<T> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -99,7 +96,7 @@ public final @NonNull class Optional<T extends @Nullable Object> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static <T extends @Nullable Object> Optional<T> empty() {
+    public static <T> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -123,7 +120,7 @@ public final @NonNull class Optional<T extends @Nullable Object> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T extends @Nullable Object> Optional<T> of(@NonNull T value) {
+    public static <T> Optional<T> of(@NonNull T value) {
         return new Optional<>(value);
     }
 
@@ -136,7 +133,7 @@ public final @NonNull class Optional<T extends @Nullable Object> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T extends @Nullable Object> Optional<T> ofNullable(@Nullable T value) {
+    public static <T> Optional<T> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 

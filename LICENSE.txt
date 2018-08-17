@@ -14,11 +14,6 @@ A few parts of the Checker Framework have more permissive licenses.
    which the Checker Framework recognizes as aliases for its own
    annotations, are licensed under the MIT License.
 
- * The Eclipse plugin is dual-licensed (you may use whichever you prefer)
-   under GPL2 and the Eclipse Public License Version 1.0 (EPL).  EPL
-   appears http://www.eclipse.org/org/documents/epl-v10.php.  Eclipse
-   itself uses EPL.
-
 Some external libraries that are included with the Checker Framework have
 different licenses.
 
@@ -32,11 +27,12 @@ different licenses.
    http://www.junit.org/license), with parts (Hamcrest) licensed under the
    BSD License (see http://hamcrest.org/JavaHamcrest/).
 
- * plume-lib is licensed under the MIT License.
+ * Libraries in plume-lib (https://github.com/plume-lib/) are licensed
+   under the MIT License.
 
-The Checker Framework includes annotations for several libraries, in
-directory checker/jdk/.  Each annotated library uses the same license as
-the unannotated version of the library.
+The Checker Framework includes annotations for the JDK in directory
+checker/jdk/, and for some other libraries.  Each annotated library uses
+the same license as the unannotated version of the library.
 
 ===========================================================================
 

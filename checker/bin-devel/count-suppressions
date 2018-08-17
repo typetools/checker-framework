@@ -1,19 +1,29 @@
-#!/bin/sh
+#!/bin/bash
 
-# This command counts the frequency of each distinct reason for warning
-# suppressions.
-# Invoke it like this:
+# This command counts the approximate frequency of each distinct reason for
+# warning suppressions.
+# To invoke it, pass a type system name; for example:
 #   count-suppressions nullness
 
 # If warning suppression text contains a colon, this script prints only
 # the text before the colon, under the assumption that the initial text
 # is a category name.
 
-# You can use this to determine the most frequent reasons for warning
-# suppressions.  However, use common.util.count.AnnotationStatistics (not
-# this script) to count the total number of warning suppressions.
+# This script is useful to determine the most frequent reasons for warning
+# suppressions, to help checker developers decide what featuers to add to
+# their type systems.  However, use common.util.count.AnnotationStatistics
+# to count the total number of warning suppressions (for example, to report
+# in a paper), because this script gives only an approximate count.
 
 debug=0
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED=gsed
+    GREP=ggrep
+else
+    SED=sed
+    GREP=grep
+fi
 
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 TYPESYSTEM" >&2
@@ -41,15 +51,15 @@ echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
 # This grep command captures a few stray lines; users should ignore them.
-grep -n --recursive --include='*.java' "\"${regex}[:\"]\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
+${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
 ## Don't output a total, to avoid people using this approximate count.
 # echo -n "Total: "
 # cat ${greplines} | wc -l
 cat ${greplines} \
-    | sed 's/.*\/\/ //g' \
-    | sed "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \
-    | sed 's/\([^0-9]\): [^:].*/\1/' \
-    | sed 's/ \+$//' \
+    | ${SED} 's/.*\/\/ //g' \
+    | ${SED} "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \
+    | ${SED} 's/\([^0-9]\): [^:].*/\1/' \
+    | ${SED} 's/ \+$//' \
     | sort | uniq -c | sort -rg
 if [ "$debug" -eq "0" ]; then
   rm -f ${greplines}

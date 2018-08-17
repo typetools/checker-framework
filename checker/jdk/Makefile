@@ -4,20 +4,26 @@
 
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS = nullness lock index
+CHECKER_DIRS = index lock nullness optional
 
-all: clean classes
+JAVA_FILES := $(shell find $(CHECKER_DIRS) -name '*.java' | sort)
+
+jdk.jar: $(JAVA_FILES)
+	$(MAKE) jdk.jar-unconditionally
+
+# Remakes the annotated JDK, regardless of whether it is out of date.
+jdk.jar-unconditionally: clean classes
 # Extracts unannotated .class files from $(CTSYM)
 	$(MAKE) unmodified
 # Insert annotations in those files.
 	$(MAKE) jaifs annotated
 # Put those annotated .class files back in jdk.jar.
-	$(MAKE) jdk.jar
+	$(MAKE) jdk.jar-insertion
 
-## DO NOT INVOKE DIRECTLY.  USE "make all" INSTEAD.
+# Does the final step of making jdk.jar.
 # jdk.jar only contains those classes with annotations, not every class from
 # the original JDK.
-jdk.jar:
+jdk.jar-insertion:
 	echo Checker-Framework-Version: `git rev-parse --short HEAD` > manifest.txt
 	echo Creation-Date: `date` >> manifest.txt
 	cd annotated; jar cfm ../jdk.jar ../manifest.txt .
@@ -30,10 +36,11 @@ ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class' | sort)
 # All class files that contain some annotation, possibly with duplicates.
 # These, and only these, need to be extracted from $(CTSYM).
 ANNOTATED_CLASSES = \
-	$(patsubst nullness/build/%.class,annotated/%.class, \
-      $(patsubst lock/build/%.class,annotated/%.class, \
-        $(patsubst index/build/%.class,annotated/%.class, \
-          $(ANNOTATED_CLASSES_BY_DIR))))
+  $(patsubst index/build/%.class,annotated/%.class, \
+  $(patsubst lock/build/%.class,annotated/%.class, \
+  $(patsubst nullness/build/%.class,annotated/%.class, \
+  $(patsubst optional/build/%.class,annotated/%.class, \
+  $(ANNOTATED_CLASSES_BY_DIR)))))
 
 # Extract from $(CTSYM) an unannotated version of every file that will
 # eventually get any annotation.
@@ -52,7 +59,7 @@ annotated: $(addsuffix .annotated, $(CHECKER_DIRS))
 annotated/%.class:
 	mkdir -p annotated
 # Extract exactly one file from $(CTSYM)
-# Ignore errors for now; we get errors when building the JDK for Java 6 but looking for files that are in the annotated JDK because of Java 7.
+# Ignore errors for now; the annotated JDK doesn't have the same inner classes as the real JDK.
 	-cd annotated; unzip $(CTSYM) 'META-INF/sym/rt.jar/$*.class' > /dev/null
 	-cp -R annotated/META-INF/sym/rt.jar/* annotated/
 	rm -rf annotated/META-INF

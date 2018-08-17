@@ -1,6 +1,5 @@
 // Test case for issue 496:
 // https://github.com/typetools/checker-framework/issues/496
-// @below-java8-jdk-skip-test
 
 import java.util.Optional;
 
