@@ -30,7 +30,9 @@ if [ -d ../annotation-tools ] ; then
     git -C ../annotation-tools pull
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+    echo "About to execute: /tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools"
     REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools`
+    echo "About to execute: /tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}"
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
     echo "About to execute: git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}"
     (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
