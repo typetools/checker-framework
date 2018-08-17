@@ -39,6 +39,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -292,15 +293,13 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree);
-        AnnotatedExecutableType method = mfuPair.first;
+    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedMethodType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.methodType;
 
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
-        return mfuPair;
+        return mType;
     }
 
     @Override

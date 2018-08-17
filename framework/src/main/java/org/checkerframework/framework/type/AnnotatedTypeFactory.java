@@ -1965,6 +1965,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
+    /** The type for an instantiated generic method. */
+    public static class ParameterizedMethodType {
+        /** The method's type. */
+        public final AnnotatedExecutableType methodType;
+        /** The types of the generic type arguments. */
+        public final List<AnnotatedTypeMirror> typeArgs;
+        /** Create a ParameterizedMethodType. */
+        public ParameterizedMethodType(
+                AnnotatedExecutableType methodType, List<AnnotatedTypeMirror> typeArgs) {
+            this.methodType = methodType;
+            this.typeArgs = typeArgs;
+        }
+    }
+
     /**
      * Determines the type of the invoked method based on the passed method invocation tree.
      *
@@ -1991,19 +2005,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
      */
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
+    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                methodFromUse(tree, methodElt, receiverType);
+        ParameterizedMethodType mType = methodFromUse(tree, methodElt, receiverType);
         if (checker.shouldResolveReflection()
                 && reflectionResolver.isReflectiveMethodInvocation(tree)) {
-            mfuPair = reflectionResolver.resolveReflectiveCall(this, tree, mfuPair);
+            mType = reflectionResolver.resolveReflectiveCall(this, tree, mType);
         }
 
-        AnnotatedExecutableType method = mfuPair.first;
+        AnnotatedExecutableType method = mType.methodType;
         if (method.getReturnType().getKind() == TypeKind.WILDCARD
                 && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()) {
             // Get the correct Java type from the tree and use it as the upper bound of the
@@ -2023,10 +2035,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             addDefaultAnnotations(wildcard);
         }
 
-        return mfuPair;
+        return mType;
     }
 
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
+    public ParameterizedMethodType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
         AnnotatedExecutableType methodType =
@@ -2060,7 +2072,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType);
         }
 
-        return Pair.of(methodType, typeargs);
+        return new ParameterizedMethodType(methodType, typeargs);
     }
 
     /**
@@ -2138,8 +2150,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the invoked constructor (as an executable type) and the
      *     (inferred) type arguments
      */
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
-            NewClassTree tree) {
+    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
         ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         addComputedTypeAnnotations(tree.getIdentifier(), type);
@@ -2166,7 +2177,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);
         }
 
-        return Pair.of(con, typeargs);
+        return new ParameterizedMethodType(con, typeargs);
     }
 
     /** Returns the return type of the method {@code m}. */
@@ -3576,10 +3587,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             case NEW_CLASS:
                 NewClassTree newClass = (NewClassTree) parentTree;
                 int indexOfLambda = newClass.getArguments().indexOf(tree);
-                Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> con =
-                        this.constructorFromUse(newClass);
+                ParameterizedMethodType con = this.constructorFromUse(newClass);
                 AnnotatedTypeMirror constructorParam =
-                        AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.first, indexOfLambda);
+                        AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(
+                                con.methodType, indexOfLambda);
                 assert isFunctionalInterface(
                         constructorParam.getUnderlyingType(), parentTree, tree);
                 return (AnnotatedDeclaredType) constructorParam;
@@ -3594,10 +3605,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             case METHOD_INVOCATION:
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
                 int index = method.getArguments().indexOf(tree);
-                Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> exe =
-                        this.methodFromUse(method);
+                ParameterizedMethodType exe = this.methodFromUse(method);
                 AnnotatedTypeMirror param =
-                        AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.first, index);
+                        AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.methodType, index);
                 if (param.getKind() == TypeKind.WILDCARD) {
                     // param is an uninferred wildcard.
                     TypeMirror typeMirror = TreeUtils.typeOf(tree);

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.checkerframework.dataflow.qual.Deterministic;
 import sun.misc.JavaSecurityAccess;
 import sun.misc.JavaSecurityProtectionDomainAccess;
 import sun.misc.SharedSecrets;
@@ -169,6 +170,7 @@ public class ProtectionDomain {
      * @return the CodeSource of this domain which may be null.
      * @since 1.2
      */
+    @Deterministic
     public final @Nullable CodeSource getCodeSource() {
         return this.codesource;
     }

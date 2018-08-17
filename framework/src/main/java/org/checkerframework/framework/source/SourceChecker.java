@@ -211,6 +211,11 @@ import org.checkerframework.javacutil.TreeUtils;
     // that were not found on the class path
     // org.checkerframework.framework.stub.StubParser.warnIfNotFound
     "stubWarnIfNotFound",
+    // Whether to ignore missing classes even when warnIfNotFound is set to true and
+    // other classes from the same package are present (useful if a package spans more than one
+    // jar).
+    // org.checkerframework.framework.stub.StubParser.warnIfNotFoundIgnoresClasses
+    "stubWarnIfNotFoundIgnoresClasses",
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
