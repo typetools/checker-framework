@@ -207,7 +207,7 @@ This section describes how to create an annotated library.
 
 \begin{enumerate}
 \item See the
-  \ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
+  \ahref{https://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
@@ -673,6 +673,12 @@ be found.
 The \<@NoStubParserWarning> annotation on a package or type in a stub file
 overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
 will be issued.
+
+Use command-line option
+\<-AstubWarnIfNotFoundIgnoresClasses> in conjuntion with the previous option
+to report only missing methods/fields, but ignore missing classes, even if
+other classes from the same package are present.
+Useful if a package spans more than one jar.
 
 Use command-line option
 \<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a

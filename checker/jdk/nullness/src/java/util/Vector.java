@@ -701,7 +701,7 @@ public class Vector<E>
      *
      * @since 1.2
      */
-    public synchronized @Nullable Object[] toArray() {
+    public @PolyNull Object[] toArray(Vector<@PolyNull E> this) {
         return Arrays.copyOf(elementData, elementCount);
     }
 
