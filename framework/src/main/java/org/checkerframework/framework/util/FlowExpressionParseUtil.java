@@ -152,30 +152,33 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    /** Return true iff s contains a dot (.) and a method call. */
+    /**
+     * Return true iff s contains a dot (.) and a method call at the top level, or a member select.
+     */
     private static boolean isMemberSelectOrMethodChain(String s, FlowExpressionContext context) {
         return parseMemberSelectOrChainedMethodCalls(s, context) != null;
     }
 
     /**
-     * Matches expressions containing a dot (.) and a method call. If expression contains a method
-     * call whose caller is a method call as well (method chain), first of the returned pair is the
-     * caller, and second of the pair is the method invoked. For e.g. myMethod().myMethod2.get(0)
-     * returns Pair(myMethod().myMethod2(), get(0)) If expression is a field select whose receiver
-     * is a method call, first of the returned pair is the receiver expression, and second is the
-     * field For e.g. myMethod().field returns Pair(myMethod(), field) Null is returned otherwise.
+     * Matches expressions containing a dot (.) and a method call. If the expression is a method
+     * call whose receiver is a method call as well (method chain), first of the returned pair is
+     * the receiver, and second of the pair is the last top-level method call. For example,
+     * myMethod().myMethod2().get(0) returns Pair(myMethod().myMethod2(), get(0)). If the expression
+     * is a field select whose receiver is a method call, first of the returned pair is the receiver
+     * expression, and the second is the field. For example, myMethod().field returns
+     * Pair(myMethod(), field). Null is returned otherwise.
      *
      * @param exprWithNumberedParameters expression string which can contain occurence of formal
-     *     parameters, such as "#2"
+     *     parameters, such as "#2".
      * @param exprWithNamedParameters exprWithNumberedParameters with replaced occurences of formal
-     *     parameters, such as "#2" with formal parameter names
+     *     parameters, such as "#2" with formal parameter names.
      * @param argumentList list of formal parameter names if numbered parameters such as "#2" are
-     *     present in exprWithNumberedParameters Like a dictionary where the index of the formal
-     *     parameter name is one less than the number it corresponds to. For example, if index of
-     *     paramName in argumentList is 1, it corresponds to formal parameter '#2'
-     * @return Pair of the left hand side of the dot (receiver or caller), and the right hand side
-     *     of it (can be field or method call). Returns null if expression does not contain both a
-     *     dot and method call.
+     *     present in exprWithNumberedParameters. It is like a dictionary where the index of the
+     *     formal parameter name is one less than the number it corresponds to. For example, if the
+     *     index of paramName in argumentList is 1, it corresponds to formal parameter '#2'.
+     * @return Pair of the left hand side of the dot (receiver), and the right hand side of it (can
+     *     be field or top-level method call). Returns null if expression does not contain both a
+     *     dot and top-level method call, or field select whose receiver is a method call.
      */
     private static Pair<String, String> parseMethodCallChain(
             String exprWithNumberedParameters,
@@ -239,9 +242,9 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Matches a field select, or chained method calls. First of returned pair is receiver and
-     * second is field if field select is found, pair of two method call expressions if expression
-     * contains chained method calls.
+     * Matches a field select, or chained method calls. First of the returned pair is the receiver
+     * and the second is the field if a field select is found. A pair of two method call expressions
+     * are returned if expression contains chained method calls.
      *
      * @param s expression string
      * @param context information about arguments in s, such as "#2" if present
@@ -601,11 +604,11 @@ public class FlowExpressionParseUtil {
      *
      * @param argumentName argument string
      * @param argumentList list of formal parameter names if numbered parameters such as "#2" are
-     *     present in the method call that is currently being parsed Like a dictionary where the
-     *     index of the formal parameter name is one less than the number it corresponds to. For
+     *     present in the method call that is currently being parsed. It is like a dictionary where
+     *     the index of the formal parameter name is one less than the number it corresponds to. For
      *     example, if index of paramName in argumentList is 1, it corresponds to formal parameter
-     *     '#2'
-     * @return a numbered formal parameter such as "#2", or the argumentName
+     *     '#2'.
+     * @return a numbered formal parameter such as "#2", or the argumentName.
      */
     public static String asFormalParameter(String argumentName, ArrayList<String> argumentList) {
         if (argumentList.contains(argumentName)) {
@@ -616,17 +619,17 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Indentify and parse a method call. First of returned pair is a pair of method name and
-     * arguments. Second of returned pair is a remaining string.
+     * Indentify and parse a method call. First of the returned pair is a pair of method name and
+     * arguments. Second of the returned pair is a remaining string.
      *
      * @param exprWithNamedParameters expression string with formal parameters such as "#2" replaced
      *     by formal parameter names
      * @param argumentList list of formal parameter names if numbered parameters such as "#2" are
-     *     present in exprWithNumberedParameters Like a dictionary where the index of the formal
-     *     parameter name is one less than the number it corresponds to. For example, if index of
-     *     paramName in argumentList is 1, it corresponds to formal parameter '#2'
-     * @return pair of (pair of method name and arguments) and remaining if method call, null
-     *     otherwise
+     *     present in exprWithNumberedParameters. It is like a dictionary where the index of the
+     *     formal parameter name is one less than the number it corresponds to. For example, if
+     *     index of paramName in argumentList is 1, it corresponds to formal parameter '#2'.
+     * @return pair of (pair of method name and arguments) and remaining if exprWithNamedParameters
+     *     is a method call. Returns null otherwise.
      */
     private static Pair<Pair<String, String>, String> parseMethodCall(
             String exprWithNamedParameters, ArrayList<String> argumentList) {
@@ -685,11 +688,11 @@ public class FlowExpressionParseUtil {
      *
      * @param s expression string
      * @param argumentList list of formal parameter names if numbered parameters such as "#2" are
-     *     present in the method call if present in expression string s Like a dictionary where the
-     *     index of the formal parameter name is one less than the number it corresponds to. For
-     *     example, if index of paramName in argumentList is 1, it corresponds to formal parameter
-     *     '#2'
-     * @return true if expression string s is a single method call, false otherwise.
+     *     present in the method call if present in expression string s. It is like a dictionary
+     *     where the index of the formal parameter name is one less than the number it corresponds
+     *     to. For example, if index of paramName in argumentList is 1, it corresponds to formal
+     *     parameter '#2'.
+     * @return true if expression string s is a single method call. Returns false otherwise.
      */
     private static boolean isMethodCall(String s, FlowExpressionContext context) {
 
@@ -820,7 +823,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Parse a array access. First of returned pair is a pair of an array to be accessed and an
+     * Parse an array access. First of returned pair is a pair of an array to be accessed and an
      * index. Second of returned pair is a remaining string.
      *
      * @param s expression string
