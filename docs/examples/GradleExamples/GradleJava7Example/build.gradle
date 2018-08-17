@@ -37,7 +37,7 @@ allprojects {
         compile.doFirst {
             compile.options.compilerArgs = [
                     '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
-                    // uncomment to turn Checker Framework errors into warnings
+                    // -Awarns turns Checker Framework errors into warnings
                     //'-Awarns',
                     "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}",
                     '-source', '7', '-target', '7'

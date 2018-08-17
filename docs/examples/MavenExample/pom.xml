@@ -85,7 +85,7 @@
               <compilerArgs>
                   <!-- location of the annotated JDK, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
-                  <!--treat Checker Framework errors as warnings-->
+                  <!-- -Awarns treats Checker Framework errors as warnings -->
                   <!-- <arg>-Awarns</arg> -->
                   <arg>-Alint</arg>
               </compilerArgs>
