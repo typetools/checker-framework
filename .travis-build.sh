@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Entering checker-framework/.travis-build.sh, GROUP=$1, in" `pwd`
+
 # Optional argument $1 is one of:
 #   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
 # It defaults to "all".
@@ -43,21 +45,25 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 
+export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+
 source ./.travis-build-without-test.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
 # subsequent command to build it except to test building it.
 
 set -e
 
+echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
+
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
-  # plume-lib-typecheck: 30 minutes
+  # plume-lib-typecheck: 15 minutes
   [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
-  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} mernst plume-lib`
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetests plume-lib-typecheck`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
-  export CHECKERFRAMEWORK=`pwd`
-  (cd ../plume-lib/java && make check-types)
+  (cd ../plume-lib-typecheck && ./.travis-build.sh)
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
@@ -78,7 +84,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
-  export AFU=`pwd`/../annotation-tools/annotation-file-utilities
+  export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && ./gradlew --console=plain dist test)
 
@@ -108,7 +114,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
   (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  export CHECKERFRAMEWORK=$ROOT/checker-framework
+  export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
   (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
 fi
@@ -155,3 +161,5 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ./gradlew --console=plain htmlValidate
 
 fi
+
+echo "Exiting checker-framework/.travis-build.sh, GROUP=$GROUP, in" `pwd`

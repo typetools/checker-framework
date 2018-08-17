@@ -446,7 +446,7 @@ use the last one.
    run checker.jar via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
-  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" ...
+  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" -processor nullness MyFile.java
 \end{Verbatim}
 
     You can simplify the above command by introducing an alias.  Then,
@@ -613,13 +613,14 @@ latest bug fixes and new features:
     </dependency>
   </dependencies>
 \end{alltt}
-\end{enumerate}
 
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:
 \begin{Verbatim}
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
+
+\end{enumerate}
 
 
 \item Use Maven properties to hold the locations of the

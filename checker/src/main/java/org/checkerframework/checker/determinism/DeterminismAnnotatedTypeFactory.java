@@ -114,7 +114,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             AnnotatedTypeMirror.AnnotatedExecutableType invokedMethod =
-                    atypeFactory.methodFromUse(node).first;
+                    atypeFactory.methodFromUse(node).methodType;
             ExecutableElement invokedMethodElement = invokedMethod.getElement();
 
             // If return type (non-array and non-collection) resolves to @OrderNonDet, replace it

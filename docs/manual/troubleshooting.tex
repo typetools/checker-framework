@@ -231,7 +231,7 @@ Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  ./gradlew  buildJdk assemble
+  ./gradlew buildJdk assemble
 \end{Verbatim}
 
 \noindent
@@ -782,11 +782,15 @@ Follow the instructions for your operating system.
 \item[Ubuntu]
   Run the following commands:
 
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdkany
 \begin{Verbatim}
-sudo apt-get update
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls \
- make maven mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
- texlive-latex-extra texlive-fonts-recommended unzip
+sudo apt-get -qqy update
+sudo apt-get -qqy install ant cpp git gradle junit4  libcurl3-gnutls \
+ make maven mercurial unzip wget openjdk-8-jdk \
+ dia hevea latexmk librsvg2-bin maven python-pip \
+ texlive-font-utils texlive-fonts-recommended \
+ texlive-latex-base texlive-latex-extra texlive-latex-recommended
+
 \end{Verbatim}
 
 % Building Checker Framework from source on Mac OS

@@ -1,4 +1,3 @@
-// this is from plume-lib
 class TypeVarAndArrayRefinement {
 
     @SuppressWarnings("determinism")
