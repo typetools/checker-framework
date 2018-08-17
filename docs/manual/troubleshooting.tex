@@ -538,22 +538,6 @@ requires changing an \<import> statement.
 
 
 \item
-This compile-time error
-
-\begin{Verbatim}
-  unknown enum constant java.lang.annotation.ElementType.TYPE_USE
-\end{Verbatim}
-
-\noindent
-indicates that you are compiling using a Java 6 or 7 JDK, but your code
-references an enum constant that is only defined in the Java 8 JDK.  The
-problem might be that your code uses a library that references the enum
-constant.  In particular, the type annotations shipped with the Checker
-Framework reference
-\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.
-
-
-\item
 If Eclipse gives the warning
 
 \begin{Verbatim}

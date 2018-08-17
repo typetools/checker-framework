@@ -203,10 +203,6 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava7Example/build.gradle" byline="true"
-                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
-                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
-
         <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava8Example/build.gradle" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
