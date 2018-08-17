@@ -153,7 +153,7 @@ public final class Class<T> implements java.io.Serializable,
      *
      * @return a string representation of this class object.
      */
-    public String toString() {
+    public @Det String toString(@PolyDet Class<T> this) {
         return (isInterface() ? "interface " : (isPrimitive() ? "" : "class "))
             + getName();
     }
@@ -184,7 +184,7 @@ public final class Class<T> implements java.io.Serializable,
      *
      * @since 1.8
      */
-    public String toGenericString() {
+    public @Det String toGenericString(@PolyDet Class<T> this) {
         if (isPrimitive()) {
             return toString();
         } else {
@@ -260,7 +260,7 @@ public final class Class<T> implements java.io.Serializable,
      * @exception ClassNotFoundException if the class cannot be located
      */
     @CallerSensitive
-    public static Class<?> forName(String className)
+    public static @PolyDet Class<?> forName(@PolyDet String className)
                 throws ClassNotFoundException {
         Class<?> caller = Reflection.getCallerClass();
         return forName0(className, true, ClassLoader.getClassLoader(caller), caller);
@@ -329,8 +329,8 @@ public final class Class<T> implements java.io.Serializable,
      * @since     1.2
      */
     @CallerSensitive
-    public static Class<?> forName(String name, boolean initialize,
-                                   ClassLoader loader)
+    public static @PolyDet Class<?> forName(@PolyDet String name, @PolyDet boolean initialize,
+                                   @PolyDet ClassLoader loader)
         throws ClassNotFoundException
     {
         Class<?> caller = null;
@@ -392,7 +392,7 @@ public final class Class<T> implements java.io.Serializable,
      *          of this class.
      */
     @CallerSensitive
-    public T newInstance()
+    public T newInstance(@PolyDet Class<T> this)
         throws InstantiationException, IllegalAccessException
     {
         if (System.getSecurityManager() != null) {
@@ -482,7 +482,7 @@ public final class Class<T> implements java.io.Serializable,
      *
      * @since JDK1.1
      */
-    public native boolean isInstance(Object obj);
+    public native @PolyDet boolean isInstance(@PolyDet Class<T> this, @PolyDet Object obj);
 
 
     /**
@@ -509,7 +509,7 @@ public final class Class<T> implements java.io.Serializable,
      *            null.
      * @since JDK1.1
      */
-    public native boolean isAssignableFrom(Class<?> cls);
+    public native @PolyDet boolean isAssignableFrom(@PolyDet Class<T> this, @PolyDet Class<?> cls);
 
 
     /**
@@ -519,7 +519,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return  {@code true} if this object represents an interface;
      *          {@code false} otherwise.
      */
-    public native boolean isInterface();
+    public native @Det boolean isInterface(@PolyDet Class<T> this);
 
 
     /**
@@ -529,7 +529,7 @@ public final class Class<T> implements java.io.Serializable,
      *          {@code false} otherwise.
      * @since   JDK1.1
      */
-    public native boolean isArray();
+    public native @Det boolean isArray(@PolyDet Class<T> this);
 
 
     /**
@@ -560,7 +560,7 @@ public final class Class<T> implements java.io.Serializable,
      * @see     java.lang.Void#TYPE
      * @since JDK1.1
      */
-    public native boolean isPrimitive();
+    public native @Det boolean isPrimitive(@PolyDet Class<T> this);
 
     /**
      * Returns true if this {@code Class} object represents an annotation
@@ -571,7 +571,7 @@ public final class Class<T> implements java.io.Serializable,
      *      type; {@code false} otherwise
      * @since 1.5
      */
-    public boolean isAnnotation() {
+    public @Det boolean isAnnotation(@PolyDet Class<T> this) {
         return (getModifiers() & ANNOTATION) != 0;
     }
 
@@ -583,7 +583,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 13.1 The Form of a Binary
      * @since 1.5
      */
-    public boolean isSynthetic() {
+    public @Det boolean isSynthetic(@PolyDet Class<T> this) {
         return (getModifiers() & SYNTHETIC) != 0;
     }
 
@@ -638,7 +638,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return  the name of the class or interface
      *          represented by this object.
      */
-    public String getName() {
+    public @Det String getName(@PolyDet Class<T> this) {
         String name = this.name;
         if (name == null)
             this.name = name = getName0();
@@ -676,7 +676,7 @@ public final class Class<T> implements java.io.Serializable,
      * @see java.lang.RuntimePermission
      */
     @CallerSensitive
-    public ClassLoader getClassLoader() {
+    public @Det ClassLoader getClassLoader(@PolyDet Class<T> this) {
         ClassLoader cl = getClassLoader0();
         if (cl == null)
             return null;
@@ -711,7 +711,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @SuppressWarnings("unchecked")
-    public TypeVariable<Class<T>>[] getTypeParameters() {
+    public @Det TypeVariable<Class<T>> @Det[] getTypeParameters(@PolyDet Class<T> this) {
         ClassRepository info = getGenericInfo();
         if (info != null)
             return (TypeVariable<Class<T>>[])info.getTypeParameters();
@@ -731,7 +731,7 @@ public final class Class<T> implements java.io.Serializable,
      *
      * @return the superclass of the class represented by this object.
      */
-    public native Class<? super T> getSuperclass();
+    public native @Det Class<? super T> getSuperclass(@PolyDet Class<T> this);
 
 
     /**
@@ -763,7 +763,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return the superclass of the class represented by this object
      * @since 1.5
      */
-    public Type getGenericSuperclass() {
+    public @Det Type getGenericSuperclass(@PolyDet Class<T> this) {
         ClassRepository info = getGenericInfo();
         if (info == null) {
             return getSuperclass();
@@ -794,7 +794,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return the package of the class, or null if no package
      *         information is available from the archive or codebase.
      */
-    public Package getPackage() {
+    public @Det Package getPackage(@PolyDet Class<T> this) {
         return Package.getPackage(this);
     }
 
@@ -843,7 +843,7 @@ public final class Class<T> implements java.io.Serializable,
      *
      * @return an array of interfaces implemented by this class.
      */
-    public Class<?>[] getInterfaces() {
+    public @Det Class<?> @Det[] getInterfaces(@PolyDet Class<T> this) {
         ReflectionData<T> rd = reflectionData();
         if (rd == null) {
             // no cloning required
@@ -910,7 +910,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return an array of interfaces implemented by this class
      * @since 1.5
      */
-    public Type[] getGenericInterfaces() {
+    public @Det Type @Det[] getGenericInterfaces(@PolyDet Class<T> this) {
         ClassRepository info = getGenericInfo();
         return (info == null) ?  getInterfaces() : info.getSuperInterfaces();
     }
@@ -926,7 +926,7 @@ public final class Class<T> implements java.io.Serializable,
      * @see     java.lang.reflect.Array
      * @since JDK1.1
      */
-    public native Class<?> getComponentType();
+    public native @Det Class<?> getComponentType(@PolyDet Class<T> this);
 
 
     /**
@@ -956,7 +956,7 @@ public final class Class<T> implements java.io.Serializable,
      * @see     java.lang.reflect.Modifier
      * @since JDK1.1
      */
-    public native int getModifiers();
+    public native @Det int getModifiers(@PolyDet Class<T> this);
 
 
     /**
@@ -967,7 +967,7 @@ public final class Class<T> implements java.io.Serializable,
      *          a primitive type or void.
      * @since   JDK1.1
      */
-    public native Object[] getSigners();
+    public native @NonDet Object @NonDet[] getSigners(@PolyDet Class<T> this);
 
 
     /**
@@ -1013,7 +1013,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @CallerSensitive
-    public Method getEnclosingMethod() throws SecurityException {
+    public @Det Method getEnclosingMethod(@PolyDet Class<T> this) throws SecurityException {
         EnclosingMethodInfo enclosingInfo = getEnclosingMethodInfo();
 
         if (enclosingInfo == null)
@@ -1166,7 +1166,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @CallerSensitive
-    public Constructor<?> getEnclosingConstructor() throws SecurityException {
+    public @Det Constructor<?> getEnclosingConstructor(@PolyDet Class<T> this) throws SecurityException {
         EnclosingMethodInfo enclosingInfo = getEnclosingMethodInfo();
 
         if (enclosingInfo == null)
@@ -1233,7 +1233,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Class<?> getDeclaringClass() throws SecurityException {
+    public @Det Class<?> getDeclaringClass(@PolyDet Class<T> this) throws SecurityException {
         final Class<?> candidate = getDeclaringClass0();
 
         if (candidate != null)
@@ -1259,7 +1259,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @CallerSensitive
-    public Class<?> getEnclosingClass() throws SecurityException {
+    public @Det Class<?> getEnclosingClass(@PolyDet Class<T> this) throws SecurityException {
         // There are five kinds of classes (or interfaces):
         // a) Top level classes
         // b) Nested classes (static member classes)
@@ -1304,7 +1304,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return the simple name of the underlying class
      * @since 1.5
      */
-    public String getSimpleName() {
+    public @Det String getSimpleName(@PolyDet Class<T> this) {
         if (isArray())
             return getComponentType().getSimpleName()+"[]";
 
@@ -1343,7 +1343,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return an informative string for the name of this type
      * @since 1.8
      */
-    public String getTypeName() {
+    public @Det String getTypeName(@PolyDet Class<T> this) {
         if (isArray()) {
             try {
                 Class<?> cl = this;
@@ -1381,7 +1381,7 @@ public final class Class<T> implements java.io.Serializable,
      * {@code null} otherwise.
      * @since 1.5
      */
-    public String getCanonicalName() {
+    public @Det String getCanonicalName(@PolyDet Class<T> this) {
         if (isArray()) {
             String canonicalName = getComponentType().getCanonicalName();
             if (canonicalName != null)
@@ -1409,7 +1409,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return {@code true} if and only if this class is an anonymous class.
      * @since 1.5
      */
-    public boolean isAnonymousClass() {
+    public @Det boolean isAnonymousClass(@PolyDet Class<T> this) {
         return "".equals(getSimpleName());
     }
 
@@ -1420,7 +1420,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return {@code true} if and only if this class is a local class.
      * @since 1.5
      */
-    public boolean isLocalClass() {
+    public @Det boolean isLocalClass(@PolyDet Class<T> this) {
         return isLocalOrAnonymousClass() && !isAnonymousClass();
     }
 
@@ -1431,7 +1431,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return {@code true} if and only if this class is a member class.
      * @since 1.5
      */
-    public boolean isMemberClass() {
+    public @Det boolean isMemberClass(@PolyDet Class<T> this) {
         return getSimpleBinaryName() != null && !isLocalOrAnonymousClass();
     }
 
@@ -1697,7 +1697,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public Field getField(String name)
+    public @PolyDet Field getField(@PolyDet Class<T> this, @PolyDet String name)
         throws NoSuchFieldException, SecurityException {
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         Field field = getField0(name);
@@ -1780,7 +1780,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Method getMethod(String name, Class<?>... parameterTypes)
+    public @PolyDet Method getMethod(@PolyDet Class<T> this, @PolyDet String name, @PolyDet Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         Method method = getMethod0(name, parameterTypes, true);
@@ -1821,7 +1821,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Constructor<T> getConstructor(Class<?>... parameterTypes)
+    public @PolyDet Constructor<T> getConstructor(@PolyDet Class<T> this, @PolyDet Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return getConstructor0(parameterTypes, Member.PUBLIC);
@@ -2064,7 +2064,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public Field getDeclaredField(String name)
+    public @PolyDet Field getDeclaredField(@PolyDet Class<T> this, @PolyDet String name)
         throws NoSuchFieldException, SecurityException {
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         Field field = searchFields(privateGetDeclaredFields(false), name);
@@ -2124,7 +2124,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Method getDeclaredMethod(String name, Class<?>... parameterTypes)
+    public @PolyDet Method getDeclaredMethod(@PolyDet Class<T> this, @PolyDet String name, @PolyDet Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         Method method = searchMethods(privateGetDeclaredMethods(false), name, parameterTypes);
@@ -2174,7 +2174,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)
+    public @PolyDet Constructor<T> getDeclaredConstructor(@PolyDet Class<T> this, @PolyDet Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return getConstructor0(parameterTypes, Member.DECLARED);
@@ -2215,7 +2215,7 @@ public final class Class<T> implements java.io.Serializable,
      * @throws  NullPointerException If {@code name} is {@code null}
      * @since  JDK1.1
      */
-     public InputStream getResourceAsStream(String name) {
+     public @PolyDet InputStream getResourceAsStream(@PolyDet Class<T> this, @PolyDet String name) {
         name = resolveName(name);
         ClassLoader cl = getClassLoader0();
         if (cl==null) {
@@ -2259,7 +2259,7 @@ public final class Class<T> implements java.io.Serializable,
      *              resource with this name is found
      * @since  JDK1.1
      */
-    public java.net.URL getResource(String name) {
+    public java.net. @PolyDet URL getResource(@PolyDet Class<T> this, @PolyDet String name) {
         name = resolveName(name);
         ClassLoader cl = getClassLoader0();
         if (cl==null) {
@@ -2295,7 +2295,7 @@ public final class Class<T> implements java.io.Serializable,
      * @see java.lang.RuntimePermission
      * @since 1.2
      */
-    public java.security.ProtectionDomain getProtectionDomain() {
+    public java.security. @Det ProtectionDomain getProtectionDomain(@PolyDet Class<T> this) {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(SecurityConstants.GET_PD_PERMISSION);
@@ -3206,7 +3206,7 @@ public final class Class<T> implements java.io.Serializable,
      * @see    java.lang.ClassLoader#setDefaultAssertionStatus
      * @since  1.4
      */
-    public boolean desiredAssertionStatus() {
+    public @Det boolean desiredAssertionStatus(@PolyDet Class<T> this) {
         ClassLoader loader = getClassLoader();
         // If the loader is null this is a system class, so ask the VM
         if (loader == null)
@@ -3233,7 +3233,7 @@ public final class Class<T> implements java.io.Serializable,
      *     source code
      * @since 1.5
      */
-    public boolean isEnum() {
+    public @Det boolean isEnum(@PolyDet Class<T> this) {
         // An enum must both directly extend java.lang.Enum and have
         // the ENUM bit set; classes for specialized enum constants
         // don't do the former.
@@ -3295,7 +3295,7 @@ public final class Class<T> implements java.io.Serializable,
      *     represent an enum type
      * @since 1.5
      */
-    public T[] getEnumConstants() {
+    public T @Det[] getEnumConstants(@PolyDet Class<T> this) {
         T[] values = getEnumConstantsShared();
         return (values != null) ? values.clone() : null;
     }
@@ -3366,7 +3366,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @SuppressWarnings("unchecked")
-    public T cast(Object obj) {
+    public T cast(@PolyDet Class<T> this, @PolyDet Object obj) {
         if (obj != null && !isInstance(obj))
             throw new ClassCastException(cannotCastMsg(obj));
         return (T) obj;
@@ -3399,7 +3399,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @SuppressWarnings("unchecked")
-    public <U> Class<? extends U> asSubclass(Class<U> clazz) {
+    public <U> @PolyDet Class<? extends U> asSubclass(@PolyDet Class<T> this, @PolyDet Class<U> clazz) {
         if (clazz.isAssignableFrom(this))
             return (Class<? extends U>) this;
         else
@@ -3411,7 +3411,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @SuppressWarnings("unchecked")
-    public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
+    public <A extends Annotation> A getAnnotation(@PolyDet Class<T> this, @PolyDet Class<A> annotationClass) {
         Objects.requireNonNull(annotationClass);
 
         return (A) annotationData().annotations.get(annotationClass);
@@ -3423,7 +3423,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @Override
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+    public @Det boolean isAnnotationPresent(@PolyDet Class<T> this, @PolyDet Class<? extends Annotation> annotationClass) {
         return GenericDeclaration.super.isAnnotationPresent(annotationClass);
     }
 
@@ -3432,7 +3432,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.8
      */
     @Override
-    public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationClass) {
+    public <A extends Annotation> A @OrderNonDet[] getAnnotationsByType(@PolyDet Class<T> this, @PolyDet Class<A> annotationClass) {
         Objects.requireNonNull(annotationClass);
 
         AnnotationData annotationData = annotationData();
@@ -3444,7 +3444,7 @@ public final class Class<T> implements java.io.Serializable,
     /**
      * @since 1.5
      */
-    public @Det Annotation @OrderNonDet [] getAnnotations(@PolyDet Class<T> this) {
+    public @Det Annotation @OrderNonDet[] getAnnotations(@PolyDet Class<T> this) {
         return AnnotationParser.toArray(annotationData().annotations);
     }
 
@@ -3454,7 +3454,7 @@ public final class Class<T> implements java.io.Serializable,
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <A extends Annotation> A getDeclaredAnnotation(Class<A> annotationClass) {
+    public <A extends Annotation> A getDeclaredAnnotation(@PolyDet Class<T> this, @PolyDet Class<A> annotationClass) {
         Objects.requireNonNull(annotationClass);
 
         return (A) annotationData().declaredAnnotations.get(annotationClass);
@@ -3465,7 +3465,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.8
      */
     @Override
-    public <A extends Annotation> A[] getDeclaredAnnotationsByType(Class<A> annotationClass) {
+    public <A extends Annotation> A @OrderNonDet[] getDeclaredAnnotationsByType(@PolyDet Class<T> this, @PolyDet Class<A> annotationClass) {
         Objects.requireNonNull(annotationClass);
 
         return AnnotationSupport.getDirectlyAndIndirectlyPresent(annotationData().declaredAnnotations,
@@ -3591,7 +3591,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return an object representing the superclass
      * @since 1.8
      */
-    public AnnotatedType getAnnotatedSuperclass() {
+    public @Det AnnotatedType getAnnotatedSuperclass(@PolyDet Class<T> this) {
         if (this == Object.class ||
                 isInterface() ||
                 isArray() ||
@@ -3634,7 +3634,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return an array representing the superinterfaces
      * @since 1.8
      */
-    public AnnotatedType[] getAnnotatedInterfaces() {
+    public @Det AnnotatedType @Det[] getAnnotatedInterfaces(@PolyDet Class<T> this) {
          return TypeAnnotationParser.buildAnnotatedInterfaces(getRawTypeAnnotations(), getConstantPool(), this);
     }
 }

@@ -117,14 +117,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     atypeFactory.methodFromUse(node).first;
             ExecutableElement invokedMethodElement = invokedMethod.getElement();
 
-            // For static methods with no arguments, return type is annotated as @Det, not the
-            // default @PolyDet
-            if (ElementUtils.isStatic(invokedMethodElement) && node.getArguments().size() == 0) {
-                if (p.getExplicitAnnotations().size() == 0) {
-                    p.replaceAnnotation(DET);
-                }
-            }
-
             // If return type (non-array and non-collection) resolves to @OrderNonDet, replace it
             // with @NonDet
             if (p.getAnnotations().contains(ORDERNONDET)
@@ -132,6 +124,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
                     && !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))) {
                 p.replaceAnnotation(NONDET);
+            }
+
+            // For static methods with no arguments, return type is annotated as @Det, not the
+            // default @PolyDet
+            if (ElementUtils.isStatic(invokedMethodElement)) {
+                if (node.getArguments().size() == 0) {
+                    if (p.getExplicitAnnotations().size() == 0) {
+                        p.replaceAnnotation(DET);
+                    }
+                }
             }
 
             // For Sets: "equals" method should return @Det boolean
@@ -145,6 +147,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // TODO: this can be more precise (@Det receiver and @OrderNonDet parameter)
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiver.getUnderlyingType());
+
+            // Without this check, NUllPointerException in Collections.
+            // TODO: check why?
+            if (receiverUnderlyingType == null) {
+                return super.visitMethodInvocation(node, p);
+            }
+
             if (isEqualsMethod(invokedMethodElement)
                     && isSet(receiverUnderlyingType.asType())
                     && AnnotationUtils.areSame(
