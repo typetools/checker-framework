@@ -538,22 +538,6 @@ requires changing an \<import> statement.
 
 
 \item
-This compile-time error
-
-\begin{Verbatim}
-  unknown enum constant java.lang.annotation.ElementType.TYPE_USE
-\end{Verbatim}
-
-\noindent
-indicates that you are compiling using a Java 6 or 7 JDK, but your code
-references an enum constant that is only defined in the Java 8 JDK.  The
-problem might be that your code uses a library that references the enum
-constant.  In particular, the type annotations shipped with the Checker
-Framework reference
-\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.
-
-
-\item
 If Eclipse gives the warning
 
 \begin{Verbatim}
@@ -782,11 +766,15 @@ Follow the instructions for your operating system.
 \item[Ubuntu]
   Run the following commands:
 
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdkany
 \begin{Verbatim}
-sudo apt-get update
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls \
- make maven mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
- texlive-latex-extra texlive-fonts-recommended unzip
+sudo apt-get -qqy update
+sudo apt-get -qqy install ant cpp git gradle junit4  libcurl3-gnutls \
+ make maven mercurial unzip wget openjdk-8-jdk \
+ dia hevea latexmk librsvg2-bin maven python-pip \
+ texlive-font-utils texlive-fonts-recommended \
+ texlive-latex-base texlive-latex-extra texlive-latex-recommended
+
 \end{Verbatim}
 
 % Building Checker Framework from source on Mac OS

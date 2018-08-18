@@ -25,8 +25,8 @@ import org.checkerframework.javacutil.PluginUtil;
  * <ul>
  *   <li>add the jsr308-langtools {@code javac.jar} to the runtime bootclasspath of the process that
  *       runs the Checker Framework. This specifies which classes are used to run javac
- *   <li>add {@code jdk7.jar} or {@code jdk8.jar} to the compile time bootclasspath of the javac
- *       argument list passed to javac
+ *   <li>add {@code jdk8.jar} to the compile time bootclasspath of the javac argument list passed to
+ *       javac
  *   <li>parse and implement any special options used by the Checker Framework, e.g., using
  *       "shortnames" for annotation processors
  *   <li>pass all remaining command-line arguments to the real javac
@@ -401,7 +401,7 @@ public class CheckerMain {
         // without loading them.  The compiler assumes that any class on
         // this bootclasspath will be on the bootclasspath of the JVM used
         // to later run the classfiles that Javac produces.  Our
-        // jdk[78].jar classes don't have bodies, so they won't be used at
+        // jdk8.jar classes don't have bodies, so they won't be used at
         // run time, but other, real definitions of those classes will be
         // on the classpath at run time.
         args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));

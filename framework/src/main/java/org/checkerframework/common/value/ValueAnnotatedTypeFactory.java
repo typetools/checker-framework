@@ -73,7 +73,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -306,14 +305,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * number of possible values of the enum.
      */
     @Override
-    public Pair<AnnotatedTypeMirror.AnnotatedExecutableType, List<AnnotatedTypeMirror>>
-            methodFromUse(
-                    ExpressionTree tree,
-                    ExecutableElement methodElt,
-                    AnnotatedTypeMirror receiverType) {
+    public ParameterizedMethodType methodFromUse(
+            ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
-        Pair<AnnotatedTypeMirror.AnnotatedExecutableType, List<AnnotatedTypeMirror>> superPair =
-                super.methodFromUse(tree, methodElt, receiverType);
+        ParameterizedMethodType superPair = super.methodFromUse(tree, methodElt, receiverType);
         if (ElementUtils.matchesElement(methodElt, "values")
                 && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
                 && ElementUtils.isStatic(methodElt)) {
@@ -325,7 +320,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             AnnotationMirror am = createArrayLenAnnotation(Collections.singletonList(count));
-            superPair.first.getReturnType().replaceAnnotation(am);
+            superPair.methodType.getReturnType().replaceAnnotation(am);
         }
         return superPair;
     }

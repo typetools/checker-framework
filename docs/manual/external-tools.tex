@@ -533,7 +533,7 @@ instructions below.
 See the directory \code{docs/examples/MavenExample/} for examples of the use of
 Maven build files that run a checker.  These examples can be used to verify that
 Maven is correctly downloading the Checker Framework from
-\href{http://search.maven.org/#search|ga|1|org.checkerframework}{Maven
+\href{https://search.maven.org/#search|ga|1|org.checkerframework}{Maven
   Central Repository} and executing it.
 
 Please note that the \<-AoutputArgsToFile> command-line option
@@ -613,13 +613,14 @@ latest bug fixes and new features:
     </dependency>
   </dependencies>
 \end{alltt}
-\end{enumerate}
 
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:
 \begin{Verbatim}
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
+
+\end{enumerate}
 
 
 \item Use Maven properties to hold the locations of the
@@ -687,7 +688,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <arg>-AprintErrorStack</arg>
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-        <!-- Uncomment the following line to turn type-checking warnings into errors. -->
+        <!-- -Awarns turns type-checking warnings into errors. -->
         <!-- <arg>-Awarns</arg> -->
       </compilerArgs>
     </configuration>
@@ -972,11 +973,11 @@ inside the body of a method.
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
-%  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
-%  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
-%%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
-%%  LocalWords:  javacheck checkerframework MavenExample org arg typecheck
-%%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
-%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
-%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples
-%%  LocalWords:  systemPath artifactID MacOS
+% LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
+% LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
+% LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
+% LocalWords:  javacheck checkerframework MavenExample org arg typecheck
+% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled
+% LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
+% LocalWords:  targetJavaVersion GradleExamples
+% LocalWords:  systemPath artifactID MacOS
