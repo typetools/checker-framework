@@ -99,7 +99,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Checks if the method invocation is a call to this.
+     * Checks if the method invocation is a call to "this".
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to this
@@ -108,6 +108,13 @@ public final class TreeUtils {
         return isNamedMethodCall("this", tree);
     }
 
+    /**
+     * Checks if the method call is a call to the given method name.
+     *
+     * @param name a method name
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to the given method
+     */
     protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
         return getMethodName(tree.getMethodSelect()).equals(name);
     }
