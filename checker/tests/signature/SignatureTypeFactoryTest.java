@@ -13,11 +13,9 @@ public class SignatureTypeFactoryTest {
     //     InternalForm.class,
     //     ClassGetSimpleName.class,
     //
-    //     SourceNameForNonInner.class,
-    //     BinaryNameForNonArray.class,
-    //     FieldDescriptorForArray.class,
+    //     FieldDescriptorForPrimitiveOrArrayInUnnamedPackage.class,
     //
-    //     SourceNameForNonArrayNonInner.class,
+    //     DotSeparatedIdentifiers.class,
     //     IdentifierOrArray.class,
     //
     //     Identifier,
@@ -215,6 +213,7 @@ public class SignatureTypeFactoryTest {
         us = s12;
         // :: error: (assignment.type.incompatible)
         fqn = s12;
+        // :: error: (assignment.type.incompatible)
         bn = s12;
         // :: error: (assignment.type.incompatible)
         cgn = s12;
@@ -227,6 +226,7 @@ public class SignatureTypeFactoryTest {
 
         us = s13;
         fqn = s13;
+        // :: error: (assignment.type.incompatible)
         bn = s13;
         // :: error: (assignment.type.incompatible)
         cgn = s13;
@@ -357,11 +357,13 @@ public class SignatureTypeFactoryTest {
 
         us = t6;
         fqn = t6;
+        // :: error: (assignment.type.incompatible)
         bn = t6;
         // :: error: (assignment.type.incompatible)
         cgn = t6;
         // :: error: (assignment.type.incompatible)
         fd = t6;
+        // :: error: (assignment.type.incompatible)
         iform = t6;
         sn = t6;
 
@@ -452,11 +454,13 @@ public class SignatureTypeFactoryTest {
 
         us = t14;
         fqn = t14;
-        bn = t14;
+        // :: error: (assignment.type.incompatible)
+        bn = t14; // t14 is int[][]
         // :: error: (assignment.type.incompatible)
         cgn = t14;
         // :: error: (assignment.type.incompatible)
         fd = t14;
+        // :: error: (assignment.type.incompatible)
         iform = t14;
         sn = t14;
 
@@ -473,7 +477,8 @@ public class SignatureTypeFactoryTest {
 
         us = t16;
         fqn = t16;
-        bn = t16;
+        // :: error: (assignment.type.incompatible)
+        bn = t16; // t16 is java.lang.Integer[]
         // :: error: (assignment.type.incompatible)
         cgn = t16;
         // :: error: (assignment.type.incompatible)
@@ -496,7 +501,8 @@ public class SignatureTypeFactoryTest {
 
         us = t18;
         fqn = t18;
-        bn = t18;
+        // :: error: (assignment.type.incompatible)
+        bn = t18; // t18 is package.Outer.Inner[]
         // :: error: (assignment.type.incompatible)
         cgn = t18;
         // :: error: (assignment.type.incompatible)
@@ -535,7 +541,8 @@ public class SignatureTypeFactoryTest {
         us = t21;
         // :: error: (assignment.type.incompatible)
         fqn = t21;
-        bn = t21;
+        // :: error: (assignment.type.incompatible)
+        bn = t21; // t21 is package.Outer$Inner[]
         // :: error: (assignment.type.incompatible)
         cgn = t21;
         // :: error: (assignment.type.incompatible)
@@ -567,7 +574,8 @@ public class SignatureTypeFactoryTest {
         cgn = t23;
         // :: error: (assignment.type.incompatible)
         fd = t23;
-        iform = t23;
+        // :: error: (assignment.type.incompatible)
+        iform = t23; // t23 is java/lang/Integer[]
         // :: error: (assignment.type.incompatible)
         sn = t23;
 
@@ -593,7 +601,8 @@ public class SignatureTypeFactoryTest {
         cgn = t25;
         // :: error: (assignment.type.incompatible)
         fd = t25;
-        iform = t25;
+        // :: error: (assignment.type.incompatible)
+        iform = t25; // rhs is package/Outer$Inner[]
         // :: error: (assignment.type.incompatible)
         sn = t25;
 
@@ -651,7 +660,8 @@ public class SignatureTypeFactoryTest {
         us = t30;
         // :: error: (assignment.type.incompatible)
         fqn = t30;
-        bn = t30;
+        // :: error: (assignment.type.incompatible)
+        bn = t30; // rhs is array
         // :: error: (assignment.type.incompatible)
         cgn = t30;
         // :: error: (assignment.type.incompatible)
@@ -683,7 +693,8 @@ public class SignatureTypeFactoryTest {
         cgn = t32;
         // :: error: (assignment.type.incompatible)
         fd = t32;
-        iform = t32;
+        // :: error: (assignment.type.incompatible)
+        iform = t32; // t32 is array
         // :: error: (assignment.type.incompatible)
         sn = t32;
 
