@@ -23,14 +23,21 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super(checker);
     }
 
+    // TODO: Javadoc must always refer to the single following element.
+    // This text would be appropriate as a // comments, but not as Javadoc.
     /** Error message keys. */
     private static final @CompilerMessageKey String ORDERNONDET_ON_NONCOLLECTION =
             "ordernondet.on.noncollection";
+
+    // TODO: You need to write Javadoc on every field; without it, the pull request will fail.
 
     private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
             "invalid.parameter.type";
     private static final @CompilerMessageKey String INVALID_ARRAY_ACCESS = "invalid.array.access";
 
+    // TODO: In a Javadoc @param, @return, etc. clause, the initial text is a sentence
+    // fragment that starts with a lowercase (not capital) letter and does not end
+    // with a period unless followed by another sentence.  Please fix throughout.
     /**
      * Sets the lower bound for exception parameters to be {@code @Det}.
      *
@@ -38,6 +45,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      */
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        // TODO: Why does thi create a new set every time?  That seems wasteful.  Can you create one
+        // immutable set and have the implmentation always return it?
         Set<AnnotationMirror> exceptionParam = AnnotationUtils.createAnnotationSet();
         exceptionParam.add(atypeFactory.DET);
         return exceptionParam;
@@ -52,6 +61,10 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      *       annotation on the Collection. Example: {@code @Det List<@OrderNonDet String>}.
      * </ol>
      *
+     * TODO: The following Javadoc comments are confusing. What is "the class"? The comment makes it
+     * seem like the reader should know what this is referring to. Likewise, "where the type is
+     * used": what type? Used in what way?
+     *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)
      * @param tree the tree where the type is used
@@ -63,6 +76,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         DeclaredType javaType = useType.getUnderlyingType();
 
         // Check for @OrderNonDet on non-collections.
+        // TODO: Rather than recompiting "AnnotationBuilder.fromClass(elements, OrderNonDet.class)"
+        // repeatedly, store it in a field.
         if (useType.hasAnnotation(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
             if (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                     || atypeFactory.isIterator(javaType.asElement().asType()))) {
@@ -71,6 +86,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             }
         }
 
+        // TODO: This wording "check if" is confusing.  It's unclear whether the "if" condition is
+        // *desired* (and you are ensuring it) or is *erroneous* (and if the check succeeds, an
+        // error is raised).  Clarify that, here and elsewhere.
         // For collections, check if annotation on the type parameter is a supertype of
         // the annotation on the collection.
         if ((atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
@@ -78,6 +96,10 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 || atypeFactory.isIterator(javaType.asElement().asType())) {
             AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
             AnnotatedTypeMirror paramType = useType.getTypeArguments().iterator().next();
+            // TODO: the previous two lines assume that there is exactly one annotation.  Why
+            // doesn't the subsequent line make the same assumption?  When can a type lack an
+            // annotation?  Or, how do you know that every iterator is annotated?  A comment to
+            // explain why the code is different would be helpful.
             Iterator<AnnotationMirror> paramAnnotationIt = paramType.getAnnotations().iterator();
             if (paramAnnotationIt.hasNext()) {
                 AnnotationMirror paramAnnotation = paramAnnotationIt.next();

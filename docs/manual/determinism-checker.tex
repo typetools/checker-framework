@@ -58,6 +58,7 @@ The Determinism type system uses the following type qualifiers (see Figure~\ref{
   possibly different order.  \<@OrderNonDet> may only be written on
   collections and arrays.
 \item[\refqualclass{checker/determinism/qual}{Det}] indicates that
+// TODO: clarify "up to equality":  explain whether it is with respect to == or .equals.
   the expression evaluates to the same value (up to equality) on all
   executions; for a collection, iteration also yields the values in the same
   order.
@@ -190,6 +191,10 @@ expressing the method behavior:
 \end{Verbatim}
 
 See the annotated JDK for more example uses of the annotations.
+
+TODO: The below seems incorrect.  Is it necessary on \<@PolyDet int
+identity(@PolyDet int)>?  Do you only mean if \<@PolyDet> is applied to a
+collection somewhere in the signature?
 
 Since the type \<@OrderNonDet} is invalid for non-collections, any return
 type that isn't a collection should be annotated as \<@PolyDet("up")> or
