@@ -239,18 +239,18 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * <p>This method is called on all parts of a type.
      *
      * @param type AnnotationTypeMirror whose poly annotations are replaced
-     * @param matches mapping from polymorphic annotation to instantiation.
+     * @param replacements mapping from polymorphic annotation to instantiation
      */
     protected abstract void replace(
-            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches);
+            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements);
 
     /** Replaces each polymorphic qualifier with its instantiation. */
     class Replacer extends AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> {
         @Override
         public Void scan(
-                AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches) {
-            replace(type, matches);
-            return super.scan(type, matches);
+                AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
+            replace(type, replacements);
+            return super.scan(type, replacements);
         }
     }
 

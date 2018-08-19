@@ -42,16 +42,16 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     }
 
     /**
-     * Replaces {@code @PolyDet("up")} with{@code @NonDet} if it resolves to {@code OrderNonDet}.
-     * Replaces {@code @PolyDet("down")} with{@code @Det} if it resolves to {@code OrderNonDet}.
+     * Replaces {@code @PolyDet("up")} with {@code @NonDet} if it resolves to {@code OrderNonDet}.
+     * Replaces {@code @PolyDet("down")} with {@code @Det} if it resolves to {@code OrderNonDet}.
      * Replaces {@code @PolyDet("use")} with the same annotation that {@code @PolyDet} resolves to.
      *
-     * @param type The polymorphic type to be replaced
-     * @param matches The Set of AnnotationMirrors that can replace 'type'
+     * @param type the polymorphic type to be replaced
+     * @param replacements the Set of AnnotationMirrors that can replace 'type'
      */
     @Override
     protected void replace(
-            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches) {
+            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
         boolean polyUp = false;
         boolean polyDown = false;
         if (type.hasAnnotation(POLYDET_UP)) {
@@ -61,7 +61,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             polyDown = true;
             type.replaceAnnotation(POLYDET);
         }
-        for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : matches.entrySet()) {
+        for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
             if (poly != null && (type.hasAnnotation(poly) || type.hasAnnotation(POLYDET_USE))) {
                 type.removeAnnotation(poly);
