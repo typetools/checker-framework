@@ -2,15 +2,15 @@
 \chapter{Determinism Checker\label{determinism-checker}}
 
 A nondeterministic program is one that may produce different output when
-run twice on the same input.
+it is run twice on the same input.
 It is desirable for programs to be deterministic.
-It is easier to test a deterministic program,
-because nondeterminism can lead to flaky tests that sometimes succeed and
-sometimes fail.  It is easier for a user or programmer to compare two
-deterministic executions than two nondeterministic executions.  It is
-easier to reproduce a bug in a deterministic program.
+It is easier to test a deterministic program, because nondeterminism can
+lead to flaky tests that sometimes succeed and sometimes fail.
+It is easier to reproduce a bug in a deterministic program.
+It is easier for a user or programmer to compare two
+deterministic executions than two nondeterministic executions.
 
-The Determinism Checker helps you to make your programs deterministic or
+The Determinism Checker helps you make your programs deterministic or
 recognize when they are not.
 The Determinism Checker enables a programmer to indicate which
 computations should be the same across runs of a single-threaded program,
@@ -77,28 +77,25 @@ Section~\ref{determinism-polymorphism} explains polymorphic qualifiers.
 
 \section{Valid collection types\label{determinism-collection-types}}
 
-The (determinism) type of a Collection must be a supertype or equal to
-the type of the type parameter.
+The (determinism) type of a Collection or Iterator must be a supertype or equal to
+the type of the type parameter (see Figure~\ref{fig-determinism-collections}).
 
 For example, these types are valid:
 \begin{itemize}
-    \item \code{@NonDet      List<@NonDet      Integer>}
-    \item \code{@NonDet      List<@OrderNonDet Set<...>\relax >}
-    \item \code{@NonDet      List<@Det         Integer>}
-    \item \code{@Det         List<@Det         Integer>}
+    \item \code{@NonDet\ \ \ \ \ \ List<@NonDet\ \ \ \ \ \ Integer>}
+    \item \code{@NonDet\ \ \ \ \ \ List<@OrderNonDet Set<...>\relax >}
+    \item \code{@NonDet\ \ \ \ \ \ List<@Det\ \ \ \ \ \ \ \ \ Integer>}
+    \item \code{@Det\ \ \ \ \ \ \ \ \ List<@Det\ \ \ \ \ \ \ \ \ Integer>}
     \item \code{@OrderNonDet Set <@OrderNonDet Set<...>\relax >}
     \item \code{@OrderNonDet Set <@Det String>}
 \end{itemize}
 
 These types are invalid:
   \begin{itemize}
-    \item \code{@OrderNonDet Set<@NonDet Integer>}
-    \item \code{@Det         List<@NonDet Integer>}
-    \item \code{@Det         List<@OrderNonDet Set<...>\relax >}
+    \item \code{@OrderNonDet Set <@NonDet\ \ \ \ \ \ Integer>}
+    \item \code{@Det\ \ \ \ \ \ \ \ \ List<@NonDet\ \ \ \ \ \ Integer>}
+    \item \code{@Det\ \ \ \ \ \ \ \ \ List<@OrderNonDet Set<...>\relax >}
   \end{itemize}
-
-Figure~\ref{fig-determinism-collections} illustrates the valid
-relationships between collection types and type parameters.
 
 \begin{figure}
   \centering
@@ -192,7 +189,7 @@ expressing the method behavior:
   @PolyDet("up") int hashCode(    @PolyDet List<E> this)
 \end{Verbatim}
 
-See the annotated JDK for more examples of the annotations.
+See the annotated JDK for more example uses of the annotations.
 
 
 \subsection{Distinguishing bindings and uses\label{determinism-polymorphism-binding}}
@@ -231,14 +228,14 @@ myDetList.set(random, ...);
 \end{Verbatim}
 
 \noindent
-even though the arguments are legal for the first instantiation:
-each argument type is a subtype of the corresponding declared type.
 The type system must forbid this call, because it modifies a
 \<@Det> list in a nondeterministic way.
+However, the arguments are legal for the first instantiation:
+each argument type is a subtype of the corresponding declared type.
 
 To solve this problem, the instantiation is chosen based only on the first
 argument (the \<List> argument).  To have this effect, the library method
-annotation is annotated as:
+is annotated as:
 
 \begin{Verbatim}
 E set(@PolyDet List<E> this, @PolyDet("use") int index, E element)
@@ -250,21 +247,25 @@ E set(@PolyDet List<E> this, @PolyDet("use") int index, E element)
 
 In the JDK, printing methods such as \<println> are annotated as taking a
 deterministic result.  This guarantees that a program's output will be
-deterministic, but it may be too restrictive.  You can define your own
-printing methods, some of which can take nondeterministic inputs.  You can
-also override the JDK annotations by providing a stub file
-(Section~\ref{stub}).
+deterministic.  If it is be too restrictive for your program:
+\begin{itemize}
+\item
+  You can define your own printing methods, some of which can take
+  nondeterministic inputs.
+\item
+  You can override the JDK annotations by providing a stub file
+  (Section~\ref{stub}).
+\end{itemize}
 
-\section{Default annotations on method parameters and returns\label{determinism-param-default}}
 
-Any unannotated method parameter or return type is treated as having the
-\<@PolyDet> annotation.  This permits all possible arguments. We make an exception to this
-rule in the case of static methods without paramateres. The return type of such methods is treated
-as having the \<@Det> annotation. If you wish
-to constrain method arguments to have deterministic type, you must annotate
-the method declaration.
+\section{Default annotations\label{determinism-defaults}}
 
-\section{Defaulting for local arrays and generic types\label{determinism-local-arrays}}
+The default annotation for most unannotated types is \<@Det>.
+
+The default annotation for an unannotated formal parameter or return type
+is \<@PolyDet>.  This permits all possible arguments to the method.  As
+an exception, the return type of a static method without paramaters is
+\<@Det>.
 
 As with all type systems, defaulting is different for the array and
 component types in a locally-declared array or generic type without explicit type
