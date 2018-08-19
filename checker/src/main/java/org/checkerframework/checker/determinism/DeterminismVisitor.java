@@ -24,7 +24,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /** Error message keys. */
-    private static final @CompilerMessageKey String INVALID_ANNOTATION = "invalid.annotation";
+    private static final @CompilerMessageKey String ORDERNONDET_ON_NONCOLLECTION =
+            "ordernondet.on.noncollection";
 
     private static final @CompilerMessageKey String INVALID_ANNOTATION_SUBTYPE =
             "invalid.parameter.type";
@@ -43,12 +44,12 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Reports errors for the following invalid annotations:
+     * Reports errors for the following ordernondet.on.noncollections:
      *
      * <ol>
      *   <li>When a non-collection is annotated as {@code @OrderNonDet}.
-     *   <li>When the annotation on type parameter of a Collection is a supertype of the annotation
-     *       on the Collection. Example: {@code @Det List<@OrderNonDet String>}.
+     *   <li>When the annotation on type parameter of a Collection or Iterator is a supertype of the
+     *       annotation on the Collection. Example: {@code @Det List<@OrderNonDet String>}.
      * </ol>
      *
      * @param declarationType the type of the class (TypeElement)
@@ -60,11 +61,12 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         DeclaredType javaType = useType.getUnderlyingType();
-        // checks for @OrderNonDet on non-collections
+
+        // Check for @OrderNonDet on non-collections.
         if (useType.hasAnnotation(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
             if (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                     || atypeFactory.isIterator(javaType.asElement().asType()))) {
-                checker.report(Result.failure(INVALID_ANNOTATION), tree);
+                checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
                 return false;
             }
         }
@@ -107,7 +109,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         Set<AnnotationMirror> annos = type.getAnnotations();
         if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
-            checker.report(Result.failure(INVALID_ANNOTATION), tree);
+            checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
             return false;
         }
         return true;

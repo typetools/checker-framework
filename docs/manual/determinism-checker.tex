@@ -191,6 +191,10 @@ expressing the method behavior:
 
 See the annotated JDK for more example uses of the annotations.
 
+Since the type \<@OrderNonDet} is invalid for non-collections, any return
+type that isn't a collection should be annotated as \<@PolyDet("up")> or
+\<@PolyDet("down")>.
+
 
 \subsection{Distinguishing bindings and uses\label{determinism-polymorphism-binding}}
 
