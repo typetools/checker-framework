@@ -36,20 +36,19 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        AnnotationBuilder builder2 = new AnnotationBuilder(processingEnv, PolyDet.class);
-        builder2.setValue("value", "");
-        POLYDET = builder2.build();
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
-        builder.setValue("value", "use");
-        POLYDET_USE = builder.build();
-        AnnotationBuilder builder_up = new AnnotationBuilder(processingEnv, PolyDet.class);
-        builder_up.setValue("value", "up");
-        POLYDET_UP = builder_up.build();
-        AnnotationBuilder builder_down = new AnnotationBuilder(processingEnv, PolyDet.class);
-        builder_down.setValue("value", "down");
-        POLYDET_DOWN = builder_down.build();
+        POLYDET = newPolyDet("");
+        POLYDET_USE = newPolyDet("use");
+        POLYDET_UP = newPolyDet("up");
+        POLYDET_DOWN = newPolyDet("down");
 
         postInit();
+    }
+
+    /** Creates an AnnotationMirror for {@code @PolyDet} with the given argument. */
+    private AnnotationMirror newPolyDet(String arg) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
+        builder.setValue("value", arg);
+        return builder.build();
     }
 
     @Override
@@ -118,7 +117,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             ExecutableElement invokedMethodElement = invokedMethod.getElement();
 
             // If return type (non-array and non-collection) resolves to @OrderNonDet, replace it
-            // with @NonDet
+            // with @NonDet.
             if (p.getAnnotations().contains(ORDERNONDET)
                     && !(p.getUnderlyingType().getKind() == TypeKind.ARRAY)
                     && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
@@ -127,7 +126,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             // For static methods with no arguments, return type is annotated as @Det, not the
-            // default @PolyDet
+            // default @PolyDet.
             if (ElementUtils.isStatic(invokedMethodElement)) {
                 if (node.getArguments().size() == 0) {
                     if (p.getExplicitAnnotations().size() == 0) {
@@ -148,7 +147,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiver.getUnderlyingType());
 
-            // Without this check, NUllPointerException in Collections.
+            // Without this check, NullPointerException in Collections.
             // TODO: check why?
             if (receiverUnderlyingType == null) {
                 return super.visitMethodInvocation(node, p);
@@ -190,7 +189,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Checks if {@code OrderNonDet List} appears as a type parameter in {@code atm}. */
+    /** Checks if {@code @OrderNonDet List} appears as a type parameter in {@code atm}. */
     private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
@@ -212,7 +211,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *
          * <ol>
          *   <li>Annotates the main method parameters as {@code Det}.
-         *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}
+         *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}.
          * </ol>
          */
         @Override

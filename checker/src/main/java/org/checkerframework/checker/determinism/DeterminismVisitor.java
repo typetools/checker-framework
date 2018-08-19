@@ -87,8 +87,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                     checker.report(
                             Result.failure(
                                     INVALID_ANNOTATION_SUBTYPE,
-                                    "parameter type(" + paramAnnotation + ")",
-                                    "base type(" + baseAnnotation + ")"),
+                                    "parameter type (" + paramAnnotation + ")",
+                                    "base type (" + baseAnnotation + ")"),
                             tree);
                     return false;
                 }
@@ -117,7 +117,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
     /**
      * Reports an error if the component type of an array has an annotation that is a supertype of
-     * the array annotation Example: {@code @NonDet int @Det[]} is invalid.
+     * the array annotation. Example: {@code @NonDet int @Det[]} is invalid.
      *
      * @param type the array type use
      * @param tree the tree where the type is used
@@ -141,8 +141,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * When an element of {@code @OrderNonDet} or {@code @NonDet} array is accessed, this method
-     * annotates the type of that element as {@code @Det}
+     * When an element of a {@code @OrderNonDet} or {@code @NonDet} array is accessed, this method
+     * annotates the type of that element as {@code @Det}.
      *
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
@@ -174,8 +174,15 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
     /**
      * Checks for invalid assignment to an array element and reports an error. This is to prevent
-     * side-effects to arrays. Example {@Code @Det int @Det [] x; @NonDet int i; x[i] = y} is
-     * flagged as an error.
+     * side-effects to arrays. Example:
+     *
+     * <pre><code>
+     * &nbsp; @Det int @Det [] x;
+     * &nbsp; @NonDet int i;
+     * &nbsp; x[i] = y;
+     * </code></pre>
+     *
+     * is flagged as an error.
      *
      * @param varTree the AST node for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
@@ -201,8 +208,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 checker.report(
                         Result.failure(
                                 INVALID_ARRAY_ACCESS,
-                                "index type(" + indexType + ")",
-                                "array type(" + arrTopType + ")"),
+                                "index type (" + indexType + ")",
+                                "array type (" + arrTopType + ")"),
                         varTree);
                 return;
             }

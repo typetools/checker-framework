@@ -19,16 +19,15 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * Transfer function for the determinism type-system.
  *
- * <p>Performs type refinement for the following:
+ * <p>Performs type refinement from {@code @OrderNonDet} to {@code @Det} for:
  *
- * <ol>
- *   <li>When sort is called on {@code @OrderNonDet List}, the receiver is type refined as
- *       {@code @Det}.
- *   <li>The first argument of Arrays.sort() and Arrays.parallelSort is type refined from
- *       {@code @OrderNonDet} to {@code @Det}.
- *   <li>The first argument of Collections.sort() and Collections.shuffle is type refined from
- *       {@code @OrderNonDet} to {@code @Det}.
- * </ol>
+ * <ul>
+ *   <li>The receiver of List.sort.
+ *   <li>The first argument of Arrays.sort.
+ *   <li>The first argument of Arrays.parallelSort.
+ *   <li>The first argument of Collections.sort.
+ *   <li>The first argument of Collections.shuffle.
+ * </ul>
  */
 public class DeterminismTransfer extends CFTransfer {
     public DeterminismTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
