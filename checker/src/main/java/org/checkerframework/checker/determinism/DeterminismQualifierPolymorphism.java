@@ -41,6 +41,9 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         POLYDET_DOWN = factory.POLYDET_DOWN;
     }
 
+    // TODO: This method description seems incorrect.  The method does the given replacements, and
+    // it also does what the specification says.  Write the specification to describe the
+    // method's behavior, not just part of it.
     /**
      * Replaces {@code @PolyDet("up")} with {@code @NonDet} if it resolves to {@code OrderNonDet}.
      * Replaces {@code @PolyDet("down")} with {@code @Det} if it resolves to {@code OrderNonDet}.
@@ -68,6 +71,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);
 
+                // Can this be done once at the end, rather than every time through the loop?
                 if (type.hasAnnotation(factory.ORDERNONDET)) {
                     if (polyUp) {
                         replaceOrderNonDet(type, factory.NONDET);
@@ -80,6 +84,9 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
     }
 
+    // TODO: This specification is incorrect.  The replacement isn't of @Det or @NonDet, it's
+    // `replaceType`.  Maybe the specification is describing one way that clients could use this
+    // method, but it's not describing this method.
     /**
      * Helper method that replaces {@code @OrderNonDet} with either {@code @Det} (in case of
      * {@code @PolyDet("up")}) or {@code @NonDet} (in case of {@code @PolyDet("down")}).
@@ -89,6 +96,10 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      */
     private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         type.replaceAnnotation(replaceType);
+        // Document these two variables.  There is something tricky going on with the loop and the
+        // reassignments to them, but I'm not sure what it is.  I'm also confused about the
+        // relationship of variables `declaredType` and `declType` -- those should be given more
+        // descriptive names and both should be documented.
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType = null;
         boolean isCollIter = false;
 
@@ -96,6 +107,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
             return;
         }
+        // TODO: What is this the underlying type for?  It's the receiver, and it would be good for
+        // the variable name to reflect that.  The current name is confusing.
         TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
         if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
             declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) type;

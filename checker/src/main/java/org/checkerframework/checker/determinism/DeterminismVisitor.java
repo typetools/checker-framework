@@ -147,6 +147,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      */
     @Override
     public boolean isValidUse(AnnotatedTypeMirror.AnnotatedArrayType type, Tree tree) {
+        // TODO: Declare variables in the smallest possible scope.  These can be declared within the
+        // if statement, and initialized at the declaration.
         AnnotationMirror arrayType;
         AnnotationMirror elementType;
         if (type.getAnnotations().size() > 0
@@ -162,6 +164,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return true;
     }
 
+    // TODO:  I'm not sure what a "NonDet array" is.  Be specific.  (For example, you should never
+    // say a "nullable method", but a method with a nullable return type.)
+    // TODO: should "as {@code @Det}" be "as {@code @NonDet}"?  That seems to be what the code does.
+    // TODO: It would be helpful, in this documentation, to give an example of the code being
+    // checked.
     /**
      * When an element of a {@code @OrderNonDet} or {@code @NonDet} array is accessed, this method
      * annotates the type of that element as {@code @Det}.
@@ -194,6 +201,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
+    // TODO: Why does the documentation say "usually a variable"?  Isn't the lvalue definitely an
+    // array access?
     /**
      * Checks for invalid assignment to an array element and reports an error. This is to prevent
      * side-effects to arrays. Example:
@@ -229,6 +238,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             if (!atypeFactory.getQualifierHierarchy().isSubtype(indexType, arrTopType)) {
                 checker.report(
                         Result.failure(
+                                // TODO: The method documentation says "Checks for invalid
+                                // assignment", so it is confusing that this key contains the word
+                                // "access".
                                 INVALID_ARRAY_ACCESS,
                                 "index type (" + indexType + ")",
                                 "array type (" + arrTopType + ")"),

@@ -87,6 +87,17 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: This documentation is incorrect.  It seems to do *defaulting*.  That means it
+        // doesn't do any *replacement*, which is what the documentation says.  Make the code and
+        // the documentation consistent with one another.
+        // TODO: "equals() called on an {@code OrderNonDet Set}" doesn't make sense, because
+        // equals() takes two arguments, not just one.
+        // TODO: The description here seems simpler than the code, at least for the third case.  For
+        // the documentation here, it seems @PolyDet("down") would work.  The actual code is more
+        // complex, but it's confusing that it is inconsistent with this documentation.  You need to
+        // always make them consistent.  In the rare case that the documentation is incomplete, say
+        // that explicitly and point to where it is fully documented (which should not be just in
+        // the code).
         /**
          * Replaces the annotation on the return type of a method invocation as follows:
          *
@@ -125,6 +136,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 p.replaceAnnotation(NONDET);
             }
 
+            // TODO: This is misleading.  The code seems to do defaulting, but the documentation
+            // describes an absolute rule.
             // For static methods with no arguments, return type is annotated as @Det, not the
             // default @PolyDet.
             if (ElementUtils.isStatic(invokedMethodElement)) {
@@ -135,6 +148,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
+            // TODO: Use {@code ...} (note capitalization) only in Javadoc, not in Java code
+            // comments.
             // For Sets: "equals" method should return @Det boolean
             // if the Set is @OrderNonDet and it does not have @OrderNonDet List type parameter.
             // Example {@Code @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
@@ -147,6 +162,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiver.getUnderlyingType());
 
+            // TODO:  I don't understand this.  Does some method in Collections crash?  Which one?
+            // Or does this method crash when the argument is Collections?  Or something else?
             // Without this check, NullPointerException in Collections.
             // TODO: check why?
             if (receiverUnderlyingType == null) {
@@ -206,6 +223,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: Is this defaulting?  The documentation doesn't say that, but indicates an absolute
+        // rule.
         /**
          *
          *
@@ -257,6 +276,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (method.getReturnType().getKind() == TypeKind.BOOLEAN
                 && method.getSimpleName().contentEquals("equals")
                 && method.getParameters().size() == 1
+                // TODO: duplicated line.
                 && method.getParameters().size() == 1
                 && TypesUtils.isObject(method.getParameters().get(0).asType())) {
             return true;
@@ -278,6 +298,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    // TODO: does "array parameters" mean all array parameters in any method?  Where is this
+    // behavior described in the manual?
     /**
      * Adds implicit annotations for main method parameters ({@code @Det}) and array parameters
      * ({@code @PolyDet[@PolyDet]}).
@@ -303,8 +325,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(elt, type);
     }
 
+    // TODO: Why is this method public?  Give methods the smallest possible visibility.
     /** @return true if {@code tm} is a Set or a subtype of Set. */
     public boolean isSet(TypeMirror tm) {
+        // TODO: Why compute this repeatedly?  I think you can store it in a field.
         TypeMirror SetInterfaceTypeMirror =
                 TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
         if (types.isSubtype(types.erasure(tm), types.erasure(SetInterfaceTypeMirror))) {
@@ -335,6 +359,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    // TODO: or a subtype
     /** @return true if {@code tm} is an Iterator. */
     public boolean isIterator(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
@@ -346,6 +371,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    // TODO: the Arrays class contains only static members.  It does not represent anything, and
+    // therefore it doesn't make sense to override it.  I think you can just check for it exactly.
     /** @return true if {@code tm} is a subtype of the Arrays class. */
     public boolean isArrays(TypeMirror tm) {
         TypeMirror ArraysTypeMirror =
@@ -356,6 +383,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    // TODO: Same comment as for isArrays
     /** @return true if {@code tm} is a subtype of the Collections class. */
     public boolean isCollections(TypeMirror tm) {
         TypeMirror CollectionsTypeMirror =

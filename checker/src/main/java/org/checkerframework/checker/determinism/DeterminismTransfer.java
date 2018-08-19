@@ -43,11 +43,18 @@ public class DeterminismTransfer extends CFTransfer {
 
         // Type refinement for List sort
         Node receiver = n.getTarget().getReceiver();
+        // TODO: I am confused about this test.  In a static method invocation (like Arrays.sort),
+        // the receiver should be null (shouldn't it?).  But this returns immediately if the
+        // receiver is null, which suggests that it can't handle Arrays.sort.  What am I missing?
         if (receiver == null || TypesUtils.getTypeElement(receiver.getType()) == null) {
             return result;
         }
+        // TODO: What is this the underlying type for?  It's the receiver, and it would be good for
+        // the variable name to reflect that.  The current name is confusing.
         TypeMirror underlyingType = TypesUtils.getTypeElement(receiver.getType()).asType();
 
+        // TODO: why is this variable needed?  I think it would be cleaner to abstract out the next
+        // 4 or so lines as a isListSort() method.
         boolean isList = factory.isList(underlyingType);
         if (isList) {
             String methName = getMethodName(n, receiver);
@@ -57,6 +64,8 @@ public class DeterminismTransfer extends CFTransfer {
                         receiver.getType().getAnnotationMirrors().iterator().next();
                 if (receiverAnno != null
                         && AnnotationUtils.areSame(receiverAnno, factory.ORDERNONDET)) {
+                    // TODO: the next three lines are repeated 5 times in this method.  Either put
+                    // just one copy of it at the end, or abstract in into a method.
                     FlowExpressions.Receiver sortReceiver =
                             FlowExpressions.internalReprOf(factory, n.getTarget().getReceiver());
                     result.getThenStore().insertValue(sortReceiver, factory.DET);
@@ -137,6 +146,10 @@ public class DeterminismTransfer extends CFTransfer {
      * @param receiver Node
      * @return String method name
      */
+    // TODO: Any use of toString or of string manipulation is a code smell.  This method should be
+    // rewritten to use accessors.  Or, have a static variable for the methods of interest, and use
+    // equals() on the methods.
+    // TODO: Why isn't this method private?
     String getMethodName(MethodInvocationNode n, Node receiver) {
         String methodName = n.toString();
         String methodnameWithoutReceiver = methodName.substring(receiver.toString().length());
