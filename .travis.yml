@@ -100,11 +100,6 @@ jobs:
               sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVIS_ACCESS_TOKEN
             fi
 
-            git ls-remote https://github.com/${SLUGOWNER}/sparta.git &>/dev/null
-            if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} sparta $TRAVIS_ACCESS_TOKEN
-            fi
-
             if [[ "${SLUGOWNER}" == "typetools" ]]; then
               sh trigger-travis.sh typetests daikon-typecheck $TRAVIS_ACCESS_TOKEN
               sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN

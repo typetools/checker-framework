@@ -442,6 +442,10 @@ public class FlowExpressions {
         return internalArguments;
     }
 
+    /**
+     * The poorly-named Receiver class is actually a Java AST. Each subclass represents a different
+     * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
+     */
     public abstract static class Receiver {
         protected final TypeMirror type;
 
