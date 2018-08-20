@@ -62,7 +62,7 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 if [ ! -d ../jsr308-langtools ] ; then
   (cd .. && wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip)
   (cd .. && unzip -q jsr308-langtools-2.4.0.zip)
-  (cd .. &&  mv jsr308-langtools-2.4.0 jsr308-langtools)
+  (cd .. && mv jsr308-langtools-2.4.0 jsr308-langtools)
 fi
 
 # Two options: rebuild the JDK or download a prebuilt JDK.

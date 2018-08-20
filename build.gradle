@@ -18,23 +18,22 @@ ext {
     release = false
     assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
 
-    jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
-    jsr308 = file(jsr308).absolutePath
+    parentDir = file("${rootDir}/../").absolutePath
 
-    annotationTools = "${jsr308}/annotation-tools"
+    annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
     afuJar = "${afu}/annotation-file-utilities-all.jar"
     if (!file(afuJar).exists()) {
         println "${afuJar} does not exist"
     }
 
-    stubparser = "${jsr308}/stubparser"
+    stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
     if (!file(stubparserJar).exists()) {
         println "${stubparserJar} does not exist"
     }
 
-    jtregHome = "${jsr308}/jtreg"
+    jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
@@ -439,7 +438,7 @@ subprojects {
                                 // Must use langtools javap.jar rather than tools.jar because the
                                 // tools.jar in the docker vm doesn't have the required classes.
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${jsr308}/jsr308-langtools/dist/lib/javap.jar:" +
+                                        "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
 
                                 "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +

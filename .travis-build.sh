@@ -144,12 +144,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
   python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
 
-  # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
-  # Not just "make" because the invocations of "hevea -exec xxcharset.exe" fail.
-  # I cannot reproduce the problem locally and it isn't important enough to fix.
-  # make -C ../jsr308-langtools/doc
-  make -C ../jsr308-langtools/doc pdf
-
   # HTML legality
   ./gradlew --console=plain htmlValidate
 
