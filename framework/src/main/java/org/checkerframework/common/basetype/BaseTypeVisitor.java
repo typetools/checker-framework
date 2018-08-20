@@ -1765,8 +1765,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Returns a set of AnnotationMirrors that is a lower bound for exception parameters.
      *
-     * <p>Note: by default this method is called by getThrowUpperBoundAnnotations(), so that this
-     * annotation is enforced.
+     * <p>Note: by default this method is called by {@link #getThrowUpperBoundAnnotations()}, so
+     * that this annotation is enforced.
      *
      * <p>(Default is top)
      *
