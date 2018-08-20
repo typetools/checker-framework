@@ -104,12 +104,6 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
     ./gradlew --console=plain :checker:demosTests
   fi
 
-  # sparta: 1 minute, but the command is "true"!
-  # TODO: requires Android installation (and at one time, it caused weird
-  # Travis hangs if enabled without Android installation).
-  # (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/sparta.git)
-  # (cd ../sparta && ant jar all-tests)
-
   # Guava
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
   (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)

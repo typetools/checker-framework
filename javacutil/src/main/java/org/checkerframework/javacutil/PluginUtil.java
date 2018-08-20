@@ -550,9 +550,9 @@ public class PluginUtil {
 
     /**
      * Determine the version of the JRE that we are currently running and select a jdkX where X is
-     * the version of Java that is being run (e.g. 6, 7, ...)
+     * the version of Java that is being run (e.g. 8, 9, ...)
      *
-     * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 8, 9, ...)
      */
     public static String getJdkJarPrefix() {
         final double jreVersion = getJreVersion();
@@ -572,9 +572,9 @@ public class PluginUtil {
 
     /**
      * Determine the version of the JRE that we are currently running and select a jdkX.jar where X
-     * is the version of Java that is being run (e.g. 6, 7, ...)
+     * is the version of Java that is being run (e.g. 8, 9, ...)
      *
-     * @return the jdkX.jar where X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return the jdkX.jar where X is the version of Java that is being run (e.g. 8, 9, ...)
      */
     public static String getJdkJarName() {
         final String fileName = getJdkJarPrefix() + ".jar";
