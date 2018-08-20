@@ -25,6 +25,7 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 
+
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
     git -C ../annotation-tools pull
@@ -35,7 +36,6 @@ else
     (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 fi
 
-# This also builds jsr308-langtools
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
@@ -57,6 +57,14 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 
 ## Compile
+
+# Download jsr308-langtools replacement for javac.jar that fixes some bugs
+if [ ! -d ../jsr308-langtools ] ; then
+  (cd .. && wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip)
+  (cd .. && unzip -q jsr308-langtools-2.4.0.zip)
+  (cd .. &&  mv jsr308-langtools-2.4.0 jsr308-langtools)
+fi
+
 # Two options: rebuild the JDK or download a prebuilt JDK.
 if [[ "${BUILDJDK}" == "buildjdk" ]]; then
   echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
