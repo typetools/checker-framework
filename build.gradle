@@ -23,7 +23,7 @@ ext {
 
     annotationTools = "${jsr308}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
-    afuJar = "${afu}/annotation-file-utilities.jar"
+    afuJar = "${afu}/annotation-file-utilities-all.jar"
     if (!file(afuJar).exists()) {
         println "${afuJar} does not exist"
     }
@@ -360,7 +360,7 @@ subprojects {
         // relocate 'javax','org.checkerframework.javax'
         // relocate 'jdk', 'org.checkerframework.jdk'
 
-        // These appear in annotation-file-utilities.jar:
+        // These appear in annotation-file-utilities-all.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
