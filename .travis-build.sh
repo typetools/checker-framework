@@ -132,7 +132,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ./gradlew --console=plain runErrorProne
 
   # Documentation
-  ./gradlew --console=plain allJavadoc
   ./gradlew --console=plain javadocPrivate
   make -C docs/manual all
 
