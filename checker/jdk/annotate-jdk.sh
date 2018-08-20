@@ -57,7 +57,7 @@ export PATCH=${SCRIPTDIR}/ad-hoc.diff
 # parameters derived from environment
 export JSR308=`readlink -e "${CHECKERFRAMEWORK}/.."`
 export AFU="${JSR308}/annotation-tools"
-export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities.jar"
+export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities-all.jar"
 export CFJAR="${CHECKERFRAMEWORK}/checker/dist/checker.jar"
 export JDJAR="${JSR308}/jsr308-langtools/dist/lib/javadoc.jar"
 export JAVAC="java -jar ${CHECKERFRAMEWORK}/checker/dist/checker.jar"
