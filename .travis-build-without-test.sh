@@ -35,7 +35,6 @@ else
     (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 fi
 
-# This also builds jsr308-langtools
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
@@ -55,6 +54,12 @@ echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
+## Download jsr308-langtools
+if [ ! -d ../jsr308-langtools ] ; then
+  (cd .. && wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip)
+  (cd .. && unzip -q jsr308-langtools-2.4.0.zip)
+  (cd .. &&  mv jsr308-langtools-2.4.0 jsr308-langtools)
+fi
 
 ## Compile
 # Two options: rebuild the JDK or download a prebuilt JDK.
