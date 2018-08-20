@@ -225,6 +225,8 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     }
 }
 
+javadoc.dependsOn(allJavadoc)
+
 configurations {
     requireJavadoc
 }
