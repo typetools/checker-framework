@@ -374,6 +374,8 @@ def push_changes_prompt_if_fail(repo_root):
             cmd = '(cd %s && git push --tags)' % repo_root
             result = os.system(cmd)
             if result == 0:
+                cmd = '(cd %s && git push origin master)' % repo_root
+                result = os.system(cmd)
                 break
             else:
                 print "Could not push tags from: " + repo_root + "; result=" + str(result) + " for command: `" + cmd + "` in " + os.getcwd()
