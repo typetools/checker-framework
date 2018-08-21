@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering checker-framework/.travis-build.sh, GROUP=$1, in" `pwd`
+echo Entering `pwd`/.travis-build.sh, GROUP=$1
 
 # Optional argument $1 is one of:
 #   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
@@ -155,4 +155,4 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
 
 fi
 
-echo "Exiting checker-framework/.travis-build.sh, GROUP=$GROUP, in" `pwd`
+echo Exiting `pwd`/.travis-build.sh, GROUP=$1
