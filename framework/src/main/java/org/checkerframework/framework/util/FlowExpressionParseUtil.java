@@ -89,7 +89,7 @@ public class FlowExpressionParseUtil {
     protected static final Pattern IDENTIFIER_PATTERN = anchored(IDENTIFIER_REGEX);
     /** Matches a string starting with an identifier. */
     protected static final Pattern STARTS_WITH_IDENTIFIER_PATTERN =
-            Pattern.compile("^(" + IDENTIFIER_REGEX + ")");
+            anchored("(" + IDENTIFIER_REGEX + ").*");
     /** Matches integer literals. */
     protected static final Pattern INT_PATTERN = anchored("[-+]?[0-9]+");
     /** Matches long literals. */
@@ -100,7 +100,7 @@ public class FlowExpressionParseUtil {
     protected static final Pattern PARENTHESES_PATTERN = anchored("\\((.*)\\)");
     /** Matches an expression that starts with a string. */
     protected static final Pattern STARTS_WITH_STRING_PATTERN =
-            Pattern.compile("^(" + STRING_REGEX + ")");
+            anchored("(" + STRING_REGEX + ").*");
     /** Matches member select on a string, such as {@code "hello".length}. */
     protected static final Pattern STRING_SELECT_PATTERN =
             anchored("(" + STRING_REGEX + ")" + "\\.(.*)");
