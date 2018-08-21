@@ -19,7 +19,8 @@ public class LowerBoundChecker extends BaseTypeChecker {
     private HashSet<String> collectionBaseTypeNames;
 
     public LowerBoundChecker() {
-        // These classes are bases for both mutable and immutable sequence collections, which contain methods that change the length.
+        // These classes are bases for both mutable and immutable sequence collections, which
+        // contain methods that change the length.
         // Lower bound checker warnings are skipped at uses of them.
         Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
         collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
