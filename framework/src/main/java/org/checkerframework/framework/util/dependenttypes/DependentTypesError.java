@@ -53,6 +53,7 @@ public class DependentTypesError {
         this.expression = expression;
     }
 
+    /** Create a DependentTypesError by parsing a printed one. */
     public DependentTypesError(String error) {
         Matcher matcher = ERROR_PATTERN.matcher(error);
         if (matcher.matches()) {
