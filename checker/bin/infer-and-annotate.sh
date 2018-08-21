@@ -19,7 +19,7 @@
 
 # Example of usage:
 # ./infer-and-annotate.sh "LockChecker,NullnessChecker" \
-#     $JSR308/plume-lib/java/plume.jar -AprintErrorStack \
+#     $JSR308/plume-lib/java/plume.jar \
 #     `find $JSR308/plume-lib/java/src/plume/ -name "*.java"`
 
 # In case of using this script for Android projects, the classpath must include
