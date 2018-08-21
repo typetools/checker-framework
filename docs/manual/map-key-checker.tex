@@ -36,7 +36,7 @@ These qualifiers are part of the Map Key type system:
 
 \item[\refqualclass{checker/nullness/qual}{KeyForBottom}]
   is used internally by the type system but should never be written by a
-  programmer.
+  programmer.  There are no values of this type (not even \<null>).
 
 \end{description}
 
@@ -48,6 +48,78 @@ These qualifiers are part of the Map Key type system:
 never be written by a programmer.}
 \label{fig-map-key-keyfor-hierarchy}
 \end{figure}
+
+\section{Default annotations\label{map-key-defaults}}
+
+The \code{null} literal is implicitly annotated with \code{@UnknownKeyFor}.
+If \code{null} were \code{@KeyForBottom}, that would mean that
+\code{null} is guaranteed to be a key for every map (which is not
+necessarily true).
+
+\subsection{Default for lower bounds\label{map-key-defaults-lowerbound}}
+
+Lower bounds are defaulted to \code{@UnknownKeyFor}.
+However, in \<java.*> packages, the default for lower bounds is
+\<@KeyForBottom>.
+
+It is challenging to choose a default for lower bounds of type variables
+and wildcards.
+
+Here is a comparison of two choices for lower bounds:
+
+%BEGIN LATEX
+\medskip
+%END LATEX
+
+\noindent
+\begin{tabular}{ll}
+\<@KeyForBottom> default                   & \<@UnknownKeyFor> default (current choice) \\
+\hline
+\code{class MyClass1<@UnknownKeyFor T> \{}  & \code{class MyClass1<T> \{} \\
+\code{~~T var = null; // OK}               & \code{~~T var = null; // OK} \\
+\hline
+\code{class MyClass2<T> \{}   & \\
+\code{~~@UnknownKeyFor T var = null; // OK} & \\
+\hline
+\code{class MyClass3<T> \{}    &  \\
+\code{~~T var = null; // ERROR}             &  \\
+\hline
+& \code{class MySet1<T> implements Set<T> \{ \}} \\
+& \code{MySet1<@KeyFor("m") String> s1; // ERROR} \\
+\hline
+\code{class Set<E> \{ \}} &
+				\code{class Set<@KeyForBottom E> \{ \}} \\
+\code{class MySet2<T> implements Set<T> \{ \}} &
+				\code{class MySet2<@KeyForBottom T> implements Set<T> \{ \}} \\
+\code{MySet2<@KeyFor("m") String> s2; // OK}
+%HEVEA~~~
+ &
+				\code{MySet2<@KeyFor("m") String> s2; // OK} \\
+
+% List<@KeyFor("m")> // ERROR unless List's type argument has lower bound of @KeyForBottom.
+\end{tabular}
+
+%BEGIN LATEX
+\medskip
+%END LATEX
+
+
+If lower bounds are defaulted to \code{@KeyForBottom} (which is not
+currently the case), then whenever \<null> is assigned to a variable whose
+type is a type variable, programmers must write an \<@UnknownKeyFor>
+annotation on either the type variable declaration or on variable
+declarations, as shown in \<MyClass1> and
+\<MyClass2>.
+A disadvantage of this default is that the Map Key checker may issue
+warnings in code that has nothing to do with map keys, and in which no map
+key annotations are used.
+
+If lower bounds are defaulted to \code{@UnknownKeyFor} (which is currently
+the case), then whenever a client might use a \<@KeyFor> type argument,
+programmers must write a \<@KeyForBottom> annotation on the type parameter,
+as in \<MySet2> (and \<Set>).
+
+
 
 \section{Examples\label{map-key-examples}}
 
@@ -172,4 +244,5 @@ class MyClass {
 
 
 %%  LocalWords:  KeyFor containsKey java keyfor UnknownKeyFor KeyForBottom
-%%  LocalWords:  mapSet keySet km threeLetterWordSubset JT
+%%  LocalWords:  mapSet keySet km threeLetterWordSubset JT MyClass1 MySet1
+%%  LocalWords:  MyClass2 MyClass3 s1 MySet2 s2

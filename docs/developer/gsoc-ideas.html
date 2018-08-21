@@ -36,6 +36,7 @@
           <li><a href="#case-study-nullness-bazel">Bazel tool</a></li>
           <li><a href="#case-study-nullness-guava">Guava library</a></li>
         </ul></li>
+      <li><a href="#index-errors">Improving error messages</a></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
       <li><a href="#compare-other-tools">Comparison to other tools</a></li>
     </ul></li>
@@ -51,7 +52,7 @@
       <li><a href="#typestate">Stateful type systems</a></li>
       <li><a href="#your-own-new-type-system">Invent your own new type system</a></li>
     </ul></li>
-  <li><a href="#other">Other enhancements and tools</a>
+  <li><a href="#cf-other">Type system enhancements and tools</a>
     <ul>
       <li><a href="#annotated-jdk">JDK annotations</a></li>
       <li><a href="#flow-expression-parser">Flow expression parser</a></li>
@@ -420,8 +421,9 @@ not happen until you have completed a case study on an open-source program.
 
 <p>
 The <b>best way</b> to impress us is by doing a thoughtful job in the case
-study.
-This may result in you submitting issues against the issue tracker of the
+study.  The case study is even more important than the proposal text,
+because it shows us your abilities.
+The case study may result in you submitting issues against the issue tracker of the
 program you are annotating or of the Checker Framework.
 Pull requests against our GitHub project are a plus but are not required:
 good submitted bugs are just as valuable as bug fixes!
@@ -523,8 +525,9 @@ sections of the Checker Framework manual</a>.
 <h2 id="case-study-signature">Signature strings</h2>
 
 <p>
-Show that the ACM library, or the BCEL library, properly handles signature
-strings (or find bugs in them).
+Show that the <a href="https://asm.ow2.org/">ASM library</a>, or
+the <a href="https://commons.apache.org/proper/commons-bcel/">BCEL
+library</a>, properly handles signature strings (or find bugs in them).
 </p>
 
 <p>
@@ -581,23 +584,23 @@ error and to prevent users from suffering the bad consequences.
 </p>
 
 <p>
-We have recently created a static analysis tool that prevents illegal index
-array exceptions in Java programs.  We have not released it because we
-don't yet know how effective this tool is.  Does it scale up to big,
+This project will be a substantial case study with
+the <a href="https://checkerframework.org/manual/#index-checker">Index
+Checker</a>.  The first goal is to identify its merits and limitations.
+Does it scale up to big,
 interesting programs?  Are there common, important code patterns that it
 fails to handle?  Does it produce too many false positive warnings?  Does
 it place too heavy a burden on the user, either in terms of annotations or
 in terms of complexity of the error messages?  Worst of all, are there
 unknown unsoundnesses in the tool?
+The second goal is to improve its precision enough to make it usable by
+real-world programmers.
 </p>
 
 <p>
-This project will be a substantial case study with
-the <a href="https://checkerframework.org/manual/#index-checker">Index
-Checker</a>.  The first goal is to identify its merits and limitations.
-The second goal is to improve its precision enough to make it usable by
-real-world programmers.  A stretch goal is to extend it to handle
-collections such as
+A <a href="#index-checker-mutable-length">related project</a> is to extend
+the Index Checker to handle
+mutable collections such as
 <code>List</code>s, where the <code>remove()</code> method makes sound,
 precise analysis very tricky.
 </p>
@@ -608,7 +611,7 @@ precise analysis very tricky.
 <p>
 Android uses its own annotations that are similar to some in the Checker
 Framework.  Examples include the
-<a href="https://medium.com/sebs-top-tips/annotations-to-support-your-contracts-609ff259d5df">Android
+<a href="https://tips.seebrock3r.me/annotations-to-support-your-contracts-609ff259d5df">Android
   Studio support annotations</a>,
   including <code>@NonNull</code>, <code>@IntRange</code>, <code>@IntDef</code>,
   and others.
@@ -804,6 +807,61 @@ tooling?
   limitations of the Nullness Checker.
 </p>
 
+<h2 id="index-errors">Improving error messages</h2>
+
+<p>
+Compiler writers have come to realize that clarity of error
+messages is as important as the speed of the executable
+(<a href="http://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
+<a href="http://se.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>
+<a href="http://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
+</p>
+
+<p>
+The goal of this project is to improve a compiler's error messages.  One
+example (not the only possible one) is the Checker Framework.  Here are
+some distinct challenges:
+</p>
+<ul>
+  <li>
+    Some type errors can be more concisely or clearly expressed than the
+    standard "found type A, expected type B" message.
+  </li>
+  <li>
+    Some types are complex.  The error message could explain them, or link
+    to the manual, or give suggested fixes.
+  </li>
+  <li>
+    Compiler messages currently show
+    the <a href="https://checkerframework.org/manual/#effective-qualifier">effective
+    type</a>, which may be different than what the user wrote due to
+    defaulting, inference, and syntactic sugar.  For example, a user-written
+    <code>@IndexFor("a")</code> annotation is syntactic sugar for
+    <code>@NonNegative @LTLengthOf("a")</code>, and those types are
+    the ones that currently appear in error messages.
+    It would be good to show simpler types or ones that the user wrote.
+  </li>
+  <li>
+    Some checkers combine multiple cooperating type systems;
+    the <a href="https://checkerframework.org/manual/#nullness-checker">Nullness
+    Checker</a> and
+    the <a href="https://checkerframework.org/manual/#index-checker">Index
+    Checker</a> are examples.  If there is a problem with a variable's
+    lower bound type, then its upper bound type should not be shown in the
+    error message.  This will make the message shorter and more specific,
+    and avoid distracting the user with irrelevant information.
+  </li>
+  <li>
+    When a checker has multiple type systems, a type error or the lack of one may depend on facts from multiple type systems, and this should be expressed to the user.
+  </li>
+</ul>
+
+<p>
+It would be reasonable to start by improving the
+<a href="https://checkerframework.org/manual/#index-checker">Index
+  Checker</a>'s error messages, which frequently stymie users.  Then,
+  generalize the results to other type systems.
+</p>
 
 <h2 id="sound-by-default">Sound checking by default</h2>
 
@@ -977,6 +1035,9 @@ a <a href="https://checkerframework.org/determinism-checker-manual/manual.html#d
     manual chapter</a> that documents a possible design for a Determinism
 Checker.  It differs slightly from the above proposal, for instance by
 having a single type hierarchy instead of two.
+That type system is nearly implemented, so your best choice for this
+project might be to do a case study of it, which could lead to design work
+to improve it.
 </p>
 
 
@@ -1212,8 +1273,10 @@ differences from the real Nullness checker:
   the behavior is just to disable some functionality of existing checkers.
 </p>
 
-<p>It will be interesting to compare this NullnessLight Checker to the
-  regular Nullness Checker:
+<p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
+  Checker form a spetrum from easy-to-use bug detectors to sound
+  verification.  NullnessLight represents a new point in the design space.
+  It will be interesting to compare these checkers:
 </p>
 
 <ul>
@@ -1229,9 +1292,10 @@ differences from the real Nullness checker:
 </ul>
 
 <p>
-  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool may
+  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
   be an implementation of this idea (that is, a fast, but incomplete and
-  unsound, nullness checker).  Does Uber's tool provide users a good
+  unsound, nullness checker).  NullAway doesn't even handle Java Generics.
+  Does Uber's tool provide users a good
   introduction to the ideas that a user can use to transition to a nullness
   type system later?
 </p>
@@ -1288,7 +1352,7 @@ focus on what helps a software developer most!
 
 
 
-<h1 id="other">Other enhancements and tools</h1>
+<h1 id="cf-other">Type system enhancements and tools</h1>
 
 
 <h2 id="annotated-jdk">JDK annotations</h2>
@@ -1333,11 +1397,11 @@ of the Checker Framework.
   File Utilities</a>, or AFU, insert annotations into, and extract
   annotations from, <code>.java</code> files, <code>.class</code> files,
   and text files.  These programs were written before the
-  <a href="http://asm.ow2.org/">ASM</a> bytecode library supported Java 8's
+  <a href="https://asm.ow2.org/">ASM</a> bytecode library supported Java 8's
   type annotations.  Therefore, the AFU has its own custom version of ASM
-  that supports type annotations.  Now that ASM 5 has been released and it
+  that supports type annotations.  Now that ASM 6 has been released and it
   supports type annotations, the AFU needs to be slightly changed to use
-  the official ASM 5 library instead of its own custom ASM variant.
+  the official ASM 6 library instead of its own custom ASM variant.
 </p>
 
 <p>
@@ -1489,6 +1553,12 @@ evaluated in order to discover its flaws, improve its design, and discover
 how accurate it is in practice.
 </p>
 
+<p>
+A valuable project all by itself would be to compare heavy-weight and
+light-weight type inference this whole-program inference vs. Checker
+Framework Inference vs. Julia, to understand when each one is worth using.
+</p>
+
 
 <h2 id="dataflow">Dataflow enhancements</h2>
 
@@ -1543,6 +1613,12 @@ must be modular, but many side effect analyses require examining the whole
 program.  The system should require few or no method annotations within
 method bodies.  I'm not sure whether such a system already exists or we
 need to design a new one.
+</p>
+
+<p>
+Perhaps one of these existing side effect analyses could be used:
+ https://github.com/Sable/soot/wiki/Using-Side-Effect-Attributes
+ http://www2.informatik.uni-freiburg.de/~geffken/GeffkenST14.pdf
 </p>
 
 <!--

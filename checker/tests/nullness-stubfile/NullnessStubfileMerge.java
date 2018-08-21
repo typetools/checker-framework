@@ -5,7 +5,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 /*
- * This test reads two stub files (in addition to flow.astub):
+ * This test reads two stub files:
  * tests/nullness-stubfile/stubfile1.astub
  * tests/nullness-stubfile/stubfile2.astub
  *

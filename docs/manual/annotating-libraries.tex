@@ -112,7 +112,8 @@ Do not change the library's code, which will change its behavior and make
 the annotated version inconsistent with the unannotated version.
 (Sometimes it is acceptable to make a refactoring, such as extracting an
 expression into a new local variable in order to annotate its type or
-suppress a warning.)
+suppress a warning.  Perform refactoring only when you cannot use
+\<@AssumeAssertion>.)
 % (The only time it is acceptable to comment out existing code in the library
 % is if the regular Java compiler cannot compile the code; but this should be
 % extremely rare.)
@@ -206,7 +207,7 @@ This section describes how to create an annotated library.
 
 \begin{enumerate}
 \item See the
-  \ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
+  \ahref{https://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
@@ -295,9 +296,6 @@ This section describes how to create an annotated library.
     pluggable type-checking, and there will be no need for the Checker
     Framework to include an annotated version of the library.
 
-    You may want to write the annotations in comments, so that it
-    is still possible to compile the library without use of Java 8.
-
     If the library maintainers do not accept the annotations, then
     periodically, such as when a new version of the library is released,
     pull changes from upstream (the library's main version control system)
@@ -365,7 +363,10 @@ option.
 
 \item
 Build the annotated JDK:
-	run \<./gradlew buildJdk>
+\begin{enumerate}
+\item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
+\item run \<./gradlew buildJdk>
+\end{enumerate}
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively
@@ -518,6 +519,7 @@ automatically, with no need for the user to supply a command-line option.
 Every Java file is a valid stub file.  However, you can omit information
 that is not relevant to pluggable type-checking; this makes the stub file
 smaller and easier for people to read and write.
+Also note that the stub file's extension must be \<.astub>, not \<.java>.
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -530,8 +532,6 @@ As an illustration, a stub file for the Interning type system
     @Interned String intern();
   }
 \end{Verbatim}
-
-Note, annotations in comments are ignored.
 
 The stub file format is allowed to differ from Java source code in the
 following ways:
@@ -580,8 +580,8 @@ in the same directory as the checker's \<.java> source code.
 
 \subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
 
-Every Java file is a stub file.  If you have access to the Java file, then
-you can use the Java file as the stub file.  Just add
+Every Java file is a stub file.  If you have access to the Java file,
+rename file \<A.java> to \<A.astub>.  You can add
 annotations to the signatures, leaving the method bodies unchanged.
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the \<import> statement.
@@ -675,6 +675,12 @@ overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
 will be issued.
 
 Use command-line option
+\<-AstubWarnIfNotFoundIgnoresClasses> in conjuntion with the previous option
+to report only missing methods/fields, but ignore missing classes, even if
+other classes from the same package are present.
+Useful if a package spans more than one jar.
+
+Use command-line option
 \<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a
 stub file overwrites annotations contained in bytecode.
 
@@ -727,7 +733,7 @@ read whether the library's annotations are parsed.
 % LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
-%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
+%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual

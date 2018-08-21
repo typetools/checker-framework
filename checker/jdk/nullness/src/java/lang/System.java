@@ -1,9 +1,10 @@
 package java.lang;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.TerminatesExecution;
 
 import java.io.*;
 import java.util.Properties;
@@ -43,6 +44,7 @@ public final class System {
   public static @Nullable String clearProperty(String key) { throw new RuntimeException("skeleton method"); }
   public static @Nullable String getenv(String name) { throw new RuntimeException("skeleton method"); }
   public static java.util.Map<String,String> getenv() { throw new RuntimeException("skeleton method"); }
+  @TerminatesExecution
   public static void exit(int status) { throw new RuntimeException("skeleton method"); }
   public static void gc() { throw new RuntimeException("skeleton method"); }
   public static void runFinalization() { throw new RuntimeException("skeleton method"); }

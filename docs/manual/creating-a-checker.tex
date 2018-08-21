@@ -14,6 +14,10 @@ the checker plugin verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
+There is also a
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{developer
+  manual} for people who wish to edit the Checker Framework source code or
+make pull requests.
 
 
 Writing a simple checker is easy!  For example, here is a complete, useful
@@ -211,8 +215,7 @@ You can place your checker's source files wherever you like.
 \item
   \begin{sloppypar}
   If you put your checker elsewhere, then when you compile your checker,
-  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>
-  and \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
   \end{sloppypar}
 \end{itemize}
 
@@ -501,6 +504,9 @@ You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
+The Javadoc of every type qualifier should include an example use of the
+qualifier.
+
 
 \subsection{Declaratively defining the qualifier hierarchy\label{creating-declarative-hierarchy}}
 
@@ -679,7 +685,8 @@ programmer didn't write a type qualifier explicitly.
 \subsection{Completeness of the type hierarchy\label{creating-bottom-and-top-qualifier}}
 
 When you define a type system, its type hierarchy must be a
-complete lattice --- that is, there must be a top type that is a
+lattice:  every set of types has a unique least upper bound and a unique
+greatest lower bound.  This implies that there must be a top type that is a
 supertype of all other types, and there must be a bottom type that is a
 subtype of all other types.
 Furthermore, it is best if the top type and bottom type are defined
@@ -1694,7 +1701,7 @@ following two lines at the beginning of the constructor for your subtype of
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
-uses the JDK.  As described in Section~\ref{annotated-libraries-creating},
+uses the JDK.  As described in Section~\ref{annotating-libraries},
 there are two general ways to supply an annotated library:  in Java files
 that will be compiled to \<.class> files, or as stub files (partial Java source files).
 
@@ -1746,8 +1753,8 @@ qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 
 \item \code{-AprintVerboseGenerics}: print more information about type
-  parameters and wildcards when they appear in warning messages.  This
-  produces a subset of the information than \code{-AprintAllQualifiers} does.
+  parameters and wildcards when they appear in warning messages.  Supplying
+  this also implies \code{-AprintAllQualifiers}.
 
 \item \code{-Adetailedmsgtext}: Output error/warning messages in a
   stylized format that is easy for tools to parse.  This is useful for
@@ -1896,9 +1903,7 @@ docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
 
 \begin{sloppypar}
 You can use any standard debugger to observe the execution of your checker.
-Set the execution main class to \code{com.sun.tools.javac.Main}, and insert
-the Checker Framework javac.jar (resides in
-\code{\$CHECKERFRAMEWORK/checker/dist/javac.jar}).  If using an IDE, it is
+If using an IDE, it is
 recommended that you add \code{.../jsr308-langtools} as a project, so you
 can step into its source code if needed.
 \end{sloppypar}
@@ -2052,7 +2057,9 @@ figures.
 
 Don't forget to write Javadoc for any annotations that the checker uses.
 That is part of the documentation and is the first thing that many users
-may see.  Also ensure that the Javadoc links back to the manual, using the
+may see.  The documentation for any annotation should include an example
+use of the annotation.
+Also ensure that the Javadoc links back to the manual, using the
 \<@checker\_framework.manual> custom Javadoc tag.
 
 \section{javac implementation survival guide\label{creating-javac-tips}}

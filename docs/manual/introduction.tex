@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.4.0.zip}
+  \url{https://checkerframework.org/checker-framework-2.5.4.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -441,15 +441,6 @@ You only need to write annotations on method signatures and fields.
 Annotations within method bodies are inferred for you; for more details,
 see  Section~\ref{type-refinement}.
 
-You may write the annotations within comments, as in
-\code{List</*@NonNull*/ String>}.  The Checker Framework compiler, which is
-distributed with the Checker Framework, will still process
-the annotations.
-However, your code will remain compilable by people who are not yet using
-Java 8.  For more details, see
-Section~\ref{annotations-in-comments}.
-
-
 \section{Running a checker\label{running}}
 
 To run a checker plugin, run the compiler \code{javac} as usual,
@@ -500,10 +491,6 @@ Checker Framework looks up the library's annotations in its class files.
 
 Some projects are already distributed with type annotations by their
 maintainers, so you do not need to do anything special.
-% such as Guava,
-% \href{https://mernst.github.io/plume-lib/}{plume-lib},
-% and
-% \href{http://plse.cs.washington.edu/daikon/}{Daikon}
 Over time, this should become more common.
 
 For some other libraries, the Checker Framework developers have provided an
@@ -514,7 +501,7 @@ running your code, you can use either the annotated library or the regular
 distributed version of the library --- they behave identically.
 
 The annotated libraries appear in
-\ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
+\ahref{https://search.maven.org/#search|gav|1|g:\%22org.checkerframework.annotatedlib\%22}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
 
 \begin{itemize}
@@ -563,41 +550,18 @@ Checker Framework users.
 
 \subsection{Distributing your annotated project\label{distributing}}
 
-You have two main options for distributing your compiled code (\<.jar>
-files).
-
-\begin{itemize}
-\item
-  Option 1: no annotations appear in the \<.jar> files.  There is no
-  run-time dependence on the Checker Framework, and the distributed \<.jar>
-  files are not useful for pluggable type-checking of client code.
-
-  Write annotations in comments (see
-  Section~\ref{annotations-in-comments}).
-  Developers perform pluggable type-checking in-house to detect errors and
-  verify their absence.
-  To create the distributed \<.jar> files, use a normal Java compiler,
-  which ignores the annotations.
-\item
-  Option 2: annotations appear in the \<.jar> files.  The distributed
+  The distributed
   \<.jar> files can be used for pluggable type-checking of client code.
   The \<.jar> files are only compatible with a Java 8
   % or later
-  JVM, unless you
-  do extra work (see Section~\ref{declaration-annotations-for-java7}).
-
-  Write annotations in comments or not in comments (it doesn't matter which).
+  JVM.
   Developers perform pluggable type-checking in-house to detect errors and
   verify their absence.
-  When you create \<.class> files, use the Checker Framework compiler
-  (Section~\ref{external-tools}) and running each relevant type system.
+  When you create \<.class> files, run each relevant type system.
   Create the distributed \<.jar> files from those \<.class> files, and also
   include the contents of
   \code{checker-framework/checker/dist/checker-qual.jar} from the Checker
   Framework distribution, to define the annotations.
-
-\end{itemize}
-
 
 \subsection{Summary of command-line options\label{checker-options}}
 
@@ -707,6 +671,10 @@ Type-checking modes:  enable/disable functionality
   Section~\ref{whole-program-inference}.
 \item \<-AshowSuppressWarningKeys>
   With each warning, show all possible keys to suppress that warning.
+\item \<-AwarnUnneededSuppressions>
+  Issue a warning if a \<@SuppressWarnings> did not suppress a warning issued by
+  the checker.  These warnings are only issued if the \<@SuppressWarnings>
+  contains a key that would suppress any warning from this checker.
 \end{itemize}
 
 Partially-annotated libraries
@@ -718,6 +686,8 @@ Partially-annotated libraries
   List of stub files or directories; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
+\item \<-AstubWarnIfNotFoundIgnoresClasses>
+  Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
 \item \<-AstubWarnIfOverwritesBytecode>
   Warn if a stub file entry overwrite bytecode information; see
   Section~\ref{stub-using}.
@@ -803,11 +773,6 @@ checker is an ``annotation processor''.
   Section~\ref{checker-auto-discovery}
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
-\item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
-  to turn off parsing annotation comments and
-  to turn on parsing annotation comments even when they
-  contain spaces; applicable only to the Checker Framework compiler;
-  see Section~\ref{annotations-in-comments}
 \item \<-J> Supply an argument to the JVM that is running javac;
   for example, \<-J-Xmx2500m> to increase its maximum heap size
 \item \<-doe> To ``dump on error'', that is, output a stack trace
@@ -973,7 +938,7 @@ affect the soundness guarantee, but a user may need to examine more
 warnings after fixing the first ones identified.  (More often, at least in
 our experience to date, a single fix corrects all the warnings.)
 
-% It might be worthwhile to permit a user to see every warning -- though I
+% It might be worthwhile to permit a user to see every warning --- though I
 % would not advocate this setting for daily use.
 
 If you find that a checker fails to issue a warning that it
@@ -1143,7 +1108,7 @@ i++;
 \end{itemize}
 
 
-\subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
+\subsection{Annotations indicate non-exceptional behavior\label{annotate-normal-behavior}}
 
 You should use annotations to specify \emph{normal} behavior.  The
 annotations indicate all the values that you \emph{want} to flow to a
@@ -1444,12 +1409,12 @@ same methodology in different words.
 % LocalWords:  nonnull langtools sourcepath classpath OpenJDK pre jsr lst
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
-% LocalWords:  Nullness Xspacesincomments unselect checkbox unsetting PolyNull
+% LocalWords:  Nullness unselect checkbox unsetting PolyNull
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
-% LocalWords:  int XDTA spacesincomments newdir Awarns signedness urgin
+% LocalWords:  int XDTA newdir Awarns signedness urgin
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
@@ -1461,9 +1426,9 @@ same methodology in different words.
 %  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
 %  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AprintErrorStack
 %  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
-%  LocalWords:  AresourceStats noannotationsincomments jls r78 JDKs i18n
+%  LocalWords:  AresourceStats jls r78 JDKs i18n
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
-%  LocalWords:  typedef guieffect Gradle jdk7 jdk8 javadoc MyFile argfiles
+%  LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles
 %%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
 %%  LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 %%  LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror

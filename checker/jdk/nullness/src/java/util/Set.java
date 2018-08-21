@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface Set<E extends @Nullable Object> extends Collection<E> {
+public interface Set<E> extends Collection<E> {
   @Pure public abstract int size();
   @Pure public abstract boolean isEmpty();
   @Pure public abstract boolean contains(@Nullable Object a1);

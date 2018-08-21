@@ -3,6 +3,5 @@ from the qual directory of a checker in two ways:
 1) from a file directory
 2) from a jar
 
-To see the demo, edit the Makefile with the location of your JDK 7 or 8's javac
-(variable JAVAC) and the location of the jsr308-langtools project for javac.jar
-(variable JAVACJAR) then run: make demo1 or make demo2
+To see the demo, edit the Makefile with the location of your JDK 8's javac
+(variable JAVAC) then run: make demo1 or make demo2

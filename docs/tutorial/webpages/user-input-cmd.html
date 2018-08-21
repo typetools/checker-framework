@@ -32,7 +32,7 @@
           Manual</a></li>
 
           <li><a href=
-          "https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">
+          "https://groups.google.com/forum/#!forum/checker-framework-discuss">
           Discussion List</a></li>
 
           <li><a href=
@@ -213,19 +213,13 @@ $ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker R
       <div id="runex2">
         <h4>6. Run the Example</h4>
 
-        <p>Run the program as before (but adding <code>checker.jar</code> or <code>checker-qual.jar</code> to the classpath)
+        <p>Run the program as before (but adding <code>checker-qual.jar</code> to the classpath)
         to verify that the program
         prints a user-friendly warning.</p>
         <pre>
 $ <strong>java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker-qual.jar" RegexExample '[01]?[\d-\([0123]?\d\)-\d{4}+' '01-24-2013'</strong>
 Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character range near index 24
 </pre>
-
-        <p>(If this issues an error</p>
-        <pre>Exception in thread "main" java.lang.UnsupportedClassVersionError: RegexExample : Unsupported major.minor version 52.0</pre>
-        <p>, then <a href="https://checkerframework.org/manual/#javac-installation">change the <code>javacheck</code>
-        alias</a> to pass the <code>-source 7 -target 7</code> command-line
-        arguments and <a href="#run2">rerun the javacheck command</a>.)</p>
 
         <p>For a full discussion of the Regex Checker, please see the <a href=
         "https://checkerframework.org/manual/#regex-checker">
