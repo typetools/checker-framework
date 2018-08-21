@@ -63,16 +63,16 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotationMirror POLYALL;
 
     /** Determines the instantiations for each polymorphic qualifier. */
-    private final PolyCollector collector;
+    private PolyCollector collector;
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
      * top qualifiers.
      */
-    private final Completer completer;
+    private Completer completer;
 
     /** Replaces each polymorphic qualifier with its instantiation. */
-    private final AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
+    private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
 
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
@@ -96,6 +96,15 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.completer = new Completer();
         this.replacer = new Replacer();
     }
+    /**
+     * Reset to allow reuse of the same instance. Subclasses should override this method to clear
+     * their additional state; they must call the super implementation.
+     */
+    protected void reset() {
+        completer.reset();
+        replacer.reset();
+        collector.reset();
+    }
 
     /**
      * Resolves polymorphism annotations for the given type.
@@ -105,9 +114,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     @Override
     public void annotate(MethodInvocationTree tree, AnnotatedExecutableType type) {
+        reset();
+
         if (polyQuals.isEmpty()) {
             return;
         }
+
         // javac produces enum super calls with zero arguments even though the
         // method element requires two.
         // See also BaseTypeVisitor.visitMethodInvocation and
@@ -145,6 +157,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     @Override
     public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
+        reset();
         if (polyQuals.isEmpty()) {
             return;
         }
@@ -169,6 +182,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     @Override
     public void annotate(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
+        reset();
+
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
             if (QualifierPolymorphism.isPolymorphicQualified(type)) {
                 // functional interface has a polymorphic qualifier, so they should not be resolved
@@ -224,18 +239,18 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * <p>This method is called on all parts of a type.
      *
      * @param type AnnotationTypeMirror whose poly annotations are replaced
-     * @param matches mapping from polymorphic annotation to instantiation.
+     * @param replacements mapping from polymorphic annotation to instantiation
      */
     protected abstract void replace(
-            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches);
+            AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements);
 
     /** Replaces each polymorphic qualifier with its instantiation. */
     class Replacer extends AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> {
         @Override
         public Void scan(
-                AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> matches) {
-            replace(type, matches);
-            return super.scan(type, matches);
+                AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
+            replace(type, replacements);
+            return super.scan(type, replacements);
         }
     }
 
@@ -488,6 +503,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             }
             AnnotationMirrorMap<AnnotationMirrorSet> result = mapQualifierToPoly(type1, type2);
             return reduce(result, super.visitWildcard_Wildcard(type1, type2, aVoid));
+        }
+
+        public void reset() {
+            this.visitedType2.clear();
+            this.visited.clear();
         }
     }
 }
