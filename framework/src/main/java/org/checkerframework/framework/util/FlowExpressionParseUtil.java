@@ -1391,6 +1391,10 @@ public class FlowExpressionParseUtil {
             this.args = args;
         }
 
+        public String getMessage() {
+            return errorKey + " " + Arays.toString(args);
+        }
+
         public Result getResult() {
             return Result.failure(errorKey, args);
         }
