@@ -16,6 +16,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -169,7 +170,10 @@ public class FlowExpressionParseUtil {
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
         } else {
-            throw constructParserException(expression);
+            throw constructParserException(
+                    expression,
+                    String.format("unrecognized expression '%s'", expression)
+                            + (context.parsingMember ? " in context with parsingMember=true" : ""));
         }
     }
 
@@ -591,7 +595,10 @@ public class FlowExpressionParseUtil {
                 }
             }
         } catch (Throwable t) {
-            throw constructParserException(s, t);
+            if (t.getMessage() == null) {
+                throw new Error("no detail message in " + t.getClass(), t);
+            }
+            throw constructParserException(s, t.getMessage());
         }
         assert methodElement != null;
         // TODO: reinstate this test, but issue a warning that the user
@@ -780,13 +787,16 @@ public class FlowExpressionParseUtil {
         try {
             classSymbol = resolver.findClassInPackage(classNameString, packageSymbol, path);
         } catch (Throwable t) {
+            if (t.getMessage() == null) {
+                throw new Error("no detail message in " + t.getClass(), t);
+            }
             throw constructParserException(
                     expression,
-                    " findClassInPackage threw an exception when looking up class "
+                    t.getMessage()
+                            + " while looking up class "
                             + classNameString
                             + " in package "
-                            + packageSymbol.toString(),
-                    t);
+                            + packageSymbol.toString());
         }
         if (classSymbol == null) {
             throw constructParserException(
@@ -843,10 +853,11 @@ public class FlowExpressionParseUtil {
             try {
                 longerResult = resolver.findPackage(packageName, path);
             } catch (Throwable t) {
+                if (t.getMessage() == null) {
+                    throw new Error("no detail message in " + t.getClass(), t);
+                }
                 throw constructParserException(
-                        expression,
-                        "findPackage threw an exception when looking up package " + packageName,
-                        t);
+                        expression, t.getMessage() + " while looking up package " + packageName);
             }
             if (longerResult == null) {
                 break;
@@ -864,10 +875,11 @@ public class FlowExpressionParseUtil {
                 try {
                     wholeExpressionAsPackage = resolver.findPackage(expression, path);
                 } catch (Throwable t) {
+                    if (t.getMessage() == null) {
+                        throw new Error("no detail message in " + t.getClass(), t);
+                    }
                     throw constructParserException(
-                            expression,
-                            "findPackage threw an exception when looking up package " + expression,
-                            t);
+                            expression, t.getMessage() + " while looking up package " + expression);
                 }
                 if (wholeExpressionAsPackage != null) {
                     // The entire expression matches a package name.
@@ -1380,6 +1392,12 @@ public class FlowExpressionParseUtil {
             this.args = args;
         }
 
+        @Override
+        public String getMessage() {
+            return errorKey + " " + Arrays.toString(args);
+        }
+
+        /** Return a Result that can be used for error reporting. */
         public Result getResult() {
             return Result.failure(errorKey, args);
         }
@@ -1390,57 +1408,18 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with no
-     * further explanation.
-     */
-    private static FlowExpressionParseException constructParserException(String expr) {
-        return constructParserException(expr, null, null);
-    }
-
-    /**
      * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with
      * explanation {@code explanation}.
      */
     private static FlowExpressionParseException constructParserException(
             String expr, String explanation) {
-        return constructParserException(expr, explanation, null);
-    }
-
-    /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} whose parsing
-     * threw {@code cause}.
-     */
-    private static FlowExpressionParseException constructParserException(
-            String expr, Throwable cause) {
-        return constructParserException(expr, null, cause);
-    }
-
-    /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with
-     * explanation {@code explanation}, whose parsing threw {@code cause}.
-     */
-    private static FlowExpressionParseException constructParserException(
-            String expr, String explanation, Throwable cause) {
-        String detail = null;
-        if (explanation != null) {
-            detail = explanation;
+        if (expr == null) {
+            throw new Error("Must have an expression.");
         }
-        if (cause != null) {
-            String causeMessage = cause.getMessage();
-            if (causeMessage != null) {
-                if (detail == null) {
-                    detail = causeMessage;
-                } else {
-                    detail = detail + ", " + causeMessage;
-                }
-            }
-        }
-        if (detail != null) {
-            detail = " because " + detail;
-        } else {
-            detail = "";
+        if (explanation == null) {
+            throw new Error("Must have an explanation.");
         }
         return new FlowExpressionParseException(
-                cause, "flowexpr.parse.error", "'" + expr + "'" + detail);
+                (Throwable) null, "flowexpr.parse.error", "'" + expr + "' because " + explanation);
     }
 }

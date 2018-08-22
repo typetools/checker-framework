@@ -132,7 +132,7 @@ public abstract class AnnotatedTypeMirror {
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
     // the class name of Annotation instead.
     // Caution: Assumes that a type can have at most one AnnotationMirror for
-    // any Annotation type. JSR308 is pushing to have this change.
+    // any Annotation type.
     protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
     /** The explicitly written annotations on this type. */

@@ -62,8 +62,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
 /**
- * An abstract annotation processor designed for implementing a source-file checker for a JSR-308
- * conforming compiler plug-in. It provides an interface to {@code javac}'s annotation processing
+ * An abstract annotation processor designed for implementing a source-file checker as an annotation
+ * processor (a compiler plug-in). It provides an interface to {@code javac}'s annotation processing
  * API, routines for error reporting via the JSR 199 compiler API, and an implementation for using a
  * {@link SourceVisitor} to perform the type-checking.
  *
