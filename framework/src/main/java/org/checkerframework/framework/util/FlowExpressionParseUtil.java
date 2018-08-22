@@ -1397,6 +1397,7 @@ public class FlowExpressionParseUtil {
             return errorKey + " " + Arrays.toString(args);
         }
 
+        /** Return a Result that can be used for error reporting. */
         public Result getResult() {
             return Result.failure(errorKey, args);
         }
