@@ -786,6 +786,9 @@ public class FlowExpressionParseUtil {
         try {
             classSymbol = resolver.findClassInPackage(classNameString, packageSymbol, path);
         } catch (Throwable t) {
+            if (t.getMessage() == null) {
+                throw new Error("no detail message in " + t.getClass(), t);
+            }
             throw constructParserException(
                     expression,
                     t.getMessage()
@@ -849,6 +852,9 @@ public class FlowExpressionParseUtil {
             try {
                 longerResult = resolver.findPackage(packageName, path);
             } catch (Throwable t) {
+                if (t.getMessage() == null) {
+                    throw new Error("no detail message in " + t.getClass(), t);
+                }
                 throw constructParserException(
                         expression, t.getMessage() + " while looking up package " + packageName);
             }
@@ -868,6 +874,9 @@ public class FlowExpressionParseUtil {
                 try {
                     wholeExpressionAsPackage = resolver.findPackage(expression, path);
                 } catch (Throwable t) {
+                    if (t.getMessage() == null) {
+                        throw new Error("no detail message in " + t.getClass(), t);
+                    }
                     throw constructParserException(
                             expression, t.getMessage() + " while looking up package " + expression);
                 }
