@@ -130,8 +130,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return atypeFactory.createQualifierHierarchy(this);
         }
 
+        /** True if the factory has already been built. */
         private boolean wasBuilt = false;
 
+        /** Throw an exception if the factory was already built. */
         protected void assertNotBuilt() {
             if (wasBuilt) {
                 throw new BugInCF(

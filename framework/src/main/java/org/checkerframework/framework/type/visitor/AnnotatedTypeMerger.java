@@ -22,6 +22,7 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
+    /** Replaces or adds all annotations from {@code from} to {@code to}. */
     public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (from == to) {
             throw new BugInCF("From == to");
