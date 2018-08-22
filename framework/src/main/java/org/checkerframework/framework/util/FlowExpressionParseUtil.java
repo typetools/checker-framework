@@ -594,6 +594,9 @@ public class FlowExpressionParseUtil {
                 }
             }
         } catch (Throwable t) {
+            if (t.getMessage() == null) {
+                throw new Error("no detail message", t);
+            }
             throw constructParserException(s, t.getMessage());
         }
         assert methodElement != null;
