@@ -4,9 +4,8 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 public class ConditionalNullness {
 
     @EnsuresNonNullIf(
-        expression = {"field", "method()"},
-        result = true
-    )
+            expression = {"field", "method()"},
+            result = true)
     boolean checkNonNull() {
         // don't bother with the implementation
         // :: error: (contracts.conditional.postcondition.not.satisfied)

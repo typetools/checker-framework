@@ -16,7 +16,8 @@ class Purity {
     // class with a pure constructor
     private static class PureClass {
         @Pure
-        // :: warning: (purity.deterministic.constructor) :: error: (purity.not.deterministic.not.sideeffectfree.call)
+        // :: warning: (purity.deterministic.constructor)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
         public PureClass() {}
     }
 

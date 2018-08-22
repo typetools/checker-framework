@@ -76,6 +76,7 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -114,8 +115,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
         extends AnnotatedTypeFactory {
 
-    /** should use flow by default */
-    protected static boolean FLOW_BY_DEFAULT = true;
+    /** Should use flow by default. */
+    protected static boolean flowByDefault = true;
 
     /** To cache the supported monotonic type qualifiers. */
     private Set<Class<? extends Annotation>> supportedMonotonicQuals;
@@ -267,7 +268,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param checker the checker to which this type factory belongs
      */
     public GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
-        this(checker, FLOW_BY_DEFAULT);
+        this(checker, flowByDefault);
     }
 
     @Override
@@ -527,7 +528,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return new QualifierDefaults(elements, this);
     }
 
-    /** Defines alphabetical sort ordering for qualifiers */
+    /** Defines alphabetical sort ordering for qualifiers. */
     private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING =
             new Comparator<Class<? extends Annotation>>() {
                 @Override
@@ -687,7 +688,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates {@link QualifierPolymorphism} which supports QualifierPolymorphism mechanism
+     * Creates {@link QualifierPolymorphism} which supports QualifierPolymorphism mechanism.
      *
      * @return the QualifierPolymorphism class
      */
@@ -1393,16 +1394,14 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
-            NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.constructorFromUse(tree);
-        AnnotatedExecutableType method = mfuPair.first;
+    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
+        ParameterizedMethodType mType = super.constructorFromUse(tree);
+        AnnotatedExecutableType method = mType.methodType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
         poly.annotate(tree, method);
-        return mfuPair;
+        return mType;
     }
 
     @Override
@@ -1465,7 +1464,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Flow analysis will be performed if:
+     * Flow analysis will be performed if all of the following are true.
      *
      * <ul>
      *   <li>tree is a {@link ClassTree}
@@ -1532,16 +1531,14 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree);
-        AnnotatedExecutableType method = mfuPair.first;
+    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedMethodType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.methodType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
         poly.annotate(tree, method);
-        return mfuPair;
+        return mType;
     }
 
     @Override

@@ -55,11 +55,10 @@ export JAIFDIR="${WD}/jaifs" # directory for generated JAIFs
 export PATCH=${SCRIPTDIR}/ad-hoc.diff
 
 # parameters derived from environment
-export JSR308=`[ -d "${CHECKERFRAMEWORK}" ] && cd "${CHECKERFRAMEWORK}/.." && pwd`
-export AFU="${JSR308}/annotation-tools"
-export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities.jar"
+export PARENTDIR=`readlink -e "${CHECKERFRAMEWORK}/.."`
+export AFU="${PARENTDIR}/annotation-tools"
+export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities-all.jar"
 export CFJAR="${CHECKERFRAMEWORK}/checker/dist/checker.jar"
-export JDJAR="${JSR308}/jsr308-langtools/dist/lib/javadoc.jar"
 export JAVAC="java -jar ${CHECKERFRAMEWORK}/checker/dist/checker.jar"
 export JFLAGS=" -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 -source 8 -target 8 -encoding ascii"
 export CLASSPATH=".:${JDK}/build/classes:${JDJAR}:${CFJAR}:${AFUJAR}:${CLASSPATH}"

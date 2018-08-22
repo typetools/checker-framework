@@ -134,7 +134,7 @@ public abstract class CFAbstractAnalysis<
     public abstract @Nullable V createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType);
 
-    /** Default implementation for {@link #createAbstractValue(Set, TypeMirror)} */
+    /** Default implementation for {@link #createAbstractValue(Set, TypeMirror)}. */
     public CFValue defaultCreateAbstractValue(
             CFAbstractAnalysis<CFValue, ?, ?> analysis,
             Set<AnnotationMirror> annotations,

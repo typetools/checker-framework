@@ -8,6 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness Checker -- testing {@code -AskipDefs} command-line argument. */
 public class NullnessSkipDefsTest extends CheckerFrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessSkipDefsTest(List<File> testFiles) {
         super(
                 testFiles,

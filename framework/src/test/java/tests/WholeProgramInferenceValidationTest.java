@@ -15,6 +15,7 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
  */
 public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public WholeProgramInferenceValidationTest(List<File> testFiles) {
         super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
     }

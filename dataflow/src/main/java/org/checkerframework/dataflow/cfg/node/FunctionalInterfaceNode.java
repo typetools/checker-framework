@@ -65,12 +65,18 @@ public class FunctionalInterfaceNode extends Node {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         FunctionalInterfaceNode that = (FunctionalInterfaceNode) o;
 
-        if (tree != null ? !tree.equals(that.tree) : that.tree != null) return false;
+        if (tree != null ? !tree.equals(that.tree) : that.tree != null) {
+            return false;
+        }
 
         return true;
     }

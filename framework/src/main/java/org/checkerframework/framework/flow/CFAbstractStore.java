@@ -951,10 +951,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
-        CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?>) viz;
-        casted_viz.visualizeStoreHeader(this.getClass().getCanonicalName());
-        internalVisualize(casted_viz);
-        casted_viz.visualizeStoreFooter();
+        CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
+        castedViz.visualizeStoreHeader(this.getClass().getCanonicalName());
+        internalVisualize(castedViz);
+        castedViz.visualizeStoreFooter();
     }
 
     /**

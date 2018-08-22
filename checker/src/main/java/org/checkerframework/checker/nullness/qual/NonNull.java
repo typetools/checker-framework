@@ -38,19 +38,18 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @SubtypeOf(MonotonicNonNull.class)
 @ImplicitFor(
-    literals = {LiteralKind.STRING},
-    types = {
-        TypeKind.PACKAGE,
-        TypeKind.INT,
-        TypeKind.BOOLEAN,
-        TypeKind.CHAR,
-        TypeKind.DOUBLE,
-        TypeKind.FLOAT,
-        TypeKind.LONG,
-        TypeKind.SHORT,
-        TypeKind.BYTE
-    }
-)
+        literals = {LiteralKind.STRING},
+        types = {
+            TypeKind.PACKAGE,
+            TypeKind.INT,
+            TypeKind.BOOLEAN,
+            TypeKind.CHAR,
+            TypeKind.DOUBLE,
+            TypeKind.FLOAT,
+            TypeKind.LONG,
+            TypeKind.SHORT,
+            TypeKind.BYTE
+        })
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER})
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})

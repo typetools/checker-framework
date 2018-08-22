@@ -3,24 +3,24 @@ class RawPartial2 {
     void nonRawReceiver() { } // receiver has type "@NonRaw A".
     void nonRawAReceiver() @NonRaw(A.class) { }
     // the next two declarations are equivalent
-    void rawAReciever1() @Raw { }
-    void rawAReciever2() @NonRaw(Object.class) { }
+    void rawAReceiver1() @Raw { }
+    void rawAReceiver2() @NonRaw(Object.class) { }
   }
 
   // Identical annotations as in superclass
   static  class B1 extends A {
     void nonRawReceiver() { }
     void nonRawAReceiver() @NonRaw(A.class) { }
-    void rawAReciever1() @Raw { }
-    void rawAReciever2() @NonRaw(Object.class) { }
+    void rawAReceiver1() @Raw { }
+    void rawAReceiver2() @NonRaw(Object.class) { }
   }
 
   // Equivalent annotations as in superclass
   static class B2 extends A {
     void nonRawReceiver() { }
     void nonRawAReceiver() Raw { }
-    void rawAReciever1() @NonRaw(Object.class) { }
-    void rawAReciever2() @Raw { }
+    void rawAReceiver1() @NonRaw(Object.class) { }
+    void rawAReceiver2() @Raw { }
   }
 
   // Weaker annotations than in superclass -- OK.

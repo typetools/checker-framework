@@ -42,9 +42,8 @@ public class NullnessFieldInvar {
     }
 
     @FieldInvariant(
-        field = {"o", "subO"},
-        qualifier = NonNull.class
-    )
+            field = {"o", "subO"},
+            qualifier = NonNull.class)
     class SubSub2 extends Sub {
         public SubSub2(@NonNull Object o) {
             super(o);
@@ -96,9 +95,8 @@ public class NullnessFieldInvar {
     }
 
     @FieldInvariant(
-        field = {"o", "subO"},
-        qualifier = NonNull.class
-    )
+            field = {"o", "subO"},
+            qualifier = NonNull.class)
     class Shadowing extends SubSub2 {
         @Nullable Object o;
         @Nullable Object subO;
@@ -142,15 +140,13 @@ public class NullnessFieldInvar {
 
     // :: error: (field.invariant.not.wellformed)
     @FieldInvariant(
-        field = {},
-        qualifier = NonNull.class
-    )
+            field = {},
+            qualifier = NonNull.class)
     class Invalid1 extends Super2 {}
     // :: error: (field.invariant.not.wellformed)
     @FieldInvariant(
-        field = {"a", "b"},
-        qualifier = {NonNull.class, NonNull.class, NonNull.class}
-    )
+            field = {"a", "b"},
+            qualifier = {NonNull.class, NonNull.class, NonNull.class})
     class Invalid2 extends Super2 {}
 
     // :: error: (field.invariant.not.found)
@@ -165,9 +161,8 @@ public class NullnessFieldInvar {
     }
 
     @FieldInvariant(
-        field = {"field1", "field2", "field3", "field4"},
-        qualifier = NonNull.class
-    )
+            field = {"field1", "field2", "field3", "field4"},
+            qualifier = NonNull.class)
     class SubManyFields extends SuperManyFields {
         void test() {
             field1.toString();

@@ -92,7 +92,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
     /**
-     * Returns a list of class names for the given tree using the Class Val Checker
+     * Returns a list of class names for the given tree using the Class Val Checker.
      *
      * @param tree ExpressionTree whose class names are requested
      * @param mustBeExact whether @ClassBound may be used
@@ -207,7 +207,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(new MethodValTreeAnnotator(this), super.createTreeAnnotator());
     }
 
-    /** TreeAnnotator with the visitMethodInvocation method overridden */
+    /** TreeAnnotator with the visitMethodInvocation method overridden. */
     protected class MethodValTreeAnnotator extends TreeAnnotator {
 
         protected MethodValTreeAnnotator(MethodValAnnotatedTypeFactory factory) {
@@ -347,7 +347,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 }
 /**
  * An object that represents a the tuple that identifies a method signature: (fully qualified class
- * name, method name, number of parameters)
+ * name, method name, number of parameters).
  */
 class MethodSignature {
     String className;

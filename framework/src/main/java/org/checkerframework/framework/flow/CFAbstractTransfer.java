@@ -424,7 +424,9 @@ public abstract class CFAbstractTransfer<
                     receiver = new ThisReference(classType);
                 }
                 V value = analysis.createAbstractValue(type);
-                if (value == null) continue;
+                if (value == null) {
+                    continue;
+                }
                 if (TreeUtils.isConstructor(methodTree)) {
                     // if we are in a constructor,
                     // then we can still use the static type, but only
@@ -896,7 +898,10 @@ public abstract class CFAbstractTransfer<
     public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
         if (shouldPerformWholeProgramInference(n.getTree())) {
             ExecutableElement constructorElt =
-                    analysis.getTypeFactory().constructorFromUse(n.getTree()).first.getElement();
+                    analysis.getTypeFactory()
+                            .constructorFromUse(n.getTree())
+                            .methodType
+                            .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()
                     .updateInferredConstructorParameterTypes(

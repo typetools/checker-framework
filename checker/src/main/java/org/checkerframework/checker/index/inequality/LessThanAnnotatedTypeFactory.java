@@ -275,7 +275,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Returns {@code @LessThan(expression)} */
+    /** Returns {@code @LessThan(expression)}. */
     public AnnotationMirror createLessThanQualifier(String expression) {
         return createLessThanQualifier(Collections.singletonList(expression));
     }

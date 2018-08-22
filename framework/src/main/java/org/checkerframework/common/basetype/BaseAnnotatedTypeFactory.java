@@ -26,7 +26,7 @@ public class BaseAnnotatedTypeFactory
     }
 
     public BaseAnnotatedTypeFactory(BaseTypeChecker checker) {
-        this(checker, FLOW_BY_DEFAULT);
+        this(checker, flowByDefault);
     }
 
     @Override

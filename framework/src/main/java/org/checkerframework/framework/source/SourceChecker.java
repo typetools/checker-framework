@@ -62,8 +62,8 @@ import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An abstract annotation processor designed for implementing a source-file checker for a JSR-308
- * conforming compiler plug-in. It provides an interface to {@code javac}'s annotation processing
+ * An abstract annotation processor designed for implementing a source-file checker as an annotation
+ * processor (a compiler plug-in). It provides an interface to {@code javac}'s annotation processing
  * API, routines for error reporting via the JSR 199 compiler API, and an implementation for using a
  * {@link SourceVisitor} to perform the type-checking.
  *
@@ -211,6 +211,11 @@ import org.checkerframework.javacutil.TreeUtils;
     // that were not found on the class path
     // org.checkerframework.framework.stub.StubParser.warnIfNotFound
     "stubWarnIfNotFound",
+    // Whether to ignore missing classes even when warnIfNotFound is set to true and
+    // other classes from the same package are present (useful if a package spans more than one
+    // jar).
+    // org.checkerframework.framework.stub.StubParser.warnIfNotFoundIgnoresClasses
+    "stubWarnIfNotFoundIgnoresClasses",
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
@@ -239,9 +244,9 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
     "detailedmsgtext",
 
-    // Whether to output a stack trace for a framework error
+    // Whether to NOT output a stack trace for each framework error.
     // org.checkerframework.framework.source.SourceChecker.logCheckerError
-    "printErrorStack",
+    "noPrintErrorStack",
 
     // Only output error code, useful for testing framework
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
@@ -357,7 +362,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
 
-    /** Keys for warning suppressions specified on the command line */
+    /** Keys for warning suppressions specified on the command line. */
     private String @Nullable [] suppressWarnings;
 
     /**
@@ -394,10 +399,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private Pattern onlyDefsPattern;
 
-    /** The supported lint options */
+    /** The supported lint options. */
     private Set<String> supportedLints;
 
-    /** The enabled lint options */
+    /** The enabled lint options. */
     private Set<String> activeLints;
 
     /**
@@ -420,7 +425,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private static final String OPTION_SEPARATOR = "_";
 
-    /** The line separator */
+    /** The line separator. */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
     /**
@@ -781,11 +786,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         StringBuilder msg = new StringBuilder(ce.getMessage());
-        if ((processingEnv == null
-                        || processingEnv.getOptions() == null
-                        || processingEnv.getOptions().containsKey("printErrorStack"))
-                && ce.getCause() != null) {
-
+        boolean noPrintErrorStack =
+                (processingEnv != null
+                        && processingEnv.getOptions() != null
+                        && processingEnv.getOptions().containsKey("noPrintErrorStack"));
+        if (ce.userError) {
+            msg.append('.');
+        } else if (ce.getCause() == null) {
+            msg.append("; The Checker Framework crashed.  Please report the crash.");
+        } else if (noPrintErrorStack) {
+            msg.append(
+                    "; The Checker Framework crashed.  Please report the crash.  To see "
+                            + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+        } else {
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
@@ -814,14 +827,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                         + "; "
                                         + formatStackTrace(cause.getStackTrace())));
                 cause = cause.getCause();
-            }
-        } else {
-            if (ce.userError) {
-                msg.append('.');
-            } else {
-                msg.append(
-                        "; The Checker Framework crashed.  Please report the crash.  To see "
-                                + "the full stack trace invoke the compiler with -AprintErrorStack");
             }
         }
 
@@ -915,7 +920,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
     }
 
-    /** Print resource usage statistics */
+    /** Print resource usage statistics. */
     protected void printStats() {
         List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
         for (MemoryPoolMXBean memoryPool : memoryPools) {
@@ -1541,7 +1546,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Should unchecked code defaults be used for the kind of code indicated by the parameter
+     * Should unchecked code defaults be used for the kind of code indicated by the parameter.
      *
      * @param kindOfCode source or bytecode
      * @return whether unchecked code defaults should be used
@@ -2188,7 +2193,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * A helper function to parse a Properties file
+     * A helper function to parse a Properties file.
      *
      * @param cls the class whose location is the base of the file path
      * @param filePath the name/path of the file to be read

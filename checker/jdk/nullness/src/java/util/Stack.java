@@ -2,7 +2,7 @@ package java.util;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // permits null elements
-public class Stack<E extends @Nullable Object> extends Vector<E> {
+public class Stack<E> extends Vector<E> {
   private static final long serialVersionUID = 0;
   public Stack() { throw new RuntimeException("skeleton method"); }
   public E push(E a1) { throw new RuntimeException("skeleton method"); }

@@ -6,9 +6,9 @@ set -o pipefail
 [ -z "${CHECKERFRAMEWORK}" ] && echo "CHECKERFRAMEWORK not set" && exit 1
 
 # annotated-jdk8u-jdk should be Checker Framework sibling
-JSR308=`(cd "${CHECKERFRAMEWORK}/.." && pwd)`
+PARENTDIR=`(cd "${CHECKERFRAMEWORK}/.." && pwd)`
 WORKDIR=`(cd "\`dirname $0\`" && pwd)`
-SRCDIR="${JSR308}/annotated-jdk8u-jdk/src/share/classes"
+SRCDIR="${PARENTDIR}/annotated-jdk8u-jdk/src/share/classes"
 ORIGINAL="${SRCDIR}/$1"
 BASE=`basename "$1" .java`
 COPY="${BASE}.0"

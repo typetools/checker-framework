@@ -44,7 +44,7 @@ The following repositories will be cloned or updated from their origins:
     for interm_to_build in INTERM_TO_BUILD_REPOS:
         message += interm_to_build[1] + "\n"
 
-    message += PLUME_LIB + "\n"
+    message += PLUME_SCRIPTS + "\n"
     message += CHECKLINK + "\n"
     message += PLUME_BIB + "\n"
     message += STUBPARSER + "\n\n"
@@ -66,7 +66,7 @@ The following repositories will be cloned or updated from their origins:
     for interm_to_build in INTERM_TO_BUILD_REPOS:
         clone_from_scratch_or_update(interm_to_build[0], interm_to_build[1], clone_from_scratch, False)
 
-    clone_from_scratch_or_update(LIVE_PLUME_LIB, PLUME_LIB, clone_from_scratch, False)
+    clone_from_scratch_or_update(LIVE_PLUME_SCRIPTS, PLUME_SCRIPTS, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_CHECKLINK, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
@@ -180,7 +180,7 @@ def build_and_locally_deploy_maven(version):
 
     execute("mkdir -p " + maven_dev_repo_without_protocol)
 
-    # Deploy jsr308 and checker-qual jars to maven repo
+    # Deploy jars to Maven Central repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
     mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)

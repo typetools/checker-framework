@@ -43,6 +43,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -80,7 +81,7 @@ public class LockAnnotatedTypeFactory
     /** dependent type annotation error message for when the expression is not effectively final. */
     public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
 
-    /** Annotation constants */
+    /** Annotation constants. */
     protected final AnnotationMirror LOCKHELD,
             LOCKPOSSIBLYHELD,
             SIDEEFFECTFREE,
@@ -89,9 +90,9 @@ public class LockAnnotatedTypeFactory
             GUARDEDBYBOTTOM,
             GUARDSATISFIED;
 
-    protected final Class<? extends Annotation> jcip_GuardedBy;
+    protected final Class<? extends Annotation> jcipGuardedBy;
 
-    protected final Class<? extends Annotation> javax_GuardedBy;
+    protected final Class<? extends Annotation> javaxGuardedBy;
 
     @SuppressWarnings("unchecked") // cast to generic type
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -124,7 +125,7 @@ public class LockAnnotatedTypeFactory
             // Ignore exceptions from Class.forName
             testLoad = null;
         }
-        jcip_GuardedBy = testLoad;
+        jcipGuardedBy = testLoad;
 
         try {
             testLoad =
@@ -134,7 +135,7 @@ public class LockAnnotatedTypeFactory
             // Ignore exceptions from Class.forName
             testLoad = null;
         }
-        javax_GuardedBy = testLoad;
+        javaxGuardedBy = testLoad;
 
         postInit();
     }
@@ -144,8 +145,8 @@ public class LockAnnotatedTypeFactory
         return new DependentTypesHelper(this) {
             @Override
             protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
-                // If the error message is NOT_EFFECTIVELY_FINAL, then report lock.expression.not
-                // .final instead of an expression.unparsable.type.invalid error.
+                // If the error message is NOT_EFFECTIVELY_FINAL, then report
+                // lock.expression.not.final instead of expression.unparsable.type.invalid .
                 List<DependentTypesError> superErrors = new ArrayList<>();
                 for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
@@ -170,7 +171,7 @@ public class LockAnnotatedTypeFactory
                 }
 
                 // Adds logic to parse <self> expression, which only the Lock Checker uses.
-                if (LockVisitor.selfReceiverPattern.matcher(expression).matches()) {
+                if (LockVisitor.SELF_RECEIVER_PATTERN.matcher(expression).matches()) {
                     return expression;
                 }
 
@@ -569,13 +570,12 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
+    public ParameterizedMethodType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree, methodElt, receiverType);
+        ParameterizedMethodType mType = super.methodFromUse(tree, methodElt, receiverType);
 
         if (tree.getKind() != Kind.METHOD_INVOCATION) {
-            return mfuPair;
+            return mType;
         }
 
         // If a method's formal return type is annotated with @GuardSatisfied(index), look for the
@@ -584,17 +584,17 @@ public class LockAnnotatedTypeFactory
         // the call site (e.g. @GuardedBy("someLock") and replace the return type at the call site
         // with this type.
 
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        AnnotatedExecutableType invokedMethod = mType.methodType;
 
         if (invokedMethod.getElement().getKind() == ElementKind.CONSTRUCTOR) {
-            return mfuPair;
+            return mType;
         }
 
         AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType();
 
         if (methodDefinitionReturn == null
                 || !methodDefinitionReturn.hasAnnotation(GuardSatisfied.class)) {
-            return mfuPair;
+            return mType;
         }
 
         int returnGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReturn);
@@ -604,7 +604,7 @@ public class LockAnnotatedTypeFactory
         // index, an error is reported by LockVisitor.visitMethod.
 
         if (returnGuardSatisfiedIndex == -1) {
-            return mfuPair;
+            return mType;
         }
 
         // Find the receiver or first parameter whose @GS index matches that of the return type.
@@ -617,7 +617,7 @@ public class LockAnnotatedTypeFactory
                         invokedMethod.getReceiverType() /* the method definition receiver*/,
                         returnGuardSatisfiedIndex,
                         receiverType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
-            return mfuPair;
+            return mType;
         }
 
         List<? extends ExpressionTree> methodInvocationTreeArguments =
@@ -632,11 +632,11 @@ public class LockAnnotatedTypeFactory
                     returnGuardSatisfiedIndex,
                     getAnnotatedType(methodInvocationTreeArguments.get(i))
                             .getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
-                return mfuPair;
+                return mType;
             }
         }
 
-        return mfuPair;
+        return mType;
     }
 
     /**
@@ -711,12 +711,12 @@ public class LockAnnotatedTypeFactory
 
         AnnotationMirror anno = null;
 
-        if (jcip_GuardedBy != null) {
-            anno = getDeclAnnotation(element, jcip_GuardedBy);
+        if (jcipGuardedBy != null) {
+            anno = getDeclAnnotation(element, jcipGuardedBy);
         }
 
-        if (anno == null && javax_GuardedBy != null) {
-            anno = getDeclAnnotation(element, javax_GuardedBy);
+        if (anno == null && javaxGuardedBy != null) {
+            anno = getDeclAnnotation(element, javaxGuardedBy);
         }
 
         if (anno == null) {
