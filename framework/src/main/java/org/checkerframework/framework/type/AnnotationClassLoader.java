@@ -27,8 +27,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * This class assists the {@link AnnotatedTypeFactory} by reflectively looking up the list of
@@ -478,7 +479,7 @@ public class AnnotationClassLoader {
                 JarURLConnection connection = (JarURLConnection) resourceURL.openConnection();
                 jarFile = connection.getJarFile();
             } catch (IOException e) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
             }
 
@@ -674,7 +675,7 @@ public class AnnotationClassLoader {
 
         // load the class
         if (classLoader == null) {
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": no classloaders are available for use to load annotation class "
                             + fullyQualifiedClassName
@@ -685,7 +686,7 @@ public class AnnotationClassLoader {
         try {
             cls = Class.forName(fullyQualifiedClassName, true, classLoader);
         } catch (ClassNotFoundException e) {
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": could not load class for annotation: "
                             + fullyQualifiedClassName
@@ -697,7 +698,7 @@ public class AnnotationClassLoader {
         // return null
         if (!cls.isAnnotation()) {
             if (issueError) {
-                checker.userErrorAbort(
+                throw new UserError(
                         checker.getClass().getSimpleName()
                                 + ": the loaded class: "
                                 + cls.getCanonicalName()
@@ -716,17 +717,17 @@ public class AnnotationClassLoader {
             // issueError is set to true for loading explicitly named external annotations
             // We issue an error here when one of those annotations is not well-defined, since the
             // user expects these external annotations to be loaded
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": the loaded annotation: "
                             + annoClass.getCanonicalName()
                             + " is not a type annotation."
                             + " Check its @Target meta-annotation.");
-            return null;
         } else {
-            // issueError is set to false for loading the qual directory or any external directories
+            // issueError is set to false for loading the qual directory or any external
+            // directories.
             // We don't issue any errors since there may be meta-annotations or non-type annotations
-            // in such directories
+            // in such directories.
             return null;
         }
     }

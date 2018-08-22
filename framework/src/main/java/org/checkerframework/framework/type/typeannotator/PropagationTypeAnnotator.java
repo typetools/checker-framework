@@ -12,7 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -160,7 +160,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
             if (wildcardBound.getAnnotationInHierarchy(top) == null) {
                 final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
                 if (typeParamAnno == null) {
-                    ErrorReporter.errorAbort(
+                    throw new CheckerFrameworkBug(
                             "Missing annotation on type parameter\n"
                                     + "top="
                                     + top

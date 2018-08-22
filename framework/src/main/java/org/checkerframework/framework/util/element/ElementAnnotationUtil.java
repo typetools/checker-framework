@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -58,8 +58,8 @@ public class ElementAnnotationUtil {
             final AnnotatedTypeFactory typeFactory) {
 
         if (types.size() != elements.size()) {
-            ErrorReporter.errorAbort(
-                    "Number of types and elements don't match!"
+            throw new CheckerFrameworkBug(
+                    "Number of types and elements don't match. "
                             + "types ( "
                             + PluginUtil.join(", ", types)
                             + " ) "
@@ -406,14 +406,13 @@ public class ElementAnnotationUtil {
             default:
                 // Raise an error for all other types below.
         }
-        ErrorReporter.errorAbort(
+        throw new CheckerFrameworkBug(
                 "ElementAnnotationUtil.getTypeAtLocation: unexpected annotation with location found for type: "
                         + type
                         + " (kind: "
                         + type.getKind()
                         + ") location: "
                         + location);
-        return null; // dead code
     }
 
     /**
@@ -465,7 +464,7 @@ public class ElementAnnotationUtil {
         }
 
         if (outerToInner.isEmpty() || error) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "ElementAnnotationUtil.getLocationTypeADT: invalid location %s for type: %s",
                     location, type);
         }
@@ -478,13 +477,12 @@ public class ElementAnnotationUtil {
             return type;
         }
 
-        ErrorReporter.errorAbort(
+        throw new CheckerFrameworkBug(
                 "ElementAnnotationUtil.getLocationTypeANT: "
                         + "invalid location "
                         + location
                         + " for type: "
                         + type);
-        return null; // dead code
     }
 
     private static AnnotatedTypeMirror getLocationTypeAWT(
@@ -507,13 +505,12 @@ public class ElementAnnotationUtil {
             }
 
         } else {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "ElementAnnotationUtil.getLocationTypeAWT: "
                             + "invalid location "
                             + location
                             + " for type: "
                             + type);
-            return null;
         }
     }
 
@@ -531,13 +528,12 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror comptype = type.getComponentType();
             return getTypeAtLocation(comptype, tail(location));
         } else {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "ElementAnnotationUtil.annotateAAT: "
                             + "invalid location "
                             + location
                             + " for type: "
                             + type);
-            return null; // dead code
         }
     }
 
@@ -565,13 +561,12 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
             return getTypeAtLocation(supertype, tail(location));
         } else {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "ElementAnnotationUtil.getLocatonTypeAIT: "
                             + "invalid location "
                             + location
                             + " for type: "
                             + type);
-            return null; // dead code
         }
     }
 

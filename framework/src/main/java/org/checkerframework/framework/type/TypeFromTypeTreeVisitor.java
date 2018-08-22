@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -68,8 +68,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
 
             } else {
-                ErrorReporter.errorAbort(
-                        "Unexpected kind for type!  node=" + node + " type=" + type);
+                throw new CheckerFrameworkBug(
+                        "Unexpected kind for type.  node="
+                                + node
+                                + " type="
+                                + type
+                                + " kind="
+                                + underlyingTree.getKind());
             }
         } else {
             type.addAnnotations(annos);
@@ -176,9 +181,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type, AnnotatedTypeFactory f) {
         if (type.getKind() != TypeKind.TYPEVAR) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "TypeFromTree.forTypeVariable: should only be called on type variables");
-            return null; // dead code
         }
 
         TypeVariable typeVar = (TypeVariable) type.getUnderlyingType();
@@ -214,7 +218,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
-                // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for:
+                // throw new CheckerFrameworkBug("TypeFromTree.forTypeVariable: did not find source
+                // for:
                 // " + elt);
                 return type;
             }
@@ -224,9 +229,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             if (TypesUtils.isCaptured(typeVar)) {
                 return type;
             } else {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "TypeFromTree.forTypeVariable: not a supported element: " + elt);
-                return null; // dead code
             }
         }
     }

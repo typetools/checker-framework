@@ -25,7 +25,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 
 /**
  * Infers type arguments by using the Least Upper Bound computation on the supertype relationships
@@ -376,7 +376,7 @@ public class SupertypesSolver {
         final Iterator<Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> typesIter =
                 types.entrySet().iterator();
         if (!typesIter.hasNext()) {
-            ErrorReporter.errorAbort("Calling LUB on empty list!");
+            throw new CheckerFrameworkBug("Calling LUB on empty list.");
         }
 
         /**
