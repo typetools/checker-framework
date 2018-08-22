@@ -189,7 +189,7 @@ public abstract class QualifierHierarchy {
         }
         if (annos1.isEmpty()) {
             ErrorReporter.errorAbort(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets!");
+                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
         }
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
