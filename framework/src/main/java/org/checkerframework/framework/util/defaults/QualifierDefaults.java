@@ -42,9 +42,9 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -311,7 +311,7 @@ public class QualifierDefaults {
         }
 
         if (!isValidUntypeLocation) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Invalid unchecked code default location: "
                             + location
                             + " -> "
@@ -322,7 +322,7 @@ public class QualifierDefaults {
     private void checkDuplicates(
             DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
         if (conflictsWithExistingDefaults(previousDefaults, newAnno, newLoc)) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Only one qualifier from a hierarchy can be the default! Existing: "
                             + previousDefaults
                             + " and new: "
@@ -518,9 +518,8 @@ public class QualifierDefaults {
         boolean elementAnnotatedForThisChecker = false;
 
         if (elt == null) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Call of QualifierDefaults.isElementAnnotatedForThisChecker with null");
-            return false;
         }
 
         if (elementAnnotatedFors.containsKey(elt)) {
@@ -977,10 +976,9 @@ public class QualifierDefaults {
                         }
                     default:
                         {
-                            ErrorReporter.errorAbort(
+                            throw new CheckerFrameworkBug(
                                     "QualifierDefaults.DefaultApplierElement: unhandled location: "
                                             + location);
-                            return null;
                         }
                 }
 
@@ -1108,8 +1106,7 @@ public class QualifierDefaults {
             return getWildcardBoundType((AnnotatedWildcardType) type, typeFactory);
         }
 
-        ErrorReporter.errorAbort("Unexpected type kind: type=" + type);
-        return null; // dead code
+        throw new CheckerFrameworkBug("Unexpected type kind: type=" + type);
     }
 
     /** @return the bound type of the input typeVar */
@@ -1157,13 +1154,12 @@ public class QualifierDefaults {
                     boundType = BoundType.UNBOUNDED;
                 }
             } else {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "Unexpected tree type for typeVar Element:\n"
                                 + "typeParamElem="
                                 + typeParamElem
                                 + "\n"
                                 + typeParamDecl);
-                boundType = null; // dead code
             }
         }
 

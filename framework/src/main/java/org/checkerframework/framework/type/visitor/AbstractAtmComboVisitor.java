@@ -12,12 +12,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AtmCombo;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 
 /**
- * Implements all methods from AtmComboVisitor. By default all methods call ErrorAbort with a
- * message created by defaultErrorMessage. Implement only those methods you expect to be called on
- * your subclass.
+ * Implements all methods from AtmComboVisitor. By default all methods throw an exception. Implement
+ * only those methods you expect to be called on your subclass.
  *
  * <p>This class does no traversal.
  */
@@ -50,8 +49,7 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM>
      */
     protected RETURN_TYPE defaultAction(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
-        ErrorReporter.errorAbort(defaultErrorMessage(type1, type2, param));
-        return null;
+        throw new CheckerFrameworkBug(defaultErrorMessage(type1, type2, param));
     }
 
     public RETURN_TYPE visit(

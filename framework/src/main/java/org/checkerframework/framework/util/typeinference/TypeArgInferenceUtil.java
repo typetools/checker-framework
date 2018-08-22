@@ -43,7 +43,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -72,11 +72,10 @@ public class TypeArgInferenceUtil {
             argTrees = ((NewClassTree) methodInvocation).getArguments();
 
         } else {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "TypeArgumentInference.relationsFromMethodArguments:\n"
                             + "couldn't determine arguments from tree: "
                             + methodInvocation);
-            throw new Error(); // dead code
         }
 
         final List<AnnotatedTypeMirror> argTypes = new ArrayList<>(argTrees.size());
@@ -193,8 +192,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof VariableTree) {
             res = assignedToVariable(atypeFactory, assignmentContext);
         } else {
-            ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
-            res = null;
+            throw new CheckerFrameworkBug("AnnotatedTypes.assignedTo: shouldn't be here!");
         }
 
         if (res != null && TypesUtils.isPrimitive(res.getUnderlyingType())) {
@@ -365,16 +363,17 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Checks that the type is not an uninferred type argument. If it is, errorAbort will be called.
-     * The error will be caught in DefaultTypeArgumentInference#infer and inference will be aborted,
-     * but type-checking will continue.
+     * Throws an exception if the type is an uninferred type argument.
+     *
+     * <p>The error will be caught in DefaultTypeArgumentInference#infer and inference will be
+     * aborted, but type-checking will continue.
      */
     public static void checkForUninferredTypes(AnnotatedTypeMirror type) {
         if (type.getKind() != TypeKind.WILDCARD) {
             return;
         }
         if (((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Can't make a constraint that includes an uninferred type argument.");
         }
     }
@@ -490,7 +489,7 @@ public class TypeArgInferenceUtil {
             final AnnotatedTypeFactory typeFactory, final Iterable<AnnotatedTypeMirror> types) {
         final Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
         if (!typesIter.hasNext()) {
-            ErrorReporter.errorAbort("Calling LUB on empty list!");
+            throw new CheckerFrameworkBug("Calling LUB on empty list!");
         }
         AnnotatedTypeMirror lubType = typesIter.next();
         AnnotatedTypeMirror nextType = null;

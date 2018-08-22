@@ -17,6 +17,7 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -623,7 +624,7 @@ public class CheckerMain {
                             Charset.defaultCharset().name());
             return new File(fileName).getAbsolutePath();
         } catch (UnsupportedEncodingException e) {
-            throw new InternalError("Default charset doesn't exist. Your VM is borked.");
+            throw new CheckerFrameworkBug("Default charset doesn't exist. Your VM is borked.");
         }
     }
 

@@ -75,8 +75,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -1396,8 +1396,7 @@ public class StubParser {
             }
             return builder.build();
         } else {
-            ErrorReporter.errorAbort("StubParser: unknown annotation type: " + annotation);
-            annoMirror = null; // dead code
+            throw new CheckerFrameworkBug("StubParser: unknown annotation type: " + annotation);
         }
         return annoMirror;
     }
@@ -1544,8 +1543,7 @@ public class StubParser {
             case DOUBLE:
                 return number.doubleValue() * scalefactor;
             default:
-                ErrorReporter.errorAbort("Unexpected expectedKind: " + expectedKind);
-                return null;
+                throw new CheckerFrameworkBug("Unexpected expectedKind: " + expectedKind);
         }
     }
 
@@ -1629,7 +1627,7 @@ public class StubParser {
         } else if (value instanceof VariableElement) {
             builder.setValue(name, (VariableElement) value);
         } else {
-            ErrorReporter.errorAbort("Unexpected builder value: %s", value);
+            throw new CheckerFrameworkBug("Unexpected builder value: %s", value);
         }
     }
 
@@ -1725,8 +1723,7 @@ public class StubParser {
     /** Just like Map.put, but does not override any existing value in the map. */
     private static <K, V> void putNoOverride(Map<K, V> m, K key, V value) {
         if (key == null) {
-            ErrorReporter.errorAbort("StubParser: key is null!");
-            return;
+            throw new CheckerFrameworkBug("StubParser: key is null!");
         }
         if (!m.containsKey(key)) {
             m.put(key, value);
@@ -1753,8 +1750,7 @@ public class StubParser {
     private static void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null) {
-            ErrorReporter.errorAbort("StubParser: key is null!");
-            return;
+            throw new CheckerFrameworkBug("StubParser: key is null!");
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);

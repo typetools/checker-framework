@@ -8,7 +8,7 @@ import javax.lang.model.element.ElementKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 
 /** Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable. */
 public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
@@ -31,7 +31,7 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
         super(type, element, typeFactory);
 
         if (!(element.getEnclosingElement() instanceof Symbol.MethodSymbol)) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "TypeParameter not enclosed by method?  Type( "
                             + type
                             + " ) "

@@ -5,7 +5,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -58,8 +58,7 @@ public class FunctionalInterfaceNode extends Node {
             return "FunctionalInterfaceNode:" + ((MemberReferenceTree) tree).getName();
         } else {
             // This should never happen.
-            ErrorReporter.errorAbort("Invalid tree in FunctionalInterfaceNode");
-            return null; // Dead code
+            throw new CheckerFrameworkBug("Invalid tree in FunctionalInterfaceNode");
         }
     }
 

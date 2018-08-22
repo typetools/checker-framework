@@ -430,13 +430,11 @@ public final class TreeUtils {
      */
     public static @Nullable Element elementFromTree(Tree tree) {
         if (tree == null) {
-            ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
-            return null; // dead code
+            throw new CheckerFrameworkBug("InternalUtils.symbol: tree is null");
         }
 
         if (!(tree instanceof JCTree)) {
-            ErrorReporter.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
-            return null; // dead code
+            throw new CheckerFrameworkBug("InternalUtils.symbol: tree is not a valid Javac tree");
         }
 
         if (isExpressionTree(tree)) {
@@ -562,8 +560,7 @@ public final class TreeUtils {
     public static ExecutableElement constructor(NewClassTree tree) {
 
         if (!(tree instanceof JCTree.JCNewClass)) {
-            ErrorReporter.errorAbort("InternalUtils.constructor: not a javac internal tree");
-            return null; // dead code
+            throw new CheckerFrameworkBug("InternalUtils.constructor: not a javac internal tree");
         }
 
         JCNewClass newClassTree = (JCNewClass) tree;
@@ -618,8 +615,7 @@ public final class TreeUtils {
         } else if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree) expr).getIdentifier();
         }
-        ErrorReporter.errorAbort("TreeUtils.methodName: cannot be here: " + node);
-        return null; // dead code
+        throw new CheckerFrameworkBug("TreeUtils.methodName: cannot be here: " + node);
     }
 
     /**
@@ -860,8 +856,8 @@ public final class TreeUtils {
         if (methods.size() == 1) {
             return methods.get(0);
         }
-        ErrorReporter.errorAbort("TreeUtils.getMethod: expected 1 match, found " + methods.size());
-        return null; // dead code
+        throw new CheckerFrameworkBug(
+                "TreeUtils.getMethod: expected 1 match, found " + methods.size());
     }
 
     /**
@@ -906,14 +902,13 @@ public final class TreeUtils {
                 }
             }
         }
-        ErrorReporter.errorAbort(
+        throw new CheckerFrameworkBug(
                 "TreeUtils.getMethod: found no match for "
                         + typeName
                         + "."
                         + methodName
                         + "("
                         + Arrays.toString(paramTypes));
-        return null; // dead code
     }
 
     /**
@@ -1089,8 +1084,7 @@ public final class TreeUtils {
                 return var;
             }
         }
-        ErrorReporter.errorAbort("TreeUtils.getField: shouldn't be here!");
-        return null; // dead code
+        throw new CheckerFrameworkBug("TreeUtils.getField: shouldn't be here!");
     }
 
     /**

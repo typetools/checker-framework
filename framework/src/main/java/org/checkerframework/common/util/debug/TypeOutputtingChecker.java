@@ -24,7 +24,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -214,9 +214,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             // Not needed - raises error.
             @Override
             public Set<AnnotationMirror> getTopAnnotations() {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy:getTopAnnotations() was called! It shouldn't be called.");
-                return null;
             }
 
             // Not needed - should raise error. Unfortunately, in inference we ask for bottom
@@ -224,7 +223,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             // Return a dummy value that does no harm.
             @Override
             public Set<AnnotationMirror> getBottomAnnotations() {
-                // ErrorReporter.errorAbort("GeneralQualifierHierarchy.getBottomAnnotations() was
+                // throw new CheckerFrameworkBug("GeneralQualifierHierarchy.getBottomAnnotations()
+                // was
                 // called! It shouldn't be called.");
                 return AnnotationUtils.createAnnotationSet();
             }
@@ -232,26 +232,23 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             // Not needed - raises error.
             @Override
             public Set<? extends AnnotationMirror> getTypeQualifiers() {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.getTypeQualifiers() was called! It shouldn't be called.");
-                return null;
             }
 
             // Not needed - raises error.
             @Override
             public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
-                return false;
             }
 
             // Not needed - raises error.
             @Override
             public boolean isSubtypeTypeVariable(
                     AnnotationMirror subAnno, AnnotationMirror superAnno) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
-                return false;
             }
 
             // Not needed - raises error.
@@ -259,9 +256,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             public boolean isSubtype(
                     Collection<? extends AnnotationMirror> rhs,
                     Collection<? extends AnnotationMirror> lhs) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
-                return false;
             }
 
             // Not needed - raises error.
@@ -269,50 +265,44 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             public boolean isSubtypeTypeVariable(
                     Collection<? extends AnnotationMirror> subAnnos,
                     Collection<? extends AnnotationMirror> superAnnos) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
-                return false;
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.leastUpperBound() was called! It shouldn't be called.");
-                return null;
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror leastUpperBoundTypeVariable(
                     AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.leastUpperBoundTypeVariable() was called! It shouldn't be called.");
-                return null;
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.greatestLowerBound() was called! It shouldn't be called.");
-                return null;
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror greatestLowerBoundTypeVariable(
                     AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() was called! It shouldn't be called.");
-                return null;
             }
 
             @Override
             public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "GeneralQualifierHierarchy.getPolymorphicAnnotation() was called! It shouldn't be called.");
-                return null;
             }
         }
     }

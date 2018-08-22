@@ -32,7 +32,7 @@ import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 
 /** Generate a graph description in the DOT language of a control graph. */
 public class DOTCFGVisualizer<
@@ -89,7 +89,7 @@ public class DOTCFGVisualizer<
             out.write(dotgraph);
             out.close();
         } catch (IOException e) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Error creating dot file: " + dotfilename + "; ensure the path is valid", e);
         }
 
@@ -239,9 +239,8 @@ public class DOTCFGVisualizer<
             srcloc.append(((JCTree) cfgm.getMethod()).pos);
             srcloc.append('>');
         } else {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Unexpected AST kind: " + ast.getKind() + " value: " + ast.toString());
-            return null;
         }
         outfile.append('-');
         outfile.append(checkerName);
@@ -496,7 +495,7 @@ public class DOTCFGVisualizer<
             }
             out.close();
         } catch (IOException e) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Error creating methods.txt file in: " + outdir + "; ensure the path is valid",
                     e);
         }
