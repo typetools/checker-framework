@@ -210,7 +210,7 @@ public class PluginUtil {
             final Map<CheckerProp, Object> props, final CheckerProp prop, final String cmdLineArg) {
         Boolean aSkip = (Boolean) props.get(prop);
         if (aSkip != null && aSkip) {
-            return Arrays.asList(tag);
+            return Arrays.asList(cmdLineArg);
         }
         return new ArrayList<>();
     }
