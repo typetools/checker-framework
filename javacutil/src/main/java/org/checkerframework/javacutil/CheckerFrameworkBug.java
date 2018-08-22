@@ -10,15 +10,16 @@ public class CheckerFrameworkBug extends RuntimeException {
      *
      * @param message the detail message
      */
-    public CheckerFrameworkBug(String msg) {
-        this(msg, (Throwable) null);
+    public CheckerFrameworkBug(String message) {
+        this(message, (Throwable) null);
     }
 
     /**
      * Constructs a new CheckerError with a detail message composed from the given arguments, and
      * with no cause (use this at the root cause).
      *
-     * @param message the detail message
+     * @param fmt the format string
+     * @param args the arguments for the format string
      */
     public CheckerFrameworkBug(String fmt, Object... args) {
         this(String.format(fmt, args));
@@ -30,9 +31,9 @@ public class CheckerFrameworkBug extends RuntimeException {
      * @param message the detail message
      * @param cause the cause, or null
      */
-    public CheckerFrameworkBug(String msg, Throwable cause) {
-        super(msg, cause);
-        if (msg == null) {
+    public CheckerFrameworkBug(String message, Throwable cause) {
+        super(message, cause);
+        if (message == null) {
             throw new Error("Must have a detail message.");
         }
     }
