@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.util;
 
 import java.util.HashSet;
 import java.util.Objects;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
@@ -35,7 +36,7 @@ public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
             case ANY:
                 return set.add(e);
             default:
-                throw new BugInCF(); // unreachable
+                throw new BugInCF("Unhandled state " + state); // unreachable
         }
     }
 
@@ -49,7 +50,7 @@ public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
             case ANY:
                 return set.contains(o);
             default:
-                throw new BugInCF(); // unreachable
+                throw new BugInCF("Unhandled state " + state); // unreachable
         }
     }
 }

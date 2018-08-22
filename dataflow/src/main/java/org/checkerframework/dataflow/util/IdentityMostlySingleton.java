@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.util;
 
 import java.util.ArrayList;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A set that is more efficient than HashSet for 0 and 1 elements. Uses objects identity for object
@@ -34,7 +35,7 @@ public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T>
             case ANY:
                 return set.add(e);
             default:
-                throw new BugInCF(); // unreachable
+                throw new BugInCF("Unhandled state " + state); // unreachable
         }
     }
 
@@ -48,7 +49,7 @@ public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T>
             case ANY:
                 return set.contains(o);
             default:
-                throw new BugInCF(); // unreachable
+                throw new BugInCF("Unhandled state " + state); // unreachable
         }
     }
 }

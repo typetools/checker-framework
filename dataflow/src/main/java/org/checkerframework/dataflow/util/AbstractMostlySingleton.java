@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Base class for sets that are more efficient than HashSet for 0 and 1 elements. */
 public abstract class AbstractMostlySingleton<T> implements Set<T> {
@@ -29,7 +30,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.size();
             default:
-                throw new BugInCF(); // unreachable
+                throw new BugInCF("Unhandled state " + state); // unreachable
         }
     }
 
@@ -69,7 +70,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.iterator();
             default:
-                throw new BugInCF(); // unreachable
+                throw new BugInCF("Unhandled state " + state); // unreachable
         }
     }
 
@@ -83,7 +84,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.toString();
             default:
-                throw new BugInCF(); // unreachable
+                throw new BugInCF("Unhandled state " + state); // unreachable
         }
     }
 

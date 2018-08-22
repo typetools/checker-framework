@@ -3908,8 +3908,7 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
-                        throw new Checkerframeworkbug(
-                                "bad element kind " + element.getKind()); // unreachable
+                        throw new BugInCF("bad element kind " + element.getKind()); // unreachable
                 }
             }
             extendWithNode(node);
