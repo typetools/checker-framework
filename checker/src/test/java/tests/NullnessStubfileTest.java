@@ -14,7 +14,6 @@ public class NullnessStubfileTest extends CheckerFrameworkPerDirectoryTest {
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext",
-                "-AprintErrorStack",
                 "-AstubWarnIfNotFound",
                 "-Astubs="
                         + "tests/nullness-stubfile/stubfile1.astub:"
