@@ -14,6 +14,6 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE})
 public @interface SafeType {}

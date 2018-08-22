@@ -13,6 +13,6 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
 public @interface PolyUIEffect {}
