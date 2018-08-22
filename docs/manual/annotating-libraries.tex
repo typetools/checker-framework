@@ -336,12 +336,12 @@ Get Java 8 source code (must be version 8)
 \item
 Set up the Checker Framework (replace \textit{mychecker} with the name of your checker)
 \begin{enumerate}
-\item \<mkdir \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
-  \<cd \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
+\item \<mkdir \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
+  \<cd \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
   \code{echo "include ../Makefile.jdk" > Makefile}
 
 \item Add \textit{mychecker} to
-  \<\$JSR308/checker-framework/checker/jdk/MakeFile> in the  definition of
+  \<\$CHECKERFRAMEWORK/checker/jdk/MakeFile> in the  definition of
   \<CHECKER\_DIRS> and in the definition of \<ANNOTATED\_CLASSES> (don't forget
   to add a closing parenthesis at the end of the definition of \<ANNOTATED\_CLASSES>!).
 
@@ -350,7 +350,7 @@ Set up the Checker Framework (replace \textit{mychecker} with the name of your c
 \item
 For each file you want to annotate, copy the JDK version into the
 directory
-\<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}/src/>, using
+\<\$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/src/>, using
 the same directory structure as the JDK\@.
 
 Whenever you add a file, fully annotate it, as described in
@@ -620,7 +620,7 @@ and then annotate it.  The rest of this section describes this approach.
 
 \begin{Verbatim}
   cd nullness-stub
-  java -cp $JSR308/checker-framework/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to
