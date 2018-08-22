@@ -1084,7 +1084,7 @@ public final class TreeUtils {
                 return var;
             }
         }
-        throw new CheckerFrameworkBug("TreeUtils.getField: shouldn't be here!");
+        throw new CheckerFrameworkBug("TreeUtils.getField: shouldn't be here");
     }
 
     /**

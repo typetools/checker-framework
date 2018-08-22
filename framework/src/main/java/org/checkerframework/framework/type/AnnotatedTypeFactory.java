@@ -1128,7 +1128,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = fromTypeTree(decl);
         } else {
             throw new CheckerFrameworkBug(
-                    "AnnotatedTypeFactory.fromElement: cannot be here! decl: "
+                    "AnnotatedTypeFactory.fromElement: cannot be here. decl: "
                             + decl.getKind()
                             + " elt: "
                             + elt);
@@ -2046,7 +2046,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
                     throw new CheckerFrameworkBug(
                             "AnnotatedTypeFactory.methodFromUse:"
-                                    + "mismatch between declared method type variables and the inferred method type arguments! "
+                                    + "mismatch between declared method type variables and the inferred method type arguments. "
                                     + "Method type variables: "
                                     + methodType.getTypeVariables()
                                     + "; "
@@ -2789,7 +2789,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         throw new CheckerFrameworkBug(
-                "AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here!");
+                "AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here");
     }
 
     private final Map<Tree, Element> pathHack = new HashMap<>();

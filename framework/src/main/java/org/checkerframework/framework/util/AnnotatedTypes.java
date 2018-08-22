@@ -1025,7 +1025,7 @@ public class AnnotatedTypes {
                     if (glb == null) {
                         throw new CheckerFrameworkBug(
                                 "AnnotatedIntersectionType has no annotation in hierarchy "
-                                        + "on any of its supertypes!\n"
+                                        + "on any of its supertypes.\n"
                                         + "intersectionType="
                                         + source);
                     }
@@ -1037,7 +1037,7 @@ public class AnnotatedTypes {
                     }
 
                     throw new CheckerFrameworkBug(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!\n"
+                            "Unexpected AnnotatedTypeMirror with no primary annotation.\n"
                                     + "toSearch="
                                     + toSearch
                                     + "\n"
@@ -1085,10 +1085,10 @@ public class AnnotatedTypes {
 
                 default:
                     throw new CheckerFrameworkBug(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!"
-                                    + "toSearch="
+                            "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                                    + " toSearch="
                                     + toSearch
-                                    + "source="
+                                    + " source="
                                     + source);
             }
 
@@ -1131,10 +1131,10 @@ public class AnnotatedTypes {
 
                 default:
                     throw new CheckerFrameworkBug(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!"
-                                    + "toSearch="
+                            "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                                    + " toSearch="
                                     + toSearch
-                                    + "source="
+                                    + " source="
                                     + source);
             }
 

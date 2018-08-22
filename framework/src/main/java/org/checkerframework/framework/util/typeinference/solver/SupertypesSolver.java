@@ -376,7 +376,7 @@ public class SupertypesSolver {
         final Iterator<Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> typesIter =
                 types.entrySet().iterator();
         if (!typesIter.hasNext()) {
-            throw new CheckerFrameworkBug("Calling LUB on empty list!");
+            throw new CheckerFrameworkBug("Calling LUB on empty list.");
         }
 
         /**

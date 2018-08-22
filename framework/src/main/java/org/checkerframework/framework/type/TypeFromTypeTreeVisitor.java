@@ -69,7 +69,12 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
             } else {
                 throw new CheckerFrameworkBug(
-                        "Unexpected kind for type!  node=" + node + " type=" + type);
+                        "Unexpected kind for type.  node="
+                                + node
+                                + " type="
+                                + type
+                                + " kind="
+                                + underlyingTree.getKind());
             }
         } else {
             type.addAnnotations(annos);

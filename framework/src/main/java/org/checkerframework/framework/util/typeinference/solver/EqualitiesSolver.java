@@ -289,7 +289,7 @@ public class EqualitiesSolver {
         Iterator<Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> entryIterator =
                 typesToHierarchies.entrySet().iterator();
         if (!entryIterator.hasNext()) {
-            throw new CheckerFrameworkBug("Merging a list of empty types!");
+            throw new CheckerFrameworkBug("Merging a list of empty types.");
         }
 
         final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> head = entryIterator.next();

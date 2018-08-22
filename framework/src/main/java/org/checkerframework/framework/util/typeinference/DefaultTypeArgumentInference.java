@@ -478,7 +478,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new CheckerFrameworkBug(
-                    "Mismatch between formal parameter count and argument count!\n"
+                    "Mismatch between formal parameter count and argument count.\n"
                             + "paramTypes="
                             + PluginUtil.join(",", paramTypes)
                             + "\n"

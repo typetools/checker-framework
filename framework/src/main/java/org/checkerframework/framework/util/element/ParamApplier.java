@@ -85,7 +85,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         final int paramIndex = enclosingMethod.getParameters().indexOf(element);
         if (paramIndex == -1) {
             throw new CheckerFrameworkBug(
-                    "Could not find parameter Element in parameter list! "
+                    "Could not find parameter Element in parameter list. "
                             + "Parameter( "
                             + element
                             + " ) Parent ( "

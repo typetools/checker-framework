@@ -38,7 +38,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
         if (type.getKind() == TypeKind.UNION
                 && element.getKind() != ElementKind.EXCEPTION_PARAMETER) {
             throw new CheckerFrameworkBug(
-                    "Union types only allowed for exception parameters! "
+                    "Union types only allowed for exception parameters. "
                             + "Type: "
                             + type
                             + " for element: "

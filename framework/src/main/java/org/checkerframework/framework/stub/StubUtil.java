@@ -325,7 +325,7 @@ public class StubUtil {
         public void visit(WildcardType n, Void arg) {
             // We don't write type arguments
             // TODO: Why?
-            throw new CheckerFrameworkBug("StubUtil: don't print type args!");
+            throw new CheckerFrameworkBug("StubUtil: don't print type args");
         }
     }
 

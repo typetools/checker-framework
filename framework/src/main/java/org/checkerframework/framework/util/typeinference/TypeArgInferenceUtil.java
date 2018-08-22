@@ -192,7 +192,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof VariableTree) {
             res = assignedToVariable(atypeFactory, assignmentContext);
         } else {
-            throw new CheckerFrameworkBug("AnnotatedTypes.assignedTo: shouldn't be here!");
+            throw new CheckerFrameworkBug("AnnotatedTypes.assignedTo: shouldn't be here");
         }
 
         if (res != null && TypesUtils.isPrimitive(res.getUnderlyingType())) {
@@ -489,7 +489,7 @@ public class TypeArgInferenceUtil {
             final AnnotatedTypeFactory typeFactory, final Iterable<AnnotatedTypeMirror> types) {
         final Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
         if (!typesIter.hasNext()) {
-            throw new CheckerFrameworkBug("Calling LUB on empty list!");
+            throw new CheckerFrameworkBug("Calling LUB on empty list");
         }
         AnnotatedTypeMirror lubType = typesIter.next();
         AnnotatedTypeMirror nextType = null;

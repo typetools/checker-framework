@@ -1495,7 +1495,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public Value getInferredValueFor(Tree tree) {
         if (tree == null) {
             throw new CheckerFrameworkBug(
-                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
+                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
         }
         Value as = null;
         if (analysis.isRunning()) {

@@ -215,7 +215,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             @Override
             public Set<AnnotationMirror> getTopAnnotations() {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy:getTopAnnotations() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy:getTopAnnotations() shouldn't be called");
             }
 
             // Not needed - should raise error. Unfortunately, in inference we ask for bottom
@@ -224,8 +224,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             @Override
             public Set<AnnotationMirror> getBottomAnnotations() {
                 // throw new CheckerFrameworkBug("GeneralQualifierHierarchy.getBottomAnnotations()
-                // was
-                // called! It shouldn't be called.");
+                // shouldn't be called");
                 return AnnotationUtils.createAnnotationSet();
             }
 
@@ -233,14 +232,14 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             @Override
             public Set<? extends AnnotationMirror> getTypeQualifiers() {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.getTypeQualifiers() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.getTypeQualifiers() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -248,7 +247,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             public boolean isSubtypeTypeVariable(
                     AnnotationMirror subAnno, AnnotationMirror superAnno) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -257,7 +256,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
                     Collection<? extends AnnotationMirror> rhs,
                     Collection<? extends AnnotationMirror> lhs) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -266,14 +265,14 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
                     Collection<? extends AnnotationMirror> subAnnos,
                     Collection<? extends AnnotationMirror> superAnnos) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.leastUpperBound() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.leastUpperBound() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -281,14 +280,14 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             public AnnotationMirror leastUpperBoundTypeVariable(
                     AnnotationMirror a1, AnnotationMirror a2) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.leastUpperBoundTypeVariable() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.leastUpperBoundTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.greatestLowerBound() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.greatestLowerBound() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -296,13 +295,13 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             public AnnotationMirror greatestLowerBoundTypeVariable(
                     AnnotationMirror a1, AnnotationMirror a2) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() shouldn't be called.");
             }
 
             @Override
             public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
                 throw new CheckerFrameworkBug(
-                        "GeneralQualifierHierarchy.getPolymorphicAnnotation() was called! It shouldn't be called.");
+                        "GeneralQualifierHierarchy.getPolymorphicAnnotation() shouldn't be called.");
             }
         }
     }

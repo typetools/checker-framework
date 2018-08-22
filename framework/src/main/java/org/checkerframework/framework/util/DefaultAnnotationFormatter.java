@@ -43,7 +43,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         for (AnnotationMirror obj : annos) {
             if (obj == null) {
                 throw new CheckerFrameworkBug(
-                        "AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
+                        "AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror");
             }
             if (isInvisibleQualified(obj) && !printInvisible) {
                 continue;

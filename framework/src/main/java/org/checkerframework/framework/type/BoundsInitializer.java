@@ -653,7 +653,7 @@ public class BoundsInitializer {
         public void pushNewTypeVarStruct(final AnnotatedTypeVariable typeVar) {
             if (typeVarToStructure.containsKey(typeVar.getUnderlyingType())) {
                 throw new CheckerFrameworkBug(
-                        "Starting a TypeVarStructure that already exists!\n"
+                        "Starting a TypeVarStructure that already exists.\n"
                                 + "typeVar="
                                 + typeVar
                                 + "\n"
@@ -675,7 +675,7 @@ public class BoundsInitializer {
         public void popCurrentTypeVarStruct(final AnnotatedTypeVariable typeVar) {
             if (!(this.currentStructure instanceof TypeVariableStructure)) {
                 throw new CheckerFrameworkBug(
-                        "Trying to pop WildcardStructure!\n"
+                        "Trying to pop WildcardStructure.\n"
                                 + "typeVar="
                                 + typeVar
                                 + "\n"
@@ -1133,7 +1133,7 @@ public class BoundsInitializer {
         @Override
         public void setType(AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new CheckerFrameworkBug(
-                    "Type variables cannot be intersection bounds!\n"
+                    "Type variables cannot be intersection bounds.\n"
                             + "parent="
                             + parent
                             + "\n"
@@ -1180,7 +1180,7 @@ public class BoundsInitializer {
         @Override
         public void setType(AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new CheckerFrameworkBug(
-                    "Union types cannot be intersection bounds!\n"
+                    "Union types cannot be intersection bounds.\n"
                             + "parent="
                             + parent
                             + "\n"
@@ -1232,7 +1232,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
             if (argIndex >= typeArgs.size()) {
                 throw new CheckerFrameworkBug(
-                        "Invalid type arg index!\n"
+                        "Invalid type arg index.\n"
                                 + "parent="
                                 + parent
                                 + "\n"
@@ -1254,7 +1254,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
             if (argIndex >= typeArgs.size()) {
                 throw new CheckerFrameworkBug(
-                        "Invalid type arg index!\n"
+                        "Invalid type arg index.\n"
                                 + "parent="
                                 + parent
                                 + "\n"

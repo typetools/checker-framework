@@ -61,7 +61,7 @@ public abstract class AnnotatedTypeMirror {
             TypeMirror type, AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
         if (type == null) {
             throw new CheckerFrameworkBug(
-                    "AnnotatedTypeMirror.createType: input type must not be null!");
+                    "AnnotatedTypeMirror.createType: input type must not be null");
         }
 
         AnnotatedTypeMirror result;
@@ -75,7 +75,7 @@ public abstract class AnnotatedTypeMirror {
                 break;
             case ERROR:
                 throw new CheckerFrameworkBug(
-                        "AnnotatedTypeMirror.createType: input should type-check already! Found error type: "
+                        "AnnotatedTypeMirror.createType: input should type-check already. Found error type: "
                                 + type);
 
             case EXECUTABLE:

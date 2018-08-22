@@ -59,7 +59,7 @@ public class ElementAnnotationUtil {
 
         if (types.size() != elements.size()) {
             throw new CheckerFrameworkBug(
-                    "Number of types and elements don't match!"
+                    "Number of types and elements don't match. "
                             + "types ( "
                             + PluginUtil.join(", ", types)
                             + " ) "

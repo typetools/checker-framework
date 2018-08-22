@@ -492,7 +492,7 @@ public class TypeVisualizer {
 
                 } else {
                     throw new CheckerFrameworkBug(
-                            "Executable types should never be recursive!\n" + "type=" + type);
+                            "Executable types should never be recursive\n" + "type=" + type);
                 }
                 return null;
             }

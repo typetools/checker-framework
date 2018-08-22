@@ -1723,7 +1723,7 @@ public class StubParser {
     /** Just like Map.put, but does not override any existing value in the map. */
     private static <K, V> void putNoOverride(Map<K, V> m, K key, V value) {
         if (key == null) {
-            throw new CheckerFrameworkBug("StubParser: key is null!");
+            throw new CheckerFrameworkBug("StubParser: key is null");
         }
         if (!m.containsKey(key)) {
             m.put(key, value);
@@ -1750,7 +1750,7 @@ public class StubParser {
     private static void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null) {
-            throw new CheckerFrameworkBug("StubParser: key is null!");
+            throw new CheckerFrameworkBug("StubParser: key is null");
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);

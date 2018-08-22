@@ -27,7 +27,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         throw new UnsupportedOperationException(
-                "Comparing two different subclasses of AnnotatedTypeMirror!\n"
+                "Comparing two different subclasses of AnnotatedTypeMirror.\n"
                         + "type1="
                         + type1
                         + "\n"
