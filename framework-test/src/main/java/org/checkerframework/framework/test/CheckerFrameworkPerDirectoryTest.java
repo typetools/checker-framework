@@ -63,8 +63,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * Creates a new checker test.
      *
      * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
-     * Iterable, Iterable, List, boolean)} adds additional checker options such as
-     * -AprintErrorStack.
+     * Iterable, Iterable, List, boolean)} adds additional checker options.
      *
      * @param testFiles the files containing test code, which will be type-checked
      * @param checker the class for the checker to use

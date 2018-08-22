@@ -10,7 +10,7 @@ public class SupportedQualsTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public SupportedQualsTest(List<File> testFiles) {
-        super(testFiles, SupportedQualsChecker.class, "simple", "-Anomsgtext", "-AprintErrorStack");
+        super(testFiles, SupportedQualsChecker.class, "simple", "-Anomsgtext");
     }
 
     @Parameters

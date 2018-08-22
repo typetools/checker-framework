@@ -244,9 +244,9 @@ import org.checkerframework.javacutil.UserError;
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
     "detailedmsgtext",
 
-    // Whether to output a stack trace for a framework error
+    // Whether to NOT output a stack trace for each framework error.
     // org.checkerframework.framework.source.SourceChecker.logBugInCF
-    "printErrorStack",
+    "noPrintErrorStack",
 
     // Only output error code, useful for testing framework
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
@@ -745,11 +745,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         StringBuilder msg = new StringBuilder(ce.getMessage());
-        if ((processingEnv == null
-                        || processingEnv.getOptions() == null
-                        || processingEnv.getOptions().containsKey("printErrorStack"))
-                && ce.getCause() != null) {
-
+        boolean noPrintErrorStack =
+                (processingEnv != null
+                        && processingEnv.getOptions() != null
+                        && processingEnv.getOptions().containsKey("noPrintErrorStack"));
+        if (ce.userError) {
+            msg.append('.');
+        } else if (ce.getCause() == null) {
+            msg.append("; The Checker Framework crashed.  Please report the crash.");
+        } else if (noPrintErrorStack) {
+            msg.append(
+                    "; The Checker Framework crashed.  Please report the crash.  To see "
+                            + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+        } else {
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
@@ -779,10 +787,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                         + formatStackTrace(cause.getStackTrace())));
                 cause = cause.getCause();
             }
-        } else {
-            msg.append(
-                    "; The Checker Framework crashed.  Please report the crash.  To see "
-                            + "the full stack trace invoke the compiler with -AprintErrorStack");
         }
 
         printMessage(msg.toString());
