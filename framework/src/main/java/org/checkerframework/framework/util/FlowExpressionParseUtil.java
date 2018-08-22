@@ -16,6 +16,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1392,7 +1393,7 @@ public class FlowExpressionParseUtil {
         }
 
         public String getMessage() {
-            return errorKey + " " + Arays.toString(args);
+            return errorKey + " " + Arrays.toString(args);
         }
 
         public Result getResult() {
