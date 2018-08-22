@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -68,7 +68,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
 
             } else {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "Unexpected kind for type.  node="
                                 + node
                                 + " type="
@@ -181,7 +181,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type, AnnotatedTypeFactory f) {
         if (type.getKind() != TypeKind.TYPEVAR) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "TypeFromTree.forTypeVariable: should only be called on type variables");
         }
 
@@ -218,7 +218,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
-                // throw new CheckerFrameworkBug("TypeFromTree.forTypeVariable: did not find source
+                // throw new BugInCF("TypeFromTree.forTypeVariable: did not find source
                 // for:
                 // " + elt);
                 return type;
@@ -229,8 +229,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             if (TypesUtils.isCaptured(typeVar)) {
                 return type;
             } else {
-                throw new CheckerFrameworkBug(
-                        "TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
             }
         }
     }

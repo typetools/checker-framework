@@ -26,7 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -151,7 +151,7 @@ class SupertypeFinder {
 
             if (type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
                 if (!type.wasRaw()) {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "AnnotatedDeclaredType's element has a different number of type parameters than type.\n"
                                     + "type="
                                     + type

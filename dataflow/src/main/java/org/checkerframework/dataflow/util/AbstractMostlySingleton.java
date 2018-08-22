@@ -29,7 +29,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.size();
             default:
-                throw new AssertionError(); // unreachable
+                throw new BugInCF(); // unreachable
         }
     }
 
@@ -69,7 +69,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.iterator();
             default:
-                throw new AssertionError(); // unreachable
+                throw new BugInCF(); // unreachable
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.toString();
             default:
-                throw new AssertionError(); // unreachable
+                throw new BugInCF(); // unreachable
         }
     }
 

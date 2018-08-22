@@ -10,7 +10,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * This struct contains all of the information that the refinement functions need. It's called by
@@ -74,7 +74,7 @@ public class IndexRefinementInfo {
         }
         Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
         if (tops.size() != 1) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     IndexRefinementInfo.class
                             + ": Found multiple tops, but expected one. \nFound: "
                             + tops.toString());

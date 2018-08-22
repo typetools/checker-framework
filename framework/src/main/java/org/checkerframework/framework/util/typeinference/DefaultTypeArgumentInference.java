@@ -49,7 +49,7 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -477,7 +477,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 AnnotatedTypes.expandVarArgsFromTypes(methodType, argTypes);
 
         if (argTypes.size() != paramTypes.size()) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "Mismatch between formal parameter count and argument count.\n"
                             + "paramTypes="
                             + PluginUtil.join(",", paramTypes)
@@ -782,8 +782,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     }
 
                     if (!handled) {
-                        throw new CheckerFrameworkBug(
-                                "Unhandled constraint type: " + constraint.toString());
+                        throw new BugInCF("Unhandled constraint type: " + constraint.toString());
                     }
 
                     toProcess.addAll(newConstraints);
@@ -799,7 +798,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final Set<TUConstraint> outgoing = new LinkedHashSet<>();
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "All afConstraints should be irreducible before conversion.\n"
                                 + "afConstraints=[ "
                                 + PluginUtil.join(", ", afConstraints)

@@ -2,7 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SimpleTreeVisitor;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Converts a Tree into an AnnotatedTypeMirror. This class is abstract and provides 2 important
@@ -24,9 +24,9 @@ abstract class TypeFromTreeVisitor
     @Override
     public AnnotatedTypeMirror defaultAction(Tree node, AnnotatedTypeFactory f) {
         if (node == null) {
-            throw new CheckerFrameworkBug("TypeFromTree.defaultAction: null tree");
+            throw new BugInCF("TypeFromTree.defaultAction: null tree");
         }
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "TypeFromTree.defaultAction: conversion undefined for tree type "
                         + node.getKind()
                         + "\n");

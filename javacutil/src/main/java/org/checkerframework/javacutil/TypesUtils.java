@@ -379,7 +379,7 @@ public final class TypesUtils {
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
-                throw new CheckerFrameworkBug("Unrecognized class: " + clazz);
+                throw new BugInCF("Unrecognized class: " + clazz);
             }
             return element.asType();
         }

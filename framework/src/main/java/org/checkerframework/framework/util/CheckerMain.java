@@ -17,7 +17,7 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -204,7 +204,7 @@ public class CheckerMain {
         if (i == -1) {
             return alternative;
         } else if (i == args.size() - 1) {
-            throw new RuntimeException(
+            throw new BugInCF(
                     "Command line contains " + argumentName + " but no value following it");
         } else {
             args.remove(i);
@@ -624,7 +624,7 @@ public class CheckerMain {
                             Charset.defaultCharset().name());
             return new File(fileName).getAbsolutePath();
         } catch (UnsupportedEncodingException e) {
-            throw new CheckerFrameworkBug("Default charset doesn't exist. Your VM is borked.");
+            throw new BugInCF("Default charset doesn't exist. Your VM is borked.");
         }
     }
 
@@ -659,7 +659,7 @@ public class CheckerMain {
     private static String quote(final String str) {
         if (str.contains(" ")) {
             if (str.contains("\"")) {
-                throw new RuntimeException(
+                throw new BugInCF(
                         "Don't know how to quote a string containing a double-quote character "
                                 + str);
             }

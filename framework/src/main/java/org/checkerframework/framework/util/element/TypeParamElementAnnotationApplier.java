@@ -14,7 +14,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Applies Element annotations to a single AnnotatedTypeVariable representing a type parameter.
@@ -120,7 +120,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                     final int boundIndex = anno.position.bound_index + boundIndexOffset;
 
                     if (boundIndex < 0 || boundIndex > intersectionTypes.size()) {
-                        throw new CheckerFrameworkBug(
+                        throw new BugInCF(
                                 "Invalid bound index on element annotation ( "
                                         + anno
                                         + " ) "
@@ -185,7 +185,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                                 + ElementAnnotationUtil.getBoundIndexOffset(intersectionTypes);
 
                 if (boundIndex < 0 || boundIndex > intersectionTypes.size()) {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "Invalid bound index on element annotation ( "
                                     + anno
                                     + " ) "

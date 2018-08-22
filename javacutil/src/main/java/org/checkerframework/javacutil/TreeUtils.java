@@ -430,11 +430,11 @@ public final class TreeUtils {
      */
     public static @Nullable Element elementFromTree(Tree tree) {
         if (tree == null) {
-            throw new CheckerFrameworkBug("InternalUtils.symbol: tree is null");
+            throw new BugInCF("InternalUtils.symbol: tree is null");
         }
 
         if (!(tree instanceof JCTree)) {
-            throw new CheckerFrameworkBug("InternalUtils.symbol: tree is not a valid Javac tree");
+            throw new BugInCF("InternalUtils.symbol: tree is not a valid Javac tree");
         }
 
         if (isExpressionTree(tree)) {
@@ -560,7 +560,7 @@ public final class TreeUtils {
     public static ExecutableElement constructor(NewClassTree tree) {
 
         if (!(tree instanceof JCTree.JCNewClass)) {
-            throw new CheckerFrameworkBug("InternalUtils.constructor: not a javac internal tree");
+            throw new BugInCF("InternalUtils.constructor: not a javac internal tree");
         }
 
         JCNewClass newClassTree = (JCNewClass) tree;
@@ -615,7 +615,7 @@ public final class TreeUtils {
         } else if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree) expr).getIdentifier();
         }
-        throw new CheckerFrameworkBug("TreeUtils.methodName: cannot be here: " + node);
+        throw new BugInCF("TreeUtils.methodName: cannot be here: " + node);
     }
 
     /**
@@ -856,8 +856,7 @@ public final class TreeUtils {
         if (methods.size() == 1) {
             return methods.get(0);
         }
-        throw new CheckerFrameworkBug(
-                "TreeUtils.getMethod: expected 1 match, found " + methods.size());
+        throw new BugInCF("TreeUtils.getMethod: expected 1 match, found " + methods.size());
     }
 
     /**
@@ -902,7 +901,7 @@ public final class TreeUtils {
                 }
             }
         }
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "TreeUtils.getMethod: found no match for "
                         + typeName
                         + "."
@@ -1084,7 +1083,7 @@ public final class TreeUtils {
                 return var;
             }
         }
-        throw new CheckerFrameworkBug("TreeUtils.getField: shouldn't be here");
+        throw new BugInCF("TreeUtils.getField: shouldn't be here");
     }
 
     /**

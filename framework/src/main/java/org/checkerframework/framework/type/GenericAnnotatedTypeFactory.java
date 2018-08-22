@@ -98,7 +98,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnno
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -675,7 +675,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
         if (!defs.hasDefaultsForCheckedCode()) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "GenericAnnotatedTypeFactory.createQualifierDefaults: "
                             + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
                             + "Every checker must specify a default qualifier. "
@@ -1337,7 +1337,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     // declared return type.
                     res = getAnnotatedType(lhsTree);
                 } else {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
                                     + "lhsTree: "
                                     + lhsTree
@@ -1371,7 +1371,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
                 break;
             default:
-                throw new CheckerFrameworkBug("Unexpected kind of tree: " + tree);
+                throw new BugInCF("Unexpected kind of tree: " + tree);
         }
 
         assert !args.isEmpty() : "Arguments are empty";
@@ -1494,7 +1494,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public Value getInferredValueFor(Tree tree) {
         if (tree == null) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
         }
         Value as = null;

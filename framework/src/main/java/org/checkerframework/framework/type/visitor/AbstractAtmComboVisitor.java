@@ -12,7 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AtmCombo;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Implements all methods from AtmComboVisitor. By default all methods throw an exception. Implement
@@ -49,7 +49,7 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM>
      */
     protected RETURN_TYPE defaultAction(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
-        throw new CheckerFrameworkBug(defaultErrorMessage(type1, type2, param));
+        throw new BugInCF(defaultErrorMessage(type1, type2, param));
     }
 
     public RETURN_TYPE visit(

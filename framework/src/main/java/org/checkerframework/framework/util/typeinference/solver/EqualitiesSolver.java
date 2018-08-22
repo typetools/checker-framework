@@ -17,7 +17,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * EqualitiesSolver infers type arguments for targets using the equality constraints in
@@ -289,7 +289,7 @@ public class EqualitiesSolver {
         Iterator<Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> entryIterator =
                 typesToHierarchies.entrySet().iterator();
         if (!entryIterator.hasNext()) {
-            throw new CheckerFrameworkBug("Merging a list of empty types.");
+            throw new BugInCF("Merging a list of empty types.");
         }
 
         final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> head = entryIterator.next();
@@ -331,7 +331,7 @@ public class EqualitiesSolver {
 
                     } else {
                         // otherwise the other type is missing an annotation
-                        throw new CheckerFrameworkBug(
+                        throw new BugInCF(
                                 "Missing annotation.\n"
                                         + "\nmergedType="
                                         + mergedType
@@ -421,7 +421,7 @@ public class EqualitiesSolver {
 
         if (!equalities.types.isEmpty()) {
             if (equalities.types.size() != 1) {
-                throw new CheckerFrameworkBug("Equalities should have at most 1 constraint.");
+                throw new BugInCF("Equalities should have at most 1 constraint.");
             }
 
             Entry<AnnotatedTypeMirror, AnnotationMirrorSet> remainingTypeEquality;

@@ -27,7 +27,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -479,7 +479,7 @@ public class AnnotationClassLoader {
                 JarURLConnection connection = (JarURLConnection) resourceURL.openConnection();
                 jarFile = connection.getJarFile();
             } catch (IOException e) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
             }
 

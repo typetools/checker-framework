@@ -75,7 +75,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -616,7 +616,7 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "StubParser: could not find superclass "
                                     + superType
                                     + " from type "
@@ -631,7 +631,7 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "StubParser: could not find superinterface "
                                     + superType
                                     + " from type "
@@ -1396,7 +1396,7 @@ public class StubParser {
             }
             return builder.build();
         } else {
-            throw new CheckerFrameworkBug("StubParser: unknown annotation type: " + annotation);
+            throw new BugInCF("StubParser: unknown annotation type: " + annotation);
         }
         return annoMirror;
     }
@@ -1543,7 +1543,7 @@ public class StubParser {
             case DOUBLE:
                 return number.doubleValue() * scalefactor;
             default:
-                throw new CheckerFrameworkBug("Unexpected expectedKind: " + expectedKind);
+                throw new BugInCF("Unexpected expectedKind: " + expectedKind);
         }
     }
 
@@ -1627,7 +1627,7 @@ public class StubParser {
         } else if (value instanceof VariableElement) {
             builder.setValue(name, (VariableElement) value);
         } else {
-            throw new CheckerFrameworkBug("Unexpected builder value: %s", value);
+            throw new BugInCF("Unexpected builder value: %s", value);
         }
     }
 
@@ -1723,7 +1723,7 @@ public class StubParser {
     /** Just like Map.put, but does not override any existing value in the map. */
     private static <K, V> void putNoOverride(Map<K, V> m, K key, V value) {
         if (key == null) {
-            throw new CheckerFrameworkBug("StubParser: key is null");
+            throw new BugInCF("StubParser: key is null");
         }
         if (!m.containsKey(key)) {
             m.put(key, value);
@@ -1750,7 +1750,7 @@ public class StubParser {
     private static void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null) {
-            throw new CheckerFrameworkBug("StubParser: key is null");
+            throw new BugInCF("StubParser: key is null");
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);

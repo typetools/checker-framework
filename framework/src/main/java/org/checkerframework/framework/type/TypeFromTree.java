@@ -6,7 +6,7 @@ import com.sun.source.tree.Tree;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A utility class to convert trees into corresponding AnnotatedTypeMirrors. This class should be
@@ -79,7 +79,7 @@ class TypeFromTree {
     protected static void abortIfTreeIsNull(
             final AnnotatedTypeFactory typeFactory, final Tree tree) {
         if (tree == null) {
-            throw new CheckerFrameworkBug("Encountered null tree" + summarize(typeFactory, tree));
+            throw new BugInCF("Encountered null tree" + summarize(typeFactory, tree));
         }
     }
 
@@ -89,7 +89,7 @@ class TypeFromTree {
             final AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.EXECUTABLE) {
             if (((AnnotatedExecutableType) type).getElement() == null) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "Executable has no element:\n" + summarize(typeFactory, tree, type));
             }
         }
@@ -100,7 +100,7 @@ class TypeFromTree {
             final Tree tree,
             final AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.EXECUTABLE) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "Unexpected Executable typekind:\n" + summarize(typeFactory, tree, type));
         }
     }

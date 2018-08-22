@@ -402,7 +402,7 @@ public class AnnotationUtils {
             case TYPE_USE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
-                throw new CheckerFrameworkBug("Unrecognized ElementType: " + elementType);
+                throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
     }
 
@@ -567,8 +567,7 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new CheckerFrameworkBug(
-                "No element with name \'" + name + "\' in annotation " + anno);
+        throw new BugInCF("No element with name \'" + name + "\' in annotation " + anno);
     }
 
     /** Version that is suitable for Enum elements. */
@@ -665,7 +664,7 @@ public class AnnotationUtils {
                     String.format(
                             "Could not load class '%s' for field '%s' in annotation %s",
                             cn, name, anno);
-            throw new CheckerFrameworkBug(msg, e);
+            throw new BugInCF(msg, e);
         }
     }
 

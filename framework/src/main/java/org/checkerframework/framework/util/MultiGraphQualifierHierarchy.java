@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents the type qualifier hierarchy of a type system that supports multiple separate subtype
@@ -134,7 +134,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         protected void assertNotBuilt() {
             if (wasBuilt) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "MultiGraphQualifierHierarchy.Factory was already built. Method build can only be called once.");
             }
         }
@@ -283,7 +283,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return top;
             }
         }
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "MultiGraphQualifierHierarchy: did not find the top corresponding to qualifier "
                         + start
                         + " all tops: "
@@ -302,7 +302,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return bot;
             }
         }
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "MultiGraphQualifierHierarchy: did not find the bottom corresponding to qualifier "
                         + start
                         + "; all bottoms: "
@@ -324,7 +324,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return polyQualifiers.get(polymorphicQualifier);
         } else {
             // No polymorphic qualifier exists for that hierarchy.
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier "
                             + start
                             + "; all polymorphic qualifiers: "
@@ -341,14 +341,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         rhs = replacePolyAll(rhs);
         lhs = replacePolyAll(lhs);
         if (lhs.isEmpty() || rhs.isEmpty()) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy: empty annotations in lhs: "
                             + lhs
                             + " or rhs: "
                             + rhs);
         }
         if (lhs.size() != rhs.size()) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy: mismatched number of annotations in lhs: "
                             + lhs
                             + " and rhs: "
@@ -496,13 +496,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         if (a == null) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy found an unqualified type.  Please ensure that "
                             + "your implicit rules cover all cases and/or "
                             + "use a @DefaultQualifierInHierarchy annotation.");
         } else {
             // System.out.println("MultiGraphQH: " + this);
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy found the unrecognized qualifier: "
                             + a
                             + ". Please ensure that the qualifier is correctly included in the subtype hierarchy.");
@@ -608,7 +608,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         }
                     }
                 } else {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "MultiGraphQualifierHierarchy.addPolyRelations: "
                                     + "incorrect or missing top qualifier given in polymorphic qualifier "
                                     + polyQualifier
@@ -635,7 +635,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     AnnotationUtils.updateMappingToImmutableSet(
                             fullMap, polyQualifier, Collections.singleton(polyTop));
                 } else {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "MultiGraphQualifierHierarchy.addPolyRelations: "
                                     + "incorrect top qualifier given in polymorphic qualifier: "
                                     + polyQualifier
@@ -660,7 +660,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                             fullMap, bottom, Collections.singleton(polyQualifier));
                 } else {
                     // TODO: in a type system with a single qualifier this check will fail.
-                    // throw new CheckerFrameworkBug("MultiGraphQualifierHierarchy.addPolyRelations:
+                    // throw new BugInCF("MultiGraphQualifierHierarchy.addPolyRelations:
                     // " +
                     //        "incorrect top qualifier given in polymorphic qualifier: "
                     //
@@ -734,7 +734,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             if (a1Lub != null) {
                 outset.add(a1Lub);
             } else {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "GraphQualifierHierarchy could not determine LUB for "
                                 + a1
                                 + " and "
@@ -891,7 +891,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     private AnnotationMirror requireSingleton(
             Set<AnnotationMirror> outset, AnnotationMirror a1, AnnotationMirror a2, boolean lub) {
         if (outset.size() == 0) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy could not determine "
                             + (lub ? "LUB" : "GLB")
                             + " for "
@@ -913,7 +913,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 } else if (result == null) {
                     result = anno;
                 } else {
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             String.format(
                                     "Bug in checker implementation:  type hierarchy is not a lattice.%n"
                                             + "There is no unique "

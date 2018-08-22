@@ -101,10 +101,9 @@ public class Resolver {
             ACCESSERROR_ACCESS = ACCESSERROR.getMethod("access", Name.class, TypeSymbol.class);
             ACCESSERROR_ACCESS.setAccessible(true);
         } catch (ClassNotFoundException e) {
-            throw new CheckerFrameworkBug(
-                    "Compiler 'Resolve$AccessError' class could not be retrieved.", e);
+            throw new BugInCF("Compiler 'Resolve$AccessError' class could not be retrieved.", e);
         } catch (NoSuchMethodException e) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "Compiler 'Resolve$AccessError' class doesn't contain required 'access' method",
                     e);
         }
@@ -140,8 +139,7 @@ public class Resolver {
         if (scope != null) {
             return scope.getEnv();
         } else {
-            throw new CheckerFrameworkBug(
-                    "Could not determine any possible scope for path: " + path.getLeaf());
+            throw new BugInCF("Could not determine any possible scope for path: " + path.getLeaf());
         }
     }
 

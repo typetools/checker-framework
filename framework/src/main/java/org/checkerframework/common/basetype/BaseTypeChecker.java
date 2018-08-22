@@ -35,7 +35,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 
 /**
@@ -263,20 +263,20 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 Throwable err = t.getCause();
                 String msg;
                 // TODO: Handle if UserError?
-                if (err instanceof CheckerFrameworkBug) {
-                    CheckerFrameworkBug ce = (CheckerFrameworkBug) err;
+                if (err instanceof BugInCF) {
+                    BugInCF ce = (BugInCF) err;
                     msg = err.getMessage();
                 } else {
                     msg = err.toString();
                 }
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "InvocationTargetException when invoking constructor for class "
                                 + name
                                 + "; Underlying cause: "
                                 + msg,
                         t);
             } else {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "Unexpected "
                                 + t.getClass().getSimpleName()
                                 + " for "
@@ -395,7 +395,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 instance.setParentChecker(this);
                 alreadyInitializedSubcheckerMap.put(subcheckerClass, instance);
             } catch (Exception e) {
-                throw new CheckerFrameworkBug("Could not create an instance of " + subcheckerClass);
+                throw new BugInCF("Could not create an instance of " + subcheckerClass);
             }
         }
 

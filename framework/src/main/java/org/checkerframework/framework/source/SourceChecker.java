@@ -55,7 +55,7 @@ import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -245,7 +245,7 @@ import org.checkerframework.javacutil.UserError;
     "detailedmsgtext",
 
     // Whether to output a stack trace for a framework error
-    // org.checkerframework.framework.source.SourceChecker.logCheckerFrameworkBug
+    // org.checkerframework.framework.source.SourceChecker.logBugInCF
     "printErrorStack",
 
     // Only output error code, useful for testing framework
@@ -736,11 +736,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /** Log an internal error in the framework or a checker. */
-    private void logCheckerFrameworkBug(CheckerFrameworkBug ce) {
+    private void logBugInCF(BugInCF ce) {
         // TODO: do this at construction time.
         if (ce.getMessage() == null) {
             final String stackTrace = formatStackTrace(ce.getStackTrace());
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
         }
 
@@ -800,8 +800,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * {@inheritDoc}
      *
      * <p>Type-checkers are not supposed to override this. Instead use initChecker. This allows us
-     * to handle CheckerFrameworkBug only here and doesn't require all overriding implementations to
-     * be aware of CheckerFrameworkBug.
+     * to handle BugInCF only here and doesn't require all overriding implementations to be aware of
+     * BugInCF.
      *
      * @see AbstractProcessor#init(ProcessingEnvironment)
      * @see SourceChecker#initChecker()
@@ -832,12 +832,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         } catch (UserError ce) {
             logUserError(ce);
-        } catch (CheckerFrameworkBug ce) {
-            logCheckerFrameworkBug(ce);
+        } catch (BugInCF ce) {
+            logBugInCF(ce);
         } catch (Throwable t) {
-            logCheckerFrameworkBug(
-                    wrapThrowableAsCheckerFrameworkBug(
-                            "SourceChecker.typeProcessingStart", t, null));
+            logBugInCF(wrapThrowableAsBugInCF("SourceChecker.typeProcessingStart", t, null));
         }
     }
 
@@ -973,11 +971,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             warnUnneededSuppressions();
         } catch (UserError ce) {
             logUserError(ce);
-        } catch (CheckerFrameworkBug ce) {
-            logCheckerFrameworkBug(ce);
+        } catch (BugInCF ce) {
+            logBugInCF(ce);
         } catch (Throwable t) {
-            logCheckerFrameworkBug(
-                    wrapThrowableAsCheckerFrameworkBug("SourceChecker.typeProcess", t, p));
+            logBugInCF(wrapThrowableAsBugInCF("SourceChecker.typeProcess", t, p));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
@@ -1090,12 +1087,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 return annotationTree;
             }
         }
-        throw new CheckerFrameworkBug("Did not find @SuppressWarnings: " + tree);
+        throw new BugInCF("Did not find @SuppressWarnings: " + tree);
     }
 
-    private CheckerFrameworkBug wrapThrowableAsCheckerFrameworkBug(
-            String where, Throwable t, @Nullable TreePath p) {
-        return new CheckerFrameworkBug(
+    private BugInCF wrapThrowableAsBugInCF(String where, Throwable t, @Nullable TreePath p) {
+        return new BugInCF(
                 where
                         + ": unexpected Throwable ("
                         + t.getClass().getSimpleName()
@@ -1291,8 +1287,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else if (source instanceof Tree) {
             printMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
-            throw new CheckerFrameworkBug(
-                    "invalid position source: " + source.getClass().getName());
+            throw new BugInCF("invalid position source: " + source.getClass().getName());
         }
     }
 
@@ -2013,7 +2008,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         SupportedAnnotationTypes supported =
                 this.getClass().getAnnotation(SupportedAnnotationTypes.class);
         if (supported != null) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "@SupportedAnnotationTypes should not be written on any checker;"
                             + " supported annotation types are inherited from SourceChecker.");
         }

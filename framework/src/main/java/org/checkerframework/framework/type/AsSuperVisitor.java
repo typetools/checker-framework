@@ -18,7 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -53,7 +53,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @SuppressWarnings("unchecked")
     public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
         if (type == null || superType == null) {
-            throw new CheckerFrameworkBug("AsSuperVisitor type and supertype cannot be null.");
+            throw new BugInCF("AsSuperVisitor type and supertype cannot be null.");
 
         } else if (type == superType) {
             return (T) type.deepCopy();
@@ -67,7 +67,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
         if (result == null) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "AsSuperVisitor returned null.\ntype: %s\nsuperType: %s", type, copySuperType);
         }
 
@@ -151,7 +151,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (isUninferredTypeAgrument) {
             return copyPrimaryAnnos(type, superType);
         }
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "AsSuperVisitor: type is not an erased subtype of supertype."
                         + "\ntype: %s\nsuperType: %s",
                 type, superType);
@@ -357,8 +357,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     public AnnotatedTypeMirror visitDeclared_Primitive(
             AnnotatedDeclaredType type, AnnotatedPrimitiveType superType, Void p) {
         if (!TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
-            throw new CheckerFrameworkBug(
-                    "AsSuperVisitor Declared_Primitive: type is not a box primitive.");
+            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a box primitive.");
         }
         AnnotatedTypeMirror unboxedType = annotatedTypeFactory.getUnboxedType(type);
         return copyPrimaryAnnos(unboxedType, superType);
@@ -441,7 +440,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
                 }
             }
             if (found == null) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "AsSuperVisitor visitIntersection_Intersection:\ntype: %s superType: %s",
                         type, superType);
             }
@@ -466,7 +465,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "AsSuperVisitor visitIntersection_Primitive:\ntype: %s superType: %s",
                 type, superType);
     }
@@ -493,7 +492,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "AsSuperVisitor visitIntersection_Union:\ntype: %s\nsuperType: %s",
                 type, superType);
     }

@@ -9,7 +9,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.junit.Ignore;
 import org.junit.Test;
 import testlib.util.AnnoWithStringArg;
@@ -17,7 +17,7 @@ import testlib.util.Encrypted;
 
 public class AnnotationBuilderTest {
 
-    private static CheckerFrameworkBug dummy = null;
+    private static BugInCF dummy = null;
 
     private final ProcessingEnvironment env;
 
@@ -47,14 +47,14 @@ public class AnnotationBuilderTest {
         assertEquals(1, anno.getElementValues().size());
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void buildingTwice() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Encrypted.class);
         builder.build();
         builder.build();
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void addingValuesAfterBuilding() {
         AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("value", "m");
@@ -63,13 +63,13 @@ public class AnnotationBuilderTest {
         builder.setValue("value", "n");
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void notFoundElements() {
         AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("n", "m");
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void illegalValue() {
         AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("value", 1);
@@ -97,14 +97,14 @@ public class AnnotationBuilderTest {
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void listArrayObjectWrongType() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
         builder.setValue("strings", new Object[] {"m", "n", 1});
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void listArrayObjectWrongType1() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
         builder.setValue("strings", 1);
@@ -122,7 +122,7 @@ public class AnnotationBuilderTest {
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void primitiveValueWithException() {
         AnnotationBuilder builder = new AnnotationBuilder(env, A.class);
         builder.setValue("a", 3.0);
@@ -143,7 +143,7 @@ public class AnnotationBuilderTest {
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void multiple2() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Mult.class);
         builder.setValue("a", "m");
@@ -174,7 +174,7 @@ public class AnnotationBuilderTest {
         assertTrue("storedValue is " + storedValue.getClass(), storedValue instanceof TypeMirror);
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void testClassNegative() {
         AnnotationBuilder builder = new AnnotationBuilder(env, ClassElt.class);
         builder.setValue("value", 2);
@@ -192,7 +192,7 @@ public class AnnotationBuilderTest {
 
     // Failing test for now.  AnnotationBuilder is a bit permissive
     // It doesn't not check type argument subtyping
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     @Ignore // bug for now
     public void testRetClassNegative() {
         AnnotationBuilder builder = new AnnotationBuilder(env, RestrictedClassElt.class);
@@ -219,13 +219,13 @@ public class AnnotationBuilderTest {
         builder.setValue("value", MyEnum.NOT);
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void testEnumNegative() {
         AnnotationBuilder builder = new AnnotationBuilder(env, EnumElt.class);
         builder.setValue("value", 2);
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void testEnumNegative2() {
         AnnotationBuilder builder = new AnnotationBuilder(env, EnumElt.class);
         builder.setValue("value", OtherEnum.TEST);
@@ -293,7 +293,7 @@ public class AnnotationBuilderTest {
                 builder.build().toString());
     }
 
-    @Test(expected = CheckerFrameworkBug.class)
+    @Test(expected = BugInCF.class)
     public void testAnnoAsArgNegative() {
         AnnotationMirror anno = AnnotationBuilder.fromClass(env.getElementUtils(), Anno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);

@@ -43,7 +43,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -72,7 +72,7 @@ public class TypeArgInferenceUtil {
             argTrees = ((NewClassTree) methodInvocation).getArguments();
 
         } else {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "TypeArgumentInference.relationsFromMethodArguments:\n"
                             + "couldn't determine arguments from tree: "
                             + methodInvocation);
@@ -192,7 +192,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof VariableTree) {
             res = assignedToVariable(atypeFactory, assignmentContext);
         } else {
-            throw new CheckerFrameworkBug("AnnotatedTypes.assignedTo: shouldn't be here");
+            throw new BugInCF("AnnotatedTypes.assignedTo: shouldn't be here");
         }
 
         if (res != null && TypesUtils.isPrimitive(res.getUnderlyingType())) {
@@ -373,8 +373,7 @@ public class TypeArgInferenceUtil {
             return;
         }
         if (((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
-            throw new CheckerFrameworkBug(
-                    "Can't make a constraint that includes an uninferred type argument.");
+            throw new BugInCF("Can't make a constraint that includes an uninferred type argument.");
         }
     }
 
@@ -489,7 +488,7 @@ public class TypeArgInferenceUtil {
             final AnnotatedTypeFactory typeFactory, final Iterable<AnnotatedTypeMirror> types) {
         final Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
         if (!typesIter.hasNext()) {
-            throw new CheckerFrameworkBug("Calling LUB on empty list");
+            throw new BugInCF("Calling LUB on empty list");
         }
         AnnotatedTypeMirror lubType = typesIter.next();
         AnnotatedTypeMirror nextType = null;

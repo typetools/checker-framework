@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -511,7 +511,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         } else if (field instanceof LocalVariableNode) {
             receiverNode = ((LocalVariableNode) field).getReceiver();
         } else {
-            throw new CheckerFrameworkBug("Unexpected type: " + field.getClass());
+            throw new BugInCF("Unexpected type: " + field.getClass());
         }
         if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
                 && classTree != null) {

@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
@@ -313,8 +313,7 @@ public class TypesIntoElements {
         @Override
         public List<TypeCompound> scan(AnnotatedTypeMirror type, TypeAnnotationPosition pos) {
             if (pos == null) {
-                throw new CheckerFrameworkBug(
-                        "TypesIntoElements: invalid usage, null pos with type: " + type);
+                throw new BugInCF("TypesIntoElements: invalid usage, null pos with type: " + type);
             }
             List<TypeCompound> res = super.scan(type, pos);
             return res;
@@ -454,7 +453,7 @@ public class TypesIntoElements {
         public List<TypeCompound> visitUnion(
                 AnnotatedUnionType type, TypeAnnotationPosition tapos) {
             // We should never need to write a union type, so raise an error.
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "TypesIntoElement: encountered union type: " + type + " at position: " + tapos);
         }
 

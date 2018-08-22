@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -58,7 +58,7 @@ public class ElementAnnotationUtil {
             final AnnotatedTypeFactory typeFactory) {
 
         if (types.size() != elements.size()) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "Number of types and elements don't match. "
                             + "types ( "
                             + PluginUtil.join(", ", types)
@@ -406,7 +406,7 @@ public class ElementAnnotationUtil {
             default:
                 // Raise an error for all other types below.
         }
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "ElementAnnotationUtil.getTypeAtLocation: unexpected annotation with location found for type: "
                         + type
                         + " (kind: "
@@ -464,7 +464,7 @@ public class ElementAnnotationUtil {
         }
 
         if (outerToInner.isEmpty() || error) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "ElementAnnotationUtil.getLocationTypeADT: invalid location %s for type: %s",
                     location, type);
         }
@@ -477,7 +477,7 @@ public class ElementAnnotationUtil {
             return type;
         }
 
-        throw new CheckerFrameworkBug(
+        throw new BugInCF(
                 "ElementAnnotationUtil.getLocationTypeANT: "
                         + "invalid location "
                         + location
@@ -505,7 +505,7 @@ public class ElementAnnotationUtil {
             }
 
         } else {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "ElementAnnotationUtil.getLocationTypeAWT: "
                             + "invalid location "
                             + location
@@ -528,7 +528,7 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror comptype = type.getComponentType();
             return getTypeAtLocation(comptype, tail(location));
         } else {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "ElementAnnotationUtil.annotateAAT: "
                             + "invalid location "
                             + location
@@ -561,7 +561,7 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
             return getTypeAtLocation(supertype, tail(location));
         } else {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "ElementAnnotationUtil.getLocatonTypeAIT: "
                             + "invalid location "
                             + location

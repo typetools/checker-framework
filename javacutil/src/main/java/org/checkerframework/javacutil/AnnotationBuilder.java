@@ -73,8 +73,7 @@ public class AnnotationBuilder {
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
         if (annotationElt == null) {
-            throw new CheckerFrameworkBug(
-                    "Could not find annotation: " + name + ". Is it on the classpath?");
+            throw new BugInCF("Could not find annotation: " + name + ". Is it on the classpath?");
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
@@ -122,7 +121,7 @@ public class AnnotationBuilder {
             return null;
         }
         if (annoElt.getKind() != ElementKind.ANNOTATION_TYPE) {
-            throw new CheckerFrameworkBug(annoElt + " is not an annotation");
+            throw new BugInCF(annoElt + " is not an annotation");
         }
 
         final DeclaredType annoType = (DeclaredType) annoElt.asType();
@@ -144,7 +143,7 @@ public class AnnotationBuilder {
 
     private void assertNotBuilt() {
         if (wasBuilt) {
-            throw new CheckerFrameworkBug("AnnotationBuilder: error: type was already built");
+            throw new BugInCF("AnnotationBuilder: error: type was already built");
         }
     }
 
@@ -211,7 +210,7 @@ public class AnnotationBuilder {
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
-            throw new CheckerFrameworkBug("value is an array while expected type is not");
+            throw new BugInCF("value is an array while expected type is not");
         }
         expectedType = ((ArrayType) expectedType).getComponentType();
 
@@ -274,7 +273,7 @@ public class AnnotationBuilder {
         ExecutableElement var = findElement(elementName);
         // Check subtyping
         if (!TypesUtils.isClass(var.getReturnType())) {
-            throw new CheckerFrameworkBug("expected " + var.getReturnType());
+            throw new BugInCF("expected " + var.getReturnType());
         }
 
         elementValues.put(var, val);
@@ -294,7 +293,7 @@ public class AnnotationBuilder {
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
-                throw new CheckerFrameworkBug("Unrecognized class: " + clazz);
+                throw new BugInCF("Unrecognized class: " + clazz);
             }
             return element.asType();
         }
@@ -314,11 +313,10 @@ public class AnnotationBuilder {
     public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
         ExecutableElement var = findElement(elementName);
         if (var.getReturnType().getKind() != TypeKind.DECLARED) {
-            throw new CheckerFrameworkBug("expected a non enum: " + var.getReturnType());
+            throw new BugInCF("expected a non enum: " + var.getReturnType());
         }
         if (!((DeclaredType) var.getReturnType()).asElement().equals(value.getEnclosingElement())) {
-            throw new CheckerFrameworkBug(
-                    "expected a different type of enum: " + value.getEnclosingElement());
+            throw new BugInCF("expected a different type of enum: " + value.getEnclosingElement());
         }
         elementValues.put(var, createValue(value));
         return this;
@@ -338,16 +336,15 @@ public class AnnotationBuilder {
 
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
-            throw new CheckerFrameworkBug("expected a non array: " + var.getReturnType());
+            throw new BugInCF("expected a non array: " + var.getReturnType());
         }
 
         expectedType = ((ArrayType) expectedType).getComponentType();
         if (expectedType.getKind() != TypeKind.DECLARED) {
-            throw new CheckerFrameworkBug(
-                    "expected a non enum component type: " + var.getReturnType());
+            throw new BugInCF("expected a non enum component type: " + var.getReturnType());
         }
         if (!((DeclaredType) expectedType).asElement().equals(enumElt.getEnclosingElement())) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "expected a different type of enum: " + enumElt.getEnclosingElement());
         }
 
@@ -371,19 +368,19 @@ public class AnnotationBuilder {
 
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
-            throw new CheckerFrameworkBug("expected an array, but found: " + expectedType);
+            throw new BugInCF("expected an array, but found: " + expectedType);
         }
 
         expectedType = ((ArrayType) expectedType).getComponentType();
         if (expectedType.getKind() != TypeKind.DECLARED) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "expected a declared component type, but found: "
                             + expectedType
                             + " kind: "
                             + expectedType.getKind());
         }
         if (!((DeclaredType) expectedType).equals(values[0].asType())) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "expected a different declared component type: "
                             + expectedType
                             + " vs. "
@@ -415,7 +412,7 @@ public class AnnotationBuilder {
                 return (VariableElement) enumElt;
             }
         }
-        throw new CheckerFrameworkBug("cannot be here");
+        throw new BugInCF("cannot be here");
     }
 
     private AnnotationBuilder setValue(CharSequence key, Object value) {
@@ -433,7 +430,7 @@ public class AnnotationBuilder {
                 return elt;
             }
         }
-        throw new CheckerFrameworkBug("Couldn't find " + key + " element in " + annotationElt);
+        throw new BugInCF("Couldn't find " + key + " element in " + annotationElt);
     }
 
     // TODO: this method always returns true and no-one ever looks at the return
@@ -478,13 +475,13 @@ public class AnnotationBuilder {
 
         if (!isSubtype) {
             if (types.isSameType(found, expected)) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
                                 + "found: "
                                 + found);
             } else {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "given value differs from expected; "
                                 + "found: "
                                 + found

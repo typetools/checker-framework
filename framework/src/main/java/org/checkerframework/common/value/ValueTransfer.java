@@ -62,7 +62,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
@@ -688,7 +688,7 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = leftRange.bitwiseXor(rightRange);
                     break;
                 default:
-                    throw new CheckerFrameworkBug("ValueTransfer: unsupported operation: " + op);
+                    throw new BugInCF("ValueTransfer: unsupported operation: " + op);
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during
             // operations.
@@ -757,8 +757,7 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.bitwiseXor(right));
                         break;
                     default:
-                        throw new CheckerFrameworkBug(
-                                "ValueTransfer: unsupported operation: " + op);
+                        throw new BugInCF("ValueTransfer: unsupported operation: " + op);
                 }
             }
         }
@@ -947,7 +946,7 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = range.bitwiseComplement();
                     break;
                 default:
-                    throw new CheckerFrameworkBug("ValueTransfer: unsupported operation: " + op);
+                    throw new BugInCF("ValueTransfer: unsupported operation: " + op);
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during
             // operations.
@@ -980,7 +979,7 @@ public class ValueTransfer extends CFTransfer {
                     resultValues.add(nmLeft.bitwiseComplement());
                     break;
                 default:
-                    throw new CheckerFrameworkBug("ValueTransfer: unsupported operation: " + op);
+                    throw new BugInCF("ValueTransfer: unsupported operation: " + op);
             }
         }
         return resultValues;
@@ -1090,8 +1089,7 @@ public class ValueTransfer extends CFTransfer {
                         result = nmLeft.notEqualTo(right);
                         break;
                     default:
-                        throw new CheckerFrameworkBug(
-                                "ValueTransfer: unsupported operation: " + op);
+                        throw new BugInCF("ValueTransfer: unsupported operation: " + op);
                 }
                 resultValues.add(result);
                 if (result) {
@@ -1171,7 +1169,7 @@ public class ValueTransfer extends CFTransfer {
                 elseLeftRange = elseRightRange; // Equality only needs to be computed once.
                 break;
             default:
-                throw new CheckerFrameworkBug("ValueTransfer: unsupported operation: " + op);
+                throw new BugInCF("ValueTransfer: unsupported operation: " + op);
         }
 
         createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
@@ -1415,7 +1413,7 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
         }
-        throw new CheckerFrameworkBug("ValueTransfer: unsupported operation: " + op);
+        throw new BugInCF("ValueTransfer: unsupported operation: " + op);
     }
 
     @Override

@@ -33,7 +33,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 
 /**
@@ -60,8 +60,7 @@ public abstract class AnnotatedTypeMirror {
     public static AnnotatedTypeMirror createType(
             TypeMirror type, AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
         if (type == null) {
-            throw new CheckerFrameworkBug(
-                    "AnnotatedTypeMirror.createType: input type must not be null");
+            throw new BugInCF("AnnotatedTypeMirror.createType: input type must not be null");
         }
 
         AnnotatedTypeMirror result;
@@ -74,7 +73,7 @@ public abstract class AnnotatedTypeMirror {
                         new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
                 break;
             case ERROR:
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "AnnotatedTypeMirror.createType: input should type-check already. Found error type: "
                                 + type);
 
@@ -107,7 +106,7 @@ public abstract class AnnotatedTypeMirror {
                     result = new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
                     break;
                 }
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "AnnotatedTypeMirror.createType: unidentified type "
                                 + type
                                 + " ("
@@ -521,8 +520,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            throw new CheckerFrameworkBug(
-                    "AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
         }
         if (atypeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
@@ -619,7 +617,7 @@ public abstract class AnnotatedTypeMirror {
     public boolean removeAnnotation(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
         }
         return removeAnnotation(anno);
@@ -797,7 +795,7 @@ public abstract class AnnotatedTypeMirror {
                 // Force instantiation of type arguments of enclosing type.
                 this.enclosingType.getTypeArguments();
             } else if (encl.getKind() != TypeKind.NONE) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "AnnotatedDeclaredType: unsupported enclosing type: "
                                 + type.getEnclosingType()
                                 + " ("
@@ -1398,7 +1396,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setLowerBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "Lower bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type
@@ -1492,7 +1490,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setUpperBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "Upper bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type
@@ -1780,7 +1778,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setSuperBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "Super bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type
@@ -1814,7 +1812,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setExtendsBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                throw new CheckerFrameworkBug(
+                throw new BugInCF(
                         "Extends bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type

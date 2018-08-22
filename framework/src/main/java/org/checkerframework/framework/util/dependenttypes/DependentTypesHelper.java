@@ -46,7 +46,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -387,7 +387,7 @@ public class DependentTypesHelper {
                         // a method parameter.
                         return;
                     }
-                    throw new CheckerFrameworkBug(this.getClass() + ": tree not found");
+                    throw new BugInCF(this.getClass() + ": tree not found");
                 } else if (TreeUtils.typeOf(tree) == null) {
                     // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
                     // gets the assignment context for a pseudo assignment of an argument to
@@ -765,7 +765,7 @@ public class DependentTypesHelper {
                 return null;
             }
             if (type.getKind() != p.getKind()) {
-                throw new CheckerFrameworkBug("Should be the same. type: %s p: %s ", type, p);
+                throw new BugInCF("Should be the same. type: %s p: %s ", type, p);
             }
             return null;
         }

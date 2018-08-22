@@ -9,6 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.javacutil.UserError;
 
+/** Defines {@link #createSupportedTypeQualifiers}. */
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {

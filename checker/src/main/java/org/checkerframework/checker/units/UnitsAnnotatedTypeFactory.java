@@ -32,7 +32,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Annotated type factory for the Units Checker.
@@ -302,7 +302,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     .asSubclass(UnitsRelations.class);
                 } catch (ClassCastException ex) {
                     Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
-                    throw new CheckerFrameworkBug(
+                    throw new BugInCF(
                             "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
                                     + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
                             qual, clazz);
@@ -319,19 +319,19 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     } catch (NoSuchMethodException e) {
                         // TODO
                         e.printStackTrace();
-                        throw new CheckerFrameworkBug("Exception NoSuchMethodException");
+                        throw new BugInCF("Exception NoSuchMethodException");
                     } catch (InvocationTargetException e) {
                         // TODO
                         e.printStackTrace();
-                        throw new CheckerFrameworkBug("Exception InvocationTargetException");
+                        throw new BugInCF("Exception InvocationTargetException");
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();
-                        throw new CheckerFrameworkBug("Exception InstantiationException");
+                        throw new BugInCF("Exception InstantiationException");
                     } catch (IllegalAccessException e) {
                         // TODO
                         e.printStackTrace();
-                        throw new CheckerFrameworkBug("Exception IllegalAccessException");
+                        throw new BugInCF("Exception IllegalAccessException");
                     }
                 }
             }

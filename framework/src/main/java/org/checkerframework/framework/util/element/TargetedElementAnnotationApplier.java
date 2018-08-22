@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.CheckerFrameworkBug;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -116,7 +116,7 @@ abstract class TargetedElementAnnotationApplier {
             }
         }
         if (!remaining.isEmpty()) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     this.getClass().getName()
                             + ".handleInvalid: "
                             + "Invalid variable and element passed to extractAndApply; type: "
@@ -183,7 +183,7 @@ abstract class TargetedElementAnnotationApplier {
      */
     public void extractAndApply() {
         if (!isAccepted()) {
-            throw new CheckerFrameworkBug(
+            throw new BugInCF(
                     "LocalVariableExtractor.extractAndApply: "
                             + "Invalid variable and element passed to "
                             + this.getClass().getName()

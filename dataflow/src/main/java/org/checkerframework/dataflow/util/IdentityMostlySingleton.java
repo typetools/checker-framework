@@ -34,7 +34,7 @@ public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T>
             case ANY:
                 return set.add(e);
             default:
-                throw new AssertionError(); // unreachable
+                throw new BugInCF(); // unreachable
         }
     }
 
@@ -48,7 +48,7 @@ public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T>
             case ANY:
                 return set.contains(o);
             default:
-                throw new AssertionError(); // unreachable
+                throw new BugInCF(); // unreachable
         }
     }
 }
