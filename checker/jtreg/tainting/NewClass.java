@@ -2,7 +2,7 @@
  * @test
  * @summary Test for bug where arguments to constructors were visited twice.
  *
- * @compile/fail/ref=NewClass.out -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker -AprintErrorStack -Alint NewClass.java
+ * @compile/fail/ref=NewClass.out -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker -Alint NewClass.java
  */
 
 import org.checkerframework.checker.tainting.qual.Untainted;
