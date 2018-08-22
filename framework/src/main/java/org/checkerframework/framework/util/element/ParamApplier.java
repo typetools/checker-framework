@@ -215,7 +215,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
      */
     public static Symbol.MethodSymbol getParentMethod(final Element methodChildElem) {
         if (!(methodChildElem.getEnclosingElement() instanceof Symbol.MethodSymbol)) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Element is not a direct child of a MethodSymbol. Element ( "
                             + methodChildElem
                             + " parent ( "

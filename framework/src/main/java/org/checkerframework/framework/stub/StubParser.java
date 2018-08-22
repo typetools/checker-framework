@@ -616,7 +616,7 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    ErrorReporter.errorAbort(
+                    throw new CheckerFrameworkBug(
                             "StubParser: could not find superclass "
                                     + superType
                                     + " from type "
@@ -631,7 +631,7 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    ErrorReporter.errorAbort(
+                    throw new CheckerFrameworkBug(
                             "StubParser: could not find superinterface "
                                     + superType
                                     + " from type "

@@ -178,8 +178,8 @@ import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.dataflow.util.MostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -4841,14 +4841,13 @@ public class CFGBuilder {
 
         @Override
         public Node visitWildcard(WildcardTree tree, Void p) {
-            ErrorReporter.errorAbort("WildcardTree is unexpected in AST to CFG translation");
-            throw new Error(); // unreachable
+            throw new CheckerFrameworkBug("WildcardTree is unexpected in AST to CFG translation");
         }
 
         @Override
         public Node visitOther(Tree tree, Void p) {
-            ErrorReporter.errorAbort("Unknown AST element encountered in AST to CFG translation.");
-            throw new Error(); // unreachable
+            throw new CheckerFrameworkBug(
+                    "Unknown AST element encountered in AST to CFG translation.");
         }
     }
 

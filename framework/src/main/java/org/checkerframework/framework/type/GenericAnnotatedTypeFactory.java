@@ -1371,8 +1371,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
                 break;
             default:
-                ErrorReporter.errorAbort("Unexpected kind of tree: " + tree);
-                throw new Error(); // unreachable
+                throw new CheckerFrameworkBug("Unexpected kind of tree: " + tree);
         }
 
         assert !args.isEmpty() : "Arguments are empty";

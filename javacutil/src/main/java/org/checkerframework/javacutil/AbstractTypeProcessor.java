@@ -166,10 +166,10 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
             }
 
             if (e.getTypeElement() == null) {
-                ErrorReporter.errorAbort("event task without a type element");
+                throw new CheckerFrameworkBug("event task without a type element");
             }
             if (e.getCompilationUnit() == null) {
-                ErrorReporter.errorAbort("event task without compilation unit");
+                throw new CheckerFrameworkBug("event task without compilation unit");
             }
 
             if (!elements.remove(e.getTypeElement().getQualifiedName())) {

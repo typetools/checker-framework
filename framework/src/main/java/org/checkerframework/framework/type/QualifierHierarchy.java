@@ -188,7 +188,7 @@ public abstract class QualifierHierarchy {
                             + annos2);
         }
         if (annos1.isEmpty()) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
         }
 
