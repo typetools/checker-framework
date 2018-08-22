@@ -595,7 +595,7 @@ public class FlowExpressionParseUtil {
             }
         } catch (Throwable t) {
             if (t.getMessage() == null) {
-                throw new Error("no detail message", t);
+                throw new Error("no detail message in " + t.getClass(), t);
             }
             throw constructParserException(s, t.getMessage());
         }
@@ -1397,6 +1397,9 @@ public class FlowExpressionParseUtil {
      */
     private static FlowExpressionParseException constructParserException(
             String expr, String explanation) {
+        if (expr == null) {
+            throw new Error("Must have an expression.");
+        }
         if (explanation == null) {
             throw new Error("Must have an explanation.");
         }
