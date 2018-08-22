@@ -1,3 +1,5 @@
+Implicit imports (deprecated in November 2014) are no longer supported.
+
 Renamed the testlib Maven artifact to framework-test.
 
 Removed command-line option -AprintErrorStack, which is now the default.

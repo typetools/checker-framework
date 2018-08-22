@@ -180,7 +180,7 @@ def build_and_locally_deploy_maven(version):
 
     execute("mkdir -p " + maven_dev_repo_without_protocol)
 
-    # Deploy jsr308 and checker-qual jars to maven repo
+    # Deploy jars to Maven Central repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
     mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)

@@ -6,15 +6,23 @@ import java.util.regex.Pattern;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 
-/** Helper class for creating dependent type annotation error strings. */
+// TODO: The design is gross, both because this is returned instead of thrown, and because errors
+// are propagated in strings and then unparsed later.  The Checker Framework should report the
+// errors earlier rather than propagating them within strings.
+/**
+ * Helper class for creating dependent type annotation error strings.
+ *
+ * <p>IMPORTANT: This is not an Exception. It is a regular class that is returned, not thrown.
+ */
 public class DependentTypesError {
-    private static final String formatString = "[error for expression: %s; error: %s]";
 
-    private static final Pattern errorPattern =
+    /** How elements of this class are formatted. */
+    private static final String FORMAT_STRING = "[error for expression: %s; error: %s]";
+    /** Regular expression for unparsing string representations of this class (gross). */
+    private static final Pattern ERROR_PATTERN =
             Pattern.compile("\\[error for expression: (.*); error: (.*)\\]");
-
     /**
-     * Returns whether or not the given expression string is an error. That is whether it is a
+     * Returns whether or not the given expression string is an error. That is, whether it is a
      * string that was generate by this class.
      *
      * @param expression expression string to test
@@ -24,7 +32,9 @@ public class DependentTypesError {
         return expression.startsWith("[error");
     }
 
+    /** The expression that is unparseable or otherwise problematic. */
     public final String expression;
+    /** An error message about that expression. */
     public final String error;
 
     public DependentTypesError(String expression, String error) {
@@ -43,8 +53,9 @@ public class DependentTypesError {
         this.expression = expression;
     }
 
+    /** Create a DependentTypesError by parsing a printed one. */
     public DependentTypesError(String error) {
-        Matcher matcher = errorPattern.matcher(error);
+        Matcher matcher = ERROR_PATTERN.matcher(error);
         if (matcher.matches()) {
             assert matcher.groupCount() == 2;
             this.expression = matcher.group(1);
@@ -78,6 +89,6 @@ public class DependentTypesError {
 
     @Override
     public String toString() {
-        return String.format(formatString, expression, error);
+        return String.format(FORMAT_STRING, expression, error);
     }
 }

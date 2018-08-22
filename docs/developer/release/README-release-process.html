@@ -130,7 +130,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <code>python release_build.py all --auto</code><br/><br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
-      There has been some work done in order to select only specific projects (JSR 308 compiler, AFU, Checker Framework)
+      There has been some work done in order to select only specific projects (AFU and Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
       See also <a href="#fi_buffalo_integeration">Buffalo Integration</a> for more information
       on the option &quot;--auto&quot;, which you can omit in order to
@@ -223,7 +223,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     </tr>
     <tr>
       <td>5.</td>
-      <td><strong>Get edit privileges for Checker Framework, JSR 308 compiler, Annotation Tools</strong><br/>
+      <td><strong>Get edit privileges for Checker Framework, Annotation Tools</strong><br/>
         Once a release has been completed, you will be prompted to update issues in the
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
@@ -516,23 +516,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     and More Sanity Checks) should have any appreciable priority.
   </p>
 
-    <h3 id="fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</h3> <!-- omit from toc -->
-    Generating the Javadocs for the entire JDK is not simple.  We have previously generated these but have
-    not updated them in a while.  They can be found here:<br/>
-    <a href="https://checkerframework.org/jdk-api/">https://checkerframework.org/jdk-api/</a><br/>
-    When we generate javadoc for the Type Annotations Compiler and Checker Framework we link against these docs.
-    But because they were generated in a faulty manner in the first place, there are many broken links related to
-    package summaries of the jdk-api docs.  It is highly unlikely that users will ever run into these links, since
-    they occur in pages like Swing's package summary, but nonetheless it would be good to build these docs
-    in the proper manner with no broken links.
-    <h4>Tasks:</h4> <!-- omit from toc -->
-    <ul>
-      <li>Figure out the best way to build the Open JDK Javadoc.</li>
-      <li>Add a release script step to build the Open JDK Javadoc.</li>
-      <li>Add a release script step to copy this javadoc to /cse/www2/types/checker-framework/jdk-api.</li>
-      <li>We may also want to put jdk-api into the release directory instead of overwriting it during each release.</li>
-      <li>Update this document to reflect the new steps.</li>
-    </ul>
     <h3 id="fi_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
     There are likely more sanity checks we might want to run during the release process.  One such example
     would be running the tutorial from the command line.
@@ -562,7 +545,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     </ul>
     <h3 id="fi_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
     The first step in running the release process, after the pre-release checklist, is to copy the
-    release scripts into the jsr308-release directory.  We could automate this.
+    release scripts into the <code>jsr308-release</code> directory.  We could automate this.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Create a read-only script in jsr308-release/scripts.</li>
