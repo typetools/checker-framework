@@ -1093,7 +1093,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         throw new CheckerFrameworkBug("Did not find @SuppressWarnings: " + tree);
     }
 
-    // TODO: what is the point of this?  Is it needed?
     private CheckerFrameworkBug wrapThrowableAsCheckerFrameworkBug(
             String where, Throwable t, @Nullable TreePath p) {
         return new CheckerFrameworkBug(
