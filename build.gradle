@@ -319,7 +319,7 @@ subprojects {
     task checkFormat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
         description 'Check whether the source code is properly formatted'
         // jdk8 and checker-qual have no source, so skip
-        onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
+        onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
         executable 'python'
 
         doFirst {
@@ -338,7 +338,7 @@ subprojects {
     task reformat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
         description 'Format the Java source code'
         // jdk8 and checker-qual have no source, so skip
-        onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
+        onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
         executable 'python'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
@@ -370,7 +370,7 @@ subprojects {
         relocate 'plume', 'org.checkerframework.plume'
     }
 
-    if (!project.name.is('checker-qual') && !project.name.is('jdk8')) {
+    if (!project.name.startsWith('checker-qual') && !project.name.is('jdk8')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
             commandLine "bash", "-c", "find . \\( -name jdk \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
@@ -653,7 +653,7 @@ task releaseBuild(type: GradleBuild) {
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
     // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
-    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
+    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar', ':checker-qual-android:compatQualSourcesJar', ':checker-qual-android:compatQualJavadocJar']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and runn allTests'
