@@ -15,7 +15,6 @@ lock-checker.tex \
 index-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
-nondeterminism-checker.tex \
 regex-checker.tex \
 formatter-checker.tex \
 i18n-format-checker.tex \
