@@ -47,10 +47,7 @@ figures-all:
 	${MAKE} -C figures all
 
 manual.pdf: bib-update figures-all check-labels
-	pdflatex manual.tex
-	bibtex -min-crossrefs=9999 manual
-	pdflatex manual.tex
-	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
+	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
@@ -86,11 +83,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
-ifdef PLUMEBIB
-	ln -s ${PLUMEBIB} bib
-else
 	git clone https://github.com/mernst/plume-bib.git bib
-endif
 .PHONY: bib-update
 bib-update: bib
 # Even if this command fails, it does not terminate the make job.

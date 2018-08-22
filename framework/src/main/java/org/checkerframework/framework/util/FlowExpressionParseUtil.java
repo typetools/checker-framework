@@ -87,14 +87,26 @@ public class FlowExpressionParseUtil {
     protected static final Pattern PARAMETER_PATTERN = anchored(PARAMETER_REGEX);
     /** Matches an identifier. */
     protected static final Pattern IDENTIFIER_PATTERN = anchored(IDENTIFIER_REGEX);
+    /** Matches a string starting with an identifier. */
+    protected static final Pattern STARTS_WITH_IDENTIFIER_PATTERN =
+            anchored("(" + IDENTIFIER_REGEX + ").*");
     /** Matches integer literals. */
     protected static final Pattern INT_PATTERN = anchored("[-+]?[0-9]+");
     /** Matches long literals. */
     protected static final Pattern LONG_PATTERN = anchored("[-+]?[0-9]+[Ll]");
+    /** Matches (some) floating-point and double literals. */
+    protected static final Pattern FLOAT_PATTERN = anchored("[+-]?([0-9]+[.][0-9]*|[.][0-9]+)");
+
     /** Matches string literals. */
     protected static final Pattern STRING_PATTERN = anchored(STRING_REGEX);
     /** Matches an expression contained in matching start and end parentheses. */
     protected static final Pattern PARENTHESES_PATTERN = anchored("\\((.*)\\)");
+    /** Matches an expression that starts with a string. */
+    protected static final Pattern STARTS_WITH_STRING_PATTERN =
+            anchored("(" + STRING_REGEX + ").*");
+    /** Matches member select on a string, such as {@code "hello".length}. */
+    protected static final Pattern STRING_SELECT_PATTERN =
+            anchored("(" + STRING_REGEX + ")" + "\\.(.*)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -134,6 +146,10 @@ public class FlowExpressionParseUtil {
             return parseIntLiteral(expression, types);
         } else if (isLongLiteral(expression, context)) {
             return parseLongLiteral(expression, types);
+        } else if (isFloatLiteral(expression, context)) {
+            throw constructParserException(
+                    expression,
+                    String.format("Cannot parse floating-point values '%s'", expression));
         } else if (isStringLiteral(expression, context)) {
             return parseStringLiteral(expression, types, env.getElementUtils());
         } else if (isThisLiteral(expression, context)) {
@@ -181,8 +197,7 @@ public class FlowExpressionParseUtil {
                     array.first.first + "[" + array.first.second + "]", array.second.substring(1));
         }
 
-        Pattern memberSelectOfStringPattern = anchored("(" + STRING_REGEX + ")" + "\\.(.*)");
-        Matcher m = memberSelectOfStringPattern.matcher(s);
+        Matcher m = STRING_SELECT_PATTERN.matcher(s);
         if (m.matches()) {
             return Pair.of(m.group(1), m.group(2));
         }
@@ -290,6 +305,14 @@ public class FlowExpressionParseUtil {
         return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
     }
 
+    private static boolean isFloatLiteral(String s, FlowExpressionContext context) {
+        if (context.parsingMember) {
+            return false;
+        }
+        Matcher floatMatcher = FLOAT_PATTERN.matcher(s);
+        return floatMatcher.matches();
+    }
+
     /** Return true iff s is a string literal. */
     private static boolean isStringLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
@@ -356,8 +379,7 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isIdentifier(String s, FlowExpressionContext context) {
-        Matcher identifierMatcher = IDENTIFIER_PATTERN.matcher(s);
-        return identifierMatcher.matches();
+        return IDENTIFIER_PATTERN.matcher(s).matches();
     }
 
     private static Receiver parseIdentifier(
@@ -440,8 +462,8 @@ public class FlowExpressionParseUtil {
         return new FieldAccess(locationOfField, fieldType, fieldElem);
     }
 
-    private static boolean isParameter(String s, FlowExpressionContext contex) {
-        if (contex.parsingMember) {
+    private static boolean isParameter(String s, FlowExpressionContext context) {
+        if (context.parsingMember) {
             return false;
         }
         Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
@@ -480,8 +502,7 @@ public class FlowExpressionParseUtil {
      */
     private static Pair<Pair<String, String>, String> parseMethodCall(String s) {
         // Parse Identifier
-        Pattern identParser = Pattern.compile("^(" + IDENTIFIER_REGEX + ").*$");
-        Matcher m = identParser.matcher(s);
+        Matcher m = STARTS_WITH_IDENTIFIER_PATTERN.matcher(s);
         if (!m.matches()) {
             return null;
         }
@@ -655,9 +676,7 @@ public class FlowExpressionParseUtil {
             char ch = s.charAt(i++);
             if (ch == '"') {
                 i--;
-                // TODO: inefficient to re-compute this on every iteration, should be static
-                Pattern stringPattern = anchored("(" + STRING_REGEX + ").*");
-                Matcher m = stringPattern.matcher(s.substring(i));
+                Matcher m = STARTS_WITH_STRING_PATTERN.matcher(s.substring(i));
                 if (!m.matches()) {
                     break;
                 }
@@ -1259,12 +1278,17 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Returns a copy of the context that differs in that it has a different receiver. The outer
-         * receiver remains unchanged.
+         * Returns a copy of the context that differs in that it has a different receiver and
+         * parsingMember is set to true. The outer receiver remains unchanged.
          */
         public FlowExpressionContext copyChangeToParsingMemberOfReceiver(Receiver receiver) {
             return new FlowExpressionContext(
-                    receiver, outerReceiver, arguments, checkerContext, true, useLocalScope);
+                    receiver,
+                    outerReceiver,
+                    arguments,
+                    checkerContext,
+                    /*parsingMember=*/ true,
+                    useLocalScope);
         }
 
         /**
@@ -1273,7 +1297,12 @@ public class FlowExpressionParseUtil {
          */
         public FlowExpressionContext copyAndUseOuterReceiver() {
             return new FlowExpressionContext(
-                    outerReceiver, outerReceiver, arguments, checkerContext, false, useLocalScope);
+                    outerReceiver,
+                    outerReceiver,
+                    arguments,
+                    checkerContext,
+                    /*parsingMember=*/ false,
+                    useLocalScope);
         }
     }
 
@@ -1332,8 +1361,8 @@ public class FlowExpressionParseUtil {
     ///
 
     /**
-     * An exception that indicates a parse error. It contains a {@link Result} that can be used for
-     * error reporting.
+     * An exception that indicates a parse error. Call {@link #getResult} to obtain a {@link Result}
+     * that can be used for error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;

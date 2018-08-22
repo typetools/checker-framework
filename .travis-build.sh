@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering checker-framework/.travis-build.sh, GROUP=$1, in" `pwd`
+echo Entering `pwd`/.travis-build.sh, GROUP=$1
 
 # Optional argument $1 is one of:
 #   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
@@ -104,12 +104,6 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
     ./gradlew --console=plain :checker:demosTests
   fi
 
-  # sparta: 1 minute, but the command is "true"!
-  # TODO: requires Android installation (and at one time, it caused weird
-  # Travis hangs if enabled without Android installation).
-  # (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/sparta.git)
-  # (cd ../sparta && ant jar all-tests)
-
   # Guava
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
   (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
@@ -138,7 +132,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ./gradlew --console=plain runErrorProne
 
   # Documentation
-  ./gradlew --console=plain allJavadoc
   ./gradlew --console=plain javadocPrivate
   make -C docs/manual all
 
@@ -162,4 +155,4 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
 
 fi
 
-echo "Exiting checker-framework/.travis-build.sh, GROUP=$GROUP, in" `pwd`
+echo Exiting `pwd`/.travis-build.sh, GROUP=$1

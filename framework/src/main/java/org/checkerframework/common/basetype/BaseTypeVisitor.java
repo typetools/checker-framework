@@ -79,6 +79,7 @@ import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -954,10 +955,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitMethodInvocation(node, p);
         }
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
-        List<AnnotatedTypeMirror> typeargs = mfuPair.second;
+        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.methodType;
+        List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
 
         if (!atypeFactory.ignoreUninferredTypeArguments) {
             for (AnnotatedTypeMirror typearg : typeargs) {
@@ -1237,10 +1237,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitNewClass(node, p);
         }
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse =
-                atypeFactory.constructorFromUse(node);
-        AnnotatedExecutableType constructor = fromUse.first;
-        List<AnnotatedTypeMirror> typeargs = fromUse.second;
+        ParameterizedMethodType fromUse = atypeFactory.constructorFromUse(node);
+        AnnotatedExecutableType constructor = fromUse.methodType;
+        List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
         List<AnnotatedTypeMirror> params =
@@ -1766,8 +1765,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Returns a set of AnnotationMirrors that is a lower bound for exception parameters.
      *
-     * <p>Note: by default this method is called by getThrowUpperBoundAnnotations(), so that this
-     * annotation is enforced.
+     * <p>Note: by default this method is called by {@link #getThrowUpperBoundAnnotations()}, so
+     * that this annotation is enforced.
      *
      * <p>(Default is top)
      *
@@ -2590,7 +2589,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invocationType =
                 atypeFactory.methodFromUse(
                                 memberReferenceTree, compileTimeDeclaration, enclosingType)
-                        .first;
+                        .methodType;
 
         if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
             // Type argument inference is required, skip check.
