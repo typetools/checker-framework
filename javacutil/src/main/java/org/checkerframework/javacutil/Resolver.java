@@ -101,18 +101,12 @@ public class Resolver {
             ACCESSERROR_ACCESS = ACCESSERROR.getMethod("access", Name.class, TypeSymbol.class);
             ACCESSERROR_ACCESS.setAccessible(true);
         } catch (ClassNotFoundException e) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Compiler 'Resolve$AccessError' class could not be retrieved.", e);
-            // Unreachable code - needed so the compiler does not warn about a possibly
-            // uninitialized final field.
-            throw new AssertionError();
         } catch (NoSuchMethodException e) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Compiler 'Resolve$AccessError' class doesn't contain required 'access' method",
                     e);
-            // Unreachable code - needed so the compiler does not warn about a possibly
-            // uninitialized final field.
-            throw new AssertionError();
         }
     }
 
@@ -146,9 +140,8 @@ public class Resolver {
         if (scope != null) {
             return scope.getEnv();
         } else {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "Could not determine any possible scope for path: " + path.getLeaf());
-            return null;
         }
     }
 

@@ -35,7 +35,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.InternalUtils;
 
 /**
@@ -262,25 +262,21 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             if (t instanceof InvocationTargetException) {
                 Throwable err = t.getCause();
                 String msg;
-                if (err instanceof CheckerError) {
-                    CheckerError ce = (CheckerError) err;
-                    if (ce.userError) {
-                        // Don't add another stack frame, just show the message.
-                        throw ce;
-                    } else {
-                        msg = err.getMessage();
-                    }
+                // TODO: Handle if UserError?
+                if (err instanceof CheckerFrameworkBug) {
+                    CheckerFrameworkBug ce = (CheckerFrameworkBug) err;
+                    msg = err.getMessage();
                 } else {
                     msg = err.toString();
                 }
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "InvocationTargetException when invoking constructor for class "
                                 + name
                                 + "; Underlying cause: "
                                 + msg,
                         t);
             } else {
-                ErrorReporter.errorAbort(
+                throw new CheckerFrameworkBug(
                         "Unexpected "
                                 + t.getClass().getSimpleName()
                                 + " for "
@@ -291,7 +287,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                         // + " and args: " + Arrays.toString(args),
                         t);
             }
-            return null; // dead code
         }
     }
 
@@ -400,7 +395,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 instance.setParentChecker(this);
                 alreadyInitializedSubcheckerMap.put(subcheckerClass, instance);
             } catch (Exception e) {
-                ErrorReporter.errorAbort("Could not create an instance of " + subcheckerClass);
+                throw new CheckerFrameworkBug("Could not create an instance of " + subcheckerClass);
             }
         }
 
@@ -475,7 +470,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
         // are stored in messageStore until all checkers have processed this compilation unit.
         // All other messages are printed immediately.  This includes errors issued because the
-        // checker threw an exception or called ErrorReporter.errorAbort().
+        // checker threw an exception.
 
         // In order to run the next checker on this compilation unit even if the previous
         // issued errors, the next checker's errsOnLastExit needs to include all errors

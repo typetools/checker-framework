@@ -5,7 +5,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 
 /**
  * Replaces or adds all the annotations in the parameter with the annotations from the visited type.
@@ -24,7 +24,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
     public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (from == to) {
-            ErrorReporter.errorAbort("From == to");
+            throw new CheckerFrameworkBug("From == to");
         }
         new AnnotatedTypeMerger().visit(from, to);
     }
@@ -34,7 +34,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
             final AnnotatedTypeMirror to,
             final AnnotationMirror top) {
         if (from == to) {
-            ErrorReporter.errorAbort("From == to");
+            throw new CheckerFrameworkBug("From == to");
         }
         new AnnotatedTypeMerger(top).visit(from, to);
     }
@@ -113,7 +113,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
                 }
             }
         } else {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "ResolvePrimaries' from argument should be a type variable OR wildcard\n"
                             + "from="
                             + from.toString(true)

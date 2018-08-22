@@ -98,10 +98,11 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnno
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.CollectionUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -674,7 +675,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
         if (!defs.hasDefaultsForCheckedCode()) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "GenericAnnotatedTypeFactory.createQualifierDefaults: "
                             + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
                             + "Every checker must specify a default qualifier. "
@@ -1336,7 +1337,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     // declared return type.
                     res = getAnnotatedType(lhsTree);
                 } else {
-                    ErrorReporter.errorAbort(
+                    throw new CheckerFrameworkBug(
                             "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
                                     + "lhsTree: "
                                     + lhsTree
@@ -1493,9 +1494,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public Value getInferredValueFor(Tree tree) {
         if (tree == null) {
-            ErrorReporter.errorAbort(
-                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
-            return null; // dead code
+            throw new CheckerFrameworkBug(
+                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
         }
         Value as = null;
         if (analysis.isRunning()) {
@@ -1612,7 +1612,7 @@ public abstract class GenericAnnotatedTypeFactory<
         } else if (checker.hasOption("cfgviz")) {
             String cfgviz = checker.getOption("cfgviz");
             if (cfgviz == null) {
-                ErrorReporter.errorAbort(
+                throw new UserError(
                         "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
@@ -1661,7 +1661,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     res.put(split[0], split[1]);
                     break;
                 default:
-                    ErrorReporter.errorAbort("Too many `=` in cfgviz option: " + opt);
+                    throw new UserError("Too many `=` in cfgviz option: " + opt);
             }
         }
         return res;

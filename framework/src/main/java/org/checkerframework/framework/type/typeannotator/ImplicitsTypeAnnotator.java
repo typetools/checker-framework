@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -97,7 +97,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "TypeAnnotator: invalid update of typeKinds "
                             + typeKinds
                             + " at "
@@ -111,7 +111,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
             Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "TypeAnnotator: invalid update of typeClasses "
                             + typeClasses
                             + " at "
@@ -125,7 +125,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         String typeNameString = typeName.getCanonicalName();
         boolean res = qualHierarchy.updateMappingToMutableSet(typeNames, typeNameString, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new CheckerFrameworkBug(
                     "TypeAnnotator: invalid update of typeNames "
                             + typeNames
                             + " at "

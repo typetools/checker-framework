@@ -36,7 +36,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -105,7 +105,7 @@ public class QualifierPolymorphism {
                     if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
                         Set<? extends AnnotationMirror> tops = qualhierarchy.getTopAnnotations();
                         if (tops.size() != 1) {
-                            ErrorReporter.errorAbort(
+                            throw new CheckerFrameworkBug(
                                     "QualifierPolymorphism: PolymorphicQualifier has to specify type hierarchy, if more than one exist; top types: "
                                             + tops);
                         }
@@ -115,7 +115,7 @@ public class QualifierPolymorphism {
                         ttreetop = qualhierarchy.getTopAnnotation(ttree);
                     }
                     if (polys.containsKey(ttreetop)) {
-                        ErrorReporter.errorAbort(
+                        throw new CheckerFrameworkBug(
                                 "QualifierPolymorphism: checker has multiple polymorphic qualifiers: "
                                         + polys.get(ttreetop)
                                         + " and "

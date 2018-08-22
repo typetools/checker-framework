@@ -33,7 +33,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.Pair;
 
 /** Utility class for stub files. */
@@ -212,8 +212,7 @@ public class StubUtil {
                     return type.toString();
                 }
         }
-        ErrorReporter.errorAbort("StubUtil: unhandled type: " + type);
-        return null; // dead code
+        throw new CheckerFrameworkBug("StubUtil: unhandled type: " + type);
     }
 
     private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
@@ -307,7 +306,7 @@ public class StubUtil {
                     sb.append("short");
                     break;
                 default:
-                    ErrorReporter.errorAbort("StubUtil: unknown type: " + n.getType());
+                    throw new CheckerFrameworkBug("StubUtil: unknown type: " + n.getType());
             }
         }
 
@@ -326,7 +325,7 @@ public class StubUtil {
         public void visit(WildcardType n, Void arg) {
             // We don't write type arguments
             // TODO: Why?
-            ErrorReporter.errorAbort("StubUtil: don't print type args!");
+            throw new CheckerFrameworkBug("StubUtil: don't print type args");
         }
     }
 

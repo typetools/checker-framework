@@ -16,7 +16,7 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.CheckerFrameworkBug;
 import org.checkerframework.javacutil.Pair;
 
 /** Adds annotations to one formal parameter of a method or lambda within a method. */
@@ -84,8 +84,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
         final int paramIndex = enclosingMethod.getParameters().indexOf(element);
         if (paramIndex == -1) {
-            ErrorReporter.errorAbort(
-                    "Could not find parameter Element in parameter list! "
+            throw new CheckerFrameworkBug(
+                    "Could not find parameter Element in parameter list. "
                             + "Parameter( "
                             + element
                             + " ) Parent ( "
