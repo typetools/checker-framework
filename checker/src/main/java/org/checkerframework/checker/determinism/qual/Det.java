@@ -7,6 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.*;
 
+// TODO: clarify "the same value" in the Javadoc for the Det annotation.  Is that with respect to
+// .equals or ==?
 /**
  * An expression of type {@code @Det} evaluates to the same value on all executions. For
  * collections, the iteration order is also the same on all executions. This is the default

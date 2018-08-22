@@ -58,6 +58,7 @@ The Determinism type system uses the following type qualifiers (see Figure~\ref{
   possibly different order.  \<@OrderNonDet> may only be written on
   collections and arrays.
 \item[\refqualclass{checker/determinism/qual}{Det}] indicates that
+// TODO: clarify "up to equality":  explain whether it is with respect to == or .equals.
   the expression evaluates to the same value (up to equality) on all
   executions; for a collection, iteration also yields the values in the same
   order.
@@ -191,7 +192,11 @@ expressing the method behavior:
 
 See the annotated JDK for more example uses of the annotations.
 
-Since the type \<@OrderNonDet} is invalid for non-collections, any return
+TODO: The below seems incorrect.  Is it necessary on \<@PolyDet int
+identity(@PolyDet int)>?  Do you only mean if \<@PolyDet> is applied to a
+collection somewhere in the signature?
+
+Since the type \<@OrderNonDet> is invalid for non-collections, any return
 type that isn't a collection should be annotated as \<@PolyDet("up")> or
 \<@PolyDet("down")>.
 
@@ -267,7 +272,9 @@ deterministic.  If it is be too restrictive for your program:
 The default annotation for most unannotated types is \<@Det>.
 
 The default annotation for an unannotated formal parameter or return type
-is \<@PolyDet>.  This permits all possible arguments to the method.  As
+is \<@PolyDet>.  This permits all possible arguments to the method.  In case of
+array parameters or return types, both the array type and its component type
+are annotated as \<@PolyDet>. As
 an exception, the return type of a static method without paramaters is
 \<@Det>.
 

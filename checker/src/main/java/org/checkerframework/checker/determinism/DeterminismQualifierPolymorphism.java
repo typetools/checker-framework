@@ -4,7 +4,6 @@ import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
@@ -14,13 +13,8 @@ import org.checkerframework.javacutil.TypesUtils;
 /** Resolves polymorphic annotations for the determinism type-system. */
 public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphism {
 
-    Elements elements;
-    ProcessingEnvironment env;
+    /** Determinism checker factory. */
     DeterminismAnnotatedTypeFactory factory;
-    AnnotationMirror POLYDET;
-    AnnotationMirror POLYDET_USE;
-    AnnotationMirror POLYDET_UP;
-    AnnotationMirror POLYDET_DOWN;
 
     /**
      * Creates a {@link DefaultQualifierPolymorphism} instance that uses the determinism checker for
@@ -28,46 +22,46 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      * annotated types.
      *
      * @param env the processing environment
-     * @param factory the factory for the current checker
+     * @param factory the factory for the determinism checker
      */
     public DeterminismQualifierPolymorphism(
             ProcessingEnvironment env, DeterminismAnnotatedTypeFactory factory) {
         super(env, factory);
-        this.env = env;
         this.factory = factory;
-        POLYDET = factory.POLYDET;
-        POLYDET_USE = factory.POLYDET_USE;
-        POLYDET_UP = factory.POLYDET_UP;
-        POLYDET_DOWN = factory.POLYDET_DOWN;
     }
 
     /**
+     * Replaces {@code @PolyDet} in {@code type} with the instantiations in {@code matches}.
      * Replaces {@code @PolyDet("up")} with {@code @NonDet} if it resolves to {@code OrderNonDet}.
      * Replaces {@code @PolyDet("down")} with {@code @Det} if it resolves to {@code OrderNonDet}.
      * Replaces {@code @PolyDet("use")} with the same annotation that {@code @PolyDet} resolves to.
      *
-     * @param type the polymorphic type to be replaced
-     * @param replacements the Set of AnnotationMirrors that can replace 'type'
+     * <p>This method is called on all parts of a type.
+     *
+     * @param type annotated type whose poly annotations are replaced
+     * @param replacements mapping from polymorphic annotation to instantiation
      */
     @Override
     protected void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
         boolean polyUp = false;
         boolean polyDown = false;
-        if (type.hasAnnotation(POLYDET_UP)) {
+        if (type.hasAnnotation(factory.POLYDET_UP)) {
             polyUp = true;
-            type.replaceAnnotation(POLYDET);
-        } else if (type.hasAnnotation(POLYDET_DOWN)) {
+            type.replaceAnnotation(factory.POLYDET);
+        } else if (type.hasAnnotation(factory.POLYDET_DOWN)) {
             polyDown = true;
-            type.replaceAnnotation(POLYDET);
+            type.replaceAnnotation(factory.POLYDET);
         }
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
-            if (poly != null && (type.hasAnnotation(poly) || type.hasAnnotation(POLYDET_USE))) {
+            if (poly != null
+                    && (type.hasAnnotation(poly) || type.hasAnnotation(factory.POLYDET_USE))) {
                 type.removeAnnotation(poly);
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);
 
+                // Can this be done once at the end, rather than every time through the loop?
                 if (type.hasAnnotation(factory.ORDERNONDET)) {
                     if (polyUp) {
                         replaceOrderNonDet(type, factory.NONDET);
@@ -81,46 +75,59 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     }
 
     /**
-     * Helper method that replaces {@code @OrderNonDet} with either {@code @Det} (in case of
-     * {@code @PolyDet("up")}) or {@code @NonDet} (in case of {@code @PolyDet("down")}).
+     * Helper method that replaces the annotation of {@code type} with {@code replaceType}.
      *
-     * @param type The polymorphic type to be replaced
-     * @param replaceType The type to be replaced with
+     * @param type the polymorphic type to be replaced
+     * @param replaceType the type to be replaced with
      */
     private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         type.replaceAnnotation(replaceType);
-        AnnotatedTypeMirror.AnnotatedDeclaredType declaredType = null;
-        boolean isCollIter = false;
+
+        // Outer declaration type
+        AnnotatedTypeMirror.AnnotatedDeclaredType declaredTypeOuter = null;
+        // This flag is true if the type is a collection or an iterator
+        boolean isCollectionOrIterator = false;
 
         // This happens for @OrderNonDet Set<T> (Generic types)
         if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
             return;
         }
-        TypeMirror underlyingType = TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
-        if (factory.isCollection(underlyingType) || factory.isIterator(underlyingType)) {
-            declaredType = (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
-            isCollIter = true;
+
+        TypeMirror underlyingTypeOfReceiver =
+                TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+        if (factory.isCollection(underlyingTypeOfReceiver)
+                || factory.isIterator(underlyingTypeOfReceiver)) {
+            declaredTypeOuter = (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
+            isCollectionOrIterator = true;
         }
-        while (isCollIter) {
-            // Iterate over all the type parameters of this collection and
-            // replace all @OrderNonDet type parameters with 'replaceType'.
-            for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
+
+        // Iterates over all the nested type parameters and does the replacement.
+        while (isCollectionOrIterator) {
+            // Iterates over all the type parameters of this collection and
+            // replaces all @OrderNonDet type parameters with 'replaceType'.
+            for (AnnotatedTypeMirror argType : declaredTypeOuter.getTypeArguments()) {
                 if (argType.hasAnnotation(factory.ORDERNONDET)) {
                     argType.replaceAnnotation(replaceType);
                 }
             }
             // Assuming a single type parameter (will not work for HashMaps)
             // TODO: Handle all type parameters
-            TypeMirror declType =
+
+            // Example: @OrderNonDet Set<@OrderNonDet List<@Det Integer>>
+            // In the first iteration of this loop, declaredTypeOuter would be @OrderNonDet Set
+            // and declaredTypeInner would be @OrderNonDet List.
+            // In the second iteration, declaredTypeOuter would be @OrderNonDet List
+            // and declaredTypeInner would be @Det Integer.
+            TypeMirror declaredTypeInner =
                     TypesUtils.getTypeElement(
-                                    declaredType.getTypeArguments().get(0).getUnderlyingType())
+                                    declaredTypeOuter.getTypeArguments().get(0).getUnderlyingType())
                             .asType();
-            if (factory.isCollection(declType) || factory.isIterator(declType)) {
-                declaredType =
+            if (factory.isCollection(declaredTypeInner) || factory.isIterator(declaredTypeInner)) {
+                declaredTypeOuter =
                         (AnnotatedTypeMirror.AnnotatedDeclaredType)
-                                declaredType.getTypeArguments().get(0);
+                                declaredTypeOuter.getTypeArguments().get(0);
             } else {
-                isCollIter = false;
+                isCollectionOrIterator = false;
             }
         }
     }

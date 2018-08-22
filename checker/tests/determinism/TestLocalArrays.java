@@ -23,7 +23,7 @@ public class TestLocalArrays<T> {
 
     void createOndArray() {
         @Det int @OrderNonDet [] ar = new int[20];
-        // :: error: (invalid.annotation)
+        // :: error: (ordernondet.on.noncollection)
         @OrderNonDet int @OrderNonDet [] invalidAr;
 
         @NonDet int @NonDet [] nar = new @NonDet int @NonDet [20];

@@ -1,7 +1,7 @@
 package org.checkerframework.checker.determinism;
 
-import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -41,108 +41,168 @@ public class DeterminismTransfer extends CFTransfer {
         DeterminismAnnotatedTypeFactory factory =
                 (DeterminismAnnotatedTypeFactory) analysis.getTypeFactory();
 
-        // Type refinement for List sort
+        // Note: For static method calls, the receiver is the Class node.
         Node receiver = n.getTarget().getReceiver();
-        if (receiver == null || TypesUtils.getTypeElement(receiver.getType()) == null) {
+
+        // TypesUtils.getTypeElement(receiver.getType()) is null for Generic type arguments.
+        if (TypesUtils.getTypeElement(receiver.getType()) == null) {
             return result;
         }
-        TypeMirror underlyingType = TypesUtils.getTypeElement(receiver.getType()).asType();
 
-        boolean isList = factory.isList(underlyingType);
-        if (isList) {
-            String methName = getMethodName(n, receiver);
-            if (methName.equals("sort") && receiver.getType().getAnnotationMirrors().size() > 0) {
-                // Check if receiver has OrderNonDet annotation
-                AnnotationMirror receiverAnno =
-                        receiver.getType().getAnnotationMirrors().iterator().next();
-                if (receiverAnno != null
-                        && AnnotationUtils.areSame(receiverAnno, factory.ORDERNONDET)) {
-                    FlowExpressions.Receiver sortReceiver =
-                            FlowExpressions.internalReprOf(factory, n.getTarget().getReceiver());
-                    result.getThenStore().insertValue(sortReceiver, factory.DET);
-                    result.getElseStore().insertValue(sortReceiver, factory.DET);
-                }
+        TypeMirror underlyingTypeOfReceiver =
+                TypesUtils.getTypeElement(receiver.getType()).asType();
+        Name methName = n.getTarget().getMethod().getSimpleName();
+
+        // Type refinement for List sort
+        if (isListSort(factory, receiver, underlyingTypeOfReceiver, methName)) {
+            AnnotationMirror receiverAnno =
+                    receiver.getType().getAnnotationMirrors().iterator().next();
+            if (receiverAnno != null
+                    && AnnotationUtils.areSame(receiverAnno, factory.ORDERNONDET)) {
+                FlowExpressions.Receiver sortReceiver =
+                        FlowExpressions.internalReprOf(factory, n.getTarget().getReceiver());
+                typeRefine(sortReceiver, result, factory.DET);
             }
         }
 
         // Type refinement for Arrays sort
-        boolean isArrays = factory.isArrays(underlyingType);
-        if (isArrays) {
-            String methName = getMethodName(n, receiver);
-            if ((methName.equals("sort") || methName.equals("parallelSort"))) {
-                AnnotatedTypeMirror firstArg =
-                        factory.getAnnotatedType(n.getTree().getArguments().get(0));
-                AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
-                // Check if receiver has first argument annotation
-                if (firstArgAnno != null
-                        && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
-                    boolean typeRefine = true;
-                    List<Node> otherArgs = n.getArguments();
-                    for (int i = 1; i < n.getArguments().size(); i++) {
-                        AnnotatedTypeMirror otherArgType =
-                                factory.getAnnotatedType(n.getTree().getArguments().get(i));
-                        if (!otherArgType.hasAnnotation(factory.DET)) {
-                            typeRefine = false;
-                            break;
-                        }
+        if (isArraysSort(factory, underlyingTypeOfReceiver, methName)) {
+            AnnotatedTypeMirror firstArg =
+                    factory.getAnnotatedType(n.getTree().getArguments().get(0));
+            AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
+            if (firstArgAnno != null
+                    && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
+                boolean typeRefine = true;
+                for (int i = 1; i < n.getArguments().size(); i++) {
+                    AnnotatedTypeMirror otherArgType =
+                            factory.getAnnotatedType(n.getTree().getArguments().get(i));
+                    if (!otherArgType.hasAnnotation(factory.DET)) {
+                        typeRefine = false;
+                        break;
                     }
-                    if (typeRefine) {
-                        FlowExpressions.Receiver firtArgRep =
-                                FlowExpressions.internalReprOf(factory, n.getArgument(0));
-                        result.getThenStore().insertValue(firtArgRep, factory.DET);
-                        result.getElseStore().insertValue(firtArgRep, factory.DET);
-                    }
+                }
+                if (typeRefine) {
+                    FlowExpressions.Receiver firtArgRep =
+                            FlowExpressions.internalReprOf(factory, n.getArgument(0));
+                    typeRefine(firtArgRep, result, factory.DET);
                 }
             }
         }
 
-        // Type refinement for Collections
-        boolean isCollections = factory.isCollections(underlyingType);
-        if (isCollections) {
-            String methName = getMethodName(n, receiver);
-            // refinement for sort
-            if (methName.equals("sort")) {
-                AnnotatedTypeMirror firstArg =
-                        factory.getAnnotatedType(n.getTree().getArguments().get(0));
-                AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
-                // Check if receiver has first argument annotation
-                if (firstArgAnno != null
-                        && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
-                    FlowExpressions.Receiver firtArgRep =
-                            FlowExpressions.internalReprOf(factory, n.getArgument(0));
-                    result.getThenStore().insertValue(firtArgRep, factory.DET);
-                    result.getElseStore().insertValue(firtArgRep, factory.DET);
-                }
-            }
-
-            // refinement for shuffle
-            if (methName.equals("shuffle")) {
-                AnnotatedTypeMirror firstArg =
-                        factory.getAnnotatedType(n.getTree().getArguments().get(0));
-                AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
-                // Check if receiver has first argument annotation
+        // Type refinement for Collections sort
+        if (isCollectionsSort(factory, underlyingTypeOfReceiver, methName)) {
+            AnnotatedTypeMirror firstArg =
+                    factory.getAnnotatedType(n.getTree().getArguments().get(0));
+            AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
+            if (firstArgAnno != null
+                    && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
                 FlowExpressions.Receiver firtArgRep =
                         FlowExpressions.internalReprOf(factory, n.getArgument(0));
-                result.getThenStore().insertValue(firtArgRep, factory.NONDET);
-                result.getElseStore().insertValue(firtArgRep, factory.NONDET);
+                typeRefine(firtArgRep, result, factory.DET);
             }
+        }
+
+        // Type refinement for Collections shuffle
+        if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, methName)) {
+            FlowExpressions.Receiver firtArgRep =
+                    FlowExpressions.internalReprOf(factory, n.getArgument(0));
+            typeRefine(firtArgRep, result, factory.NONDET);
         }
         return result;
     }
 
     /**
-     * Extracts just the method name from MethodInvocationNode.
+     * Checks if the receiver is a List and the method invoked is sort().
      *
-     * @param n MethodInvocationNode
-     * @param receiver Node
-     * @return String method name
+     * @param factory the determinism factory
+     * @param receiver the receiver Node
+     * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
+     * @param methName the invoked method name
+     * @return true if the receiver is a List and the method invoked is sort(), false otherwise
      */
-    String getMethodName(MethodInvocationNode n, Node receiver) {
-        String methodName = n.toString();
-        String methodnameWithoutReceiver = methodName.substring(receiver.toString().length());
-        int startIndex = methodnameWithoutReceiver.indexOf(".");
-        int endIndex = methodnameWithoutReceiver.indexOf("(");
-        String methName = methodnameWithoutReceiver.substring(startIndex + 1, endIndex);
-        return methName;
+    private boolean isListSort(
+            DeterminismAnnotatedTypeFactory factory,
+            Node receiver,
+            TypeMirror underlyingTypeOfReceiver,
+            Name methName) {
+        if (factory.isList(underlyingTypeOfReceiver)
+                && methName.contentEquals("sort")
+                && receiver.getType().getAnnotationMirrors().size() > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the invoked method is Arrays.sort().
+     *
+     * @param factory the determinism factory
+     * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
+     * @param methName the invoked method name
+     * @return true if the invoked method is Arrays.sort(), false otherwise
+     */
+    private boolean isArraysSort(
+            DeterminismAnnotatedTypeFactory factory,
+            TypeMirror underlyingTypeOfReceiver,
+            Name methName) {
+
+        if (factory.isArrays(underlyingTypeOfReceiver)
+                && (methName.contentEquals("sort") || methName.contentEquals("parallelSort"))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the invoked method is Collections.sort().
+     *
+     * @param factory the determinism factory
+     * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
+     * @param methName the invoked method name
+     * @return true if the invoked method is Collections.sort(), false otherwise
+     */
+    private boolean isCollectionsSort(
+            DeterminismAnnotatedTypeFactory factory,
+            TypeMirror underlyingTypeOfReceiver,
+            Name methName) {
+        if (factory.isCollections(underlyingTypeOfReceiver) && methName.contentEquals("sort")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the invoked method is Collections.shuffle().
+     *
+     * @param factory the determinism factory
+     * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
+     * @param methName the invoked method name
+     * @return true if the invoked method is Collections.shuffle(), false otherwise
+     */
+    private boolean isCollectionsShuffle(
+            DeterminismAnnotatedTypeFactory factory,
+            TypeMirror underlyingTypeOfReceiver,
+            Name methName) {
+        if (factory.isCollections(underlyingTypeOfReceiver) && methName.contentEquals("shuffle")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Helper method for type refinement.
+     *
+     * @param receiver the receiver or argument to be refined
+     * @param result the determinism transfer result store
+     * @param replaceType the type to be refined with
+     */
+    private void typeRefine(
+            FlowExpressions.Receiver receiver,
+            TransferResult<CFValue, CFStore> result,
+            AnnotationMirror replaceType) {
+        result.getThenStore().insertValue(receiver, replaceType);
+        result.getElseStore().insertValue(receiver, replaceType);
     }
 }
