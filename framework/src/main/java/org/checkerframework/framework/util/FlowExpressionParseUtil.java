@@ -94,6 +94,9 @@ public class FlowExpressionParseUtil {
     protected static final Pattern INT_PATTERN = anchored("[-+]?[0-9]+");
     /** Matches long literals. */
     protected static final Pattern LONG_PATTERN = anchored("[-+]?[0-9]+[Ll]");
+    /** Matches (some) floating-point and double literals. */
+    protected static final Pattern FLOAT_PATTERN = anchored("[+-]?([0-9]+[.][0-9]*|[.][0-9]+)");
+
     /** Matches string literals. */
     protected static final Pattern STRING_PATTERN = anchored(STRING_REGEX);
     /** Matches an expression contained in matching start and end parentheses. */
@@ -143,6 +146,10 @@ public class FlowExpressionParseUtil {
             return parseIntLiteral(expression, types);
         } else if (isLongLiteral(expression, context)) {
             return parseLongLiteral(expression, types);
+        } else if (isFloatLiteral(expression, context)) {
+            throw constructParserException(
+                    expression,
+                    String.format("Cannot parse floating-point values '%s'", expression));
         } else if (isStringLiteral(expression, context)) {
             return parseStringLiteral(expression, types, env.getElementUtils());
         } else if (isThisLiteral(expression, context)) {
@@ -296,6 +303,14 @@ public class FlowExpressionParseUtil {
         s = s.substring(0, s.length() - 1);
         long val = Long.parseLong(s);
         return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
+    }
+
+    private static boolean isFloatLiteral(String s, FlowExpressionContext context) {
+        if (context.parsingMember) {
+            return false;
+        }
+        Matcher floatMatcher = FLOAT_PATTERN.matcher(s);
+        return floatMatcher.matches();
     }
 
     /** Return true iff s is a string literal. */
