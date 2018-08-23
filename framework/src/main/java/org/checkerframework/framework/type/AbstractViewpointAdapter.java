@@ -166,8 +166,8 @@ public abstract class AbstractViewpointAdapter implements ViewpointAdapter {
         declMethodType =
                 (AnnotatedExecutableType) AnnotatedTypeReplacer.replace(declMethodType, mappings);
 
-        // Because we can't viewpoint adapt asMemberOf result, we adapt the declared method first, and sets the
-        // corresponding parts to asMemberOf result
+        // Because we can't viewpoint adapt asMemberOf result, we adapt the declared method first,
+        // and sets the corresponding parts to asMemberOf result
         methodType.setReturnType(declMethodType.getReturnType());
         methodType.setReceiverType(declMethodType.getReceiverType());
         methodType.setParameterTypes(declMethodType.getParameterTypes());
@@ -393,8 +393,8 @@ public abstract class AbstractViewpointAdapter implements ViewpointAdapter {
                 mapping.put(formalTypeParameter, actualTypeArgument);
                 // The following code does the wrong thing!
             }
-            // We must use AnnotatedTypeReplacer to replace the formal type parameters with actual type
-            // arguments, but not replace with its main qualifier
+            // We must use AnnotatedTypeReplacer to replace the formal type parameters with actual
+            // type arguments, but not replace with its main qualifier
             rhs = AnnotatedTypeReplacer.replace(adt, mapping);
         } else if (rhs.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType awt = (AnnotatedWildcardType) rhs.shallowCopy();
@@ -492,7 +492,8 @@ public abstract class AbstractViewpointAdapter implements ViewpointAdapter {
                     return res;
                 }
             }
-            // We reach this point if the variable wasn't found in any recursive call on ALL direct supertypes.
+            // We reach this point if the variable wasn't found in any recursive call on ALL direct
+            // supertypes.
             return null;
         }
 
