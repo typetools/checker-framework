@@ -93,6 +93,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
@@ -104,7 +105,6 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -2605,8 +2605,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // Use the function type's parameters to resolve polymorphic qualifiers.
-        QualifierPolymorphism poly =
-                new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
+        QualifierPolymorphism poly = atypeFactory.createQualifierPolymorphism();
         poly.annotate(functionType, invocationType);
 
         AnnotatedTypeMirror invocationReturnType;

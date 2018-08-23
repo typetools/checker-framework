@@ -79,6 +79,8 @@ import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -91,7 +93,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -692,8 +693,8 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return the QualifierPolymorphism class
      */
-    protected QualifierPolymorphism createQualifierPolymorphism() {
-        return new QualifierPolymorphism(processingEnv, this);
+    public QualifierPolymorphism createQualifierPolymorphism() {
+        return new DefaultQualifierPolymorphism(processingEnv, this);
     }
 
     // **********************************************************************
