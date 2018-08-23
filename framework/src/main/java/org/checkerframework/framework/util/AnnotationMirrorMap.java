@@ -26,11 +26,14 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
 
     /** The actual map to which all work is delegated. */
-    private final Map<AnnotationMirror, V> shadowMap = new TreeMap<>(annotationOrdering());
+    private final Map<AnnotationMirror, V> shadowMap;
 
-    public AnnotationMirrorMap() {}
+    public AnnotationMirrorMap() {
+        this.shadowMap = new TreeMap<>(annotationOrdering());
+    }
 
     public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> primaries) {
+        this();
         this.putAll(primaries);
     }
 
@@ -115,5 +118,14 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
     @Override
     public Set<Entry<AnnotationMirror, V>> entrySet() {
         return shadowMap.entrySet();
+    }
+
+    /**
+     * Creates an empty map.
+     *
+     * @return the empty map
+     */
+    public static <V> AnnotationMirrorMap<V> emptyMap() {
+        return new AnnotationMirrorMap<>();
     }
 }
