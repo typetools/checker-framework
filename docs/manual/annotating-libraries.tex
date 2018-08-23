@@ -207,7 +207,7 @@ This section describes how to create an annotated library.
 
 \begin{enumerate}
 \item See the
-  \ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
+  \ahref{https://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
@@ -336,12 +336,12 @@ Get Java 8 source code (must be version 8)
 \item
 Set up the Checker Framework (replace \textit{mychecker} with the name of your checker)
 \begin{enumerate}
-\item \<mkdir \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
-  \<cd \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
+\item \<mkdir \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
+  \<cd \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
   \code{echo "include ../Makefile.jdk" > Makefile}
 
 \item Add \textit{mychecker} to
-  \<\$JSR308/checker-framework/checker/jdk/MakeFile> in the  definition of
+  \<\$CHECKERFRAMEWORK/checker/jdk/MakeFile> in the  definition of
   \<CHECKER\_DIRS> and in the definition of \<ANNOTATED\_CLASSES> (don't forget
   to add a closing parenthesis at the end of the definition of \<ANNOTATED\_CLASSES>!).
 
@@ -350,7 +350,7 @@ Set up the Checker Framework (replace \textit{mychecker} with the name of your c
 \item
 For each file you want to annotate, copy the JDK version into the
 directory
-\<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}/src/>, using
+\<\$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/src/>, using
 the same directory structure as the JDK\@.
 
 Whenever you add a file, fully annotate it, as described in
@@ -519,6 +519,7 @@ automatically, with no need for the user to supply a command-line option.
 Every Java file is a valid stub file.  However, you can omit information
 that is not relevant to pluggable type-checking; this makes the stub file
 smaller and easier for people to read and write.
+Also note that the stub file's extension must be \<.astub>, not \<.java>.
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -579,8 +580,8 @@ in the same directory as the checker's \<.java> source code.
 
 \subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
 
-Every Java file is a stub file.  If you have access to the Java file, then
-you can use the Java file as the stub file.  Just add
+Every Java file is a stub file.  If you have access to the Java file,
+rename file \<A.java> to \<A.astub>.  You can add
 annotations to the signatures, leaving the method bodies unchanged.
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the \<import> statement.
@@ -619,7 +620,7 @@ and then annotate it.  The rest of this section describes this approach.
 
 \begin{Verbatim}
   cd nullness-stub
-  java -cp $JSR308/checker-framework/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to
@@ -674,6 +675,12 @@ overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
 will be issued.
 
 Use command-line option
+\<-AstubWarnIfNotFoundIgnoresClasses> in conjuntion with the previous option
+to report only missing methods/fields, but ignore missing classes, even if
+other classes from the same package are present.
+Useful if a package spans more than one jar.
+
+Use command-line option
 \<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a
 stub file overwrites annotations contained in bytecode.
 
@@ -726,7 +733,7 @@ read whether the library's annotations are parsed.
 % LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
-%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
+%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual

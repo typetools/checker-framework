@@ -62,8 +62,8 @@ import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An abstract annotation processor designed for implementing a source-file checker for a JSR-308
- * conforming compiler plug-in. It provides an interface to {@code javac}'s annotation processing
+ * An abstract annotation processor designed for implementing a source-file checker as an annotation
+ * processor (a compiler plug-in). It provides an interface to {@code javac}'s annotation processing
  * API, routines for error reporting via the JSR 199 compiler API, and an implementation for using a
  * {@link SourceVisitor} to perform the type-checking.
  *
@@ -211,6 +211,11 @@ import org.checkerframework.javacutil.TreeUtils;
     // that were not found on the class path
     // org.checkerframework.framework.stub.StubParser.warnIfNotFound
     "stubWarnIfNotFound",
+    // Whether to ignore missing classes even when warnIfNotFound is set to true and
+    // other classes from the same package are present (useful if a package spans more than one
+    // jar).
+    // org.checkerframework.framework.stub.StubParser.warnIfNotFoundIgnoresClasses
+    "stubWarnIfNotFoundIgnoresClasses",
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
@@ -239,9 +244,9 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
     "detailedmsgtext",
 
-    // Whether to output a stack trace for a framework error
+    // Whether to NOT output a stack trace for each framework error.
     // org.checkerframework.framework.source.SourceChecker.logCheckerError
-    "printErrorStack",
+    "noPrintErrorStack",
 
     // Only output error code, useful for testing framework
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
@@ -781,11 +786,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         StringBuilder msg = new StringBuilder(ce.getMessage());
-        if ((processingEnv == null
-                        || processingEnv.getOptions() == null
-                        || processingEnv.getOptions().containsKey("printErrorStack"))
-                && ce.getCause() != null) {
-
+        boolean noPrintErrorStack =
+                (processingEnv != null
+                        && processingEnv.getOptions() != null
+                        && processingEnv.getOptions().containsKey("noPrintErrorStack"));
+        if (ce.userError) {
+            msg.append('.');
+        } else if (ce.getCause() == null) {
+            msg.append("; The Checker Framework crashed.  Please report the crash.");
+        } else if (noPrintErrorStack) {
+            msg.append(
+                    "; The Checker Framework crashed.  Please report the crash.  To see "
+                            + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+        } else {
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
@@ -814,14 +827,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                         + "; "
                                         + formatStackTrace(cause.getStackTrace())));
                 cause = cause.getCause();
-            }
-        } else {
-            if (ce.userError) {
-                msg.append('.');
-            } else {
-                msg.append(
-                        "; The Checker Framework crashed.  Please report the crash.  To see "
-                                + "the full stack trace invoke the compiler with -AprintErrorStack");
             }
         }
 

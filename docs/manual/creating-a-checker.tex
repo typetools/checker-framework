@@ -685,7 +685,8 @@ programmer didn't write a type qualifier explicitly.
 \subsection{Completeness of the type hierarchy\label{creating-bottom-and-top-qualifier}}
 
 When you define a type system, its type hierarchy must be a
-complete lattice --- that is, there must be a top type that is a
+lattice:  every set of types has a unique least upper bound and a unique
+greatest lower bound.  This implies that there must be a top type that is a
 supertype of all other types, and there must be a bottom type that is a
 subtype of all other types.
 Furthermore, it is best if the top type and bottom type are defined
@@ -1761,13 +1762,16 @@ qualifiers like \code{@Unqualified} which are usually not shown.
   plugins.  See the source code of \<SourceChecker.java> for details about
   the format.
 
-\item \code{-AprintErrorStack}: print a stack trace whenever an
-internal Checker Framework error occurs.
-
 \item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
 rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
 changed if the English message is updated.
+
+\item \code{-AnoPrintErrorStack}: don't print a stack trace when an
+internal Checker Framework error occurs.  Setting this option is rare.  You
+should only do it if you have discovered a bug in a checker, you have
+already reported the bug, and you want to continue using the checker on a
+large codebase without being inundated in stack traces.
 
 \end{itemize}
 
@@ -1900,12 +1904,7 @@ docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
 
 \subsection{Using an external debugger\label{creating-debugging-options-external}}
 
-\begin{sloppypar}
 You can use any standard debugger to observe the execution of your checker.
-If using an IDE, it is
-recommended that you add \code{.../jsr308-langtools} as a project, so you
-can step into its source code if needed.
-\end{sloppypar}
 
 You can also set up remote (or local) debugging using the following command as a template:
 
@@ -1917,14 +1916,11 @@ java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" \
 
 \end{Verbatim}
 
-% TODO: show example -AprintErrorStack usage. Update text above to
-% refer to it.
-
 % $ javac -processor org.checkerframework.checker.fenum.FenumChecker IdentityArrayList.java
 % error: GraphQualifierHierarchy found an unqualified type.  Please ensure that your implicit rules cover all cases and/or use a @DefaulQualifierInHierarchy annotation.
 % 1 error
 
-% $ javac -processor org.checkerframework.checker.fenum.FenumChecker -AprintErrorStack IdentityArrayList.java
+% $ javac -processor org.checkerframework.checker.fenum.FenumChecker IdentityArrayList.java
 %% error: GraphQualifierHierarchy found an unqualified type.  Please ensure that your implicit rules cover all cases and/or use a @DefaulQualifierInHierarchy annotation.
 %%   checkers.util.GraphQualifierHierarchy.checkAnnoInGraph(GraphQualifierHierarchy.java:253)
 %%   checkers.util.GraphQualifierHierarchy.isSubtype(GraphQualifierHierarchy.java:243)
@@ -2270,7 +2266,7 @@ without warnings or errors.
 % LocalWords:  typeProcess getSupportedSourceVersion fenum classpath astub
 %%  LocalWords:  addAbsoluteDefault BaseAnnotatedTypeFactory superclasses
 %%  LocalWords:  SupportedOptions AprintAllQualifiers InvisibleQualifier
-%%  LocalWords:  Adetailedmsgtext AprintErrorStack Aignorejdkastub Astubs
+%%  LocalWords:  Adetailedmsgtext AnoPrintErrorStack Aignorejdkastub Astubs
 %%  LocalWords:  Anocheckjdk AstubDebug Aflowdotdir AresourceStats Regex
 %%  LocalWords:  classfiles CHECKERFRAMEWORK RegexUtil asRegex myString
 %%  LocalWords:  myInt CFAbstractTransfer RegexTransfer CFAbstractAnalysis

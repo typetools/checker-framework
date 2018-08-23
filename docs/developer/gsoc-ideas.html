@@ -1383,7 +1383,13 @@ A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
 Java expression</a>.  The parser for these is a hack.  The goal of this
 project is to replace it by calls
-to <a href="https://github.com/javaparser/javaparser">JavaParser</a>.  This
+to <a href="https://github.com/javaparser/javaparser">JavaParser</a>.
+For example, the <code>FlowExpressions.Receiver</code> class, which
+represents an AST, should be replaced by the JavaParser AST.
+</p>
+
+<p>
+This task
 should be straightforward, since JavaParser is already used in other parts
 of the Checker Framework.
 </p>

@@ -2,7 +2,7 @@
 
 # This script tests that the Checker Framework release can be downloaded
 # and that a simple sanity test works.
-# It assumes that environment variables JAVA7_HOME and JAVA8_HOME are defined.
+# It assumes that environment variable JAVA8_HOME is defined.
 # It takes an argument specifying the current Checker Framework version, e.g. "1.9.11".
 
 # This script is used by the release_push script in the "Run javac sanity tests on the live release" step
@@ -45,15 +45,7 @@ function cfruntest() {
   if (($?)); then exit 6; fi
 }
 
-echo "Testing with Java 7:"
-
-export JAVA_HOME=$JAVA7_HOME
-export PATH=$JAVA_HOME/bin:$ORIG_PATH
-
-cfruntest
-
-
-echo "Testing with Java 8 build:"
+echo "Testing with Java 8:"
 
 export JAVA_HOME=$JAVA8_HOME
 export PATH=$JAVA_HOME/bin:$ORIG_PATH

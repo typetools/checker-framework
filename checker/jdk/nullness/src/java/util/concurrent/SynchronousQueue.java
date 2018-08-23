@@ -46,6 +46,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 /**
  * A {@linkplain BlockingQueue blocking queue} in which each insert
@@ -1089,7 +1090,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * Returns a zero-length array.
      * @return a zero-length array
      */
-    public Object[] toArray() {
+    public @PolyNull Object[] toArray(SynchronousQueue<@PolyNull E> this) {
         return new Object[0];
     }
 

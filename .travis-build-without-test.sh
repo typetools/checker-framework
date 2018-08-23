@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo Entering `pwd`/.travis-build-without-test.sh
+
 # Fail the whole script if any command fails
 set -e
 
@@ -23,31 +25,17 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 
-# Checks for the existence of a repository
-export GITEXISTS="wget -q --spider"
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
-    # Older versions of git don't support the -C command-line option
-    echo "Running: (cd ../annotation-tools && git pull)"
-    (cd ../annotation-tools && git pull)
-    echo "... done: (cd ../annotation-tools && git pull)"
+    git -C ../annotation-tools pull
 else
-    set +e
-    echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/annotation-tools.git &>-"
-    ${GITEXISTS} https://github.com/${SLUGOWNER}/annotation-tools.git &>-
-    if [ "$?" -ne 0 ]; then
-        ATSLUGOWNER=typetools
-    else
-        ATSLUGOWNER=${SLUGOWNER}
-    fi
-    set -e
-    echo "Running:  (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
-    (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git) || (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)
-    echo "... done: (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
+    [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+    REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools`
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+    (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 fi
 
-# This also builds jsr308-langtools
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
@@ -55,23 +43,12 @@ echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 ## Build stubparser
 if [ -d ../stubparser ] ; then
-    # Older versions of git don't support the -C command-line option
-    echo "Running: (cd ../stubparser && git pull)"
-    (cd ../stubparser && git pull)
-    echo "... done: (cd ../stubparser && git pull)"
+    git -C ../stubparser pull
 else
-    set +e
-    echo "Running: ${GITEXISTS} https://github.com/${SLUGOWNER}/stubparser.git &>-"
-    ${GITEXISTS} https://github.com/${SLUGOWNER}/stubparser.git &>-
-    if [ "$?" -ne 0 ]; then
-        SPSLUGOWNER=typetools
-    else
-        SPSLUGOWNER=${SLUGOWNER}
-    fi
-    set -e
-    echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git)"
-    (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git) || (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git)
-    echo "... done: (cd .. && git clone --depth 1 https://github.com/${SPSLUGOWNER}/stubparser.git)"
+    [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+    REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools stubparser`
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+    (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 fi
 
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
@@ -80,13 +57,23 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 
 ## Compile
+
+# Download jsr308-langtools replacement for javac.jar that fixes some bugs
+if [ ! -d ../jsr308-langtools ] ; then
+  (cd .. && wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip)
+  (cd .. && unzip -q jsr308-langtools-2.4.0.zip)
+  (cd .. && mv jsr308-langtools-2.4.0 jsr308-langtools)
+fi
+
 # Two options: rebuild the JDK or download a prebuilt JDK.
 if [[ "${BUILDJDK}" == "buildjdk" ]]; then
-  echo "running \"./gradlew assemble buildJdk\" for checker-framework"
-   ./gradlew assemble -PuseLocalJdk
+  echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
+   ./gradlew assemble -PuseLocalJdk --console=plain
 fi
 
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew assemble
+  ./gradlew --console=plain assemble
 fi
+
+echo Exiting `pwd`/.travis-build-without-test.sh

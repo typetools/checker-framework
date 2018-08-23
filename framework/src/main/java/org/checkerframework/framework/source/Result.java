@@ -154,8 +154,8 @@ public final class Result {
     /**
      * A class that represents diagnostic messages.
      *
-     * <p>{@code DiagMessage} encapsulate the message key which would identify the relevant standard
-     * error message according to the user locale.
+     * <p>{@code DiagMessage} encapsulates the message key which would identify the relevant
+     * standard error message according to the user locale.
      *
      * <p>The optional arguments are possible custom strings for the error message.
      */

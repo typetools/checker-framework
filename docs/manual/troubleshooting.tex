@@ -83,35 +83,6 @@ on your classpath.  See the installation instructions
 (Section~\ref{installation}).
 
 \item
-If you get an error such as
-
-\begin{Verbatim}
-package org.checkerframework.checker.nullness.qual does not exist
-\end{Verbatim}
-
-  \noindent
-\begin{sloppypar}
-  despite no apparent use of \code{import org.checkerframework.checker.nullness.qual.*;} in
-  the source code, then perhaps
-  \code{jsr308\_imports} is set as a Java system property, a shell
-  environment variable, or a command-line option.
-  You should solve this by unsetting the variable/option, which is deprecated.
-\end{sloppypar}
-
-If the error is
-
-% Don't remove the apostrophe here
-\begin{Verbatim}
-package 'org.checkerframework.checker.nullness.qual does not exist
-\end{Verbatim}
-
-\begin{sloppypar}
-\noindent
-(note the extra apostrophe!), then you have probably misused quoting when
-supplying the (deprecated) \code{jsr308\_imports} environment variable.
-\end{sloppypar}
-
-\item
 If you get an error like one of the following,
 
 %BEGIN LATEX
@@ -231,7 +202,7 @@ Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  ./gradlew  buildJdk assemble
+  ./gradlew buildJdk assemble
 \end{Verbatim}
 
 \noindent
@@ -538,22 +509,6 @@ requires changing an \<import> statement.
 
 
 \item
-This compile-time error
-
-\begin{Verbatim}
-  unknown enum constant java.lang.annotation.ElementType.TYPE_USE
-\end{Verbatim}
-
-\noindent
-indicates that you are compiling using a Java 6 or 7 JDK, but your code
-references an enum constant that is only defined in the Java 8 JDK.  The
-problem might be that your code uses a library that references the enum
-constant.  In particular, the type annotations shipped with the Checker
-Framework reference
-\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.
-
-
-\item
 If Eclipse gives the warning
 
 \begin{Verbatim}
@@ -673,7 +628,7 @@ helpful if you:
 
 \begin{itemize}
 \item
-  Add \code{-version -verbose -AprintErrorStack -AprintAllQualifiers}
+  Add \code{-version -verbose -AprintAllQualifiers}
   to the javac options.  This causes the compiler to output
   debugging information, including its version number.
 \item
@@ -782,11 +737,15 @@ Follow the instructions for your operating system.
 \item[Ubuntu]
   Run the following commands:
 
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdkany
 \begin{Verbatim}
-sudo apt-get update
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls \
- make maven mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
- texlive-latex-extra texlive-fonts-recommended unzip
+sudo apt-get -qqy update
+sudo apt-get -qqy install ant cpp git gradle junit4  libcurl3-gnutls \
+ make maven mercurial unzip wget openjdk-8-jdk \
+ dia hevea latexmk librsvg2-bin maven python-pip \
+ texlive-font-utils texlive-fonts-recommended \
+ texlive-latex-base texlive-latex-extra texlive-latex-recommended
+
 \end{Verbatim}
 
 % Building Checker Framework from source on Mac OS
@@ -840,14 +799,12 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Hom
 Obtain the latest source code from the version control repository:
 
 \begin{Verbatim}
-export JSR308=$HOME/jsr308
-mkdir -p $JSR308
-cd $JSR308
 git clone https://github.com/typetools/checker-framework.git checker-framework
+export CHECKERFRAMEWORK=`pwd`/checker-framework
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-You might want to add the \<export JSR308=\$HOME/jsr308> line to your
+You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \<.bashrc> file.
 
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
@@ -902,7 +859,7 @@ the Checker Framework anyway.)
 Run \code{./gradlew cloneAndBuildDependencies} to build the Checker Framework dependencies:
 
 \begin{Verbatim}
-  cd $JSR308/checker-framework
+  cd $CHECKERFRAMEWORK
   ./gradlew cloneAndBuildDependencies
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
@@ -911,7 +868,7 @@ Run \code{./gradlew cloneAndBuildDependencies} to build the Checker Framework de
 Run \code{./gradlew assemble} to build the Checker Framework:
 
 \begin{Verbatim}
-  cd $JSR308/checker-framework
+  cd $CHECKERFRAMEWORK
   ./gradlew assemble
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
@@ -921,7 +878,7 @@ Once it is built, you may wish to put the Checker Framework's \<javac>
 even earlier in your \<PATH>:
 
 \begin{Verbatim}
-export PATH=$JSR308/checker-framework/checker/bin:$JSR308/jsr308-langtools/dist/bin:${PATH}
+export PATH=$CHECKERFRAMEWORK/checker/bin:${PATH}
 \end{Verbatim}
 
 The Checker Framework's \code{javac} ensures that all required
@@ -943,7 +900,7 @@ errors.
 To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
 
 \begin{Verbatim}
-export PATH=$JSR308/checker-framework/checker/bin-devel:$JSR308/jsr308-langtools/dist/bin:${PATH}
+export PATH=$CHECKERFRAMEWORK/checker/bin-devel:${PATH}
 \end{Verbatim}
 
 The developer version of \<javac> allows you to not have to rebuild
@@ -958,7 +915,7 @@ an IDE such as Eclipse.
 
   \item Run \code{./gradlew allTests}:
 \begin{Verbatim}
-  cd $JSR308/checker-framework
+  cd $CHECKERFRAMEWORK
   ./gradlew allTests
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
@@ -998,7 +955,7 @@ and install it.
 select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
 Projects into Workspace''.
 \item After the ``Import Projects'' window appears, select ``Select
-Root Directory'', and select the directory pointed to by \code{\$JSR308}.
+Root Directory'', and select the parent of the \code{\$CHECKERFRAMEWORK} directory.
 \item Ensure ``Search for nested projects'' is selected in the Options panel.
 \item Select all the projects in the folder except for ``personalblog-demo'',
 then select ``Finish'' to import the projects.
@@ -1399,7 +1356,7 @@ For details, see file
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
 % LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
-%  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
+%  LocalWords:  extJavac ZipFile AnoPrintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
 %  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
 %  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre
