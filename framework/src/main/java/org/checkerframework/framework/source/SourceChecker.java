@@ -749,9 +749,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 (processingEnv != null
                         && processingEnv.getOptions() != null
                         && processingEnv.getOptions().containsKey("noPrintErrorStack"));
-        if (ce.userError) {
-            msg.append('.');
-        } else if (ce.getCause() == null) {
+        if (ce.getCause() == null) {
             msg.append("; The Checker Framework crashed.  Please report the crash.");
         } else if (noPrintErrorStack) {
             msg.append(
