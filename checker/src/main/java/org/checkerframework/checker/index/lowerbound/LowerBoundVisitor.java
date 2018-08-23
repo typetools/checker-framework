@@ -4,7 +4,9 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -90,5 +92,21 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
         }
 
         super.commonAssignmentCheck(varTree, valueTree, errorKey);
+    }
+
+    /**
+     * Overridden so that any typecast to @NonNegative char does not issue a warning - all chars
+     * are @NonNegative.
+     */
+    @Override
+    protected void checkTypecastSafety(TypeCastTree node, Void p) {
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        if (castType.getUnderlyingType().getKind() == TypeKind.CHAR) {
+            if (AnnotationUtils.containsSame(castType.getEffectiveAnnotations(), atypeFactory.NN)) {
+                return;
+            }
+        } else {
+            super.checkTypecastSafety(node, p);
+        }
     }
 }
