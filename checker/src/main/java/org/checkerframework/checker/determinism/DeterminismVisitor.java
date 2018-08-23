@@ -28,7 +28,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             "ordernondet.on.noncollection";
     /** Error message key for collections whose type is a subtype of their element types. */
     private static final @CompilerMessageKey String INVALID_ELEMENT_TYPE = "invalid.element.type";
-    /** Error message key arrays whose type is a subtype of their component types. */
+    /** Error message key for arrays whose type is a subtype of their component types. */
     private static final @CompilerMessageKey String INVALID_ARRAY_COMPONENT_TYPE =
             "invalid.array.component.type";
     /**
@@ -76,11 +76,10 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         }
 
         // Checks if the annotation on the type parameter of a collection (or iterator) is a
-        // supertype of
-        // the annotation on the collection (or iterator). If the check succeeds , an error is
-        // raised.
+        // supertype of the annotation on the collection (or iterator).
+        // If the check succeeds , an error is raised.
         if ((atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
-                        // TODO: This won't work for maps since they have 2 type arguments.
+                        // TODO-rashmi: This won't work for maps since they have 2 type arguments.
                         && javaType.getTypeArguments().size() == 1)
                 || atypeFactory.isIterator(javaType.asElement().asType())) {
             AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
@@ -156,7 +155,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      * &nbsp; i = arr[0];
      * </code></pre>
      *
-     * In the code above, type of i is annotated as @NonDet.
+     * In the code above, type of i gets annotated as @NonDet.
      *
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
@@ -194,7 +193,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      * &nbsp; x[i] = y;
      * </code></pre>
      *
-     * is flagged as an error.
+     * The array access {@code x[i]} is flagged as an error.
      *
      * @param varTree the AST node for the lvalue
      * @param valueExp the AST node for the rvalue (the new value)

@@ -111,7 +111,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Places the default annotation on the return type of a method invocation as follows:
          *
          * <ol>
-         *   <li>The return type for static methods without any argument is {@code @Det}.
+         *   <li>The return type for static methods without any argument defaults to {@code @Det}.
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
          *       array or a collection, it defaults to {@code @NonDet}.
          *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
@@ -151,7 +151,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 p.replaceAnnotation(NONDET);
             }
 
-            // For static methods with no arguments, this sets the default annotation to be @Det.
+            // If the invoked method is static and has no arguments,
+            // its return type is annotated as @Det.
             if (ElementUtils.isStatic(invokedMethodElement)) {
                 if (node.getArguments().size() == 0) {
                     if (p.getExplicitAnnotations().size() == 0) {
@@ -164,17 +165,17 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // as described in the specification.
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
             //           @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s2;
-            // s1.equals(s2) is @Det
+            // s1.equals(s2) is @NonDet
 
             // Example 2: @OrderNonDet Set<@Det List<@Det Integer>> s1;
             //            @OrderNonDet Set<@Det List<@Det Integer>> s2;
-            // s1.equals(s2) is @NonDet
-            // TODO: this can be more precise (@Det receiver and @OrderNonDet parameter)
+            // s1.equals(s2) is @Det
+            // TODO-rashmi: this can be more precise (@Det receiver and @OrderNonDet parameter)
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiver.getUnderlyingType());
 
             // Without this check, NullPointerException in Collections class with buildJdk.
-            // TODO: check why?
+            // TODO-rashmi: check why?
             if (receiverUnderlyingType == null) {
                 return super.visitMethodInvocation(node, p);
             }
@@ -399,7 +400,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Treat {@code @PolyDet} with values as {@code @PolyDet} without values in the qualifier
+         * Treats {@code @PolyDet} with values as {@code @PolyDet} without values in the qualifier
          * hierarchy.
          */
         @Override
