@@ -120,6 +120,11 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
         return shadowMap.entrySet();
     }
 
+    /**
+     * Creates an empty map.
+     *
+     * @return the empty map
+     */
     public static <V> AnnotationMirrorMap<V> emptyMap() {
         return new AnnotationMirrorMap<>();
     }

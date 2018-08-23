@@ -11,12 +11,26 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/** The qualifier polymorphism interface. */
 public interface QualifierPolymorphism {
 
+    /**
+     * Checks if the type qualifier {@code qual} is {@code PolyAll}.
+     *
+     * @param qual the type qualifier to be checked
+     * @return true if {@code qual} is {@code PolyAll}, false otherwise
+     */
     static boolean isPolyAll(AnnotationMirror qual) {
         return AnnotationUtils.areSameByClass(qual, PolyAll.class);
     }
 
+    /**
+     * Returns the AnnotationMirror of the polymorphic qualifier if {@code qual} is polymorphic.
+     *
+     * @param qual the type qualifier to be checked
+     * @return the AnnotationMirror of the polymorphic qualifier if {@code qual} is polymorphic,
+     *     null otherwise
+     */
     static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
         if (qual == null) {
             return null;
@@ -32,6 +46,12 @@ public interface QualifierPolymorphism {
         return null;
     }
 
+    /**
+     * Checks if the type qualifier {@code qual} is polymorphic.
+     *
+     * @param qual the type qualifier to be checked
+     * @return true if {@code qual} is polymorphic, false otherwise
+     */
     static boolean isPolymorphicQualified(AnnotationMirror qual) {
         return getPolymorphicQualifier(qual) != null;
     }
@@ -60,13 +80,25 @@ public interface QualifierPolymorphism {
     /**
      * Resolves polymorphism annotations for the given type.
      *
-     * @param tree the tree associated with the type
+     * @param tree the MethodInvocationTree associated with the type
      * @param type the type to annotate
      */
     void annotate(MethodInvocationTree tree, AnnotatedExecutableType type);
 
+    /**
+     * Resolves polymorphism annotations for the given type.
+     *
+     * @param tree the NewClassTree associated with the type
+     * @param type the type to annotate
+     */
     void annotate(NewClassTree tree, AnnotatedExecutableType type);
 
+    /**
+     * Resolves polymorphism annotations for the given member reference.
+     *
+     * @param functionalInterface the AnnotatedExecutableType associated with the member reference
+     * @param memberReference the member reference to annotate
+     */
     void annotate(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference);
 }

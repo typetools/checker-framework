@@ -46,6 +46,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
+    /** AnnotatedTypeFactory of the checker using this class. */
     protected final AnnotatedTypeFactory atypeFactory;
 
     /**
@@ -60,6 +61,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /** The qualifier hierarchy to use. */
     protected final QualifierHierarchy qualhierarchy;
 
+    /** Annotation constant for POLYALL. */
     protected final AnnotationMirror POLYALL;
 
     /** Determines the instantiations for each polymorphic qualifier. */
