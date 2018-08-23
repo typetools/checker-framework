@@ -7,25 +7,23 @@ PRESERVE=1  # option to preserve intermediate files
 
 # parameters derived from environment
 # TOOLSJAR and CTSYM derived from JAVA_HOME, rest from CHECKERFRAMEWORK
-JSR308="`cd $CHECKERFRAMEWORK/.. && pwd`"   # base directory
+PARENTDIR="`cd $CHECKERFRAMEWORK/.. && pwd`"   # base directory
 WORKDIR="${CHECKERFRAMEWORK}/checker/jdk"   # working directory
-AJDK="${JSR308}/annotated-jdk8u-jdk"        # annotated JDK
+AJDK="${PARENTDIR}/annotated-jdk8u-jdk"        # annotated JDK
 SRCDIR="${AJDK}/src/share/classes"
 BINDIR="${WORKDIR}/build"
 BOOTDIR="${WORKDIR}/bootstrap"              # initial build w/o processors
 TOOLSJAR="${JAVA_HOME}/lib/tools.jar"
-LT_BIN="${JSR308}/jsr308-langtools/build/classes"
-LT_JAVAC="${JSR308}/jsr308-langtools/dist/bin/javac"
 CF_BIN="${CHECKERFRAMEWORK}/checker/build"
 CF_DIST="${CHECKERFRAMEWORK}/checker/dist"
 CF_JAR="${CF_DIST}/checker.jar"
 CF_JAVAC="java -Xms128m -Xmx512m -jar ${CF_JAR} -Xbootclasspath/p:${BOOTDIR}"
 CTSYM="${JAVA_HOME}/lib/ct.sym"
-CP="${BINDIR}:${BOOTDIR}:${LT_BIN}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
+CP="${BINDIR}:${BOOTDIR}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
 JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 \
         -source 8 -target 8 -encoding ascii -cp ${CP}"
 PROCESSORS="interning,nullness,signature"
-PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -AprintErrorStack -Awarns"
+PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -Awarns"
 
 PID=$$      # script process id
 BOOT=0      # 0 to skip building bootstrap class directory
@@ -66,7 +64,7 @@ fi
 
 if [ ${BOOT} -ne 0 ] ; then
     echo "build bootstrap JDK" | tee ${WORKDIR}/LOG
-    ${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC} | tee -a ${WORKDIR}/LOG
+    javac -g -d ${BOOTDIR} ${JFLAGS} ${SRC} | tee -a ${WORKDIR}/LOG
     [ $? -ne 0 ] && exit 1
     grep -q 'not found' ${WORKDIR}/LOG
     [ $? -eq 0 ] && exit 0

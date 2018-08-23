@@ -1,2 +1,2 @@
-A test case to ensure that the JSR 305 declaration annotation
-is correctly interpreted as a JSR 308 type annotation.
+A test case to ensure that the declaration annotation
+is correctly interpreted as a type annotation.
