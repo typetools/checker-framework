@@ -274,9 +274,9 @@ The default annotation for most unannotated types is \<@Det>.
 The default annotation for an unannotated formal parameter or return type
 is \<@PolyDet>.  This permits all possible arguments to the method.  In case of
 array parameters or return types, both the array type and its component type
-are annotated as \<@PolyDet>. As
-an exception, the return type of a static method without paramaters is
-\<@Det>.
+are defaulted to \<@PolyDet>.
+As an exception, the return type of a static method without paramaters
+defaults to \<@Det>.
 
 As with all type systems, defaulting is different for the array and
 component types in a locally-declared array or generic type without explicit type
