@@ -45,7 +45,7 @@ public class DeterminismTransfer extends CFTransfer {
         // Note: For static method calls, the receiver is the Class node.
         Node receiver = n.getTarget().getReceiver();
 
-        // TypesUtils.getTypeElement(receiver.getType()) is null for Generic type arguments.
+        // TypesUtils.getTypeElement(receiver.getType()) is null for generic type arguments.
         if (TypesUtils.getTypeElement(receiver.getType()) == null) {
             return result;
         }
@@ -85,9 +85,9 @@ public class DeterminismTransfer extends CFTransfer {
                     }
                 }
                 if (typeRefine) {
-                    FlowExpressions.Receiver firtArgRep =
+                    FlowExpressions.Receiver firstArgRep =
                             FlowExpressions.internalReprOf(factory, n.getArgument(0));
-                    typeRefine(firtArgRep, result, factory.DET);
+                    typeRefine(firstArgRep, result, factory.DET);
                 }
             }
         }
@@ -99,17 +99,17 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
             if (firstArgAnno != null
                     && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
-                FlowExpressions.Receiver firtArgRep =
+                FlowExpressions.Receiver firstArgRep =
                         FlowExpressions.internalReprOf(factory, n.getArgument(0));
-                typeRefine(firtArgRep, result, factory.DET);
+                typeRefine(firstArgRep, result, factory.DET);
             }
         }
 
         // Type refinement for Collections shuffle
         if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, methName)) {
-            FlowExpressions.Receiver firtArgRep =
+            FlowExpressions.Receiver firstArgRep =
                     FlowExpressions.internalReprOf(factory, n.getArgument(0));
-            typeRefine(firtArgRep, result, factory.NONDET);
+            typeRefine(firstArgRep, result, factory.NONDET);
         }
         return result;
     }
