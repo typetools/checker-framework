@@ -158,11 +158,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
-            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
+            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(node);
 
-            // Receiver is null for abstract classes
+            // ReceiverType is null for abstract classes
             // (Example: Ordering.natural() in tests/all-systems/PolyCollectorTypeVars.java)
-            if (receiver == null) {
+            if (receiverType == null) {
                 return super.visitMethodInvocation(node, p);
             }
 
@@ -170,7 +170,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     atypeFactory.methodFromUse(node).methodType;
             ExecutableElement invokedMethodElement = invokedMethod.getElement();
 
-            // Checks if return type (non-array and non-collection) resolves to @OrderNonDet.
+            // Checks if return type (non-array, non-collection, and non-iterator) resolves to
+            // @OrderNonDet.
             // If the check succeeds, the annotation on the return type is replaced with @NonDet.
             if (p.getAnnotations().contains(ORDERNONDET)
                     && !(p.getUnderlyingType().getKind() == TypeKind.ARRAY)
@@ -200,7 +201,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // s1.equals(s2) is @Det
             // TODO-rashmi: this can be more precise (@Det receiver and @OrderNonDet parameter)
             TypeElement receiverUnderlyingType =
-                    TypesUtils.getTypeElement(receiver.getUnderlyingType());
+                    TypesUtils.getTypeElement(receiverType.getUnderlyingType());
 
             // Without this check, NullPointerException in Collections class with buildJdk.
             // TODO-rashmi: check why?
@@ -211,9 +212,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isEqualsMethod(invokedMethodElement)
                     && isSet(receiverUnderlyingType.asType())
                     && AnnotationUtils.areSame(
-                            receiver.getAnnotations().iterator().next(), ORDERNONDET)) {
-                // Checks that the receiver does not have "@OrderNonDet List" as a type parameter
-                if (!hasOrderNonDetListAsTypeParameter(receiver)) {
+                            receiverType.getAnnotations().iterator().next(), ORDERNONDET)) {
+                // Checks that the receiverType does not have "@OrderNonDet List" as a type
+                // parameter
+                if (!hasOrderNonDetListAsTypeParameter(receiverType)) {
                     AnnotatedTypeMirror parameter =
                             atypeFactory.getAnnotatedType(node.getArguments().get(0));
                     if (isSet(TypesUtils.getTypeElement(parameter.getUnderlyingType()).asType())
@@ -229,10 +231,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(node, p);
         }
 
-        /**
-         * Annotates the length property of an array annotated as {@code @NonDet} to be
-         * {@code @NonDet}.
-         */
+        /** If array a is {@code @NonDet}, then a.length is {@code @NonDet}. */
         @Override
         public Void visitMemberSelect(
                 MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
