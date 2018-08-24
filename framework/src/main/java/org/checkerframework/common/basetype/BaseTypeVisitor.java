@@ -1723,6 +1723,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // **********************************************************************
 
     /**
+     * Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once.
+     */
+    private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCache = null;
+    /** The same as {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache. */
+    private getExceptionParameterLowerBoundAnnotationsCached() {
+        if (getExceptionParameterLowerBoundAnnotationsCache == null) {
+            getExceptionParameterLowerBoundAnnotationsCache =
+                    getExceptionParameterLowerBoundAnnotations();
+        }
+        return getExceptionParameterLowerBoundAnnotationsCache;
+    }
+
+    /**
      * Issue error if the exception parameter is not a supertype of the annotation specified by
      * {@link #getExceptionParameterLowerBoundAnnotations()}, which is top by default.
      *
@@ -1735,7 +1748,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkExceptionParameter(CatchTree node) {
 
         Set<? extends AnnotationMirror> requiredAnnotations =
-                getExceptionParameterLowerBoundAnnotations();
+                getExceptionParameterLowerBoundAnnotationsCached();
         AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(node.getParameter());
 
         for (AnnotationMirror required : requiredAnnotations) {
