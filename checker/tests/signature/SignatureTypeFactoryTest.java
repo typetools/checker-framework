@@ -711,4 +711,21 @@ public class SignatureTypeFactoryTest {
         iform = t33;
         sn = t33;
     }
+
+    void genericSignatures(
+        @MethodSignature String ms,
+        @MethodDescriptor String md,
+        @ClassTypeSignature String cts,
+        @ClassSignature String cs,
+        @ReferenceTypeSignature String rts,
+        @JavaTypeSignature String jts) {
+        
+        ms = md;
+        // :: error: (assignment.type.incompatible)
+        md = ms;
+        
+        rts = cs;
+        jts = cts;
+        jts = cs;
+    }
 }
