@@ -36,10 +36,16 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     /** Error message key for arrays whose type is a subtype of their component types. */
     private static final @CompilerMessageKey String INVALID_ARRAY_COMPONENT_TYPE =
             "invalid.array.component.type";
+    // TODO: I don't see the problem; such array accesses are legal.  In particular, both
+    // `detArray[nonDetInt]` and `nonDetArray[detInt]` are legal and both should have type `@NonDet
+    // ElementType`.
+    // TODO: Later, it became clear that this is about array *assignment*, not array *access*.
+    // Change the text accordingly.
     /**
      * Error message key for array accesses where the type of the index is a supertype of the array
      * type.
      */
+    // TODO: This error key is pretty general and might conflict with other type systems.
     private static final @CompilerMessageKey String INVALID_ARRAY_ACCESS = "invalid.array.access";
 
     /**
@@ -51,6 +57,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
         return Collections.singleton(atypeFactory.DET);
     }
+
+    // TODO: in "type parameter" below, do you mean "type argument"?  I think the latter.
+    // Parameters and arguments are different things, and it's confusing to write imprecisely.
+    // TODO: why can't declarationType be from some other library?  If you just mean  it's a
+    // non-primitive, non-array (?) class, say that.
+    // TODO: the documentation says that declarationType and useType are both "any" type.  Do they
+    // have any relationship to one another?  If so, explain it.
 
     /**
      * Reports errors for the following conditions:
@@ -73,6 +86,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
         // Checks for @OrderNonDet on non-collections and raises an error if this check succeeds.
         if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
+                // TODO: This would be a place to use the allowsOrderNonDet method, if you create
+                // it.  (There is at least one other opportunity as well.)
                 && (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                         || atypeFactory.isIterator(javaType.asElement().asType())))) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
@@ -82,6 +97,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         // Raises an error if the annotation on the type parameter of a collection (or iterator) is
         // a supertype of the annotation on the collection (or iterator).
         if ((atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
+                        // TODO: Abstract out the body, and then it's easy to call that method 1
+                        // or 2 times.
                         // TODO-rashmi: This won't work for maps since they have 2 type arguments.
                         && javaType.getTypeArguments().size() == 1)
                 || atypeFactory.isIterator(javaType.asElement().asType())) {
@@ -118,6 +135,10 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         Set<AnnotationMirror> annos = type.getAnnotations();
+        // TODO: The code repeatedly calls AnnotationBuilder.fromClass.  It should be able to use
+        // fields declared in other classes, or at least cache the results here.  That will improve
+        // performance somewhat, by reducing computation and allocation, and by creating less
+        // garbage for the garbage collector.
         if (annos.contains(AnnotationBuilder.fromClass(elements, OrderNonDet.class))) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
             return false;
