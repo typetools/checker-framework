@@ -16,6 +16,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.basetype.TypeValidator;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -70,8 +71,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      *
      * <ol>
      *   <li>When a non-collection is annotated as {@code @OrderNonDet}.
-     *   <li>When the annotation on type parameter of a Collection or Iterator is a supertype of the
-     *       annotation on the Collection. Example: {@code @Det List<@OrderNonDet String>}.
+     *   <li>When the annotation on the type parameter of a Collection or Iterator is a supertype of
+     *       the annotation on the Collection. Example: {@code @Det List<@OrderNonDet String>}.
      * </ol>
      *
      * @param declarationType the type of any user-defined or a JDK class (TypeElement)
@@ -155,7 +156,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      * @return true if the annotation is valid and false otherwise
      */
     @Override
-    public boolean isValidUse(AnnotatedTypeMirror.AnnotatedArrayType type, Tree tree) {
+    public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
         if (type.getAnnotations().size() > 0
                 && type.getComponentType().getAnnotations().size() > 0) {
             AnnotationMirror arrayType = type.getAnnotations().iterator().next();
