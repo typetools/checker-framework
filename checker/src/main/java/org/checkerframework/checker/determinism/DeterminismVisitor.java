@@ -43,11 +43,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     // TODO: Later, it became clear that this is about array *assignment*, not array *access*.
     // Change the text accordingly.
     /**
-     * Error message key for array accesses where the type of the index is a supertype of the array
-     * type.
+     * Error message key for array assignment where the array is deterministic but the index is
+     * nondeterministic.
      */
-    // TODO: This error key is pretty general and might conflict with other type systems.
-    private static final @CompilerMessageKey String INVALID_ARRAY_ACCESS = "invalid.array.access";
+    private static final @CompilerMessageKey String INVALID_ARRAY_ASSIGNMENT =
+            "invalid.array.assignment";
 
     /**
      * The lower bound for exception parameters is {@code @Det}.
@@ -251,7 +251,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                             .next();
             if (!atypeFactory.getQualifierHierarchy().isSubtype(indexType, arrTopType)) {
                 checker.report(
-                        Result.failure(INVALID_ARRAY_ACCESS, indexType, arrTopType), varTree);
+                        Result.failure(INVALID_ARRAY_ASSIGNMENT, arrTopType, indexType), varTree);
                 return;
             }
         }
