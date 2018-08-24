@@ -171,6 +171,15 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         return true;
     }
 
+    // TODO: The code example "i = arr[0]" was very helpful here, thanks.  Otherwise I wouldn't have
+    // understood the intent.  ("i" is traditionally an index, though, so using it for the array
+    // content was a bit confusing.)
+    // TODO: This approach of handling the assignment rather than the array access expression seems
+    // wrong.  There should be no need for special rules for variable assignment.  It should be
+    // enough to have a rule for the expression "arr[i]".  Then, the Checker Framework's built-in
+    // handling of assignment and other operations should work correctly.  That will also handle the
+    // appearance of "arr[i]" as a subexpression.  So, I would move this.  Does that not work?  Why
+    // is it here?
     /**
      * When an element of an array of type {@code @OrderNonDet} or {@code @NonDet} is accessed, this
      * method annotates the type of that element as {@code @NonDet}. Example:
