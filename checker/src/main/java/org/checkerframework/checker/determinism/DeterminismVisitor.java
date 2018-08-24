@@ -43,7 +43,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     private static final @CompilerMessageKey String INVALID_ARRAY_ACCESS = "invalid.array.access";
 
     /**
-     * Sets the lower bound for exception parameters to be {@code @Det}.
+     * The lower bound for exception parameters is {@code @Det}.
      *
      * @return set of lower bound annotations for exception parameters
      */
@@ -53,7 +53,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Reports errors for the following ordernondet.on.noncollections:
+     * Reports errors for the following conditions:
      *
      * <ol>
      *   <li>When a non-collection is annotated as {@code @OrderNonDet}.
@@ -72,17 +72,15 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         DeclaredType javaType = useType.getUnderlyingType();
 
         // Checks for @OrderNonDet on non-collections and raises an error if this check succeeds.
-        if (useType.hasAnnotation(atypeFactory.ORDERNONDET)) {
-            if (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
-                    || atypeFactory.isIterator(javaType.asElement().asType()))) {
-                checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
-                return false;
-            }
+        if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
+                && (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
+                        || atypeFactory.isIterator(javaType.asElement().asType())))) {
+            checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
+            return false;
         }
 
-        // Checks if the annotation on the type parameter of a collection (or iterator) is a
-        // supertype of the annotation on the collection (or iterator).
-        // If the check succeeds , an error is raised.
+        // Raises an error if the annotation on the type parameter of a collection (or iterator) is
+        // a supertype of the annotation on the collection (or iterator).
         if ((atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
                         // TODO-rashmi: This won't work for maps since they have 2 type arguments.
                         && javaType.getTypeArguments().size() == 1)
@@ -114,7 +112,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      * Reports an error if {@code @OrderNonDet} is used with a primitive type.
      *
      * @param type the use of the primitive type
-     * @param tree the tree where the type is used
+     * @param tree the tree where the type is used; used only for error reporting
      * @return true if the annotation is valid and false otherwise
      */
     @Override

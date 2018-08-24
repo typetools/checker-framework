@@ -125,12 +125,9 @@ public class DeterminismTransfer extends CFTransfer {
             Node receiver,
             TypeMirror underlyingTypeOfReceiver,
             Name methName) {
-        if (factory.isList(underlyingTypeOfReceiver)
+        return (factory.isList(underlyingTypeOfReceiver)
                 && methName.contentEquals("sort")
-                && receiver.getType().getAnnotationMirrors().size() > 0) {
-            return true;
-        }
-        return false;
+                && receiver.getType().getAnnotationMirrors().size() > 0);
     }
 
     /**
@@ -146,11 +143,8 @@ public class DeterminismTransfer extends CFTransfer {
             TypeMirror underlyingTypeOfReceiver,
             Name methName) {
 
-        if (factory.isArrays(underlyingTypeOfReceiver)
-                && (methName.contentEquals("sort") || methName.contentEquals("parallelSort"))) {
-            return true;
-        }
-        return false;
+        return (factory.isArrays(underlyingTypeOfReceiver)
+                && (methName.contentEquals("sort") || methName.contentEquals("parallelSort")));
     }
 
     /**
@@ -165,11 +159,7 @@ public class DeterminismTransfer extends CFTransfer {
             DeterminismAnnotatedTypeFactory factory,
             TypeMirror underlyingTypeOfReceiver,
             Name methName) {
-        if (factory.isCollections(underlyingTypeOfReceiver) && methName.contentEquals("sort")) {
-            return true;
-        }
-
-        return false;
+        return (factory.isCollections(underlyingTypeOfReceiver) && methName.contentEquals("sort"));
     }
 
     /**
@@ -184,11 +174,8 @@ public class DeterminismTransfer extends CFTransfer {
             DeterminismAnnotatedTypeFactory factory,
             TypeMirror underlyingTypeOfReceiver,
             Name methName) {
-        if (factory.isCollections(underlyingTypeOfReceiver) && methName.contentEquals("shuffle")) {
-            return true;
-        }
-
-        return false;
+        return (factory.isCollections(underlyingTypeOfReceiver)
+                && methName.contentEquals("shuffle"));
     }
 
     /**
