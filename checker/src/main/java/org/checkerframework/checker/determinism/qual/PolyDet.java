@@ -32,19 +32,10 @@ public @interface PolyDet {
      * <p>If {@code @PolyDet} resolves to {@link OrderNonDet}, {@code @PolyDet("up")} gets replaced
      * by {@link NonDet}, and {@code @PolyDet("down")} by {@link Det}.
      *
-     * <p>TODO: The below comment is confusing. Here are two things that are confusing. First, even
-     * with regular rules, the method would never be instantiated as {@code void method_name(@Det
-     * a, @NonDet b)}. The only two instantiations would be {@code void method_name(@Det a, @Det b)}
-     * and {@code void method_name(@NonDet a, @NonDet b)}. Second, regarding "you do not want
-     * instantiated": every {@code @PolyDet} will be instatiated, the only question is what it is
-     * instantiated as. Please rewrite the below text. Also, the "this is especially useful" would
-     * be good text for the manual; move it there from here.
-     *
-     * <p>{@code @PolyDet("use")} should be the annotation on method parameters that you do not want
-     * instantiated. For example, a method that is annotated as {@code void method_name (@PolyDet
-     * a, @PolyDet("use") b)} would not be instantiated as {@code void method_name(@Det a, @NonDet
-     * b)}. This is especially useful in preventing methods from non-deterministically modifying the
-     * state of a deterministic receiver.
+     * <p>{@code @PolyDet("use")} should be the annotation on method parameters that are required to
+     * have the same type as {@code @PolyDet} without affecting their instantiation. For example, a
+     * method that is annotated as {@code void method_name (@PolyDet a, @PolyDet("use") b)} would
+     * not allow the method invocation {@code method_name(@Det a, @NonDet b)}.
      */
     String value() default "";
 }

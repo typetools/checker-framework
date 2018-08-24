@@ -58,8 +58,7 @@ The Determinism type system uses the following type qualifiers (see Figure~\ref{
   possibly different order.  \<@OrderNonDet> may only be written on
   collections and arrays.
 \item[\refqualclass{checker/determinism/qual}{Det}] indicates that
-// TODO: clarify "up to equality":  explain whether it is with respect to == or .equals.
-  the expression evaluates to the same value (up to equality) on all
+  the expression evaluates to the same value (with respect to .equals()) on all
   executions; for a collection, iteration also yields the values in the same
   order.
   This is the default qualifier.
@@ -192,13 +191,10 @@ expressing the method behavior:
 
 See the annotated JDK for more example uses of the annotations.
 
-TODO: The below seems incorrect.  Is it necessary on \<@PolyDet int
-identity(@PolyDet int)>?  Do you only mean if \<@PolyDet> is applied to a
-collection somewhere in the signature?
-
-Since the type \<@OrderNonDet> is invalid for non-collections, any return
-type that isn't a collection should be annotated as \<@PolyDet("up")> or
-\<@PolyDet("down")>.
+Since the type \<@OrderNonDet> is invalid for non-collections,
+if \<@PolyDet> is applied to a collection somewhere in the method signature
+and if the return type isn't a collection, then the return type should be
+annotated as \<@PolyDet("up")> or \<@PolyDet("down")>.
 
 
 \subsection{Distinguishing bindings and uses\label{determinism-polymorphism-binding}}
@@ -215,7 +211,9 @@ instantiation, which is one that works for all of the actual arguments
 (their least upper bound).
 
 The \<@PolyDet("use")> annotation is given the same instantiation as all of the
-\<@PolyDet> annotations, but does not affect the instantiation.
+\<@PolyDet> annotations, but does not affect the instantiation. This is especially
+useful in preventing methods from non-deterministically modifying the
+state of a deterministic receiver.
 
 As an example of the need for the \<@PolyDet("use")> annotation, consider the
 \<List.set> method.  There should be two versions of it (\<@OrderNonDet
@@ -275,7 +273,7 @@ The default annotation for an unannotated formal parameter or return type
 is \<@PolyDet>.  This permits all possible arguments to the method.  In case of
 array parameters or return types, both the array type and its component type
 are defaulted to \<@PolyDet>.
-As an exception, the return type of a static method without paramaters
+As an exception, the return type of a static method without parameters
 defaults to \<@Det>.
 
 As with all type systems, defaulting is different for the array and

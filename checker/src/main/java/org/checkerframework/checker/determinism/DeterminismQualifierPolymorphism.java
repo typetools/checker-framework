@@ -1,6 +1,6 @@
 package org.checkerframework.checker.determinism;
 
-import java.util.*;
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
@@ -60,16 +60,15 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
                 type.removeAnnotation(poly);
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);
+            }
+        }
 
-                // Can this be done once at the end, rather than every time through the loop?
-                if (type.hasAnnotation(factory.ORDERNONDET)) {
-                    if (polyUp) {
-                        replaceOrderNonDet(type, factory.NONDET);
-                    }
-                    if (polyDown) {
-                        replaceOrderNonDet(type, factory.DET);
-                    }
-                }
+        if (type.hasAnnotation(factory.ORDERNONDET)) {
+            if (polyUp) {
+                replaceOrderNonDet(type, factory.NONDET);
+            }
+            if (polyDown) {
+                replaceOrderNonDet(type, factory.DET);
             }
         }
     }
@@ -88,7 +87,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         // This flag is true if the type is a collection or an iterator
         boolean isCollectionOrIterator = false;
 
-        // This happens for @OrderNonDet Set<T> (Generic types)
+        // This check succeeds for @OrderNonDet Set<T> (Generic types)
         if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
             return;
         }
@@ -102,16 +101,21 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
 
         // Iterates over all the nested type parameters and does the replacement.
+        // Example: @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>
+        // This while loop iterates twice for the two @OrderNonDet Sets.
         while (isCollectionOrIterator) {
             // Iterates over all the type parameters of this collection and
             // replaces all @OrderNonDet type parameters with 'replaceType'.
+            // Example: @OrderNonDet MyMap<@Det Integer, @Det Integer>
+            // This loop executes twice for the two type parameters.
             for (AnnotatedTypeMirror argType : declaredTypeOuter.getTypeArguments()) {
                 if (argType.hasAnnotation(factory.ORDERNONDET)) {
                     argType.replaceAnnotation(replaceType);
                 }
             }
+
             // Assuming a single type parameter (will not work for HashMaps)
-            // TODO: Handle all type parameters
+            // TODO-rashmi: Handle all type parameters
 
             // Example: @OrderNonDet Set<@OrderNonDet List<@Det Integer>>
             // In the first iteration of this loop, declaredTypeOuter would be @OrderNonDet Set
