@@ -32,8 +32,8 @@ public @interface PolyDet {
      * <p>If {@code @PolyDet} resolves to {@link OrderNonDet}, {@code @PolyDet("up")} gets replaced
      * by {@link NonDet}, and {@code @PolyDet("down")} by {@link Det}.
      *
-     * <p>{@code @PolyDet("use")} should be the annotation on method parameters that are required to
-     * have the same type as {@code @PolyDet} without affecting their instantiation. For example, a
+     * <p>Write {@code @PolyDet("use")} on a method parameter that should have the same type as
+     * {@code @PolyDet} without affecting the instantiation of {@code @PolyDet}. For example, a
      * method that is annotated as {@code void method_name (@PolyDet a, @PolyDet("use") b)} would
      * not allow the method invocation {@code method_name(@Det a, @NonDet b)}.
      */
