@@ -276,6 +276,31 @@ This permits all possible arguments to the method.
 As an exception, the return type of a static method without parameters
 defaults to \<@Det>.
 
+The default annotation on constructor parameters and return types is also \<@PolyDet>.
+This scheme of defaulting allows the construction of Objects whose type
+is dependent on the types of constructor arguments. This causes the checker
+to report errors in situations where the constructor modifies the fields of its class
+using these arguments. The reason for this is that the fields default to \<@Det>.
+As an illustration, consider the example below:
+
+\begin{Verbatim}
+public class Strings {
+    public static class StringHolder {
+        public String data;
+        public StringHolder(String data) {
+            this.data = data;
+        }
+    }
+}
+\end{Verbatim}
+
+In this example, the checker reports an error "assignment type incompatible"
+at the line \<this.data = data> because the field \<data> is annotated as
+\<@Det> by default, whereas the constructor argument has \<@PolyDet>
+as its default annotation. In such cases, you could either suppress the warning
+(to allow construction of \<@PolyDet> objects) or explicitly annotate the
+constructor arguments and return types.
+
 As with all type systems, defaulting is different for the array and
 component types in a locally-declared array or generic type without explicit type
 annotations.
