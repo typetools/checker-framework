@@ -13,8 +13,7 @@ public class SignednessTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.signedness.SignednessChecker.class,
                 "signedness",
-                "-Anomsgtext",
-                "-AprintErrorStack");
+                "-Anomsgtext");
     }
 
     @Parameters

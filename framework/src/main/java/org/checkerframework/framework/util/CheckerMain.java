@@ -23,8 +23,8 @@ import org.checkerframework.javacutil.PluginUtil;
  * This class behaves similarly to javac. CheckerMain does the following:
  *
  * <ul>
- *   <li>add the jsr308-langtools {@code javac.jar} to the runtime bootclasspath of the process that
- *       runs the Checker Framework. This specifies which classes are used to run javac
+ *   <li>add the {@code javac.jar} to the runtime classpath of the process that runs the Checker
+ *       Framework.
  *   <li>add {@code jdk8.jar} to the compile time bootclasspath of the javac argument list passed to
  *       javac
  *   <li>parse and implement any special options used by the Checker Framework, e.g., using
@@ -47,10 +47,7 @@ import org.checkerframework.javacutil.PluginUtil;
  */
 public class CheckerMain {
 
-    /**
-     * Invoke the JSR 308 Type Annotations Compiler. Any exception thrown by the Checker Framework
-     * escapes to the command line.
-     */
+    /** Any exception thrown by the Checker Framework escapes to the command line. */
     public static void main(String[] args) {
         final File pathToThisJar = new File(findPathTo(CheckerMain.class, false));
         ArrayList<String> alargs = new ArrayList<>(args.length);
@@ -63,7 +60,7 @@ public class CheckerMain {
     /** The path to the annotated jdk jar to use. */
     protected final File jdkJar;
 
-    /** The path to the jsr308 Langtools Type Annotations Compiler. */
+    /** The path to the javacJar to use. */
     protected final File javacJar;
 
     /** The path to the jar containing CheckerMain.class (i.e. checker.jar). */
@@ -376,10 +373,7 @@ public class CheckerMain {
         args.add("com.sun.tools.javac.Main");
     }
 
-    /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath.
-     */
+    /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
@@ -461,10 +455,7 @@ public class CheckerMain {
         return result;
     }
 
-    /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath.
-     */
+    /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
     public int invokeCompiler() {
         List<String> args = getExecArguments();
 

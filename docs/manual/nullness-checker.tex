@@ -1212,10 +1212,10 @@ helper routine that is called by constructor.  For example:
 % skip this section on first reading; you can return to it once you have
 % mastered the rest of the Nullness Checker.
 
-At the end of the constructor, the type is not fully initialized. Rather,
-it is \<@UnderInitialization(\emph{supertype})>.
+At the end of the constructor, \<this> is not fully initialized. Rather,
+it is \<@UnderInitialization(\emph{CurrentClass.class})>.
 The reason is that there might be subclasses with uninitialized fields.
-The following example illustrates:
+The following example illustrates this:
 
 \begin{Verbatim}
 class A {

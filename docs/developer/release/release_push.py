@@ -67,17 +67,6 @@ def copy_releases_to_live_site(checker_version, afu_version):
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
     promote_release(AFU_LIVE_RELEASES_DIR, afu_version)
 
-### def update_release_symlinks(checker_version, afu_version):
-###     """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
-###     and the Checker Framework live sites to point to the new releases of each
-###     project."""
-###     afu_relative_latest_release_dir = os.path.join("releases", afu_version)
-###     checker_and_jsr308_relative_latest_release_dir = os.path.join("releases", checker_version)
-###
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, "current"))
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, "current"))
-###     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, "current"))
-
 def ensure_group_access_to_releases():
     """Gives group access to all files and directories in the \"releases\"
     subdirectories on the live web site for the AFU and the
@@ -270,7 +259,7 @@ def main(argv):
 
     if not os.path.exists(RELEASE_BUILD_COMPLETED_FLAG_FILE):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
-                         "the JSR308, AFU, or Checker Framework repositories.  Please ensure it has " +
+                         "the AFU or Checker Framework repositories.  Please ensure it has " +
                          "been run.")
 
     # The release script checks that the new release version is greater than the previous release version.

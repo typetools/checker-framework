@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering checker-framework/.travis-build-without-test.sh" in `pwd`
+echo Entering `pwd`/.travis-build-without-test.sh
 
 # Fail the whole script if any command fails
 set -e
@@ -62,7 +62,7 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 if [ ! -d ../jsr308-langtools ] ; then
   (cd .. && wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip)
   (cd .. && unzip -q jsr308-langtools-2.4.0.zip)
-  (cd .. &&  mv jsr308-langtools-2.4.0 jsr308-langtools)
+  (cd .. && mv jsr308-langtools-2.4.0 jsr308-langtools)
 fi
 
 # Two options: rebuild the JDK or download a prebuilt JDK.
@@ -76,4 +76,4 @@ if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   ./gradlew --console=plain assemble
 fi
 
-echo "Exiting checker-framework/.travis-build-without-test.sh" in `pwd`
+echo Exiting `pwd`/.travis-build-without-test.sh

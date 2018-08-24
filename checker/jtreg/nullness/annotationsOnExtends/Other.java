@@ -2,8 +2,8 @@
  * @test
  * @summary Test for bug when storing annotations on extends or implements in class declarations in elements.
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack Test.java Test2.java Other.java
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack Other.java Test.java Test2.java
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Test.java Test2.java Other.java
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Other.java Test.java Test2.java
  */
 
 class Other {
