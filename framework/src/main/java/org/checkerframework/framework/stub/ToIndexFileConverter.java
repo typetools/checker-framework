@@ -568,7 +568,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                             case SHORT:
                                 return "S";
                             default:
-                                throw new BugInCF("unknown primitive type " + type); // unreachable
+                                throw new BugInCF("unknown primitive type " + type);
                         }
                     }
 

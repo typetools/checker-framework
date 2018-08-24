@@ -35,7 +35,7 @@ public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T>
             case ANY:
                 return set.add(e);
             default:
-                throw new BugInCF("Unhandled state " + state); // unreachable
+                throw new BugInCF("Unhandled state " + state);
         }
     }
 
@@ -49,7 +49,7 @@ public final class IdentityMostlySingleton<T> extends AbstractMostlySingleton<T>
             case ANY:
                 return set.contains(o);
             default:
-                throw new BugInCF("Unhandled state " + state); // unreachable
+                throw new BugInCF("Unhandled state " + state);
         }
     }
 }

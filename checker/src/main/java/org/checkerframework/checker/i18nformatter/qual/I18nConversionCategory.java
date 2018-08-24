@@ -129,7 +129,7 @@ public enum I18nConversionCategory {
                 return v;
             }
         }
-        throw new RuntimeException(); // unreachable
+        throw new RuntimeException();
     }
 
     /**

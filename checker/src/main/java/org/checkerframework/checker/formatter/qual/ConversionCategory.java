@@ -185,7 +185,7 @@ public enum ConversionCategory {
                 return v;
             }
         }
-        throw new RuntimeException(); // unreachable
+        throw new RuntimeException();
     }
 
     /**

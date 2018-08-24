@@ -30,7 +30,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.size();
             default:
-                throw new BugInCF("Unhandled state " + state); // unreachable
+                throw new BugInCF("Unhandled state " + state);
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.iterator();
             default:
-                throw new BugInCF("Unhandled state " + state); // unreachable
+                throw new BugInCF("Unhandled state " + state);
         }
     }
 
@@ -84,7 +84,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case ANY:
                 return set.toString();
             default:
-                throw new BugInCF("Unhandled state " + state); // unreachable
+                throw new BugInCF("Unhandled state " + state);
         }
     }
 
