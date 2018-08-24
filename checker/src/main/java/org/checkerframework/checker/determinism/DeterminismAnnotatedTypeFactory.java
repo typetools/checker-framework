@@ -135,6 +135,14 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO:
+        // I think there might be a confusion regarding what "defaulting" means.
+        // Defaulting occurs when the programmer does not write a type qualifier on a use of a type.
+        // (This is explained at https://checkerframework.org/manual/#effective-qualifier .)
+        // Defaulting has no effect if the programmer wrote a type qualifier.
+        // On a method invocation, there is no type on which to write a type qualifier, and there is
+        // no check whether a programmer wrote something explicitly.
+        // Please correct use of the term "defaulting" throughout.
         /**
          * Places the default annotation on the return type of a method invocation as follows:
          *
@@ -173,12 +181,18 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Checks if return type (non-array and non-collection) resolves to @OrderNonDet.
             // If the check succeeds, the annotation on the return type is replaced with @NonDet.
             if (p.getAnnotations().contains(ORDERNONDET)
+                    // TODO: consider abstracting out these three lines into a mayBeOrderNonDet
+                    // method.
                     && !(p.getUnderlyingType().getKind() == TypeKind.ARRAY)
                     && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
                     && !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))) {
                 p.replaceAnnotation(NONDET);
             }
 
+            // TODO: This logic should not be performed here, at the call site.  Rather, it should
+            // be done as defaulting, at the method definition.  That way, the .class file will
+            // contain correct information for use by other tools.  More generally, checking for
+            // explicit annotations, anywhere other than when doing defaulting, is a code smell.
             // If the invoked method is static and has no arguments,
             // its return type is annotated as @Det.
             if (ElementUtils.isStatic(invokedMethodElement)) {
@@ -189,6 +203,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
+            // TODO: This doesn't say where a reader of the code can find "the specification"?  You
+            // should refer to the manual.  Is this behavior documented there?
             // Annotates the return type of "equals()" method called on a Set receiver
             // as described in the specification.
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
