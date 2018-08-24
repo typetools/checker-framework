@@ -1,16 +1,34 @@
 package org.checkerframework.checker.determinism;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
-import java.util.*;
-import javax.lang.model.element.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.determinism.qual.*;
+import org.checkerframework.checker.determinism.qual.Det;
+import org.checkerframework.checker.determinism.qual.NonDet;
+import org.checkerframework.checker.determinism.qual.OrderNonDet;
+import org.checkerframework.checker.determinism.qual.PolyDet;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.flow.*;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -21,35 +39,45 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.javacutil.*;
+import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the determinism type-system. */
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    /** Annotation constants for @PolyDet. */
-    public final AnnotationMirror POLYDET, POLYDET_USE, POLYDET_UP, POLYDET_DOWN;
-    /** Annotation constant for @NonDet. */
+    /** The @PolyDet annotation. */
+    public final AnnotationMirror POLYDET;
+    /** The @PolyDet("up") annotation. */
+    public final AnnotationMirror POLYDET_UP;
+    /** The @PolyDet("down") annotation. */
+    public final AnnotationMirror POLYDET_DOWN;
+    /** The @PolyDet("use") annotation. */
+    public final AnnotationMirror POLYDET_USE;
+    /** The @NonDet annotation. */
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
-    /** Annotation constant for @OrderNonDet. */
+    /** The @OrderNonDet annotation. */
     public final AnnotationMirror ORDERNONDET =
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
-    /** Annotation constant for @Det. */
+    /** The @Det annotation. */
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
-    /** TypeMirror constant for the Set interface. */
+    /** The Set interface. */
     private final TypeMirror SetInterfaceTypeMirror =
             TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
-    /** TypeMirror constant for the List interface. */
+    /** The List interface. */
     private final TypeMirror ListInterfaceTypeMirror =
             TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
-    /** TypeMirror constant for the Collection class. */
+    /** The Collection class. */
     private final TypeMirror CollectionInterfaceTypeMirror =
             TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
-    /** TypeMirror constant for the Iterator class. */
+    /** The Iterator class. */
     private final TypeMirror IteratorTypeMirror =
             TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
-    /** TypeMirror constant for the Arrays class. */
+    /** The Arrays class. */
     private final TypeMirror ArraysTypeMirror =
             TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
-    /** TypeMirror constant for the Collections class. */
+    /** The Collections class. */
     private final TypeMirror CollectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
 
