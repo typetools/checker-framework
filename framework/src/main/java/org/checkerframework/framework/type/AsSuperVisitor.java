@@ -62,7 +62,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         // This visitor modifies superType and may return type, so pass it copies so that the
         // parameters to asSuper are not changed and a copy is returned.
         AnnotatedTypeMirror copyType = type.deepCopy();
-        AnnotatedTypeMirror copySuperType = superType.deepCopy(false);
+        AnnotatedTypeMirror copySuperType = superType.deepCopy();
         reset();
         AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
@@ -607,7 +607,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitTypevar_Typevar(
             AnnotatedTypeVariable type, AnnotatedTypeVariable superType, Void p) {
-
+        superType.clearAnnotations();
+        copyPrimaryAnnos(type, superType);
         AnnotatedTypeMirror upperBound = visit(type.getUpperBound(), superType.getUpperBound(), p);
         superType.setUpperBound(upperBound);
 
@@ -622,7 +623,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setLowerBound(lowerBound);
 
-        return copyPrimaryAnnos(type, superType);
+        return superType;
     }
 
     @Override
