@@ -270,9 +270,9 @@ deterministic.  If it is be too restrictive for your program:
 The default annotation for most unannotated types is \<@Det>.
 
 The default annotation for an unannotated formal parameter or return type
-is \<@PolyDet>.  This permits all possible arguments to the method.  In case of
-array parameters or return types, both the array type and its component type
-are defaulted to \<@PolyDet>.
+is \<@PolyDet> (for arrays, both the array type and its component type
+are defaulted to \<@PolyDet>).
+This permits all possible arguments to the method.
 As an exception, the return type of a static method without parameters
 defaults to \<@Det>.
 
