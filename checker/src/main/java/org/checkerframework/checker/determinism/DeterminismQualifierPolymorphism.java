@@ -13,16 +13,16 @@ import org.checkerframework.javacutil.TypesUtils;
 /** Resolves polymorphic annotations for the determinism type-system. */
 public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphism {
 
-    /** Determinism checker factory. */
+    /** Determinism Checker factory. */
     DeterminismAnnotatedTypeFactory factory;
 
     /**
-     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the determinism checker for
+     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the Determinism Checker for
      * querying type qualifiers and the {@link DeterminismAnnotatedTypeFactory} for getting
      * annotated types.
      *
      * @param env the processing environment
-     * @param factory the factory for the determinism checker
+     * @param factory the factory for the Determinism Checker
      */
     public DeterminismQualifierPolymorphism(
             ProcessingEnvironment env, DeterminismAnnotatedTypeFactory factory) {
@@ -31,7 +31,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     }
 
     /**
-     * Replaces {@code @PolyDet} in {@code type} with the instantiations in {@code matches}.
+     * Replaces {@code @PolyDet} in {@code type} with the instantiations in {@code replacements}.
      * Replaces {@code @PolyDet("up")} with {@code @NonDet} if it resolves to {@code OrderNonDet}.
      * Replaces {@code @PolyDet("down")} with {@code @Det} if it resolves to {@code OrderNonDet}.
      * Replaces {@code @PolyDet("use")} with the same annotation that {@code @PolyDet} resolves to.
@@ -44,13 +44,13 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     @Override
     protected void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
-        boolean polyUp = false;
-        boolean polyDown = false;
+        boolean isPolyUp = false;
+        boolean isPolyDown = false;
         if (type.hasAnnotation(factory.POLYDET_UP)) {
-            polyUp = true;
+            isPolyUp = true;
             type.replaceAnnotation(factory.POLYDET);
         } else if (type.hasAnnotation(factory.POLYDET_DOWN)) {
-            polyDown = true;
+            isPolyDown = true;
             type.replaceAnnotation(factory.POLYDET);
         }
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
@@ -64,10 +64,10 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
 
         if (type.hasAnnotation(factory.ORDERNONDET)) {
-            if (polyUp) {
+            if (isPolyUp) {
                 replaceOrderNonDet(type, factory.NONDET);
             }
-            if (polyDown) {
+            if (isPolyDown) {
                 replaceOrderNonDet(type, factory.DET);
             }
         }
@@ -101,8 +101,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
 
         // Iterates over all the nested type parameters and does the replacement.
-        // Example: @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>
-        // This while loop iterates twice for the two @OrderNonDet Sets.
+        // Example: In @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>,
+        // this while loop iterates twice for the two @OrderNonDet Sets.
         while (isCollectionOrIterator) {
             // Iterates over all the type parameters of this collection and
             // replaces all @OrderNonDet type parameters with 'replaceType'.
