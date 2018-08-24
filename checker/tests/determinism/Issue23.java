@@ -1,5 +1,6 @@
 import org.checkerframework.checker.determinism.qual.*;
 
+// @skip-test
 public class Issue23 {
     public static <T> String arrToString(T[] arr) {
         return arr.toString();
