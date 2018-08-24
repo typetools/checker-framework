@@ -41,6 +41,7 @@ public class DeterminismTransfer extends CFTransfer {
         DeterminismAnnotatedTypeFactory factory =
                 (DeterminismAnnotatedTypeFactory) analysis.getTypeFactory();
 
+        // TODO: What class node?  The class that declares the method?
         // Note: For static method calls, the receiver is the Class node.
         Node receiver = n.getTarget().getReceiver();
 
@@ -72,6 +73,8 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
             if (firstArgAnno != null
                     && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
+                // TODO: Please explain the following code (the for and if statements); I don't
+                // understand them.
                 boolean typeRefine = true;
                 for (int i = 1; i < n.getArguments().size(); i++) {
                     AnnotatedTypeMirror otherArgType =

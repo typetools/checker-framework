@@ -10,6 +10,7 @@ import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
+// TODO: This comment is vague.  Please make it more descriptive and concrete.
 /** Resolves polymorphic annotations for the determinism type-system. */
 public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphism {
 
@@ -53,8 +54,14 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             polyDown = true;
             type.replaceAnnotation(factory.POLYDET);
         }
+        // TODO: Does this for loop iterate exactly once, or could it do so multiple times?
+        // The test type.hasAnnotation(factory.POLYDET_USE) will evaluet te the same value on every
+        // iteration, which meats that type.replaceAnnotations could get called multiple times.
+        // That seems surprising and wrong.
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
+            // TODO: when can poly be null?  I would not expect null keys.  What does a null key
+            // mean?
             if (poly != null
                     && (type.hasAnnotation(poly) || type.hasAnnotation(factory.POLYDET_USE))) {
                 type.removeAnnotation(poly);
@@ -73,6 +80,10 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
     }
 
+    // TODO: I'm confused by this method.  Its name contains OrderNonDet, but its documentation
+    // doesn't mention OrderNonDet.  The documentation is also incomplete:  type gets replaced by
+    // replaceType in what?  Or maybe it should be "replaces the @OrderNonDet annotation of type"?
+    // Please clarify.
     /**
      * Helper method that replaces the annotation of {@code type} with {@code replaceType}.
      *
@@ -82,11 +93,6 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         type.replaceAnnotation(replaceType);
 
-        // Outer declaration type
-        AnnotatedTypeMirror.AnnotatedDeclaredType declaredTypeOuter = null;
-        // This flag is true if the type is a collection or an iterator
-        boolean isCollectionOrIterator = false;
-
         // This check succeeds for @OrderNonDet Set<T> (Generic types)
         if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
             return;
@@ -94,12 +100,23 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
 
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
-        if (factory.isCollection(underlyingTypeOfReceiver)
-                || factory.isIterator(underlyingTypeOfReceiver)) {
-            declaredTypeOuter = (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
-            isCollectionOrIterator = true;
-        }
+        // TODO: The following comment is incorrect, because isCollectionOrIterator is reassigned
+        // without `type` being reassigned.  or maybe "the type" doesn't refer to `type` but some
+        // other variable such as declaredTypeOuter that the reader is supposed to guess from
+        // context.  Clarify, and be specific.
+        // This flag is true if the type is a collection or an iterator
+        boolean isCollectionOrIterator =
+                (factory.isCollection(underlyingTypeOfReceiver)
+                        || factory.isIterator(underlyingTypeOfReceiver));
+        // Outer declaration type
+        AnnotatedTypeMirror.AnnotatedDeclaredType declaredTypeOuter =
+                (isCollectionOrIterator ? (AnnotatedTypeMirror.AnnotatedDeclaredType) type : null);
 
+        // TODO: I am still confused by this loop.
+        // Why not make a recursive call to this method for each type parameter?
+        // That will make it easy to accommodate multiple type parameters, too (just a for loop over
+        // each one), whereas I don't see how to handle multiple type parameters with the current
+        // design.
         // Iterates over all the nested type parameters and does the replacement.
         // Example: @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>
         // This while loop iterates twice for the two @OrderNonDet Sets.

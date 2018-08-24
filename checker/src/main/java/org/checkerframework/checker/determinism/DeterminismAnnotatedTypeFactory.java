@@ -396,6 +396,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSubtype(types.erasure(tm), types.erasure(ListInterfaceTypeMirror));
     }
 
+    // TODO: It is surprising that isCollection and isIterator recompute the `types` variable, but
+    // isSet and isList did not (and neither did isArrays and isCollections).  Make them consistent.
+
     /** @return true if {@code tm} is Collection or a subtype of Collection */
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
