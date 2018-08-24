@@ -247,10 +247,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     * Checks if {@code @OrderNonDet List} appears as a type parameter in {@code atm} and returns
-     * true if the checks succeeds.
-     */
+    /** Returns true if {@code @OrderNonDet List} appears as a type parameter in {@code atm}. */
     private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
@@ -282,7 +279,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             } else {
-                // Annotates the array return types as @PolyDet[@PolyDet]
+                // Annotates array return types as @PolyDet[@PolyDet]
                 AnnotatedTypeMirror retType = t.getReturnType();
                 if (retType.getKind() == TypeKind.ARRAY) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
@@ -295,7 +292,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
 
-                // Annotates the array parameter types as @PolyDet[@PolyDet]
+                // Annotates array parameter types as @PolyDet[@PolyDet]
                 List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
                 for (AnnotatedTypeMirror paramType : paramTypes) {
                     if (paramType.getKind() == TypeKind.ARRAY
@@ -339,7 +336,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Adds default annotations for main method parameters ({@code @Det}) and array parameters
+     * Adds default annotations for main method parameters ({@code @Det}) and other array parameters
      * ({@code @PolyDet[@PolyDet]}).
      */
     @Override
@@ -363,55 +360,36 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(elt, type);
     }
 
-    /** @return true if {@code tm} is a Set or a subtype of Set */
+    /** @return true if {@code tm} is Set or a subtype of Set */
     private boolean isSet(TypeMirror tm) {
-        if (types.isSubtype(types.erasure(tm), types.erasure(SetInterfaceTypeMirror))) {
-            return true;
-        }
-        return false;
+        return types.isSubtype(types.erasure(tm), types.erasure(SetInterfaceTypeMirror));
     }
 
     /** @return true if {@code tm} is a List or a subtype of List */
     public boolean isList(TypeMirror tm) {
-        // List and subclasses
-        if (types.isSubtype(types.erasure(tm), types.erasure(ListInterfaceTypeMirror))) {
-            return true;
-        }
-        return false;
+        return types.isSubtype(types.erasure(tm), types.erasure(ListInterfaceTypeMirror));
     }
 
-    /** @return true if {@code tm} is a Collection or a subtype of Collection */
+    /** @return true if {@code tm} is Collection or a subtype of Collection */
     public boolean isCollection(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
-        if (types.isSubtype(types.erasure(tm), types.erasure(CollectionInterfaceTypeMirror))) {
-            return true;
-        }
-        return false;
+        return types.isSubtype(types.erasure(tm), types.erasure(CollectionInterfaceTypeMirror));
     }
 
-    /** @return true if {@code tm} is an Iterator or a subtype of Iterator */
+    /** @return true if {@code tm} is Iterator or a subtype of Iterator */
     public boolean isIterator(TypeMirror tm) {
         javax.lang.model.util.Types types = processingEnv.getTypeUtils();
-        if (types.isSubtype(tm, IteratorTypeMirror)) {
-            return true;
-        }
-        return false;
+        return types.isSubtype(tm, IteratorTypeMirror);
     }
 
     /** @return true if {@code tm} is the Arrays class */
     public boolean isArrays(TypeMirror tm) {
-        if (types.isSameType(tm, ArraysTypeMirror)) {
-            return true;
-        }
-        return false;
+        return types.isSameType(tm, ArraysTypeMirror);
     }
 
-    /** @return true if {@code tm} is a the Collections class */
+    /** @return true if {@code tm} is the Collections class */
     public boolean isCollections(TypeMirror tm) {
-        if (types.isSameType(tm, CollectionsTypeMirror)) {
-            return true;
-        }
-        return false;
+        return types.isSameType(tm, CollectionsTypeMirror);
     }
 
     @Override
