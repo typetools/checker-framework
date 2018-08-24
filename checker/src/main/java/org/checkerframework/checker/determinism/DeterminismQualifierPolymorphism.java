@@ -101,7 +101,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
         // TODO: The following comment is incorrect, because isCollectionOrIterator is reassigned
-        // without `type` being reassigned.  or maybe "the type" doesn't refer to `type` but some
+        // without `type` being reassigned.  Or maybe "the type" doesn't refer to `type` but some
         // other variable such as declaredTypeOuter that the reader is supposed to guess from
         // context.  Clarify, and be specific.
         // This flag is true if the type is a collection or an iterator

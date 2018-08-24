@@ -85,9 +85,9 @@ public class DeterminismTransfer extends CFTransfer {
                     }
                 }
                 if (typeRefine) {
-                    // The following two lines appear a lot in this method.  Can they be factored
-                    // out (for clarity and to emphasize similarity, more than for brevity)?  Or
-                    // maybe the common code can be larger.
+                    // TODO: The following two lines appear a lot in this method.  Can they be
+                    // factored out (for clarity and to emphasize similarity, more than for
+                    // brevity)?  Or maybe the common code can be larger.
                     FlowExpressions.Receiver firstArgRep =
                             FlowExpressions.internalReprOf(factory, n.getArgument(0));
                     typeRefine(firstArgRep, result, factory.DET);
