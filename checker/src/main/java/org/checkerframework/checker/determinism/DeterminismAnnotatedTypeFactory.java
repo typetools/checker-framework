@@ -283,6 +283,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: Are these really default annotations?
+        // The code should check whether there is already an annotation there (and maybe warn or
+        // issue an error, depending on whether this is defaults or implicit annotations).
         /**
          * Places the following default annotations:
          *
@@ -300,10 +303,14 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 // Annotates the array return types as @PolyDet[@PolyDet]
                 AnnotatedTypeMirror retType = t.getReturnType();
+                // TODO: I suggest abstracting out this if statement be abstracted out, so that the
+                // below for loop can use it too.
                 if (retType.getKind() == TypeKind.ARRAY) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) retType;
                     if (arrRetType.getAnnotations().size() == 0
+                            // TODO: Why does this check for type variables but the similar code in
+                            // the for loop below does not?
                             && arrRetType.getComponentType().getUnderlyingType().getKind()
                                     != TypeKind.TYPEVAR) {
                         arrRetType.replaceAnnotation(POLYDET);
@@ -360,6 +367,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+        // TODO: This logic is very similar to logic elsewhere in this file.  Why is it duplicated?
+        // When is each used?  Does the need for duplication indicate a problem in your design, or a
+        // limitation in the Checker Framework?
         if (elt.getKind() == ElementKind.PARAMETER) {
             if (elt.getEnclosingElement().getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
