@@ -284,10 +284,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (retType.getKind() == TypeKind.ARRAY) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) retType;
-                    if (arrRetType.getAnnotations().size() == 0){
+                    if (arrRetType.getAnnotations().size() == 0) {
                         arrRetType.replaceAnnotation(POLYDET);
-                        if(arrRetType.getComponentType().getUnderlyingType().getKind()
-                                != TypeKind.TYPEVAR){
+                        if (arrRetType.getComponentType().getUnderlyingType().getKind()
+                                != TypeKind.TYPEVAR) {
                             arrRetType.getComponentType().replaceAnnotation(POLYDET);
                         }
                     }
@@ -296,12 +296,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Annotates array parameter types as @PolyDet[@PolyDet]
                 List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
                 for (AnnotatedTypeMirror paramType : paramTypes) {
-                    if (paramType.getKind() == TypeKind.ARRAY){
+                    if (paramType.getKind() == TypeKind.ARRAY) {
                         AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
                                 (AnnotatedTypeMirror.AnnotatedArrayType) paramType;
                         if (arrParamType.getAnnotations().size() == 0) {
                             arrParamType.replaceAnnotation(POLYDET);
-                            if(paramType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+                            if (paramType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
                                 arrParamType.getComponentType().replaceAnnotation(POLYDET);
                             }
                         }
