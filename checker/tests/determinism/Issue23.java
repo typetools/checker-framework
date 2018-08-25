@@ -10,7 +10,11 @@ public class Issue23 {
         return arrToString(arr);
     }
 
-    public static <T> @Det String callToStringDet(T @Det [] arr) {
+    public static <T extends @Det Object> @Det String callToStringDet(T @Det [] arr) {
+        return arrToString(arr);
+    }
+
+    public static <T> @Det String callToStringDet1(@NonDet T @Det [] arr) {
         return arrToString(arr);
     }
 }
