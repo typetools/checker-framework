@@ -1727,7 +1727,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCache = null;
     /** The same as {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache. */
-    private getExceptionParameterLowerBoundAnnotationsCached() {
+    private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCached() {
         if (getExceptionParameterLowerBoundAnnotationsCache == null) {
             getExceptionParameterLowerBoundAnnotationsCache =
                     getExceptionParameterLowerBoundAnnotations();
