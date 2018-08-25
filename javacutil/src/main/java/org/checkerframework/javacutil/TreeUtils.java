@@ -99,7 +99,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Checks if the method invocation is a call to this.
+     * Checks if the method invocation is a call to "this".
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to this
@@ -108,25 +108,15 @@ public final class TreeUtils {
         return isNamedMethodCall("this", tree);
     }
 
+    /**
+     * Checks if the method call is a call to the given method name.
+     *
+     * @param name a method name
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to the given method
+     */
     protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
-        @Nullable ExpressionTree mst = tree.getMethodSelect();
-        assert mst != null; /*nninvariant*/
-
-        if (mst.getKind() == Tree.Kind.IDENTIFIER) {
-            return ((IdentifierTree) mst).getName().contentEquals(name);
-        }
-
-        if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
-            MemberSelectTree selectTree = (MemberSelectTree) mst;
-
-            if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
-                return false;
-            }
-
-            return ((IdentifierTree) selectTree.getExpression()).getName().contentEquals(name);
-        }
-
-        return false;
+        return getMethodName(tree.getMethodSelect()).equals(name);
     }
 
     /**
