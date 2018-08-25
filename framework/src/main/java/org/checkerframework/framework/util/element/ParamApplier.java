@@ -16,7 +16,7 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /** Adds annotations to one formal parameter of a method or lambda within a method. */
@@ -84,8 +84,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
         final int paramIndex = enclosingMethod.getParameters().indexOf(element);
         if (paramIndex == -1) {
-            ErrorReporter.errorAbort(
-                    "Could not find parameter Element in parameter list! "
+            throw new BugInCF(
+                    "Could not find parameter Element in parameter list. "
                             + "Parameter( "
                             + element
                             + " ) Parent ( "
@@ -215,7 +215,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
      */
     public static Symbol.MethodSymbol getParentMethod(final Element methodChildElem) {
         if (!(methodChildElem.getEnclosingElement() instanceof Symbol.MethodSymbol)) {
-            throw new RuntimeException(
+            throw new BugInCF(
                     "Element is not a direct child of a MethodSymbol. Element ( "
                             + methodChildElem
                             + " parent ( "
