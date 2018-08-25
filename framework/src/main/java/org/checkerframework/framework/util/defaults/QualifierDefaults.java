@@ -723,7 +723,8 @@ public class QualifierDefaults {
 
         protected final DefaultApplierElementImpl impl;
 
-        /*Local type variables are defaulted to top when flow is turned on
+        /*
+          Local type variables are defaulted to top when flow is turned on
           We only want to default the top level type variable (and not type variables that are nested
           in its bounds). E.g.,
             <T extends List<E>, E extends Object> void method() {
