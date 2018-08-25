@@ -1218,7 +1218,7 @@ Section~\ref{creating-javac-tips} can help you get started.
 If the \<@ImplicitFor> annotation is not sufficiently expressive, then you
 can write code to set implicit annotations.  To do so, create a subclass of
 \refclass{framework/type}{AnnotatedTypeFactory} and override its
-\<addComputedTypeAnnotations> methods.
+two \<addComputedTypeAnnotations> methods.
 
 \<AnnotatedTypeFactory>, when given a program
 expression, returns the expression's type.  This should include not only
@@ -1236,7 +1236,9 @@ and
 \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
 The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
 which is the Checker Framework's representation of an annotated type.
-
+The methods can make arbitrary changes to the annotations on a type, but
+try to limit their work to implicit annotations; often some existing
+simpler mechanism in the Checker Framework will serve other purposes.
 
 
 \section{Dataflow: enhancing flow-sensitive type qualifier inference\label{creating-dataflow}}
