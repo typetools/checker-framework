@@ -159,7 +159,9 @@ Framework:
   \textbf{Type qualifiers and hierarchy.}  You define the annotations for
   the type system and the subtyping relationships among qualified types
   (for instance, \<@NonNull Object> is a subtype of \<@Nullable
-  Object>).
+  Object>).  This is also where you specify the default annotation that
+  applies whenever the programmer wrote no annotation and no implicit
+  annotation applies.
 
 \item{\ref{creating-compiler-interface}}
   \textbf{Interface to the compiler.}  The compiler interface indicates
@@ -652,6 +654,10 @@ qualifier file.  For instance, \code{int value() default 0;} would make
 \code{value} default to zero. Alternatively, the procedural method
 described above can be used.
 
+Implicit annotations are distinct from default annotations.
+Section~\ref{creating-type-introduction} describes how to implement
+implicit annotations.
+
 
 \subsection{Relevant Java types\label{creating-relevant-java-types}}
 
@@ -1136,13 +1142,13 @@ Section~\ref{eclipse}).
 
 \subsection{Avoid hardcoding\label{creating-avoid-hardcoding}}
 
-It may be tempting to write a type-checking rule for method invocation,
-where your rule checks the name of the method being called and then treats
-the method in a special way.  This is sometimes necessary, but it is usually
-the wrong approach.  It is better to write annotations, in a stub file
-or annotated JDK (Chapter~\ref{annotating-libraries}),
-and leave the work to the standard
-type-checking rules.
+If a method's contract is expressible in the type system's annotation
+syntax, then you should write annotations, in a stub file or annotated JDK
+(Chapter~\ref{annotating-libraries}).
+
+Only if the contract is not expressible should you write a type-checking
+rule for method invocation, where your rule checks the name of the method
+being called and then treats the method in a special way.
 
 
 \section{Type factory: Implicit annotations (type introduction rules)\label{creating-type-introduction}}
@@ -1158,6 +1164,10 @@ The implicit annotations may be specified declaratively
 (Section~\ref{creating-procedurally-specifying-implicit-annotations}).
 It is easiest to specify them declaratively, when the declarative method is
 sufficiently expressive.
+
+Default annotations are distinct from implicit annotations.
+Section~\ref{creating-typesystem-defaults} describes how to specify
+default annotations.
 
 
 \subsection{Declaratively specifying implicit annotations\label{creating-declarative-type-introduction}}
