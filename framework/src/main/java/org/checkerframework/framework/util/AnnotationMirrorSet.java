@@ -24,6 +24,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class AnnotationMirrorSet implements Set<AnnotationMirror> {
     private Set<AnnotationMirror> shadowSet = new TreeSet<>(AnnotationUtils.annotationOrdering());
 
+    /** Default constructor. */
     public AnnotationMirrorSet() {}
 
     public AnnotationMirrorSet(Collection<? extends AnnotationMirror> values) {

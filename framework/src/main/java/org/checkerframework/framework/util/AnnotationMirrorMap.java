@@ -27,6 +27,7 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
     private final Map<AnnotationMirror, V> shadowMap =
             new TreeMap<>(AnnotationUtils.annotationOrdering());
 
+    /** Default constructor. */
     public AnnotationMirrorMap() {}
 
     public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> primaries) {
