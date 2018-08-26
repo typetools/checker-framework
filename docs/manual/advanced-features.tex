@@ -57,7 +57,7 @@ precise possible type, depending on the particular expression or value.
 For example, when using the Regex Checker (\chapterpageref{regex-checker}),
 the string \<"hello"> is given type \<@Regex String> because it is a legal
 regular expression (whether it is meant to be used as one or not) and the
-string \<"(foo"> is given the type \<@Unqualified String> because it is not
+string \<"(foo"> is given the type \<@RegexBottom String> because it is not
 a legal regular expression.
 
 Array constructors work differently.  When you create an array with the

@@ -765,7 +765,7 @@ public class AnnotationClassLoader {
      *
      * <p>A subclass may override this method to load annotations that are not intended to be
      * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code
-     * Unqualified}
+     * Unqualified}.
      *
      * @param annoClass an annotation class
      * @return true if the annotation is well defined, false if it isn't

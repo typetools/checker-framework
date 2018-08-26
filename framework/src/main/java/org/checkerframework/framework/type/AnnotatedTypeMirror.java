@@ -669,8 +669,8 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Removes all primary annotations on this type. Make sure to add an annotation again, e.g.
-     * Unqualified.
+     * Removes all primary annotations on this type. Make sure to add an annotation after calling
+     * this.
      *
      * <p>This method should only be used in very specific situations. For individual type systems,
      * it is generally better to use {@link #removeAnnotation(AnnotationMirror)} and similar

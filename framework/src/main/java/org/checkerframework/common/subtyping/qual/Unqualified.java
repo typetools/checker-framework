@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * A special annotation intended solely for representing an unqualified type in the qualifier
- * hierarchy, as an argument to {@link SubtypeOf#value()}, in the type qualifiers declarations.
+ * hierarchy, as an argument to {@link SubtypeOf#value()}, in a type qualifier declaration.
  *
  * <p>This annotation may not be written in source code; it is an implementation detail of the
  * checker.
