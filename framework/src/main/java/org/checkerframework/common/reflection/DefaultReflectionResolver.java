@@ -50,7 +50,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -563,8 +563,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
         } catch (SecurityException | NoSuchMethodException | IllegalArgumentException e) {
-            ErrorReporter.errorAbort("Error in obtaining reflective method.");
-            return null;
+            throw new BugInCF("Error in obtaining reflective method.");
         }
         try {
             Symbol symbol = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
@@ -573,8 +572,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 | IllegalAccessException
                 | IllegalArgumentException
                 | InvocationTargetException e) {
-            ErrorReporter.errorAbort("Error in invoking reflective method.");
-            return null;
+            throw new BugInCF("Error in invoking reflective method.");
         }
     }
 
