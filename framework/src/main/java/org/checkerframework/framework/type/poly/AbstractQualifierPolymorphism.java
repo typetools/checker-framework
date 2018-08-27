@@ -352,13 +352,16 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return res;
         }
 
-        public AnnotationMirrorMap<AnnotationMirrorSet> visit(
+        /**
+         * Calls {@link #visit(AnnotatedTypeMirror, AnnotatedTypeMirror)} for each type in types.
+         */
+        private AnnotationMirrorMap<AnnotationMirrorSet> visit(
                 Iterable<? extends AnnotatedTypeMirror> types,
-                Iterable<? extends AnnotatedTypeMirror> actualTypes) {
+                Iterable<? extends AnnotatedTypeMirror> polyTypes) {
             AnnotationMirrorMap<AnnotationMirrorSet> result = new AnnotationMirrorMap<>();
 
             Iterator<? extends AnnotatedTypeMirror> itert = types.iterator();
-            Iterator<? extends AnnotatedTypeMirror> itera = actualTypes.iterator();
+            Iterator<? extends AnnotatedTypeMirror> itera = polyTypes.iterator();
 
             while (itert.hasNext() && itera.hasNext()) {
                 AnnotatedTypeMirror type = itert.next();
@@ -368,37 +371,41 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return result;
         }
 
-        public AnnotationMirrorMap<AnnotationMirrorSet> visit(
-                AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
+        /**
+         * Creates a mapping of polymorphic qualifiers to their instantiations by visiting each
+         * composite type in type.
+         *
+         * @param type AnnotateTypeMirror used to find instantiations
+         * @param polyType AnnotatedTypeMirror that may have polymorphich qualifiers
+         * @return a mapping of polymorphic qualifiers to their instantiations
+         */
+        private AnnotationMirrorMap<AnnotationMirrorSet> visit(
+                AnnotatedTypeMirror type, AnnotatedTypeMirror polyType) {
             if (type.getKind() == TypeKind.NULL) {
-                return mapQualifierToPoly(type, actualType);
+                return mapQualifierToPoly(type, polyType);
             }
 
             if (type.getKind() == TypeKind.WILDCARD) {
-                return visitWildcard((AnnotatedWildcardType) type, actualType);
+                AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
+                if (wildcardType.isUninferredTypeArgument()) {
+                    return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+                }
+
+                switch (polyType.getKind()) {
+                    case WILDCARD:
+                        AnnotatedTypeMirror asSuper =
+                                AnnotatedTypes.asSuper(atypeFactory, wildcardType, polyType);
+                        return visit(asSuper, polyType, null);
+                    case TYPEVAR:
+                        return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+                    default:
+                        return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+                }
             }
 
-            AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(atypeFactory, type, actualType);
+            AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(atypeFactory, type, polyType);
 
-            return visit(asSuper, actualType, null);
-        }
-
-        private AnnotationMirrorMap<AnnotationMirrorSet> visitWildcard(
-                AnnotatedWildcardType type, AnnotatedTypeMirror actualType) {
-            if (type.isUninferredTypeArgument()) {
-                return mapQualifierToPoly(type.getExtendsBound(), actualType);
-            }
-
-            switch (actualType.getKind()) {
-                case WILDCARD:
-                    AnnotatedTypeMirror asSuper =
-                            AnnotatedTypes.asSuper(atypeFactory, type, actualType);
-                    return visit(asSuper, actualType, null);
-                case TYPEVAR:
-                    return mapQualifierToPoly(type.getExtendsBound(), actualType);
-                default:
-                    return mapQualifierToPoly(type.getExtendsBound(), actualType);
-            }
+            return visit(asSuper, polyType, null);
         }
 
         /**
@@ -505,6 +512,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return reduce(result, super.visitWildcard_Wildcard(type1, type2, aVoid));
         }
 
+        /** Resets the state. */
         public void reset() {
             this.visitedType2.clear();
             this.visited.clear();
