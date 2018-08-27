@@ -9,8 +9,6 @@ import java.lang.annotation.Target;
 /**
  * A meta-annotation indicating that an annotation is a type qualifier that should not be visible in
  * output.
- *
- * <p>Examples of such qualifiers: {@code @Unqualified}, {@code @Primitive}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
