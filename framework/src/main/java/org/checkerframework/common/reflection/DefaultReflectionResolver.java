@@ -534,7 +534,6 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Names names = Names.instance(context);
 
         List<Symbol> result = new ArrayList<>();
-        Method loadClass = null;
         Symbol symClass = getSymbol(className, env, names, resolve);
         if (!symClass.exists()) {
             debugReflection("Unable to resolve class: " + className);
@@ -559,23 +558,24 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     private Symbol getSymbol(String className, Env<AttrContext> env, Names names, Resolve resolve) {
+        Method loadClass;
         try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
+            loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
-            try {
-                Symbol symbol =
-                        (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
-                return symbol;
-            } catch (SecurityException
-                    | IllegalAccessException
-                    | IllegalArgumentException
-                    | InvocationTargetException e) {
-                ErrorReporter.errorAbort("Error in invoking reflective method.");
-            }
         } catch (SecurityException | NoSuchMethodException | IllegalArgumentException e) {
             ErrorReporter.errorAbort("Error in obtaining reflective method.");
+            return null;
         }
-        return null;
+        try {
+            Symbol symbol = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+            return symbol;
+        } catch (SecurityException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            ErrorReporter.errorAbort("Error in invoking reflective method.");
+            return null;
+        }
     }
 
     /**
