@@ -5,8 +5,17 @@ import org.checkerframework.checker.determinism.qual.*;
 
 // @skip-test
 class Issue14 {
-    public static <T> Set<T> toSet(List<T> list) {
-        Set<T> result = new HashSet<T>();
+    public static <@PolyDet("use") T extends @PolyDet("use") Object> @PolyDet Set<T> toSet(
+            @PolyDet List<T> list, @PolyDet Set<T> result) {
+        for (T element : list) {
+            result.add(element);
+        }
+        return result;
+    }
+
+    public static <@PolyDet("use") T extends @PolyDet("use") Object> @PolyDet Set<T> toSetNew(
+            @PolyDet List<T> list) {
+        @PolyDet Set<T> result = new @PolyDet HashSet<T>();
         for (T element : list) {
             result.add(element);
         }
