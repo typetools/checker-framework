@@ -368,6 +368,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
             // Resolve the Symbol(s) for the current method
             for (Symbol symbol : getMethodSymbolsfor(className, methodName, paramLength, env)) {
+                if (!processingEnv.getTypeUtils().isSubtype(receiver.type, symbol.owner.type)) {
+                    continue;
+                }
                 if ((symbol.flags() & Flags.PUBLIC) > 0) {
                     debugReflection("Resolved public method: " + symbol.owner + "." + symbol);
                 } else {

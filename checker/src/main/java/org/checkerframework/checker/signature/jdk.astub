@@ -12,7 +12,6 @@ class Class<T> implements Serializable, GenericDeclaration, Type, AnnotatedEleme
     @FullyQualifiedName String getCanonicalName();
 }
 
-// Would BinaryNameForNonArray be more accurate for some of these methods?
 class ClassLoader {
     protected Class<?> loadClass(@BinaryName String name, boolean resolve) throws ClassNotFoundException;
     Class<?> loadClass(@BinaryName String name) throws ClassNotFoundException;
@@ -67,7 +66,7 @@ package java.lang.instrument;
 
 class ClassFileTransformer {
   byte[] transform(ClassLoader loader,
-                   @InternalFormForNonArray String className,
+                   @InternalForm String className,
                    Class<?> classBeingRedefined,
                    ProtectionDomain protectionDomain,
                    byte[] classfileBuffer);

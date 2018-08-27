@@ -46,7 +46,6 @@ public class Main {
                                 "-classpath",
                                 "../../dist/checker.jar",
                                 "-proc:only",
-                                "-AprintErrorStack",
                                 "-AprintAllQualifiers",
                                 "-source",
                                 "8",

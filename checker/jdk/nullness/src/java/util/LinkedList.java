@@ -1059,7 +1059,7 @@ public class LinkedList<E>
      * @return an array containing all of the elements in this list
      *         in proper sequence
      */
-    public @Nullable Object[] toArray() {
+    public @PolyNull Object[] toArray(LinkedList<@PolyNull E> this) {
         Object[] result = new Object[size];
         int i = 0;
         for (Node<E> x = first; x != null; x = x.next)

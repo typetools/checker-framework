@@ -2,8 +2,8 @@
  * @test
  * @summary Test for Issue 373: message duplicated when using -Awarns
  *
- * @compile/fail/ref=Issue373-err.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Alint Issue373.java
- * @compile/ref=Issue373-warn.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Alint Issue373.java -Awarns
+ * @compile/fail/ref=Issue373-err.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue373.java
+ * @compile/ref=Issue373-warn.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue373.java -Awarns
  */
 
 import java.util.AbstractMap;

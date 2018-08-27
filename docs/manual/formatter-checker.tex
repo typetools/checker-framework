@@ -252,22 +252,6 @@ relationship among all conversion categories.
 \end{figure}
 
 
-
-% THIS SHOULD BE IN A MORE GENERAL DESCRIPTION OF THE FRAMEWORK
-% \code{@Unqualified} is at the top of the hierarchy, which reduces
-% false positives. Among other things, it allows you to pass format strings into
-% functions that require a simple String without any qualifiers. The \code{null}
-% value is assigned bottom for similar reasons. In the following example, this
-% enables us to know that no matter the qualifier of \code{T}, \code{null} can
-% always be assigned to it:
-%
-% \begin{Verbatim}
-%     <T> T f() {
-%         return null;
-%     }
-% \end{Verbatim}
-
-
 \subsection{Subtyping rules for \<@Format>\label{formatter-format-subtyping}}
 
 Here are the subtyping rules among different

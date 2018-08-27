@@ -750,7 +750,7 @@ corresponding annotation:
 You should ignore all other occurrences of \code{null} within a method
 body.  In particular, you (almost) never need to annotate local variables.
 
-Only after this step should you run \code{ant} to invoke
+Only after this step should you run
 the Nullness Checker.  The reason is that it is quicker to search for
 places to change than to repeatedly run the checker and fix the errors it
 tells you about, one at a time.
@@ -1212,10 +1212,10 @@ helper routine that is called by constructor.  For example:
 % skip this section on first reading; you can return to it once you have
 % mastered the rest of the Nullness Checker.
 
-Note that it would not be sound to type {@code this} as fully {@link Initialized} anywhere in
-a constructor (with the exception of final classes, for which the set
-of all fields is known),
-because there might be subclasses with uninitialized fields. The following example shows why:
+At the end of the constructor, \<this> is not fully initialized. Rather,
+it is \<@UnderInitialization(\emph{CurrentClass.class})>.
+The reason is that there might be subclasses with uninitialized fields.
+The following example illustrates this:
 
 \begin{Verbatim}
 class A {
@@ -1442,7 +1442,7 @@ Consider what happens during execution of \<new B()>.
 \item \<B>'s constructor completes.  The object is initialized when treated
   as an \<A> or a \<B>.  (And, the object is fully initialized
    if \<B>'s constructor was invoked via a \<new B()>.  But the type system
-   cannot assume that -- there might be a \<class C extends B \{
+   cannot assume that --- there might be a \<class C extends B \{
   ... \}>, and \<B>'s constructor might have been invoked from that.)
 \end{enumerate}
 
