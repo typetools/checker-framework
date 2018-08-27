@@ -14,7 +14,7 @@ import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Implements framework support for type qualifier polymorphism. Checkers that wish to use it should
@@ -54,7 +54,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                     AnnotationMirror ttreetop;
                     if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
                         if (topQuals.size() != 1) {
-                            ErrorReporter.errorAbort(
+                            throw new BugInCF(
                                     "DefaultQualifierPolymorphism: PolymorphicQualifier has to specify type hierarchy, if more than one exist; top types: "
                                             + topQuals);
                         }
@@ -64,7 +64,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                         ttreetop = qualhierarchy.getTopAnnotation(ttree);
                     }
                     if (topsSeen.contains(ttreetop)) {
-                        ErrorReporter.errorAbort(
+                        throw new BugInCF(
                                 "DefaultQualifierPolymorphism: checker has multiple polymorphic qualifiers: "
                                         + polys.get(ttreetop)
                                         + " and "

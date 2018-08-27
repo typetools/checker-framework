@@ -36,6 +36,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -332,10 +333,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case VOID:
                     return "void";
                 default:
-                    checker.errorAbort(
+                    throw new BugInCF(
                             "ClassValAnnotatedTypeFactory.getClassname: did not expect "
                                     + classType.getKind());
-                    return "java.lang.Object";
             }
         }
     }

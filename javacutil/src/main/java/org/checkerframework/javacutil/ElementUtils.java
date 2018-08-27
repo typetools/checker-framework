@@ -366,7 +366,6 @@ public class ElementUtils {
                 // Looking up a supertype failed. This sometimes happens
                 // when transitive dependencies are not on the classpath.
                 // As javac didn't complain, let's also not complain.
-                // TODO: Use an expanded ErrorReporter to output a message.
                 supertypecls = null;
             }
 

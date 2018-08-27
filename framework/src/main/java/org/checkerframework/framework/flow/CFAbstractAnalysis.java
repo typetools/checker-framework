@@ -52,10 +52,7 @@ public abstract class CFAbstractAnalysis<
     protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
             atypeFactory;
 
-    /**
-     * A checker used to do error reporting. TODO: if it's only for error reporting, should it be an
-     * (extended) ErrorHandler?
-     */
+    /** A checker that contains command-line arguments and other information. */
     protected final SourceChecker checker;
 
     /** Initial abstract types for fields. */
