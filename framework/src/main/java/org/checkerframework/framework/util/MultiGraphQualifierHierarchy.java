@@ -17,7 +17,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents the type qualifier hierarchy of a type system that supports multiple separate subtype
@@ -130,11 +130,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return atypeFactory.createQualifierHierarchy(this);
         }
 
+        /** True if the factory has already been built. */
         private boolean wasBuilt = false;
 
+        /** Throw an exception if the factory was already built. */
         protected void assertNotBuilt() {
             if (wasBuilt) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "MultiGraphQualifierHierarchy.Factory was already built. Method build can only be called once.");
             }
         }
@@ -283,12 +285,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return top;
             }
         }
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "MultiGraphQualifierHierarchy: did not find the top corresponding to qualifier "
                         + start
                         + " all tops: "
                         + tops);
-        return null;
     }
 
     @Override
@@ -303,14 +304,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return bot;
             }
         }
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "MultiGraphQualifierHierarchy: did not find the bottom corresponding to qualifier "
                         + start
                         + "; all bottoms: "
                         + bottoms
                         + "; this: "
                         + this);
-        return null;
     }
 
     @Override
@@ -326,14 +326,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return polyQualifiers.get(polymorphicQualifier);
         } else {
             // No polymorphic qualifier exists for that hierarchy.
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier "
                             + start
                             + "; all polymorphic qualifiers: "
                             + polyQualifiers
                             + "; this: "
                             + this);
-            return null;
         }
     }
 
@@ -344,14 +343,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         rhs = replacePolyAll(rhs);
         lhs = replacePolyAll(lhs);
         if (lhs.isEmpty() || rhs.isEmpty()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy: empty annotations in lhs: "
                             + lhs
                             + " or rhs: "
                             + rhs);
         }
         if (lhs.size() != rhs.size()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy: mismatched number of annotations in lhs: "
                             + lhs
                             + " and rhs: "
@@ -499,13 +498,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         if (a == null) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy found an unqualified type.  Please ensure that "
                             + "your implicit rules cover all cases and/or "
                             + "use a @DefaultQualifierInHierarchy annotation.");
         } else {
             // System.out.println("MultiGraphQH: " + this);
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy found the unrecognized qualifier: "
                             + a
                             + ". Please ensure that the qualifier is correctly included in the subtype hierarchy.");
@@ -611,7 +610,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         }
                     }
                 } else {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "MultiGraphQualifierHierarchy.addPolyRelations: "
                                     + "incorrect or missing top qualifier given in polymorphic qualifier "
                                     + polyQualifier
@@ -638,7 +637,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     AnnotationUtils.updateMappingToImmutableSet(
                             fullMap, polyQualifier, Collections.singleton(polyTop));
                 } else {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "MultiGraphQualifierHierarchy.addPolyRelations: "
                                     + "incorrect top qualifier given in polymorphic qualifier: "
                                     + polyQualifier
@@ -663,7 +662,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                             fullMap, bottom, Collections.singleton(polyQualifier));
                 } else {
                     // TODO: in a type system with a single qualifier this check will fail.
-                    // ErrorReporter.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
+                    // throw new BugInCF("MultiGraphQualifierHierarchy.addPolyRelations:
+                    // " +
                     //        "incorrect top qualifier given in polymorphic qualifier: "
                     //
                     //        + polyQualifier + " could not find bottom for: " + polyTop);
@@ -736,7 +736,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             if (a1Lub != null) {
                 outset.add(a1Lub);
             } else {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "GraphQualifierHierarchy could not determine LUB for "
                                 + a1
                                 + " and "
@@ -893,7 +893,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     private AnnotationMirror requireSingleton(
             Set<AnnotationMirror> outset, AnnotationMirror a1, AnnotationMirror a2, boolean lub) {
         if (outset.size() == 0) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "MultiGraphQualifierHierarchy could not determine "
                             + (lub ? "LUB" : "GLB")
                             + " for "
@@ -901,7 +901,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                             + " and "
                             + a2
                             + ". Please ensure that the checker knows about all type qualifiers.");
-            return null;
         } else if (outset.size() == 1) {
             return outset.iterator().next();
         } else {
@@ -916,7 +915,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 } else if (result == null) {
                     result = anno;
                 } else {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             String.format(
                                     "Bug in checker implementation:  type hierarchy is not a lattice.%n"
                                             + "There is no unique "
@@ -927,7 +926,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                                     a2,
                                     result,
                                     anno));
-                    return null;
                 }
             }
             return result;

@@ -101,18 +101,11 @@ public class Resolver {
             ACCESSERROR_ACCESS = ACCESSERROR.getMethod("access", Name.class, TypeSymbol.class);
             ACCESSERROR_ACCESS.setAccessible(true);
         } catch (ClassNotFoundException e) {
-            ErrorReporter.errorAbort(
-                    "Compiler 'Resolve$AccessError' class could not be retrieved.", e);
-            // Unreachable code - needed so the compiler does not warn about a possibly
-            // uninitialized final field.
-            throw new AssertionError();
+            throw new BugInCF("Compiler 'Resolve$AccessError' class could not be retrieved.", e);
         } catch (NoSuchMethodException e) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Compiler 'Resolve$AccessError' class doesn't contain required 'access' method",
                     e);
-            // Unreachable code - needed so the compiler does not warn about a possibly
-            // uninitialized final field.
-            throw new AssertionError();
         }
     }
 
@@ -146,9 +139,7 @@ public class Resolver {
         if (scope != null) {
             return scope.getEnv();
         } else {
-            ErrorReporter.errorAbort(
-                    "Could not determine any possible scope for path: " + path.getLeaf());
-            return null;
+            throw new BugInCF("Could not determine any possible scope for path: " + path.getLeaf());
         }
     }
 
@@ -332,7 +323,14 @@ public class Resolver {
                 setField(resolve, "currentResolutionContext", oldContext);
                 return result;
             } catch (Throwable t) {
-                Error err = new AssertionError("Unexpected Reflection error");
+                Error err =
+                        new AssertionError(
+                                String.format(
+                                        "Unexpected Reflection error in findMethod(%s, %s, ..., %s)",
+                                        methodName,
+                                        receiverType,
+                                        // path
+                                        argumentTypes));
                 err.initCause(t);
                 throw err;
             }
@@ -382,16 +380,12 @@ public class Resolver {
     private Symbol wrapInvocation(Object receiver, Method method, Object... args) {
         try {
             return (Symbol) method.invoke(receiver, args);
-        } catch (IllegalAccessException e) {
-            Error err = new AssertionError("Unexpected Reflection error");
-            err.initCause(e);
-            throw err;
-        } catch (IllegalArgumentException e) {
-            Error err = new AssertionError("Unexpected Reflection error");
-            err.initCause(e);
-            throw err;
-        } catch (InvocationTargetException e) {
-            Error err = new AssertionError("Unexpected Reflection error");
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Error err =
+                    new AssertionError(
+                            String.format(
+                                    "Unexpected Reflection error in wrapInvocation(%s, %s, %s)",
+                                    receiver, method, args));
             err.initCause(e);
             throw err;
         }
