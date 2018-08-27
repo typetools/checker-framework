@@ -11,18 +11,18 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>1. JavaTypeSignature
  *
- * <p>JavaTypeSignature of type {@code GenericClass<? extends cl>}:
- * {@code Lorg/pkg/GenericClass<+Lorg/pkg/cl>}
+ * <p>JavaTypeSignature of type {@code GenericClass<? extends cl>}: {@code
+ * Lorg/pkg/GenericClass<+Lorg/pkg/cl>}
  *
- * <p>JavaTypeSignature of type {@code GenericClass<? extends cl>[]}:
- * {@code [Lorg/pkg/GenericClass<+Lorg/pkg/cl>}
+ * <p>JavaTypeSignature of type {@code GenericClass<? extends cl>[]}: {@code
+ * [Lorg/pkg/GenericClass<+Lorg/pkg/cl>}
  *
  * <p>JavaTypeSignature of a type variable named R: {@code TR;}
  *
- * <p>2. ClassSignature 
+ * <p>2. ClassSignature
  *
- * <p>ClassSignature of class {@code class T<R extends Runnable> extends GenericClass<R>}:
- * {@code <R:Object:Runnable>Lorg/pkg/GenericClass<TR;>;}
+ * <p>ClassSignature of class {@code class T<R extends Runnable> extends GenericClass<R>}: {@code
+ * <R:Object:Runnable>Lorg/pkg/GenericClass<TR;>;}
  *
  * <p>3. MethodSignature {@code <R::Runnable>(TR;Ljava/lang/String;)V^Ljava/lang/Exception;}
  */

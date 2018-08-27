@@ -713,19 +713,24 @@ public class SignatureTypeFactoryTest {
     }
 
     void genericSignatures(
-        @MethodSignature String ms,
-        @MethodDescriptor String md,
-        @ClassTypeSignature String cts,
-        @ClassSignature String cs,
-        @ReferenceTypeSignature String rts,
-        @JavaTypeSignature String jts) {
-        
+            @MethodSignature String ms,
+            @MethodDescriptor String md,
+            @ClassTypeSignature String cts,
+            @ClassSignature String cs,
+            @ReferenceTypeSignature String rts,
+            @JavaTypeSignature String jts) {
+
         ms = md;
         // :: error: (assignment.type.incompatible)
         md = ms;
-        
+
         rts = cs;
         jts = cts;
         jts = cs;
+        // :: error: (assignment.type.incompatible)
+        cs = ms;
+        // :: error: (assignment.type.incompatible)
+        cs = cts;
+        // :: error: (assignment.type.incompatible)
     }
 }

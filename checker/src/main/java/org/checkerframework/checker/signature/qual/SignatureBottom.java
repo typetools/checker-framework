@@ -19,7 +19,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
     FieldDescriptorForPrimitive.class,
     MethodDescriptor.class,
     ClassSignature.class,
-    ClassTypeSignature.class
+    ClassTypeSignature.class,
+    TypeVariableSignature.class,
+    ArrayTypeSignature.class
 })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
