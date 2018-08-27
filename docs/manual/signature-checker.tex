@@ -14,10 +14,14 @@ they differ only for nested classes and arrays.
 
 \section{Signature annotations\label{signature-annotations}}
 
-Java defines six formats for the string representation of a type.
+Java defines six formats for the string representation of a type, and
+many more for representing generic types. (See
+\href{https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.9.1}
+for a detailed description of generic signatures)
+
 There is an annotation for each of these representations.
-Figure~\ref{fig-signature-hierarchy} shows how they are related;
-examples appear in a table below.
+Figures~\ref{fig-signature-hierarchy} and ~\ref{fig-generic-signature-hierarchy}
+shows how they are related; examples appear in a table below.
 
 \begin{figure}
 \includeimage{signature-types}{7cm}
@@ -26,6 +30,12 @@ examples appear in a table below.
   the boldfaced qualifiers, in the second row; qualifiers below those are
   included to improve the internal handling of String literals.}
 \label{fig-signature-hierarchy}
+\end{figure}
+
+\begin{figure}
+\includeimage{generic-signatures}{7cm}
+    \caption{Part of type hierarchy relevent to generic signatures.}
+\label{fig-generic-signature-hierarchy}
 \end{figure}
 
 \begin{description}
