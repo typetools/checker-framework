@@ -139,7 +139,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Places the default annotation on the return type of a method invocation as follows:
          *
          * <ol>
-         *   <li>The return type for static methods without any argument defaults to {@code @Det}.
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
          *       array or a collection, it defaults to {@code @NonDet}.
          *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
@@ -178,16 +177,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
                     && !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))) {
                 p.replaceAnnotation(NONDET);
-            }
-
-            // If the invoked method is static and has no arguments,
-            // its return type is annotated as @Det.
-            if (ElementUtils.isStatic(invokedMethodElement)) {
-                if (node.getArguments().size() == 0) {
-                    if (p.getExplicitAnnotations().size() == 0) {
-                        p.replaceAnnotation(DET);
-                    }
-                }
             }
 
             // Annotates the return type of "equals()" method called on a Set receiver
@@ -270,6 +259,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * <ol>
          *   <li>Annotates the main method parameter as {@code Det}.
          *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}.
+         *   <li>Annotates the return type for static methods without any parameters as
+         *       {@code @Det}.
          * </ol>
          */
         @Override
@@ -303,6 +294,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     != TypeKind.TYPEVAR) {
                                 arrParamType.getComponentType().replaceAnnotation(POLYDET);
                             }
+                        }
+                    }
+                }
+
+                // If the invoked method is static and has no arguments,
+                // its return type is annotated as @Det.
+                if (ElementUtils.isStatic(t.getElement())) {
+                    if (t.getElement().getParameters().size() == 0) {
+                        if (t.getReturnType().getExplicitAnnotations().size() == 0) {
+                            t.getReturnType().replaceAnnotation(DET);
                         }
                     }
                 }
