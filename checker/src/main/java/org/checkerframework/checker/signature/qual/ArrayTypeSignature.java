@@ -2,7 +2,6 @@ package org.checkerframework.checker.signature.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -10,9 +9,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.9.1">Java Virtual
  * Machine Specification, section 4.3.2</a>.
  *
- * For example:
- * 
- * {@code [[Lpkg/Cl<+Base>;}
+ * <p>For example:
+ *
+ * <p>{@code [[Lpkg/Cl<+Base>;}
  *
  * @see GenericSignature
  */

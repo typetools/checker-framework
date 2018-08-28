@@ -10,9 +10,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.9.1">Java Virtual
  * Machine Specification, section 4.3.2</a>.
  *
- * For example:
- * 
- * {@code TIdent;}
+ * <p>For example:
+ *
+ * <p>{@code TIdent;}
  *
  * @see GenericSignature
  */
