@@ -76,7 +76,6 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
