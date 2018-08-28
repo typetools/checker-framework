@@ -189,20 +189,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 p.replaceAnnotation(NONDET);
             }
 
-            // TODO: This logic should not be performed here, at the call site.  Rather, it should
-            // be done as defaulting, at the method definition.  That way, the .class file will
-            // contain correct information for use by other tools.  More generally, checking for
-            // explicit annotations, anywhere other than when doing defaulting, is a code smell.
-            // If the invoked method is static and has no arguments,
-            // its return type is annotated as @Det.
-            if (ElementUtils.isStatic(invokedMethodElement)) {
-                if (node.getArguments().size() == 0) {
-                    if (p.getExplicitAnnotations().size() == 0) {
-                        p.replaceAnnotation(DET);
-                    }
-                }
-            }
-
             // TODO: This doesn't say where a reader of the code can find "the specification"?  You
             // should refer to the manual.  Is this behavior documented there?
             // Annotates the return type of "equals()" method called on a Set receiver
@@ -408,18 +394,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSubtype(types.erasure(tm), types.erasure(ListInterfaceTypeMirror));
     }
 
-    // TODO: It is surprising that isCollection and isIterator recompute the `types` variable, but
-    // isSet and isList did not (and neither did isArrays and isCollections).  Make them consistent.
-
     /** @return true if {@code tm} is Collection or a subtype of Collection */
     public boolean isCollection(TypeMirror tm) {
-        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         return types.isSubtype(types.erasure(tm), types.erasure(CollectionInterfaceTypeMirror));
     }
 
     /** @return true if {@code tm} is Iterator or a subtype of Iterator */
     public boolean isIterator(TypeMirror tm) {
-        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         return types.isSubtype(tm, IteratorTypeMirror);
     }
 

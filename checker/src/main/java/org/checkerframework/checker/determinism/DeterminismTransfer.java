@@ -41,8 +41,8 @@ public class DeterminismTransfer extends CFTransfer {
         DeterminismAnnotatedTypeFactory factory =
                 (DeterminismAnnotatedTypeFactory) analysis.getTypeFactory();
 
-        // TODO: What class node?  The class that declares the method?
-        // Note: For static method calls, the receiver is the Class node.
+        // Note: For static method calls, the receiver is the Class node
+        // that declares the method.
         Node receiver = n.getTarget().getReceiver();
 
         // TypesUtils.getTypeElement(receiver.getType()) is null for generic type arguments.
@@ -54,15 +54,17 @@ public class DeterminismTransfer extends CFTransfer {
                 TypesUtils.getTypeElement(receiver.getType()).asType();
         Name methName = n.getTarget().getMethod().getSimpleName();
 
+        AnnotationMirror refineWithType = factory.DET;
+        boolean refineReceiver = false;
+        boolean refineArgument = false;
+
         // Type refinement for List sort
         if (isListSort(factory, receiver, underlyingTypeOfReceiver, methName)) {
             AnnotationMirror receiverAnno =
                     receiver.getType().getAnnotationMirrors().iterator().next();
             if (receiverAnno != null
                     && AnnotationUtils.areSame(receiverAnno, factory.ORDERNONDET)) {
-                FlowExpressions.Receiver sortReceiver =
-                        FlowExpressions.internalReprOf(factory, n.getTarget().getReceiver());
-                typeRefine(sortReceiver, result, factory.DET);
+                refineReceiver = true;
             }
         }
 
@@ -85,12 +87,7 @@ public class DeterminismTransfer extends CFTransfer {
                     }
                 }
                 if (typeRefine) {
-                    // TODO: The following two lines appear a lot in this method.  Can they be
-                    // factored out (for clarity and to emphasize similarity, more than for
-                    // brevity)?  Or maybe the common code can be larger.
-                    FlowExpressions.Receiver firstArgRep =
-                            FlowExpressions.internalReprOf(factory, n.getArgument(0));
-                    typeRefine(firstArgRep, result, factory.DET);
+                    refineArgument = true;
                 }
             }
         }
@@ -102,18 +99,25 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
             if (firstArgAnno != null
                     && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
-                FlowExpressions.Receiver firstArgRep =
-                        FlowExpressions.internalReprOf(factory, n.getArgument(0));
-                typeRefine(firstArgRep, result, factory.DET);
+                refineArgument = true;
             }
         }
 
         // Type refinement for Collections shuffle
         if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, methName)) {
-            FlowExpressions.Receiver firstArgRep =
-                    FlowExpressions.internalReprOf(factory, n.getArgument(0));
-            typeRefine(firstArgRep, result, factory.NONDET);
+            refineArgument = true;
+            refineWithType = factory.NONDET;
         }
+
+        Node receiverToBeRefined = null;
+        if (refineReceiver) {
+            receiverToBeRefined = n.getTarget().getReceiver();
+        }
+        if (refineArgument) {
+            receiverToBeRefined = n.getArgument(0);
+        }
+
+        typeRefine(receiverToBeRefined, result, refineWithType, factory);
         return result;
     }
 
@@ -187,14 +191,18 @@ public class DeterminismTransfer extends CFTransfer {
     /**
      * Helper method for type refinement.
      *
-     * @param receiver the receiver or argument to be refined
+     * @param node the node to be refined
      * @param result the determinism transfer result store
      * @param replaceType the type to be refined with
+     * @param factory the determinism factory
      */
     private void typeRefine(
-            FlowExpressions.Receiver receiver,
+            Node node,
             TransferResult<CFValue, CFStore> result,
-            AnnotationMirror replaceType) {
+            AnnotationMirror replaceType,
+            DeterminismAnnotatedTypeFactory factory) {
+        if (node == null) return;
+        FlowExpressions.Receiver receiver = FlowExpressions.internalReprOf(factory, node);
         result.getThenStore().insertValue(receiver, replaceType);
         result.getElseStore().insertValue(receiver, replaceType);
     }
