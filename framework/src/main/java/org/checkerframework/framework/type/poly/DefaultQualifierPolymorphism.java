@@ -1,7 +1,5 @@
 package org.checkerframework.framework.type.poly;
 
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -17,15 +15,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Implements framework support for type qualifier polymorphism. Checkers that wish to use it should
- * add calls to {@link #annotate(MethodInvocationTree, AnnotatedTypeMirror.AnnotatedExecutableType)}
- * to the {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)} and
- * {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)} methods.
- *
- * <p>This implementation currently only supports polymorphism for method invocations, for which the
- * return type depends on the unification of the parameter/receiver types.
- *
- * @see PolymorphicQualifier
+ * Default implementation of {@link AbstractQualifierPolymorphism}. The polymorphic qualifiers for a
+ * checker that uses this class are found by searching all supported qualifiers. instantiations of a
+ * polymorphic qualifier are combined using lub.
  */
 public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism {
 

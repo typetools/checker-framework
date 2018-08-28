@@ -10,6 +10,13 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/**
+ * Interface to implement qualifier polymorphism.
+ *
+ * @see PolymorphicQualifier
+ * @see AbstractQualifierPolymorphism
+ * @see DefaultQualifierPolymorphism
+ */
 public interface QualifierPolymorphism {
 
     /** @return true if {@code qual} is {@code @PolyAlly} */

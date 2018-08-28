@@ -2,7 +2,6 @@ package org.checkerframework.framework.type.poly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +11,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -34,15 +32,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Implements framework support for type qualifier polymorphism. Checkers that wish to use it should
- * add calls to {@link #annotate(MethodInvocationTree, AnnotatedTypeMirror.AnnotatedExecutableType)}
- * to the {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)} and
- * {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)} methods.
+ * Implements framework support for qualifier polymorphism.
  *
- * <p>This implementation currently only supports polymorphism for method invocations, for which the
- * return type depends on the unification of the parameter/receiver types.
- *
- * @see PolymorphicQualifier
+ * <p>{@link DefaultQualifierPolymorphism} implements this abstract methods in this class.
+ * Subclasses can alter the way instantiations of polymorpich qualifiers are combined.
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
