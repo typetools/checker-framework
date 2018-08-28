@@ -7,7 +7,9 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.type.AnnotationClassLoader;
+import org.checkerframework.javacutil.UserError;
 
+/** Defines {@link #createSupportedTypeQualifiers}. */
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -32,9 +34,8 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String qualDirectories = checker.getOption("qualDirs");
 
         if (qualNames == null && qualDirectories == null) {
-            checker.userErrorAbort(
+            throw new UserError(
                     "SubtypingChecker: missing required option. Use -Aquals or -AqualDirs");
-            throw new Error("This can't happen"); // dead code
         }
 
         // load individually named qualifiers
@@ -58,7 +59,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 for (Class<? extends Annotation> superqual :
                         qual.getAnnotation(SubtypeOf.class).value()) {
                     if (!qualSet.contains(superqual)) {
-                        checker.userErrorAbort(
+                        throw new UserError(
                                 "SubtypingChecker: qualifier "
                                         + qual
                                         + " was specified via -Aquals but its super-qualifier "

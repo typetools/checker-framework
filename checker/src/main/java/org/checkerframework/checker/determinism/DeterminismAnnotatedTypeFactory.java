@@ -147,7 +147,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Places the default annotation on the return type of a method invocation as follows:
          *
          * <ol>
-         *   <li>The return type for static methods without any argument defaults to {@code @Det}.
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
          *       array or a collection, it defaults to {@code @NonDet}.
          *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
@@ -289,6 +288,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * <ol>
          *   <li>Annotates the main method parameter as {@code Det}.
          *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}.
+         *   <li>Annotates the return type for static methods without any parameters as
+         *       {@code @Det}.
          * </ol>
          */
         @Override
@@ -305,26 +306,38 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (retType.getKind() == TypeKind.ARRAY) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) retType;
-                    if (arrRetType.getAnnotations().size() == 0
-                            // TODO: Why does this check for type variables but the similar code in
-                            // the for loop below does not?
-                            && arrRetType.getComponentType().getUnderlyingType().getKind()
-                                    != TypeKind.TYPEVAR) {
-                        arrRetType.replaceAnnotation(POLYDET);
-                        arrRetType.getComponentType().replaceAnnotation(POLYDET);
+
+                    if (arrRetType.getAnnotations().size() == 0) {
+                        // TODO: Why does this check for type variables but the similar code in
+                        // the for loop below does not?
+                        if (arrRetType.getComponentType().getUnderlyingType().getKind()
+                                != TypeKind.TYPEVAR) {
+                            arrRetType.getComponentType().replaceAnnotation(POLYDET);
+                        }
                     }
                 }
 
                 // Annotates array parameter types as @PolyDet[@PolyDet]
                 List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
                 for (AnnotatedTypeMirror paramType : paramTypes) {
-                    if (paramType.getKind() == TypeKind.ARRAY
-                            && paramType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+                    if (paramType.getKind() == TypeKind.ARRAY) {
                         AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
                                 (AnnotatedTypeMirror.AnnotatedArrayType) paramType;
                         if (arrParamType.getAnnotations().size() == 0) {
-                            arrParamType.replaceAnnotation(POLYDET);
-                            arrParamType.getComponentType().replaceAnnotation(POLYDET);
+                            if (arrParamType.getComponentType().getUnderlyingType().getKind()
+                                    != TypeKind.TYPEVAR) {
+                                arrParamType.getComponentType().replaceAnnotation(POLYDET);
+                            }
+                        }
+                    }
+                }
+
+                // If the invoked method is static and has no arguments,
+                // its return type is annotated as @Det.
+                if (ElementUtils.isStatic(t.getElement())) {
+                    if (t.getElement().getParameters().size() == 0) {
+                        if (t.getReturnType().getExplicitAnnotations().size() == 0) {
+                            t.getReturnType().replaceAnnotation(DET);
                         }
                     }
                 }
@@ -378,7 +391,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (arrType.getComponentType().getKind() != TypeKind.TYPEVAR) {
                         arrType.getComponentType()
                                 .addMissingAnnotations(Collections.singleton(POLYDET));
-                        type.addMissingAnnotations(Collections.singleton(POLYDET));
                     }
                 }
             }
