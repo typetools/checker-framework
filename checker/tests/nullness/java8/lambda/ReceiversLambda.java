@@ -15,6 +15,7 @@ class ReceiverTest {
 
     // :: error: (method.invocation.invalid)
     FunctionRT<String, String> f1 = s -> this.toString();
+    // :: error: (method.invocation.invalid)
     FunctionRT<String, String> f2 = s -> super.toString();
 
     void context1(@NonNull ReceiverTest this) {
