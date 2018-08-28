@@ -718,19 +718,30 @@ public class SignatureTypeFactoryTest {
             @ClassTypeSignature String cts,
             @ClassSignature String cs,
             @ReferenceTypeSignature String rts,
-            @JavaTypeSignature String jts) {
+            @JavaTypeSignature String jts,
+            @MethodSignature String ms2,
+            @MethodDescriptor String md2,
+            @ClassTypeSignature String cts2,
+            @ClassSignature String cs2,
+            @ReferenceTypeSignature String rts2,
+            @JavaTypeSignature String jts2) {
 
-        ms = md;
-        // :: error: (assignment.type.incompatible)
-        md = ms;
+        // signature strings with '2' suffix are supposed
+        // to be at rhs of assignments
 
-        rts = cs;
-        jts = cts;
-        jts = cs;
+        ms = md2;
         // :: error: (assignment.type.incompatible)
-        cs = ms;
+        md = ms2;
+
         // :: error: (assignment.type.incompatible)
-        cs = cts;
+        rts = cs2;
+        rts = cts2;
+        jts = cts2;
         // :: error: (assignment.type.incompatible)
+        jts = cs2;
+        // :: error: (assignment.type.incompatible)
+        cs = ms2;
+        // :: error: (assignment.type.incompatible)
+        cs = cts2;
     }
 }
