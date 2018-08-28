@@ -720,6 +720,7 @@ public class QualifierDefaults {
          */
         protected TypeUseLocation location;
 
+        /** The default element applier implementation. */
         protected final DefaultApplierElementImpl impl;
 
         /*

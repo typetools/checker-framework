@@ -1,14 +1,7 @@
 package org.checkerframework.framework.qual;
 
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
-
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -38,7 +31,15 @@ import java.lang.annotation.Target;
 // TODO: use repeating annotations (will make source depend on Java 8).
 @Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
+@Target({
+    ElementType.PACKAGE,
+    ElementType.TYPE,
+    ElementType.CONSTRUCTOR,
+    ElementType.METHOD,
+    ElementType.FIELD,
+    ElementType.LOCAL_VARIABLE,
+    ElementType.PARAMETER
+})
 public @interface DefaultQualifiers {
     /** The default qualifier settings. */
     DefaultQualifier[] value() default {};
