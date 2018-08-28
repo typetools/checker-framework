@@ -10,7 +10,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /** A utility for converting AnnotationMirrors to Strings. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
@@ -42,8 +42,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         StringBuilder sb = new StringBuilder();
         for (AnnotationMirror obj : annos) {
             if (obj == null) {
-                ErrorReporter.errorAbort(
-                        "AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
+                throw new BugInCF(
+                        "AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror");
             }
             if (isInvisibleQualified(obj) && !printInvisible) {
                 continue;

@@ -26,7 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.ExecUtil;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -253,7 +253,7 @@ public class TypeVisualizer {
                     writer.write("}");
                     writer.flush();
                 } catch (IOException e) {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "Exception visualizing type:\n"
                                     + "file="
                                     + file
@@ -267,7 +267,7 @@ public class TypeVisualizer {
                     }
                 }
             } catch (IOException exc) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Exception visualizing type:\n" + "file=" + file + "\n" + "type=" + type,
                         exc);
             }
@@ -491,8 +491,8 @@ public class TypeVisualizer {
                     visitAll(type.getThrownTypes());
 
                 } else {
-                    ErrorReporter.errorAbort(
-                            "Executable types should never be recursive!\n" + "type=" + type);
+                    throw new BugInCF(
+                            "Executable types should never be recursive\n" + "type=" + type);
                 }
                 return null;
             }

@@ -14,7 +14,6 @@ public class AliasingTest extends FrameworkPerDirectoryTest {
                 org.checkerframework.common.aliasing.AliasingChecker.class,
                 "aliasing",
                 "-Anomsgtext",
-                "-AprintErrorStack",
                 "-Astubs=tests/aliasing/stubfile.astub");
     }
 

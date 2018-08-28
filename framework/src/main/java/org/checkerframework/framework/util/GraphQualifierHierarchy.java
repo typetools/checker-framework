@@ -6,7 +6,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents the type qualifier hierarchy of a type system.
@@ -58,7 +58,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     @Override
     public Set<? extends AnnotationMirror> getTopAnnotations() {
         if (tops.size() != 1) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Expected 1 possible top qualifier, found "
                             + tops.size()
                             + " (does the checker know about all type qualifiers?): "
@@ -80,18 +80,18 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
         rhs = replacePolyAll(rhs);
         lhs = replacePolyAll(lhs);
         if (lhs.isEmpty() || rhs.isEmpty()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "GraphQualifierHierarchy: Empty annotations in lhs: "
                             + lhs
                             + " or rhs: "
                             + rhs);
         }
         if (lhs.size() > 1) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "GraphQualifierHierarchy: Type with more than one annotation found: " + lhs);
         }
         if (rhs.size() > 1) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "GraphQualifierHierarchy: Type with more than one annotation found: " + rhs);
         }
         for (AnnotationMirror lhsAnno : lhs) {

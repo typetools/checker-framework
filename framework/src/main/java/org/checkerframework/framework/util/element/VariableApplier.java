@@ -8,7 +8,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Applies annotations to variable declaration (providing they are not the use of a TYPE_PARAMETER).
@@ -37,8 +37,8 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
 
         if (type.getKind() == TypeKind.UNION
                 && element.getKind() != ElementKind.EXCEPTION_PARAMETER) {
-            ErrorReporter.errorAbort(
-                    "Union types only allowed for exception parameters! "
+            throw new BugInCF(
+                    "Union types only allowed for exception parameters. "
                             + "Type: "
                             + type
                             + " for element: "

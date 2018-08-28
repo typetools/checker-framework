@@ -41,8 +41,7 @@ public class Conversion {
             return iform.replace('/', '.');
         }
 
-        @DotSeparatedIdentifiers
-        String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+        @DotSeparatedIdentifiers String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
             // :: error: (return.type.incompatible)
             return bn.replace('$', '.');
         }
@@ -92,8 +91,7 @@ public class Conversion {
             return iform.replace("/", ".");
         }
 
-        @DotSeparatedIdentifiers
-        String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
+        @DotSeparatedIdentifiers String binaryNameToDotSeparatedIdentifiers(@BinaryName String bn) {
             // :: error: (return.type.incompatible)
             return bn.replace("$", ".");
         }

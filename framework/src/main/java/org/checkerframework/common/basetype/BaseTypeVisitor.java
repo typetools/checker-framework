@@ -107,8 +107,8 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -241,13 +241,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
             return (Factory) new BaseAnnotatedTypeFactory(checker);
         } catch (Throwable t) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Unexpected "
                             + t.getClass().getSimpleName()
                             + " when invoking BaseAnnotatedTypeFactory for checker "
                             + checker.getClass().getSimpleName(),
                     t);
-            return null; // dead code
         }
     }
 
@@ -1037,7 +1036,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 args = ((NewClassTree) tree).getArguments();
                 break;
             default:
-                throw new AssertionError("Unexpected kind of tree: " + tree);
+                throw new BugInCF("Unexpected kind of tree: " + tree);
         }
         if (numFormals == args.size()) {
             AnnotatedTypeMirror lastArgType =
@@ -1836,9 +1835,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
                 break;
             default:
-                ErrorReporter.errorAbort(
-                        "Unexpected throw expression type: " + throwType.getKind());
-                break;
+                throw new BugInCF("Unexpected throw expression type: " + throwType.getKind());
         }
     }
 
@@ -2932,8 +2929,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror receiverArg;
             switch (memberTree.kind) {
                 case UNBOUND:
-                    ErrorReporter.errorAbort("Case UNBOUND should already be handled.");
-                    return true; // Dead code
+                    throw new BugInCF("Case UNBOUND should already be handled.");
                 case SUPER:
                     receiverDecl = overrider.getReceiverType();
                     receiverArg =
