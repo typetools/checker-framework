@@ -313,7 +313,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         @Override
         protected AnnotationMirrorMap<AnnotationMirrorSet> scanWithNull(
                 AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void aVoid) {
-            return AnnotationMirrorMap.emptyMap();
+            return new AnnotationMirrorMap<>();
         }
 
         @Override
@@ -447,7 +447,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 AnnotatedDeclaredType type1, AnnotatedDeclaredType type2, Void aVoid) {
             // Don't call super because asSuper has to be called on each type argument.
             if (visited(type2)) {
-                return AnnotationMirrorMap.emptyMap();
+                return new AnnotationMirrorMap<>();
             }
 
             AnnotationMirrorMap<AnnotationMirrorSet> result = mapQualifierToPoly(type1, type2);
@@ -484,7 +484,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         public AnnotationMirrorMap<AnnotationMirrorSet> visitTypevar_Typevar(
                 AnnotatedTypeVariable type1, AnnotatedTypeVariable type2, Void aVoid) {
             if (visited(type2)) {
-                return AnnotationMirrorMap.emptyMap();
+                return new AnnotationMirrorMap<>();
             }
             AnnotationMirrorMap<AnnotationMirrorSet> result = mapQualifierToPoly(type1, type2);
             return reduce(result, super.visitTypevar_Typevar(type1, type2, aVoid));
@@ -501,7 +501,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         public AnnotationMirrorMap<AnnotationMirrorSet> visitWildcard_Wildcard(
                 AnnotatedWildcardType type1, AnnotatedWildcardType type2, Void aVoid) {
             if (visited(type2)) {
-                return AnnotationMirrorMap.emptyMap();
+                return new AnnotationMirrorMap<>();
             }
             AnnotationMirrorMap<AnnotationMirrorSet> result = mapQualifierToPoly(type1, type2);
             return reduce(result, super.visitWildcard_Wildcard(type1, type2, aVoid));
