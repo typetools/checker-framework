@@ -1,7 +1,5 @@
 package org.checkerframework.common.reflection;
 
-import static com.sun.tools.javac.code.TypeTag.CLASS;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -13,6 +11,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
@@ -514,7 +513,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 break;
             }
             Type t = classSym.getSuperclass();
-            if (!t.hasTag(CLASS) || t.isErroneous()) {
+            if (!t.hasTag(TypeTag.CLASS) || t.isErroneous()) {
                 break;
             }
             classSym = (ClassSymbol) t.tsym;
