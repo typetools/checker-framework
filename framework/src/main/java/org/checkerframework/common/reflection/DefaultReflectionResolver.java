@@ -566,7 +566,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
         } catch (SecurityException | NoSuchMethodException | IllegalArgumentException e) {
-            throw new BugInCF("Error in obtaining reflective method.");
+            // A problem with javac is serious and must be reported.
+            throw new BugInCF("Error in obtaining reflective method.", e);
         }
         try {
             Symbol symbol = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
@@ -575,7 +576,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 | IllegalAccessException
                 | IllegalArgumentException
                 | InvocationTargetException e) {
-            throw new BugInCF("Error in invoking reflective method.");
+            // A problem with javac is serious and must be reported.
+            throw new BugInCF("Error in invoking reflective method.", e);
         }
     }
 
