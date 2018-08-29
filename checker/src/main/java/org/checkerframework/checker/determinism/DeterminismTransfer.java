@@ -75,8 +75,13 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
             if (firstArgAnno != null
                     && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
-                // TODO: Please explain the following code (the for and if statements); I don't
-                // understand them.
+
+                // Consider the call to Arrays.sort(T[], Comparator<? super T> c)
+                // The first argument of this method invocation must be type-refined
+                // only if it is annotated as @OrderNonDet and the second argument
+                // is annotated @Det (Not if it is @NonDet).
+                // The following code sets the flag typeRefine to true iff
+                // all arguments except the first are annotated as @Det.
                 boolean typeRefine = true;
                 for (int i = 1; i < n.getArguments().size(); i++) {
                     AnnotatedTypeMirror otherArgType =
