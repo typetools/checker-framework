@@ -4,10 +4,10 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -69,44 +69,41 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         DeclaredType javaType = useType.getUnderlyingType();
 
         // Checks for @OrderNonDet on non-collections and raises an error if this check succeeds.
-        if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
-                // TODO: This would be a place to use the allowsOrderNonDet method, if you create
-                // it.  (There is at least one other opportunity as well.)
-                && (!(atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
-                        || atypeFactory.isIterator(javaType.asElement().asType())))) {
+        if (useType.hasAnnotation(atypeFactory.ORDERNONDET) && !allowsOrderNonDet(javaType)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
             return false;
         }
 
         // Raises an error if the annotation on the type parameter of a collection (or iterator) is
         // a supertype of the annotation on the collection (or iterator).
-        if ((atypeFactory.isCollection(TypesUtils.getTypeElement(javaType).asType())
-                        // TODO: Abstract out the body, and then it's easy to call that method 1
-                        // or 2 times.
-                        // TODO-rashmi: This won't work for maps since they have 2 type arguments.
-                        && javaType.getTypeArguments().size() == 1)
-                || atypeFactory.isIterator(javaType.asElement().asType())) {
-            AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
-            AnnotatedTypeMirror paramType = useType.getTypeArguments().iterator().next();
-            // The previous line assumes that there is exactly one type parameter.
-            // This type parameter may not always be annotated. For example, in the code
-            // @OrderNonDet TreeSet<@Det Integer> treeSet; Iterator it = treeSet.iterator();
-            // the type parameter of Iterator does not have an annotation.
-            Iterator<AnnotationMirror> paramAnnotationIt = paramType.getAnnotations().iterator();
-            if (paramAnnotationIt.hasNext()) {
-                AnnotationMirror paramAnnotation = paramAnnotationIt.next();
-                if (!atypeFactory
-                        .getQualifierHierarchy()
-                        .isSubtype(paramAnnotation, baseAnnotation)) {
-                    checker.report(
-                            Result.failure(INVALID_ELEMENT_TYPE, paramAnnotation, baseAnnotation),
-                            tree);
-                    return false;
+        AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
+        if (allowsOrderNonDet(javaType)) {
+            for (AnnotatedTypeMirror paramType : useType.getTypeArguments()) {
+                if (paramType.getAnnotations().size() > 0) {
+                    AnnotationMirror paramAnnotation = paramType.getAnnotations().iterator().next();
+                    if (isInvalidSubtyping(
+                            paramAnnotation, baseAnnotation, tree, INVALID_ELEMENT_TYPE)) {
+                        return false;
+                    }
                 }
             }
         }
-
         return true;
+    }
+
+    /**
+     * Checks if it is valid for {@code javaType} to have {@OrderNonDet} annotation.
+     *
+     * @param javaType the declared type to be checked
+     * @return true if {@code javaType} is a Collection (or its subtype) or Iterator (or its
+     *     subtype)
+     */
+    private boolean allowsOrderNonDet(DeclaredType javaType) {
+        TypeMirror javaTypeMirror = TypesUtils.getTypeElement(javaType).asType();
+        if (atypeFactory.isCollection(javaTypeMirror) || atypeFactory.isIterator(javaTypeMirror)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -141,13 +138,29 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             AnnotationMirror arrayType = type.getAnnotations().iterator().next();
             AnnotationMirror elementType =
                     type.getComponentType().getAnnotations().iterator().next();
-            if (!atypeFactory.getQualifierHierarchy().isSubtype(elementType, arrayType)) {
-                checker.report(
-                        Result.failure(INVALID_ARRAY_COMPONENT_TYPE, elementType, arrayType), tree);
+            if (isInvalidSubtyping(elementType, arrayType, tree, INVALID_ARRAY_COMPONENT_TYPE)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Checks if {@code subAnnotation} is not a subtype of {@code superAnnotation} and report an
+     * error if the check succeeds.
+     *
+     * @return true if the subtyping relationship is invalid, false otherwise
+     */
+    private boolean isInvalidSubtyping(
+            AnnotationMirror subAnnotation,
+            AnnotationMirror superAnnotation,
+            Tree tree,
+            @CompilerMessageKey String errorMessage) {
+        if (!atypeFactory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation)) {
+            checker.report(Result.failure(errorMessage, subAnnotation, superAnnotation), tree);
+            return true;
+        }
+        return false;
     }
 
     /**

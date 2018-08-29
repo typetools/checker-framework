@@ -401,7 +401,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** @return true if {@code tm} is Iterator or a subtype of Iterator */
     public boolean isIterator(TypeMirror tm) {
-        return types.isSubtype(tm, IteratorTypeMirror);
+        return types.isSubtype(types.erasure(tm), types.erasure(IteratorTypeMirror));
     }
 
     /** @return true if {@code tm} is the Arrays class */
