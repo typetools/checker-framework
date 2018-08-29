@@ -7,8 +7,13 @@ task copySources(type: Copy) {
     fileMode(0555)
 }
 copySources.dependsOn(":checker-qual:copySources")
-copySources.dependsOn(":checker-qual:copyCompatQual")
 
+/**
+* Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
+* Using the standard Checker Framework annotations can lead to main dex overflows;
+* users of the Checker framework may find themselves unable to build their Android apps.
+* By contrast, class-retention annotations are stripped out before packaging by all build systems as a convention.
+*/
 task replaceAnnotations {
     doLast {
         fileTree(dir: 'src', include: "**/*.java").each {
@@ -18,51 +23,7 @@ task replaceAnnotations {
 }
 replaceAnnotations.dependsOn copySources
 
-sourceSets {
-    compatQual
-}
-
 compileJava.dependsOn replaceAnnotations
-
-compileCompatQualJava {
-    dependsOn replaceAnnotations
-    doFirst {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-    }
-}
-
-task compatQualJavadoc(type: Javadoc) {
-    source = sourceSets.compatQual.java
-}
-
-task compatQualJar(type: Jar, dependsOn: compileCompatQualJava) {
-    baseName = 'checker-compat-qual-android'
-    from compileCompatQualJava.outputs
-    manifest {
-        attributes('Automatic-Module-Name': "org.checkerframework.checker.qual")
-    }
-}
-
-task compatQualSourcesJar(type: Jar) {
-    description 'Creates compat-qual sources jar.'
-    classifier = 'source'
-    baseName = 'checker-compat-qual-android'
-    from sourceSets.compatQual.java
-}
-
-// Create a javadocJar task for each subproject
-task compatQualJavadocJar(type: Jar, dependsOn: compatQualJavadoc) {
-    description 'Creates compat-qual javadoc jar.'
-    classifier = 'javadoc'
-    baseName = 'checker-compat-qual-android'
-    from compatQualJavadoc.destinationDir
-}
-
-
-artifacts {
-    archives compatQualJar
-}
 
 clean {
     delete file('src')
