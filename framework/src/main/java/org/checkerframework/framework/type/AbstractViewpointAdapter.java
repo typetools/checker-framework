@@ -21,8 +21,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -345,12 +345,11 @@ public abstract class AbstractViewpointAdapter implements ViewpointAdapter {
             ant.replaceAnnotation(resultAnnotation);
             return ant;
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ViewpointAdaptor::combineAnnotationWithType: Unknown decl: "
                             + declared
                             + " of kind: "
                             + declared.getKind());
-            return null;
         }
     }
 
@@ -427,7 +426,7 @@ public abstract class AbstractViewpointAdapter implements ViewpointAdapter {
         } else if (rhs.getKind().isPrimitive() || rhs.getKind() == TypeKind.NULL) {
             // nothing to do for primitive types and the null type
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ViewpointAdaptor::substituteTVars: Cannot handle rhs: "
                             + rhs
                             + " of kind: "
