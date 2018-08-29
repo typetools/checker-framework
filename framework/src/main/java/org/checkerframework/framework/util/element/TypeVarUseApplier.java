@@ -18,7 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Apply annotations to the use of a type parameter declaration. */
 public class TypeVarUseApplier {
@@ -77,7 +77,7 @@ public class TypeVarUseApplier {
             final Element element,
             final AnnotatedTypeFactory typeFactory) {
         if (!accepts(type, element)) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "TypeParamUseApplier does not accept type/element combination ("
                             + " type ( "
                             + type
@@ -199,7 +199,7 @@ public class TypeVarUseApplier {
                 break;
 
             default:
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "TypeVarUseApplier::extractAndApply : "
                                 + "Unhandled element kind "
                                 + useElem.getKind()
@@ -209,7 +209,6 @@ public class TypeVarUseApplier {
                                 + "declarationElem ( "
                                 + declarationElem
                                 + " ) ");
-                annotations = null; // dead code
         }
 
         return annotations;
@@ -250,7 +249,7 @@ public class TypeVarUseApplier {
     private static List<Attribute.TypeCompound> getParameterAnnos(final Element paramElem) {
         final Element enclosingElement = paramElem.getEnclosingElement();
         if (!(enclosingElement instanceof ExecutableElement)) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Bad element passed to TypeFromElement.getTypeParameterAnnotationAttributes: "
                             + "element: "
                             + paramElem
@@ -287,7 +286,7 @@ public class TypeVarUseApplier {
     /** @return the annotations on the return type of the input ExecutableElement */
     private static List<Attribute.TypeCompound> getReturnAnnos(final Element methodElem) {
         if (!(methodElem instanceof ExecutableElement)) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Bad element passed to TypeVarUseApplier.getReturnAnnos:" + methodElem);
         }
 

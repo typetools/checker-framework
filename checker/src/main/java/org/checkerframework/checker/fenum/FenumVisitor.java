@@ -79,7 +79,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         // The checker calls this method to compare the annotation used in a
         // type to the modifier it adds to the class declaration. As our default
-        // modifier is Unqualified, this results in an error when a non-subtype
+        // modifier is FenumBottom, this results in an error when a non-subtype
         // is used. Can we use FenumTop as default instead?
         return true;
     }

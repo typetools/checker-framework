@@ -37,8 +37,8 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -415,9 +415,7 @@ public class FlowExpressions {
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
                 return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
-                ErrorReporter.errorAbort(
-                        "Unexpected element kind: %s element: %s", ele.getKind(), ele);
-                return null;
+                throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
         }
     }
 

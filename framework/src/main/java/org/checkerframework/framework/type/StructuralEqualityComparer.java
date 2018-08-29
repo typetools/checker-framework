@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -129,8 +129,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                     type1.getAnnotationInHierarchy(currentTop),
                     type2.getAnnotationInHierarchy(currentTop));
         } else {
-            ErrorReporter.errorAbort("currentTop null");
-            return false;
+            throw new BugInCF("currentTop null");
         }
     }
 
@@ -144,7 +143,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final Collection<? extends AnnotatedTypeMirror> types1,
             final Collection<? extends AnnotatedTypeMirror> types2) {
         if (types1.size() != types2.size()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Mismatching collection sizes:\n    types 1: "
                             + PluginUtil.join("; ", types1)
                             + " ("
@@ -255,7 +254,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return true;
             /* TODO! This should be an error. See framework/tests/all-systems/InitializationVisitor.java
              * for a failure.
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Mismatching type argument sizes:\n    type 1: "
                             + type1
                             + " ("
@@ -385,8 +384,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                         AnnotatedTypes.findEffectiveAnnotationInHierarchy(
                                 qualifierHierarchy, type2, currentTop));
             } else {
-                ErrorReporter.errorAbort("currentTop null");
-                return false;
+                throw new BugInCF("currentTop null");
             }
         }
 
