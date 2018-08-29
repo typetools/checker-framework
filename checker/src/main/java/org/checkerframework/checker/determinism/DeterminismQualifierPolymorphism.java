@@ -55,15 +55,12 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             type.replaceAnnotation(factory.POLYDET);
         }
         // TODO: Does this for loop iterate exactly once, or could it do so multiple times?
-        // The test type.hasAnnotation(factory.POLYDET_USE) will evaluet te the same value on every
-        // iteration, which meats that type.replaceAnnotations could get called multiple times.
+        // The test type.hasAnnotation(factory.POLYDET_USE) will evaluate to the same value on every
+        // iteration, which means that type.replaceAnnotations could get called multiple times.
         // That seems surprising and wrong.
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
-            // TODO: when can poly be null?  I would not expect null keys.  What does a null key
-            // mean?
-            if (poly != null
-                    && (type.hasAnnotation(poly) || type.hasAnnotation(factory.POLYDET_USE))) {
+            if (type.hasAnnotation(poly) || type.hasAnnotation(factory.POLYDET_USE)) {
                 type.removeAnnotation(poly);
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);

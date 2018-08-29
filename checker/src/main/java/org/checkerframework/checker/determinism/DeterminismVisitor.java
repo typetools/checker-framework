@@ -6,7 +6,6 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -19,7 +18,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /** Visitor for the determinism type-system. */
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
@@ -66,10 +64,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        DeclaredType javaType = useType.getUnderlyingType();
+        TypeMirror javaType = useType.getUnderlyingType();
 
         // Checks for @OrderNonDet on non-collections and raises an error if this check succeeds.
-        if (useType.hasAnnotation(atypeFactory.ORDERNONDET) && !allowsOrderNonDet(javaType)) {
+        if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
+                && !atypeFactory.mayBeOrderNonDet(javaType)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
             return false;
         }
@@ -77,7 +76,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         // Raises an error if the annotation on the type parameter of a collection (or iterator) is
         // a supertype of the annotation on the collection (or iterator).
         AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
-        if (allowsOrderNonDet(javaType)) {
+        if (atypeFactory.mayBeOrderNonDet(javaType)) {
             for (AnnotatedTypeMirror paramType : useType.getTypeArguments()) {
                 if (paramType.getAnnotations().size() > 0) {
                     AnnotationMirror paramAnnotation = paramType.getAnnotations().iterator().next();
@@ -89,21 +88,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             }
         }
         return true;
-    }
-
-    /**
-     * Checks if it is valid for {@code javaType} to have {@OrderNonDet} annotation.
-     *
-     * @param javaType the declared type to be checked
-     * @return true if {@code javaType} is a Collection (or its subtype) or Iterator (or its
-     *     subtype)
-     */
-    private boolean allowsOrderNonDet(DeclaredType javaType) {
-        TypeMirror javaTypeMirror = TypesUtils.getTypeElement(javaType).asType();
-        if (atypeFactory.isCollection(javaTypeMirror) || atypeFactory.isIterator(javaTypeMirror)) {
-            return true;
-        }
-        return false;
     }
 
     /**

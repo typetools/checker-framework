@@ -181,11 +181,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // @OrderNonDet.
             // If the check succeeds, the annotation on the return type is replaced with @NonDet.
             if (p.getAnnotations().contains(ORDERNONDET)
-                    // TODO: consider abstracting out these three lines into a mayBeOrderNonDet
-                    // method.
-                    && !(p.getUnderlyingType().getKind() == TypeKind.ARRAY)
-                    && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
-                    && !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))) {
+                    && !mayBeOrderNonDet(p.getUnderlyingType())) {
                 p.replaceAnnotation(NONDET);
             }
 
@@ -260,6 +256,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Checks if it is valid for {@code javaType} to have {@OrderNonDet} annotation.
+     *
+     * @param javaType the declared type to be checked
+     * @return true if {@code javaType} is a Collection (or its subtype) or Iterator (or its
+     *     subtype) or an array
+     */
+    public boolean mayBeOrderNonDet(TypeMirror javaType) {
+        if (javaType.getKind() == TypeKind.ARRAY
+                || isCollection(TypesUtils.getTypeElement(javaType).asType())
+                || isIterator(TypesUtils.getTypeElement(javaType).asType())) {
+            return true;
+        }
+        return false;
+    }
+
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
         public DeterminismTypeAnnotator(DeterminismAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -287,35 +299,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 // Annotates array return types as @PolyDet[@PolyDet]
                 AnnotatedTypeMirror retType = t.getReturnType();
-                // TODO: I suggest abstracting out this if statement be abstracted out, so that the
-                // below for loop can use it too.
-                if (retType.getKind() == TypeKind.ARRAY) {
-                    AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
-                            (AnnotatedTypeMirror.AnnotatedArrayType) retType;
-
-                    if (arrRetType.getAnnotations().size() == 0) {
-                        // TODO: Why does this check for type variables but the similar code in
-                        // the for loop below does not?
-                        if (arrRetType.getComponentType().getUnderlyingType().getKind()
-                                != TypeKind.TYPEVAR) {
-                            arrRetType.getComponentType().replaceAnnotation(POLYDET);
-                        }
-                    }
-                }
+                annotateArrayElementAsPolyDet(retType);
 
                 // Annotates array parameter types as @PolyDet[@PolyDet]
                 List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
                 for (AnnotatedTypeMirror paramType : paramTypes) {
-                    if (paramType.getKind() == TypeKind.ARRAY) {
-                        AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
-                                (AnnotatedTypeMirror.AnnotatedArrayType) paramType;
-                        if (arrParamType.getAnnotations().size() == 0) {
-                            if (arrParamType.getComponentType().getUnderlyingType().getKind()
-                                    != TypeKind.TYPEVAR) {
-                                arrParamType.getComponentType().replaceAnnotation(POLYDET);
-                            }
-                        }
-                    }
+                    annotateArrayElementAsPolyDet(paramType);
                 }
 
                 // If the invoked method is static and has no arguments,
@@ -329,6 +318,23 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             return super.visitExecutable(t, p);
+        }
+    }
+
+    /**
+     * Helper method that replaces the annotation on component type of the array type {@code
+     * arrType} as @PolyDet.
+     */
+    private void annotateArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
+        if (arrType.getKind() == TypeKind.ARRAY) {
+            AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
+                    (AnnotatedTypeMirror.AnnotatedArrayType) arrType;
+            if (arrParamType.getAnnotations().size() == 0) {
+                if (arrParamType.getComponentType().getUnderlyingType().getKind()
+                        != TypeKind.TYPEVAR) {
+                    arrParamType.getComponentType().replaceAnnotation(POLYDET);
+                }
+            }
         }
     }
 
