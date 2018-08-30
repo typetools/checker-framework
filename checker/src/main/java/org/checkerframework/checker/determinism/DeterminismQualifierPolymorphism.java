@@ -54,17 +54,13 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             isPolyDown = true;
             type.replaceAnnotation(factory.POLYDET);
         }
-        // TODO: Does this for loop iterate exactly once, or could it do so multiple times?
-        // The test type.hasAnnotation(factory.POLYDET_USE) will evaluate to the same value on every
-        // iteration, which means that type.replaceAnnotations could get called multiple times.
-        // That seems surprising and wrong.
-        for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
-            AnnotationMirror poly = pqentry.getKey();
-            if (type.hasAnnotation(poly) || type.hasAnnotation(factory.POLYDET_USE)) {
-                type.removeAnnotation(poly);
-                AnnotationMirrorSet quals = pqentry.getValue();
-                type.replaceAnnotations(quals);
-            }
+
+        Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry =
+                replacements.entrySet().iterator().next();
+        AnnotationMirror poly = pqentry.getKey();
+        if (type.hasAnnotation(poly) || type.hasAnnotation(factory.POLYDET_USE)) {
+            AnnotationMirrorSet quals = pqentry.getValue();
+            type.replaceAnnotations(quals);
         }
 
         if (type.hasAnnotation(factory.ORDERNONDET)) {
