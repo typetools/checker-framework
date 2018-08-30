@@ -23,15 +23,9 @@ ext {
     annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
     afuJar = "${afu}/annotation-file-utilities-all.jar"
-    if (!file(afuJar).exists()) {
-        println "${afuJar} does not exist"
-    }
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
-    if (!file(stubparserJar).exists()) {
-        println "${stubparserJar} does not exist"
-    }
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
