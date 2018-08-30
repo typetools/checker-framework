@@ -41,7 +41,6 @@ public class CollectionToArrayHeuristics {
     private final ProcessingEnvironment processingEnv;
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
-    private final ExecutableElement collectionToArrayObject;
     private final ExecutableElement collectionToArrayE;
     private final ExecutableElement size;
     private final AnnotatedDeclaredType collectionType;
@@ -51,8 +50,6 @@ public class CollectionToArrayHeuristics {
         this.processingEnv = env;
         this.atypeFactory = factory;
 
-        this.collectionToArrayObject =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 0, env);
         this.collectionToArrayE =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
         this.size = TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);

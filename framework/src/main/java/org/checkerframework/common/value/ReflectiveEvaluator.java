@@ -249,7 +249,7 @@ public class ReflectiveEvaluator {
             String classname, String fieldName, MemberSelectTree tree) {
         try {
             Class<?> recClass = Class.forName(classname);
-            Field field = recClass.getField(fieldName.toString());
+            Field field = recClass.getField(fieldName);
             return field.get(recClass);
 
         } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {

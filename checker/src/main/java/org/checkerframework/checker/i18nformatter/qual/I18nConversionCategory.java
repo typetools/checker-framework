@@ -82,7 +82,7 @@ public enum I18nConversionCategory {
                 }
             }
         }
-        throw new IllegalArgumentException("Invalid format type.");
+        throw new IllegalArgumentException("Invalid format type " + string);
     }
 
     private static <E> Set<E> arrayToSet(E[] a) {
@@ -129,7 +129,6 @@ public enum I18nConversionCategory {
                 return v;
             }
         }
-        // this should never happen
         throw new RuntimeException();
     }
 

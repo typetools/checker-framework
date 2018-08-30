@@ -1,7 +1,5 @@
 package org.checkerframework.framework.test;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +87,7 @@ public abstract class CheckerFrameworkPerFileTest {
         List<String> customizedOptions =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
         TestConfiguration config =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir, testFile, checkerName, customizedOptions, shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
         TestUtilities.assertResultsAreValid(testResult);

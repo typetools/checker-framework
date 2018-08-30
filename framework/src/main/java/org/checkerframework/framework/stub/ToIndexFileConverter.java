@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -178,7 +178,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             iu = JavaParser.parseStubUnit(in);
         } catch (ParseProblemException e) {
             iu = null;
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ToIndexFileConverter: exception from JavaParser.parseStubUnit for InputStream."
                             + System.lineSeparator()
                             + "Problem message with problems encountered: "
@@ -568,8 +568,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                             case SHORT:
                                 return "S";
                             default:
-                                throw new IllegalArgumentException(
-                                        "baseTypeName(): unknown primitive type " + type);
+                                throw new BugInCF("unknown primitive type " + type);
                         }
                     }
 
