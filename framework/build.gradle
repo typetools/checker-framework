@@ -28,14 +28,16 @@ dependencies {
 }
 
 task checkDependencies() {
-    if (!file(afuJar).exists()) {
-        if (!file(stubparserJar).exists()) {
-            throw new GradleException("${afuJar} and ${stubparserJar} do not exist")
+    doLast {
+        if (!file(afuJar).exists()) {
+            if (!file(stubparserJar).exists()) {
+                throw new GradleException("${afuJar} and ${stubparserJar} do not exist")
+            }
+            throw new GradleException("${afuJar} does not exist")
         }
-        throw new GradleException("${afuJar} does not exist")
-    }
-    if (!file(stubparserJar).exists()) {
-        throw new GradleException("${stubparserJar} does not exist")
+        if (!file(stubparserJar).exists()) {
+            throw new GradleException("${stubparserJar} does not exist")
+        }
     }
 }
 
