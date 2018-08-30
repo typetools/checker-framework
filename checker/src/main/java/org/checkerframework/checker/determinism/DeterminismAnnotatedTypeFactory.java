@@ -257,7 +257,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Checks if it is valid for {@code javaType} to have {@OrderNonDet} annotation.
+     * Checks if it is valid for {@code javaType} to have {@code @OrderNonDet} annotation.
      *
      * @param javaType the declared type to be checked
      * @return true if {@code javaType} is a Collection (or its subtype) or Iterator (or its
