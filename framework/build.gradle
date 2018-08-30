@@ -39,7 +39,7 @@ task checkDependencies() {
     }
 }
 
-compileJava.dependsOn(checkDependancies)
+compileJava.dependsOn(checkDependencies)
 
 shadowJar {
     description 'Creates the "fat" framework.jar in dist'
