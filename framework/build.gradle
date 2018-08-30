@@ -27,7 +27,7 @@ dependencies {
     testCompile sourceSets.testannotations.output
 }
 
-task checkDependancies() {
+task checkDependencies() {
     if (!file(afuJar).exists()) {
         if (!file(stubparserJar).exists()) {
             throw new GradleException("${afuJar} and ${stubparserJar} do not exist")
