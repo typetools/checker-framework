@@ -27,6 +27,20 @@ dependencies {
     testCompile sourceSets.testannotations.output
 }
 
+task checkDependancies() {
+    if (!file(afuJar).exists()) {
+        if (!file(stubparserJar).exists()) {
+            throw new GradleException("${afuJar} and ${stubparserJar} do not exist")
+        }
+        throw new GradleException("${afuJar} does not exist")
+    }
+    if (!file(stubparserJar).exists()) {
+        throw new GradleException("${stubparserJar} does not exist")
+    }
+}
+
+compileJava.dependsOn(checkDependancies)
+
 shadowJar {
     description 'Creates the "fat" framework.jar in dist'
     destinationDir = file("${projectDir}/dist")
