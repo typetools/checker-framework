@@ -947,18 +947,41 @@ These instructions are relevant if you use Eclipse as your IDE\@.
 \begin{enumerate}
 \item Follow the instructions earlier in Section~\ref{build-source} to
 clone and build all projects from their sources.
+\item Download the source code zip for your JDK:
+On Linux, run `sudo apt-get -qqy install openjdk-8-source`.
+On Window, re-run the JDK install wizard and in the custom setup panel, ensure
+``Source Code'' is selected for installation.
+If this step is successful, there should be a \<src.zip> file located in the
+directory pointed to by \<JAVA\_HOME>.
+\item Create symbolic links to \<tools.jar> and \<src.zip>:
+In a terminal (Linux / Mac) or command prompt with administrative
+priviliges (Windows), navigate to the
+\<\$CHECKERFRAMEWORK/../annotation-tools/annotation-file-utilities/lib>
+directory. Create symbolic links to \<\$JAVA\_HOME/lib/tools.jar> and to
+\<\$JAVA\_HOME/src.zip>. Ensure the symbolic links are named \<tools.jar> and
+\<src.zip>, respectively.
 \item Download Eclipse from
 the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
 and install it.
-\item Run Eclipse.
-\item Enter the main Eclipse working screen and in the ``File'' menu,
-select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
-Projects into Workspace''.
+\item Run Eclipse and enter the main Eclipse working screen.
+\item Checker Framework's sources depend on classes packaged in \<rt.jar> from
+the JRE. Attaching the source code to \<rt.jar> makes it easier to understand
+and work with these classes:
+In the ``Window'' menu, select ``Preferences'' $\rightarrow$ ``Java''
+$\rightarrow$ ``Installed JREs''. Select the Java 8 JRE, then Select ``Edit''.
+In the list of JRE system libraries, select \<rt.jar>. Select
+``Source Attachment'' $\rightarrow$ ``External location'' $\rightarrow$
+``External File''. Locate the directory pointed to by \<\$JAVA\_HOME>, select
+\<src.zip> and then OK to attach the source. Select ``Finish'' and
+``Apply and Close''.
+\item In the ``File'' menu, select ``Import'' $\rightarrow$ ``General''
+$\rightarrow$ ``Existing Projects into Workspace''.
 \item After the ``Import Projects'' window appears, select ``Select
 Root Directory'', and select the parent of the \code{\$CHECKERFRAMEWORK} directory.
 \item Ensure ``Search for nested projects'' is selected in the Options panel.
-\item Select all the projects in the folder except for ``personalblog-demo'',
-then select ``Finish'' to import the projects.
+\item Select all the projects in the list except for ``personalblog-demo''
+and ``jsr308-langtools'', then select ``Finish'' to import the projects.
+
 \end{enumerate}
 Eclipse should successfully build all the imported projects.
 If Eclipse reports any errors, ensure you followed the instructions
