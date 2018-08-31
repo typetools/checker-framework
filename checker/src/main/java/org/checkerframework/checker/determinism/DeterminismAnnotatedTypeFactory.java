@@ -291,30 +291,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitExecutable(
                 final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
-            if (isMainMethod(t.getElement())) {
-                AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
-                if (paramType.getAnnotations().size() > 0 && !paramType.hasAnnotation(DET)) {
-                    checker.report(Result.failure(INVALID_ANNOTATION_ON_PARAMETER), t);
-                }
-                paramType.replaceAnnotation(DET);
-            } else {
-                // Annotates array return types as @PolyDet[@PolyDet]
-                AnnotatedTypeMirror retType = t.getReturnType();
-                annotateArrayElementAsPolyDet(retType);
+            // Annotates array return types as @PolyDet[@PolyDet]
+            AnnotatedTypeMirror retType = t.getReturnType();
+            annotateArrayElementAsPolyDet(retType);
 
-                // Annotates array parameter types as @PolyDet[@PolyDet]
-                List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
-                for (AnnotatedTypeMirror paramType : paramTypes) {
-                    annotateArrayElementAsPolyDet(paramType);
-                }
+            // Annotates array parameter types as @PolyDet[@PolyDet]
+            List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
+            for (AnnotatedTypeMirror paramType : paramTypes) {
+                annotateArrayElementAsPolyDet(paramType);
+            }
 
-                // If the invoked method is static and has no arguments,
-                // its return type is annotated as @Det.
-                if (ElementUtils.isStatic(t.getElement())) {
-                    if (t.getElement().getParameters().size() == 0) {
-                        if (t.getReturnType().getExplicitAnnotations().size() == 0) {
-                            t.getReturnType().replaceAnnotation(DET);
-                        }
+            // If the invoked method is static and has no arguments,
+            // its return type is annotated as @Det.
+            if (ElementUtils.isStatic(t.getElement())) {
+                if (t.getElement().getParameters().size() == 0) {
+                    if (t.getReturnType().getExplicitAnnotations().size() == 0) {
+                        t.getReturnType().replaceAnnotation(DET);
                     }
                 }
             }
@@ -364,8 +356,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Adds default annotations for main method parameters ({@code @Det}) and other array parameters
-     * ({@code @PolyDet[@PolyDet]}).
+     * Adds implicit annotation for main method parameter ({@code @Det}) and default annotations for
+     * other array parameters ({@code @PolyDet[@PolyDet]}).
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
@@ -376,6 +368,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (elt.getEnclosingElement().getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
                 if (isMainMethod(method)) {
+                    if (type.getAnnotations().size() > 0 && !type.hasAnnotation(DET)) {
+                        checker.report(Result.failure(INVALID_ANNOTATION_ON_PARAMETER), elt);
+                    }
                     type.addMissingAnnotations(Collections.singleton(DET));
                 } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrType =
