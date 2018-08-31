@@ -69,7 +69,7 @@ public interface Iterator<E> {
      * @return the next element in the iteration
      * @throws NoSuchElementException if the iteration has no more elements
      */
-    @PolyDet("up") E next(@PolyDet Iterator<E> this);
+    /*@PolyDet("up")*/ E next(@PolyDet Iterator<E> this);
 
     /**
      * Removes from the underlying collection the last element returned

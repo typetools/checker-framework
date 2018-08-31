@@ -3,6 +3,7 @@ package org.checkerframework.checker.determinism;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -63,7 +64,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             }
         }
 
-        if (type.hasAnnotation(factory.ORDERNONDET)) {
+        if (type.hasAnnotation(factory.ORDERNONDET) && type.getKind() != TypeKind.TYPEVAR) {
             if (isPolyUp) {
                 replaceOrderNonDet(type, factory.NONDET);
             }
@@ -109,7 +110,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             // Example: @OrderNonDet MyMap<@Det Integer, @Det Integer>
             // This loop executes twice for the two type parameters.
             for (AnnotatedTypeMirror argType : declaredTypeOuter.getTypeArguments()) {
-                if (argType.hasAnnotation(factory.ORDERNONDET)) {
+                if (argType.getKind() != TypeKind.TYPEVAR
+                        && argType.hasAnnotation(factory.ORDERNONDET)) {
                     argType.replaceAnnotation(replaceType);
                 }
             }

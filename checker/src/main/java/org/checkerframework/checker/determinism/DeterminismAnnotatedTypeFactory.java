@@ -217,6 +217,17 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
             }
+
+            if (isIterator(receiverUnderlyingType.asType())) {
+                if (invokedMethodElement.getSimpleName().contentEquals("next")) {
+                    if (p.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+                        if (receiverType.hasAnnotation(NONDET)
+                                || receiverType.hasAnnotation(ORDERNONDET)) {
+                            p.replaceAnnotation(NONDET);
+                        }
+                    }
+                }
+            }
             return super.visitMethodInvocation(node, p);
         }
 
