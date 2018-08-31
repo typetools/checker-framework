@@ -7,6 +7,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 % Keep this list up to date with the sections of this chapter and with TWO
 % copies of the list in file introduction.tex .
 \begin{itemize}
+\item Android (Section~\ref{android})
 \item Android Gradle Plugin (Section~\ref{android-gradle})
 \item Ant (Section~\ref{ant-task})
 \item Eclipse (Section~\ref{eclipse})
@@ -31,6 +32,19 @@ we can add it to this manual.
 
 All examples in this chapter are in the public domain, with no copyright nor
 licensing restrictions.
+
+
+\section{Android\label{android}}
+
+When creating an Android app, you may wish to use \<checker-qual-android>
+whenever this document mentions \<checker-qual>.  This can lead to smaller
+dex files (smaller distributed apps).
+
+The \<checker-qual-android> artifact is identical to the \<checker-qual>
+artifact, except that in \<checker-qual-android> annotations have classfile
+retention.  The default Android Gradle plugin retains types annotated with
+runtime annotations in the main dex, but strips out class-retention
+annotations.
 
 
 \section{Android Studio 3.0 and the Android Gradle Plugin 3.0\label{android-gradle}}
@@ -94,7 +108,7 @@ configurations {
 dependencies {
     ... existing dependencies...
     ext.checkerFrameworkVersion = '2.5.4'
-    implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+    implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
 }
