@@ -18,6 +18,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.determinism.qual.Det;
 import org.checkerframework.checker.determinism.qual.NonDet;
 import org.checkerframework.checker.determinism.qual.OrderNonDet;
@@ -29,6 +30,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -80,6 +82,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The Collections class. */
     private final TypeMirror CollectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
+
+    /**
+     * Error message key for explicitly annotating main method parameter as anything other that
+     * {@code @Det}.
+     */
+    private static final @CompilerMessageKey String INVALID_ANNOTATION_ON_PARAMETER =
+            "invalid.annotation.on.parameter";
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -135,20 +144,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        // TODO:
-        // I think there might be a confusion regarding what "defaulting" means.
-        // Defaulting occurs when the programmer does not write a type qualifier on a use of a type.
-        // (This is explained at https://checkerframework.org/manual/#effective-qualifier .)
-        // Defaulting has no effect if the programmer wrote a type qualifier.
-        // On a method invocation, there is no type on which to write a type qualifier, and there is
-        // no check whether a programmer wrote something explicitly.
-        // Please correct use of the term "defaulting" throughout.
         /**
-         * Places the default annotation on the return type of a method invocation as follows:
+         * Replaces the annotation on the return type of a method invocation as follows:
          *
          * <ol>
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
-         *       array or a collection, it defaults to {@code @NonDet}.
+         *       array or a collection, it is replaced with {@code @NonDet}.
          *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
          *       the {@code @Det} annotation under the following conditions:
          *       <ol>
@@ -277,14 +278,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        // TODO: Are these really default annotations?
-        // The code should check whether there is already an annotation there (and maybe warn or
-        // issue an error, depending on whether this is defaults or implicit annotations).
         /**
-         * Places the following default annotations:
+         * Places the following implicit annotation of {@code Det} on main method parameter. Places
+         * the following default annotations:
          *
          * <ol>
-         *   <li>Annotates the main method parameter as {@code Det}.
          *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}.
          *   <li>Annotates the return type for static methods without any parameters as
          *       {@code @Det}.
@@ -295,6 +293,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
             if (isMainMethod(t.getElement())) {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
+                if (paramType.getAnnotations().size() > 0 && !paramType.hasAnnotation(DET)) {
+                    checker.report(Result.failure(INVALID_ANNOTATION_ON_PARAMETER), t);
+                }
                 paramType.replaceAnnotation(DET);
             } else {
                 // Annotates array return types as @PolyDet[@PolyDet]
@@ -322,8 +323,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Helper method that replaces the annotation on component type of the array type {@code
-     * arrType} as @PolyDet.
+     * Helper method that annotates component type of the array type {@code arrType} as @PolyDet.
      */
     private void annotateArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
         if (arrType.getKind() == TypeKind.ARRAY) {
