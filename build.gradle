@@ -23,15 +23,9 @@ ext {
     annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
     afuJar = "${afu}/annotation-file-utilities-all.jar"
-    if (!file(afuJar).exists()) {
-        println "${afuJar} does not exist"
-    }
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
-    if (!file(stubparserJar).exists()) {
-        println "${stubparserJar} does not exist"
-    }
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -57,7 +51,7 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.4'
+    version '2.5.5'
 
     repositories {
         mavenCentral()
