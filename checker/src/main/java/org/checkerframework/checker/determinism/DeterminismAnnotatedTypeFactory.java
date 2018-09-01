@@ -218,16 +218,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
-            if (isIterator(receiverUnderlyingType.asType())) {
-                if (invokedMethodElement.getSimpleName().contentEquals("next")) {
-                    if (p.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
-                        if (receiverType.hasAnnotation(NONDET)
-                                || receiverType.hasAnnotation(ORDERNONDET)) {
-                            p.replaceAnnotation(NONDET);
-                        }
-                    }
+            if (isIteratorNext(receiverUnderlyingType, invokedMethodElement)
+                    && p.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+                if (receiverType.hasAnnotation(NONDET) || receiverType.hasAnnotation(ORDERNONDET)) {
+                    p.replaceAnnotation(NONDET);
                 }
             }
+
             return super.visitMethodInvocation(node, p);
         }
 
@@ -384,13 +381,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** @return true if {@code tm} is Collection or a subtype of Collection */
     public boolean isCollection(TypeMirror tm) {
-        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         return types.isSubtype(types.erasure(tm), types.erasure(CollectionInterfaceTypeMirror));
     }
 
     /** @return true if {@code tm} is Iterator or a subtype of Iterator */
     public boolean isIterator(TypeMirror tm) {
-        javax.lang.model.util.Types types = processingEnv.getTypeUtils();
         return types.isSubtype(tm, IteratorTypeMirror);
     }
 
@@ -402,6 +397,17 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** @return true if {@code tm} is the Collections class */
     public boolean isCollections(TypeMirror tm) {
         return types.isSameType(tm, CollectionsTypeMirror);
+    }
+
+    private boolean isIteratorNext(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (isIterator(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("next")
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
