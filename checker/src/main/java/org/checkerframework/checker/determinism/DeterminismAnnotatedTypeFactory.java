@@ -3,13 +3,7 @@ package org.checkerframework.checker.determinism;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -24,6 +18,7 @@ import org.checkerframework.checker.determinism.qual.OrderNonDet;
 import org.checkerframework.checker.determinism.qual.PolyDet;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -80,6 +75,28 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The Collections class. */
     private final TypeMirror CollectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
+    /** The AbstractList class. */
+    private final TypeMirror AbstractListTypeMirror =
+            TypesUtils.typeFromClass(AbstractList.class, types, processingEnv.getElementUtils());
+    /** The AbstractList class. */
+    private final TypeMirror AbstractSequentialListTypeMirror =
+            TypesUtils.typeFromClass(
+                    AbstractSequentialList.class, types, processingEnv.getElementUtils());
+    /** The ArrayList class. */
+    private final TypeMirror ArrayListTypeMirror =
+            TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
+    /** The LinkedList class. */
+    private final TypeMirror LinkedListTypeMirror =
+            TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
+    /** The NavigableSet class. */
+    private final TypeMirror NavigableSetTypeMirror =
+            TypesUtils.typeFromClass(NavigableSet.class, types, processingEnv.getElementUtils());
+    /** The SortedSet class. */
+    private final TypeMirror SortedSetTypeMirror =
+            TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
+    /** The TreeSet class. */
+    private final TypeMirror TreeSetTypeMirror =
+            TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -218,10 +235,30 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
-            if (isIteratorNext(receiverUnderlyingType, invokedMethodElement)
-                    && p.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
-                if (receiverType.hasAnnotation(NONDET) || receiverType.hasAnnotation(ORDERNONDET)) {
-                    p.replaceAnnotation(NONDET);
+            if (p.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+                if (isIteratorNext(receiverUnderlyingType, invokedMethodElement)
+                        || isAbstractListWithTypeVarReturn(
+                                receiverUnderlyingType, invokedMethodElement)
+                        || isArrayListWithTypeVarReturn(
+                                receiverUnderlyingType, invokedMethodElement)
+                        || isLinkedListWithTypeVarReturn(
+                                receiverUnderlyingType, invokedMethodElement)) {
+                    if (receiverType.hasAnnotation(NONDET)
+                            || receiverType.hasAnnotation(ORDERNONDET)) {
+                        p.replaceAnnotation(NONDET);
+                    } else {
+                        p.replaceAnnotation(DET);
+                    }
+                }
+                if (isNavigableSetWithTypeVarReturn(receiverUnderlyingType, invokedMethodElement)
+                        || isSortedSetWithTypeVarReturn(
+                                receiverUnderlyingType, invokedMethodElement)) {
+                    if (receiverType.hasAnnotation(DET)
+                            || receiverType.hasAnnotation(ORDERNONDET)) {
+                        p.replaceAnnotation(DET);
+                    } else {
+                        p.replaceAnnotation(NONDET);
+                    }
                 }
             }
 
@@ -399,10 +436,332 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSameType(tm, CollectionsTypeMirror);
     }
 
+    /** @return true if {@code tm} is AbstractList or its subtype */
+    public boolean isAbstractList(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(AbstractListTypeMirror));
+    }
+
+    /** @return true if {@code tm} is AbstractSequentialList or its subtype */
+    public boolean isAbstractSequentialList(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(AbstractSequentialListTypeMirror));
+    }
+
+    /** @return true if {@code tm} is ArrayList or its subtype */
+    public boolean isArrayList(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(ArrayListTypeMirror));
+    }
+
+    /** @return true if {@code tm} is LinkedList or its subtype */
+    public boolean isLinkedList(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(LinkedListTypeMirror));
+    }
+
+    /** @return true if {@code tm} is NavigableSet or its subtype */
+    public boolean isNavigableSet(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(NavigableSetTypeMirror));
+    }
+
+    /** @return true if {@code tm} is SortedSet or its subtype */
+    public boolean isSortedSet(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(SortedSetTypeMirror));
+    }
+
+    /** @return true if {@code tm} is TreeSet or its subtype */
+    public boolean isTreeSet(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(TreeSetTypeMirror));
+    }
+
     private boolean isIteratorNext(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isIterator(receiverUnderlyingType.asType())) {
             if (invokedMethodElement.getSimpleName().contentEquals("next")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isAbstractListWithTypeVarReturn(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (isAbstractList(receiverUnderlyingType.asType())
+                || isAbstractSequentialList(receiverUnderlyingType.asType())
+                || isList(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("get")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("set")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 2
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT
+                    && invokedMethodElement.getParameters().get(1).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("remove")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNavigableSetWithTypeVarReturn(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (isNavigableSet(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("lower")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("floor")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("ceiling")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("higher")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isArrayListWithTypeVarReturn(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (isArrayList(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("elementData")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("get")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("set")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 2
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT
+                    && invokedMethodElement.getParameters().get(1).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("remove")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isLinkedListWithTypeVarReturn(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (isLinkedList(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("unlink")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && (types.isSameType(
+                            invokedMethodElement.getParameters().get(0).asType(),
+                            TypesUtils.typeFromClass(
+                                    Node.class, types, processingEnv.getElementUtils())))) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("getFirst")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("getLast")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("removeFirst")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("removeLast")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("get")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("set")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 2
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT
+                    && invokedMethodElement.getParameters().get(1).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("remove")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.INT) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("peek")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("element")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("poll")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("remove")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("peekFirst")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("peekLast")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pop")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isSortedSetWithTypeVarReturn(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (isSortedSet(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("first")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("last")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isTreeSetWithTypeVarReturn(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (isTreeSet(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("first")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("last")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("lower")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("floor")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("ceiling")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("higher")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().size() == 0) {
                 return true;
             }

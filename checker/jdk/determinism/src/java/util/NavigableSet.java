@@ -98,7 +98,7 @@ public interface NavigableSet<E> extends SortedSet<E> {
      * @throws NullPointerException if the specified element is null
      *         and this set does not permit null elements
      */
-    @PolyDet E lower(@PolyDet NavigableSet<E> this, E e);
+    E lower(@PolyDet NavigableSet<E> this, E e);
 
     /**
      * Returns the greatest element in this set less than or equal to
@@ -112,7 +112,7 @@ public interface NavigableSet<E> extends SortedSet<E> {
      * @throws NullPointerException if the specified element is null
      *         and this set does not permit null elements
      */
-    @PolyDet E floor(@PolyDet NavigableSet<E> this, E e);
+    E floor(@PolyDet NavigableSet<E> this, E e);
 
     /**
      * Returns the least element in this set greater than or equal to
@@ -126,7 +126,7 @@ public interface NavigableSet<E> extends SortedSet<E> {
      * @throws NullPointerException if the specified element is null
      *         and this set does not permit null elements
      */
-    @PolyDet E ceiling(@PolyDet NavigableSet<E> this, E e);
+    E ceiling(@PolyDet NavigableSet<E> this, E e);
 
     /**
      * Returns the least element in this set strictly greater than the
@@ -140,7 +140,7 @@ public interface NavigableSet<E> extends SortedSet<E> {
      * @throws NullPointerException if the specified element is null
      *         and this set does not permit null elements
      */
-    @PolyDet E higher(@PolyDet NavigableSet<E> this, E e);
+    E higher(@PolyDet NavigableSet<E> this, E e);
 
     /**
      * Retrieves and removes the first (lowest) element,
@@ -148,7 +148,7 @@ public interface NavigableSet<E> extends SortedSet<E> {
      *
      * @return the first element, or {@code null} if this set is empty
      */
-    @PolyDet E pollFirst(@PolyDet NavigableSet<E> this);
+    E pollFirst(@PolyDet NavigableSet<E> this);
 
     /**
      * Retrieves and removes the last (highest) element,
@@ -156,7 +156,7 @@ public interface NavigableSet<E> extends SortedSet<E> {
      *
      * @return the last element, or {@code null} if this set is empty
      */
-    @PolyDet E pollLast(@PolyDet NavigableSet<E> this);
+    E pollLast(@PolyDet NavigableSet<E> this);
 
     /**
      * Returns an iterator over the elements in this set, in ascending order.

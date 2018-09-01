@@ -208,7 +208,7 @@ public class LinkedList<E>
     /**
      * Unlinks non-null node x.
      */
-    @PolyDet("up") E unlink(@PolyDet LinkedList<E> this, @PolyDet("use") Node<E> x) {
+    E unlink(@PolyDet LinkedList<E> this, @PolyDet("use") Node<E> x) {
         // assert x != null;
         final E element = x.item;
         final Node<E> next = x.next;
@@ -240,7 +240,7 @@ public class LinkedList<E>
      * @return the first element in this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @PolyDet("up") E getFirst(@PolyDet LinkedList<E> this) {
+    public E getFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         if (f == null)
             throw new NoSuchElementException();
@@ -253,7 +253,7 @@ public class LinkedList<E>
      * @return the last element in this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @PolyDet("up") E getLast(@PolyDet LinkedList<E> this) {
+    public E getLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         if (l == null)
             throw new NoSuchElementException();
@@ -266,7 +266,7 @@ public class LinkedList<E>
      * @return the first element from this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @PolyDet("up") E removeFirst(@PolyDet LinkedList<E> this) {
+    public E removeFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         if (f == null)
             throw new NoSuchElementException();
@@ -279,7 +279,7 @@ public class LinkedList<E>
      * @return the last element from this list
      * @throws NoSuchElementException if this list is empty
      */
-    public @PolyDet("up") E removeLast(@PolyDet LinkedList<E> this) {
+    public E removeLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         if (l == null)
             throw new NoSuchElementException();
@@ -474,7 +474,7 @@ public class LinkedList<E>
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @PolyDet("up") E get(@PolyDet LinkedList<E> this, @PolyDet int index) {
+    public E get(@PolyDet LinkedList<E> this, @PolyDet int index) {
         checkElementIndex(index);
         return node(index).item;
     }
@@ -488,7 +488,7 @@ public class LinkedList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @PolyDet("up") E set(@PolyDet LinkedList<E> this, @PolyDet("use") int index, E element) {
+    public E set(@PolyDet LinkedList<E> this, @PolyDet("use") int index, E element) {
         checkElementIndex(index);
         Node<E> x = node(index);
         E oldVal = x.item;
@@ -523,7 +523,7 @@ public class LinkedList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @PolyDet("up") E remove(@PolyDet LinkedList<E> this, @PolyDet("use") int index) {
+    public E remove(@PolyDet LinkedList<E> this, @PolyDet("use") int index) {
         checkElementIndex(index);
         return unlink(node(index));
     }
@@ -649,7 +649,7 @@ public class LinkedList<E>
      * @return the head of this list, or {@code null} if this list is empty
      * @since 1.5
      */
-    public @PolyDet("up") E peek(@PolyDet LinkedList<E> this) {
+    public E peek(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : f.item;
     }
@@ -661,7 +661,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.5
      */
-    public @PolyDet("up") E element(@PolyDet LinkedList<E> this) {
+    public E element(@PolyDet LinkedList<E> this) {
         return getFirst();
     }
 
@@ -671,7 +671,7 @@ public class LinkedList<E>
      * @return the head of this list, or {@code null} if this list is empty
      * @since 1.5
      */
-    public @PolyDet("up") E poll(@PolyDet LinkedList<E> this) {
+    public E poll(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : unlinkFirst(f);
     }
@@ -683,7 +683,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.5
      */
-    public @PolyDet("up") E remove(@PolyDet LinkedList<E> this) {
+    public E remove(@PolyDet LinkedList<E> this) {
         return removeFirst();
     }
 
@@ -731,7 +731,7 @@ public class LinkedList<E>
      *         if this list is empty
      * @since 1.6
      */
-    public @PolyDet("up") E peekFirst(@PolyDet LinkedList<E> this) {
+    public E peekFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : f.item;
      }
@@ -744,7 +744,7 @@ public class LinkedList<E>
      *         if this list is empty
      * @since 1.6
      */
-    public @PolyDet("up") E peekLast(@PolyDet LinkedList<E> this) {
+    public E peekLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         return (l == null) ? null : l.item;
     }
@@ -757,7 +757,7 @@ public class LinkedList<E>
      *     this list is empty
      * @since 1.6
      */
-    public @PolyDet("up") E pollFirst(@PolyDet LinkedList<E> this) {
+    public E pollFirst(@PolyDet LinkedList<E> this) {
         final Node<E> f = first;
         return (f == null) ? null : unlinkFirst(f);
     }
@@ -770,7 +770,7 @@ public class LinkedList<E>
      *     this list is empty
      * @since 1.6
      */
-    public @PolyDet("up") E pollLast(@PolyDet LinkedList<E> this) {
+    public E pollLast(@PolyDet LinkedList<E> this) {
         final Node<E> l = last;
         return (l == null) ? null : unlinkLast(l);
     }
@@ -799,7 +799,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.6
      */
-    public @PolyDet("up") E pop(@PolyDet LinkedList<E> this) {
+    public E pop(@PolyDet LinkedList<E> this) {
         return removeFirst();
     }
 

@@ -392,14 +392,14 @@ public class TreeSet<E> extends AbstractSet<E>
     /**
      * @throws NoSuchElementException {@inheritDoc}
      */
-    public @PolyDet("down") E first(@PolyDet TreeSet<E> this) {
+    public E first(@PolyDet TreeSet<E> this) {
         return m.firstKey();
     }
 
     /**
      * @throws NoSuchElementException {@inheritDoc}
      */
-    public @PolyDet("down") E last(@PolyDet TreeSet<E> this) {
+    public E last(@PolyDet TreeSet<E> this) {
         return m.lastKey();
     }
 
@@ -412,7 +412,7 @@ public class TreeSet<E> extends AbstractSet<E>
      *         does not permit null elements
      * @since 1.6
      */
-    public @PolyDet("down") E lower(@PolyDet TreeSet<E> this, E e) {
+    public E lower(@PolyDet TreeSet<E> this, E e) {
         return m.lowerKey(e);
     }
 
@@ -423,7 +423,7 @@ public class TreeSet<E> extends AbstractSet<E>
      *         does not permit null elements
      * @since 1.6
      */
-    public @PolyDet("down") E floor(@PolyDet TreeSet<E> this, E e) {
+    public E floor(@PolyDet TreeSet<E> this, E e) {
         return m.floorKey(e);
     }
 
@@ -434,7 +434,7 @@ public class TreeSet<E> extends AbstractSet<E>
      *         does not permit null elements
      * @since 1.6
      */
-    public @PolyDet("down") E ceiling(@PolyDet TreeSet<E> this, E e) {
+    public E ceiling(@PolyDet TreeSet<E> this, E e) {
         return m.ceilingKey(e);
     }
 
@@ -445,14 +445,14 @@ public class TreeSet<E> extends AbstractSet<E>
      *         does not permit null elements
      * @since 1.6
      */
-    public @PolyDet("down") E higher(@PolyDet TreeSet<E> this, E e) {
+    public E higher(@PolyDet TreeSet<E> this, E e) {
         return m.higherKey(e);
     }
 
     /**
      * @since 1.6
      */
-    public @PolyDet("down") E pollFirst(@PolyDet TreeSet<E> this) {
+    public E pollFirst(@PolyDet TreeSet<E> this) {
         Map.Entry<E,?> e = m.pollFirstEntry();
         return (e == null) ? null : e.getKey();
     }
@@ -460,7 +460,7 @@ public class TreeSet<E> extends AbstractSet<E>
     /**
      * @since 1.6
      */
-    public @PolyDet("down") E pollLast(@PolyDet TreeSet<E> this) {
+    public E pollLast(@PolyDet TreeSet<E> this) {
         Map.Entry<E,?> e = m.pollLastEntry();
         return (e == null) ? null : e.getKey();
     }
