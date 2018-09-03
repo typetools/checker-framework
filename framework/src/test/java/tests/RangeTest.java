@@ -300,6 +300,7 @@ public class RangeTest {
 
     @Test
     public void testCharRange() {
+        Range.IGNORE_OVERFLOW = false;
         for (Range range : ranges) {
             Range result = range.charRange();
             for (long value : values) {
@@ -309,17 +310,11 @@ public class RangeTest {
                     // filter out test data that would cause Range.CharRange to return
                     // CHAR_EVERYTHING
                     char charValue = (char) value;
-                    int covert = (int) charValue;
-                    assert (range.contains(value) && result.contains(covert))
-                                    || (!range.contains(value) && !result.contains(charValue))
+                    assert range.contains(value) && result.contains(charValue)
+                                    || !range.contains(value) && !result.contains(charValue)
                             : String.format(
-                                    "Range.charRange failure: %s => %s; witness = %s %s, %s, %s",
-                                    range,
-                                    result,
-                                    covert,
-                                    value,
-                                    range.contains(value),
-                                    result.contains(covert));
+                                    "Range.byteRange failure: %s => %s; witness = %s",
+                                    range, result, charValue);
                 }
             }
         }

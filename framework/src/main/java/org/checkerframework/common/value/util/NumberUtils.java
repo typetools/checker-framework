@@ -93,7 +93,7 @@ public class NumberUtils {
                     return TypeKind.BYTE;
                 case "java.lang.Boolean":
                     return TypeKind.BOOLEAN;
-                case "java.lang.Charater":
+                case "java.lang.Character":
                     return TypeKind.CHAR;
                 case "java.lang.Double":
                     return TypeKind.DOUBLE;
