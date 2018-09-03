@@ -36,6 +36,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -69,6 +70,7 @@ public class BoundsInitializer {
         final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>();
 
         // Create AnnotatedTypeMirror for each type argument and store them in the typeArgsMap.
+        // Take un-annotated type variables as the key for this map.
         Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>();
         for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
             TypeMirror javaTypeArg;
@@ -92,11 +94,16 @@ public class BoundsInitializer {
             typeArgs.add(typeArg);
 
             // Add mapping from type parameter to the annotated type argument.
-            typeArgMap.put((TypeVariable) typeElement.getTypeParameters().get(i).asType(), typeArg);
+            TypeVariable key =
+                    (TypeVariable)
+                            TypeAnnotationUtils.unannotatedType(
+                                    typeElement.getTypeParameters().get(i).asType());
+            typeArgMap.put(key, typeArg);
 
             if (javaTypeArg.getKind() == TypeKind.TYPEVAR) {
                 // Add mapping from Java type argument to the annotated type argument.
-                typeArgMap.put((TypeVariable) javaTypeArg, typeArg);
+                key = (TypeVariable) TypeAnnotationUtils.unannotatedType(javaTypeArg);
+                typeArgMap.put(key, typeArg);
             }
         }
 
@@ -454,8 +461,11 @@ public class BoundsInitializer {
                     }
                     break;
                 case TYPEVAR:
-                    if (typevars.containsKey(type.getUnderlyingType())) {
-                        return typevars.get(type.getUnderlyingType());
+                    TypeVariable key =
+                            (TypeVariable)
+                                    TypeAnnotationUtils.unannotatedType(type.getUnderlyingType());
+                    if (typevars.containsKey(key)) {
+                        return typevars.get(key);
                     }
                     break;
                 default:
