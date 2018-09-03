@@ -99,18 +99,17 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
 
         // TODO-rashmi: Handle Maps
-        recursiveReplaceOrderNonDet(type, replaceType);
+        recursiveReplaceAnnotation(type, replaceType);
     }
 
     /**
-     * Iterates over all the nested type arguments and does the replacement. Example:
-     * In @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>, this while loop iterates twice for the
-     * two @OrderNonDet Sets.
-     *
-     * @param type
-     * @param replaceType
+     * Iterates over all the nested Collection/Iterator type arguments of {@code type} and replaces
+     * their annotations with {@code replaceType}. Example: If this method is called with {@code
+     * type} as {@code @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>} and {@code replaceType} as
+     * {@code @NonDet}, the resulting {@code type} will be {@code @NonDet Set<@NonDet Set<@Det
+     * Integer>>}.
      */
-    void recursiveReplaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
+    void recursiveReplaceAnnotation(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
         if (!(factory.isCollection(underlyingTypeOfReceiver)
@@ -124,6 +123,6 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         if (argType.hasAnnotation(factory.ORDERNONDET)) {
             argType.replaceAnnotation(replaceType);
         }
-        recursiveReplaceOrderNonDet(argType, replaceType);
+        recursiveReplaceAnnotation(argType, replaceType);
     }
 }
