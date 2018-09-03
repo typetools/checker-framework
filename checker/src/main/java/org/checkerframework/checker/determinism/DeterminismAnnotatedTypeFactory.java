@@ -279,14 +279,28 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Places the following implicit annotation of {@code Det} on main method parameter. Places
-         * the following default annotations:
+         * Places the annotation {@code Det} on the type of main method argument. Places the
+         * following default annotations:
          *
          * <ol>
-         *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}.
+         *   <li>Annotates unannotated array arguments and return types as
+         *       {@code @PolyDet[@PolyDet]}.
          *   <li>Annotates the return type for static methods without any parameters as
          *       {@code @Det}.
          * </ol>
+         *
+         * Example: Consider the following code:
+         *
+         * <pre><code>
+         * void testArr(int[] a) {
+         *     @Det int i = a[0];
+         * }
+         * </code></pre>
+         *
+         * Here, the line {@code @Det int i = a[0];} should be flagged as an error since {@code
+         * a[0]} is {@code @PolyDet}. Without the method {@code visitExecutable}, the incoming
+         * argument to {@code testArr} is treated as {@code @PolyDet[@Det]} and the line {@code @Det
+         * int i = a[0];} is not flagged as an error by the checker.
          */
         @Override
         public Void visitExecutable(
@@ -358,12 +372,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Adds implicit annotation for main method parameter ({@code @Det}) and default annotations for
      * other array parameters ({@code @PolyDet[@PolyDet]}).
+     *
+     * <p>Example: Consider the following code:
+     *
+     * <pre><code>
+     * void testArr(int[] a) {
+     *     ...
+     * }
+     * </code></pre>
+     *
+     * This method {@code addComputedTypeAnnotations} annotates the parameter {@code int[] a} as
+     * {@code @PolyDet int @PolyDet[] a}.
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-        // TODO: This logic is very similar to logic elsewhere in this file.  Why is it duplicated?
-        // When is each used?  Does the need for duplication indicate a problem in your design, or a
-        // limitation in the Checker Framework?
         if (elt.getKind() == ElementKind.PARAMETER) {
             if (elt.getEnclosingElement().getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
