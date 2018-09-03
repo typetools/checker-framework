@@ -277,7 +277,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Places the annotation {@code Det} on the type of main method argument. Places the
+         * Places the implicit annotation {@code Det} on the type of main method argument and the
          * following default annotations:
          *
          * <ol>
