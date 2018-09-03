@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that specifies the trees and types for which the framework should automatically
- * add that qualifier. These types and trees can be specified via any combination of six attributes.
+ * add that qualifier. These types and trees can be specified via a combination of attributes.
  *
  * <p>For example, the {@code Nullable} annotation is annotated with
  *

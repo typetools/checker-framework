@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import java.util.Objects;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -33,13 +34,7 @@ public class Pair<V1, V2> {
     @Override
     public int hashCode() {
         if (hashCode == -1) {
-            hashCode = 31;
-            if (first != null) {
-                hashCode += 17 * first.hashCode();
-            }
-            if (second != null) {
-                hashCode += 17 * second.hashCode();
-            }
+            hashCode = Objects.hash(first, second);
         }
         return hashCode;
     }
@@ -51,17 +46,6 @@ public class Pair<V1, V2> {
         }
         @SuppressWarnings("unchecked")
         Pair<V1, V2> other = (Pair<V1, V2>) o;
-        if (this.first == null) {
-            if (other.first != null) return false;
-        } else {
-            if (!this.first.equals(other.first)) return false;
-        }
-        if (this.second == null) {
-            if (other.second != null) return false;
-        } else {
-            if (!this.second.equals(other.second)) return false;
-        }
-
-        return true;
+        return Objects.equals(this.first, other.first) && Objects.equals(this.second, other.second);
     }
 }

@@ -27,7 +27,8 @@ different licenses.
    http://www.junit.org/license), with parts (Hamcrest) licensed under the
    BSD License (see http://hamcrest.org/JavaHamcrest/).
 
- * plume-lib is licensed under the MIT License.
+ * Libraries in plume-lib (https://github.com/plume-lib/) are licensed
+   under the MIT License.
 
 The Checker Framework includes annotations for the JDK in directory
 checker/jdk/, and for some other libraries.  Each annotated library uses

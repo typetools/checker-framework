@@ -22,7 +22,7 @@ public class HashcodeAtmVisitor extends AnnotatedTypeScanner<Integer, Void> {
         return reduce(super.scan(type, null), generateHashcode(type));
     }
 
-    /** Used to combine the hashcodes of component types or a type and its component types */
+    /** Used to combine the hashcodes of component types or a type and its component types. */
     @Override
     protected Integer reduce(Integer hashcode1, Integer hashcode2) {
         if (hashcode1 == null) {

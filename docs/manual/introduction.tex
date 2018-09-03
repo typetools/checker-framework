@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.2.zip}
+  \url{https://checkerframework.org/checker-framework-2.5.5.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -491,10 +491,6 @@ Checker Framework looks up the library's annotations in its class files.
 
 Some projects are already distributed with type annotations by their
 maintainers, so you do not need to do anything special.
-% such as Guava,
-% \href{https://mernst.github.io/plume-lib/}{plume-lib},
-% and
-% \href{http://plse.cs.washington.edu/daikon/}{Daikon}
 Over time, this should become more common.
 
 For some other libraries, the Checker Framework developers have provided an
@@ -505,7 +501,7 @@ running your code, you can use either the annotated library or the regular
 distributed version of the library --- they behave identically.
 
 The annotated libraries appear in
-\ahref{http://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
+\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
 
 \begin{itemize}
@@ -690,6 +686,8 @@ Partially-annotated libraries
   List of stub files or directories; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
+\item \<-AstubWarnIfNotFoundIgnoresClasses>
+  Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
 \item \<-AstubWarnIfOverwritesBytecode>
   Warn if a stub file entry overwrite bytecode information; see
   Section~\ref{stub-using}.
@@ -707,7 +705,6 @@ Debugging
  \<-AprintAllQualifiers>,
  \<-AprintVerboseGenerics>,
  \<-Adetailedmsgtext>,
- \<-AprintErrorStack>,
  \<-Anomsgtext>
 Amount of detail in messages; see Section~\ref{creating-debugging-options-detail}.
 
@@ -940,7 +937,7 @@ affect the soundness guarantee, but a user may need to examine more
 warnings after fixing the first ones identified.  (More often, at least in
 our experience to date, a single fix corrects all the warnings.)
 
-% It might be worthwhile to permit a user to see every warning -- though I
+% It might be worthwhile to permit a user to see every warning --- though I
 % would not advocate this setting for daily use.
 
 If you find that a checker fails to issue a warning that it
@@ -1426,11 +1423,11 @@ same methodology in different words.
 %  LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
 %  LocalWords:  AignoreRawTypeArguments AsuggestPureMethods Anocheckjdk
 %  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
-%  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AprintErrorStack
+%  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
 %  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
 %  LocalWords:  AresourceStats jls r78 JDKs i18n
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
-%  LocalWords:  typedef guieffect Gradle jdk7 jdk8 javadoc MyFile argfiles
+%  LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles
 %%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
 %%  LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 %%  LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror

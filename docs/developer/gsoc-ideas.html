@@ -525,7 +525,7 @@ sections of the Checker Framework manual</a>.
 <h2 id="case-study-signature">Signature strings</h2>
 
 <p>
-Show that the <a href="http://asm.ow2.org/">ASM library</a>, or
+Show that the <a href="https://asm.ow2.org/">ASM library</a>, or
 the <a href="https://commons.apache.org/proper/commons-bcel/">BCEL
 library</a>, properly handles signature strings (or find bugs in them).
 </p>
@@ -1383,7 +1383,13 @@ A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
 Java expression</a>.  The parser for these is a hack.  The goal of this
 project is to replace it by calls
-to <a href="https://github.com/javaparser/javaparser">JavaParser</a>.  This
+to <a href="https://github.com/javaparser/javaparser">JavaParser</a>.
+For example, the <code>FlowExpressions.Receiver</code> class, which
+represents an AST, should be replaced by the JavaParser AST.
+</p>
+
+<p>
+This task
 should be straightforward, since JavaParser is already used in other parts
 of the Checker Framework.
 </p>
@@ -1397,7 +1403,7 @@ of the Checker Framework.
   File Utilities</a>, or AFU, insert annotations into, and extract
   annotations from, <code>.java</code> files, <code>.class</code> files,
   and text files.  These programs were written before the
-  <a href="http://asm.ow2.org/">ASM</a> bytecode library supported Java 8's
+  <a href="https://asm.ow2.org/">ASM</a> bytecode library supported Java 8's
   type annotations.  Therefore, the AFU has its own custom version of ASM
   that supports type annotations.  Now that ASM 6 has been released and it
   supports type annotations, the AFU needs to be slightly changed to use
@@ -1613,6 +1619,12 @@ must be modular, but many side effect analyses require examining the whole
 program.  The system should require few or no method annotations within
 method bodies.  I'm not sure whether such a system already exists or we
 need to design a new one.
+</p>
+
+<p>
+Perhaps one of these existing side effect analyses could be used:
+ https://github.com/Sable/soot/wiki/Using-Side-Effect-Attributes
+ http://www2.informatik.uni-freiburg.de/~geffken/GeffkenST14.pdf
 </p>
 
 <!--

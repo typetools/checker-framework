@@ -8,6 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** */
 public class PolyAllTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public PolyAllTest(List<File> testFiles) {
         super(
                 testFiles,

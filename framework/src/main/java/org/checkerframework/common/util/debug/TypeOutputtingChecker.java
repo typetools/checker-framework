@@ -24,7 +24,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -55,7 +55,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         return new Visitor(this);
     }
 
-    /** Prints the types of the class and all of its enclosing fields, methods, and inner classes */
+    /**
+     * Prints the types of the class and all of its enclosing fields, methods, and inner classes.
+     */
     public static class Visitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
         String currentClass;
 
@@ -116,7 +118,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         }
     }
 
-    /** Prints the types of the class and all of its enclosing fields, methods, and inner classes */
+    /**
+     * Prints the types of the class and all of its enclosing fields, methods, and inner classes.
+     */
     protected static void printClassType(TypeElement typeElt, AnnotatedTypeFactory atypeFactory) {
         assert typeElt != null;
 
@@ -130,8 +134,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             if (enclosedElt instanceof TypeElement) {
                 printClassType((TypeElement) enclosedElt, atypeFactory);
             }
-            if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement))
+            if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement)) {
                 continue;
+            }
             AnnotatedTypeMirror memberType = atypeFactory.fromElement(enclosedElt);
             System.out.println(simpleName + "." + enclosedElt + "\t\t" + memberType);
         }
@@ -209,43 +214,39 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             // Not needed - raises error.
             @Override
             public Set<AnnotationMirror> getTopAnnotations() {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy:getTopAnnotations() was called! It shouldn't be called.");
-                return null;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy:getTopAnnotations() shouldn't be called");
             }
 
-            // Not needed - should raise error. Unfortunately, in inference we ask for bottom annotations.
+            // Not needed - should raise error. Unfortunately, in inference we ask for bottom
+            // annotations.
             // Return a dummy value that does no harm.
             @Override
             public Set<AnnotationMirror> getBottomAnnotations() {
-                // ErrorReporter.errorAbort("GeneralQualifierHierarchy.getBottomAnnotations() was called! It
-                // shouldn't be called.");
+                // throw new BugInCF("GeneralQualifierHierarchy.getBottomAnnotations()
+                // shouldn't be called");
                 return AnnotationUtils.createAnnotationSet();
             }
 
             // Not needed - raises error.
             @Override
             public Set<? extends AnnotationMirror> getTypeQualifiers() {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.getTypeQualifiers() was called! It shouldn't be called.");
-                return null;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.getTypeQualifiers() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
-                return false;
+                throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public boolean isSubtypeTypeVariable(
                     AnnotationMirror subAnno, AnnotationMirror superAnno) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
-                return false;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -253,9 +254,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             public boolean isSubtype(
                     Collection<? extends AnnotationMirror> rhs,
                     Collection<? extends AnnotationMirror> lhs) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
-                return false;
+                throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -263,50 +262,44 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             public boolean isSubtypeTypeVariable(
                     Collection<? extends AnnotationMirror> subAnnos,
                     Collection<? extends AnnotationMirror> superAnnos) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
-                return false;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.leastUpperBound() was called! It shouldn't be called.");
-                return null;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.leastUpperBound() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror leastUpperBoundTypeVariable(
                     AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.leastUpperBoundTypeVariable() was called! It shouldn't be called.");
-                return null;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.leastUpperBoundTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.greatestLowerBound() was called! It shouldn't be called.");
-                return null;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.greatestLowerBound() shouldn't be called.");
             }
 
             // Not needed - raises error.
             @Override
             public AnnotationMirror greatestLowerBoundTypeVariable(
                     AnnotationMirror a1, AnnotationMirror a2) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() was called! It shouldn't be called.");
-                return null;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() shouldn't be called.");
             }
 
             @Override
             public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-                ErrorReporter.errorAbort(
-                        "GeneralQualifierHierarchy.getPolymorphicAnnotation() was called! It shouldn't be called.");
-                return null;
+                throw new BugInCF(
+                        "GeneralQualifierHierarchy.getPolymorphicAnnotation() shouldn't be called.");
             }
         }
     }

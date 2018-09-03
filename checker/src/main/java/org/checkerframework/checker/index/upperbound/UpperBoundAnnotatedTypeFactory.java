@@ -239,7 +239,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-            // if there is an LTLengthOf annotation whose argument lengths don't match, replace it with bottom
+            // If there is an LTLengthOf annotation whose argument lengths don't match, replace it
+            // with bottom.
             AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
             if (anm != null) {
                 List<String> sequences =
@@ -250,8 +251,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && offsets != null
                         && sequences.size() != offsets.size()
                         && offsets.size() > 0) {
-                    // Cannot use type.replaceAnnotation because it will call isSubtype, which will try to process
-                    // the annotation and throw an error.
+                    // Cannot use type.replaceAnnotation because it will call isSubtype, which will
+                    // try to process the annotation and throw an error.
                     type.clearAnnotations();
                     type.addAnnotation(BOTTOM);
                 }
@@ -526,7 +527,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Infers upper-bound annotation for {@code left >> right} and {@code left >>> right} (case
-         * 4)
+         * 4).
          */
         private void addAnnotationForRightShift(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
@@ -535,7 +536,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror annotation =
                         getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
                 // For non-negative numbers, right shift is equivalent to division by a power of two
-                // The range of the shift amount is limited to 0..30 to avoid overflows and int/long differences
+                // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
+                // differences
                 Long shiftAmount = IndexUtil.getExactValue(right, getValueAnnotatedTypeFactory());
                 if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
                     int divisor = 1 << shiftAmount;

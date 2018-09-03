@@ -158,7 +158,7 @@ public class ReflectiveEvaluator {
 
     /**
      * Method for reflectively obtaining a method object so it can (potentially) be statically
-     * executed by the checker for constant propagation
+     * executed by the checker for constant propagation.
      *
      * @return the Method object corresponding to the method being invoke in tree
      */
@@ -249,7 +249,7 @@ public class ReflectiveEvaluator {
             String classname, String fieldName, MemberSelectTree tree) {
         try {
             Class<?> recClass = Class.forName(classname);
-            Field field = recClass.getField(fieldName.toString());
+            Field field = recClass.getField(fieldName);
             return field.get(recClass);
 
         } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {

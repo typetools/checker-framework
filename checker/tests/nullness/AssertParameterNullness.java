@@ -5,9 +5,8 @@ public class AssertParameterNullness {
 
     /** True iff both sequences are non-null and have the same length. */
     @EnsuresNonNullIf(
-        result = true,
-        expression = {"#1", "#2"}
-    )
+            result = true,
+            expression = {"#1", "#2"})
     /* pure */ public static boolean sameLength(
             final boolean @Nullable [] seq1, final boolean @Nullable [] seq2) {
         if ((seq1 != null) && (seq2 != null) && seq1.length == seq2.length) {

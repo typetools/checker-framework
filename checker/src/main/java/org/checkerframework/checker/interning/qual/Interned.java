@@ -31,18 +31,17 @@ import org.checkerframework.framework.qual.TypeKind;
  */
 @SubtypeOf(UnknownInterned.class)
 @ImplicitFor(
-    literals = {LiteralKind.PRIMITIVE, LiteralKind.STRING}, // everyhing but NULL
-    types = {
-        TypeKind.BOOLEAN,
-        TypeKind.BYTE,
-        TypeKind.CHAR,
-        TypeKind.DOUBLE,
-        TypeKind.FLOAT,
-        TypeKind.INT,
-        TypeKind.LONG,
-        TypeKind.SHORT
-    }
-)
+        literals = {LiteralKind.PRIMITIVE, LiteralKind.STRING}, // everyhing but NULL
+        types = {
+            TypeKind.BOOLEAN,
+            TypeKind.BYTE,
+            TypeKind.CHAR,
+            TypeKind.DOUBLE,
+            TypeKind.FLOAT,
+            TypeKind.INT,
+            TypeKind.LONG,
+            TypeKind.SHORT
+        })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

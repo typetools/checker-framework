@@ -33,16 +33,16 @@
 
 <body>
 <div class="page-header">
-  <h1>Release Process: <small>JSR 308 compiler, Annotation File Utilities, Checker Framework</small></h1> <!-- omit from toc -->
+  <h1>Release Process: <small>Annotation File Utilities, Checker Framework</small></h1> <!-- omit from toc -->
 </div>
 
 <div class="container">
 <div class="row" style="width: 100%">
 <div id="content">
 <p>
-  This document explains how to make a release of the Checker Framework, the Type Annotations Compiler,
+  This document explains how to make a release of the Checker Framework
   and the Annotation File Utilities.
-The process takes around 3 hours (including manual steps) when all goes according to plan.
+The process takes around 2 hours (including manual steps) when all goes according to plan.
   However, the lengthiest steps are automatic so you will be able to work on other tasks.
 </p>
 
@@ -57,14 +57,6 @@ The process takes around 3 hours (including manual steps) when all goes accordin
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
     <ul>
-      <li><a href="#release_process">Release process</a>
-        <ul>
-          <li><a href="#checklist">Checklist of steps a release person must follow</a></li>
-          <li><a href="#notes-for-release-person">Recommendations/notes for the release person</a></li>
-          <li><a href="#phases">Milestone Phases</a></li>
-          <li><a href="#phases-description">Description of the phases and deadlines</a></li>
-          <li><a href="#deadline-enforcement">Deadline enforcement</a></li>
-        </ul></li>
       <li><a href="#step_by_step">Step by Step</a></li>
       <li><a href="#continuous-integration">Continuous integration (nightly) tests</a></li>
       <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
@@ -87,173 +79,6 @@ The process takes around 3 hours (including manual steps) when all goes accordin
 <!-- end toc -->
 
 
-<h2 id="release_process">Release process</h2>
-
-<h3 id="checklist">Checklist of steps a release person must follow</h3>
-
-    <ol>
-      <li>Once ever:
-        <ul>
-          <li>Follow the steps in the <a href="#pre_release_checklist">Pre-release Checklist</a>
-           in the Release Process document. Some of these steps can take days to complete as they
-            involve obtaining permissions.</li>
-        </ul>
-      </li>
-       <li>First day of the development milestone:
-         <ul>
-           <li>Plan the feature freeze, code freeze and release dates for the following two months.  The release date should be the first business day of the month.  (Avoid releasing
-             near the end of a month instead of the beginning of the next month, as that makes it easier for users
-             to keep track of the cadence of our releases.  For example, having a June 1st and a June 30th release makes
-             it harder to tell that the June 30th release is meant for distribution in the month of July.)
-           </li>
-           <li>
-           Send an e-mail to the
-             checker-framework-dev mailing lists with these dates.
-           <!--
-             Also please make sure to add these dates to the "Checker Framework Developers" Google Calendar.
-           -->
-             </li>
-         </ul>
-       </li>
-       <li>One week before Feature Freeze:
-         <ul>
-           <li>
-             Update <a href="https://search.maven.org/#search%7Cga%7C1%7Cannotatedlib">annotated
-               libraries</a> from upstream.  If a library's maintainers have
-             made a new release, follow the instructions in the
-             README-typetools.md file in the annotated version.
-           </li>
-          <li>Remind bug owners of their bugs outstanding.</li>
-         </ul>
-       </li>
-       <li>Two business days before Feature Freeze:
-         <ul>
-          <li>E-mail checker-framework-dev reminding
-          users of the upcoming Feature Freeze and the requirements for this deadline, including
-          the requirement for changelogs to be complete.</li>
-         </ul>
-       </li>
-       <li>The work morning after Feature Freeze:
-         <ul>
-           <li>Ensure that all the <a href="#continuous-integration">continuous integration jobs</a> are passing.</li>
-           <li>Ensure that
-           the changelogs and documentation for the Checker Framework, Type Annotations Compiler and AFU are complete by following
-           <a href="#step_by_step">these instructions</a> up to and including the &quot;Review the changelogs and documentation&quot; step.
-           <li>E-mail Mike asking him to vet the changelogs
-           that are checked in.</li>
-           <li>E-mail checker-framework-dev reminding
-           users of the upcoming Code Freeze and the requirements for this deadline.</li>
-         </ul>
-       </li>
-       <li>The work morning after Code Freeze:
-         <ul>
-           <li>Ensure that all the <a
-           href="#continuous-integration">continuous
-           integration jobs</a> are passing.</li>
-           <li>If the above items are taken care of, perform the release.</li>
-         </ul>
-       </li>
-
-    </ol>
-
-<!--
-    <h3 id="notes-for-release-person">Recommendations/notes for the release person</h3>
-    <ul>
-      <li>As the release person, consider pushing your bug fixes at least two days prior to the code freeze deadline &mdash; this is because you
-      are likely to be helping other people make their Jenkins projects become green during those two days.</li>
-      <li>The reason Mike must be asked to look at the changelogs right after feature freeze (instead of
-      code freeze) is that there no longer is a "recall class" bug fix period, so there is now only one
-      working day between feature freeze and the release.
-      This ensures that there are no delays in releasing the products (due to
-      incomplete changelogs) or in sending the announcement e-mail.
-      If during the bug fixing period anyone fixes a bug that is worth mentioning as more
-      than a number, the changelog can be amended accordingly and Mike can be warned about it.</li>
-    </ul>
--->
-
-    <h3 id="phases">Milestone Phases</h3>
-    <!-- I'm not sure how to get the exact effect achieved by this HTML 4 code: -->
-    <!--    <table border="1" width="864" cellspacing="2" cellpadding="2"> -->
-    <table style="border:1px solid black;width:864px;border-collapse:separate;border-spacing:2px;padding:2px;">
-      <tbody>
-        <tr>
-          <td>
-            <p style="background-color: #6d9de9">Development</p>
-          </td>
-          <td>
-            <p style="background-color: #92c27d">Bug fixing</p>
-          </td>
-          <td>
-            <p style="background-color: #d0e0e3">Release</p>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <p>(Varies, typically 3 to 4 weeks)</p>
-          </td>
-          <td>
-            <p>1 business day</p>
-          </td>
-          <td>
-            <p>1 business day</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <table style="width:864px;">
-      <tbody>
-        <tr>
-          <td>
-            <p>Deadlines:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-          </td>
-          <td>
-            <p style="color:blue">Feature freeze</p>
-          </td>
-          <td>
-            <p style="color:#6aa74f">Code freeze</p>
-          </td>
-          <td style="float:right;">
-            <p style="color:#999999">Release</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div>
-    <p>Example timeline:</p>
-    <img src="example-release-schedule.png" alt="Example release schedule" />
-    <h3 id="phases-description">Description of the phases and deadlines</h3>
-    <p style="background-color: #6d9de9">Development</p>
-    <p>During the development phase, arbitrarily large or complex changes may be pushed.</p>
-    <p style="background-color:blue">Feature freeze</p>
-    <p>By the <em>feature freeze </em>deadline, all new feature code, associated tests, and documentation
-    must be pushed. If a feature is not complete by this time, then it should be delayed until the next
-    release. By this time, all users should update the relevant project&rsquo;s changelog to include
-    features and bug fixes they have made during this development cycle (not including bug fixes made
-    in the day that follows).</p>
-    <p style="background-color: #92c27d">Bug fixing</p>
-    <p>During this phase bugs are fixed, including minor bugs that may have been discovered
-    (by the new tests or otherwise) in the feature implementation or documentation. You are allowed
-    to fix any bug that you want, add new tests and documentation, etc., during this time. But no
-    new features may be implemented. Example bugs that would be fixed during this phase are bugs
-    revealed by Jenkins that were not revealed by the test suites that were run before pushing a feature.</p>
-    <p style="color:#6aa74f">Code freeze</p>
-    <p>By <em>code freeze</em>, the code is assumed to be in a shippable state. Pushes to the
-    repository are no longer allowed.</p>
-    <p style="background-color: #d0e0e3">Release</p>
-    <p>The person responsible for making the release runs the release scripts and other manual tasks
-    for the release (note that any pushes during this phase force the automated tests to restart and
-    are likely to delay the release).</p>
-    <h3 id="deadline-enforcement">Deadline enforcement</h3>
-    <p>The following are only enforced for the 'master' branch from which the release is performed:</p>
-    <ul>
-      <li>Any large or complex change (i.e. a feature change or a design change) pushed after
-      feature freeze will be reverted.</li>
-      <li>Any fix for a bug pushed after code freeze for which an exception was not made will be reverted.</li>
-      <li>If a critical bug is discovered late and its fix is not checked in with enough time
-      for Jenkins tests to complete before Release Day, <strong>then the release is delayed</strong>.</li>
-    </ul>
-
 <h2 id="step_by_step">Step by Step</h2>
 
 <p>
@@ -274,7 +99,12 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 
 <ol>
   <li>If you have never made a release before, follow the instructions in the
-  <a href="#pre_release_checklist">Pre-release Checklist</a>.
+    <a href="#pre_release_checklist">Pre-release Checklist</a>.
+  </li>
+  <li> Update the Checker Framework version in <code>checker-framework/build.gradle</code>,
+    in the <code>allprojects</code> block.
+  </li>
+  <li> Update AFU and Checker Framework change logs by following the instructions at <a href="#content_guidelines">content guidelines</a>.
   </li>
   <li>
       <strong>Log into Buffalo</strong><br/>
@@ -288,7 +118,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <code>cd checker-framework/docs/developer/release<br/></code>
   </li>
   <li><strong>Review the changelogs and documentation</strong><br/>
-      Ensure that the changelogs and documentation for the Checker Framework, Type Annotations Compiler and
+      Ensure that the changelogs and documentation for the Checker Framework and
       AFU are complete.  First follow the instructions at <a href="#content_guidelines">content guidelines</a>.  Then,
       run release_build in a mode that reviews the documentation only:
       <code>cd /scratch/$USER/jsr308-release/checker-framework/docs/developer/release<br/></code>
@@ -300,7 +130,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <code>python release_build.py all --auto</code><br/><br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
-      There has been some work done in order to select only specific projects (JSR 308 compiler, AFU, Checker Framework)
+      There has been some work done in order to select only specific projects (AFU and Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
       See also <a href="#fi_buffalo_integeration">Buffalo Integration</a> for more information
       on the option &quot;--auto&quot;, which you can omit in order to
@@ -339,9 +169,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <li>Daikon: <img src="https://travis-ci.org/codespecs/daikon.svg?branch=master" alt="Travis codespecs/daikon status"/></li>
     <li>daikon-typecheck: <img src="https://travis-ci.org/typetests/daikon-typecheck.svg?branch=master" alt="Travis typetests/daikon-typecheck status"/></li>
     <li>guava-typecheck: <img src="https://travis-ci.org/typetests/guava-typecheck.svg?branch=master" alt="Travis typetests/guava-typecheck status"/></li>
-    <li>plume-lib: <img src="https://travis-ci.org/mernst/plume-lib.svg?branch=master" alt="Travis mernst/plume-lib status"/></li>
     <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetests/plume-lib-typecheck.svg?branch=master" alt="Travis typetests/plume-lib-typecheck status"/></li>
-    <li>Sparta: <img src="https://travis-ci.org/typetools/sparta.svg?branch=master" alt="Travis typetools/sparta status"/></li>
+    <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetests/plume-lib-typecheck.svg?branch=master" alt="Travis typetests/plume-lib-typecheck status"/></li>
   </ul>
   </li>
   <li> Check that <a href="https://travis-ci.org/typetests/daikon-typecheck/builds">a daikon-typecheck Travis job</a> was triggered by the last commit of the Checker Framework before the code freeze.
@@ -356,8 +185,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <td><strong>Ensure you are a member of the types_www and pl_gang groups</strong><br/>
         Run the command "groups" on the file system (perhaps on Buffalo).
         If the group types_www or pl_gang do not appear in the list, email the appropriate
-        person to be added (currently Michael Ernst and Werner Dietl for types_www and
-        Michael Ernst for pl_gang).
+        person to be added (currently Michael Ernst).
       </td>
     </tr>
     <tr>
@@ -395,16 +223,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     </tr>
     <tr>
       <td>5.</td>
-      <td><strong>Copy login related settings from your .hgrc file to a .hgrc in your home directory
-          in Buffalo.</strong><br/>
-        On your local machine, you probably have an .hgrc file in your home directory
-        with login information for Mercurial. Copy the login related parts of this file to
-        your home directory on Buffalo. Copying the entire file may lead to path issues.<br/>
-      </td>
-    </tr>
-    <tr>
-      <td>6.</td>
-      <td><strong>Get edit privileges for Checker Framework, JSR 308 compiler, Annotation Tools</strong><br/>
+      <td><strong>Get edit privileges for Checker Framework, Annotation Tools</strong><br/>
         Once a release has been completed, you will be prompted to update issues in the
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
@@ -414,23 +233,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       </td>
     </tr>
     <tr>
-      <td>7.</td>
-      <td><strong>Ensure that you can see the status of all Travis relevant to the release</strong><br/>
-        Ensure that the status of all the Travis projects listed <a href="#continuous-integration">here</a> is displayed correctly.
-      </td>
-    </tr>
-    <tr>
-      <td>8.</td>
-      <td><strong>Read the Checker Framework Development Process document</strong><br/>
-        A release person has responsibilities each month in addition to performing the release.
-        The <a href="README-release-process.html">Checker Framework Release Process document</a>
-        explains these responsibilities in detail.  Please re-read the <a href="README-release-process.html#checklist">checklist</a> in this document at the beginning
-        of each month that you are the designated the release person, and help keep this document up
-        to date with the latest best practices.
-      </td>
-    </tr>
-    <tr>
-      <td>9.</td>
+      <td>6.</td>
       <td><strong>Install html5validator</strong>
        If you are going to perform the release on buffalo, you may need to install
        html5validator.  If <code>html5validator --version</code> issues any errors, try running
@@ -464,7 +267,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <td></td>
         <td colspan="2">build</td>
         <td>Contains repositories for:
-          annotation-tools, checker-framework, plume-bib, plume-lib, stubparser<br/>
+          annotation-tools, checker-framework, plume-bib, plume-scripts, stubparser<br/>
           These repositories are used to build the Checker Framework and its dependencies.
         </td>
       </tr>
@@ -472,7 +275,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <td></td>
         <td colspan="2">interm</td>
         <td>Contains repositories for:
-          annotation-tools, checker-framework, plume-bib, plume-lib, stubparser<br/>
+          annotation-tools, checker-framework, plume-bib, plume-scripts, stubparser<br/>
           The repositories in build are clones of repositories in interm.  The repositories
           in interm are clones of the GitHub/Bitbucket repositories.  This is so that
           we can test and push the release to the interm repositories then check the
@@ -713,23 +516,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     and More Sanity Checks) should have any appreciable priority.
   </p>
 
-    <h3 id="fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</h3> <!-- omit from toc -->
-    Generating the Javadocs for the entire JDK is not simple.  We have previously generated these but have
-    not updated them in a while.  They can be found here:<br/>
-    <a href="https://checkerframework.org/jdk-api/">https://checkerframework.org/jdk-api/</a><br/>
-    When we generate javadoc for the Type Annotations Compiler and Checker Framework we link against these docs.
-    But because they were generated in a faulty manner in the first place, there are many broken links related to
-    package summaries of the jdk-api docs.  It is highly unlikely that users will ever run into these links, since
-    they occur in pages like Swing's package summary, but nonetheless it would be good to build these docs
-    in the proper manner with no broken links.
-    <h4>Tasks:</h4> <!-- omit from toc -->
-    <ul>
-      <li>Figure out the best way to build the Open JDK Javadoc.</li>
-      <li>Add a release script step to build the Open JDK Javadoc.</li>
-      <li>Add a release script step to copy this javadoc to /cse/www2/types/checker-framework/jdk-api.</li>
-      <li>We may also want to put jdk-api into the release directory instead of overwriting it during each release.</li>
-      <li>Update this document to reflect the new steps.</li>
-    </ul>
     <h3 id="fi_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
     There are likely more sanity checks we might want to run during the release process.  One such example
     would be running the tutorial from the command line.
@@ -759,7 +545,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     </ul>
     <h3 id="fi_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
     The first step in running the release process, after the pre-release checklist, is to copy the
-    release scripts into the jsr308-release directory.  We could automate this.
+    release scripts into the <code>jsr308-release</code> directory.  We could automate this.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Create a read-only script in jsr308-release/scripts.</li>

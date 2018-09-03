@@ -32,7 +32,7 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -460,9 +460,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.ClassName c = (FlowExpressions.ClassName) expr;
             return classValues.get(c);
         } else {
-            ErrorReporter.errorAbort(
-                    "Unexpected FlowExpression: " + expr + " (" + expr.getClass() + ")");
-            return null;
+            throw new BugInCF("Unexpected FlowExpression: " + expr + " (" + expr.getClass() + ")");
         }
     }
 
@@ -508,7 +506,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (receiver instanceof LocalVariable) {
             updateForLocalVariableAssignment((LocalVariable) receiver, val);
         } else {
-            ErrorReporter.errorAbort("Unexpected receiver of class " + receiver.getClass());
+            throw new BugInCF("Unexpected receiver of class " + receiver.getClass());
         }
     }
 
@@ -951,10 +949,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
-        CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?>) viz;
-        casted_viz.visualizeStoreHeader(this.getClass().getCanonicalName());
-        internalVisualize(casted_viz);
-        casted_viz.visualizeStoreFooter();
+        CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
+        castedViz.visualizeStoreHeader(this.getClass().getCanonicalName());
+        internalVisualize(castedViz);
+        castedViz.visualizeStoreFooter();
     }
 
     /**

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This command counts the approximate frequency of each distinct reason for
 # warning suppressions.
@@ -51,7 +51,7 @@ echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
 # This grep command captures a few stray lines; users should ignore them.
-${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
+${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
 ## Don't output a total, to avoid people using this approximate count.
 # echo -n "Total: "
 # cat ${greplines} | wc -l

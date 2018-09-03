@@ -891,14 +891,14 @@ public abstract class UBQualifier {
                     }
                 }
             }
-            if (sequences.size() == 0) {
+            if (sequences.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             } else {
                 return UBQualifier.createUBQualifier(sequences, offsets);
             }
         }
 
-        /** Functional interface that operates on {@link OffsetEquation}s */
+        /** Functional interface that operates on {@link OffsetEquation}s. */
         interface OffsetEquationFunction {
             /**
              * Returns the result of the computation or null if the passed equation should be

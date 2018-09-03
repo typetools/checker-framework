@@ -18,15 +18,13 @@ class ConstantArrays {
         int[] b = new int[4];
         int[] b2 = new int[10];
         @LTLengthOf(
-            value = {"b", "b2"},
-            offset = {"-2", "5"}
-        )
+                value = {"b", "b2"},
+                offset = {"-2", "5"})
         int[] a = {2, 3, 0};
 
         @LTLengthOf(
-            value = {"b", "b2"},
-            offset = {"-2", "5"}
-        )
+                value = {"b", "b2"},
+                offset = {"-2", "5"})
         // :: error: (array.initializer.type.incompatible)::error: (assignment.type.incompatible)
         int[] a2 = {2, 3, 5};
 

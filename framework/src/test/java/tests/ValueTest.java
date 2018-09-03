@@ -15,6 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class ValueTest extends FrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public ValueTest(List<File> testFiles) {
         super(
                 testFiles,

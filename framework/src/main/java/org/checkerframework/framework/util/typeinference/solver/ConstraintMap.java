@@ -42,7 +42,7 @@ public class ConstraintMap {
         this.targetToRecords.putAll(toCopy.targetToRecords);
     }
 
-    /** Gets the equality, subtypes, and supertypes constraints for a particular target */
+    /** Gets the equality, subtypes, and supertypes constraints for a particular target. */
     public TargetConstraints getConstraints(final TypeVariable target) {
         return targetToRecords.get(target);
     }
@@ -57,7 +57,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that the equivalent is equal to target in the given qualifier
-     * hierarchies
+     * hierarchies.
      */
     public void addTargetEquality(
             final TypeVariable target,
@@ -74,7 +74,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target has primary annotations equal to the given
-     * annotations
+     * annotations.
      */
     public void addPrimaryEqualities(
             final TypeVariable target,
@@ -92,7 +92,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target is a supertype of subtype in the given qualifier
-     * hierarchies
+     * hierarchies.
      *
      * @param hierarchies a set of TOP annotations
      */
@@ -111,7 +111,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target is a supertype of subtype in the given qualifier
-     * hierarchies
+     * hierarchies.
      *
      * @param hierarchies a set of TOP annotations
      */
@@ -130,7 +130,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target's primary annotations are subtypes of the given
-     * annotations
+     * annotations.
      */
     public void addPrimarySupertype(
             final TypeVariable target,
@@ -150,7 +150,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target is a subtype of supertype in the given qualifier
-     * hierarchies
+     * hierarchies.
      *
      * @param hierarchies a set of TOP annotations
      */
@@ -169,7 +169,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target is a subtype of supertype in the given qualifier
-     * hierarchies
+     * hierarchies.
      *
      * @param hierarchies a set of TOP annotations
      */
@@ -188,7 +188,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target's primary annotations are subtypes of the given
-     * annotations
+     * annotations.
      */
     public void addPrimarySubtypes(
             final TypeVariable target,
@@ -207,7 +207,7 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target is equal to type in the given hierarchies
+     * Add a constraint indicating that target is equal to type in the given hierarchies.
      *
      * @param hierarchies a set of TOP annotations
      */

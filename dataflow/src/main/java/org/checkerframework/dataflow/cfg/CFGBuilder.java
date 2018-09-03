@@ -114,6 +114,7 @@ import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.CharacterLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ClassDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
@@ -177,6 +178,7 @@ import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.dataflow.util.MostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -1568,8 +1570,8 @@ public class CFGBuilder {
             // traverse AST of the method body
             Node finalNode = scan(bodyPath, null);
 
-            // If we are building the CFG for a lambda with a single expression as the body, then add an extra node
-            // for the result of that lambda
+            // If we are building the CFG for a lambda with a single expression as the body, then
+            // add an extra node for the result of that lambda
             if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
                 LambdaExpressionTree lambdaTree =
                         ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
@@ -3389,7 +3391,9 @@ public class CFGBuilder {
         @Override
         public Node visitClass(ClassTree tree, Void p) {
             declaredClasses.add(tree);
-            return null;
+            Node classbody = new ClassDeclarationNode(tree);
+            extendWithNode(classbody);
+            return classbody;
         }
 
         @Override
@@ -3904,8 +3908,7 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
-                        throw new IllegalArgumentException(
-                                "unexpected element kind : " + element.getKind());
+                        throw new BugInCF("bad element kind " + element.getKind());
                 }
             }
             extendWithNode(node);
@@ -4073,12 +4076,6 @@ public class CFGBuilder {
                 scan(enclosingExpr, p);
             }
 
-            // We ignore any class body because its methods should
-            // be visited separately.
-            // TODO: For anonymous classes we want to propagate the current store
-            // to the anonymous class.
-            // See Issues 266, 811.
-
             // Convert constructor arguments
             ExecutableElement constructor = TreeUtils.elementFromUse(tree);
 
@@ -4090,7 +4087,11 @@ public class CFGBuilder {
             // See Issue 890.
             Node constructorNode = scan(tree.getIdentifier(), p);
 
-            Node node = new ObjectCreationNode(tree, constructorNode, arguments);
+            // Handle anonymous classes in visitClass.
+            // Note that getClassBody() and therefore classbody can be null.
+            ClassDeclarationNode classbody = (ClassDeclarationNode) scan(tree.getClassBody(), p);
+
+            Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
 
             Set<TypeMirror> thrownSet = new HashSet<>();
             // Add exceptions explicitly mentioned in the throws clause.
@@ -4342,10 +4343,11 @@ public class CFGBuilder {
                 }
 
                 if (hasExceptionalPath(exceptionalFinallyLabel)) {
-                    // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-                    // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
-                    // is no successful path, it will be removed in later phase.
-                    // TODO: Don't we need a separate finally block for each kind of exception?
+                    // If an exceptional path exists, scan 'finallyBlock' for
+                    // 'exceptionalFinallyLabel', and scan copied 'finallyBlock' for 'finallyLabel'
+                    // (a successful path). If there is no successful path, it will be removed in
+                    // later phase.  TODO: Don't we need a separate finally block for each kind of
+                    // exception?
                     addLabelForNextNode(exceptionalFinallyLabel);
                     extendWithNode(
                             new MarkerNode(
@@ -4839,14 +4841,12 @@ public class CFGBuilder {
 
         @Override
         public Node visitWildcard(WildcardTree tree, Void p) {
-            assert false : "WildcardTree is unexpected in AST to CFG translation";
-            return null;
+            throw new BugInCF("WildcardTree is unexpected in AST to CFG translation");
         }
 
         @Override
         public Node visitOther(Tree tree, Void p) {
-            assert false : "Unknown AST element encountered in AST to CFG translation.";
-            return null;
+            throw new BugInCF("Unknown AST element encountered in AST to CFG translation.");
         }
     }
 

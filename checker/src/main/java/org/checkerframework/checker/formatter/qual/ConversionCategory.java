@@ -133,7 +133,7 @@ public enum ConversionCategory {
                 return v;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Bad conversion character " + c);
     }
 
     private static <E> Set<E> arrayToSet(E[] a) {
@@ -145,7 +145,7 @@ public enum ConversionCategory {
     }
 
     /**
-     * Use this function to get the intersection of two categories. This is seldomly needed.
+     * Returns the intersection of two categories. This is seldomly needed.
      *
      * <blockquote>
      *
@@ -154,6 +154,10 @@ public enum ConversionCategory {
      * </pre>
      *
      * </blockquote>
+     *
+     * @param a a category
+     * @param b a category
+     * @return the intersection of the two categories (their greatest lower bound)
      */
     public static ConversionCategory intersect(ConversionCategory a, ConversionCategory b) {
         if (a == UNUSED) {
@@ -181,12 +185,11 @@ public enum ConversionCategory {
                 return v;
             }
         }
-        // this should never happen
         throw new RuntimeException();
     }
 
     /**
-     * Use this function to get the union of two categories. This is seldomly needed.
+     * Returns the union of two categories. This is seldomly needed.
      *
      * <blockquote>
      *
@@ -195,6 +198,10 @@ public enum ConversionCategory {
      * </pre>
      *
      * </blockquote>
+     *
+     * @param a a category
+     * @param b a category
+     * @return the union of the two categories (their least upper bound)
      */
     public static ConversionCategory union(ConversionCategory a, ConversionCategory b) {
         if (a == UNUSED || b == UNUSED) {

@@ -37,8 +37,8 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -415,9 +415,7 @@ public class FlowExpressions {
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
                 return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
-                ErrorReporter.errorAbort(
-                        "Unexpected element kind: %s element: %s", ele.getKind(), ele);
-                return null;
+                throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
         }
     }
 
@@ -442,6 +440,10 @@ public class FlowExpressions {
         return internalArguments;
     }
 
+    /**
+     * The poorly-named Receiver class is actually a Java AST. Each subclass represents a different
+     * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
+     */
     public abstract static class Receiver {
         protected final TypeMirror type;
 
@@ -732,10 +734,10 @@ public class FlowExpressions {
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // The code below isn't just return vs.equals(vsother) because an element might be different
-            // between subcheckers.  The owner of a lambda parameter is the enclosing method, so
-            // a local variable and a lambda parameter might have the same name and the same owner.
-            // pos is used to differentiate this case.
+            // The code below isn't just return vs.equals(vsother) because an element might be
+            // different between subcheckers.  The owner of a lambda parameter is the enclosing
+            // method, so a local variable and a lambda parameter might have the same name and the
+            // same owner.  pos is used to differentiate this case.
             return vs.pos == vsother.pos
                     && vsother.name.contentEquals(vs.name)
                     && vsother.owner.toString().equals(vs.owner.toString());

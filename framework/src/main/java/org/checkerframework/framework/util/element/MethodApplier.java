@@ -15,8 +15,8 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -37,7 +37,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
     private final AnnotatedTypeFactory typeFactory;
 
-    /** Method being annotated, this symbol contains all relevant annotations */
+    /** Method being annotated, this symbol contains all relevant annotations. */
     private final Symbol.MethodSymbol methodSymbol;
 
     private final AnnotatedExecutableType methodType;
@@ -143,7 +143,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         applyThrowsAnnotations(targetTypeToAnno.get(TargetType.THROWS));
 
         if (unmatched.size() > 0) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Unexpected annotations ( "
                             + PluginUtil.join(",", unmatched)
                             + " ) for"
@@ -155,7 +155,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         }
     }
 
-    /** For each thrown type, collect all the annotations for that type and apply them */
+    /** For each thrown type, collect all the annotations for that type and apply them. */
     private void applyThrowsAnnotations(final List<Attribute.TypeCompound> annos) {
         final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
         if (thrown.isEmpty()) {
@@ -174,7 +174,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
                 typeToAnnos.get(thrownType).add(anno);
 
             } else {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "MethodApplier.applyThrowsAnnotation: "
                                 + "invalid throws index "
                                 + annoPos.type_index
@@ -194,7 +194,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
     /**
      * If the return type is a use of a type variable first apply the bound annotations from the
-     * type variables declaration
+     * type variables declaration.
      */
     private void applyTypeVarUseOnReturnType() {
         new TypeVarUseApplier(methodType.getReturnType(), methodSymbol, typeFactory)

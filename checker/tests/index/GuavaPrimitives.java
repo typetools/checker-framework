@@ -51,21 +51,24 @@ public class GuavaPrimitives extends AbstractList<Short> {
     }
 
     @SuppressWarnings(
-            "index") // these three fields need to be initialized in some order, and any ordering leads to the first two issuing errors - since each field is dependent on at least one of the others
+            "index") // these three fields need to be initialized in some order, and any ordering
+    // leads to the first two issuing errors - since each field is dependent on at
+    // least one of the others
     GuavaPrimitives(
             short @MinLen(1) [] array,
             @IndexFor("#1") @LessThan("#3") int start,
             @Positive @LTEqLengthOf("#1") int end) {
-        // warnings in here might just need to be suppressed. A single @SuppressWarnings("index") to establish rep. invariant might be okay?
+        // warnings in here might just need to be suppressed. A single @SuppressWarnings("index") to
+        // establish rep. invariant might be okay?
         this.array = array;
         this.start = start;
         this.end = end;
     }
 
     public @Positive @LTLengthOf(
-        value = {"this", "array"},
-        offset = {"-1", "start - 1"}
-    ) int size() { // INDEX: Annotation on a public method refers to private member.
+            value = {"this", "array"},
+            offset = {"-1", "start - 1"}) int
+            size() { // INDEX: Annotation on a public method refers to private member.
         return end - start;
     }
 
@@ -78,7 +81,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     }
 
     @SuppressWarnings(
-            "lowerbound") // needs https://github.com/kelloggm/checker-framework/issues/227 on static indexOf method
+            "lowerbound") // https://github.com/kelloggm/checker-framework/issues/227 indexOf()
     public @IndexOrLow("this") int indexOf(Object target) {
         // Overridden to prevent a ton of boxing
         if (target instanceof Short) {
@@ -91,7 +94,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     }
 
     @SuppressWarnings(
-            "lowerbound") // needs https://github.com/kelloggm/checker-framework/issues/227 on static lastIndexOf method
+            "lowerbound") // https://github.com/kelloggm/checker-framework/issues/227 lastIndexOf()
     public @IndexOrLow("this") int lastIndexOf(Object target) {
         // Overridden to prevent a ton of boxing
         if (target instanceof Short) {

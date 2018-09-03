@@ -1,5 +1,6 @@
 // Test case for kelloggm 215
 // https://github.com/kelloggm/checker-framework/issues/215
+
 import org.checkerframework.checker.index.qual.NonNegative;
 
 public class RefineSubtrahend {
