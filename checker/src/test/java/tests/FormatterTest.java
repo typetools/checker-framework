@@ -6,6 +6,7 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 public class FormatterTest extends CheckerFrameworkPerDirectoryTest {
+    /** @param testFiles the files containing test code, which will be type-checked */
     public FormatterTest(List<File> testFiles) {
         super(
                 testFiles,

@@ -16,26 +16,26 @@ import java.util.List;
  */
 // https://docs.oracle.com/javase/8/docs/technotes/tools/findingclasses.html#bootclass
 public enum LiteralKind {
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#NULL_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#NULL_LITERAL} trees. */
     NULL,
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#INT_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#INT_LITERAL} trees. */
     INT,
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#LONG_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#LONG_LITERAL} trees. */
     LONG,
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#FLOAT_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#FLOAT_LITERAL} trees. */
     FLOAT,
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#DOUBLE_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#DOUBLE_LITERAL} trees. */
     DOUBLE,
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#BOOLEAN_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#BOOLEAN_LITERAL} trees. */
     BOOLEAN,
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#CHAR_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#CHAR_LITERAL} trees. */
     CHAR,
-    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#STRING_LITERAL} trees */
+    /** Corresponds to {@link com.sun.source.tree.Tree.Kind#STRING_LITERAL} trees. */
     STRING,
-    /** Shorthand for all other LiteralKind constants, other than PRIMITIVE */
+    /** Shorthand for all other LiteralKind constants, other than PRIMITIVE. */
     ALL,
     /**
-     * Shorthand for all primitive LiteralKind constants: INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR
+     * Shorthand for all primitive LiteralKind constants: INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR.
      */
     PRIMITIVE;
 

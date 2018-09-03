@@ -46,8 +46,8 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -387,7 +387,7 @@ public class DependentTypesHelper {
                         // a method parameter.
                         return;
                     }
-                    ErrorReporter.errorAbort(this.getClass() + ": tree not found");
+                    throw new BugInCF(this.getClass() + ": tree not found");
                 } else if (TreeUtils.typeOf(tree) == null) {
                     // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
                     // gets the assignment context for a pseudo assignment of an argument to
@@ -511,7 +511,7 @@ public class DependentTypesHelper {
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
         private final FlowExpressionContext context;
         private final TreePath localScope;
-        /** Whether or not the expression might contain a variable declared in local scope */
+        /** Whether or not the expression might contain a variable declared in local scope. */
         private final boolean useLocalScope;
 
         private StandardizeTypeAnnotator(
@@ -765,7 +765,7 @@ public class DependentTypesHelper {
                 return null;
             }
             if (type.getKind() != p.getKind()) {
-                ErrorReporter.errorAbort("Should be the same. type: %s p: %s ", type, p);
+                throw new BugInCF("Should be the same. type: %s p: %s ", type, p);
             }
             return null;
         }

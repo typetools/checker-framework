@@ -26,7 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -49,7 +49,7 @@ import scenelib.annotations.io.IndexFileWriter;
  * my.package.MyClass.jaif}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #jaifFilesPath} directory. Having more information in those initial .jaif files means that the
+ * #JAIF_FILES_PATH} directory. Having more information in those initial .jaif files means that the
  * precision achieved by the whole-program inference analysis will be better. {@link
  * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
  */
@@ -65,13 +65,13 @@ public class WholeProgramInferenceScenesHelper {
      * Directory where .jaif files will be written to and read from. This directory is relative to
      * where the CF's javac command is executed.
      */
-    public static final String jaifFilesPath =
+    public static final String JAIF_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
     /** Indicates whether assignments where the rhs is null should be ignored. */
     private final boolean ignoreNullAssignments;
 
-    /** Maps .jaif file paths (Strings) to Scenes. Relatives to jaifFilesPath. */
+    /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
     private final Map<String, AScene> scenes = new HashMap<>();
 
     /**
@@ -96,7 +96,7 @@ public class WholeProgramInferenceScenesHelper {
      */
     public void writeScenesToJaif() {
         // Create .jaif files directory if it doesn't exist already.
-        File jaifDir = new File(jaifFilesPath);
+        File jaifDir = new File(JAIF_FILES_PATH);
         if (!jaifDir.exists()) {
             jaifDir.mkdirs();
         }
@@ -111,14 +111,14 @@ public class WholeProgramInferenceScenesHelper {
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
             } catch (IOException e) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Problem while reading file in: "
                                 + jaifPath
                                 + ". Exception message: "
                                 + e.getMessage(),
                         e);
             } catch (DefException e) {
-                ErrorReporter.errorAbort(e.getMessage(), e);
+                throw new BugInCF(e.getMessage(), e);
             }
         }
         modifiedScenes.clear();
@@ -126,7 +126,7 @@ public class WholeProgramInferenceScenesHelper {
 
     /** Returns the String representing the .jaif path of a class given its name. */
     protected String getJaifPath(String className) {
-        String jaifPath = jaifFilesPath + className + ".jaif";
+        String jaifPath = JAIF_FILES_PATH + className + ".jaif";
         return jaifPath;
     }
 
@@ -143,7 +143,7 @@ public class WholeProgramInferenceScenesHelper {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "Problem while reading file in: "
                                     + jaifPath
                                     + "."
@@ -347,8 +347,12 @@ public class WholeProgramInferenceScenesHelper {
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
         Target target = elt.getAnnotation(Target.class);
-        if (target != null && target.value().length == 0) return true;
-        if (elt.getAnnotation(InvisibleQualifier.class) != null) return true;
+        if (target != null && target.value().length == 0) {
+            return true;
+        }
+        if (elt.getAnnotation(InvisibleQualifier.class) != null) {
+            return true;
+        }
 
         // Checks if am is default
         if (elt.getAnnotation(DefaultQualifierInHierarchy.class) != null) {

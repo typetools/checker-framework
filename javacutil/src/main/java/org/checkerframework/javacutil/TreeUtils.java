@@ -99,7 +99,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Checks if the method invocation is a call to this.
+     * Checks if the method invocation is a call to "this".
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to this
@@ -108,25 +108,15 @@ public final class TreeUtils {
         return isNamedMethodCall("this", tree);
     }
 
+    /**
+     * Checks if the method call is a call to the given method name.
+     *
+     * @param name a method name
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to the given method
+     */
     protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
-        @Nullable ExpressionTree mst = tree.getMethodSelect();
-        assert mst != null; /*nninvariant*/
-
-        if (mst.getKind() == Tree.Kind.IDENTIFIER) {
-            return ((IdentifierTree) mst).getName().contentEquals(name);
-        }
-
-        if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
-            MemberSelectTree selectTree = (MemberSelectTree) mst;
-
-            if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
-                return false;
-            }
-
-            return ((IdentifierTree) selectTree.getExpression()).getName().contentEquals(name);
-        }
-
-        return false;
+        return getMethodName(tree.getMethodSelect()).equals(name);
     }
 
     /**
@@ -430,13 +420,11 @@ public final class TreeUtils {
      */
     public static @Nullable Element elementFromTree(Tree tree) {
         if (tree == null) {
-            ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
-            return null; // dead code
+            throw new BugInCF("InternalUtils.symbol: tree is null");
         }
 
         if (!(tree instanceof JCTree)) {
-            ErrorReporter.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
-            return null; // dead code
+            throw new BugInCF("InternalUtils.symbol: tree is not a valid Javac tree");
         }
 
         if (isExpressionTree(tree)) {
@@ -562,8 +550,7 @@ public final class TreeUtils {
     public static ExecutableElement constructor(NewClassTree tree) {
 
         if (!(tree instanceof JCTree.JCNewClass)) {
-            ErrorReporter.errorAbort("InternalUtils.constructor: not a javac internal tree");
-            return null; // dead code
+            throw new BugInCF("InternalUtils.constructor: not a javac internal tree");
         }
 
         JCNewClass newClassTree = (JCNewClass) tree;
@@ -618,8 +605,7 @@ public final class TreeUtils {
         } else if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree) expr).getIdentifier();
         }
-        ErrorReporter.errorAbort("TreeUtils.methodName: cannot be here: " + node);
-        return null; // dead code
+        throw new BugInCF("TreeUtils.methodName: cannot be here: " + node);
     }
 
     /**
@@ -627,8 +613,9 @@ public final class TreeUtils {
      *     constructor
      */
     public static final boolean containsThisConstructorInvocation(MethodTree node) {
-        if (!TreeUtils.isConstructor(node) || node.getBody().getStatements().isEmpty())
+        if (!TreeUtils.isConstructor(node) || node.getBody().getStatements().isEmpty()) {
             return false;
+        }
 
         StatementTree st = node.getBody().getStatements().get(0);
         if (!(st instanceof ExpressionStatementTree)
@@ -859,8 +846,7 @@ public final class TreeUtils {
         if (methods.size() == 1) {
             return methods.get(0);
         }
-        ErrorReporter.errorAbort("TreeUtils.getMethod: expected 1 match, found " + methods.size());
-        return null; // dead code
+        throw new BugInCF("TreeUtils.getMethod: expected 1 match, found " + methods.size());
     }
 
     /**
@@ -905,14 +891,13 @@ public final class TreeUtils {
                 }
             }
         }
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "TreeUtils.getMethod: found no match for "
                         + typeName
                         + "."
                         + methodName
                         + "("
                         + Arrays.toString(paramTypes));
-        return null; // dead code
     }
 
     /**
@@ -1088,8 +1073,7 @@ public final class TreeUtils {
                 return var;
             }
         }
-        ErrorReporter.errorAbort("TreeUtils.getField: shouldn't be here!");
-        return null; // dead code
+        throw new BugInCF("TreeUtils.getField: shouldn't be here");
     }
 
     /**
@@ -1255,8 +1239,9 @@ public final class TreeUtils {
 
         if (newArray.dimAnnotations.length() > 0
                 && (level >= 0)
-                && (level < newArray.dimAnnotations.size()))
+                && (level < newArray.dimAnnotations.size())) {
             return annotationsFromTypeAnnotationTrees(newArray.dimAnnotations.get(level));
+        }
 
         return Collections.emptyList();
     }

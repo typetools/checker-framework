@@ -2,8 +2,8 @@
 # Tt uses the aliasing checker as it is one of the framework checkers that has a
 # qual directory with qualifiers that must be loaded using the loader.
 
-# When called by the gradle tests, JAVAC is defined as $JAVA_HOME/bin/javac, which
-# could be jdk8 or jdk7. When executed as a demo, we'll use openjdk 8 located in
+# When called by the gradle tests, JAVAC is defined as $JAVA_HOME/bin/javac.
+# When executed as a demo, we'll use openjdk 8 located in
 # the following directory (change to your setup):
 JAVAC ?= /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
 
@@ -37,7 +37,6 @@ demo1:
 	  -classpath $(PROJECTDIR):${CHECKERQUALBUILD} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
-	  -AprintErrorStack \
 	  -Anocheckjdk \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java
@@ -51,7 +50,6 @@ demo2:
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -Anocheckjdk \
-	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java
 
@@ -65,7 +63,6 @@ load-from-dir-test:
 	  -classpath $(PROJECTDIR):${CHECKERQUALBUILD} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
-	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  -Anocheckjdk \
 	  LoaderTest.java > Out.txt 2>&1 || true
@@ -80,7 +77,6 @@ load-from-jar-test:
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -Anocheckjdk \
-	  -AprintErrorStack \
 	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	  LoaderTest.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt

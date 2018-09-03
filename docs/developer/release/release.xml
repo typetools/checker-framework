@@ -66,6 +66,10 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}, ${release.date}"/>
 
+        <update file="${cf.docs}/manual/checkerframework.gradle"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}, ${release.date}"/>
+
         <update file="${checkerWebPage}"
                 start="${compiler.ver.0}" end="${compiler.ver.1}"
                 with="${release.ver}, ${release.date}"/>
@@ -190,11 +194,11 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checker.binary.poms}/testlibPom.xml"
+        <update file="${checker.binary.poms}/frameworktestPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checker.release.poms}/testlibReleasePom.xml"
+        <update file="${checker.release.poms}/frameworktestReleasePom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -202,10 +206,6 @@
         <update file="${cf.docs.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
-
-        <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava7Example/build.gradle" byline="true"
-                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
-                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
         <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava8Example/build.gradle" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"

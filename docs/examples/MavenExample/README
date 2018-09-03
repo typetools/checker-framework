@@ -1,8 +1,5 @@
 This directory contains an example Maven project that downloads the latest
 Checker Framework Maven artifacts and runs the Nullness Checker.
-The project assumes you are using a Java 8 compiler.  If you are using
-a Java 7 compiler, modify the pom.xml by following the instructions in
-the three locations in the pom.xml that mention "if using Java 7".
 
 To run the example, simply execute:
 mvn compile

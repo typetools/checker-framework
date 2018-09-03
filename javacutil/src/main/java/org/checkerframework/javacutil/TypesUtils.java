@@ -1,7 +1,5 @@
 package org.checkerframework.javacutil;
 
-import static com.sun.tools.javac.code.TypeTag.WILDCARD;
-
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -355,7 +353,7 @@ public final class TypesUtils {
      */
     public static Type wildLowerBound(TypeMirror tm, ProcessingEnvironment env) {
         Type t = (Type) tm;
-        if (t.hasTag(WILDCARD)) {
+        if (t.hasTag(TypeTag.WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
             Symtab syms = Symtab.instance(context);
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
@@ -379,8 +377,7 @@ public final class TypesUtils {
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
-                ErrorReporter.errorAbort("Unrecognized class: " + clazz);
-                return null; // dead code
+                throw new BugInCF("Unrecognized class: " + clazz);
             }
             return element.asType();
         }

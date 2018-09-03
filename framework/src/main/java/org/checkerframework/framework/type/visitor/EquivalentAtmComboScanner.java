@@ -23,7 +23,9 @@ import org.checkerframework.framework.util.AtmCombo;
  */
 public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
         extends AbstractAtmComboVisitor<RETURN_TYPE, PARAM> {
-    /** A history of type pairs that have already been visited and the return type of their visit */
+    /**
+     * A history of type pairs that have already been visited and the return type of their visit.
+     */
     protected final Visited visited = new Visited();
 
     /** Entry point for this scanner. */

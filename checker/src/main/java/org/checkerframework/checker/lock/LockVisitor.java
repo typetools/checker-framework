@@ -53,6 +53,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -63,9 +64,8 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -79,7 +79,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
     private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
-    protected static final Pattern selfReceiverPattern = Pattern.compile("^<self>(\\.(.*))?$");
+    protected static final Pattern SELF_RECEIVER_PATTERN = Pattern.compile("^<self>(\\.(.*))?$");
 
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -112,10 +112,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     /**
      * Issues an error if two or more of the following annotations are present on a variable
-     * declaration:<br>
-     * {@code @org.checkerframework.checker.lock.qual.GuardedBy}<br>
-     * {@code @net.jcip.annotations.GuardedBy}<br>
-     * {@code @javax.annotation.concurrent.GuardedBy}
+     * declaration.
+     *
+     * <ul>
+     *   <li>{@code @org.checkerframework.checker.lock.qual.GuardedBy}
+     *   <li>{@code @net.jcip.annotations.GuardedBy}
+     *   <li>{@code @javax.annotation.concurrent.GuardedBy}
+     * </ul>
      *
      * @param variableTree the VariableTree for the variable declaration used to determine if
      *     multiple @GuardedBy annotations are present and to report the error via checker.report.
@@ -212,10 +215,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if two or more of the following annotations are present on a method:<br>
-     * {@code @Holding}<br>
-     * {@code @net.jcip.annotations.GuardedBy}<br>
-     * {@code @javax.annotation.concurrent.GuardedBy}
+     * Issues an error if two or more of the following annotations are present on a method.
+     *
+     * <ul>
+     *   <li>{@code @Holding}
+     *   <li>{@code @net.jcip.annotations.GuardedBy}
+     *   <li>{@code @javax.annotation.concurrent.GuardedBy}
+     * </ul>
      *
      * @param methodElement the ExecutableElement for the method call referred to by {@code node}
      * @param treeForErrorReporting the MethodTree used to report the error via checker.report.
@@ -229,15 +235,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         try {
-            if (atypeFactory.jcip_GuardedBy != null
-                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcip_GuardedBy)
+            if (atypeFactory.jcipGuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.jcipGuardedBy)
                             != null) {
                 lockPreconditionAnnotationCount++;
             }
 
             if (lockPreconditionAnnotationCount < 2
-                    && atypeFactory.javax_GuardedBy != null
-                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javax_GuardedBy)
+                    && atypeFactory.javaxGuardedBy != null
+                    && atypeFactory.getDeclAnnotation(methodElement, atypeFactory.javaxGuardedBy)
                             != null) {
                 lockPreconditionAnnotationCount++;
             }
@@ -629,9 +635,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // matches
         // those in corresponding locations on the method call site.
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.methodType;
 
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
@@ -1194,7 +1199,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     private void checkLockOfThisOrTree(Tree tree, boolean implicitThis, AnnotationMirror gbAnno) {
         if (gbAnno == null) {
-            ErrorReporter.errorAbort("LockVisitor.checkLock: gbAnno cannot be null");
+            throw new BugInCF("LockVisitor.checkLock: gbAnno cannot be null");
         }
         if (AnnotationUtils.areSameByClass(gbAnno, GuardedByUnknown.class)
                 || AnnotationUtils.areSameByClass(gbAnno, GuardedByBottom.class)) {
@@ -1296,7 +1301,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             return lockExpression;
         }
 
-        Matcher selfReceiverMatcher = selfReceiverPattern.matcher(expression);
+        Matcher selfReceiverMatcher = SELF_RECEIVER_PATTERN.matcher(expression);
         try {
             if (selfReceiverMatcher.matches()) {
                 String remainingExpression = selfReceiverMatcher.group(2);

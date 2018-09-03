@@ -97,10 +97,11 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnno
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -114,8 +115,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
         extends AnnotatedTypeFactory {
 
-    /** should use flow by default */
-    protected static boolean FLOW_BY_DEFAULT = true;
+    /** Should use flow by default. */
+    protected static boolean flowByDefault = true;
 
     /** To cache the supported monotonic type qualifiers. */
     private Set<Class<? extends Annotation>> supportedMonotonicQuals;
@@ -267,7 +268,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param checker the checker to which this type factory belongs
      */
     public GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
-        this(checker, FLOW_BY_DEFAULT);
+        this(checker, flowByDefault);
     }
 
     @Override
@@ -527,7 +528,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return new QualifierDefaults(elements, this);
     }
 
-    /** Defines alphabetical sort ordering for qualifiers */
+    /** Defines alphabetical sort ordering for qualifiers. */
     private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING =
             new Comparator<Class<? extends Annotation>>() {
                 @Override
@@ -673,7 +674,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
         if (!defs.hasDefaultsForCheckedCode()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "GenericAnnotatedTypeFactory.createQualifierDefaults: "
                             + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
                             + "Every checker must specify a default qualifier. "
@@ -687,7 +688,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates {@link QualifierPolymorphism} which supports QualifierPolymorphism mechanism
+     * Creates {@link QualifierPolymorphism} which supports QualifierPolymorphism mechanism.
      *
      * @return the QualifierPolymorphism class
      */
@@ -1335,7 +1336,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     // declared return type.
                     res = getAnnotatedType(lhsTree);
                 } else {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
                                     + "lhsTree: "
                                     + lhsTree
@@ -1369,7 +1370,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
                 break;
             default:
-                throw new AssertionError("Unexpected kind of tree: " + tree);
+                throw new BugInCF("Unexpected kind of tree: " + tree);
         }
 
         assert !args.isEmpty() : "Arguments are empty";
@@ -1393,16 +1394,14 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
-            NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.constructorFromUse(tree);
-        AnnotatedExecutableType method = mfuPair.first;
+    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
+        ParameterizedMethodType mType = super.constructorFromUse(tree);
+        AnnotatedExecutableType method = mType.methodType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
         poly.annotate(tree, method);
-        return mfuPair;
+        return mType;
     }
 
     @Override
@@ -1465,7 +1464,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Flow analysis will be performed if:
+     * Flow analysis will be performed if all of the following are true.
      *
      * <ul>
      *   <li>tree is a {@link ClassTree}
@@ -1494,9 +1493,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public Value getInferredValueFor(Tree tree) {
         if (tree == null) {
-            ErrorReporter.errorAbort(
-                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
-            return null; // dead code
+            throw new BugInCF(
+                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
         }
         Value as = null;
         if (analysis.isRunning()) {
@@ -1532,16 +1530,14 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree);
-        AnnotatedExecutableType method = mfuPair.first;
+    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedMethodType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.methodType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
         poly.annotate(tree, method);
-        return mfuPair;
+        return mType;
     }
 
     @Override
@@ -1615,7 +1611,7 @@ public abstract class GenericAnnotatedTypeFactory<
         } else if (checker.hasOption("cfgviz")) {
             String cfgviz = checker.getOption("cfgviz");
             if (cfgviz == null) {
-                ErrorReporter.errorAbort(
+                throw new UserError(
                         "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
@@ -1664,7 +1660,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     res.put(split[0], split[1]);
                     break;
                 default:
-                    ErrorReporter.errorAbort("Too many `=` in cfgviz option: " + opt);
+                    throw new UserError("Too many `=` in cfgviz option: " + opt);
             }
         }
         return res;

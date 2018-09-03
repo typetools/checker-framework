@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -309,7 +309,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // TODO: Anonymous classes
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
-        if (classSymbol == null) return;
+        if (classSymbol == null) {
+            return;
+        }
 
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -472,7 +474,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
-        if (classSymbol == null) return; // TODO: Handle anonymous classes.
+        if (classSymbol == null) { // TODO: Handle anonymous classes.
+            return;
+        }
         String className = classSymbol.flatname.toString();
 
         String jaifPath = helper.getJaifPath(className);
@@ -507,7 +511,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         } else if (field instanceof LocalVariableNode) {
             receiverNode = ((LocalVariableNode) field).getReceiver();
         } else {
-            ErrorReporter.errorAbort("Unexpected type: " + field.getClass());
+            throw new BugInCF("Unexpected type: " + field.getClass());
         }
         if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
                 && classTree != null) {

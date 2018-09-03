@@ -42,9 +42,9 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -87,6 +87,7 @@ public class QualifierDefaults {
     /** Mapping from an Element to the source Tree of the declaration. */
     private static final int CACHE_SIZE = 300;
 
+    @SuppressWarnings("checkstyle:constantname") // only a shallow constant, so don't use all-caps
     protected static final Map<Element, BoundType> elementToBoundType =
             CollectionUtils.createLRUCache(CACHE_SIZE);
 
@@ -101,7 +102,7 @@ public class QualifierDefaults {
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /** CLIMB locations whose standard default is top for a given type system. */
-    public static final TypeUseLocation[] standardClimbDefaultsTop = {
+    public static final TypeUseLocation[] STANDARD_CLIMB_DEFAULTS_TOP = {
         TypeUseLocation.LOCAL_VARIABLE,
         TypeUseLocation.RESOURCE_VARIABLE,
         TypeUseLocation.EXCEPTION_PARAMETER,
@@ -109,7 +110,7 @@ public class QualifierDefaults {
     };
 
     /** CLIMB locations whose standard default is bottom for a given type system. */
-    public static final TypeUseLocation[] standardClimbDefaultsBottom = {
+    public static final TypeUseLocation[] STANDARD_CLIMB_DEFAULTS_BOTTOM = {
         TypeUseLocation.IMPLICIT_LOWER_BOUND
     };
 
@@ -125,16 +126,16 @@ public class QualifierDefaults {
         TypeUseLocation.ALL
     };
 
-    /** Standard unchecked default locations that should be top */
+    /** Standard unchecked default locations that should be top. */
     // Fields are defaulted to top so that warnings are issued at field reads, which we believe are
     // more common than field writes. Future work is to specify different defaults for field reads
     // and field writes.  (When a field is written to, its type should be bottom.)
-    public static final TypeUseLocation[] standardUncheckedDefaultsTop = {
+    public static final TypeUseLocation[] STANDARD_UNCHECKED_DEFAULTS_TOP = {
         TypeUseLocation.RETURN, TypeUseLocation.FIELD, TypeUseLocation.UPPER_BOUND
     };
 
-    /** Standard unchecked default locations that should be bottom */
-    public static final TypeUseLocation[] standardUncheckedDefaultsBottom = {
+    /** Standard unchecked default locations that should be bottom. */
+    public static final TypeUseLocation[] STANDARD_UNCHECKED_DEFAULTS_BOTTOM = {
         TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND
     };
 
@@ -206,7 +207,7 @@ public class QualifierDefaults {
         Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
         Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
 
-        for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
+        for (TypeUseLocation loc : STANDARD_UNCHECKED_DEFAULTS_TOP) {
             // Only add standard defaults in locations where a default has not be specified
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, top, loc)) {
@@ -215,7 +216,7 @@ public class QualifierDefaults {
             }
         }
 
-        for (TypeUseLocation loc : standardUncheckedDefaultsBottom) {
+        for (TypeUseLocation loc : STANDARD_UNCHECKED_DEFAULTS_BOTTOM) {
             for (AnnotationMirror bottom : bottoms) {
                 // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
@@ -231,7 +232,7 @@ public class QualifierDefaults {
         Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
         Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
 
-        for (TypeUseLocation loc : standardClimbDefaultsTop) {
+        for (TypeUseLocation loc : STANDARD_CLIMB_DEFAULTS_TOP) {
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
                     // Only add standard defaults in locations where a default has not been
@@ -241,7 +242,7 @@ public class QualifierDefaults {
             }
         }
 
-        for (TypeUseLocation loc : standardClimbDefaultsBottom) {
+        for (TypeUseLocation loc : STANDARD_CLIMB_DEFAULTS_BOTTOM) {
             for (AnnotationMirror bottom : bottoms) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, bottom, loc)) {
                     // Only add standard defaults in locations where a default has not been
@@ -310,7 +311,7 @@ public class QualifierDefaults {
         }
 
         if (!isValidUntypeLocation) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Invalid unchecked code default location: "
                             + location
                             + " -> "
@@ -321,8 +322,8 @@ public class QualifierDefaults {
     private void checkDuplicates(
             DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
         if (conflictsWithExistingDefaults(previousDefaults, newAnno, newLoc)) {
-            ErrorReporter.errorAbort(
-                    "Only one qualifier from a hierarchy can be the default! Existing: "
+            throw new BugInCF(
+                    "Only one qualifier from a hierarchy can be the default. Existing: "
                             + previousDefaults
                             + " and new: "
                             + (new Default(newAnno, newLoc)));
@@ -517,9 +518,8 @@ public class QualifierDefaults {
         boolean elementAnnotatedForThisChecker = false;
 
         if (elt == null) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Call of QualifierDefaults.isElementAnnotatedForThisChecker with null");
-            return false;
         }
 
         if (elementAnnotatedFors.containsKey(elt)) {
@@ -720,9 +720,11 @@ public class QualifierDefaults {
          */
         protected TypeUseLocation location;
 
+        /** The default element applier implementation. */
         protected final DefaultApplierElementImpl impl;
 
-        /*Local type variables are defaulted to top when flow is turned on
+        /*
+          Local type variables are defaulted to top when flow is turned on
           We only want to default the top level type variable (and not type variables that are nested
           in its bounds). E.g.,
             <T extends List<E>, E extends Object> void method() {
@@ -976,10 +978,9 @@ public class QualifierDefaults {
                         }
                     default:
                         {
-                            ErrorReporter.errorAbort(
+                            throw new BugInCF(
                                     "QualifierDefaults.DefaultApplierElement: unhandled location: "
                                             + location);
-                            return null;
                         }
                 }
 
@@ -1068,10 +1069,10 @@ public class QualifierDefaults {
      */
     enum BoundType {
 
-        /** Indicates an upper bounded type variable or wildcard */
+        /** Indicates an upper-bounded type variable or wildcard. */
         UPPER,
 
-        /** Indicates a lower bounded type variable or wildcard */
+        /** Indicates a lower-bounded type variable or wildcard. */
         LOWER,
 
         /**
@@ -1107,8 +1108,7 @@ public class QualifierDefaults {
             return getWildcardBoundType((AnnotatedWildcardType) type, typeFactory);
         }
 
-        ErrorReporter.errorAbort("Unexpected type kind: type=" + type);
-        return null; // dead code
+        throw new BugInCF("Unexpected type kind: type=" + type);
     }
 
     /** @return the bound type of the input typeVar */
@@ -1156,13 +1156,12 @@ public class QualifierDefaults {
                     boundType = BoundType.UNBOUNDED;
                 }
             } else {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Unexpected tree type for typeVar Element:\n"
                                 + "typeParamElem="
                                 + typeParamElem
                                 + "\n"
                                 + typeParamDecl);
-                boundType = null; // dead code
             }
         }
 

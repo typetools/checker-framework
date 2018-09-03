@@ -36,7 +36,7 @@ task copyCompatQual(type: Copy) {
     description 'Copy checker-compat-qual source from other projects.'
     includeEmptyDirs = false
     doFirst {
-        // Delete the directory in case a previously copied file should no longer be in checker-qual
+        // Delete the directory in case a previously copied file should no longer be in checker-qual.
         delete file('src/compatQual/java')
     }
 
@@ -63,6 +63,9 @@ task compatQualJavadoc(type: Javadoc) {
 task compatQualJar(type: Jar, dependsOn: compileCompatQualJava) {
     baseName = 'checker-compat-qual'
     from compileCompatQualJava.outputs
+    manifest {
+        attributes('Automatic-Module-Name': "org.checkerframework.checker.qual")
+    }
 }
 
 task compatQualSourcesJar(type: Jar) {

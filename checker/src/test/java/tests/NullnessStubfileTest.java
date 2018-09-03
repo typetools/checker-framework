@@ -7,13 +7,13 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class NullnessStubfileTest extends CheckerFrameworkPerDirectoryTest {
 
+    /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessStubfileTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext",
-                "-AprintErrorStack",
                 "-AstubWarnIfNotFound",
                 "-Astubs="
                         + "tests/nullness-stubfile/stubfile1.astub:"

@@ -1,15 +1,8 @@
 package org.checkerframework.framework.qual;
 
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -36,15 +29,23 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
+@Target({
+    ElementType.PACKAGE,
+    ElementType.TYPE,
+    ElementType.CONSTRUCTOR,
+    ElementType.METHOD,
+    ElementType.FIELD,
+    ElementType.LOCAL_VARIABLE,
+    ElementType.PARAMETER
+})
 public @interface DefaultQualifier {
 
     /**
      * The Class for the default annotation.
      *
      * <p>To prevent affecting other type systems, always specify an annotation in your own type
-     * hierarchy. (For example, do not set "org.checkerframework.framework.qual.Unqualified" as the
-     * default.)
+     * hierarchy. (For example, do not set {@code org.checkerframework.framework.qual.Unqualified}
+     * as the default.)
      */
     Class<? extends Annotation> value();
 

@@ -73,7 +73,7 @@ Here is a comparison of two choices for lower bounds:
 
 \noindent
 \begin{tabular}{ll}
-\<@KeyForBottom> default                   & \<@UnknownKeyFor> default \\
+\<@KeyForBottom> default                   & \<@UnknownKeyFor> default (current choice) \\
 \hline
 \code{class MyClass1<@UnknownKeyFor T> \{}  & \code{class MyClass1<T> \{} \\
 \code{~~T var = null; // OK}               & \code{~~T var = null; // OK} \\
@@ -110,6 +110,9 @@ type is a type variable, programmers must write an \<@UnknownKeyFor>
 annotation on either the type variable declaration or on variable
 declarations, as shown in \<MyClass1> and
 \<MyClass2>.
+A disadvantage of this default is that the Map Key checker may issue
+warnings in code that has nothing to do with map keys, and in which no map
+key annotations are used.
 
 If lower bounds are defaulted to \code{@UnknownKeyFor} (which is currently
 the case), then whenever a client might use a \<@KeyFor> type argument,
@@ -241,4 +244,5 @@ class MyClass {
 
 
 %%  LocalWords:  KeyFor containsKey java keyfor UnknownKeyFor KeyForBottom
-%%  LocalWords:  mapSet keySet km threeLetterWordSubset JT
+%%  LocalWords:  mapSet keySet km threeLetterWordSubset JT MyClass1 MySet1
+%%  LocalWords:  MyClass2 MyClass3 s1 MySet2 s2

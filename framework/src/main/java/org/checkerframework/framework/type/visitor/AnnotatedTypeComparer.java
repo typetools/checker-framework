@@ -9,7 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A TypeVisitor that takes two AnnotatedTypeMirrors as parameters, and visits them simultaneously.
@@ -22,7 +22,7 @@ public abstract class AnnotatedTypeComparer<R>
     /** Compares two annotated type mirrors. */
     protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
 
-    /** Supplies the logic to reduce on how to combine two R objects */
+    /** Supplies the logic to reduce on how to combine two R objects. */
     protected abstract R combineRs(R r1, R r2);
 
     protected R scan(
@@ -63,11 +63,10 @@ public abstract class AnnotatedTypeComparer<R>
     @Override
     protected R scanAndReduce(
             Iterable<? extends AnnotatedTypeMirror> types, AnnotatedTypeMirror p, R r) {
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "AnnotatedTypeComparer.scanAndReduce: "
                         + p
                         + "is not Iterable<? extends AnnotatedTypeMirror>");
-        return null;
     }
 
     @Override

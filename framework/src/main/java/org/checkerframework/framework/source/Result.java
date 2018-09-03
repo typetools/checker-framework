@@ -41,7 +41,7 @@ public final class Result {
     /** The type of result (success, warning, failure). */
     private final Type type;
 
-    /** The messages for the results */
+    /** The messages for the results. */
     private final List<DiagMessage> messages;
 
     /** The success result. */
@@ -154,8 +154,8 @@ public final class Result {
     /**
      * A class that represents diagnostic messages.
      *
-     * <p>{@code DiagMessage} encapsulate the message key which would identify the relevant standard
-     * error message according to the user locale.
+     * <p>{@code DiagMessage} encapsulates the message key which would identify the relevant
+     * standard error message according to the user locale.
      *
      * <p>The optional arguments are possible custom strings for the error message.
      */

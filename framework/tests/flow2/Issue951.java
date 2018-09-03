@@ -21,7 +21,8 @@ public class Issue951 {
 
     @Pure
     public static int arbitraryExceptionArg1() {
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call) :: error: (purity.not.sideeffectfree.object.creation)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.object.creation)
         throw new MyException("" + arbitraryMethod());
     }
 
@@ -35,7 +36,8 @@ public class Issue951 {
     public static int sefExceptionArg1() {
         // The method is safe, so this is a false positive warning;
         // in the future the Purity Checker may not issue this warning.
-        // :: error: (purity.not.deterministic.call) :: error: (purity.not.sideeffectfree.object.creation)
+        // :: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.sideeffectfree.object.creation)
         throw new MyException("" + sefMethod());
     }
 
@@ -49,7 +51,8 @@ public class Issue951 {
 
     @Pure
     public static int detExceptionArg1() {
-        // :: error: (purity.not.sideeffectfree.call) :: error: (purity.not.sideeffectfree.object.creation)
+        // :: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.object.creation)
         throw new MyException("" + detMethod());
     }
 

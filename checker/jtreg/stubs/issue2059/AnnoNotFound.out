@@ -1,0 +1,2 @@
+- compiler.warn.proc.messager: StubParser: Unknown annotation: @Nullable
+1 warning

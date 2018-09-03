@@ -85,7 +85,7 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Get a list of values of annotation, and then cast them to a given type
+     * Get a list of values of annotation, and then cast them to a given type.
      *
      * @param anno the annotation that contains values
      * @param castTo the type that is casted to

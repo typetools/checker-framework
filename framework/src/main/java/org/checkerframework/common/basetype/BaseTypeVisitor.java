@@ -79,6 +79,7 @@ import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -106,8 +107,8 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -240,13 +241,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
             return (Factory) new BaseAnnotatedTypeFactory(checker);
         } catch (Throwable t) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Unexpected "
                             + t.getClass().getSimpleName()
                             + " when invoking BaseAnnotatedTypeFactory for checker "
                             + checker.getClass().getSimpleName(),
                     t);
-            return null; // dead code
         }
     }
 
@@ -615,30 +615,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 msgPrefix = "purity.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
-                String reason = r.second;
-                @SuppressWarnings("CompilerMessages")
-                @CompilerMessageKey String msg = msgPrefix + reason;
-                if (reason.equals("call")) {
-                    MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-                    checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
-                } else {
-                    checker.report(Result.failure(msg), r.first);
-                }
+                reportPurityError(msgPrefix, r);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.sideeffectfree." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.sideeffectfree.", r);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
-                    @SuppressWarnings("CompilerMessages")
-                    @CompilerMessageKey String msg = "purity.not.deterministic." + r.second;
-                    checker.report(Result.failure(msg), r.first);
+                    reportPurityError("purity.not.deterministic.", r);
                 }
             }
+        }
+    }
+
+    /** Reports single purity error. * */
+    private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
+        String reason = r.second;
+        @SuppressWarnings("CompilerMessages")
+        @CompilerMessageKey String msg = msgPrefix + reason;
+        if (reason.equals("call")) {
+            MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+        } else {
+            checker.report(Result.failure(msg), r.first);
         }
     }
 
@@ -782,7 +783,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Check that the expression's type is annotated with {@code annotation} at every regular exit
-     * that returns {@code result}
+     * that returns {@code result}.
      *
      * @param node tree of method with the postcondition
      * @param annotation expression's type must have this annotation
@@ -953,10 +954,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitMethodInvocation(node, p);
         }
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
-        List<AnnotatedTypeMirror> typeargs = mfuPair.second;
+        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.methodType;
+        List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
 
         if (!atypeFactory.ignoreUninferredTypeArguments) {
             for (AnnotatedTypeMirror typearg : typeargs) {
@@ -1036,7 +1036,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 args = ((NewClassTree) tree).getArguments();
                 break;
             default:
-                throw new AssertionError("Unexpected kind of tree: " + tree);
+                throw new BugInCF("Unexpected kind of tree: " + tree);
         }
         if (numFormals == args.size()) {
             AnnotatedTypeMirror lastArgType =
@@ -1152,7 +1152,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The tyoe of java.util.Vector. */
     private AnnotatedDeclaredType vectorType;
 
-    /** Returns true if the method symbol represents {@code Vector.copyInto} */
+    /** Returns true if the method symbol represents {@code Vector.copyInto}. */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
         if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1) {
@@ -1236,10 +1236,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitNewClass(node, p);
         }
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse =
-                atypeFactory.constructorFromUse(node);
-        AnnotatedExecutableType constructor = fromUse.first;
-        List<AnnotatedTypeMirror> typeargs = fromUse.second;
+        ParameterizedMethodType fromUse = atypeFactory.constructorFromUse(node);
+        AnnotatedExecutableType constructor = fromUse.methodType;
+        List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
         List<AnnotatedTypeMirror> params =
@@ -1765,8 +1764,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Returns a set of AnnotationMirrors that is a lower bound for exception parameters.
      *
-     * <p>Note: by default this method is called by getThrowUpperBoundAnnotations(), so that this
-     * annotation is enforced.
+     * <p>Note: by default this method is called by {@link #getThrowUpperBoundAnnotations()}, so
+     * that this annotation is enforced.
      *
      * <p>(Default is top)
      *
@@ -1836,9 +1835,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
                 break;
             default:
-                ErrorReporter.errorAbort(
-                        "Unexpected throw expression type: " + throwType.getKind());
-                break;
+                throw new BugInCF("Unexpected throw expression type: " + throwType.getKind());
         }
     }
 
@@ -2589,7 +2586,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invocationType =
                 atypeFactory.methodFromUse(
                                 memberReferenceTree, compileTimeDeclaration, enclosingType)
-                        .first;
+                        .methodType;
 
         if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
             // Type argument inference is required, skip check.
@@ -2760,7 +2757,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         /**
-         * Perform the check
+         * Perform the check.
          *
          * @return true if the override is allowed
          */
@@ -2932,8 +2929,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror receiverArg;
             switch (memberTree.kind) {
                 case UNBOUND:
-                    ErrorReporter.errorAbort("Case UNBOUND should already be handled.");
-                    return true; // Dead code
+                    throw new BugInCF("Case UNBOUND should already be handled.");
                 case SUPER:
                     receiverDecl = overrider.getReceiverType();
                     receiverArg =
@@ -3555,7 +3551,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Overriding to avoid visit part of the tree
     // **********************************************************************
 
-    /** Override Compilation Unit so we won't visit package names or imports */
+    /** Override Compilation Unit so we won't visit package names or imports. */
     @Override
     public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
         Void r = scan(node.getPackageAnnotations(), p);
