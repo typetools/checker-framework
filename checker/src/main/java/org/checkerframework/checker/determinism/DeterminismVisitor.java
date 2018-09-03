@@ -66,7 +66,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         TypeMirror javaType = useType.getUnderlyingType();
 
-        // Checks for @OrderNonDet on non-collections and raises an error if this check succeeds.
+        // Raises an error if a non-collections is annotated with @OrderNonDet.
         if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
                 && !atypeFactory.mayBeOrderNonDet(javaType)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
@@ -130,8 +130,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Checks if {@code subAnnotation} is not a subtype of {@code superAnnotation} and report an
-     * error if the check succeeds.
+     * Reports and error if {@code subAnnotation} is not a subtype of {@code superAnnotation}.
      *
      * @return true if the subtyping relationship is invalid, false otherwise
      */
@@ -148,8 +147,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Checks for invalid access of an array element on the lhs of an assignment and reports an
-     * error if this check succeeds. This is to prevent side-effects to arrays. Example:
+     * Reports an error in case of invalid access of an array element on the lhs of an assignment.
+     * This is to prevent side-effects to arrays. Example:
      *
      * <pre><code>
      * &nbsp; @Det int @Det [] x;

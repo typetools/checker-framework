@@ -178,9 +178,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     atypeFactory.methodFromUse(node).methodType;
             ExecutableElement invokedMethodElement = invokedMethod.getElement();
 
-            // Checks if return type (non-array, non-collection, and non-iterator) resolves to
-            // @OrderNonDet.
-            // If the check succeeds, the annotation on the return type is replaced with @NonDet.
+            // If return type (non-array, non-collection, and non-iterator) resolves to
+            // @OrderNonDet, replaces the annotation on the return type with @NonDet.
             if (p.getAnnotations().contains(ORDERNONDET)
                     && !mayBeOrderNonDet(p.getUnderlyingType())) {
                 p.replaceAnnotation(NONDET);
@@ -263,12 +262,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *     subtype) or an array
      */
     public boolean mayBeOrderNonDet(TypeMirror javaType) {
-        if (javaType.getKind() == TypeKind.ARRAY
+        return (javaType.getKind() == TypeKind.ARRAY
                 || isCollection(TypesUtils.getTypeElement(javaType).asType())
-                || isIterator(TypesUtils.getTypeElement(javaType).asType())) {
-            return true;
-        }
-        return false;
+                || isIterator(TypesUtils.getTypeElement(javaType).asType()));
     }
 
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
@@ -344,13 +340,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** @return true if {@code method} is equals */
     public static boolean isEqualsMethod(ExecutableElement method) {
-        if (method.getReturnType().getKind() == TypeKind.BOOLEAN
+        return (method.getReturnType().getKind() == TypeKind.BOOLEAN
                 && method.getSimpleName().contentEquals("equals")
                 && method.getParameters().size() == 1
-                && TypesUtils.isObject(method.getParameters().get(0).asType())) {
-            return true;
-        }
-        return false;
+                && TypesUtils.isObject(method.getParameters().get(0).asType()));
     }
 
     /** @return true if {@code method} is a main method */
