@@ -186,8 +186,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 p.replaceAnnotation(NONDET);
             }
 
-            // TODO: This doesn't say where a reader of the code can find "the specification"?  You
-            // should refer to the manual.  Is this behavior documented there?
             // Annotates the return type of "equals()" method called on a Set receiver
             // as described in the the manual section 11.3.1 (Handling imprecision) .
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
