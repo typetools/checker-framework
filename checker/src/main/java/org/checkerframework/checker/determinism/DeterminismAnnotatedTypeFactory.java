@@ -101,7 +101,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         postInit();
     }
 
-    /** Creates an AnnotationMirror for {@code @PolyDet} with the given argument. */
+    /** Creates an AnnotationMirror for {@code @PolyDet} with {@code arg} as its value. */
     private AnnotationMirror newPolyDet(String arg) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder.setValue("value", arg);
@@ -151,7 +151,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
          *       array or a collection, it is replaced with {@code @NonDet}.
          *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
-         *       the {@code @Det} annotation under the following conditions:
+         *       the annotation {@code @Det} under the following conditions:
          *       <ol>
          *         <li>The receiver does not have {@code List} or its subtype as a type argument
          *         <li>The argument to equals() is also an {@code @OrderNonDet Set}
@@ -186,7 +186,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             // Annotates the return type of "equals()" method called on a Set receiver
-            // as described in the the manual section 11.3.1 (Handling imprecision) .
+            // as described in section 11.3.1 of the manual under the heading "Handling
+            // Imprecision".
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
             //           @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s2;
             // s1.equals(s2) is @NonDet
@@ -226,7 +227,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(node, p);
         }
 
-        /** If array a is {@code @NonDet}, then a.length is {@code @NonDet}. */
+        /** Annotates the length property of a {@code @NonDet} array as {@code @NonDet}. */
         @Override
         public Void visitMemberSelect(
                 MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
@@ -273,8 +274,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Places the implicit annotation {@code Det} on the type of main method argument and the
-         * following default annotations:
+         * Places the implicit annotation {@code Det} on the type of main method argument. Places
+         * the following default annotations:
          *
          * <ol>
          *   <li>Annotates unannotated array arguments and return types as
@@ -283,7 +284,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *       {@code @Det}.
          * </ol>
          *
-         * Example: Consider the following code:
+         * <p>Example: Consider the following code:
          *
          * <pre><code>
          * &nbsp; void testArr(int[] a) {
@@ -309,8 +310,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 annotateArrayElementAsPolyDet(paramType);
             }
 
-            // If the invoked method is static and has no arguments,
-            // its return type is annotated as @Det.
+            // Annotates the return type of a static method without parameters as @Det.
             if (ElementUtils.isStatic(t.getElement())) {
                 if (t.getElement().getParameters().size() == 0) {
                     if (t.getReturnType().getExplicitAnnotations().size() == 0) {

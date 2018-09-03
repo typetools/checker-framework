@@ -38,7 +38,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             "invalid.array.assignment";
 
     /**
-     * The lower bound for exception parameters is {@code @Det}.
+     * Fixes the lower bound for exception parameters as {@code @Det}.
      *
      * @return set of lower bound annotations for exception parameters
      */

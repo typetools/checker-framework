@@ -26,6 +26,11 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>The first argument of Arrays.sort.
  *   <li>The first argument of Arrays.parallelSort.
  *   <li>The first argument of Collections.sort.
+ * </ul>
+ *
+ * <p>Performs type refinement from {@code @OrderNonDet} to {@code @NonDet} for
+ *
+ * <ul>
  *   <li>The first argument of Collections.shuffle.
  * </ul>
  */
@@ -78,7 +83,7 @@ public class DeterminismTransfer extends CFTransfer {
 
                 // Consider the call to Arrays.sort(T[], Comparator<? super T> c)
                 // The first argument of this method invocation must be type-refined
-                // only if it is annotated as @OrderNonDet and the second argument
+                // iff it is annotated as @OrderNonDet and the second argument
                 // is annotated @Det (Not if it is @NonDet).
                 // The following code sets the flag typeRefine to true iff
                 // all arguments except the first are annotated as @Det.
