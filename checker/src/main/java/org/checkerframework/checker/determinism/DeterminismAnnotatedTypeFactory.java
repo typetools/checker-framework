@@ -189,7 +189,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // TODO: This doesn't say where a reader of the code can find "the specification"?  You
             // should refer to the manual.  Is this behavior documented there?
             // Annotates the return type of "equals()" method called on a Set receiver
-            // as described in the specification.
+            // as described in the the manual section 11.3.1 (Handling imprecision) .
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
             //           @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s2;
             // s1.equals(s2) is @NonDet
@@ -292,9 +292,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Example: Consider the following code:
          *
          * <pre><code>
-         * void testArr(int[] a) {
-         *     @Det int i = a[0];
-         * }
+         * &nbsp; void testArr(int[] a) {
+         * &nbsp; &nbsp; {@code @Det} int i = a[0];
+         * &nbsp; }
          * </code></pre>
          *
          * Here, the line {@code @Det int i = a[0];} should be flagged as an error since {@code
@@ -376,9 +376,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * <p>Example: Consider the following code:
      *
      * <pre><code>
-     * void testArr(int[] a) {
-     *     ...
-     * }
+     * &nbsp; void testArr(int[] a) {
+     * &nbsp; &nbsp; ...
+     * &nbsp; }
      * </code></pre>
      *
      * This method {@code addComputedTypeAnnotations} annotates the parameter {@code int[] a} as
