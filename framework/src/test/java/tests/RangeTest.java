@@ -300,7 +300,7 @@ public class RangeTest {
 
     @Test
     public void testCharRange() {
-        Range.IGNORE_OVERFLOW = false;
+        Range.ignoreOverflow = false;
         for (Range range : ranges) {
             Range result = range.charRange();
             for (long value : values) {

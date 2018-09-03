@@ -246,13 +246,13 @@ public class Range {
     /**
      * Converts a this range to a char range.
      *
-     * <p>If {@link #IGNORE_OVERFLOW} is true and one of the bounds is outside the Character range,
+     * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Character range,
      * then that bound is set to the bound of the Character range.
      *
-     * <p>If {@link #IGNORE_OVERFLOW} is false and this range is too wide, i.e., wider than the full
+     * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
      * range of the Character class, return CHAR_EVERYTHING.
      *
-     * <p>If {@link #IGNORE_OVERFLOW} is false and the bounds of this range are not representable as
+     * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
      * 8-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
      * e.g., Character.MAX_VALUE + 1 is converted to Character.MIN_VALUE.
      */
@@ -260,7 +260,7 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
-        if (IGNORE_OVERFLOW) {
+        if (ignoreOverflow) {
             return new Range(
                     Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
         }
