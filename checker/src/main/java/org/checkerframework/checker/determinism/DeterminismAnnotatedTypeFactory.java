@@ -84,7 +84,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
 
     /**
-     * Error message key for explicitly annotating main method parameter as anything other that
+     * Error message key for explicitly annotating main method parameter as anything other than
      * {@code @Det}.
      */
     private static final @CompilerMessageKey String INVALID_ANNOTATION_ON_PARAMETER =
@@ -153,10 +153,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
          *       the {@code @Det} annotation under the following conditions:
          *       <ol>
-         *         <li>The receiver does not have {@code List} or its subtype as a type parameter
+         *         <li>The receiver does not have {@code List} or its subtype as a type argument
          *         <li>The argument to equals() is also an {@code @OrderNonDet Set}
          *         <li>The argument to equals() also does not have {@code List} or its subtype as a
-         *             type parameter
+         *             type argument
          *       </ol>
          * </ol>
          *
@@ -195,7 +195,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Example 2: @OrderNonDet Set<@Det List<@Det Integer>> s1;
             //            @OrderNonDet Set<@Det List<@Det Integer>> s2;
             // s1.equals(s2) is @Det
-            // TODO-rashmi: this can be more precise (@Det receiver and @OrderNonDet parameter)
+            // TODO-rashmi: this can be more precise (@Det receiver and @OrderNonDet argument)
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiverType.getUnderlyingType());
 
@@ -210,15 +210,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && AnnotationUtils.areSame(
                             receiverType.getAnnotations().iterator().next(), ORDERNONDET)) {
                 // Checks that the receiverType does not have "@OrderNonDet List" as a type
-                // parameter
-                if (!hasOrderNonDetListAsTypeParameter(receiverType)) {
-                    AnnotatedTypeMirror parameter =
+                // argument
+                if (!hasOrderNonDetListAsTypeArgument(receiverType)) {
+                    AnnotatedTypeMirror argument =
                             atypeFactory.getAnnotatedType(node.getArguments().get(0));
-                    if (isSet(TypesUtils.getTypeElement(parameter.getUnderlyingType()).asType())
-                            && parameter.hasAnnotation(ORDERNONDET)) {
-                        // Checks that the parameter does not have "@OrderNonDet List" as a
-                        // type parameter
-                        if (!hasOrderNonDetListAsTypeParameter(parameter)) {
+                    if (isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
+                            && argument.hasAnnotation(ORDERNONDET)) {
+                        // Checks that the argument does not have "@OrderNonDet List" as a
+                        // type argument
+                        if (!hasOrderNonDetListAsTypeArgument(argument)) {
                             p.replaceAnnotation(DET);
                         }
                     }
@@ -243,8 +243,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Returns true if {@code @OrderNonDet List} appears as a type parameter in {@code atm}. */
-    private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
+    /** Returns true if {@code @OrderNonDet List} appears as a type argument in {@code atm}. */
+    private boolean hasOrderNonDetListAsTypeArgument(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
         for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
@@ -307,7 +307,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror retType = t.getReturnType();
             annotateArrayElementAsPolyDet(retType);
 
-            // Annotates array parameter types as @PolyDet[@PolyDet]
+            // Annotates array arguments types as @PolyDet[@PolyDet]
             List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
             for (AnnotatedTypeMirror paramType : paramTypes) {
                 annotateArrayElementAsPolyDet(paramType);

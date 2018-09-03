@@ -15,15 +15,12 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <ol>
  *   <li>Resolves the return type annotated as {@code @PolyDet("up")} to {@code @NonDet} if the
- *       least upper bound of parameters types resolves to {@code OrderNonDet}.
+ *       least upper bound of argument types resolves to {@code OrderNonDet}.
  *   <li>Resolves the return type annotated as {@code @PolyDet("down")} to {@code @Det} if the least
- *       upper bound of parameters types resolves to {@code OrderNonDet}.
- *   <li>Resolves a parameter type annotated as {@code @PolyDet("use")} to the same annotation that
- *       {@code @PolyDet} resolves to for the other parameters.
+ *       upper bound of argument types resolves to {@code OrderNonDet}.
+ *   <li>Resolves an argument type annotated as {@code @PolyDet("use")} to the same annotation that
+ *       {@code @PolyDet} resolves to for the other arguments.
  * </ol>
- *
- * Resolves polymorphic annotations {@code @PolyDet("up")} and {@code @PolyDet("down")} at method
- * return types, and {@code @PolyDet("use")} at method parameters for the determinism type-system.
  */
 public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphism {
 
@@ -106,7 +103,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     }
 
     /**
-     * Iterates over all the nested type parameters and does the replacement. Example:
+     * Iterates over all the nested type arguments and does the replacement. Example:
      * In @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>, this while loop iterates twice for the
      * two @OrderNonDet Sets.
      *

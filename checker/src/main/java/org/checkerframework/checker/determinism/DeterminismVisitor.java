@@ -73,15 +73,15 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             return false;
         }
 
-        // Raises an error if the annotation on the type parameter of a collection (or iterator) is
+        // Raises an error if the annotation on the type argument of a collection (or iterator) is
         // a supertype of the annotation on the collection (or iterator).
         AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
         if (atypeFactory.mayBeOrderNonDet(javaType)) {
-            for (AnnotatedTypeMirror paramType : useType.getTypeArguments()) {
-                if (paramType.getAnnotations().size() > 0) {
-                    AnnotationMirror paramAnnotation = paramType.getAnnotations().iterator().next();
+            for (AnnotatedTypeMirror argType : useType.getTypeArguments()) {
+                if (argType.getAnnotations().size() > 0) {
+                    AnnotationMirror argAnnotation = argType.getAnnotations().iterator().next();
                     if (isInvalidSubtyping(
-                            paramAnnotation, baseAnnotation, tree, INVALID_ELEMENT_TYPE)) {
+                            argAnnotation, baseAnnotation, tree, INVALID_ELEMENT_TYPE)) {
                         return false;
                     }
                 }
