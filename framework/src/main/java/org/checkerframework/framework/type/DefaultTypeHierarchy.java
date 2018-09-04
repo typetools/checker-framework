@@ -1,8 +1,5 @@
 package org.checkerframework.framework.type;
 
-import static org.checkerframework.framework.util.AnnotatedTypes.isDeclarationOfJavaLangEnum;
-import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1097,8 +1094,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // asSuper should return:
         // @1 Enum<E extends @2 Enum<E>>
         if (asSuperType != null
-                && isEnum(asSuperType)
-                && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+                && AnnotatedTypes.isEnum(asSuperType)
+                && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
             final AnnotatedDeclaredType resultAtd = ((AnnotatedDeclaredType) supertype).deepCopy();
             resultAtd.clearAnnotations();
             resultAtd.addAnnotations(asSuperType.getAnnotations());
