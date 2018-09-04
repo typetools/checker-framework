@@ -3,7 +3,6 @@ package determinism;
 import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
-// @skip-test
 class Issue7 {
     // Tests whether this.method is treated correctly.
     int testDotThis() {
