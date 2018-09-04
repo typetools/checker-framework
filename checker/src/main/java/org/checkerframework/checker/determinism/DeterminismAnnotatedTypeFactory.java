@@ -18,7 +18,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.determinism.qual.Det;
 import org.checkerframework.checker.determinism.qual.NonDet;
 import org.checkerframework.checker.determinism.qual.OrderNonDet;
@@ -49,6 +48,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the determinism type-system. */
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    // TODO: What order are these annotations in?  PolyDet doesn't usually appear first in lists.
     /** The @PolyDet annotation. */
     public final AnnotationMirror POLYDET;
     /** The @PolyDet("up") annotation. */
@@ -64,31 +64,24 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     /** The @Det annotation. */
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
-    /** The Set interface. */
+    /** The java.util.Set interface. */
     private final TypeMirror SetInterfaceTypeMirror =
             TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
-    /** The List interface. */
+    /** The java.util.List interface. */
     private final TypeMirror ListInterfaceTypeMirror =
             TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
-    /** The Collection class. */
+    /** The java.util.Collection class. */
     private final TypeMirror CollectionInterfaceTypeMirror =
             TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
-    /** The Iterator class. */
+    /** The java.util.Iterator class. */
     private final TypeMirror IteratorTypeMirror =
             TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
-    /** The Arrays class. */
+    /** The java.util.Arrays class. */
     private final TypeMirror ArraysTypeMirror =
             TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
-    /** The Collections class. */
+    /** The java.util.Collections class. */
     private final TypeMirror CollectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
-
-    /**
-     * Error message key for explicitly annotating main method parameter as anything other than
-     * {@code @Det}.
-     */
-    private static final @CompilerMessageKey String INVALID_ANNOTATION_ON_PARAMETER =
-            "invalid.annotation.on.parameter";
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -144,19 +137,18 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: p is a poor name for a parameter documented as "annotated return type".
         /**
          * Replaces the annotation on the return type of a method invocation as follows:
          *
          * <ol>
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
          *       array or a collection, it is replaced with {@code @NonDet}.
-         *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
-         *       the annotation {@code @Det} under the following conditions:
+         *   <li>Return type of equals() gets the annotation {@code @Det}, when both the receiver
+         *       and the argument satisfy these conditions::
          *       <ol>
-         *         <li>The receiver does not have {@code List} or its subtype as a type argument
-         *         <li>The argument to equals() is also an {@code @OrderNonDet Set}
-         *         <li>The argument to equals() also does not have {@code List} or its subtype as a
-         *             type argument
+         *         <li>the type is {@code OrderNonDet Set}, and
+         *         <li>it does not have {@code List} or its subtype as a type argument
          *       </ol>
          * </ol>
          *
@@ -174,9 +166,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, p);
             }
 
-            AnnotatedTypeMirror.AnnotatedExecutableType invokedMethod =
-                    atypeFactory.methodFromUse(node).methodType;
-            ExecutableElement invokedMethodElement = invokedMethod.getElement();
+            ExecutableElement m = atypeFactory.methodFromUse(node).methodType.getElement();
 
             // If return type (non-array, non-collection, and non-iterator) resolves to
             // @OrderNonDet, replaces the annotation on the return type with @NonDet.
@@ -185,6 +175,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 p.replaceAnnotation(NONDET);
             }
 
+            // TODO: The section number will change due to edits such as insertion/deletion of other
+            //   chapters.  Use a URL instead, such as
+            //   https://checkerframework.org/manual/#handling-imprecision .
             // Annotates the return type of "equals()" method called on a Set receiver
             // as described in section 11.3.1 of the manual under the heading "Handling
             // Imprecision".
@@ -200,28 +193,28 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     TypesUtils.getTypeElement(receiverType.getUnderlyingType());
 
             // Without this check, NullPointerException in Collections class with buildJdk.
+            // TODO: At the least, indicate when the value is null, similarly to the comment
+            // about when receiverType can be null.
             // TODO-rashmi: check why?
             if (receiverUnderlyingType == null) {
                 return super.visitMethodInvocation(node, p);
             }
 
-            if (isEqualsMethod(invokedMethodElement)
-                    && isSet(receiverUnderlyingType.asType())
-                    && AnnotationUtils.areSame(
-                            receiverType.getAnnotations().iterator().next(), ORDERNONDET)) {
-                // Checks that the receiverType does not have "@OrderNonDet List" as a type
-                // argument
-                if (!hasOrderNonDetListAsTypeArgument(receiverType)) {
-                    AnnotatedTypeMirror argument =
-                            atypeFactory.getAnnotatedType(node.getArguments().get(0));
-                    if (isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
-                            && argument.hasAnnotation(ORDERNONDET)) {
-                        // Checks that the argument does not have "@OrderNonDet List" as a
-                        // type argument
-                        if (!hasOrderNonDetListAsTypeArgument(argument)) {
-                            p.replaceAnnotation(DET);
-                        }
-                    }
+            if (isEqualsMethod(m)) {
+                AnnotatedTypeMirror argument =
+                        atypeFactory.getAnnotatedType(node.getArguments().get(0));
+                // TODO: I restructured this so the tests for the two arguments are easier to
+                // compare.  Why are the tests for ORDERNONDET different for the two arguments?
+                // More generally, remove all occurrences of idioms like ".iterator().next()" from
+                // your code.  It is brittle and may break during future refactoring.
+                if (isSet(receiverUnderlyingType.asType())
+                        && AnnotationUtils.areSame(
+                                receiverType.getAnnotations().iterator().next(), ORDERNONDET)
+                        && !hasOrderNonDetListAsTypeArgument(receiverType)
+                        && isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
+                        && argument.hasAnnotation(ORDERNONDET)
+                        && !hasOrderNonDetListAsTypeArgument(argument)) {
+                    p.replaceAnnotation(DET);
                 }
             }
             return super.visitMethodInvocation(node, p);
@@ -243,7 +236,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Returns true if {@code @OrderNonDet List} appears as a type argument in {@code atm}. */
+    /**
+     * Returns true if {@code @OrderNonDet List} appears as a top-level type argument in {@code
+     * atm}.
+     */
     private boolean hasOrderNonDetListAsTypeArgument(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
@@ -256,11 +252,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Checks if it is valid for {@code javaType} to have {@code @OrderNonDet} annotation.
+     * Returns true if {@code javaType} may be annotated as {@code @OrderNonDet}.
      *
      * @param javaType the declared type to be checked
-     * @return true if {@code javaType} is a Collection (or its subtype) or Iterator (or its
-     *     subtype) or an array
+     * @return true if {@code javaType} is Collection (or a subtype), Iterator (or a subtype), or an
+     *     array
      */
     public boolean mayBeOrderNonDet(TypeMirror javaType) {
         return (javaType.getKind() == TypeKind.ARRAY
@@ -273,9 +269,14 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: I don't see where this handles the main method.  Is the documentation wrong?
+        // TODO: What is the "incoming argument"?  If it is just `a`, say that (be specific).
+        // TODO: Don't use passive voice, such as "is treated as".  What does the action?  Is this
+        // related to the declarative mechanism for specifying defaults, which you are working
+        // around here?
         /**
-         * Places the implicit annotation {@code Det} on the type of main method argument. Places
-         * the following default annotations:
+         * Places the implicit annotation {@code Det} on the type of the main method's parameter.
+         * Places the following default annotations:
          *
          * <ol>
          *   <li>Annotates unannotated array arguments and return types as
@@ -300,13 +301,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitExecutable(
                 final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
-            // Annotates array return types as @PolyDet[@PolyDet]
-            AnnotatedTypeMirror retType = t.getReturnType();
-            annotateArrayElementAsPolyDet(retType);
-
-            // Annotates array arguments types as @PolyDet[@PolyDet]
-            List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
-            for (AnnotatedTypeMirror paramType : paramTypes) {
+            annotateArrayElementAsPolyDet(t.getReturnType());
+            for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
                 annotateArrayElementAsPolyDet(paramType);
             }
 
@@ -322,6 +318,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    // TODO: This documentation seems incorrect.  Does this do defaulting (only if the method is not
+    // annotated) rather than unconditionally annotating?  In that case, the name of the method
+    // should be changed too, to indicate that it does defaulting.
+    // TODO: This does not handle multidimensional arrays.  Should it?  How should int[][][] get
+    // defaulted?
     /**
      * Helper method that annotates component type of the array type {@code arrType} as @PolyDet.
      */
@@ -329,6 +330,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (arrType.getKind() == TypeKind.ARRAY) {
             AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
                     (AnnotatedTypeMirror.AnnotatedArrayType) arrType;
+            // TODO: Should this use getExplicitAnnotations instead of getAnnotations?
             if (arrParamType.getAnnotations().size() == 0) {
                 if (arrParamType.getComponentType().getUnderlyingType().getKind()
                         != TypeKind.TYPEVAR) {
@@ -360,6 +362,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    // TODO: This claims to do {@code @PolyDet[@PolyDet]} but it seems only to do the {@code
+    // ...[@PolyDet]} part.  Document what it does.  I suspect that the {@code @PolyDet[...]} part
+    // is handled by the declarative mechanism, but if so, please say that rather than leaving it
+    // undocumented.
     /**
      * Adds implicit annotation for main method parameter ({@code @Det}) and default annotations for
      * other array parameters ({@code @PolyDet[@PolyDet]}).
@@ -382,9 +388,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
                 if (isMainMethod(method)) {
                     if (type.getAnnotations().size() > 0 && !type.hasAnnotation(DET)) {
-                        checker.report(Result.failure(INVALID_ANNOTATION_ON_PARAMETER), elt);
+                        checker.report(Result.failure("invalid.annotation.on.parameter"), elt);
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
+                    // TODO: Should this use getExplicitAnnotations instead of getAnnotations?
                 } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) type;
