@@ -242,6 +242,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         || isArrayListWithTypeVarReturn(
                                 receiverUnderlyingType, invokedMethodElement)
                         || isLinkedListWithTypeVarReturn(
+                                receiverUnderlyingType, invokedMethodElement)
+                        || isEnumerationWithTypeVarReturn(
                                 receiverUnderlyingType, invokedMethodElement)) {
                     if (receiverType.hasAnnotation(NONDET)
                             || receiverType.hasAnnotation(ORDERNONDET)) {
@@ -250,7 +252,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         p.replaceAnnotation(DET);
                     }
                 }
-                if (isNavigableSetWithTypeVarReturn(receiverUnderlyingType, invokedMethodElement)
+                if (isTreeSetWithTypeVarReturn(receiverUnderlyingType, invokedMethodElement)
+                        || isNavigableSetWithTypeVarReturn(
+                                receiverUnderlyingType, invokedMethodElement)
                         || isSortedSetWithTypeVarReturn(
                                 receiverUnderlyingType, invokedMethodElement)) {
                     if (receiverType.hasAnnotation(DET)
@@ -765,6 +769,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && invokedMethodElement.getParameters().size() == 0) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean isEnumerationWithTypeVarReturn(
+            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
+        if (invokedMethodElement.getSimpleName().contentEquals("nextElement")
+                && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                && invokedMethodElement.getParameters().size() == 0) {
+            return true;
         }
         return false;
     }
