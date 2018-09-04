@@ -16,6 +16,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+// TODO: Why does this change the type of the first argument to `shuffle`?  I would expect it to
+// still be @OrderNonDet:  its contents are in arbitrary order (just as before the call), but they
+// are still the same set  values.  I think it should be from @Det to @OrderNonDet.  (When we notice
+// an issue like this, please write a test case too.)
 /**
  * Transfer function for the determinism type-system.
  *
@@ -46,8 +50,7 @@ public class DeterminismTransfer extends CFTransfer {
         DeterminismAnnotatedTypeFactory factory =
                 (DeterminismAnnotatedTypeFactory) analysis.getTypeFactory();
 
-        // Note: For static method calls, the receiver is the Class node
-        // that declares the method.
+        // Note: For static method calls, the receiver is the Class that declares the method.
         Node receiver = n.getTarget().getReceiver();
 
         // TypesUtils.getTypeElement(receiver.getType()) is null for generic type arguments.
@@ -63,7 +66,7 @@ public class DeterminismTransfer extends CFTransfer {
         boolean refineReceiver = false;
         boolean refineArgument = false;
 
-        // Type refinement for List sort
+        // Type refinement for List.sort
         if (isListSort(factory, receiver, underlyingTypeOfReceiver, methName)) {
             AnnotationMirror receiverAnno =
                     receiver.getType().getAnnotationMirrors().iterator().next();
@@ -73,7 +76,7 @@ public class DeterminismTransfer extends CFTransfer {
             }
         }
 
-        // Type refinement for Arrays sort
+        // Type refinement for Arrays.sort
         if (isArraysSort(factory, underlyingTypeOfReceiver, methName)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
@@ -102,7 +105,7 @@ public class DeterminismTransfer extends CFTransfer {
             }
         }
 
-        // Type refinement for Collections sort
+        // Type refinement for Collections.sort
         if (isCollectionsSort(factory, underlyingTypeOfReceiver, methName)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
@@ -113,7 +116,7 @@ public class DeterminismTransfer extends CFTransfer {
             }
         }
 
-        // Type refinement for Collections shuffle
+        // Type refinement for Collections.shuffle
         if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, methName)) {
             refineArgument = true;
             refineWithType = factory.NONDET;
@@ -127,6 +130,13 @@ public class DeterminismTransfer extends CFTransfer {
             receiverToBeRefined = n.getArgument(0);
         }
 
+        // TODO: This call at the end of the method, with arguments that have been set at various
+        // locations, is confusing because the reader needs to trace through all the logic of the
+        // method to figure out what values are being used as arguments.  Instead, call the helper
+        // method in each case.  That is, have multiple calls to typeRefine rather than just one
+        // here at the end.  That way, the arguments are clear.  You might be able to make the
+        // contract of typeRefine cleaner, too, such as not having special-case behavior if the
+        // first argument is null.
         typeRefine(receiverToBeRefined, result, refineWithType, factory);
         return result;
     }
@@ -198,6 +208,8 @@ public class DeterminismTransfer extends CFTransfer {
                 && methName.contentEquals("shuffle"));
     }
 
+    // TODO: The documentation doesn't say that node can be null and doesn't say what happens in
+    // that case.  This is confusing.  Please make the specification and implementation consistent.
     /**
      * Helper method for type refinement.
      *
