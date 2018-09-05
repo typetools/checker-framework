@@ -5,9 +5,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a JavaTypeSignature for a non primitive type.
+ * Represents a JavaTypeSignature for a reference (non-primitive) type.
  *
- * <p>see <a href=https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1>JVM
+ * <p>See <a href=https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1>JVM
  * specs</a>.
  *
  * @see GenericSignature
