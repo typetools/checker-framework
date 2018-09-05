@@ -48,15 +48,6 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the determinism type-system. */
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    // TODO: What order are these annotations in?  PolyDet doesn't usually appear first in lists.
-    /** The @PolyDet annotation. */
-    public final AnnotationMirror POLYDET;
-    /** The @PolyDet("up") annotation. */
-    public final AnnotationMirror POLYDET_UP;
-    /** The @PolyDet("down") annotation. */
-    public final AnnotationMirror POLYDET_DOWN;
-    /** The @PolyDet("use") annotation. */
-    public final AnnotationMirror POLYDET_USE;
     /** The @NonDet annotation. */
     public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
     /** The @OrderNonDet annotation. */
@@ -65,6 +56,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @Det annotation. */
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
     /** The java.util.Set interface. */
+    /** The @PolyDet annotation. */
+    public final AnnotationMirror POLYDET;
+    /** The @PolyDet("up") annotation. */
+    public final AnnotationMirror POLYDET_UP;
+    /** The @PolyDet("down") annotation. */
+    public final AnnotationMirror POLYDET_DOWN;
+    /** The @PolyDet("use") annotation. */
+    public final AnnotationMirror POLYDET_USE;
+
     private final TypeMirror SetInterfaceTypeMirror =
             TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
     /** The java.util.List interface. */
@@ -137,7 +137,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        // TODO: p is a poor name for a parameter documented as "annotated return type".
         /**
          * Replaces the annotation on the return type of a method invocation as follows:
          *
@@ -153,26 +152,27 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * </ol>
          *
          * @param node method invocation tree
-         * @param p annotated return type
+         * @param annotatedRetType annotated return type
          * @return visitMethodInvocation() of the super class
          */
         @Override
-        public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
+        public Void visitMethodInvocation(
+                MethodInvocationTree node, AnnotatedTypeMirror annotatedRetType) {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(node);
 
             // ReceiverType is null for abstract classes
             // (Example: Ordering.natural() in tests/all-systems/PolyCollectorTypeVars.java)
             if (receiverType == null) {
-                return super.visitMethodInvocation(node, p);
+                return super.visitMethodInvocation(node, annotatedRetType);
             }
 
             ExecutableElement m = atypeFactory.methodFromUse(node).methodType.getElement();
 
             // If return type (non-array, non-collection, and non-iterator) resolves to
             // @OrderNonDet, replaces the annotation on the return type with @NonDet.
-            if (p.getAnnotations().contains(ORDERNONDET)
-                    && !mayBeOrderNonDet(p.getUnderlyingType())) {
-                p.replaceAnnotation(NONDET);
+            if (annotatedRetType.getAnnotations().contains(ORDERNONDET)
+                    && !mayBeOrderNonDet(annotatedRetType.getUnderlyingType())) {
+                annotatedRetType.replaceAnnotation(NONDET);
             }
 
             // TODO: The section number will change due to edits such as insertion/deletion of other
@@ -197,26 +197,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // about when receiverType can be null.
             // TODO-rashmi: check why?
             if (receiverUnderlyingType == null) {
-                return super.visitMethodInvocation(node, p);
+                return super.visitMethodInvocation(node, annotatedRetType);
             }
 
             if (isEqualsMethod(m)) {
                 AnnotatedTypeMirror argument =
                         atypeFactory.getAnnotatedType(node.getArguments().get(0));
-                // TODO: I restructured this so the tests for the two arguments are easier to
-                // compare.  Why are the tests for ORDERNONDET different for the two arguments?
-                // More generally, remove all occurrences of idioms like ".iterator().next()" from
-                // your code.  It is brittle and may break during future refactoring.
                 if (isSet(receiverUnderlyingType.asType())
                         && receiverType.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(receiverType)
                         && isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
                         && argument.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(argument)) {
-                    p.replaceAnnotation(DET);
+                    annotatedRetType.replaceAnnotation(DET);
                 }
             }
-            return super.visitMethodInvocation(node, p);
+            return super.visitMethodInvocation(node, annotatedRetType);
         }
 
         /** Annotates the length property of a {@code @NonDet} array as {@code @NonDet}. */

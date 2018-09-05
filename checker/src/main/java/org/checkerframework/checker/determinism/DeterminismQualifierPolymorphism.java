@@ -10,17 +10,15 @@ import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
-// TODO: Why are these specific, such as "the return type"?  I would expect all @PolyDet("up") to be
-// resolved, not just those on return types, and similarly for @PolyDet("down") and @PolyDet("use").
 /**
  * Resolves polymorphic annotations at method invocations as follows:
  *
  * <ol>
- *   <li>Resolves the return type annotated as {@code @PolyDet("up")} to {@code @NonDet} if the
- *       least upper bound of argument types resolves to {@code OrderNonDet}.
- *   <li>Resolves the return type annotated as {@code @PolyDet("down")} to {@code @Det} if the least
- *       upper bound of argument types resolves to {@code OrderNonDet}.
- *   <li>Resolves an argument type annotated as {@code @PolyDet("use")} to the same annotation that
+ *   <li>Resolves a type annotated as {@code @PolyDet("up")} to {@code @NonDet} if the least upper
+ *       bound of argument types resolves to {@code OrderNonDet}.
+ *   <li>Resolves a type annotated as {@code @PolyDet("down")} to {@code @Det} if the least upper
+ *       bound of argument types resolves to {@code OrderNonDet}.
+ *   <li>Resolves a type annotated as {@code @PolyDet("use")} to the same annotation that
  *       {@code @PolyDet} resolves to for the other arguments.
  * </ol>
  */
@@ -82,15 +80,16 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
     }
 
-    // TODO: Is there a precondition that `type` must have an @OrderNonDet annotation?  If so, state
-    // it.
     /**
-     * Replaces the @OrderNonDet annotation of {@code type} with {@code replaceType}.
+     * If {@code type} has the annotation {@code @OrderNonDet}, this method replaces the annotation
+     * of {@code type} with {@code replaceType}.
      *
      * @param type the polymorphic type to be replaced
      * @param replaceType the type to be replaced with
      */
     private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
+        if (!type.hasAnnotation(factory.ORDERNONDET)) return;
+
         type.replaceAnnotation(replaceType);
 
         // This check succeeds for @OrderNonDet Set<T> (Generic types)
@@ -102,16 +101,12 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         recursiveReplaceAnnotation(type, replaceType);
     }
 
-    // TODO: The documentation states that this unconditionally replaces annoattions, but the code
-    // seems to check whether there is already an @OrderNonDet annotation present.  Either the code
-    // or the documentation is wrong.  Please make sure that the specification fully describes the
-    // behavior.  Otherwise, it's misleading, and is very confusing for readers.
     /**
      * Iterates over all the nested Collection/Iterator type arguments of {@code type} and replaces
-     * their top-level annotations with {@code replaceType}. Example: If this method is called with
-     * {@code type} as {@code @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>} and {@code
-     * replaceType} as {@code @NonDet}, the result will be {@code @NonDet Set<@NonDet Set<@Det
-     * Integer>>}.
+     * their top-level annotations with {@code replaceType} if these top-level annotations are
+     * {@code OrderNonDet}. Example: If this method is called with {@code type} as
+     * {@code @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>} and {@code replaceType} as
+     * {@code @NonDet}, the result will be {@code @NonDet Set<@NonDet Set<@Det Integer>>}.
      */
     void recursiveReplaceAnnotation(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         TypeMirror underlyingTypeOfReceiver =

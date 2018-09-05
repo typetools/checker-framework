@@ -18,8 +18,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 // TODO: Why does this change the type of the first argument to `shuffle`?  I would expect it to
 // still be @OrderNonDet:  its contents are in arbitrary order (just as before the call), but they
-// are still the same set  values.  I think it should be from @Det to @OrderNonDet.  (When we notice
-// an issue like this, please write a test case too.)
+// are still the same set  values.  I think it should be from @Det to @OrderNonDet.
 /**
  * Transfer function for the determinism type-system.
  *
@@ -32,7 +31,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>The first argument of Collections.sort.
  * </ul>
  *
- * <p>Performs type refinement from {@code @OrderNonDet} to {@code @NonDet} for
+ * <p>Performs type refinement from {@code @Det} to {@code @OrderNonDet} for
  *
  * <ul>
  *   <li>The first argument of Collections.shuffle.
@@ -62,16 +61,12 @@ public class DeterminismTransfer extends CFTransfer {
                 TypesUtils.getTypeElement(receiver.getType()).asType();
         Name methName = n.getTarget().getMethod().getSimpleName();
 
-        AnnotationMirror refineWithType = factory.DET;
-        boolean refineReceiver = false;
-        boolean refineArgument = false;
-
         // Type refinement for List.sort
         if (isListSort(factory, receiver, underlyingTypeOfReceiver, methName)) {
             AnnotationMirror receiverAnno =
                     factory.getAnnotatedType(receiver.getTree()).getAnnotation(OrderNonDet.class);
             if (receiverAnno != null) {
-                refineReceiver = true;
+                typeRefine(n.getTarget().getReceiver(), result, factory.DET, factory);
             }
         }
 
@@ -97,7 +92,7 @@ public class DeterminismTransfer extends CFTransfer {
                     }
                 }
                 if (typeRefine) {
-                    refineArgument = true;
+                    typeRefine(n.getArgument(0), result, factory.DET, factory);
                 }
             }
         }
@@ -107,32 +102,19 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
-                refineArgument = true;
+                typeRefine(n.getArgument(0), result, factory.DET, factory);
             }
         }
 
         // Type refinement for Collections.shuffle
         if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, methName)) {
-            refineArgument = true;
-            refineWithType = factory.NONDET;
+            AnnotatedTypeMirror firstArg =
+                    factory.getAnnotatedType(n.getTree().getArguments().get(0));
+            if (firstArg.hasAnnotation(factory.DET)) {
+                typeRefine(n.getArgument(0), result, factory.ORDERNONDET, factory);
+            }
         }
 
-        Node receiverToBeRefined = null;
-        if (refineReceiver) {
-            receiverToBeRefined = n.getTarget().getReceiver();
-        }
-        if (refineArgument) {
-            receiverToBeRefined = n.getArgument(0);
-        }
-
-        // TODO: This call at the end of the method, with arguments that have been set at various
-        // locations, is confusing because the reader needs to trace through all the logic of the
-        // method to figure out what values are being used as arguments.  Instead, call the helper
-        // method in each case.  That is, have multiple calls to typeRefine rather than just one
-        // here at the end.  That way, the arguments are clear.  You might be able to make the
-        // contract of typeRefine cleaner, too, such as not having special-case behavior if the
-        // first argument is null.
-        typeRefine(receiverToBeRefined, result, refineWithType, factory);
         return result;
     }
 
@@ -203,8 +185,6 @@ public class DeterminismTransfer extends CFTransfer {
                 && methName.contentEquals("shuffle"));
     }
 
-    // TODO: The documentation doesn't say that node can be null and doesn't say what happens in
-    // that case.  This is confusing.  Please make the specification and implementation consistent.
     /**
      * Helper method for type refinement.
      *
@@ -218,7 +198,6 @@ public class DeterminismTransfer extends CFTransfer {
             TransferResult<CFValue, CFStore> result,
             AnnotationMirror replaceType,
             DeterminismAnnotatedTypeFactory factory) {
-        if (node == null) return;
         FlowExpressions.Receiver receiver = FlowExpressions.internalReprOf(factory, node);
         result.getThenStore().insertValue(receiver, replaceType);
         result.getElseStore().insertValue(receiver, replaceType);
