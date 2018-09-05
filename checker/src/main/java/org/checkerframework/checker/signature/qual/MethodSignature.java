@@ -6,7 +6,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Represents the signature of a generic method as defined in <a
- * href=https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.9.1>JVM specs</a>
+ * href=https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1>JVM specs</a>
  *
  * @see GenericSignature
  */
