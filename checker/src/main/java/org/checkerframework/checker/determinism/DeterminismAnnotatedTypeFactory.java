@@ -208,8 +208,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // More generally, remove all occurrences of idioms like ".iterator().next()" from
                 // your code.  It is brittle and may break during future refactoring.
                 if (isSet(receiverUnderlyingType.asType())
-                        && AnnotationUtils.areSame(
-                                receiverType.getAnnotations().iterator().next(), ORDERNONDET)
+                        && receiverType.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(receiverType)
                         && isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
                         && argument.hasAnnotation(ORDERNONDET)
@@ -228,7 +227,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror.AnnotatedArrayType arrType =
                         (AnnotatedTypeMirror.AnnotatedArrayType)
                                 atypeFactory.getAnnotatedType(node.getExpression());
-                if (AnnotationUtils.areSame(arrType.getAnnotations().iterator().next(), NONDET)) {
+                if (arrType.hasAnnotation(NONDET)) {
                     annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
             }

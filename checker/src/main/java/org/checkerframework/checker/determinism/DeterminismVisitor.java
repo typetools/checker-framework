@@ -75,11 +75,12 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
         // Raises an error if the annotation on the type argument of a collection (or iterator) is
         // a supertype of the annotation on the collection (or iterator).
-        AnnotationMirror baseAnnotation = useType.getAnnotations().iterator().next();
+        AnnotationMirror baseAnnotation = useType.getAnnotationInHierarchy(atypeFactory.NONDET);
         if (atypeFactory.mayBeOrderNonDet(javaType)) {
             for (AnnotatedTypeMirror argType : useType.getTypeArguments()) {
                 if (argType.getAnnotations().size() > 0) {
-                    AnnotationMirror argAnnotation = argType.getAnnotations().iterator().next();
+                    AnnotationMirror argAnnotation =
+                            argType.getAnnotationInHierarchy(atypeFactory.NONDET);
                     if (isInvalidSubtyping(
                             argAnnotation, baseAnnotation, tree, INVALID_ELEMENT_TYPE)) {
                         return false;
@@ -119,9 +120,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
         if (type.getAnnotations().size() > 0
                 && type.getComponentType().getAnnotations().size() > 0) {
-            AnnotationMirror arrayType = type.getAnnotations().iterator().next();
+            AnnotationMirror arrayType = type.getAnnotationInHierarchy(atypeFactory.NONDET);
             AnnotationMirror elementType =
-                    type.getComponentType().getAnnotations().iterator().next();
+                    type.getComponentType().getAnnotationInHierarchy(atypeFactory.NONDET);
             if (isInvalidSubtyping(elementType, arrayType, tree, INVALID_ARRAY_COMPONENT_TYPE)) {
                 return false;
             }
@@ -171,13 +172,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                     atypeFactory.getAnnotatedType(arrTree.getExpression());
             AnnotatedTypeMirror.AnnotatedArrayType arrType =
                     (AnnotatedTypeMirror.AnnotatedArrayType) arrExprType;
-            AnnotationMirror arrTopType = arrType.getAnnotations().iterator().next();
+            AnnotationMirror arrTopType = arrType.getAnnotationInHierarchy(atypeFactory.NONDET);
             AnnotationMirror indexType =
                     atypeFactory
                             .getAnnotatedType(arrTree.getIndex())
-                            .getAnnotations()
-                            .iterator()
-                            .next();
+                            .getAnnotationInHierarchy(atypeFactory.NONDET);
             if (!atypeFactory.getQualifierHierarchy().isSubtype(indexType, arrTopType)) {
                 checker.report(
                         Result.failure(INVALID_ARRAY_ASSIGNMENT, arrTopType, indexType), varTree);
@@ -229,7 +228,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                     atypeFactory.getAnnotatedType(arrTree.getExpression());
             AnnotatedTypeMirror.AnnotatedArrayType arrType =
                     (AnnotatedTypeMirror.AnnotatedArrayType) arrExprType;
-            AnnotationMirror arrTopType = arrType.getAnnotations().iterator().next();
+            AnnotationMirror arrTopType = arrType.getAnnotationInHierarchy(atypeFactory.NONDET);
             if (AnnotationUtils.areSame(arrTopType, atypeFactory.ORDERNONDET)
                     || AnnotationUtils.areSame(arrTopType, atypeFactory.NONDET)) {
                 valueType.replaceAnnotation(atypeFactory.NONDET);

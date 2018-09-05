@@ -14,4 +14,9 @@ public class TestSubtyping {
         lst = cpy;
         cpy = lst;
     }
+
+    void TestCollection() {
+        // :: error: (invalid.element.type)
+        @Det ArrayList<@NonDet Integer> list = null;
+    }
 }

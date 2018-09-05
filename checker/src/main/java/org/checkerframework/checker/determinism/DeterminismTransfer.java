@@ -3,6 +3,7 @@ package org.checkerframework.checker.determinism;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.determinism.qual.OrderNonDet;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -13,7 +14,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 // TODO: Why does this change the type of the first argument to `shuffle`?  I would expect it to
@@ -69,9 +69,8 @@ public class DeterminismTransfer extends CFTransfer {
         // Type refinement for List.sort
         if (isListSort(factory, receiver, underlyingTypeOfReceiver, methName)) {
             AnnotationMirror receiverAnno =
-                    receiver.getType().getAnnotationMirrors().iterator().next();
-            if (receiverAnno != null
-                    && AnnotationUtils.areSame(receiverAnno, factory.ORDERNONDET)) {
+                    factory.getAnnotatedType(receiver.getTree()).getAnnotation(OrderNonDet.class);
+            if (receiverAnno != null) {
                 refineReceiver = true;
             }
         }
@@ -80,9 +79,7 @@ public class DeterminismTransfer extends CFTransfer {
         if (isArraysSort(factory, underlyingTypeOfReceiver, methName)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
-            AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
-            if (firstArgAnno != null
-                    && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
+            if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
 
                 // Consider the call to Arrays.sort(T[], Comparator<? super T> c)
                 // The first argument of this method invocation must be type-refined
@@ -109,9 +106,7 @@ public class DeterminismTransfer extends CFTransfer {
         if (isCollectionsSort(factory, underlyingTypeOfReceiver, methName)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
-            AnnotationMirror firstArgAnno = firstArg.getAnnotations().iterator().next();
-            if (firstArgAnno != null
-                    && AnnotationUtils.areSame(firstArgAnno, factory.ORDERNONDET)) {
+            if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
                 refineArgument = true;
             }
         }
