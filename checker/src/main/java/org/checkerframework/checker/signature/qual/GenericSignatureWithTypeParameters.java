@@ -5,8 +5,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a generic signature which may define type variables(signatures which represent a
- * declaration), i.e. MethodSignature and ClassSignature
+ * A signature that represents a class or method or declaration.
  *
  * @see GenericSignature
  * @see MethodSignature
