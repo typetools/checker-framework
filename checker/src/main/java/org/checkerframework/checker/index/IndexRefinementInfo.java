@@ -66,12 +66,6 @@ public class IndexRefinementInfo {
 
     private static AnnotationMirror getAnno(
             Set<AnnotationMirror> set, QualifierHierarchy hierarchy) {
-        if (set.size() == 1) {
-            return set.iterator().next();
-        }
-        if (set.isEmpty()) {
-            return null;
-        }
         Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
         if (tops.size() != 1) {
             throw new BugInCF(
@@ -79,6 +73,6 @@ public class IndexRefinementInfo {
                             + ": Found multiple tops, but expected one. \nFound: "
                             + tops.toString());
         }
-        return hierarchy.findAnnotationInSameHierarchy(set, tops.iterator().next());
+        return hierarchy.findAnnotationInHierarchy(set, tops.iterator().next());
     }
 }
