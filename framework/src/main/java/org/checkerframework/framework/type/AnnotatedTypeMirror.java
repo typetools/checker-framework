@@ -279,9 +279,11 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the annotations on this type.
+     * Returns the annotations on this type. It does not include annotations in deep types (type
+     * arguments, array components, etc).
      *
-     * <p>It does not include annotations in deep types (type arguments, array components, etc).
+     * <p>To get the single annotation in a particular hierarchy, use {@link
+     * #getAnnotationInHierarchy}.
      *
      * @return a unmodifiable set of the annotations on this
      */

@@ -1,6 +1,8 @@
-package org.checkerframework.framework.qual;
+package org.checkerframework.common.subtyping.qual;
 
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * A special annotation intended solely for representing an unqualified type in the qualifier
@@ -18,4 +20,6 @@ import java.lang.annotation.Target;
 @InvisibleQualifier
 @SubtypeOf({})
 @Target({}) // empty target prevents programmers from writing this in a program
+// At the moment this is done in SubtypingATF to prevent errors in checker-framework-inference
+// @DefaultFor(TypeUseLocation.OTHERWISE)
 public @interface Unqualified {}
