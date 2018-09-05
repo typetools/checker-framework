@@ -14,10 +14,9 @@ they differ only for nested classes and arrays.
 
 \section{Signature annotations\label{signature-annotations}}
 
-Java defines six formats for the string representation of a type, and
-many more for representing generic types. (See
-\href{https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.9.1}
-for a detailed description of generic signatures)
+\subsection{String representation of types\label{signature-annotations-types}}
+
+Java defines seven formats for the string representation of a type.
 
 There is an annotation for each of these representations.
 Figures~\ref{fig-signature-hierarchy} and ~\ref{fig-generic-signature-hierarchy}
@@ -142,7 +141,14 @@ pkg.Outer.Inner[]   & [Lpkg.Outer\$Inner;  & [Lpkg/Outer\$Inner;  & \naforarray 
 \end{center}
 \end{small}
 
-Java defines one format for the string representation of a method signature:
+
+\subsection{String representation of declarations\label{signature-annotations-declarations}}
+
+Java defines one format for the string representation of a class
+declaration, and two formats for the string representation of a method
+signature.
+(For details on classfile signature representations, see
+\href{https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.9.1}.)
 
 \begin{description}
 
