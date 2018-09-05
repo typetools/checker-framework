@@ -289,7 +289,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *
          * <pre><code>
          * &nbsp; void testArr(int[] a) {
-         * &nbsp; &nbsp; {@code @Det} int i = a[0];
+         * &nbsp; @Det int i = a[0];
          * &nbsp; }
          * </code></pre>
          *
