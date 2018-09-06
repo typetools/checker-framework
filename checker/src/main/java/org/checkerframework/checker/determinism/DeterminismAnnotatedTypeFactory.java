@@ -37,7 +37,6 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -325,8 +324,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * <ol>
          *   <li>Annotates unannotated component types of array arguments and return types as {@code
          *       ...[@PolyDet]}.
-         *   <li>Annotates the return type for static methods without any parameters as
-         *       {@code @Det}.
+         *   <li>Annotates the return type for methods with no unannotated or @PolyDet formal
+         *       parameters (including the receiver) as {@code @Det}.
          * </ol>
          *
          * <p>Example: Consider the following code:
@@ -354,12 +353,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     defaultArrayElementAsPolyDet(paramType);
                 }
 
-                // Annotates the return type of a static method without parameters as @Det.
-                if (ElementUtils.isStatic(t.getElement())) {
-                    if (t.getElement().getParameters().size() == 0) {
-                        if (t.getReturnType().getExplicitAnnotations().size() == 0) {
-                            t.getReturnType().replaceAnnotation(DET);
+                // t.getReceiverType() is null for both "Object <init>()"
+                // and for static methods.
+                if (t.getReturnType().getAnnotations().size() == 0
+                        && (t.getReceiverType() == null
+                                || (t.getReceiverType().getAnnotations().size() != 0
+                                        && !t.getReceiverType().hasAnnotation(POLYDET)))) {
+                    boolean unannotatedOrPolyDet = false;
+                    for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
+                        if (paramType.getAnnotations().size() == 0
+                                || paramType.hasAnnotation(POLYDET)) {
+                            unannotatedOrPolyDet = true;
+                            break;
                         }
+                    }
+                    if (!unannotatedOrPolyDet) {
+                        t.getReturnType().replaceAnnotation(DET);
                     }
                 }
             }
