@@ -16,9 +16,13 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TypesUtils;
 
-// TODO: Why does this change the type of the first argument to `shuffle`?  I would expect it to
-// still be @OrderNonDet:  its contents are in arbitrary order (just as before the call), but they
-// are still the same set  values.  I think it should be from @Det to @OrderNonDet.
+// TODO-rashmi: type refinement for first argument of Collections.shuffle() from
+// @Det to @OrderNonDet doesn't seem to work.
+// result.getThenStore().insertValue(receiver, replaceType); replaces the
+// annotation on the receiver with the strongest of current annotation on receiver
+// and 'replaceType' in the lattice.
+// The annotation first argument of shuffle (@Det) is stronger than replaceType (@OrderNonDet).
+
 /**
  * Transfer function for the determinism type-system.
  *
