@@ -77,5 +77,5 @@ public interface Enumeration<E> {
      * @return     the next element of this enumeration.
      * @exception  NoSuchElementException  if no more elements exist.
      */
-    @PolyDet("up") E nextElement(@PolyDet Enumeration<E> this);
+    E nextElement(@PolyDet Enumeration<E> this);
 }

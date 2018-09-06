@@ -212,7 +212,7 @@ public interface SortedSet<E> extends Set<E> {
      * @return the first (lowest) element currently in this set
      * @throws NoSuchElementException if this set is empty
      */
-    @PolyDet E first(@PolyDet SortedSet<E> this);
+    E first(@PolyDet SortedSet<E> this);
 
     /**
      * Returns the last (highest) element currently in this set.
@@ -220,7 +220,7 @@ public interface SortedSet<E> extends Set<E> {
      * @return the last (highest) element currently in this set
      * @throws NoSuchElementException if this set is empty
      */
-    @PolyDet E last(@PolyDet SortedSet<E> this);
+    E last(@PolyDet SortedSet<E> this);
 
     /**
      * Creates a {@code Spliterator} over the elements in this sorted set.

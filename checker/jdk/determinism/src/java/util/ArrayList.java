@@ -426,7 +426,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @PolyDet E get(@PolyDet ArrayList<E> this, @PolyDet int index) {
+    public E get(@PolyDet ArrayList<E> this, @PolyDet int index) {
         rangeCheck(index);
 
         return elementData(index);
@@ -441,7 +441,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @PolyDet("up") E set(@PolyDet ArrayList<E> this, @PolyDet("use") int index, E element) {
+    public E set(@PolyDet ArrayList<E> this, @PolyDet("use") int index, E element) {
         rangeCheck(index);
 
         E oldValue = elementData(index);
@@ -489,7 +489,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element that was removed from the list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public @PolyDet("up") E remove(@PolyDet ArrayList<E> this, @PolyDet("use") int index) {
+    public E remove(@PolyDet ArrayList<E> this, @PolyDet("use") int index) {
         rangeCheck(index);
 
         modCount++;
