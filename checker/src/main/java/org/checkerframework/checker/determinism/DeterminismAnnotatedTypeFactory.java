@@ -175,12 +175,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 annotatedRetType.replaceAnnotation(NONDET);
             }
 
-            // TODO: The section number will change due to edits such as insertion/deletion of other
-            //   chapters.  Use a URL instead, such as
-            //   https://checkerframework.org/manual/#handling-imprecision .
             // Annotates the return type of "equals()" method called on a Set receiver
-            // as described in section 11.3.1 of the manual under the heading "Handling
-            // Imprecision".
+            // as described in https://checkerframework.org/manual/#improved-precision-set-equals.
+
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
             //           @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s2;
             // s1.equals(s2) is @NonDet
@@ -193,8 +190,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     TypesUtils.getTypeElement(receiverType.getUnderlyingType());
 
             // Without this check, NullPointerException in Collections class with buildJdk.
-            // TODO: At the least, indicate when the value is null, similarly to the comment
-            // about when receiverType can be null.
+            // Likely cause: Collections has a private constructor?
+            // Error at line: public class Collections {
             // TODO-rashmi: check why?
             if (receiverUnderlyingType == null) {
                 return super.visitMethodInvocation(node, annotatedRetType);
@@ -264,18 +261,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        // TODO: I don't see where this handles the main method.  Is the documentation wrong?
-        // TODO: What is the "incoming argument"?  If it is just `a`, say that (be specific).
-        // TODO: Don't use passive voice, such as "is treated as".  What does the action?  Is this
-        // related to the declarative mechanism for specifying defaults, which you are working
-        // around here?
         /**
          * Places the implicit annotation {@code Det} on the type of the main method's parameter.
          * Places the following default annotations:
          *
          * <ol>
-         *   <li>Annotates unannotated array arguments and return types as
-         *       {@code @PolyDet[@PolyDet]}.
+         *   <li>Annotates unannotated component types of array arguments and return types as {@code
+         *       ...[@PolyDet]}.
          *   <li>Annotates the return type for static methods without any parameters as
          *       {@code @Det}.
          * </ol>
@@ -289,23 +281,28 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * </code></pre>
          *
          * Here, the line {@code @Det int i = a[0];} should be flagged as an error since {@code
-         * a[0]} is {@code @PolyDet}. Without the method {@code visitExecutable}, the incoming
-         * argument to {@code testArr} is treated as {@code @PolyDet[@Det]} and the line {@code @Det
-         * int i = a[0];} is not flagged as an error by the checker.
+         * a[0]} is {@code @PolyDet}. Without the method {@code visitExecutable}, the argument
+         * {@code a} defaults to {@code @PolyDet[@Det]} and the line {@code @Det int i = a[0];} is
+         * not flagged as an error by the checker.
          */
         @Override
         public Void visitExecutable(
                 final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
-            annotateArrayElementAsPolyDet(t.getReturnType());
-            for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
-                annotateArrayElementAsPolyDet(paramType);
-            }
+            if (isMainMethod(t.getElement())) {
+                AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
+                paramType.replaceAnnotation(DET);
+            } else {
+                defaultArrayElementAsPolyDet(t.getReturnType());
+                for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
+                    defaultArrayElementAsPolyDet(paramType);
+                }
 
-            // Annotates the return type of a static method without parameters as @Det.
-            if (ElementUtils.isStatic(t.getElement())) {
-                if (t.getElement().getParameters().size() == 0) {
-                    if (t.getReturnType().getExplicitAnnotations().size() == 0) {
-                        t.getReturnType().replaceAnnotation(DET);
+                // Annotates the return type of a static method without parameters as @Det.
+                if (ElementUtils.isStatic(t.getElement())) {
+                    if (t.getElement().getParameters().size() == 0) {
+                        if (t.getReturnType().getExplicitAnnotations().size() == 0) {
+                            t.getReturnType().replaceAnnotation(DET);
+                        }
                     }
                 }
             }
@@ -313,23 +310,24 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    // TODO: This documentation seems incorrect.  Does this do defaulting (only if the method is not
-    // annotated) rather than unconditionally annotating?  In that case, the name of the method
-    // should be changed too, to indicate that it does defaulting.
-    // TODO: This does not handle multidimensional arrays.  Should it?  How should int[][][] get
-    // defaulted?
+    // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor.
     /**
-     * Helper method that annotates component type of the array type {@code arrType} as @PolyDet.
+     * Helper method that places the default annotation on component type of the array type {@code
+     * arrType} as @PolyDet.
      */
-    private void annotateArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
+    private void defaultArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
         if (arrType.getKind() == TypeKind.ARRAY) {
-            AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
+            AnnotatedTypeMirror.AnnotatedArrayType AnnoArrType =
                     (AnnotatedTypeMirror.AnnotatedArrayType) arrType;
-            // TODO: Should this use getExplicitAnnotations instead of getAnnotations?
-            if (arrParamType.getAnnotations().size() == 0) {
-                if (arrParamType.getComponentType().getUnderlyingType().getKind()
+            // Example: @Det int @Det[] returnArrExplicit(){}
+            // Here, AnnoArrType is @Det int @Det[].
+            // arrParamType.getExplicitAnnotations().size() returns 0,
+            // arrParamType.getAnnotations().size() returns 1.
+            // getExplicitAnnotations works only with type use locations?
+            if (AnnoArrType.getAnnotations().size() == 0) {
+                if (AnnoArrType.getComponentType().getUnderlyingType().getKind()
                         != TypeKind.TYPEVAR) {
-                    arrParamType.getComponentType().replaceAnnotation(POLYDET);
+                    AnnoArrType.getComponentType().replaceAnnotation(POLYDET);
                 }
             }
         }
@@ -357,24 +355,23 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    // TODO: This claims to do {@code @PolyDet[@PolyDet]} but it seems only to do the {@code
-    // ...[@PolyDet]} part.  Document what it does.  I suspect that the {@code @PolyDet[...]} part
-    // is handled by the declarative mechanism, but if so, please say that rather than leaving it
-    // undocumented.
     /**
      * Adds implicit annotation for main method parameter ({@code @Det}) and default annotations for
-     * other array parameters ({@code @PolyDet[@PolyDet]}).
+     * the component types of other array parameters ({@code ...[@PolyDet]}).
+     *
+     * <p>Note: The annotation on an array type defaults to {@code @PolyDet[]} and this defaulting
+     * is handled by declarative mechanism.
      *
      * <p>Example: Consider the following code:
      *
      * <pre><code>
      * &nbsp; void testArr(int[] a) {
-     * &nbsp; &nbsp; ...
+     * &nbsp; ...
      * &nbsp; }
      * </code></pre>
      *
-     * This method {@code addComputedTypeAnnotations} annotates the parameter {@code int[] a} as
-     * {@code @PolyDet int @PolyDet[] a}.
+     * This method {@code addComputedTypeAnnotations} annotates the component type of parameter
+     * {@code int[] a} as {@code @PolyDet int[] a}.
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
@@ -386,7 +383,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         checker.report(Result.failure("invalid.annotation.on.parameter"), elt);
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
-                    // TODO: Should this use getExplicitAnnotations instead of getAnnotations?
+                    // Note: void testArrParam(@PolyDet int @PolyDet [] arr) {}
+                    // getExplicitAnnotations().size() for arr is 0,
+                    // getAnnotations().size() for arr is 1.
                 } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) type;
