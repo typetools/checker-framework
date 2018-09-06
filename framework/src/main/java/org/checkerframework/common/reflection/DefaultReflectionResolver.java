@@ -49,6 +49,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -490,46 +491,35 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Names names = Names.instance(context);
 
         List<Symbol> result = new ArrayList<>();
-        try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
-            loadClass.setAccessible(true);
-            Symbol sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
-            if (!sym.exists()) {
-                debugReflection("Unable to resolve class: " + className);
-                return Collections.emptyList();
-            }
+        Symbol sym = getSymbol(className, env, names, resolve);
+        if (!sym.exists()) {
+            debugReflection("Unable to resolve class: " + className);
+            return Collections.emptyList();
+        }
 
-            ClassSymbol classSym = (ClassSymbol) sym;
-            while (classSym != null) {
-                for (Symbol s : classSym.getEnclosedElements()) {
-                    // check all member methods
-                    if (s.getKind() == ElementKind.METHOD) {
-                        // Check for method name and number of arguments
-                        if (names.fromString(methodName).equals(s.name)
-                                && ((MethodSymbol) s).getParameters().size() == paramLength) {
-                            result.add(s);
-                        }
+        ClassSymbol classSym = (ClassSymbol) sym;
+        while (classSym != null) {
+            for (Symbol s : classSym.getEnclosedElements()) {
+                // check all member methods
+                if (s.getKind() == ElementKind.METHOD) {
+                    // Check for method name and number of arguments
+                    if (names.fromString(methodName).equals(s.name)
+                            && ((MethodSymbol) s).getParameters().size() == paramLength) {
+                        result.add(s);
                     }
                 }
-                if (!result.isEmpty()) {
-                    break;
-                }
-                Type t = classSym.getSuperclass();
-                if (!t.hasTag(TypeTag.CLASS) || t.isErroneous()) {
-                    break;
-                }
-                classSym = (ClassSymbol) t.tsym;
             }
-            if (result.isEmpty()) {
-                debugReflection("Unable to resolve method: " + className + "@" + methodName);
+            if (!result.isEmpty()) {
+                break;
             }
-        } catch (SecurityException
-                | NoSuchMethodException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
-            debugReflection("Exception during resolution of reflective method: " + e.getMessage());
-            return Collections.emptyList();
+            Type t = classSym.getSuperclass();
+            if (!t.hasTag(TypeTag.CLASS) || t.isErroneous()) {
+                break;
+            }
+            classSym = (ClassSymbol) t.tsym;
+        }
+        if (result.isEmpty()) {
+            debugReflection("Unable to resolve method: " + className + "@" + methodName);
         }
         return result;
     }
@@ -546,39 +536,48 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Names names = Names.instance(context);
 
         List<Symbol> result = new ArrayList<>();
-        try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
-            loadClass.setAccessible(true);
-            Symbol symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
-            if (!symClass.exists()) {
-                debugReflection("Unable to resolve class: " + className);
-                return Collections.emptyList();
-            }
+        Symbol symClass = getSymbol(className, env, names, resolve);
+        if (!symClass.exists()) {
+            debugReflection("Unable to resolve class: " + className);
+            return Collections.emptyList();
+        }
 
-            ElementFilter.constructorsIn(symClass.getEnclosedElements());
+        ElementFilter.constructorsIn(symClass.getEnclosedElements());
 
-            for (Symbol s : symClass.getEnclosedElements()) {
-                // Check all constructors
-                if (s.getKind() == ElementKind.CONSTRUCTOR) {
-                    // Check for number of parameters
-                    if (((MethodSymbol) s).getParameters().size() == paramLength) {
-                        result.add(s);
-                    }
+        for (Symbol s : symClass.getEnclosedElements()) {
+            // Check all constructors
+            if (s.getKind() == ElementKind.CONSTRUCTOR) {
+                // Check for number of parameters
+                if (((MethodSymbol) s).getParameters().size() == paramLength) {
+                    result.add(s);
                 }
             }
-            if (result.isEmpty()) {
-                debugReflection("Unable to resolve constructor!");
-            }
+        }
+        if (result.isEmpty()) {
+            debugReflection("Unable to resolve constructor!");
+        }
+        return result;
+    }
+
+    private Symbol getSymbol(String className, Env<AttrContext> env, Names names, Resolve resolve) {
+        Method loadClass;
+        try {
+            loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
+            loadClass.setAccessible(true);
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException e) {
+            // A problem with javac is serious and must be reported.
+            throw new BugInCF("Error in obtaining reflective method.", e);
+        }
+        try {
+            Symbol symbol = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
+            return symbol;
         } catch (SecurityException
-                | NoSuchMethodException
                 | IllegalAccessException
                 | IllegalArgumentException
                 | InvocationTargetException e) {
-            debugReflection(
-                    "Exception during resolution of reflective constructor: " + e.getMessage());
-            return Collections.emptyList();
+            // A problem with javac is serious and must be reported.
+            throw new BugInCF("Error in invoking reflective method.", e);
         }
-        return result;
     }
 
     /**

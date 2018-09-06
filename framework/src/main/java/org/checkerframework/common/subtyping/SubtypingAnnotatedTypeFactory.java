@@ -1,12 +1,20 @@
 package org.checkerframework.common.subtyping;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.subtyping.qual.Unqualified;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotationClassLoader;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.UserError;
 
 /** Defines {@link #createSupportedTypeQualifiers}. */
@@ -71,5 +79,38 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         return qualSet;
+    }
+
+    /**
+     * If necessary, make Unqualified the default qualifier. Keep most logic in sync with super.
+     *
+     * @see
+     *     org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addCheckedCodeDefaults(org.checkerframework.framework.util.defaults.QualifierDefaults)
+     */
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        boolean foundOtherwise = false;
+        // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
+        for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
+            DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
+            if (defaultFor != null) {
+                final TypeUseLocation[] locations = defaultFor.value();
+                defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
+                foundOtherwise =
+                        foundOtherwise
+                                || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
+            }
+
+            if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
+                defs.addCheckedCodeDefault(
+                        AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
+                foundOtherwise = true;
+            }
+        }
+        // If Unqualified is a supported qualifier, make it the default.
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
+        if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
+            defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
+        }
     }
 }

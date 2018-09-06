@@ -7,9 +7,9 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.common.subtyping.qual.Bottom;
+import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -31,7 +32,13 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         addTypeNameImplicit(java.lang.Void.class, BOTTOM);
-        this.defaults.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
+    }
+
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        defs.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
+        defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
     }
 
     @Override

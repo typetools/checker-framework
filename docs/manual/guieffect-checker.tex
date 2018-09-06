@@ -374,7 +374,7 @@ public interface Dispatcher \{
     void dispatch(@PolyUI Runnable toRun);
 \}
 @SafeType
-public class SafeDispatcher \{
+public class SafeDispatcher implements Dispatcher \{
     @Override
     public void dispatch(@AlwaysSafe Runnable toRun) \{
         runOnBackgroundThread(toRun);
