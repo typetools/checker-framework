@@ -60,6 +60,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @PolyDet("use") annotation. */
     public final AnnotationMirror POLYDET_USE;
 
+    /** The java.util.Set interface. */
     private final TypeMirror SetInterfaceTypeMirror =
             TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
     /** The java.util.List interface. */
@@ -77,36 +78,39 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The java.util.Collections class. */
     private final TypeMirror CollectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
-    /** The AbstractList class. */
+    /** The java.util.AbstractList class. */
     private final TypeMirror AbstractListTypeMirror =
             TypesUtils.typeFromClass(AbstractList.class, types, processingEnv.getElementUtils());
-    /** The AbstractList class. */
+    /** The java.util.AbstractList class. */
     private final TypeMirror AbstractSequentialListTypeMirror =
             TypesUtils.typeFromClass(
                     AbstractSequentialList.class, types, processingEnv.getElementUtils());
-    /** The ArrayList class. */
+    /** The java.util.ArrayList class. */
     private final TypeMirror ArrayListTypeMirror =
             TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
-    /** The LinkedList class. */
+    /** The java.util.LinkedList class. */
     private final TypeMirror LinkedListTypeMirror =
             TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
-    /** The NavigableSet class. */
+    /** The java.util.NavigableSet class. */
     private final TypeMirror NavigableSetTypeMirror =
             TypesUtils.typeFromClass(NavigableSet.class, types, processingEnv.getElementUtils());
-    /** The SortedSet class. */
+    /** The java.util.SortedSet class. */
     private final TypeMirror SortedSetTypeMirror =
             TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
-    /** The TreeSet class. */
+    /** The java.util.TreeSet class. */
     private final TypeMirror TreeSetTypeMirror =
             TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
+    /** The java.util.Enumeration interface. */
+    private final TypeMirror EnumerationTypeMirror =
+            TypesUtils.typeFromClass(Enumeration.class, types, processingEnv.getElementUtils());
 
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         POLYDET = newPolyDet("");
-        POLYDET_USE = newPolyDet("use");
         POLYDET_UP = newPolyDet("up");
         POLYDET_DOWN = newPolyDet("down");
+        POLYDET_USE = newPolyDet("use");
 
         postInit();
     }
@@ -227,6 +231,17 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
+            // The following code fixes Issue#14
+            // (https://github.com/t-rasmud/checker-framework/issues/14).
+            // Checks if the return type is not a TYPEVAR, and if the invoked method belongs
+            // to a set of (hardcoded) Collection methods in the JDK that return a generic type.
+            // If the check succeeds, annotates the return type depending on the
+            // type of the receiver.
+            // Note: Annotating a generic type with @Polydet(or any annotation for that matter)
+            // constrains both its upper and
+            // lower bounds which was the root cause for Issue#14.
+            // Therefore, we do not annotate the return types of these methods in the JDK.
+            // Instead, we annotate the return type at the method invocation.
             if (annotatedRetType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
                 if (isIteratorNext(receiverUnderlyingType, m)
                         || isAbstractListWithTypeVarReturn(receiverUnderlyingType, m)
@@ -508,6 +523,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSubtype(types.erasure(tm), types.erasure(TreeSetTypeMirror));
     }
 
+    /** @return true if {@code tm} is Enumeration or its subtype */
+    public boolean isEnumeration(TypeMirror tm) {
+        return types.isSubtype(types.erasure(tm), types.erasure(EnumerationTypeMirror));
+    }
+
+    /**
+     * Returns true if {@code receiverUnderlyingType} is Iterator and if {@code
+     * invokedMethodElement} returns a generic type.
+     */
     private boolean isIteratorNext(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isIterator(receiverUnderlyingType.asType())) {
@@ -520,6 +544,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code receiverUnderlyingType} is AbstractList, AbstractSequentialList or
+     * List and if {@code invokedMethodElement} returns a generic type.
+     */
     private boolean isAbstractListWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isAbstractList(receiverUnderlyingType.asType())
@@ -552,6 +580,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code receiverUnderlyingType} is NavigableSet and if {@code
+     * invokedMethodElement} returns a generic type.
+     */
     private boolean isNavigableSetWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isNavigableSet(receiverUnderlyingType.asType())) {
@@ -593,6 +625,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code receiverUnderlyingType} is ArrayList and if {@code
+     * invokedMethodElement} returns a generic type.
+     */
     private boolean isArrayListWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isArrayList(receiverUnderlyingType.asType())) {
@@ -630,6 +666,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code receiverUnderlyingType} is LinkedList and if {@code
+     * invokedMethodElement} returns a generic type.
+     */
     private boolean isLinkedListWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isLinkedList(receiverUnderlyingType.asType())) {
@@ -734,6 +774,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code receiverUnderlyingType} is SortedSet and if {@code
+     * invokedMethodElement} returns a generic type.
+     */
     private boolean isSortedSetWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isSortedSet(receiverUnderlyingType.asType())) {
@@ -751,6 +795,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code receiverUnderlyingType} is TreeSet and if {@code invokedMethodElement}
+     * returns a generic type.
+     */
     private boolean isTreeSetWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isTreeSet(receiverUnderlyingType.asType())) {
@@ -806,12 +854,18 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code receiverUnderlyingType} is Enumeration and if {@code
+     * invokedMethodElement} returns a generic type.
+     */
     private boolean isEnumerationWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (invokedMethodElement.getSimpleName().contentEquals("nextElement")
-                && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                && invokedMethodElement.getParameters().size() == 0) {
-            return true;
+        if (isEnumeration(receiverUnderlyingType.asType())) {
+            if (invokedMethodElement.getSimpleName().contentEquals("nextElement")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 0) {
+                return true;
+            }
         }
         return false;
     }
