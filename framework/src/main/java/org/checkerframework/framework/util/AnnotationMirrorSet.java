@@ -139,7 +139,7 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
      * @param value AnnotationMirror to put in the set
      * @return a new {@link AnnotationMirrorSet} that contains {@code value}.
      */
-    public static AnnotationMirrorSet singleton(AnnotationMirror value) {
+    public static AnnotationMirrorSet singleElementSet(AnnotationMirror value) {
         AnnotationMirrorSet newSet = new AnnotationMirrorSet();
         newSet.add(value);
         return newSet;
