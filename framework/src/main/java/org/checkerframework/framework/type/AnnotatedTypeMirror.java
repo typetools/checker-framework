@@ -292,6 +292,15 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns true if there are no annotations on this type.
+     *
+     * @return true if there are no annotations on this type
+     */
+    public final boolean isUnannotated() {
+        return annotations.isEmpty();
+    }
+
+    /**
      * Returns the annotations on this type.
      *
      * <p>It does not include annotations in deep types (type arguments, array components, etc).
