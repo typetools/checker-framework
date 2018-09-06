@@ -44,8 +44,8 @@ public @interface DefaultQualifier {
      * The Class for the default annotation.
      *
      * <p>To prevent affecting other type systems, always specify an annotation in your own type
-     * hierarchy. (For example, do not set {@code org.checkerframework.framework.qual.Unqualified}
-     * as the default.)
+     * hierarchy. (For example, do not set {@link
+     * org.checkerframework.common.subtyping.qual.Unqualified} as the default.)
      */
     Class<? extends Annotation> value();
 
