@@ -211,10 +211,9 @@ public class SameLenTransfer extends CFTransfer {
             if (cfValue == null) {
                 return UNKNOWN;
             }
-            if (cfValue.getAnnotations().size() == 1) {
-                return cfValue.getAnnotations().iterator().next();
-            }
-            return UNKNOWN;
+            return aTypeFactory
+                    .getQualifierHierarchy()
+                    .findAnnotationInHierarchy(cfValue.getAnnotations(), UNKNOWN);
         }
     }
 
