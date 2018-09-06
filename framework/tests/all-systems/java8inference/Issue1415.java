@@ -18,8 +18,9 @@ class Issue1415 {
     }
 
     static class Crash9 {
-        <T extends Enum<T>> void foo(boolean b, Box<Optional<T>> box, Class<T> enumClass) {
-            box.box(b ? Optional.<T>absent() : Optional.of(Enum.valueOf(enumClass, "hi")));
+        <F extends Enum<F>> void foo(boolean b, Box<Optional<F>> box, Class<F> enumClass) {
+            box.box(b ? Optional.<F>absent() : Optional.of(Enum.valueOf(enumClass, "hi")));
+            box.box(b ? Optional.absent() : Optional.of(Enum.valueOf(enumClass, "hi")));
         }
     }
 }

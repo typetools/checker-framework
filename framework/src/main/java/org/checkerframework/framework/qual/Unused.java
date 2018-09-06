@@ -1,9 +1,8 @@
 package org.checkerframework.framework.qual;
 
-import static java.lang.annotation.ElementType.FIELD;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -38,7 +37,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({FIELD})
+@Target({ElementType.FIELD})
 public @interface Unused {
     /**
      * The field that is annotated with @Unused may not be accessed via a receiver that is annotated
