@@ -182,7 +182,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 A type system designer, or an end-user programmer, can cause unannotated
 Java types to be treated as if they had a default annotation.
-(Defaulting never applies to uses of type varables, even if they do not
+(Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.)
 
 There are several defaulting mechanisms, for convenience and flexibility.
@@ -198,11 +198,11 @@ rules are used in order, until one applies.
   (Section~\ref{creating-typesystem-defaults});
   this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
 \item
-  Use \refqualclass{framework/qual}{Unqualified}, which the framework
-  inserts to avoid ambiguity and simplify the programming interface for
-  type system designers.  Users do not have to worry about this detail,
-  but type system implementers can rely on the fact that some
-  qualifier is present.
+  When using the Subtyping Checker,
+  use \refqualclass{common/subtyping/qual}{Unqualified}
+  as default, if it is a supported qualifier and nothing else is specified by the
+  type system designer.
+  This makes initial experiments with the Subtyping Checker convenient.
 \end{itemize}
 
 % (Implementation detail:  setting defaults is implemented by the

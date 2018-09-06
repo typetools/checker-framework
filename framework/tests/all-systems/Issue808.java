@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/808
 
 import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings("determinism")
 class Issue808 {
@@ -9,6 +10,8 @@ class Issue808 {
         Arrays.asList(0, 0, "", Arrays.asList(new Object[0]));
         foo(new Object(), bar());
         new Issue808(bar());
+        foo(bar());
+        List<Object> list = Arrays.asList(new Object[0]);
     }
 
     <T> T bar() {
