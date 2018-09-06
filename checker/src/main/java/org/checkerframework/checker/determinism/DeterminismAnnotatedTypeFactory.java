@@ -50,7 +50,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, OrderNonDet.class);
     /** The @Det annotation. */
     public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
-    /** The java.util.Set interface. */
     /** The @PolyDet annotation. */
     public final AnnotationMirror POLYDET;
     /** The @PolyDet("up") annotation. */
