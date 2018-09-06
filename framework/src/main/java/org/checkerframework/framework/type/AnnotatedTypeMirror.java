@@ -33,8 +33,8 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Represents an annotated type in the Java programming language. Types include primitive types,
@@ -60,9 +60,7 @@ public abstract class AnnotatedTypeMirror {
     public static AnnotatedTypeMirror createType(
             TypeMirror type, AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
         if (type == null) {
-            ErrorReporter.errorAbort(
-                    "AnnotatedTypeMirror.createType: input type must not be null!");
-            return null;
+            throw new BugInCF("AnnotatedTypeMirror.createType: input type must not be null");
         }
 
         AnnotatedTypeMirror result;
@@ -75,10 +73,10 @@ public abstract class AnnotatedTypeMirror {
                         new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
                 break;
             case ERROR:
-                ErrorReporter.errorAbort(
-                        "AnnotatedTypeMirror.createType: input should type-check already! Found error type: "
+                throw new BugInCF(
+                        "AnnotatedTypeMirror.createType: input should type-check already. Found error type: "
                                 + type);
-                return null; // dead code
+
             case EXECUTABLE:
                 result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
                 break;
@@ -108,13 +106,12 @@ public abstract class AnnotatedTypeMirror {
                     result = new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
                     break;
                 }
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "AnnotatedTypeMirror.createType: unidentified type "
                                 + type
                                 + " ("
                                 + type.getKind()
                                 + ")");
-                return null; // dead code
         }
         /*if (jctype.isAnnotated()) {
             result.addAnnotations(jctype.getAnnotationMirrors());
@@ -282,9 +279,11 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the annotations on this type.
+     * Returns the annotations on this type. It does not include annotations in deep types (type
+     * arguments, array components, etc).
      *
-     * <p>It does not include annotations in deep types (type arguments, array components, etc).
+     * <p>To get the single annotation in a particular hierarchy, use {@link
+     * #getAnnotationInHierarchy}.
      *
      * @return a unmodifiable set of the annotations on this
      */
@@ -523,8 +522,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            ErrorReporter.errorAbort(
-                    "AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
         }
         if (atypeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
@@ -621,7 +619,7 @@ public abstract class AnnotatedTypeMirror {
     public boolean removeAnnotation(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
         }
         return removeAnnotation(anno);
@@ -673,8 +671,8 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Removes all primary annotations on this type. Make sure to add an annotation again, e.g.
-     * Unqualified.
+     * Removes all primary annotations on this type. Make sure to add an annotation after calling
+     * this.
      *
      * <p>This method should only be used in very specific situations. For individual type systems,
      * it is generally better to use {@link #removeAnnotation(AnnotationMirror)} and similar
@@ -699,7 +697,7 @@ public abstract class AnnotatedTypeMirror {
      * Returns the erasure type of the this type, according to JLS specifications.
      *
      * @see <a
-     *     href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.6</a>
+     *     href="https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.6</a>
      * @return the erasure of this AnnotatedTypeMirror, this is always a copy even if the erasure
      *     and the original type are equivalent
      */
@@ -799,7 +797,7 @@ public abstract class AnnotatedTypeMirror {
                 // Force instantiation of type arguments of enclosing type.
                 this.enclosingType.getTypeArguments();
             } else if (encl.getKind() != TypeKind.NONE) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "AnnotatedDeclaredType: unsupported enclosing type: "
                                 + type.getEnclosingType()
                                 + " ("
@@ -1400,7 +1398,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setLowerBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Lower bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type
@@ -1494,7 +1492,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setUpperBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Upper bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type
@@ -1782,7 +1780,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setSuperBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Super bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type
@@ -1816,7 +1814,7 @@ public abstract class AnnotatedTypeMirror {
          */
         void setExtendsBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Extends bounds should never be null or a declaration.\n"
                                 + "  new bound = "
                                 + type

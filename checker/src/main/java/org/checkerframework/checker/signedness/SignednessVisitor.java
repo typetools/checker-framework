@@ -17,6 +17,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -118,8 +119,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             // Check that the shiftAmount most significant bits of the mask were 1.
             return mask == (1 << shiftAmount) - 1;
         } else {
-            // This shouldn't be possible.
-            throw new RuntimeException("Invalid Masking Operation");
+            throw new BugInCF("Invalid Masking Operation");
         }
     }
 
@@ -164,7 +164,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 shiftAmount = 0x3F & getLong(shiftAmountLit.getValue());
                 break;
             default:
-                throw new RuntimeException("Invalid shift type");
+                throw new BugInCF("Invalid shift type");
         }
 
         // Determine number of bits in the cast type
@@ -186,7 +186,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 castBits = 64;
                 break;
             default:
-                throw new RuntimeException("Invalid cast target");
+                throw new BugInCF("Invalid cast target");
         }
 
         long bitsDiscarded = shiftBits - castBits;

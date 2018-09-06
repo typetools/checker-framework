@@ -23,6 +23,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -92,7 +93,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
                 }
             }
         } catch (Exception e) {
-            errorAbort("Couldn't load " + checkerClassName + " class.");
+            throw new BugInCF("Couldn't load " + checkerClassName + " class.");
         }
     }
 

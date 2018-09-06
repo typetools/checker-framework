@@ -740,7 +740,7 @@ Follow the instructions for your operating system.
 % Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdkany
 \begin{Verbatim}
 sudo apt-get -qqy update
-sudo apt-get -qqy install ant cpp git gradle junit4  libcurl3-gnutls \
+sudo apt-get -qqy install ant cpp git gradle junit4 libcurl3-gnutls \
  make maven mercurial unzip wget openjdk-8-jdk \
  dia hevea latexmk librsvg2-bin maven python-pip \
  texlive-font-utils texlive-fonts-recommended \
@@ -905,8 +905,8 @@ export PATH=$CHECKERFRAMEWORK/checker/bin-devel:${PATH}
 
 The developer version of \<javac> allows you to not have to rebuild
 the jar files after every code change, in turn allowing you to test
-your changes faster. Source files can be compiled using command \<ant
-build> in the \<checker> directory, or can be automatically compiled by
+your changes faster. Source files can be compiled using command \<./gradlew
+compile> in the \<checker> directory, or can be automatically compiled by
 an IDE such as Eclipse.
 
 \item Test that everything works:

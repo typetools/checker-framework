@@ -1,0 +1,30 @@
+evaluationDependsOn(":checker-qual")
+
+task copySources(type: Copy) {
+    from files('../checker-qual/src/')
+    include "**/*.java"
+    into file('src')
+    fileMode(0555)
+}
+copySources.dependsOn(":checker-qual:copySources")
+
+/**
+* Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
+* Using the standard Checker Framework annotations can lead to main dex overflows;
+* users of the Checker framework may find themselves unable to build their Android apps.
+* By contrast, class-retention annotations are stripped out before packaging by all build systems as a convention.
+*/
+task replaceAnnotations {
+    doLast {
+        fileTree(dir: 'src', include: "**/*.java").each {
+            it.text = it.text.replaceAll("RetentionPolicy.RUNTIME", "RetentionPolicy.CLASS")
+        }
+    }
+}
+replaceAnnotations.dependsOn copySources
+
+compileJava.dependsOn replaceAnnotations
+
+clean {
+    delete file('src')
+}
