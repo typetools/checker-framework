@@ -310,7 +310,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor.
+    // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
+    // and test.
     /**
      * Helper method that places the default annotation on component type of the array type {@code
      * arrType} as @PolyDet.
