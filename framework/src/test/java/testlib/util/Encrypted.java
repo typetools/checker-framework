@@ -2,12 +2,12 @@ package testlib.util;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.qual.Unqualified;
 
 /** Denotes an object with a representation that has been encrypted. */
 @SubtypeOf(Unqualified.class)

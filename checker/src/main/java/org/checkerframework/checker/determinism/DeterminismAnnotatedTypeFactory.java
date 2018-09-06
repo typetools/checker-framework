@@ -24,6 +24,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -42,6 +43,14 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the determinism type-system. */
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    /** The @NonDet annotation. */
+    public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
+    /** The @OrderNonDet annotation. */
+    public final AnnotationMirror ORDERNONDET =
+            AnnotationBuilder.fromClass(elements, OrderNonDet.class);
+    /** The @Det annotation. */
+    public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
+    /** The java.util.Set interface. */
     /** The @PolyDet annotation. */
     public final AnnotationMirror POLYDET;
     /** The @PolyDet("up") annotation. */
@@ -50,29 +59,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET_DOWN;
     /** The @PolyDet("use") annotation. */
     public final AnnotationMirror POLYDET_USE;
-    /** The @NonDet annotation. */
-    public final AnnotationMirror NONDET = AnnotationBuilder.fromClass(elements, NonDet.class);
-    /** The @OrderNonDet annotation. */
-    public final AnnotationMirror ORDERNONDET =
-            AnnotationBuilder.fromClass(elements, OrderNonDet.class);
-    /** The @Det annotation. */
-    public final AnnotationMirror DET = AnnotationBuilder.fromClass(elements, Det.class);
-    /** The Set interface. */
+
     private final TypeMirror SetInterfaceTypeMirror =
             TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
-    /** The List interface. */
+    /** The java.util.List interface. */
     private final TypeMirror ListInterfaceTypeMirror =
             TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
-    /** The Collection class. */
+    /** The java.util.Collection class. */
     private final TypeMirror CollectionInterfaceTypeMirror =
             TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
-    /** The Iterator class. */
+    /** The java.util.Iterator class. */
     private final TypeMirror IteratorTypeMirror =
             TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
-    /** The Arrays class. */
+    /** The java.util.Arrays class. */
     private final TypeMirror ArraysTypeMirror =
             TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
-    /** The Collections class. */
+    /** The java.util.Collections class. */
     private final TypeMirror CollectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
     /** The AbstractList class. */
@@ -109,7 +111,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         postInit();
     }
 
-    /** Creates an AnnotationMirror for {@code @PolyDet} with the given argument. */
+    /** Creates an AnnotationMirror for {@code @PolyDet} with {@code arg} as its value. */
     private AnnotationMirror newPolyDet(String arg) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PolyDet.class);
         builder.setValue("value", arg);
@@ -153,51 +155,46 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Places the default annotation on the return type of a method invocation as follows:
+         * Replaces the annotation on the return type of a method invocation as follows:
          *
          * <ol>
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
-         *       array or a collection, it defaults to {@code @NonDet}.
-         *   <li>Return type of equals() called on a receiver of type {@code OrderNonDet Set} gets
-         *       the {@code @Det} annotation under the following conditions:
+         *       array or a collection, it is replaced with {@code @NonDet}.
+         *   <li>Return type of equals() gets the annotation {@code @Det}, when both the receiver
+         *       and the argument satisfy these conditions::
          *       <ol>
-         *         <li>The receiver does not have {@code List} or its subtype as a type parameter
-         *         <li>The argument to equals() is also an {@code @OrderNonDet Set}
-         *         <li>The argument to equals() also does not have {@code List} or its subtype as a
-         *             type parameter
+         *         <li>the type is {@code OrderNonDet Set}, and
+         *         <li>it does not have {@code List} or its subtype as a type argument
          *       </ol>
          * </ol>
          *
          * @param node method invocation tree
-         * @param p annotated return type
+         * @param annotatedRetType annotated return type
          * @return visitMethodInvocation() of the super class
          */
         @Override
-        public Void visitMethodInvocation(MethodInvocationTree node, AnnotatedTypeMirror p) {
+        public Void visitMethodInvocation(
+                MethodInvocationTree node, AnnotatedTypeMirror annotatedRetType) {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(node);
 
             // ReceiverType is null for abstract classes
             // (Example: Ordering.natural() in tests/all-systems/PolyCollectorTypeVars.java)
             if (receiverType == null) {
-                return super.visitMethodInvocation(node, p);
+                return super.visitMethodInvocation(node, annotatedRetType);
             }
 
-            AnnotatedTypeMirror.AnnotatedExecutableType invokedMethod =
-                    atypeFactory.methodFromUse(node).methodType;
-            ExecutableElement invokedMethodElement = invokedMethod.getElement();
+            ExecutableElement m = atypeFactory.methodFromUse(node).methodType.getElement();
 
-            // Checks if return type (non-array, non-collection, and non-iterator) resolves to
-            // @OrderNonDet.
-            // If the check succeeds, the annotation on the return type is replaced with @NonDet.
-            if (p.getAnnotations().contains(ORDERNONDET)
-                    && !(p.getUnderlyingType().getKind() == TypeKind.ARRAY)
-                    && !(isCollection(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))
-                    && !(isIterator(TypesUtils.getTypeElement(p.getUnderlyingType()).asType()))) {
-                p.replaceAnnotation(NONDET);
+            // If return type (non-array, non-collection, and non-iterator) resolves to
+            // @OrderNonDet, replaces the annotation on the return type with @NonDet.
+            if (annotatedRetType.getAnnotations().contains(ORDERNONDET)
+                    && !mayBeOrderNonDet(annotatedRetType.getUnderlyingType())) {
+                annotatedRetType.replaceAnnotation(NONDET);
             }
 
             // Annotates the return type of "equals()" method called on a Set receiver
-            // as described in the specification.
+            // as described in https://checkerframework.org/manual/#improved-precision-set-equals.
+
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
             //           @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s2;
             // s1.equals(s2) is @NonDet
@@ -205,71 +202,60 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Example 2: @OrderNonDet Set<@Det List<@Det Integer>> s1;
             //            @OrderNonDet Set<@Det List<@Det Integer>> s2;
             // s1.equals(s2) is @Det
-            // TODO-rashmi: this can be more precise (@Det receiver and @OrderNonDet parameter)
+            // TODO-rashmi: this can be more precise (@Det receiver and @OrderNonDet argument)
             TypeElement receiverUnderlyingType =
                     TypesUtils.getTypeElement(receiverType.getUnderlyingType());
 
             // Without this check, NullPointerException in Collections class with buildJdk.
+            // Likely cause: Collections has a private constructor?
+            // Error at line: public class Collections {
             // TODO-rashmi: check why?
             if (receiverUnderlyingType == null) {
-                return super.visitMethodInvocation(node, p);
+                return super.visitMethodInvocation(node, annotatedRetType);
             }
 
-            if (isEqualsMethod(invokedMethodElement)
-                    && isSet(receiverUnderlyingType.asType())
-                    && AnnotationUtils.areSame(
-                            receiverType.getAnnotations().iterator().next(), ORDERNONDET)) {
-                // Checks that the receiverType does not have "@OrderNonDet List" as a type
-                // parameter
-                if (!hasOrderNonDetListAsTypeParameter(receiverType)) {
-                    AnnotatedTypeMirror parameter =
-                            atypeFactory.getAnnotatedType(node.getArguments().get(0));
-                    if (isSet(TypesUtils.getTypeElement(parameter.getUnderlyingType()).asType())
-                            && parameter.hasAnnotation(ORDERNONDET)) {
-                        // Checks that the parameter does not have "@OrderNonDet List" as a
-                        // type parameter
-                        if (!hasOrderNonDetListAsTypeParameter(parameter)) {
-                            p.replaceAnnotation(DET);
-                        }
-                    }
+            if (isEqualsMethod(m)) {
+                AnnotatedTypeMirror argument =
+                        atypeFactory.getAnnotatedType(node.getArguments().get(0));
+                if (isSet(receiverUnderlyingType.asType())
+                        && receiverType.hasAnnotation(ORDERNONDET)
+                        && !hasOrderNonDetListAsTypeArgument(receiverType)
+                        && isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
+                        && argument.hasAnnotation(ORDERNONDET)
+                        && !hasOrderNonDetListAsTypeArgument(argument)) {
+                    annotatedRetType.replaceAnnotation(DET);
                 }
             }
 
-            if (p.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
-                if (isIteratorNext(receiverUnderlyingType, invokedMethodElement)
-                        || isAbstractListWithTypeVarReturn(
-                                receiverUnderlyingType, invokedMethodElement)
-                        || isArrayListWithTypeVarReturn(
-                                receiverUnderlyingType, invokedMethodElement)
-                        || isLinkedListWithTypeVarReturn(
-                                receiverUnderlyingType, invokedMethodElement)
-                        || isEnumerationWithTypeVarReturn(
-                                receiverUnderlyingType, invokedMethodElement)) {
+            if (annotatedRetType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+                if (isIteratorNext(receiverUnderlyingType, m)
+                        || isAbstractListWithTypeVarReturn(receiverUnderlyingType, m)
+                        || isArrayListWithTypeVarReturn(receiverUnderlyingType, m)
+                        || isLinkedListWithTypeVarReturn(receiverUnderlyingType, m)
+                        || isEnumerationWithTypeVarReturn(receiverUnderlyingType, m)) {
                     if (receiverType.hasAnnotation(NONDET)
                             || receiverType.hasAnnotation(ORDERNONDET)) {
-                        p.replaceAnnotation(NONDET);
+                        annotatedRetType.replaceAnnotation(NONDET);
                     } else {
-                        p.replaceAnnotation(DET);
+                        annotatedRetType.replaceAnnotation(DET);
                     }
                 }
-                if (isTreeSetWithTypeVarReturn(receiverUnderlyingType, invokedMethodElement)
-                        || isNavigableSetWithTypeVarReturn(
-                                receiverUnderlyingType, invokedMethodElement)
-                        || isSortedSetWithTypeVarReturn(
-                                receiverUnderlyingType, invokedMethodElement)) {
+                if (isTreeSetWithTypeVarReturn(receiverUnderlyingType, m)
+                        || isNavigableSetWithTypeVarReturn(receiverUnderlyingType, m)
+                        || isSortedSetWithTypeVarReturn(receiverUnderlyingType, m)) {
                     if (receiverType.hasAnnotation(DET)
                             || receiverType.hasAnnotation(ORDERNONDET)) {
-                        p.replaceAnnotation(DET);
+                        annotatedRetType.replaceAnnotation(DET);
                     } else {
-                        p.replaceAnnotation(NONDET);
+                        annotatedRetType.replaceAnnotation(NONDET);
                     }
                 }
             }
 
-            return super.visitMethodInvocation(node, p);
+            return super.visitMethodInvocation(node, annotatedRetType);
         }
 
-        /** If array a is {@code @NonDet}, then a.length is {@code @NonDet}. */
+        /** Annotates the length property of a {@code @NonDet} array as {@code @NonDet}. */
         @Override
         public Void visitMemberSelect(
                 MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
@@ -277,7 +263,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror.AnnotatedArrayType arrType =
                         (AnnotatedTypeMirror.AnnotatedArrayType)
                                 atypeFactory.getAnnotatedType(node.getExpression());
-                if (AnnotationUtils.areSame(arrType.getAnnotations().iterator().next(), NONDET)) {
+                if (arrType.hasAnnotation(NONDET)) {
                     annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
             }
@@ -285,8 +271,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Returns true if {@code @OrderNonDet List} appears as a type parameter in {@code atm}. */
-    private boolean hasOrderNonDetListAsTypeParameter(AnnotatedTypeMirror atm) {
+    /**
+     * Returns true if {@code @OrderNonDet List} appears as a top-level type argument in {@code
+     * atm}.
+     */
+    private boolean hasOrderNonDetListAsTypeArgument(AnnotatedTypeMirror atm) {
         AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
                 (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
         for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
@@ -297,20 +286,47 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /**
+     * Returns true if {@code javaType} may be annotated as {@code @OrderNonDet}.
+     *
+     * @param javaType the declared type to be checked
+     * @return true if {@code javaType} is Collection (or a subtype), Iterator (or a subtype), or an
+     *     array
+     */
+    public boolean mayBeOrderNonDet(TypeMirror javaType) {
+        return (javaType.getKind() == TypeKind.ARRAY
+                || isCollection(TypesUtils.getTypeElement(javaType).asType())
+                || isIterator(TypesUtils.getTypeElement(javaType).asType()));
+    }
+
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
         public DeterminismTypeAnnotator(DeterminismAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
         /**
+         * Places the implicit annotation {@code Det} on the type of the main method's parameter.
          * Places the following default annotations:
          *
          * <ol>
-         *   <li>Annotates the main method parameter as {@code Det}.
-         *   <li>Annotates array parameters and return types as {@code @PolyDet[@PolyDet]}.
+         *   <li>Annotates unannotated component types of array arguments and return types as {@code
+         *       ...[@PolyDet]}.
          *   <li>Annotates the return type for static methods without any parameters as
          *       {@code @Det}.
          * </ol>
+         *
+         * <p>Example: Consider the following code:
+         *
+         * <pre><code>
+         * &nbsp; void testArr(int[] a) {
+         * &nbsp; @Det int i = a[0];
+         * &nbsp; }
+         * </code></pre>
+         *
+         * Here, the line {@code @Det int i = a[0];} should be flagged as an error since {@code
+         * a[0]} is {@code @PolyDet}. Without the method {@code visitExecutable}, the argument
+         * {@code a} defaults to {@code @PolyDet[@Det]} and the line {@code @Det int i = a[0];} is
+         * not flagged as an error by the checker.
          */
         @Override
         public Void visitExecutable(
@@ -319,36 +335,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             } else {
-                // Annotates array return types as @PolyDet[@PolyDet]
-                AnnotatedTypeMirror retType = t.getReturnType();
-                if (retType.getKind() == TypeKind.ARRAY) {
-                    AnnotatedTypeMirror.AnnotatedArrayType arrRetType =
-                            (AnnotatedTypeMirror.AnnotatedArrayType) retType;
-                    if (arrRetType.getAnnotations().size() == 0) {
-                        if (arrRetType.getComponentType().getUnderlyingType().getKind()
-                                != TypeKind.TYPEVAR) {
-                            arrRetType.getComponentType().replaceAnnotation(POLYDET);
-                        }
-                    }
+                defaultArrayElementAsPolyDet(t.getReturnType());
+                for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
+                    defaultArrayElementAsPolyDet(paramType);
                 }
 
-                // Annotates array parameter types as @PolyDet[@PolyDet]
-                List<AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
-                for (AnnotatedTypeMirror paramType : paramTypes) {
-                    if (paramType.getKind() == TypeKind.ARRAY) {
-                        AnnotatedTypeMirror.AnnotatedArrayType arrParamType =
-                                (AnnotatedTypeMirror.AnnotatedArrayType) paramType;
-                        if (arrParamType.getAnnotations().size() == 0) {
-                            if (arrParamType.getComponentType().getUnderlyingType().getKind()
-                                    != TypeKind.TYPEVAR) {
-                                arrParamType.getComponentType().replaceAnnotation(POLYDET);
-                            }
-                        }
-                    }
-                }
-
-                // If the invoked method is static and has no arguments,
-                // its return type is annotated as @Det.
+                // Annotates the return type of a static method without parameters as @Det.
                 if (ElementUtils.isStatic(t.getElement())) {
                     if (t.getElement().getParameters().size() == 0) {
                         if (t.getReturnType().getExplicitAnnotations().size() == 0) {
@@ -361,15 +353,36 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
+    // and test.
+    /**
+     * Helper method that places the default annotation on component type of the array type {@code
+     * arrType} as @PolyDet.
+     */
+    private void defaultArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
+        if (arrType.getKind() == TypeKind.ARRAY) {
+            AnnotatedTypeMirror.AnnotatedArrayType AnnoArrType =
+                    (AnnotatedTypeMirror.AnnotatedArrayType) arrType;
+            // Example: @Det int @Det[] returnArrExplicit(){}
+            // Here, AnnoArrType is @Det int @Det[].
+            // arrParamType.getExplicitAnnotations().size() returns 0,
+            // arrParamType.getAnnotations().size() returns 1.
+            // getExplicitAnnotations works only with type use locations?
+            if (AnnoArrType.getAnnotations().size() == 0) {
+                if (AnnoArrType.getComponentType().getUnderlyingType().getKind()
+                        != TypeKind.TYPEVAR) {
+                    AnnoArrType.getComponentType().replaceAnnotation(POLYDET);
+                }
+            }
+        }
+    }
+
     /** @return true if {@code method} is equals */
     public static boolean isEqualsMethod(ExecutableElement method) {
-        if (method.getReturnType().getKind() == TypeKind.BOOLEAN
+        return (method.getReturnType().getKind() == TypeKind.BOOLEAN
                 && method.getSimpleName().contentEquals("equals")
                 && method.getParameters().size() == 1
-                && TypesUtils.isObject(method.getParameters().get(0).asType())) {
-            return true;
-        }
-        return false;
+                && TypesUtils.isObject(method.getParameters().get(0).asType()));
     }
 
     /** @return true if {@code method} is a main method */
@@ -387,8 +400,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Adds default annotations for main method parameters ({@code @Det}) and other array parameters
-     * ({@code @PolyDet[@PolyDet]}).
+     * Adds implicit annotation for main method parameter ({@code @Det}) and default annotations for
+     * the component types of other array parameters ({@code ...[@PolyDet]}).
+     *
+     * <p>Note: The annotation on an array type defaults to {@code @PolyDet[]} and this defaulting
+     * is handled by declarative mechanism.
+     *
+     * <p>Example: Consider the following code:
+     *
+     * <pre><code>
+     * &nbsp; void testArr(int[] a) {
+     * &nbsp; ...
+     * &nbsp; }
+     * </code></pre>
+     *
+     * This method {@code addComputedTypeAnnotations} annotates the component type of parameter
+     * {@code int[] a} as {@code @PolyDet int[] a}.
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
@@ -396,7 +423,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (elt.getEnclosingElement().getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
                 if (isMainMethod(method)) {
+                    if (type.getAnnotations().size() > 0 && !type.hasAnnotation(DET)) {
+                        checker.report(Result.failure("invalid.annotation.on.parameter"), elt);
+                    }
                     type.addMissingAnnotations(Collections.singleton(DET));
+                    // Note: void testArrParam(@PolyDet int @PolyDet [] arr) {}
+                    // getExplicitAnnotations().size() for arr is 0,
+                    // getAnnotations().size() for arr is 1.
                 } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
                     AnnotatedTypeMirror.AnnotatedArrayType arrType =
                             (AnnotatedTypeMirror.AnnotatedArrayType) type;
@@ -427,7 +460,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** @return true if {@code tm} is Iterator or a subtype of Iterator */
     public boolean isIterator(TypeMirror tm) {
-        return types.isSubtype(tm, IteratorTypeMirror);
+        return types.isSubtype(types.erasure(tm), types.erasure(IteratorTypeMirror));
     }
 
     /** @return true if {@code tm} is the Arrays class */

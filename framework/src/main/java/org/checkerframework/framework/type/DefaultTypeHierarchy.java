@@ -1,8 +1,5 @@
 package org.checkerframework.framework.type;
 
-import static org.checkerframework.framework.util.AnnotatedTypes.isDeclarationOfJavaLangEnum;
-import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +38,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * options passed to DefaultTypeHierarchy.
  *
  * <p>Subtyping rules of the JLS can be found in section 4.10, "Subtyping":
- * https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.10
+ * https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.10
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
  * TypeHierarchy interface reference which will only allow isSubtype to be called. It does not make
@@ -318,7 +315,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
      * Containment is described in the JLS section 4.5.1 "Type Arguments of Parameterized Types",
-     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.5.1
+     * https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.5.1
      *
      * @param inside the "subtype" type argument
      * @param outside the "supertype" type argument
@@ -1097,8 +1094,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // asSuper should return:
         // @1 Enum<E extends @2 Enum<E>>
         if (asSuperType != null
-                && isEnum(asSuperType)
-                && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+                && AnnotatedTypes.isEnum(asSuperType)
+                && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
             final AnnotatedDeclaredType resultAtd = ((AnnotatedDeclaredType) supertype).deepCopy();
             resultAtd.clearAnnotations();
             resultAtd.addAnnotations(asSuperType.getAnnotations());

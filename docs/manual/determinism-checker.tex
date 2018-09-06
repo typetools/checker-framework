@@ -196,6 +196,32 @@ if \<@PolyDet> is applied to a collection somewhere in the method signature
 and if the return type isn't a collection, then the return type should be
 annotated as \<@PolyDet("up")> or \<@PolyDet("down")>.
 
+\subsubsection{Improved precision for Set equals\label{improved-precision-set-equals}}
+
+In the JDK, \<equals()> method of \<Set> is annotated as
+\begin{Verbatim}
+@PolyDet("up") boolean equals(@PolyDet Set<E> this, @PolyDet Object o);
+\end{Verbatim}
+While this is sound, it is imprecise.
+For example, consider the code below:
+
+\begin{Verbatim}
+    @OrderNonDet Set<@Det Integer> a;
+    @OrderNonDet Set<@Det Integer> b;
+    a.equals(b);
+\end{Verbatim}
+
+Here, the return type of \<equals()> gets the annotation \<@NonDet>.
+But it would be more precise to annotate it as \<@Det>.
+To achieve this precision, the checker annotates the return type
+of \<equals()> called on a receiver of type \<Set> as \<@Det> if the
+following conditions are true:
+\begin{itemize}
+    \item the receiver does not have {@code List} or its subtype as a type parameter,
+    \item the argument to equals() is also an {@code @OrderNonDet Set}, and
+    \item the argument to equals() also does not have {@code List} or its subtype as a
+    type parameter
+\end{itemize}
 
 \subsection{Distinguishing bindings and uses\label{determinism-polymorphism-binding}}
 
