@@ -1,5 +1,6 @@
 package org.checkerframework.checker.determinism;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
@@ -246,18 +247,47 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         || isArrayListWithTypeVarReturn(receiverUnderlyingType, m)
                         || isLinkedListWithTypeVarReturn(receiverUnderlyingType, m)
                         || isEnumerationWithTypeVarReturn(receiverUnderlyingType, m)) {
-                    if (receiverType.hasAnnotation(NONDET)
-                            || receiverType.hasAnnotation(ORDERNONDET)) {
-                        annotatedRetType.replaceAnnotation(NONDET);
-                    } else {
+                    if (receiverOrArgPoly(receiverType, node)) {
+                        annotatedRetType.replaceAnnotation(POLYDET_UP);
+                        return super.visitMethodInvocation(node, annotatedRetType);
+                    }
+                    boolean isDet = false;
+                    if (receiverType.hasAnnotation(DET)) {
+                        isDet = true;
+                        for (ExpressionTree arg : node.getArguments()) {
+                            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(arg);
+                            if (!argType.hasAnnotation(DET)) {
+                                isDet = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (isDet) {
                         annotatedRetType.replaceAnnotation(DET);
+                    } else {
+                        annotatedRetType.replaceAnnotation(NONDET);
                     }
                 }
                 if (isTreeSetWithTypeVarReturn(receiverUnderlyingType, m)
                         || isNavigableSetWithTypeVarReturn(receiverUnderlyingType, m)
                         || isSortedSetWithTypeVarReturn(receiverUnderlyingType, m)) {
+                    if (receiverOrArgPoly(receiverType, node)) {
+                        annotatedRetType.replaceAnnotation(POLYDET_DOWN);
+                        return super.visitMethodInvocation(node, annotatedRetType);
+                    }
+                    boolean isDetOrOrderNonDet = false;
                     if (receiverType.hasAnnotation(DET)
                             || receiverType.hasAnnotation(ORDERNONDET)) {
+                        isDetOrOrderNonDet = true;
+                        for (ExpressionTree arg : node.getArguments()) {
+                            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(arg);
+                            if (argType.hasAnnotation(NONDET)) {
+                                isDetOrOrderNonDet = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (isDetOrOrderNonDet) {
                         annotatedRetType.replaceAnnotation(DET);
                     } else {
                         annotatedRetType.replaceAnnotation(NONDET);
@@ -282,6 +312,19 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return super.visitMemberSelect(node, annotatedTypeMirror);
         }
+    }
+
+    private boolean receiverOrArgPoly(AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
+        if (receiverType.hasAnnotation(POLYDET)) {
+            return true;
+        }
+        for (ExpressionTree arg : node.getArguments()) {
+            AnnotatedTypeMirror argType = getAnnotatedType(arg);
+            if (argType.hasAnnotation(POLYDET)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
