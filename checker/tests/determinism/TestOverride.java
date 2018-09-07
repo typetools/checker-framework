@@ -13,6 +13,10 @@ public class TestOverride {
     protected @PolyDet int getList(@PolyDet ArrayList<Integer> a) {
         return a.get(0);
     }
+
+    protected @NonDet int getList1(@Det ArrayList<Integer> a, @NonDet int b) {
+        return a.get(b);
+    }
 }
 
 class Child extends TestOverride {
