@@ -13,6 +13,12 @@ class Overflows {
         @IntVal(-128) byte maxPlus1 = (byte) (max + 1);
     }
 
+    static void chars() {
+        char max = Character.MAX_VALUE;
+        // :: warning: (cast.unsafe)
+        @IntVal(0) char maxPlus1 = (char) (max + 1);
+    }
+
     static void shorts() {
         short max = Short.MAX_VALUE;
         // :: warning: (cast.unsafe)

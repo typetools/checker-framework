@@ -23,6 +23,7 @@ import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -236,6 +237,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
                 return p;
             }
+            if (castType.getKind() == TypeKind.CHAR && castRange.isCharEverything()) {
+                return p;
+            }
             if (castType.getKind() == TypeKind.INT && castRange.isIntEverything()) {
                 return p;
             }
@@ -247,17 +251,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // In that case, do not warn if the range of the expression encompasses
                 // the whole type being casted to (i.e. the warning is actually about overflow).
                 Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
-                switch (castType.getKind()) {
-                    case BYTE:
-                        exprRange = exprRange.byteRange();
-                        break;
-                    case SHORT:
-                        exprRange = exprRange.shortRange();
-                        break;
-                    case INT:
-                        exprRange = exprRange.intRange();
-                        break;
-                    default:
+                TypeKind casttypekind = castType.getKind();
+                if (casttypekind == TypeKind.BYTE
+                        || casttypekind == TypeKind.SHORT
+                        || casttypekind == TypeKind.CHAR
+                        || casttypekind == TypeKind.INT) {
+                    exprRange = NumberUtils.castRange(castType.getUnderlyingType(), exprRange);
                 }
                 if (castRange.equals(exprRange)) {
                     return p;

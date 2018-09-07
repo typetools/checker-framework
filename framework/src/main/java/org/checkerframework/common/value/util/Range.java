@@ -42,6 +42,9 @@ public class Range {
     /** A range containing all possible 8-bit values. */
     public static final Range BYTE_EVERYTHING = new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
+    /** A range containing all possible char values. */
+    public static final Range CHAR_EVERYTHING = new Range(Character.MIN_VALUE, Character.MAX_VALUE);
+
     /** The empty range. */
     public static final Range NOTHING = new Range();
 
@@ -121,6 +124,11 @@ public class Range {
     /** Return true if this range contains every {@code byte} value. */
     public boolean isByteEverything() {
         return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code char} value. */
+    public boolean isCharEverything() {
+        return from == Character.MIN_VALUE && to == Character.MAX_VALUE;
     }
 
     /** Return true if this range contains no values. */
@@ -230,6 +238,42 @@ public class Range {
             return new Range(byteFrom, byteTo);
         }
         return BYTE_EVERYTHING;
+    }
+
+    /** The number of values representable in char: */
+    private static long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
+
+    /**
+     * Converts a this range to a char range.
+     *
+     * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Character range,
+     * then that bound is set to the bound of the Character range.
+     *
+     * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
+     * range of the Character class, return CHAR_EVERYTHING.
+     *
+     * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
+     * 8-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
+     * e.g., Character.MAX_VALUE + 1 is converted to Character.MIN_VALUE.
+     */
+    public Range charRange() {
+        if (this.isNothing()) {
+            return this;
+        }
+        if (ignoreOverflow) {
+            return new Range(
+                    Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
+        }
+        if (this.isWiderThan(charWidth)) {
+            // char is be promoted to int before the operation so no need for explicit casting
+            return CHAR_EVERYTHING;
+        }
+        char charFrom = (char) this.from;
+        char charTo = (char) this.to;
+        if (charFrom <= charTo) {
+            return new Range(charFrom, charTo);
+        }
+        return CHAR_EVERYTHING;
     }
 
     /** Returns true if the element is contained in this range. */
