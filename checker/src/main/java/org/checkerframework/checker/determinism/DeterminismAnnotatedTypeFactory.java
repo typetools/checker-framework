@@ -178,7 +178,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMethodInvocation(
                 MethodInvocationTree node, AnnotatedTypeMirror annotatedRetType) {
-            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(node);
+            AnnotatedTypeMirror receiverType = getReceiverType(node);
 
             // ReceiverType is null for abstract classes
             // (Example: Ordering.natural() in tests/all-systems/PolyCollectorTypeVars.java)
@@ -186,7 +186,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, annotatedRetType);
             }
 
-            ExecutableElement m = atypeFactory.methodFromUse(node).methodType.getElement();
+            ExecutableElement m = methodFromUse(node).methodType.getElement();
 
             // If return type (non-array, non-collection, and non-iterator) resolves to
             // @OrderNonDet, replaces the annotation on the return type with @NonDet.
@@ -218,8 +218,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (isEqualsMethod(m)) {
-                AnnotatedTypeMirror argument =
-                        atypeFactory.getAnnotatedType(node.getArguments().get(0));
+                AnnotatedTypeMirror argument = getAnnotatedType(node.getArguments().get(0));
                 if (isSet(receiverUnderlyingType.asType())
                         && receiverType.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(receiverType)
@@ -247,22 +246,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         || isArrayListWithTypeVarReturn(receiverUnderlyingType, m)
                         || isLinkedListWithTypeVarReturn(receiverUnderlyingType, m)
                         || isEnumerationWithTypeVarReturn(receiverUnderlyingType, m)) {
-                    if (receiverOrArgPoly(receiverType, node)) {
+                    // Annotates the return types of these methods as @PolyDet("up").
+                    if (isReceiverOrArgPoly(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(POLYDET_UP);
                         return super.visitMethodInvocation(node, annotatedRetType);
                     }
-                    boolean isDet = false;
-                    if (receiverType.hasAnnotation(DET)) {
-                        isDet = true;
-                        for (ExpressionTree arg : node.getArguments()) {
-                            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(arg);
-                            if (!argType.hasAnnotation(DET)) {
-                                isDet = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (isDet) {
+                    if (isReceiverAndArgsDet(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(DET);
                     } else {
                         annotatedRetType.replaceAnnotation(NONDET);
@@ -271,23 +260,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (isTreeSetWithTypeVarReturn(receiverUnderlyingType, m)
                         || isNavigableSetWithTypeVarReturn(receiverUnderlyingType, m)
                         || isSortedSetWithTypeVarReturn(receiverUnderlyingType, m)) {
-                    if (receiverOrArgPoly(receiverType, node)) {
+                    // Annotates the return types of these methods as @PolyDet("down").
+                    if (isReceiverOrArgPoly(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(POLYDET_DOWN);
                         return super.visitMethodInvocation(node, annotatedRetType);
                     }
-                    boolean isDetOrOrderNonDet = false;
-                    if (receiverType.hasAnnotation(DET)
-                            || receiverType.hasAnnotation(ORDERNONDET)) {
-                        isDetOrOrderNonDet = true;
-                        for (ExpressionTree arg : node.getArguments()) {
-                            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(arg);
-                            if (argType.hasAnnotation(NONDET)) {
-                                isDetOrOrderNonDet = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (isDetOrOrderNonDet) {
+                    if (isReceiverAndArgsDetOrOrderNonDet(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(DET);
                     } else {
                         annotatedRetType.replaceAnnotation(NONDET);
@@ -305,7 +283,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isArrayLengthAccess(node)) {
                 AnnotatedTypeMirror.AnnotatedArrayType arrType =
                         (AnnotatedTypeMirror.AnnotatedArrayType)
-                                atypeFactory.getAnnotatedType(node.getExpression());
+                                getAnnotatedType(node.getExpression());
                 if (arrType.hasAnnotation(NONDET)) {
                     annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
@@ -314,7 +292,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    private boolean receiverOrArgPoly(AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
+    /**
+     * Returns true if any of the arguments of the method invocation {@code node} or the {@code
+     * receiverType} are annotated as {@code @PolyDet}.
+     */
+    private boolean isReceiverOrArgPoly(
+            AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
         if (receiverType.hasAnnotation(POLYDET)) {
             return true;
         }
@@ -323,6 +306,42 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (argType.hasAnnotation(POLYDET)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if all the arguments of the method invocation {@code node} and the {@code
+     * receiverType} are annotated as {@code @Det}.
+     */
+    private boolean isReceiverAndArgsDet(
+            AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
+        if (receiverType.hasAnnotation(DET)) {
+            for (ExpressionTree arg : node.getArguments()) {
+                AnnotatedTypeMirror argType = getAnnotatedType(arg);
+                if (!argType.hasAnnotation(DET)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if all the arguments of the method invocation {@code node} and the {@code
+     * receiverType} are annotated either as {@code @Det} or {@code @OrderNonDet}.
+     */
+    private boolean isReceiverAndArgsDetOrOrderNonDet(
+            AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
+        if (receiverType.hasAnnotation(DET) || receiverType.hasAnnotation(ORDERNONDET)) {
+            for (ExpressionTree arg : node.getArguments()) {
+                AnnotatedTypeMirror argType = getAnnotatedType(arg);
+                if (argType.hasAnnotation(NONDET)) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }
