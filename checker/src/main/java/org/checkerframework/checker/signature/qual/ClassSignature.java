@@ -15,6 +15,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @see GenericSignature
  */
-@SubtypeOf(GenericSignatureWithTypeParameters.class)
+@SubtypeOf(GenericSignatureForDeclarations.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface ClassSignature {}
