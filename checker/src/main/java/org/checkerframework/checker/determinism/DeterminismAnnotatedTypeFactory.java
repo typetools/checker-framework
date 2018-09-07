@@ -234,7 +234,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Checks if the return type is not a TYPEVAR, and if the invoked method belongs
             // to a set of (hardcoded) Collection methods in the JDK that return a generic type.
             // If the check succeeds, annotates the return type depending on the
-            // type of the receiver.
+            // type of the receiver and the method invoked.
             // Note: Annotating a generic type with @Polydet(or any annotation for that matter)
             // constrains both its upper and
             // lower bounds which was the root cause for Issue#14.
