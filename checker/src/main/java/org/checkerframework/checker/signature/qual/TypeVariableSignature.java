@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * Represents the signature of a Type Variable as defined in <a
  * href="https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1">Java Virtual
- * Machine Specification, section 4.3.2</a>.
+ * Machine Specification, section 4.7.9.1</a>.
  *
  * <p>For example:
  *

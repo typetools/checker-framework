@@ -10,6 +10,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * superclass and direct superinterfaces, if any. A type parameter is described by its name,
  * followed by any class bound and interface bounds.
  *
+ * <p>For example, ClassSignature of class {@code class T<R extends Runnable> extends
+ * GenericClass<R>} is {@code <R:Object:Runnable>Lorg/pkg/GenericClass<TR;>;}
+ *
  * @see GenericSignature
  */
 @SubtypeOf(GenericSignatureWithTypeParameters.class)
