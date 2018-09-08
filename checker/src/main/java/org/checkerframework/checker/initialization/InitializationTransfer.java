@@ -31,7 +31,6 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TreeUtils;
-import com.sun.tools.javac.code.Symbol.Completer;
 
 /**
  * A transfer function that extends {@link CFAbstractTransfer} and tracks {@link
@@ -130,7 +129,7 @@ public class InitializationTransfer<
             List<VariableElement> result, TypeElement clazzElem) {
         List<VariableElement> fields = ElementFilter.fieldsIn(clazzElem.getEnclosedElements());
         for (VariableElement field : fields) {
-            if (((Symbol) field).type.tsym.completer != Completer.NULL_COMPLETER) {
+            if (((Symbol) field).type.tsym.completer != Symbol.Completer.NULL_COMPLETER) {
                 // If the type is not completed yet, we might run
                 // into trouble. Skip the field.
                 // TODO: is there a nicer solution?
