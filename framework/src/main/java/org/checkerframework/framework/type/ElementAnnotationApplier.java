@@ -7,6 +7,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -76,7 +77,13 @@ public class ElementAnnotationApplier {
             TypeVarUseApplier.apply(type, element, typeFactory);
 
         } else if (VariableApplier.accepts(type, element)) {
-            VariableApplier.apply(type, element);
+            if (element.getKind() != ElementKind.LOCAL_VARIABLE) {
+                // For local variables we have the source code,
+                // so there is no need to look at the Element.
+                // This is needed to avoid a bug in the JDK:
+                // https://github.com/eisop/checker-framework/issues/14
+                VariableApplier.apply(type, element);
+            }
 
         } else if (MethodApplier.accepts(type, element)) {
             MethodApplier.apply(type, element, typeFactory);
