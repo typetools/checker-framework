@@ -489,7 +489,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<Symbol> result = new ArrayList<>();
         try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class, RecoveryLoadClass.class);
+            Method loadClass =
+                    Resolve.class.getDeclaredMethod(
+                            "loadClass", Env.class, Name.class, RecoveryLoadClass.class);
             loadClass.setAccessible(true);
             Symbol sym = (Symbol) loadClass.invoke(resolve, env, names.fromString(className), null);
             if (!sym.exists()) {
@@ -545,9 +547,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<Symbol> result = new ArrayList<>();
         try {
-            Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class, RecoveryLoadClass.class);
+            Method loadClass =
+                    Resolve.class.getDeclaredMethod(
+                            "loadClass", Env.class, Name.class, RecoveryLoadClass.class);
             loadClass.setAccessible(true);
-            Symbol symClass = (Symbol) loadClass.invoke(resolve, env, names.fromString(className), null);
+            Symbol symClass =
+                    (Symbol) loadClass.invoke(resolve, env, names.fromString(className), null);
             if (!symClass.exists()) {
                 debugReflection("Unable to resolve class: " + className);
                 return Collections.emptyList();
