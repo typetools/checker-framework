@@ -143,17 +143,32 @@ pkg.Outer.Inner[]   & [Lpkg.Outer\$Inner;  & [Lpkg/Outer\$Inner;  & \naforarray 
 
 \subsection{String representation of declarations\label{signature-annotations-declarations}}
 
-Java defines one format for the string representation of a class
-declaration, and two formats for the string representation of a method
-signature.
-(For details on classfile signature representations, see
-\href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1}.)
+Java defines one format for the string representation of a class ([\refqualclass{checker/signature/qual}{ClassSigature}])
+declaration, one format for the string representation of generic
+types ([\refqualclass{checker/signature/qual}{JavaTypeSignature}])
+and two formats for the string representation of a method signature.
 
 Figure~\ref{fig-generic-signature-hierarchy} shows annotations related to
 these.
 
 \begin{description}
 
+\item[\refqualclass{checker/signature/qual}{JavaTypeSignature}]
+  A \emph{JavaTypeSignature} (\href{https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.9.1}{JVMS \S
+    4.7.9.1}) represents the signature of a generic type of a type variable,
+        stored in the class file for debugging. It has many subtypes:
+
+        1. FieldDescriptorForPrimitive
+
+        2. TypeVariableSignature ( \emph{TIdentifier;}, for a type variable named 'Identifier' )
+
+        3. ClassTypeSignature
+
+        4. ArrayTypeSignature
+
+(For details on classfile signature representations, see \href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.7.9.1}{JVMS \S4.7.9.1}.)
+\item[\refqualclass{checker/signature/qual}{MethodSignature}]
+    Similar to \emph{JavaTypeSignature}s. Stored in classfile for debugging.
 \item[\refqualclass{checker/signature/qual}{MethodDescriptor}]
   A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.3.3}{JVMS \S
     4.3.3}) identifies a method's signature (its parameter and return
