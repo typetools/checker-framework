@@ -116,7 +116,8 @@ abstract class TargetedElementAnnotationApplier {
             }
         }
         if (!remaining.isEmpty()) {
-            ErrorReporter.errorAbort(
+            StringBuilder msg = new StringBuilder();
+            msg.append(
                     this.getClass().getName()
                             + ".handleInvalid: "
                             + "Invalid variable and element passed to extractAndApply; type: "
@@ -126,13 +127,19 @@ abstract class TargetedElementAnnotationApplier {
                             + element
                             + " (kind: "
                             + element.getKind()
-                            + "), invalid annotations: "
-                            + PluginUtil.join(", ", remaining)
-                            + "\n"
+                            + "), invalid annotations: ");
+            List<String> remainingInfo = new ArrayList<>(remaining.size());
+            for (Attribute.TypeCompound r : remaining) {
+                remainingInfo.add(r.toString() + " (" + r.position + ")");
+            }
+            msg.append(PluginUtil.join(", ", remainingInfo));
+            msg.append(
+                    "\n"
                             + "Targeted annotations: "
                             + PluginUtil.join(", ", annotatedTargets())
                             + "; Valid annotations: "
                             + PluginUtil.join(", ", validTargets()));
+            ErrorReporter.errorAbort(msg.toString());
         }
     }
 
