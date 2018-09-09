@@ -38,7 +38,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             "invalid.array.assignment";
 
     /**
-     * Fixes the lower bound for exception parameters as {@code @Det}.
+     * The lower bound for exception parameters is {@code @Det}.
      *
      * @return set of lower bound annotations for exception parameters
      */
@@ -59,14 +59,15 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      * @param declarationType the type of any non-primitive, non-array class (TypeElement)
      * @param useType the use of the {@code declarationType} class (instance type)
      * @param tree the tree where the type is used
-     * @return true if the annotation is valid and false otherwise
+     * @return true if the annotation is valid and false otherwise (in which case an error is also
+     *     reported)
      */
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         TypeMirror javaType = useType.getUnderlyingType();
 
-        // Raises an error if a non-collections is annotated with @OrderNonDet.
+        // Raises an error if a non-collection type is annotated with @OrderNonDet.
         if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
                 && !atypeFactory.mayBeOrderNonDet(javaType)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
@@ -100,8 +101,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      */
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        Set<AnnotationMirror> annos = type.getAnnotations();
-        if (annos.contains(atypeFactory.ORDERNONDET)) {
+        // TODO: Why doesn't this use hasAnnotation(...), rather than
+        // getAnnotations().contains(...)?
+        if (type.getAnnotations().contains(atypeFactory.ORDERNONDET)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
             return false;
         }
@@ -131,10 +133,14 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Reports and error if {@code subAnnotation} is not a subtype of {@code superAnnotation}.
+     * Reports the given if {@code subAnnotation} is not a subtype of {@code superAnnotation}.
      *
-     * @return true if the subtyping relationship is invalid, false otherwise
+     * @return true if the subtyping relationship is invalid (and an error was reported), false
+     *     otherwise
      */
+    // TODO: This method name is vague.  It will be easier to read client code if "invalid" is
+    // replaced by something more specific.  You could name it something like "isSubtype".  The
+    // Javadoc "is invalid" should be similarly made more concrete.
     private boolean isInvalidSubtyping(
             AnnotationMirror subAnnotation,
             AnnotationMirror superAnnotation,
@@ -170,13 +176,14 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             ArrayAccessTree arrTree = (ArrayAccessTree) varTree;
             AnnotatedTypeMirror arrExprType =
                     atypeFactory.getAnnotatedType(arrTree.getExpression());
-            AnnotatedTypeMirror.AnnotatedArrayType arrType =
-                    (AnnotatedTypeMirror.AnnotatedArrayType) arrExprType;
+            AnnotatedArrayType arrType = (AnnotatedArrayType) arrExprType;
             AnnotationMirror arrTopType = arrType.getAnnotationInHierarchy(atypeFactory.NONDET);
             AnnotationMirror indexType =
                     atypeFactory
                             .getAnnotatedType(arrTree.getIndex())
                             .getAnnotationInHierarchy(atypeFactory.NONDET);
+            // Why doesn't this call isInvalidSubtyping?  It seems to do exactly what that method
+            // does.
             if (!atypeFactory.getQualifierHierarchy().isSubtype(indexType, arrTopType)) {
                 checker.report(
                         Result.failure(INVALID_ARRAY_ASSIGNMENT, arrTopType, indexType), varTree);
@@ -186,9 +193,16 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
+    // TODO: x[i] as an lvalue is not an assay access; rather, it is an array assignment.
+    // Does the Checker Framework call them both array accesses and make it impossible to
+    // distinguish them?  I would expect it to be possible to determine whether a "[]" operator is
+    // in an lvalue or an rvalue position, and thus to give every (rvalue) array access x[i] the
+    // qualifier @NonDet, without affecting lvalue types.  Then, you don't need to have duplicated
+    // code.
     /**
-     * When an element of an array of type {@code @OrderNonDet} or {@code @NonDet} is accessed, this
-     * method annotates the type of that element as {@code @NonDet}. Example:
+     * When an array of type {@code @OrderNonDet} or {@code @NonDet} is accessed, this method
+     * annotates the type of the array access expression (equivalently, the array element) as
+     * {@code @NonDet}. Example:
      *
      * <pre><code>
      * &nbsp; @Det int @NonDet int[] arr;
@@ -224,10 +238,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             @CompilerMessageKey String errorKey) {
         if (valueTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
             ArrayAccessTree arrTree = (ArrayAccessTree) valueTree;
-            AnnotatedTypeMirror arrExprType =
-                    atypeFactory.getAnnotatedType(arrTree.getExpression());
-            AnnotatedTypeMirror.AnnotatedArrayType arrType =
-                    (AnnotatedTypeMirror.AnnotatedArrayType) arrExprType;
+            AnnotatedArrayType arrType =
+                    (AnnotatedArrayType) atypeFactory.getAnnotatedType(arrTree.getExpression());
             AnnotationMirror arrTopType = arrType.getAnnotationInHierarchy(atypeFactory.NONDET);
             if (AnnotationUtils.areSame(arrTopType, atypeFactory.ORDERNONDET)
                     || AnnotationUtils.areSame(arrTopType, atypeFactory.NONDET)) {

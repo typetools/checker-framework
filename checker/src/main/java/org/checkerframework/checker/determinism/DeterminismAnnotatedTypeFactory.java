@@ -28,6 +28,9 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -157,6 +160,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: The below comment "is not {@code List}" seems wrong.  It should be "@OrderNonDet
+        // List", right?
         /**
          * Replaces the annotation on the return type of a method invocation as follows:
          *
@@ -164,10 +169,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
          *       array or a collection, it is replaced with {@code @NonDet}.
          *   <li>Return type of equals() gets the annotation {@code @Det}, when both the receiver
-         *       and the argument satisfy these conditions::
+         *       and the argument satisfy these conditions:
          *       <ol>
-         *         <li>the type is {@code OrderNonDet Set}, and
-         *         <li>it does not have {@code List} or its subtype as a type argument
+         *         <li>the type is {@code @OrderNonDet Set}, and
+         *         <li>its type argument is not {@code List} or a subtype
          *       </ol>
          * </ol>
          *
@@ -194,6 +199,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && !mayBeOrderNonDet(annotatedRetType.getUnderlyingType())) {
                 annotatedRetType.replaceAnnotation(NONDET);
             }
+
+            // TODO: Why is this referring to the manual rather than the documentation at the top of
+            // the method?  This implies they are different.  Why doesn't the method docementation
+            // reference the manual?
 
             // Annotates the return type of "equals()" method called on a Set receiver
             // as described in https://checkerframework.org/manual/#improved-precision-set-equals.
@@ -235,9 +244,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // to a set of (hardcoded) Collection methods in the JDK that return a generic type.
             // If the check succeeds, annotates the return type depending on the
             // type of the receiver and the method invoked.
-            // Note: Annotating a generic type with @Polydet(or any annotation for that matter)
-            // constrains both its upper and
-            // lower bounds which was the root cause for Issue#14.
+            // Note: Annotating a generic type with @PolyDet (or any annotation for that matter)
+            // constrains both its upper and lower bounds which was the root cause for Issue#14.
             // Therefore, we do not annotate the return types of these methods in the JDK.
             // Instead, we annotate the return type at the method invocation.
             if (annotatedRetType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
@@ -281,9 +289,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitMemberSelect(
                 MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
             if (TreeUtils.isArrayLengthAccess(node)) {
-                AnnotatedTypeMirror.AnnotatedArrayType arrType =
-                        (AnnotatedTypeMirror.AnnotatedArrayType)
-                                getAnnotatedType(node.getExpression());
+                AnnotatedArrayType arrType =
+                        (AnnotatedArrayType) getAnnotatedType(node.getExpression());
                 if (arrType.hasAnnotation(NONDET)) {
                     annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
@@ -294,7 +301,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns true if any of the arguments of the method invocation {@code node} or the {@code
-     * receiverType} are annotated as {@code @PolyDet}.
+     * receiverType} is annotated as {@code @PolyDet}.
      */
     private boolean isReceiverOrArgPoly(
             AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
@@ -316,6 +323,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private boolean isReceiverAndArgsDet(
             AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
+        // TODO: The structure of isReceiverOrArgPoly is inconsistent with this method and with
+        // isReceiverAndArgsDetOrOrderNonDet.
+        // isReceiverOrArgPoly uses a short-cutting `return` but this does not.  Try to make code
+        // use a consistent style.  When a reader sees a difference in coding paradigms, the reader
+        // will assume there is a specific reason for it.  I would use the short-cutting version,
+        // because it's no longer, but has less indentation; but either way, give the code similar
+        // style.
         if (receiverType.hasAnnotation(DET)) {
             for (ExpressionTree arg : node.getArguments()) {
                 AnnotatedTypeMirror argType = getAnnotatedType(arg);
@@ -351,8 +365,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * atm}.
      */
     private boolean hasOrderNonDetListAsTypeArgument(AnnotatedTypeMirror atm) {
-        AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
-                (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
+        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) atm;
         for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
             if (isList(argType.getUnderlyingType()) && argType.hasAnnotation(ORDERNONDET)) {
                 return true;
@@ -364,7 +377,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns true if {@code javaType} may be annotated as {@code @OrderNonDet}.
      *
-     * @param javaType the declared type to be checked
+     * @param javaType the type to be checked
      * @return true if {@code javaType} is Collection (or a subtype), Iterator (or a subtype), or an
      *     array
      */
@@ -379,15 +392,32 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: in the comment, "arguments" should be "parameters".
+        // TODO: its' inconsistent that the first bullet point says "annotates unannotated" but the
+        // second bullet point says "annotates", which implies it is not defaulting.  You could
+        // replace both by "Defaults" (using "default" as a verb).
+        // TODO: The method has 3 features, but the example relates to the middle one.  There is no
+        // indication of this in the comment, which makes it confusing to read.
+        // TODO: The explanation is confusing.  It says that "a[0] is @PolyDet", but that does not
+        // seem to be true, and the whole point of this method is that it isn't true.  (Maybe it
+        // *should* be true, but that's different.)  I'm not sure a counterfactual is helpful here.
+        // If you want to discuss problems, talk about types (what the type of an expression should
+        // be) rather than talking about what "would be flagged as an error", which requires further
+        // reasoning about all the behaviors of the checker, when the point here is to set the type
+        // of an expression.  Likewise, the assignment "i = " is a distraction.  You could just as
+        // well have written "... a[0] ..." to show that a[0] is being used as an rvalue, without
+        // bringing in assignment which isn't relevant to the discussion and therefore is more
+        // likely to confuse than to clarify.
         /**
          * Places the implicit annotation {@code Det} on the type of the main method's parameter.
-         * Places the following default annotations:
+         *
+         * <p>Places the following default annotations:
          *
          * <ol>
          *   <li>Annotates unannotated component types of array arguments and return types as {@code
          *       ...[@PolyDet]}.
-         *   <li>Annotates the return type for methods with no unannotated or @PolyDet formal
-         *       parameters (including the receiver) as {@code @Det}.
+         *   <li>Annotates the return type for methods with no @PolyDet formal parameters (including
+         *       the receiver) as {@code @Det}.
          * </ol>
          *
          * <p>Example: Consider the following code:
@@ -404,9 +434,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * not flagged as an error by the checker.
          */
         @Override
-        public Void visitExecutable(
-                final AnnotatedTypeMirror.AnnotatedExecutableType t, final Void p) {
+        public Void visitExecutable(final AnnotatedExecutableType t, final Void p) {
             if (isMainMethod(t.getElement())) {
+                // TODO: There is repeated logic for this case, both in method
+                // addComputedTypeAnnotations and in this method.  Please avoid duplication:  put
+                // the logic in just one place.  Or explain why it is essential for it to be
+                // duplicated (but I would not expect that to be necessary).
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             } else {
@@ -417,12 +450,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // t.getReceiverType() is null for both "Object <init>()"
                 // and for static methods.
+                // TODO: It's considered better style (and may be more efficient) to use
+                // ".isempty()" rather than ".size() == 0".
                 if (t.getReturnType().getAnnotations().size() == 0
                         && (t.getReceiverType() == null
                                 || (t.getReceiverType().getAnnotations().size() != 0
                                         && !t.getReceiverType().hasAnnotation(POLYDET)))) {
-                    boolean unannotatedOrPolyDet = false;
+                    // True if some formal parameter has a @PolyDet annotation
+                    boolean hasPolyDet = false;
                     for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
+                        // The default is @PolyDet, so treat unannotated the same as @PolyDet
                         if (paramType.getAnnotations().size() == 0
                                 || paramType.hasAnnotation(POLYDET)) {
                             unannotatedOrPolyDet = true;
@@ -438,18 +475,35 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    // TODO: It would be great to handle as many TODOs as possible.  Otherwise, once you address
+    // them, the code has to be reviewed again.
     // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
     // and test.
+    // TODO: You never need to write "Helper method that".  It is obvious from the `private`
+    // modifier, and documentation should focus first on what the method does, and only secondarily
+    // on how it is intended to be used.
+    // TODO: It's inconsistent that the documentation says "component type" and the method name is
+    // "element type".
+    // TODO: The documentation "the array type" indicates that the argument must be an array.  That
+    // is not true.  The parameter name `arrType` is also misleading, though clear documentatino
+    // might be enough to fix that problem.
     /**
      * Helper method that places the default annotation on component type of the array type {@code
      * arrType} as @PolyDet.
      */
     private void defaultArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
         if (arrType.getKind() == TypeKind.ARRAY) {
-            AnnotatedTypeMirror.AnnotatedArrayType AnnoArrType =
-                    (AnnotatedTypeMirror.AnnotatedArrayType) arrType;
+            // TODO: do not capitalize variable names.
+            AnnotatedArrayType AnnoArrType = (AnnotatedArrayType) arrType;
+            // TODO: It's unclear how this example is related to the method.  What is it an example
+            // of?  The example code is a method call, so it cannot be the argument to this method,
+            // and the doucmentation gives no indication of how the method was called.  Examples
+            // with no context appeared elsewhere in the code, too, and it does more harm than good.
             // Example: @Det int @Det[] returnArrExplicit(){}
             // Here, AnnoArrType is @Det int @Det[].
+            // TODO: what is the point of the facts on the following two lines?  It's confusing to
+            // state facts without indicating why they are relevant or what the reader should infer
+            // from them.
             // arrParamType.getExplicitAnnotations().size() returns 0,
             // arrParamType.getAnnotations().size() returns 1.
             // getExplicitAnnotations works only with type use locations?
@@ -495,13 +549,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * <pre><code>
      * &nbsp; void testArr(int[] a) {
-     * &nbsp; ...
+     * &nbsp;   ...
      * &nbsp; }
      * </code></pre>
      *
      * This method {@code addComputedTypeAnnotations} annotates the component type of parameter
      * {@code int[] a} as {@code @PolyDet int[] a}.
      */
+    // TODO: How is this method related to visitExecutable?  The logic seems very similar.  Why does
+    // it have to be duplicated?  If it's duplicated, why is the style/structure of the code
+    // different in the two methods?
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         if (elt.getKind() == ElementKind.PARAMETER) {
@@ -512,12 +569,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         checker.report(Result.failure("invalid.annotation.on.parameter"), elt);
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
+                    // TODO: Here is another comment that I cannot understand.  Why is the
+                    // testArrParam method declaration important?
                     // Note: void testArrParam(@PolyDet int @PolyDet [] arr) {}
                     // getExplicitAnnotations().size() for arr is 0,
                     // getAnnotations().size() for arr is 1.
                 } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
-                    AnnotatedTypeMirror.AnnotatedArrayType arrType =
-                            (AnnotatedTypeMirror.AnnotatedArrayType) type;
+                    AnnotatedArrayType arrType = (AnnotatedArrayType) type;
                     if (arrType.getComponentType().getKind() != TypeKind.TYPEVAR) {
                         arrType.getComponentType()
                                 .addMissingAnnotations(Collections.singleton(POLYDET));
@@ -558,6 +616,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSameType(tm, CollectionsTypeMirror);
     }
 
+    // TODO: The term "its subtype" implies there is exactly one subtype (which is rare and not what
+    // you mean).  "a subtype" doesn't make this implication.
     /** @return true if {@code tm} is AbstractList or its subtype */
     public boolean isAbstractList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(AbstractListTypeMirror));
@@ -598,6 +658,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSubtype(types.erasure(tm), types.erasure(EnumerationTypeMirror));
     }
 
+    // TODO: The comment "returns a generic type" is at odds with the method name "isIteratorNext"
     /**
      * Returns true if {@code receiverUnderlyingType} is Iterator and if {@code
      * invokedMethodElement} returns a generic type.
@@ -615,7 +676,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if {@code receiverUnderlyingType} is AbstractList, AbstractSequentialList or
+     * Returns true if {@code receiverUnderlyingType} is AbstractList, AbstractSequentialList, or
      * List and if {@code invokedMethodElement} returns a generic type.
      */
     private boolean isAbstractListWithTypeVarReturn(

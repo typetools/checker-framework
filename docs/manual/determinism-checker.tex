@@ -196,9 +196,14 @@ if \<@PolyDet> is applied to a collection somewhere in the method signature
 and if the return type isn't a collection, then the return type should be
 annotated as \<@PolyDet("up")> or \<@PolyDet("down")>.
 
-\subsubsection{Improved precision for Set equals\label{improved-precision-set-equals}}
+% TODO: "Set equals" is not the Java way to describe a method.  Use
+% "Set.equals" or "Set.equals()" instead.
+% TODO: Per
+% https://checkerframework.org/manual/#creating-documenting-a-checker, the
+% label should start with the checker name.
+\subsubsection{Special handling of Set equals\label{improved-precision-set-equals}}
 
-In the JDK, \<equals()> method of \<Set> is annotated as
+In the JDK, the \<equals()> method of \<Set> is annotated as
 \begin{Verbatim}
 @PolyDet("up") boolean equals(@PolyDet Set<E> this, @PolyDet Object o);
 \end{Verbatim}
@@ -295,13 +300,20 @@ deterministic.  If it is be too restrictive for your program:
 
 The default annotation for most unannotated types is \<@Det>.
 
-The default annotation for an unannotated formal parameter or return type
-is \<@PolyDet> (for arrays, both the array type and its component type
-are defaulted to \<@PolyDet>).
-This permits all possible arguments to the method.
-As an exception, the return type of a method with no unannotated or
-\<@PolyDet> formal parameters (including the receiver)
-defaults to \<@Det>.
+Method and constructor signatures:
+\begin{itemize}
+\item
+  Formal parameter and return types default to is \<@PolyDet>.
+\item
+  If a formal/return type is an array, its component type defaults to
+  \<@PolyDet>.
+\item
+  As an exception, the return type of a method with no unannotated or
+  \<@PolyDet> formal parameters (including the receiver) defaults to
+  \<@Det>.
+\end{itemize}
+
+These choices permit all possible arguments to an unannotated method.
 
 The default annotation on constructor parameters and return types is also \<@PolyDet>.
 This scheme of defaulting allows the construction of Objects whose type

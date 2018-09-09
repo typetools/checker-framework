@@ -16,6 +16,8 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TypesUtils;
 
+// TODO: It would be better to put TODO comments near the relevant code.  It took me a while to
+// find this in the helper method typeRefine().
 // TODO-rashmi: type refinement for first argument of Collections.shuffle() from
 // @Det to @OrderNonDet doesn't seem to work.
 // result.getThenStore().insertValue(receiver, replaceType); replaces the
@@ -58,6 +60,8 @@ public class DeterminismTransfer extends CFTransfer {
 
         // TypesUtils.getTypeElement(receiver.getType()) is null for generic type arguments.
         if (TypesUtils.getTypeElement(receiver.getType()) == null) {
+            // Why is this return statement correct?
+            // Is it because none of the 5 cases has a generic type argument?
             return result;
         }
 
@@ -67,6 +71,8 @@ public class DeterminismTransfer extends CFTransfer {
 
         // Type refinement for List.sort
         if (isListSort(factory, receiver, underlyingTypeOfReceiver, methName)) {
+            // TODO: Why does this use getAnnotation(Class) and then a test against null?
+            // I think it would be clearer to use hasAnnotation(ORDERNONDET).  Is that not possible?
             AnnotationMirror receiverAnno =
                     factory.getAnnotatedType(receiver.getTree()).getAnnotation(OrderNonDet.class);
             if (receiverAnno != null) {
@@ -80,12 +86,18 @@ public class DeterminismTransfer extends CFTransfer {
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
 
+                // TODO: It is confusing, that the comment mentions only Arrays.sort(T[],
+                // Comparator) but the code also handles Arrays.sort(T[]).
                 // Consider the call to Arrays.sort(T[], Comparator<? super T> c)
                 // The first argument of this method invocation must be type-refined
                 // iff it is annotated as @OrderNonDet and the second argument
                 // is annotated @Det (Not if it is @NonDet).
                 // The following code sets the flag typeRefine to true iff
                 // all arguments except the first are annotated as @Det.
+                // TODO: There are only two possibilities for "all arguments except the first":
+                // there are 0 or 1 of them.  It would be clearer to handle those two cases with an
+                // if statement rather than a for loop that you expect to iterate exactly 0 or 1
+                // times.
                 boolean typeRefine = true;
                 for (int i = 1; i < n.getArguments().size(); i++) {
                     AnnotatedTypeMirror otherArgType =
@@ -122,6 +134,7 @@ public class DeterminismTransfer extends CFTransfer {
         return result;
     }
 
+    // Should "is a List" also include subtypes?  The wording implies not.
     /**
      * Checks if the receiver is a List and the method invoked is sort().
      *
@@ -138,6 +151,9 @@ public class DeterminismTransfer extends CFTransfer {
             Name methName) {
         return (factory.isList(underlyingTypeOfReceiver)
                 && methName.contentEquals("sort")
+                // TODO: This test is wrong.  The size should be exactly 1 or 2, and the arguments
+                // must be of specific types.  Otherwise the checker will behave oddly if a
+                // programmer extends list and defines his or her own sort method.
                 && receiver.getType().getAnnotationMirrors().size() > 0);
     }
 
@@ -189,6 +205,9 @@ public class DeterminismTransfer extends CFTransfer {
                 && methName.contentEquals("shuffle"));
     }
 
+    // TODO: "Helper method for type refinement." doesn't say anything about what this method does.
+    // A todo comment indicates that there may be a problem with it, but without documentation I
+    // cannot review it.
     /**
      * Helper method for type refinement.
      *
