@@ -11,7 +11,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -59,7 +58,13 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         // some code throws NPE. This should be cleaned up.
         result.getReturnType();
 
+        // TODO: Needed to visit parameter types, etc.
+        // It would be nicer if this didn't decode the information from the Element and
+        // instead also used the Tree.
+        ElementAnnotationApplier.apply(result, elt, f);
+
         // Add primary annotations to return type
+        /* This doesn't do the right thing for annotations on type variables.
         List<? extends AnnotationTree> annos = node.getModifiers().getAnnotations();
         if (annos != null
                 && !annos.isEmpty()
@@ -67,11 +72,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             List<AnnotationMirror> ams = TreeUtils.annotationsFromTypeAnnotationTrees(annos);
             ElementAnnotationUtil.addAnnotationsFromElement(result.getReturnType(), ams);
         }
-
-        // TODO: Needed to visit parameter types, etc.
-        // It would be nicer if this didn't decode the information from the Element and
-        // instead also used the Tree.
-        ElementAnnotationApplier.apply(result, elt, f);
+        */
 
         return result;
     }
