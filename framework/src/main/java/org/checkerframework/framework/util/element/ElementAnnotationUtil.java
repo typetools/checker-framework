@@ -84,12 +84,9 @@ public class ElementAnnotationUtil {
      * @param type the type to annotate
      * @param annotations the annotations to add
      */
-    // TODO: pick better name and move to utility class.
-    public static void addAnnotationsFromElement(
+    static void addAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
-        innerType.addAnnotations(annotations);
-        /* Test qualifiers won't get added with this package restriction.
         if (innerType != type) {
             for (AnnotationMirror annotation : annotations) {
                 if (AnnotationUtils.annotationName(annotation).startsWith("org.checkerframework")) {
@@ -100,7 +97,7 @@ public class ElementAnnotationUtil {
             }
         } else {
             type.addAnnotations(annotations);
-        }*/
+        }
     }
 
     /**
