@@ -410,7 +410,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             } else {
-                defaultArrayElementAsPolyDet(t.getReturnType());
                 for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
                     defaultArrayElementAsPolyDet(paramType);
                 }
@@ -418,9 +417,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // t.getReceiverType() is null for both "Object <init>()"
                 // and for static methods.
                 if (t.getReturnType().getAnnotations().size() == 0
-                        && (t.getReceiverType() == null
-                                || (t.getReceiverType().getAnnotations().size() != 0
-                                        && !t.getReceiverType().hasAnnotation(POLYDET)))) {
+                        && (t.getReceiverType() == null)) {
                     boolean unannotatedOrPolyDet = false;
                     for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
                         if (paramType.getAnnotations().size() == 0
@@ -433,6 +430,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         t.getReturnType().replaceAnnotation(DET);
                     }
                 }
+                defaultArrayElementAsPolyDet(t.getReturnType());
             }
             return super.visitExecutable(t, p);
         }

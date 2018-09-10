@@ -57,4 +57,10 @@ class TestArrays {
     void testArrayLength2(@Det int @OrderNonDet [] a) {
         System.out.println(a.length);
     }
+
+    static int[] foo(int @Det [] arr) {
+        @NonDet int @NonDet [] a = new @NonDet int @NonDet [20];
+        // :: error: (return.type.incompatible)
+        return a;
+    }
 }
