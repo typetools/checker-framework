@@ -163,12 +163,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
-    // TODO: x[i] as an lvalue is not an array access; rather, it is an array assignment.
-    // Does the Checker Framework call them both array accesses and make it impossible to
-    // distinguish them?  I would expect it to be possible to determine whether a "[]" operator is
-    // in an lvalue or an rvalue position, and thus to give every (rvalue) array access x[i] the
-    // qualifier @NonDet, without affecting lvalue types.  Then, you don't need to have duplicated
-    // code.
+    // NOTE: Checker Framework treats x[i] as an lvalue like array access.
+    // It is possible to distinguish whether a "[]" operator is in an lvalue or an rvalue position.
+    // But, the "visitArrayAccess" method does not give access to valueType (the annotated type of rhs value)
+    // like in "commonAssignmentCheck" below, making it difficult to replace the annotation on the rvalue.
+
     /**
      * When an array of type {@code @OrderNonDet} or {@code @NonDet} is accessed, this method
      * annotates the type of the array access expression (equivalently, the array element) as
@@ -218,23 +217,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         }
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
-
-    //    @Override
-    //    public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-    //        ArrayAccessNode arrayAccessNode = atypeFactory.getFirstNodeOfKindForTree(node,
-    // ArrayAccessNode.class);
-    //        AnnotatedArrayType arrType =
-    //                (AnnotatedArrayType) atypeFactory.getAnnotatedType(node.getExpression());
-    //        AnnotationMirror arrTopType = arrType.getAnnotationInHierarchy(atypeFactory.NONDET);
-    //        if(arrayAccessNode.isLValue()){
-    //            AnnotationMirror indexType =
-    //                    atypeFactory
-    //                            .getAnnotatedType(node.getIndex())
-    //                            .getAnnotationInHierarchy(atypeFactory.NONDET);
-    //            isSubtype(indexType, arrTopType, node, INVALID_ARRAY_ASSIGNMENT);
-    //        }
-    //        return super.visitArrayAccess(node, p);
-    //    }
 
     /**
      * Reports the given {@code errorMessage} if {@code subAnnotation} is not a subtype of {@code
