@@ -27,7 +27,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
     /** Error message key for use of {@code @OrderNonDet} on non-collections. */
     private static final @CompilerMessageKey String ORDERNONDET_ON_NONCOLLECTION =
-            "ordernondet.on.noncollection";
+            "ordernondet.on.noncollection.and.nonarray";
     /** Error message key for collections whose type is a subtype of their element types. */
     private static final @CompilerMessageKey String INVALID_ELEMENT_TYPE = "invalid.element.type";
     /** Error message key for arrays whose type is a subtype of their component types. */
@@ -193,7 +193,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
-    // TODO: x[i] as an lvalue is not an assay access; rather, it is an array assignment.
+    // TODO: x[i] as an lvalue is not an array access; rather, it is an array assignment.
     // Does the Checker Framework call them both array accesses and make it impossible to
     // distinguish them?  I would expect it to be possible to determine whether a "[]" operator is
     // in an lvalue or an rvalue position, and thus to give every (rvalue) array access x[i] the

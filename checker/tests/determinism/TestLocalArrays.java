@@ -23,7 +23,7 @@ public class TestLocalArrays<T> {
 
     void createOndArray() {
         @Det int @OrderNonDet [] ar = new int[20];
-        // :: error: (ordernondet.on.noncollection)
+        // :: error: (ordernondet.on.noncollection.and.nonarray)
         @OrderNonDet int @OrderNonDet [] invalidAr;
 
         @NonDet int @NonDet [] nar = new @NonDet int @NonDet [20];

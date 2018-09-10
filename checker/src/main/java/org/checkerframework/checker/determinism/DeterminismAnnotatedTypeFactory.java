@@ -205,7 +205,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // reference the manual?
 
             // Annotates the return type of "equals()" method called on a Set receiver
-            // as described in https://checkerframework.org/manual/#improved-precision-set-equals.
+            // as described in
+            // https://checkerframework.org/manual/#determinism-improved-precision-set-equals.
 
             // Example1: @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s1;
             //           @OrderNonDet Set<@OrderNonDet List<@Det Integer>> s2;
@@ -443,7 +444,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             } else {
-                defaultArrayElementAsPolyDet(t.getReturnType());
                 for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
                     defaultArrayElementAsPolyDet(paramType);
                 }
@@ -453,11 +453,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // TODO: It's considered better style (and may be more efficient) to use
                 // ".isempty()" rather than ".size() == 0".
                 if (t.getReturnType().getAnnotations().size() == 0
-                        && (t.getReceiverType() == null
-                                || (t.getReceiverType().getAnnotations().size() != 0
-                                        && !t.getReceiverType().hasAnnotation(POLYDET)))) {
-                    // True if some formal parameter has a @PolyDet annotation
-                    boolean hasPolyDet = false;
+                        && (t.getReceiverType() == null)) {
+                    boolean unannotatedOrPolyDet = false;
                     for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
                         // The default is @PolyDet, so treat unannotated the same as @PolyDet
                         if (paramType.getAnnotations().size() == 0
@@ -470,6 +467,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         t.getReturnType().replaceAnnotation(DET);
                     }
                 }
+                defaultArrayElementAsPolyDet(t.getReturnType());
             }
             return super.visitExecutable(t, p);
         }
@@ -566,7 +564,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
                 if (isMainMethod(method)) {
                     if (type.getAnnotations().size() > 0 && !type.hasAnnotation(DET)) {
-                        checker.report(Result.failure("invalid.annotation.on.parameter"), elt);
+                        checker.report(
+                                Result.failure(
+                                        "invalid.annotation.on.parameter",
+                                        type.getAnnotationInHierarchy(NONDET)),
+                                elt);
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
                     // TODO: Here is another comment that I cannot understand.  Why is the
