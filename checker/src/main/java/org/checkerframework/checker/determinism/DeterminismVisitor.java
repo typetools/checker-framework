@@ -165,8 +165,10 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
     // NOTE: Checker Framework treats x[i] as an lvalue like array access.
     // It is possible to distinguish whether a "[]" operator is in an lvalue or an rvalue position.
-    // But, the "visitArrayAccess" method does not give access to valueType (the annotated type of rhs value)
-    // like in "commonAssignmentCheck" below, making it difficult to replace the annotation on the rvalue.
+    // But, the "visitArrayAccess" method does not give access to valueType (the annotated type of
+    // rhs value)
+    // like in "commonAssignmentCheck" below, making it difficult to replace the annotation on the
+    // rvalue.
 
     /**
      * When an array of type {@code @OrderNonDet} or {@code @NonDet} is accessed, this method
