@@ -63,4 +63,13 @@ class TestArrays {
         // :: error: (return.type.incompatible)
         return a;
     }
+
+    void checkArrayAccessRvalue(@Det int @NonDet [] arr) {
+        int val = arr[0];
+    }
+
+    void checkArrayAccessLvalue(@Det int @OrderNonDet [] x, @NonDet int i, @Det int y) {
+        // :: error: (invalid.array.assignment)
+        x[i] = y;
+    }
 }

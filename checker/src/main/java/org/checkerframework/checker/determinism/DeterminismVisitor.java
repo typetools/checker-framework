@@ -34,7 +34,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     private static final @CompilerMessageKey String INVALID_ARRAY_COMPONENT_TYPE =
             "invalid.array.component.type";
     /** Error message key for assignment to a deterministic array at a non-deterministic index. */
-    private static final @CompilerMessageKey String INVALID_ARRAY_ASSIGNMENT =
+    public static final @CompilerMessageKey String INVALID_ARRAY_ASSIGNMENT =
             "invalid.array.assignment";
 
     /**
@@ -82,8 +82,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 if (argType.getAnnotations().size() > 0) {
                     AnnotationMirror argAnnotation =
                             argType.getAnnotationInHierarchy(atypeFactory.NONDET);
-                    if (isInvalidSubtyping(
-                            argAnnotation, baseAnnotation, tree, INVALID_ELEMENT_TYPE)) {
+                    if (!isSubtype(argAnnotation, baseAnnotation, tree, INVALID_ELEMENT_TYPE)) {
                         return false;
                     }
                 }
@@ -101,9 +100,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      */
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        // TODO: Why doesn't this use hasAnnotation(...), rather than
-        // getAnnotations().contains(...)?
-        if (type.getAnnotations().contains(atypeFactory.ORDERNONDET)) {
+        if (type.hasAnnotation(atypeFactory.ORDERNONDET)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
             return false;
         }
@@ -125,32 +122,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             AnnotationMirror arrayType = type.getAnnotationInHierarchy(atypeFactory.NONDET);
             AnnotationMirror elementType =
                     type.getComponentType().getAnnotationInHierarchy(atypeFactory.NONDET);
-            if (isInvalidSubtyping(elementType, arrayType, tree, INVALID_ARRAY_COMPONENT_TYPE)) {
+            if (!isSubtype(elementType, arrayType, tree, INVALID_ARRAY_COMPONENT_TYPE)) {
                 return false;
             }
         }
         return true;
-    }
-
-    /**
-     * Reports the given if {@code subAnnotation} is not a subtype of {@code superAnnotation}.
-     *
-     * @return true if the subtyping relationship is invalid (and an error was reported), false
-     *     otherwise
-     */
-    // TODO: This method name is vague.  It will be easier to read client code if "invalid" is
-    // replaced by something more specific.  You could name it something like "isSubtype".  The
-    // Javadoc "is invalid" should be similarly made more concrete.
-    private boolean isInvalidSubtyping(
-            AnnotationMirror subAnnotation,
-            AnnotationMirror superAnnotation,
-            Tree tree,
-            @CompilerMessageKey String errorMessage) {
-        if (!atypeFactory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation)) {
-            checker.report(Result.failure(errorMessage, subAnnotation, superAnnotation), tree);
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -182,13 +158,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                     atypeFactory
                             .getAnnotatedType(arrTree.getIndex())
                             .getAnnotationInHierarchy(atypeFactory.NONDET);
-            // Why doesn't this call isInvalidSubtyping?  It seems to do exactly what that method
-            // does.
-            if (!atypeFactory.getQualifierHierarchy().isSubtype(indexType, arrTopType)) {
-                checker.report(
-                        Result.failure(INVALID_ARRAY_ASSIGNMENT, arrTopType, indexType), varTree);
-                return;
-            }
+            isSubtype(indexType, arrTopType, varTree, INVALID_ARRAY_ASSIGNMENT);
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
@@ -247,6 +217,42 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
             }
         }
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
+    //    @Override
+    //    public Void visitArrayAccess(ArrayAccessTree node, Void p) {
+    //        ArrayAccessNode arrayAccessNode = atypeFactory.getFirstNodeOfKindForTree(node,
+    // ArrayAccessNode.class);
+    //        AnnotatedArrayType arrType =
+    //                (AnnotatedArrayType) atypeFactory.getAnnotatedType(node.getExpression());
+    //        AnnotationMirror arrTopType = arrType.getAnnotationInHierarchy(atypeFactory.NONDET);
+    //        if(arrayAccessNode.isLValue()){
+    //            AnnotationMirror indexType =
+    //                    atypeFactory
+    //                            .getAnnotatedType(node.getIndex())
+    //                            .getAnnotationInHierarchy(atypeFactory.NONDET);
+    //            isSubtype(indexType, arrTopType, node, INVALID_ARRAY_ASSIGNMENT);
+    //        }
+    //        return super.visitArrayAccess(node, p);
+    //    }
+
+    /**
+     * Reports the given {@code errorMessage} if {@code subAnnotation} is not a subtype of {@code
+     * superAnnotation}.
+     *
+     * @return true if {@code subAnnotation} is a subtype of {@code superAnnotation}, false
+     *     otherwise
+     */
+    private boolean isSubtype(
+            AnnotationMirror subAnnotation,
+            AnnotationMirror superAnnotation,
+            Tree tree,
+            @CompilerMessageKey String errorMessage) {
+        if (atypeFactory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation)) {
+            return true;
+        }
+        checker.report(Result.failure(errorMessage, superAnnotation, subAnnotation), tree);
+        return false;
     }
 
     @Override

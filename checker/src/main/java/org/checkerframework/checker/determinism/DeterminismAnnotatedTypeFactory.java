@@ -1,8 +1,6 @@
 package org.checkerframework.checker.determinism;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;

@@ -196,12 +196,7 @@ if \<@PolyDet> is applied to a collection somewhere in the method signature
 and if the return type isn't a collection, then the return type should be
 annotated as \<@PolyDet("up")> or \<@PolyDet("down")>.
 
-% TODO: "Set equals" is not the Java way to describe a method.  Use
-% "Set.equals" or "Set.equals()" instead.
-% TODO: Per
-% https://checkerframework.org/manual/#creating-documenting-a-checker, the
-% label should start with the checker name.
-\subsubsection{Special handling of Set equals\label{improved-precision-set-equals}}
+\subsubsection{Special handling of Set.equals()\label{determinism-improved-precision-set-equals}}
 
 In the JDK, the \<equals()> method of \<Set> is annotated as
 \begin{Verbatim}
