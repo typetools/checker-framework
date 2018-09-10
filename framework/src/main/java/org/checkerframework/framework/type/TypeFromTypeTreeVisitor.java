@@ -71,19 +71,17 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             underlyingWildcard.withTypeVar(wildcardAttachedToNode.bound);
             // End of work-around
 
+            final AnnotatedWildcardType wctype = ((AnnotatedWildcardType) type);
             final ExpressionTree underlyingTree = node.getUnderlyingType();
 
             if (underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
                 // primary annotations on unbounded wildcard types apply to both bounds
-                ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
-                ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
-
+                wctype.getExtendsBound().addAnnotations(annos);
+                wctype.getSuperBound().addAnnotations(annos);
             } else if (underlyingTree.getKind() == Kind.EXTENDS_WILDCARD) {
-                ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
-
+                wctype.getSuperBound().addAnnotations(annos);
             } else if (underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
-                ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
-
+                wctype.getExtendsBound().addAnnotations(annos);
             } else {
                 ErrorReporter.errorAbort(
                         "Unexpected kind for type!  node=" + node + " type=" + type);
