@@ -14,6 +14,7 @@ public class TestTypeRefinementSort {
             @Det List<@Det Integer> detList,
             @NonDet Comparator<@Det Integer> cmp,
             @Det List<@Det Integer> check) {
+        // ::error: argument.type.incompatible
         detList.sort(cmp);
         System.out.println(detList.equals(check));
     }

@@ -808,9 +808,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().size() == 1
                     && (types.isSameType(
-                            invokedMethodElement.getParameters().get(0).asType(),
-                            TypesUtils.typeFromClass(
-                                    Node.class, types, processingEnv.getElementUtils())))) {
+                            types.erasure(invokedMethodElement.getParameters().get(0).asType()),
+                            types.erasure(
+                                    TypesUtils.typeFromClass(
+                                            Node.class,
+                                            types,
+                                            processingEnv.getElementUtils()))))) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("getFirst")
