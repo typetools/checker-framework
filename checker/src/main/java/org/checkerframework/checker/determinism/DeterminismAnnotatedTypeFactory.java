@@ -320,23 +320,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private boolean isReceiverAndArgsDet(
             AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
-        // TODO: The structure of isReceiverOrArgPoly is inconsistent with this method and with
-        // isReceiverAndArgsDetOrOrderNonDet.
-        // isReceiverOrArgPoly uses a short-cutting `return` but this does not.  Try to make code
-        // use a consistent style.  When a reader sees a difference in coding paradigms, the reader
-        // will assume there is a specific reason for it.  I would use the short-cutting version,
-        // because it's no longer, but has less indentation; but either way, give the code similar
-        // style.
-        if (receiverType.hasAnnotation(DET)) {
-            for (ExpressionTree arg : node.getArguments()) {
-                AnnotatedTypeMirror argType = getAnnotatedType(arg);
-                if (!argType.hasAnnotation(DET)) {
-                    return false;
-                }
-            }
-            return true;
+        if (!receiverType.hasAnnotation(DET)) {
+            return false;
         }
-        return false;
+        for (ExpressionTree arg : node.getArguments()) {
+            AnnotatedTypeMirror argType = getAnnotatedType(arg);
+            if (!argType.hasAnnotation(DET)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -345,16 +338,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private boolean isReceiverAndArgsDetOrOrderNonDet(
             AnnotatedTypeMirror receiverType, MethodInvocationTree node) {
-        if (receiverType.hasAnnotation(DET) || receiverType.hasAnnotation(ORDERNONDET)) {
-            for (ExpressionTree arg : node.getArguments()) {
-                AnnotatedTypeMirror argType = getAnnotatedType(arg);
-                if (argType.hasAnnotation(NONDET)) {
-                    return false;
-                }
-            }
-            return true;
+        if (!(receiverType.hasAnnotation(DET) || receiverType.hasAnnotation(ORDERNONDET))) {
+            return false;
         }
-        return false;
+        for (ExpressionTree arg : node.getArguments()) {
+            AnnotatedTypeMirror argType = getAnnotatedType(arg);
+            if (argType.hasAnnotation(NONDET)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -467,16 +460,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // them, the code has to be reviewed again.
     // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
     // and test.
-    // TODO: The documentation "the array type" indicates that the argument must be an array.  That
-    // is not true.  The parameter name `arrType` is also misleading, though clear documentatino
-    // might be enough to fix that problem.
-    /**
-     * Places the default annotation on component type of the array type {@code arrType}
-     * as @PolyDet.
-     */
-    private void defaultArrayComponentTypeAsPolyDet(AnnotatedTypeMirror arrType) {
-        if (arrType.getKind() == TypeKind.ARRAY) {
-            AnnotatedArrayType annoArrType = (AnnotatedArrayType) arrType;
+    /** If {@code type} is an array type, defaults its component type as @PolyDet. */
+    private void defaultArrayComponentTypeAsPolyDet(AnnotatedTypeMirror type) {
+        if (type.getKind() == TypeKind.ARRAY) {
+            AnnotatedArrayType annoArrType = (AnnotatedArrayType) type;
             // TODO: It's unclear how this example is related to the method.  What is it an example
             // of?  The example code is a method call, so it cannot be the argument to this method,
             // and the doucmentation gives no indication of how the method was called.  Examples
