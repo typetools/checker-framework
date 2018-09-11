@@ -28,8 +28,7 @@ class TestArrays {
         return new @PolyDet int @PolyDet [] {0};
     }
 
-    @Det
-    int @Det [] returnArrExplicit() {
+    @Det int @Det [] returnArrExplicit() {
         return new @Det int @Det [] {0};
     }
 

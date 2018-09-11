@@ -475,22 +475,18 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // them, the code has to be reviewed again.
     // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
     // and test.
-    // TODO: You never need to write "Helper method that".  It is obvious from the `private`
-    // modifier, and documentation should focus first on what the method does, and only secondarily
-    // on how it is intended to be used.
     // TODO: It's inconsistent that the documentation says "component type" and the method name is
     // "element type".
     // TODO: The documentation "the array type" indicates that the argument must be an array.  That
     // is not true.  The parameter name `arrType` is also misleading, though clear documentatino
     // might be enough to fix that problem.
     /**
-     * Helper method that places the default annotation on component type of the array type {@code
-     * arrType} as @PolyDet.
+     * Places the default annotation on component type of the array type {@code arrType}
+     * as @PolyDet.
      */
     private void defaultArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
         if (arrType.getKind() == TypeKind.ARRAY) {
-            // TODO: do not capitalize variable names.
-            AnnotatedArrayType AnnoArrType = (AnnotatedArrayType) arrType;
+            AnnotatedArrayType annoArrType = (AnnotatedArrayType) arrType;
             // TODO: It's unclear how this example is related to the method.  What is it an example
             // of?  The example code is a method call, so it cannot be the argument to this method,
             // and the doucmentation gives no indication of how the method was called.  Examples
@@ -503,10 +499,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // arrParamType.getExplicitAnnotations().size() returns 0,
             // arrParamType.getAnnotations().size() returns 1.
             // getExplicitAnnotations works only with type use locations?
-            if (AnnoArrType.getAnnotations().size() == 0) {
-                if (AnnoArrType.getComponentType().getUnderlyingType().getKind()
+            if (annoArrType.getAnnotations().size() == 0) {
+                if (annoArrType.getComponentType().getUnderlyingType().getKind()
                         != TypeKind.TYPEVAR) {
-                    AnnoArrType.getComponentType().replaceAnnotation(POLYDET);
+                    annoArrType.getComponentType().replaceAnnotation(POLYDET);
                 }
             }
         }

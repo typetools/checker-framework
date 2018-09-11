@@ -71,24 +71,19 @@ public class DeterminismTransfer extends CFTransfer {
             }
         }
 
-        // Type refinement for Arrays.sort
+        // Type refinement for Arrays.sort() and Arrays.parallelSort()
+        // For Arrays.sort(int[] a), refines 'a' to @Det[..] if 'a' is of the type @OrderNonDet[..]
+        // For Arrays.sort(int[] a, int fromIndex, int toIndex), Arrays.sort(T[], Comparator<? super
+        // T> c),
+        // and all other variants of Arrays.sort() and Arrays.parallelSort(),
+        // refines the first argument if this first argument is annotated as @OrderNonDet[..]
+        // and all other arguments are annotated as @Det.
         if (isArraysSort(factory, underlyingTypeOfReceiver, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
-
-                // TODO: It is confusing, that the comment mentions only Arrays.sort(T[],
-                // Comparator) but the code also handles Arrays.sort(T[]).
-                // Consider the call to Arrays.sort(T[], Comparator<? super T> c)
-                // The first argument of this method invocation must be type-refined
-                // iff it is annotated as @OrderNonDet and the second argument
-                // is annotated @Det (Not if it is @NonDet).
-                // The following code sets the flag typeRefine to true iff
+                // The following code sets the flag typeRefine to true if
                 // all arguments except the first are annotated as @Det.
-                // TODO: There are only two possibilities for "all arguments except the first":
-                // there are 0 or 1 of them.  It would be clearer to handle those two cases with an
-                // if statement rather than a for loop that you expect to iterate exactly 0 or 1
-                // times.
                 boolean typeRefine = true;
                 for (int i = 1; i < n.getArguments().size(); i++) {
                     AnnotatedTypeMirror otherArgType =
@@ -199,11 +194,8 @@ public class DeterminismTransfer extends CFTransfer {
                 && invokedMethod.getSimpleName().contentEquals("shuffle"));
     }
 
-    // TODO: "Helper method for type refinement." doesn't say anything about what this method does.
-    // A todo comment indicates that there may be a problem with it, but without documentation I
-    // cannot review it.
     /**
-     * Helper method for type refinement.
+     * Refines the type of {@code node} to {@code replaceType}.
      *
      * @param node the node to be refined
      * @param result the determinism transfer result store
@@ -214,9 +206,9 @@ public class DeterminismTransfer extends CFTransfer {
             // TODO-rashmi: type refinement for first argument of Collections.shuffle() from
             // @Det to @OrderNonDet doesn't seem to work.
             // result.getThenStore().insertValue(receiver, replaceType); replaces the
-            // annotation on the receiver with the strongest of current annotation on receiver
-            // and 'replaceType' in the lattice.
-            // The annotation first argument of shuffle (@Det) is stronger than replaceType
+            // annotation on the 'receiver' if 'replaceType' is stronger than
+            // the current annotation of 'receiver'.
+            // The annotation on first argument of shuffle (@Det) is stronger than 'replaceType'
             // (@OrderNonDet).
             Node node,
             TransferResult<CFValue, CFStore> result,

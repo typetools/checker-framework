@@ -7,8 +7,7 @@ public class MethodParamsAnnotated {
         AnnotateMethod(a);
     }
 
-    @Det
-    int AnnotateMethod(@NonDet int a) {
+    @Det int AnnotateMethod(@NonDet int a) {
         return 0;
     }
 }

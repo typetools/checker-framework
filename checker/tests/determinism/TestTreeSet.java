@@ -22,8 +22,7 @@ public class TestTreeSet {
     }
 
     void testTreeIterator1(
-            @OrderNonDet
-                    TreeSet<@OrderNonDet TreeSet<@OrderNonDet TreeSet<@Det Integer>>> treeSet) {
+                    @OrderNonDet TreeSet<@OrderNonDet TreeSet<@OrderNonDet TreeSet<@Det Integer>>> treeSet) {
         @Det NavigableSet<@Det TreeSet<@Det TreeSet<@Det Integer>>> nSet = treeSet.descendingSet();
     }
 
