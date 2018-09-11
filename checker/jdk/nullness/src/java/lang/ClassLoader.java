@@ -1873,7 +1873,8 @@ public abstract class ClassLoader {
         boolean isBuiltin = (name != null);
         if (!isBuiltin) {
             boolean exists = AccessController.doPrivileged(
-                new PrivilegedAction<@Nullable Object>() {
+                // Commented out because of https://github.com/typetools/checker-framework/issues/1863
+                new PrivilegedAction</* @Nullable */ Object>() {
                     public @Nullable Object run() {
                         return file.exists() ? Boolean.TRUE : null;
                     }})
