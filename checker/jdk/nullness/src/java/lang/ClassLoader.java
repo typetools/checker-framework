@@ -1774,8 +1774,8 @@ public abstract class ClassLoader {
     private static Stack<NativeLibrary> nativeLibraryContext = new Stack<>();
 
     // The paths searched for libraries
-    private static String usr_paths @Nullable [];
-    private static String sys_paths @Nullable [];
+    private static String @Nullable [] usr_paths;
+    private static String @Nullable [] sys_paths;
 
     private static String[] initializePath(String propname) {
         String ldpath = System.getProperty(propname, "");
