@@ -158,8 +158,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        // TODO: The below comment "is not {@code List}" seems wrong.  It should be "@OrderNonDet
-        // List", right?
         /**
          * Replaces the annotation on the return type of a method invocation as follows:
          *
@@ -170,7 +168,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *       and the argument satisfy these conditions:
          *       <ol>
          *         <li>the type is {@code @OrderNonDet Set}, and
-         *         <li>its type argument is not {@code List} or a subtype
+         *         <li>its type argument is not {@code @OrderNonDet List} or a subtype
          *       </ol>
          * </ol>
          *
@@ -392,9 +390,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // TODO: in the comment, "arguments" should be "parameters".
-        // TODO: its' inconsistent that the first bullet point says "annotates unannotated" but the
-        // second bullet point says "annotates", which implies it is not defaulting.  You could
-        // replace both by "Defaults" (using "default" as a verb).
         // TODO: The method has 3 features, but the example relates to the middle one.  There is no
         // indication of this in the comment, which makes it confusing to read.
         // TODO: The explanation is confusing.  It says that "a[0] is @PolyDet", but that does not
@@ -413,9 +408,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * <p>Places the following default annotations:
          *
          * <ol>
-         *   <li>Annotates unannotated component types of array arguments and return types as {@code
+         *   <li>Defaults the component types of array arguments and return types as {@code
          *       ...[@PolyDet]}.
-         *   <li>Annotates the return type for methods with no @PolyDet formal parameters (including
+         *   <li>Defaults the return type for methods with no @PolyDet formal parameters (including
          *       the receiver) as {@code @Det}.
          * </ol>
          *
@@ -443,19 +438,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 paramType.replaceAnnotation(DET);
             } else {
                 for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
-                    defaultArrayElementAsPolyDet(paramType);
+                    defaultArrayComponentTypeAsPolyDet(paramType);
                 }
 
                 // t.getReceiverType() is null for both "Object <init>()"
                 // and for static methods.
-                // TODO: It's considered better style (and may be more efficient) to use
-                // ".isempty()" rather than ".size() == 0".
-                if (t.getReturnType().getAnnotations().size() == 0
-                        && (t.getReceiverType() == null)) {
+                if (t.getReturnType().getAnnotations().isEmpty() && (t.getReceiverType() == null)) {
                     boolean unannotatedOrPolyDet = false;
                     for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
                         // The default is @PolyDet, so treat unannotated the same as @PolyDet
-                        if (paramType.getAnnotations().size() == 0
+                        if (paramType.getAnnotations().isEmpty()
                                 || paramType.hasAnnotation(POLYDET)) {
                             unannotatedOrPolyDet = true;
                             break;
@@ -465,7 +457,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         t.getReturnType().replaceAnnotation(DET);
                     }
                 }
-                defaultArrayElementAsPolyDet(t.getReturnType());
+                defaultArrayComponentTypeAsPolyDet(t.getReturnType());
             }
             return super.visitExecutable(t, p);
         }
@@ -475,8 +467,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // them, the code has to be reviewed again.
     // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
     // and test.
-    // TODO: It's inconsistent that the documentation says "component type" and the method name is
-    // "element type".
     // TODO: The documentation "the array type" indicates that the argument must be an array.  That
     // is not true.  The parameter name `arrType` is also misleading, though clear documentatino
     // might be enough to fix that problem.
@@ -484,7 +474,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Places the default annotation on component type of the array type {@code arrType}
      * as @PolyDet.
      */
-    private void defaultArrayElementAsPolyDet(AnnotatedTypeMirror arrType) {
+    private void defaultArrayComponentTypeAsPolyDet(AnnotatedTypeMirror arrType) {
         if (arrType.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType annoArrType = (AnnotatedArrayType) arrType;
             // TODO: It's unclear how this example is related to the method.  What is it an example
@@ -499,7 +489,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // arrParamType.getExplicitAnnotations().size() returns 0,
             // arrParamType.getAnnotations().size() returns 1.
             // getExplicitAnnotations works only with type use locations?
-            if (annoArrType.getAnnotations().size() == 0) {
+            if (annoArrType.getAnnotations().isEmpty()) {
                 if (annoArrType.getComponentType().getUnderlyingType().getKind()
                         != TypeKind.TYPEVAR) {
                     annoArrType.getComponentType().replaceAnnotation(POLYDET);
@@ -570,7 +560,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // Note: void testArrParam(@PolyDet int @PolyDet [] arr) {}
                     // getExplicitAnnotations().size() for arr is 0,
                     // getAnnotations().size() for arr is 1.
-                } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().size() == 0) {
+                } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().isEmpty()) {
                     AnnotatedArrayType arrType = (AnnotatedArrayType) type;
                     if (arrType.getComponentType().getKind() != TypeKind.TYPEVAR) {
                         arrType.getComponentType()
@@ -612,59 +602,58 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSameType(tm, CollectionsTypeMirror);
     }
 
-    // TODO: The term "its subtype" implies there is exactly one subtype (which is rare and not what
-    // you mean).  "a subtype" doesn't make this implication.
-    /** @return true if {@code tm} is AbstractList or its subtype */
+    /** @return true if {@code tm} is AbstractList or a subtype of AbstractList */
     public boolean isAbstractList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(AbstractListTypeMirror));
     }
 
-    /** @return true if {@code tm} is AbstractSequentialList or its subtype */
+    /**
+     * @return true if {@code tm} is AbstractSequentialList or a subtype of AbstractSequentialList
+     */
     public boolean isAbstractSequentialList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(AbstractSequentialListTypeMirror));
     }
 
-    /** @return true if {@code tm} is ArrayList or its subtype */
+    /** @return true if {@code tm} is ArrayList or a subtype of ArrayList */
     public boolean isArrayList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(ArrayListTypeMirror));
     }
 
-    /** @return true if {@code tm} is LinkedList or its subtype */
+    /** @return true if {@code tm} is LinkedList or a subtype of LinkedList */
     public boolean isLinkedList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(LinkedListTypeMirror));
     }
 
-    /** @return true if {@code tm} is NavigableSet or its subtype */
+    /** @return true if {@code tm} is NavigableSet or a subtype of NavigableSet */
     public boolean isNavigableSet(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(NavigableSetTypeMirror));
     }
 
-    /** @return true if {@code tm} is SortedSet or its subtype */
+    /** @return true if {@code tm} is SortedSet or a subtype of SortedSet */
     public boolean isSortedSet(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(SortedSetTypeMirror));
     }
 
-    /** @return true if {@code tm} is TreeSet or its subtype */
+    /** @return true if {@code tm} is TreeSet or a subtype of TreeSet */
     public boolean isTreeSet(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(TreeSetTypeMirror));
     }
 
-    /** @return true if {@code tm} is Enumeration or its subtype */
+    /** @return true if {@code tm} is Enumeration or a subtype of Enumeration */
     public boolean isEnumeration(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(EnumerationTypeMirror));
     }
 
-    // TODO: The comment "returns a generic type" is at odds with the method name "isIteratorNext"
     /**
-     * Returns true if {@code receiverUnderlyingType} is Iterator and if {@code
-     * invokedMethodElement} returns a generic type.
+     * Returns true if {@code receiverUnderlyingType} is Iterator and if the return type of {@code
+     * invokedMethodElement} is a type variable.
      */
     private boolean isIteratorNext(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isIterator(receiverUnderlyingType.asType())) {
             if (invokedMethodElement.getSimpleName().contentEquals("next")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
         }
@@ -673,7 +662,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns true if {@code receiverUnderlyingType} is AbstractList, AbstractSequentialList, or
-     * List and if {@code invokedMethodElement} returns a generic type.
+     * List and if the return type of {@code invokedMethodElement} is a type variable.
      */
     private boolean isAbstractListWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
@@ -708,8 +697,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if {@code receiverUnderlyingType} is NavigableSet and if {@code
-     * invokedMethodElement} returns a generic type.
+     * Returns true if {@code receiverUnderlyingType} is NavigableSet and if the return type of
+     * {@code invokedMethodElement} is a type variable.
      */
     private boolean isNavigableSetWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
@@ -730,22 +719,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             if (invokedMethodElement.getSimpleName().contentEquals("ceiling")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("higher")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
         }
@@ -753,8 +742,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if {@code receiverUnderlyingType} is ArrayList and if {@code
-     * invokedMethodElement} returns a generic type.
+     * Returns true if {@code receiverUnderlyingType} is ArrayList and if the return type of {@code
+     * invokedMethodElement} is a type variable.
      */
     private boolean isArrayListWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
@@ -794,8 +783,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if {@code receiverUnderlyingType} is LinkedList and if {@code
-     * invokedMethodElement} returns a generic type.
+     * Returns true if {@code receiverUnderlyingType} is LinkedList and if the return type of {@code
+     * invokedMethodElement} is a type variable.
      */
     private boolean isLinkedListWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
@@ -814,22 +803,22 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             if (invokedMethodElement.getSimpleName().contentEquals("getFirst")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("getLast")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("removeFirst")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("removeLast")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("get")
@@ -857,47 +846,47 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             if (invokedMethodElement.getSimpleName().contentEquals("peek")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("element")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("poll")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("remove")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("peekFirst")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("peekLast")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("pop")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
         }
@@ -905,20 +894,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if {@code receiverUnderlyingType} is SortedSet and if {@code
-     * invokedMethodElement} returns a generic type.
+     * Returns true if {@code receiverUnderlyingType} is SortedSet and if the return type of {@code
+     * invokedMethodElement} is a type variable.
      */
     private boolean isSortedSetWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isSortedSet(receiverUnderlyingType.asType())) {
             if (invokedMethodElement.getSimpleName().contentEquals("first")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("last")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
         }
@@ -926,20 +915,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if {@code receiverUnderlyingType} is TreeSet and if {@code invokedMethodElement}
-     * returns a generic type.
+     * Returns true if {@code receiverUnderlyingType} is TreeSet and if the return type of {@code
+     * invokedMethodElement} is a type variable.
      */
     private boolean isTreeSetWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isTreeSet(receiverUnderlyingType.asType())) {
             if (invokedMethodElement.getSimpleName().contentEquals("first")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("last")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("lower")
@@ -972,12 +961,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
             if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
         }
@@ -985,15 +974,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if {@code receiverUnderlyingType} is Enumeration and if {@code
-     * invokedMethodElement} returns a generic type.
+     * Returns true if {@code receiverUnderlyingType} is Enumeration and if the return type of
+     * {@code invokedMethodElement} is a type variable.
      */
     private boolean isEnumerationWithTypeVarReturn(
             TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
         if (isEnumeration(receiverUnderlyingType.asType())) {
             if (invokedMethodElement.getSimpleName().contentEquals("nextElement")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 0) {
+                    && invokedMethodElement.getParameters().isEmpty()) {
                 return true;
             }
         }

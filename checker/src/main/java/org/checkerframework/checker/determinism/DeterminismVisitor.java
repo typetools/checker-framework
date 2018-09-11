@@ -79,7 +79,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         AnnotationMirror baseAnnotation = useType.getAnnotationInHierarchy(atypeFactory.NONDET);
         if (atypeFactory.mayBeOrderNonDet(javaType)) {
             for (AnnotatedTypeMirror argType : useType.getTypeArguments()) {
-                if (argType.getAnnotations().size() > 0) {
+                if (!argType.getAnnotations().isEmpty()) {
                     AnnotationMirror argAnnotation =
                             argType.getAnnotationInHierarchy(atypeFactory.NONDET);
                     if (!isSubtype(argAnnotation, baseAnnotation, tree, INVALID_ELEMENT_TYPE)) {
@@ -117,8 +117,8 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      */
     @Override
     public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
-        if (type.getAnnotations().size() > 0
-                && type.getComponentType().getAnnotations().size() > 0) {
+        if (!type.getAnnotations().isEmpty()
+                && !type.getComponentType().getAnnotations().isEmpty()) {
             AnnotationMirror arrayType = type.getAnnotationInHierarchy(atypeFactory.NONDET);
             AnnotationMirror elementType =
                     type.getComponentType().getAnnotationInHierarchy(atypeFactory.NONDET);

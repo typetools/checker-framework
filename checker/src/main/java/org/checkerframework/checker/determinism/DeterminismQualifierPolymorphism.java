@@ -1,6 +1,5 @@
 package org.checkerframework.checker.determinism;
 
-import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
@@ -11,19 +10,14 @@ import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
-// TODO: I don't see how the least upper bound of argument types is relevant.  The point is to find
-// the lub of the actual argument types that correspond to all the occurrences of @PolyDet within
-// the method signature (whether on formal parameters or elsewhere, such as on parameter
-// elements/components).  This is both less than all arguments (it's only those annotated as
-// @PolyDet) and more than all arguments (@PolyDet may appear elsewhere).
 /**
  * Resolves polymorphic annotations at method invocations as follows:
  *
  * <ol>
- *   <li>Resolves a type annotated as {@code @PolyDet("up")} to {@code @NonDet} if the least upper
- *       bound of argument types resolves to {@code OrderNonDet}.
- *   <li>Resolves a type annotated as {@code @PolyDet("down")} to {@code @Det} if the least upper
- *       bound of argument types resolves to {@code OrderNonDet}.
+ *   <li>Resolves a type annotated as {@code @PolyDet("up")} to {@code @NonDet} if {@code @PolyDet}
+ *       resolves to {@code OrderNonDet}.
+ *   <li>Resolves a type annotated as {@code @PolyDet("down")} to {@code @Det} if {@code @PolyDet}
+ *       resolves to {@code OrderNonDet}.
  *   <li>Resolves a type annotated as {@code @PolyDet("use")} to the same annotation that
  *       {@code @PolyDet} resolves to for the other arguments.
  * </ol>
@@ -70,16 +64,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
 
         if (type.hasAnnotation(factory.POLYDET) || type.hasAnnotation(factory.POLYDET_USE)) {
-            // TODO: This code assumes that `replacements` contains exactly one element.  That
-            // requirement is not documented in the method documentation, nor is there any defensive
-            // check in the method body.  Furthermore, it is brittle and likely to break in
-            // hard-to-debug ways if that assumption changes in the future.  There should be a
-            // better way to make this work even if replacements does not have size 1.  (If
-            // replacements really does always have size 1, why is it a map rather than just an
-            // AnnotationMirror?)
-            Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry =
-                    replacements.entrySet().iterator().next();
-            AnnotationMirrorSet quals = pqentry.getValue();
+            AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
             type.replaceAnnotations(quals);
         }
 
@@ -119,16 +104,22 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         recursiveReplaceAnnotation(type, replaceType);
     }
 
-    // TODO: One example is not enough here.  Also give one where there is a deeper replacement, and
-    // one where a replacement does not occur.
     /**
      * Iterates over all the nested Collection/Iterator type arguments of {@code type} and replaces
      * their top-level annotations with {@code replaceType} if these top-level annotations are
      * {@code OrderNonDet}.
      *
-     * <p>Example: If this method is called with {@code type} as {@code @OrderNonDet
+     * <p>Example1: If this method is called with {@code type} as {@code @NonDet Set<@Det List<@Det
+     * Integer>>} and {@code replaceType} as {@code @NonDet}, the method doesn't do anything since
+     * the top-level annotation of is not {@code @OrderNonDet}.
+     *
+     * <p>Example2: If this method is called with {@code type} as {@code @OrderNonDet
      * Set<@OrderNonDet Set<@Det Integer>>} and {@code replaceType} as {@code @NonDet}, the result
      * will be {@code @NonDet Set<@NonDet Set<@Det Integer>>}.
+     *
+     * <p>Example3: If this method is called with {@code type} as {@code @OrderNonDet
+     * Set<@OrderNonDet Set<@OrderNonDet List<@Det Integer>>>} and {@code replaceType} as
+     * {@code @Det}, the result will be {@code @Det Set<@Det Set<@Det List<@Det Integer>>>}.
      */
     void recursiveReplaceAnnotation(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         TypeMirror underlyingTypeOfReceiver =
@@ -143,9 +134,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
 
         AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
         AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
-        if (argType.hasAnnotation(factory.ORDERNONDET)) {
-            argType.replaceAnnotation(replaceType);
-        }
+        argType.replaceAnnotation(replaceType);
         recursiveReplaceAnnotation(argType, replaceType);
     }
 }
