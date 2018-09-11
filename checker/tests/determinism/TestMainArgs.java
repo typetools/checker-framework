@@ -6,4 +6,9 @@ public class TestMainArgs {
         @Det String @Det [] a = args;
         System.out.println(a);
     }
+
+    void callMain(@PolyDet String @PolyDet [] ar) {
+        // :: error: (argument.type.incompatible)
+        main(ar);
+    }
 }
