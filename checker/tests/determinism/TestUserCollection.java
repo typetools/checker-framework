@@ -9,4 +9,7 @@ public class TestUserCollection<E> extends ArrayList<E> {
     void callContains(@OrderNonDet TestUserCollection<@Det Integer> list, @Det Object o) {
         @Det boolean result = list.contains(o);
     }
+
+    // :: error: (invalid.element.type)
+    void callContains1(@OrderNonDet TestUserCollection<@NonDet Integer> list) {}
 }

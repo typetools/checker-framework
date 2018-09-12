@@ -131,9 +131,6 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
 
-        // What if there is a user-defined collection, such as Box or Cell?
-        // The manual should document what the checker does in that case.
-        // What if the user writes the type Box<@OrderNonDet Integer>?
         if (!(factory.isCollection(underlyingTypeOfReceiver)
                 || factory.isIterator(underlyingTypeOfReceiver))) {
             return;

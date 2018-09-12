@@ -130,6 +130,20 @@ Collection (or array)   & OrderNonDet &   invalid  &  valid      & valid  \\ \cl
   \label{fig-determinism-collections}
 \end{figure}
 
+\subsection{Valid user defined types\label{determinism-valid-user-types}}
+A user defined type may be annotated as \<@OrderNonDet> if and only if it
+is a subtype of Collection or Iterator.
+For example, if a user defines a type as
+\begin{Verbatim}
+    public class TestUserCollection<E> extends ArrayList<E> {...}
+\end{Verbatim}
+Writing \code{@OrderNonDet TestUserCollection<@Det Integer>} is valid.\\
+Writing \code{@OrderNonDet TestUserCollection<@NonDet Integer>} is invalid
+because the type of the type parameter (\code{@NonDet}) is not a subtype
+of the user defined Collection type (\code{@OrderNonDet}).
+
+User defined types that are not a subtype of Collection or Iterator
+may not be annotated as \code{@OrderNonDet}.
 %Formally, the type validity rule is stated as follows:
 
 %\begin{prooftree}
