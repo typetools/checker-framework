@@ -456,18 +456,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private void defaultArrayComponentTypeAsPolyDet(AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType annoArrType = (AnnotatedArrayType) type;
-            // TODO: It's unclear how this example is related to the method.  What is it an example
-            // of?  The example code is a method call, so it cannot be the argument to this method,
-            // and the doucmentation gives no indication of how the method was called.  Examples
-            // with no context appeared elsewhere in the code, too, and it does more harm than good.
-            // Example: @Det int @Det[] returnArrExplicit(){}
-            // Here, AnnoArrType is @Det int @Det[].
-            // TODO: what is the point of the facts on the following two lines?  It's confusing to
-            // state facts without indicating why they are relevant or what the reader should infer
-            // from them.
-            // arrParamType.getExplicitAnnotations().size() returns 0,
-            // arrParamType.getAnnotations().size() returns 1.
-            // getExplicitAnnotations works only with type use locations?
+            // The following code uses "annoannoArrType.getAnnotations().isEmpty()"
+            // to check if 'annoannoArrType' has explicit annotations.
+            // It doesn't check for "annoannoArrType.getExplicitAnnotations().isEmpty()"
+            // because "getExplicitAnnotations()" works only with type use locations?
+            // For example: if 'annoannoArrType' is @Det int @Det[],
+            // "arrParamType.getExplicitAnnotations().size()" returns 0,
+            // "arrParamType.getAnnotations().size()" returns 1.
             if (annoArrType.getAnnotations().isEmpty()) {
                 if (annoArrType.getComponentType().getUnderlyingType().getKind()
                         != TypeKind.TYPEVAR) {
