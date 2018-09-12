@@ -26,7 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -111,14 +111,14 @@ public class WholeProgramInferenceScenesHelper {
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
             } catch (IOException e) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Problem while reading file in: "
                                 + jaifPath
                                 + ". Exception message: "
                                 + e.getMessage(),
                         e);
             } catch (DefException e) {
-                ErrorReporter.errorAbort(e.getMessage(), e);
+                throw new BugInCF(e.getMessage(), e);
             }
         }
         modifiedScenes.clear();
@@ -143,7 +143,7 @@ public class WholeProgramInferenceScenesHelper {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "Problem while reading file in: "
                                     + jaifPath
                                     + "."

@@ -17,16 +17,17 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
  *
  * <ul>
- *   <li>add the jsr308-langtools {@code javac.jar} to the runtime bootclasspath of the process that
- *       runs the Checker Framework. This specifies which classes are used to run javac
- *   <li>add {@code jdk7.jar} or {@code jdk8.jar} to the compile time bootclasspath of the javac
- *       argument list passed to javac
+ *   <li>add the {@code javac.jar} to the runtime classpath of the process that runs the Checker
+ *       Framework.
+ *   <li>add {@code jdk8.jar} to the compile time bootclasspath of the javac argument list passed to
+ *       javac
  *   <li>parse and implement any special options used by the Checker Framework, e.g., using
  *       "shortnames" for annotation processors
  *   <li>pass all remaining command-line arguments to the real javac
@@ -47,10 +48,7 @@ import org.checkerframework.javacutil.PluginUtil;
  */
 public class CheckerMain {
 
-    /**
-     * Invoke the JSR 308 Type Annotations Compiler. Any exception thrown by the Checker Framework
-     * escapes to the command line.
-     */
+    /** Any exception thrown by the Checker Framework escapes to the command line. */
     public static void main(String[] args) {
         final File pathToThisJar = new File(findPathTo(CheckerMain.class, false));
         ArrayList<String> alargs = new ArrayList<>(args.length);
@@ -63,7 +61,7 @@ public class CheckerMain {
     /** The path to the annotated jdk jar to use. */
     protected final File jdkJar;
 
-    /** The path to the jsr308 Langtools Type Annotations Compiler. */
+    /** The path to the javacJar to use. */
     protected final File javacJar;
 
     /** The path to the jsr308 Langtools Type Annotations Compiler JDK. */
@@ -219,8 +217,8 @@ public class CheckerMain {
         if (i == -1) {
             return alternative;
         } else if (i == args.size() - 1) {
-            throw new RuntimeException(
-                    "Argument " + argumentName + " specified but given no value!");
+            throw new BugInCF(
+                    "Command line contains " + argumentName + " but no value following it");
         } else {
             args.remove(i);
             return args.remove(i);
@@ -389,10 +387,7 @@ public class CheckerMain {
         args.add("com.sun.tools.javac.Main");
     }
 
-    /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath.
-     */
+    /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
@@ -416,7 +411,7 @@ public class CheckerMain {
         // without loading them.  The compiler assumes that any class on
         // this bootclasspath will be on the bootclasspath of the JVM used
         // to later run the classfiles that Javac produces.  Our
-        // jdk[78].jar classes don't have bodies, so they won't be used at
+        // jdk8.jar classes don't have bodies, so they won't be used at
         // run time, but other, real definitions of those classes will be
         // on the classpath at run time.
         args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));
@@ -483,10 +478,7 @@ public class CheckerMain {
         return result;
     }
 
-    /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot
-     * classpath.
-     */
+    /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
     public int invokeCompiler() {
         List<String> args = getExecArguments();
 
@@ -654,7 +646,7 @@ public class CheckerMain {
                             Charset.defaultCharset().name());
             return new File(fileName).getAbsolutePath();
         } catch (UnsupportedEncodingException e) {
-            throw new InternalError("Default charset doesn't exist. Your VM is borked.");
+            throw new BugInCF("Default charset doesn't exist. Your VM is borked.");
         }
     }
 
@@ -689,7 +681,9 @@ public class CheckerMain {
     private static String quote(final String str) {
         if (str.contains(" ")) {
             if (str.contains("\"")) {
-                throw new RuntimeException("Don't know how to quote " + str);
+                throw new BugInCF(
+                        "Don't know how to quote a string containing a double-quote character "
+                                + str);
             }
             return "\"" + str + "\"";
         }

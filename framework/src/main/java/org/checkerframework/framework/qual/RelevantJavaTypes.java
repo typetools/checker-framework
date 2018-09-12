@@ -8,9 +8,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation on a SourceChecker subclass to specify which types are processed by the checker.
- * The checker's type qualifiers may only appear on the given types and their subtypes &mdash; in
- * source code, internally in the compiler, or in class files.
+ * An annotation on a SourceChecker subclass to specify which Java types are processed by the
+ * checker. The checker's type qualifiers may only appear on the given types and their subtypes
+ * &mdash; in source code, internally in the compiler, or in class files.
  *
  * <p>If a checker is not annotated with this annotation, then the checker's qualifiers may appear
  * on any type.

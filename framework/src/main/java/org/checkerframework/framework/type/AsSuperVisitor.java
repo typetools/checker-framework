@@ -18,7 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -53,8 +53,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @SuppressWarnings("unchecked")
     public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
         if (type == null || superType == null) {
-            ErrorReporter.errorAbort("AsSuperVisitor type and supertype cannot be null.");
-            return null; // dead code
+            throw new BugInCF("AsSuperVisitor type and supertype cannot be null.");
+
         } else if (type == superType) {
             return (T) type.deepCopy();
         }
@@ -67,7 +67,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
         if (result == null) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "AsSuperVisitor returned null.\ntype: %s\nsuperType: %s", type, copySuperType);
         }
 
@@ -151,11 +151,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (isUninferredTypeAgrument) {
             return copyPrimaryAnnos(type, superType);
         }
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "AsSuperVisitor: type is not an erased subtype of supertype."
                         + "\ntype: %s\nsuperType: %s",
                 type, superType);
-        return null; // dead code
     }
 
     private AnnotatedTypeMirror copyPrimaryAnnos(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
@@ -358,8 +357,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     public AnnotatedTypeMirror visitDeclared_Primitive(
             AnnotatedDeclaredType type, AnnotatedPrimitiveType superType, Void p) {
         if (!TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
-            ErrorReporter.errorAbort(
-                    "AsSuperVisitor Declared_Primitive: type is not a box primitive.");
+            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a box primitive.");
         }
         AnnotatedTypeMirror unboxedType = annotatedTypeFactory.getUnboxedType(type);
         return copyPrimaryAnnos(unboxedType, superType);
@@ -442,7 +440,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
                 }
             }
             if (found == null) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "AsSuperVisitor visitIntersection_Intersection:\ntype: %s superType: %s",
                         type, superType);
             }
@@ -467,10 +465,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "AsSuperVisitor visitIntersection_Primitive:\ntype: %s superType: %s",
                 type, superType);
-        return null; // dead code
     }
 
     @Override
@@ -495,10 +492,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "AsSuperVisitor visitIntersection_Union:\ntype: %s\nsuperType: %s",
                 type, superType);
-        return null; // dead code
     }
 
     @Override
@@ -607,6 +603,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitTypevar_Typevar(
             AnnotatedTypeVariable type, AnnotatedTypeVariable superType, Void p) {
+        // Clear the superType annotations and copy over the primary annotations before computing
+        // bounds, so that the superType annotations don't override the type annotations on the
+        // bounds.
+        superType.clearAnnotations();
+        copyPrimaryAnnos(type, superType);
 
         AnnotatedTypeMirror upperBound = visit(type.getUpperBound(), superType.getUpperBound(), p);
         superType.setUpperBound(upperBound);
@@ -622,7 +623,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setLowerBound(lowerBound);
 
-        return copyPrimaryAnnos(type, superType);
+        return superType;
     }
 
     @Override

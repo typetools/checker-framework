@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering checker-framework/.travis-build-without-test.sh" in `pwd`
+echo Entering `pwd`/.travis-build-without-test.sh
 
 # Fail the whole script if any command fails
 set -e
@@ -25,9 +25,10 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=eisop
 fi
 
+
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
-    git -C ../annotation-tools pull
+    git -C ../annotation-tools pull || true
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
     REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools`
@@ -35,7 +36,6 @@ else
     (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 fi
 
-# This also builds jsr308-langtools
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
@@ -57,15 +57,23 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 
 ## Compile
+
+# Download jsr308-langtools replacement for javac.jar that fixes some bugs
+if [ ! -d ../jsr308-langtools ] ; then
+  (cd .. && wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip)
+  (cd .. && unzip -q jsr308-langtools-2.4.0.zip)
+  (cd .. && mv jsr308-langtools-2.4.0 jsr308-langtools)
+fi
+
 # Two options: rebuild the JDK or download a prebuilt JDK.
 if [[ "${BUILDJDK}" == "buildjdk" ]]; then
   echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
-   ./gradlew assemble -PuseLocalJdk --console=plain
+   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all
 fi
 
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew --console=plain assemble
+  ./gradlew --console=plain --warning-mode=all assemble
 fi
 
-echo "Exiting checker-framework/.travis-build-without-test.sh" in `pwd`
+echo Exiting `pwd`/.travis-build-without-test.sh

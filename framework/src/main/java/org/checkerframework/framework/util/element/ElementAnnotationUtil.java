@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -58,8 +58,8 @@ public class ElementAnnotationUtil {
             final AnnotatedTypeFactory typeFactory) {
 
         if (types.size() != elements.size()) {
-            ErrorReporter.errorAbort(
-                    "Number of types and elements don't match!"
+            throw new BugInCF(
+                    "Number of types and elements don't match. "
                             + "types ( "
                             + PluginUtil.join(", ", types)
                             + " ) "
@@ -336,7 +336,7 @@ public class ElementAnnotationUtil {
 
     /**
      * See the Type Annotation Specification on bounds
-     * (https://checkerframework.org/jsr308/specification/java-annotation-design.html)
+     * (https://checkerframework.org/jsr308/specification/java-annotation-design.html).
      *
      * <p>TypeAnnotationPositions have bound indices when they represent an upper bound on a
      * TypeVariable. The index 0 ALWAYS refers to the superclass type. If that supertype is implied
@@ -424,14 +424,13 @@ public class ElementAnnotationUtil {
             default:
                 // Raise an error for all other types below.
         }
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "ElementAnnotationUtil.getTypeAtLocation: unexpected annotation with location found for type: "
                         + type
                         + " (kind: "
                         + type.getKind()
                         + ") location: "
                         + location);
-        return null; // dead code
     }
 
     /**
@@ -507,7 +506,7 @@ public class ElementAnnotationUtil {
         }
 
         if (outerToInner.isEmpty() || error) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ElementAnnotationUtil.getLocationTypeADT: invalid location %s for type: %s",
                     location, type);
         }
@@ -520,13 +519,12 @@ public class ElementAnnotationUtil {
             return type;
         }
 
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "ElementAnnotationUtil.getLocationTypeANT: "
                         + "invalid location "
                         + location
                         + " for type: "
                         + type);
-        return null; // dead code
     }
 
     private static AnnotatedTypeMirror getLocationTypeAWT(
@@ -549,13 +547,12 @@ public class ElementAnnotationUtil {
             }
 
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ElementAnnotationUtil.getLocationTypeAWT: "
                             + "invalid location "
                             + location
                             + " for type: "
                             + type);
-            return null;
         }
     }
 
@@ -575,13 +572,12 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror comptype = type.getComponentType();
             return getTypeAtLocation(comptype, tail(location), anno, true);
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ElementAnnotationUtil.annotateAAT: "
                             + "invalid location "
                             + location
                             + " for type: "
                             + type);
-            return null; // dead code
         }
     }
 
@@ -609,13 +605,12 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
             return getTypeAtLocation(supertype, tail(location));
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ElementAnnotationUtil.getLocatonTypeAIT: "
                             + "invalid location "
                             + location
                             + " for type: "
                             + type);
-            return null; // dead code
         }
     }
 

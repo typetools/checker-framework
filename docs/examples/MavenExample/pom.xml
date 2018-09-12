@@ -14,25 +14,22 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.5.4<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->2.5.5<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
     <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <!-- Use checker-qual7 if targeting Java 7 -->
-      <!-- <artifactId>checker-qual7</artifactId> -->
       <version>${checkerFrameworkVersion}</version>
     </dependency>
-    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
@@ -86,7 +83,7 @@
               <compilerArgs>
                   <!-- location of the annotated JDK, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
-                  <!--treat Checker Framework errors as warnings-->
+                  <!-- -Awarns treats Checker Framework errors as warnings -->
                   <!-- <arg>-Awarns</arg> -->
                   <arg>-Alint</arg>
               </compilerArgs>

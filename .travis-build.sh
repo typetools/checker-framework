@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering checker-framework/.travis-build.sh, GROUP=$1, in" `pwd`
+echo Entering `pwd`/.travis-build.sh, GROUP=$1
 
 # Optional argument $1 is one of:
 #   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
@@ -67,10 +67,10 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew --console=plain allTests
+  ./gradlew --console=plain --warning-mode=all allTests
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
-  ./gradlew --console=plain :checker:exampleTests
+  ./gradlew --console=plain --warning-mode=all :checker:exampleTests
 fi
 
 if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
@@ -86,7 +86,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 
   export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew --console=plain dist test)
+  (cd ../checker-framework-inference && ./gradlew --console=plain --warning-mode=all dist test)
 
 fi
 
@@ -101,14 +101,8 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew --console=plain :checker:demosTests
+    ./gradlew --console=plain --warning-mode=all :checker:demosTests
   fi
-
-  # sparta: 1 minute, but the command is "true"!
-  # TODO: requires Android installation (and at one time, it caused weird
-  # Travis hangs if enabled without Android installation).
-  # (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/sparta.git)
-  # (cd ../sparta && ant jar all-tests)
 
   # Guava
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
@@ -121,7 +115,7 @@ fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew --console=plain IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk
+  ./gradlew --console=plain --warning-mode=all IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -132,34 +126,27 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew --console=plain checkBasicStyle checkFormat
+  ./gradlew --console=plain --warning-mode=all checkBasicStyle checkFormat
 
   # Run error-prone
-  ./gradlew --console=plain runErrorProne
+  ./gradlew --console=plain --warning-mode=all runErrorProne
 
   # Documentation
-  ./gradlew --console=plain allJavadoc
-  ./gradlew --console=plain javadocPrivate
+  ./gradlew --console=plain --warning-mode=all javadocPrivate
   make -C docs/manual all
 
   echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
   # (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
   # The change to TRAVIS_COMMIT_RANGE is due to travis-ci/travis-ci#4596 .
   (git diff "${TRAVIS_COMMIT_RANGE/.../..}" > /tmp/diff.txt 2>&1) || true
-  (./gradlew requireJavadocPrivate --console=plain > /tmp/rjp-output.txt 2>&1) || true
-  [ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty" && false)
+  (./gradlew requireJavadocPrivate --console=plain --warning-mode=all > /tmp/rjp-output.txt 2>&1) || true
+  [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty" && false))
   wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
   python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
 
-  # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
-  # Not just "make" because the invocations of "hevea -exec xxcharset.exe" fail.
-  # I cannot reproduce the problem locally and it isn't important enough to fix.
-  # make -C ../jsr308-langtools/doc
-  make -C ../jsr308-langtools/doc pdf
-
   # HTML legality
-  ./gradlew --console=plain htmlValidate
+  ./gradlew --console=plain --warning-mode=all htmlValidate
 
 fi
 
-echo "Exiting checker-framework/.travis-build.sh, GROUP=$GROUP, in" `pwd`
+echo Exiting `pwd`/.travis-build.sh, GROUP=$1

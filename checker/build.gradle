@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '98819d21643236074184421ade9771cd5d254e9c'
+    jdkShaHash = 'd7c50126251d341b576f7ed5219d9a84773d5f95'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -84,10 +84,8 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
         exec {
             executable 'make'
             environment CHECKERFRAMEWORK: "${projectDir}/..",
-                    LANGTOOLS: "${jsr308}/jsr308-langtools",
                     ANNOTATION_TOOLS: "${afu}/..",
-                    CLASSPATH: project(':checker').tasks.getByName('shadowJar').archivePath,
-                    LT_BIN: "${jsr308}/jsr308-langtools/dist/bin"
+                    CLASSPATH: project(':checker').tasks.getByName('shadowJar').archivePath
             args += ["-C", "jdk/"]
         }
 
@@ -108,10 +106,11 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
 
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
+    if (jdkShaHash.is('local')) {
+        dependsOn(buildJdk)
+    }
     doLast {
-        if (jdkShaHash.is('local')) {
-            buildJdk.execute()
-        } else {
+        if (!jdkShaHash.is('local')) {
             File downloadedJdk = new File(buildDir, "jdk8-${jdkShaHash}.jar");
             if (!downloadedJdk.exists()) {
                 download {
@@ -143,6 +142,8 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist.'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker.jar"
+    // To see what files are incorporated into the shadow jar file:
+    // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
     archives shadowJar

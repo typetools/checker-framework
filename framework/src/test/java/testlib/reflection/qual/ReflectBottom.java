@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Toy type system for testing reflection resolution. Uses
- * org.checkerframework.framework.qual.Bottom as bottom
+ * org.checkerframework.common.subtyping.qual.Bottom as bottom.
  *
  * @see Sibling1, Sibling2
  */

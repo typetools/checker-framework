@@ -13,8 +13,7 @@ public abstract class FrameworkPerFileTest extends CheckerFrameworkPerFileTest {
      * Creates a new framework test.
      *
      * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
-     * Iterable, Iterable, List, boolean)} adds additional checker options such as
-     * -AprintErrorStack.
+     * Iterable, Iterable, List, boolean)} adds additional checker options.
      *
      * <p>These tests do not require the annotated jdk.
      *

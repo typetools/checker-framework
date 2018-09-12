@@ -292,15 +292,13 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree);
-        AnnotatedExecutableType method = mfuPair.first;
+    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedMethodType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.methodType;
 
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
-        return mfuPair;
+        return mType;
     }
 
     @Override

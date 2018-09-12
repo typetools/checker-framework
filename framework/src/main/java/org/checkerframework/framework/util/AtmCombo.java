@@ -23,7 +23,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AtmComboVisitor;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * AtmKind should mirror TypeKind except that each member has a reference to the AnnotatedTypeMirror
@@ -62,8 +62,7 @@ enum AtmKind {
             }
         }
 
-        ErrorReporter.errorAbort("Unhandled AnnotatedTypeMirror ( " + atm.getClass() + " )");
-        return null; // dead code
+        throw new BugInCF("Unhandled AnnotatedTypeMirror ( " + atm.getClass() + " )");
     }
 }
 
@@ -718,8 +717,7 @@ public enum AtmCombo {
 
             default:
                 // Reaching this point indicates that there is an AtmCombo missing
-                ErrorReporter.errorAbort("Unhandled AtmCombo ( " + combo + " ) ");
-                return null; // dead code
+                throw new BugInCF("Unhandled AtmCombo ( " + combo + " ) ");
         }
     }
 }

@@ -1,7 +1,5 @@
 package org.checkerframework.framework.test;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,8 +61,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * Creates a new checker test.
      *
      * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
-     * Iterable, Iterable, List, boolean)} adds additional checker options such as
-     * -AprintErrorStack.
+     * Iterable, Iterable, List, boolean)} adds additional checker options.
      *
      * @param testFiles the files containing test code, which will be type-checked
      * @param checker the class for the checker to use
@@ -88,7 +85,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
         List<String> customizedOptions =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
         TestConfiguration config =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir,
                         testFiles,
                         Collections.singleton(checkerName),
