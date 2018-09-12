@@ -100,37 +100,36 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         if (!type.hasAnnotation(factory.ORDERNONDET)) {
             return;
         }
-
         // TODO-rashmi: Handle Maps
         recursiveReplaceAnnotation(type, replaceType);
     }
 
     /**
-     * Iterates over all the nested Collection/Iterator type arguments of {@code type} and replaces
-     * their top-level annotations with {@code replaceType}.
+     * Replaces the annotation on {@code type} with {@code replaceType}. If {@code type} is a
+     * Collection (or a subtype) or an Iterator (or a subtype), iterates over all the nested
+     * Collection/Iterator type arguments of {@code type} and replaces their top-level annotations
+     * with {@code replaceType}.
      *
-     * <p>Example1: If this method is called with {@code type} as {@code @OrderNonDet Set<@Det
+     * <p>Example1: If this method is called with {@code type} as {@code @OrderNonDet Integer} and
+     * {@code replaceType} as {@code @NonDet}, the resulting {@code type} will be {@code @NonDet
+     * Integer}.
+     *
+     * <p>Example2: If this method is called with {@code type} as {@code @OrderNonDet Set<@Det
      * Integer>} and {@code replaceType} as {@code @NonDet}, the resulting {@code type} will be
      * {@code @NonDet Set<@Det Integer>}.
      *
-     * <p>Example2: If this method is called with {@code type} as {@code @OrderNonDet
+     * <p>Example3: If this method is called with {@code type} as {@code @OrderNonDet
      * Set<@OrderNonDet Set<@Det Integer>>} and {@code replaceType} as {@code @NonDet}, the result
      * will be {@code @NonDet Set<@NonDet Set<@Det Integer>>}.
      *
-     * <p>Example3: If this method is called with {@code type} as {@code @OrderNonDet
+     * <p>Example4: If this method is called with {@code type} as {@code @OrderNonDet
      * Set<@OrderNonDet Set<@OrderNonDet List<@Det Integer>>>} and {@code replaceType} as
      * {@code @Det}, the result will be {@code @Det Set<@Det Set<@Det List<@Det Integer>>>}.
      */
     void recursiveReplaceAnnotation(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
+        type.replaceAnnotation(replaceType);
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
-
-        type.replaceAnnotation(replaceType);
-
-        // This check succeeds for @OrderNonDet Set<T> (Generic types)
-        if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
-            return;
-        }
 
         // What if there is a user-defined collection, such as Box or Cell?
         // The manual should document what the checker does in that case.
@@ -142,7 +141,6 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
 
         AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
         AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
-        argType.replaceAnnotation(replaceType);
         recursiveReplaceAnnotation(argType, replaceType);
     }
 }
