@@ -447,7 +447,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         setProcessingEnvironment(env);
 
         double jreVersion = PluginUtil.getJreVersion();
-        if (jreVersion != 1.8) {
+        if (jreVersion != 1.8 && jreVersion != 8) {
             throw new UserError(
                     String.format(
                             "The Checker Framework must be run under JDK 1.8.  You are using version %f.",
