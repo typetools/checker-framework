@@ -395,10 +395,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitExecutable(final AnnotatedExecutableType executableType, final Void p) {
             if (isMainMethod(executableType.getElement())) {
-                // TODO: There is repeated logic for this case, both in method
-                // addComputedTypeAnnotations and in this method.  Please avoid duplication:  put
-                // the logic in just one place.  Or explain why it is essential for it to be
-                // duplicated (but I would not expect that to be necessary).
                 AnnotatedTypeMirror paramType = executableType.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             } else {
@@ -490,9 +486,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * This method {@code addComputedTypeAnnotations} annotates the component type of parameter
      * {@code int[] a} as {@code @PolyDet int[] a}.
+     *
+     * <p>Note: Even though {@code visitExecutable} and {@code addComputedTypeAnnotations} have the
+     * same logic for adding defaults to parameter types, the code structure is different. This is
+     * because the argument to {@code visitExecutable} is an {@code AnnotatedExecutableType} which
+     * represents the type of a method, constructor or an initializer and the argument to {@code
+     * addComputedTypeAnnotations} is any {@code Element}.
      */
-    // If it's duplicated, why is the style/structure of the code
-    // different in the two methods?
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         if (elt.getKind() == ElementKind.PARAMETER) {
