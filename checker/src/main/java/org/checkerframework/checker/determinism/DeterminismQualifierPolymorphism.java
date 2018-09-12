@@ -1,5 +1,6 @@
 package org.checkerframework.checker.determinism;
 
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
@@ -66,6 +67,16 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         if (type.hasAnnotation(factory.POLYDET) || type.hasAnnotation(factory.POLYDET_USE)) {
             AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
             type.replaceAnnotations(quals);
+        } else {
+            for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry :
+                    replacements.entrySet()) {
+                AnnotationMirror poly = pqentry.getKey();
+                if (type.hasAnnotation(poly)) {
+                    type.removeAnnotation(poly);
+                    AnnotationMirrorSet quals = pqentry.getValue();
+                    type.replaceAnnotations(quals);
+                }
+            }
         }
 
         if (type.hasAnnotation(factory.ORDERNONDET)) {
@@ -78,12 +89,9 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
     }
 
-    // TOOD: The documentation doesn't say anything about his being a deep replacement, but the
-    // implementation calls recursiveReplaceAnnotation.  It's important to make the documentation
-    // complete so that readers can understand it.
     /**
      * If {@code type} has the annotation {@code @OrderNonDet}, this method replaces the annotation
-     * of {@code type} with {@code replaceType}.
+     * of {@code type} and all the nested type arguments of {@code type} with {@code replaceType}.
      *
      * @param type the polymorphic type to be replaced
      * @param replaceType the type to be replaced with
@@ -93,25 +101,17 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             return;
         }
 
-        type.replaceAnnotation(replaceType);
-
-        // This check succeeds for @OrderNonDet Set<T> (Generic types)
-        if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
-            return;
-        }
-
         // TODO-rashmi: Handle Maps
         recursiveReplaceAnnotation(type, replaceType);
     }
 
     /**
      * Iterates over all the nested Collection/Iterator type arguments of {@code type} and replaces
-     * their top-level annotations with {@code replaceType} if these top-level annotations are
-     * {@code OrderNonDet}.
+     * their top-level annotations with {@code replaceType}.
      *
-     * <p>Example1: If this method is called with {@code type} as {@code @NonDet Set<@Det List<@Det
-     * Integer>>} and {@code replaceType} as {@code @NonDet}, the method doesn't do anything since
-     * the top-level annotation of is not {@code @OrderNonDet}.
+     * <p>Example1: If this method is called with {@code type} as {@code @OrderNonDet Set<@Det
+     * Integer>} and {@code replaceType} as {@code @NonDet}, the resulting {@code type} will be
+     * {@code @NonDet Set<@Det Integer>}.
      *
      * <p>Example2: If this method is called with {@code type} as {@code @OrderNonDet
      * Set<@OrderNonDet Set<@Det Integer>>} and {@code replaceType} as {@code @NonDet}, the result
@@ -124,6 +124,14 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     void recursiveReplaceAnnotation(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+
+        type.replaceAnnotation(replaceType);
+
+        // This check succeeds for @OrderNonDet Set<T> (Generic types)
+        if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
+            return;
+        }
+
         // What if there is a user-defined collection, such as Box or Cell?
         // The manual should document what the checker does in that case.
         // What if the user writes the type Box<@OrderNonDet Integer>?
