@@ -460,7 +460,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // to check if 'annoannoArrType' has explicit annotations.
             // It doesn't check for "annoannoArrType.getExplicitAnnotations().isEmpty()"
             // because "getExplicitAnnotations()" works only with type use locations?
-            // For example: if 'annoannoArrType' is @Det int @Det[],
+            // For example: if 'annoannoArrType' is "@Det int @Det[]",
             // "arrParamType.getExplicitAnnotations().size()" returns 0,
             // "arrParamType.getAnnotations().size()" returns 1.
             if (annoArrType.getAnnotations().isEmpty()) {
@@ -529,11 +529,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 elt);
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
-                    // TODO: Here is another comment that I cannot understand.  Why is the
-                    // testArrParam method declaration important?
-                    // Note: void testArrParam(@PolyDet int @PolyDet [] arr) {}
-                    // getExplicitAnnotations().size() for arr is 0,
-                    // getAnnotations().size() for arr is 1.
+                    // The following code uses "type.getAnnotations().isEmpty()"
+                    // to check if 'type' has explicit annotations.
+                    // It doesn't check for "type.getExplicitAnnotations().isEmpty()"
+                    // because "getExplicitAnnotations()" works only with type use locations?
+                    // For example: if 'type' is "@PolyDet int @PolyDet [] arr",
+                    // "type.getExplicitAnnotations().size()" returns 0,
+                    // "type.getAnnotations().size()" returns 1.
                 } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().isEmpty()) {
                     AnnotatedArrayType arrType = (AnnotatedArrayType) type;
                     if (arrType.getComponentType().getKind() != TypeKind.TYPEVAR) {
