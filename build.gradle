@@ -73,7 +73,9 @@ allprojects {
     }
 
     dependencies {
-        javacJar 'org.checkerframework:compiler:2.4.0'
+//        javacJar 'org.checkerframework:compiler:2.4.0'
+                javacJar 'com.google.errorprone:error_prone_ant:2.3.1'
+
         // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
         toolsJar files(Jvm.current().toolsJar)
     }
