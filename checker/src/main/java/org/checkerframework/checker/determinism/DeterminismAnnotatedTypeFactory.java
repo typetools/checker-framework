@@ -375,62 +375,43 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        // TODO: The method has 3 features, but the example relates to the middle one. There is no
-        // indication of this in the comment, which makes it confusing to read.
-        // TODO: The explanation is confusing.  It says that "a[0] is @PolyDet", but that does not
-        // seem to be true, and the whole point of this method is that it isn't true. (Maybe it
-        // *should* be true, but that's different.)  I'm not sure a counterfactual is helpful here.
-        // If you want to discuss problems, talk about types (what the type of an expression should
-        // be) rather than talking about what "would be flagged as an error", which requires further
-        // reasoning about all the behaviors of the checker, when the point here is to set the type
-        // of an expression.  Likewise, the assignment "i = " is a distraction.  You could just as
-        // well have written "... a[0] ..." to show that a[0] is being used as an rvalue, without
-        // bringing in assignment which isn't relevant to the discussion and therefore is more
-        // likely to confuse than to clarify.
         /**
-         * Places the implicit annotation {@code Det} on the type of the main method's parameter.
+         * Places the implicit annotation {@code Det} on the type of the main method's parameter
+         * inside the main method body.
          *
          * <p>Places the following default annotations:
          *
          * <ol>
          *   <li>Defaults the component types of array parameters and return types as {@code
-         *       ...[@PolyDet]}.
+         *       ...[@PolyDet]} in the body of the method represented by {@code executableType}.
          *   <li>Defaults the return type for methods with no @PolyDet formal parameters (including
-         *       the receiver) as {@code @Det}.
+         *       the receiver) as {@code @Det} in the method represented by {@code executableType}.
          * </ol>
          *
-         * <p>Example: Consider the following code:
-         *
-         * <pre><code>
-         * &nbsp; void testArr(int[] a) {
-         * &nbsp; @Det int i = a[0];
-         * &nbsp; }
-         * </code></pre>
-         *
-         * Here, the line {@code @Det int i = a[0];} should be flagged as an error since {@code
-         * a[0]} is {@code @PolyDet}. Without the method {@code visitExecutable}, the argument
-         * {@code a} defaults to {@code @PolyDet[@Det]} and the line {@code @Det int i = a[0];} is
-         * not flagged as an error by the checker.
+         * <p>NOTE: This method {@code visitExecutable} adds default types to parameter types inside
+         * the method bodies, not in method signatures. The same defaults are added to method
+         * signatures by {@code addComputedTypeAnnotations}.
          */
         @Override
-        public Void visitExecutable(final AnnotatedExecutableType t, final Void p) {
-            if (isMainMethod(t.getElement())) {
+        public Void visitExecutable(final AnnotatedExecutableType executableType, final Void p) {
+            if (isMainMethod(executableType.getElement())) {
                 // TODO: There is repeated logic for this case, both in method
                 // addComputedTypeAnnotations and in this method.  Please avoid duplication:  put
                 // the logic in just one place.  Or explain why it is essential for it to be
                 // duplicated (but I would not expect that to be necessary).
-                AnnotatedTypeMirror paramType = t.getParameterTypes().get(0);
+                AnnotatedTypeMirror paramType = executableType.getParameterTypes().get(0);
                 paramType.replaceAnnotation(DET);
             } else {
-                for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
+                for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
                     defaultArrayComponentTypeAsPolyDet(paramType);
                 }
 
                 // t.getReceiverType() is null for both "Object <init>()"
                 // and for static methods.
-                if (t.getReturnType().getAnnotations().isEmpty() && (t.getReceiverType() == null)) {
+                if (executableType.getReturnType().getAnnotations().isEmpty()
+                        && (executableType.getReceiverType() == null)) {
                     boolean unannotatedOrPolyDet = false;
-                    for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
+                    for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
                         // The default is @PolyDet, so treat unannotated the same as @PolyDet
                         if (paramType.getAnnotations().isEmpty()
                                 || paramType.hasAnnotation(POLYDET)) {
@@ -439,17 +420,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         }
                     }
                     if (!unannotatedOrPolyDet) {
-                        t.getReturnType().replaceAnnotation(DET);
+                        executableType.getReturnType().replaceAnnotation(DET);
                     }
                 }
-                defaultArrayComponentTypeAsPolyDet(t.getReturnType());
+                defaultArrayComponentTypeAsPolyDet(executableType.getReturnType());
             }
-            return super.visitExecutable(t, p);
+            return super.visitExecutable(executableType, p);
         }
     }
 
-    // TODO: It would be great to handle as many TODOs as possible.  Otherwise, once you address
-    // them, the code has to be reviewed again.
     // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
     // and test.
     /** If {@code type} is an array type, defaults its component type as @PolyDet. */
@@ -512,8 +491,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * This method {@code addComputedTypeAnnotations} annotates the component type of parameter
      * {@code int[] a} as {@code @PolyDet int[] a}.
      */
-    // TODO: How is this method related to visitExecutable?  The logic seems very similar. Why does
-    // it have to be duplicated?  If it's duplicated, why is the style/structure of the code
+    // If it's duplicated, why is the style/structure of the code
     // different in the two methods?
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
@@ -529,14 +507,15 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 elt);
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
-                    // The following code uses "type.getAnnotations().isEmpty()"
-                    // to check if 'type' has explicit annotations.
-                    // It doesn't check for "type.getExplicitAnnotations().isEmpty()"
-                    // because "getExplicitAnnotations()" works only with type use locations?
-                    // For example: if 'type' is "@PolyDet int @PolyDet [] arr",
-                    // "type.getExplicitAnnotations().size()" returns 0,
-                    // "type.getAnnotations().size()" returns 1.
-                } else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().isEmpty()) {
+                }
+                // The following code uses "type.getAnnotations().isEmpty()"
+                // to check if 'type' has explicit annotations.
+                // It doesn't check for "type.getExplicitAnnotations().isEmpty()"
+                // because "getExplicitAnnotations()" works only with type use locations?
+                // For example: if 'type' is "@PolyDet int @PolyDet [] arr",
+                // "type.getExplicitAnnotations().size()" returns 0,
+                // "type.getAnnotations().size()" returns 1.
+                else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().isEmpty()) {
                     AnnotatedArrayType arrType = (AnnotatedArrayType) type;
                     if (arrType.getComponentType().getKind() != TypeKind.TYPEVAR) {
                         arrType.getComponentType()
