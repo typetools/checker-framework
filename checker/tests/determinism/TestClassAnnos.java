@@ -11,8 +11,7 @@ public class TestClassAnnos {
     }
 }
 
-@Det
-class Node {
+@Det class Node {
     int data;
 
     public Node() {
@@ -31,8 +30,7 @@ class Node {
     }
 }
 
-@NonDet
-class NonDetNode {
+@NonDet class NonDetNode {
     String val;
 
     public NonDetNode() {

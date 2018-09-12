@@ -28,8 +28,7 @@ public class TestLocalArrays<T> {
 
         @NonDet int @NonDet [] nar = new @NonDet int @NonDet [20];
 
-        @Det
-        int @OrderNonDet [] @OrderNonDet [] oar = new @Det int @OrderNonDet [10] @OrderNonDet [10];
+        @Det int @OrderNonDet [] @OrderNonDet [] oar = new @Det int @OrderNonDet [10] @OrderNonDet [10];
     }
 
     void assignElement1(@Det int @OrderNonDet [] a, @Det int x, @Det int index) {
