@@ -182,8 +182,8 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 A type system designer, or an end-user programmer, can cause unannotated
 Java types to be treated as if they had a default annotation.
-(Defaulting never applies to uses of type variables, even if they do not
-have an explicit type annotation.)
+Defaulting never applies to uses of type variables, even if they do not
+have an explicit type annotation.
 
 There are several defaulting mechanisms, for convenience and flexibility.
 When determining the default qualifier for a use of a type, the following
@@ -220,7 +220,7 @@ the default in all locations.  See the Javadoc of \refclass{framework/qual}{Defa
 For example, using the Nullness type system (Chapter~\ref{nullness-checker}):
 
 \begin{Verbatim}
-import org.checkerframework.framework.qual.*;        // for DefaultQualifier[s]
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 @DefaultQualifier(NonNull.class)
@@ -228,9 +228,8 @@ class MyClass {
 
   public boolean compile(File myFile) { // myFile has type "@NonNull File"
     if (!myFile.exists())          // no warning: myFile is non-null
-      return false;
+      ...
     @Nullable File srcPath = ...;  // must annotate to specify "@Nullable File"
-    ...
     if (srcPath.exists())          // warning: srcPath might be null
       ...
   }
