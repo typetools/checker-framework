@@ -71,4 +71,25 @@ class TestArrays {
         // :: error: (invalid.array.assignment)
         x[i] = y;
     }
+
+    // :: error: (invalid.array.component.type)
+    void checkArrayValid2D(@Det int @OrderNonDet [] @NonDet [] arr) {}
+
+    void checkArrayValid2DAssign(
+            @Det int @NonDet [] @NonDet [] arr1,
+            @Det int @NonDet [] @OrderNonDet [] arr2,
+            @Det int @Det [] @Det [] arr3,
+            @NonDet int index) {
+        // :: error: (assignment.type.incompatible)
+        arr2[0] = arr1[0];
+        // :: error: (invalid.array.assignment)
+        arr3[0][index] = 0;
+        // :: error: (assignment.type.incompatible)
+        @Det int y = arr2[1][0];
+    }
+
+    int[] @Det [] checkDefaults2D(int[][] arr) {
+        // :: error: (return.type.incompatible)
+        return arr;
+    }
 }

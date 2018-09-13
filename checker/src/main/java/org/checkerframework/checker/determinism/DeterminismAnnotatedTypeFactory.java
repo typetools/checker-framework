@@ -425,9 +425,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    // TODO-rashmi: handle multidimensional arrays - here, addComputedTypes, DeterminismVisitor
-    // and test.
-    /** If {@code type} is an array type, defaults its component type as @PolyDet. */
+    /** If {@code type} is an array type, defaults all its nested component types as @PolyDet. */
     private void defaultArrayComponentTypeAsPolyDet(AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType annoArrType = (AnnotatedArrayType) type;
@@ -439,12 +437,30 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // "arrParamType.getExplicitAnnotations().size()" returns 0,
             // "arrParamType.getAnnotations().size()" returns 1.
             if (annoArrType.getAnnotations().isEmpty()) {
-                if (annoArrType.getComponentType().getUnderlyingType().getKind()
-                        != TypeKind.TYPEVAR) {
-                    annoArrType.getComponentType().replaceAnnotation(POLYDET);
-                }
+                recursiveDefaultArrayComponentTypeAsPolyDet(annoArrType);
             }
         }
+    }
+
+    /**
+     * Defaults all the nested component types of the array type {@code annoArrType} as
+     * {@code @PolyDet}.
+     *
+     * <p>Example: If this method is called with {@code annoArrType} as {@code int[][]}, the
+     * resulting {@code annoArrType} will be {@code @PolyDet int @PolyDet[][]}
+     */
+    void recursiveDefaultArrayComponentTypeAsPolyDet(AnnotatedArrayType annoArrType) {
+        AnnotatedTypeMirror componentType = annoArrType.getComponentType();
+        if (!componentType.getAnnotations().isEmpty()) {
+            return;
+        }
+        if (componentType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+            annoArrType.getComponentType().replaceAnnotation(POLYDET);
+        }
+        if (componentType.getKind() != TypeKind.ARRAY) {
+            return;
+        }
+        recursiveDefaultArrayComponentTypeAsPolyDet((AnnotatedArrayType) componentType);
     }
 
     /** @return true if {@code method} is equals */
@@ -499,7 +515,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (elt.getEnclosingElement().getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
                 if (isMainMethod(method)) {
-                    if (type.getAnnotations().size() > 0 && !type.hasAnnotation(DET)) {
+                    if (!type.getAnnotations().isEmpty() && !type.hasAnnotation(DET)) {
                         checker.report(
                                 Result.failure(
                                         "invalid.annotation.on.parameter",
@@ -508,20 +524,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
                 }
-                // The following code uses "type.getAnnotations().isEmpty()"
-                // to check if 'type' has explicit annotations.
-                // It doesn't check for "type.getExplicitAnnotations().isEmpty()"
-                // because "getExplicitAnnotations()" works only with type use locations?
-                // For example: if 'type' is "@PolyDet int @PolyDet [] arr",
-                // "type.getExplicitAnnotations().size()" returns 0,
-                // "type.getAnnotations().size()" returns 1.
-                else if (type.getKind() == TypeKind.ARRAY && type.getAnnotations().isEmpty()) {
-                    AnnotatedArrayType arrType = (AnnotatedArrayType) type;
-                    if (arrType.getComponentType().getKind() != TypeKind.TYPEVAR) {
-                        arrType.getComponentType()
-                                .addMissingAnnotations(Collections.singleton(POLYDET));
-                    }
-                }
+
+                defaultArrayComponentTypeAsPolyDet(type);
             }
         }
         super.addComputedTypeAnnotations(elt, type);
