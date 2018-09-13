@@ -34,9 +34,7 @@ public interface QualifierPolymorphism {
         }
         Element qualElt = qual.getAnnotationType().asElement();
         for (AnnotationMirror am : qualElt.getAnnotationMirrors()) {
-            if (am.getAnnotationType()
-                    .toString()
-                    .equals(PolymorphicQualifier.class.getCanonicalName())) {
+            if (AnnotationUtils.areSameByClass(am, PolymorphicQualifier.class)) {
                 return am;
             }
         }
