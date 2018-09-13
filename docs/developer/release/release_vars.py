@@ -169,8 +169,6 @@ JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
 
-JSR308_LANGTOOLS = os.path.join(BUILD_DIR, 'jsr308-langtools')
-
 ANNO_TOOLS = os.path.join(BUILD_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, 'annotation-file-utilities')
 AFU_CHANGELOG = os.path.join(ANNO_FILE_UTILITIES, 'changelog.html')
@@ -228,7 +226,7 @@ LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE = datetime.date.today()
 
-os.environ['JSR308'] = BUILD_DIR
+os.environ['PARENT_DIR'] = BUILD_DIR
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 # Environment variables for tools needed during the build

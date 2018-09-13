@@ -52,9 +52,9 @@ public @interface ImplicitFor {
     Class<?>[] typeNames() default {};
 
     /**
-     * @return regular expressions of string literals, the types of which an annotation should be
-     *     implicitly added. If multiple patterns match, then the string literal is given the
-     *     greatest lower bound of all the matches.
+     * @return regular expressions of string literals for which an annotation should be implicitly
+     *     added. If multiple patterns match, then the string literal is given the greatest lower
+     *     bound of all the matches.
      */
     String[] stringPatterns() default {};
 

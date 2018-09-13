@@ -18,25 +18,22 @@ PRESERVE=1  # option to preserve intermediate files
 
 # parameters derived from environment
 # TOOLSJAR and CTSYM derived from JAVA_HOME, rest from CHECKERFRAMEWORK
-JSR308="`cd $CHECKERFRAMEWORK/.. && pwd`"   # base directory
+PARENTDIR="`cd $CHECKERFRAMEWORK/.. && pwd`"   # base directory
 WORKDIR="${CHECKERFRAMEWORK}/checker/jdk"   # working directory
-AJDK="${JSR308}/annotated-jdk8u-jdk"        # annotated JDK
+AJDK="${PARENTDIR}/annotated-jdk8u-jdk"        # annotated JDK
 SRCDIR="${AJDK}/src/share/classes"
 BINDIR="${WORKDIR}/build"
 BOOTDIR="${WORKDIR}/bootstrap"              # initial build w/o processors
 TOOLSJAR="${JAVA_HOME}/lib/tools.jar"
-LT_BIN="${JSR308}/jsr308-langtools/build/classes"
-LT_JAVAC="${JSR308}/jsr308-langtools/dist/bin/javac"
 CF_BIN="${CHECKERFRAMEWORK}/checker/build"
 CF_DIST="${CHECKERFRAMEWORK}/checker/dist"
 CF_JAR="${CF_DIST}/checker.jar"
 CF_JAVAC="java -Xmx512m -jar ${CF_JAR} -Xbootclasspath/p:${BOOTDIR}"
-CP="${BINDIR}:${BOOTDIR}:${LT_BIN}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
+CP="${BINDIR}:${BOOTDIR}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
 JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000\
  -source 8 -target 8 -encoding ascii -cp ${CP}"
 PROCESSORS="fenum,formatter,guieffect,i18n,i18nformatter,interning,nullness,signature"
-PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source\
- -AprintErrorStack -Awarns"
+PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -Awarns"
 JAIFDIR="${WORKDIR}/jaifs"
 SYMDIR="${WORKDIR}/sym"
 
@@ -63,7 +60,7 @@ fi
 # JDK source distribution.  You don't want to build the JDK from source.
 echo "build bootstrap JDK"
 find ${SI_DIRS} ${DIRS} -maxdepth 1 -name '*\.java' -print | xargs\
- ${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} -source 8 -target 8 -encoding ascii\
+ javac -g -d ${BOOTDIR} ${JFLAGS} -source 8 -target 8 -encoding ascii\
  -cp ${CP} | tee ${WORKDIR}/log/0.log
 [ $? -ne 0 ] && exit 1
 grep -q 'not found' ${WORKDIR}/log/0.log

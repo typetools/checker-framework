@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.4.zip}
+  \url{https://checkerframework.org/checker-framework-2.5.5.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -501,7 +501,7 @@ running your code, you can use either the annotated library or the regular
 distributed version of the library --- they behave identically.
 
 The annotated libraries appear in
-\ahref{https://search.maven.org/#search|gav|1|g:\%22org.checkerframework.annotatedlib\%22}{the
+\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
 
 \begin{itemize}
@@ -558,10 +558,8 @@ Checker Framework users.
   Developers perform pluggable type-checking in-house to detect errors and
   verify their absence.
   When you create \<.class> files, run each relevant type system.
-  Create the distributed \<.jar> files from those \<.class> files, and also
-  include the contents of
-  \code{checker-framework/checker/dist/checker-qual.jar} from the Checker
-  Framework distribution, to define the annotations.
+  Create the distributed \<.jar> files from those \<.class> files.
+
 
 \subsection{Summary of command-line options\label{checker-options}}
 
@@ -705,7 +703,6 @@ Debugging
  \<-AprintAllQualifiers>,
  \<-AprintVerboseGenerics>,
  \<-Adetailedmsgtext>,
- \<-AprintErrorStack>,
  \<-Anomsgtext>
 Amount of detail in messages; see Section~\ref{creating-debugging-options-detail}.
 
@@ -1424,7 +1421,7 @@ same methodology in different words.
 %  LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
 %  LocalWords:  AignoreRawTypeArguments AsuggestPureMethods Anocheckjdk
 %  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
-%  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AprintErrorStack
+%  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
 %  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
 %  LocalWords:  AresourceStats jls r78 JDKs i18n
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname

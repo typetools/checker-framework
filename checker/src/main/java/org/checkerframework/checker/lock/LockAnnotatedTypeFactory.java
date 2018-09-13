@@ -43,7 +43,6 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -145,8 +144,8 @@ public class LockAnnotatedTypeFactory
         return new DependentTypesHelper(this) {
             @Override
             protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
-                // If the error message is NOT_EFFECTIVELY_FINAL, then report lock.expression.not
-                // .final instead of an expression.unparsable.type.invalid error.
+                // If the error message is NOT_EFFECTIVELY_FINAL, then report
+                // lock.expression.not.final instead of expression.unparsable.type.invalid .
                 List<DependentTypesError> superErrors = new ArrayList<>();
                 for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {

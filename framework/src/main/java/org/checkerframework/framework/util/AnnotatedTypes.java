@@ -47,9 +47,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -261,8 +262,7 @@ public class AnnotatedTypes {
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
             default:
-                ErrorReporter.errorAbort("asMemberOf called on unexpected type.\nt: " + of);
-                return memberType; // dead code
+                throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
         }
     }
 
@@ -313,7 +313,7 @@ public class AnnotatedTypes {
                 new ArrayList<>(enclosingType.getTypeArguments().size());
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Type arguments of a declaration should be type variables\n"
                                 + "enclosingClassOfElem="
                                 + enclosingClassOfElem
@@ -329,7 +329,7 @@ public class AnnotatedTypes {
 
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Unexpected number of parameters.\n"
                             + "enclosingType="
                             + enclosingType
@@ -386,9 +386,7 @@ public class AnnotatedTypes {
         }
 
         if (iterableType.getKind() != TypeKind.DECLARED) {
-            ErrorReporter.errorAbort(
-                    "AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
-            return null; // dead code
+            throw new BugInCF("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
         }
 
         TypeElement iterableElement =
@@ -532,8 +530,7 @@ public class AnnotatedTypes {
             }
         } else {
             // This case should never happen.
-            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
-            return null; // dead code
+            throw new BugInCF("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
         }
 
         // Has the user supplied type arguments?
@@ -853,7 +850,7 @@ public class AnnotatedTypes {
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "@Target meta-annotation should not contain both TYPE_USE and "
                                 + otherElementType
                                 + ", for annotation "
@@ -1025,9 +1022,9 @@ public class AnnotatedTypes {
                                     (AnnotatedIntersectionType) source, top, qualifierHierarchy);
 
                     if (glb == null) {
-                        ErrorReporter.errorAbort(
+                        throw new BugInCF(
                                 "AnnotatedIntersectionType has no annotation in hierarchy "
-                                        + "on any of its supertypes!\n"
+                                        + "on any of its supertypes.\n"
                                         + "intersectionType="
                                         + source);
                     }
@@ -1038,8 +1035,8 @@ public class AnnotatedTypes {
                         return null;
                     }
 
-                    ErrorReporter.errorAbort(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!\n"
+                    throw new BugInCF(
+                            "Unexpected AnnotatedTypeMirror with no primary annotation.\n"
                                     + "toSearch="
                                     + toSearch
                                     + "\n"
@@ -1048,7 +1045,6 @@ public class AnnotatedTypes {
                                     + "\n"
                                     + "source="
                                     + source);
-                    return null;
             }
         }
 
@@ -1087,11 +1083,11 @@ public class AnnotatedTypes {
                     return glb;
 
                 default:
-                    ErrorReporter.errorAbort(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!"
-                                    + "toSearch="
+                    throw new BugInCF(
+                            "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                                    + " toSearch="
                                     + toSearch
-                                    + "source="
+                                    + " source="
                                     + source);
             }
 
@@ -1133,11 +1129,11 @@ public class AnnotatedTypes {
                     return glb;
 
                 default:
-                    ErrorReporter.errorAbort(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!"
-                                    + "toSearch="
+                    throw new BugInCF(
+                            "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                                    + " toSearch="
                                     + toSearch
-                                    + "source="
+                                    + " source="
                                     + source);
             }
 
