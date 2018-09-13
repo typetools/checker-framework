@@ -35,4 +35,10 @@ public class TestTypeRefinementSort {
         ondetList.sort(cmp);
         System.out.println(ondetList);
     }
+
+    <T> void sortGeneric(
+            @OrderNonDet List<@Det T> list, @Det Comparator<@Det T> cmp, @Det List<@Det T> check) {
+        list.sort(cmp);
+        System.out.println(list.equals(check));
+    }
 }

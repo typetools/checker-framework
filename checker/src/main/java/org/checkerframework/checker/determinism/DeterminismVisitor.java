@@ -25,7 +25,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super(checker);
     }
 
-    /** Error message key for use of {@code @OrderNonDet} on non-collections. */
+    /** Error message key for use of {@code @OrderNonDet} on non-collections and non-arrays. */
     private static final @CompilerMessageKey String ORDERNONDET_ON_NONCOLLECTION =
             "ordernondet.on.noncollection.and.nonarray";
     /** Error message key for collections whose type is a subtype of their element types. */
@@ -163,13 +163,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
-    // NOTE: Checker Framework treats x[i] as an lvalue like array access.
-    // It is possible to distinguish whether a "[]" operator is in an lvalue or an rvalue position.
-    // But, the "visitArrayAccess" method does not give access to valueType (the annotated type of
-    // rhs value)
-    // like in "commonAssignmentCheck" below, making it difficult to replace the annotation on the
-    // rvalue.
-
     /**
      * When an array of type {@code @OrderNonDet} or {@code @NonDet} is accessed, this method
      * annotates the type of the array access expression (equivalently, the array element) as
@@ -195,6 +188,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      * replaced the type of every {@code @OrderNonDet} and {@code @NonDet} array access with
      * {@code @NonDet}, the array access {@code x[i]} would have the type {@code @NonDet} and this
      * assignment would not be flagged as an error.
+     *
+     * <p>NOTE: We override {@code commonAssignmentCheck} and not {@code visitArrayAccess} because
+     * the checker framework treats x[i] as an lvalue like array access. It is possible to
+     * distinguish whether a "[]" operator is in an lvalue or an rvalue position. But, the {@code
+     * visitArrayAccess} method does not give access to valueType (the annotated type of rhs value)
+     * like in {@code commonAssignmentCheck} below, making it difficult to replace the annotation on
+     * the rvalue.
      *
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value

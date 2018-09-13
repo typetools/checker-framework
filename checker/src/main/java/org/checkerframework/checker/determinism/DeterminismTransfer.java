@@ -53,10 +53,13 @@ public class DeterminismTransfer extends CFTransfer {
         // Note: For static method calls, the receiver is the Class that declares the method.
         Node receiver = n.getTarget().getReceiver();
 
-        // TypesUtils.getTypeElement(receiver.getType()) is null for generic type arguments.
+        // TypesUtils.getTypeElement(receiver.getType()) is null
+        // if 'receiver' is a type variable.
+        // Example: T[] a1; a1[0].compareTo(...);
+        // When "visitMethodInvocation" is called on "compareTo",
+        // the receiver "a1[0]" is a type variable and the following
+        // condition is satisfied.
         if (TypesUtils.getTypeElement(receiver.getType()) == null) {
-            // Why is this return statement correct?
-            // Is it because none of the 5 cases has a generic type argument?
             return result;
         }
 
