@@ -327,12 +327,12 @@ deterministic.  If it is be too restrictive for your program:
 
 The default annotation for most unannotated types is \<@Det>.
 
-Method and constructor signatures:
+\subsection{Method signatures\label{determinism-method-defaults}}
 \begin{itemize}
 \item
-  Formal parameter and return types default to is \<@PolyDet>.
+  Formal parameter and return types default to \<@PolyDet>.
 \item
-  If a formal/return type is an array, its component type defaults to
+  If a formal parameter/return type is an array, its component type defaults to
   \<@PolyDet>.
 \item
   As an exception, the return type of a method with no unannotated or
@@ -342,22 +342,22 @@ Method and constructor signatures:
 
 These choices permit all possible arguments to an unannotated method.
 
+\subsection{Constructor signatures\label{determinism-constructor-defaults}}
 The default annotation on constructor parameters and return types is also \<@PolyDet>.
-This scheme of defaulting allows the construction of Objects whose type
-is dependent on the types of constructor arguments. This causes the checker
+As a result, one can construct Objects whose type
+is dependent on the types of constructor arguments without any explicit
+annotations. This causes the checker
 to report errors in situations where the constructor modifies the fields of its class
 using these arguments. The reason for this is that the fields default to \<@Det>.
 As an illustration, consider the example below:
 
 \begin{Verbatim}
-public class Strings {
-    public static class StringHolder {
+    public class StringHolder {
         public String data;
         public StringHolder(String data) {
             this.data = data;
         }
     }
-}
 \end{Verbatim}
 
 In this example, the checker reports an error "assignment type incompatible"
@@ -367,6 +367,7 @@ as its default annotation. In such cases, you could either suppress the warning
 (to allow construction of \<@PolyDet> objects) or explicitly annotate the
 constructor arguments and return types.
 
+\subsection{Local array and generic types\label{determinism-array-defaults}}
 As with all type systems, defaulting is different for the array and
 component types in a locally-declared array or generic type without explicit type
 annotations.
@@ -377,7 +378,9 @@ For example, the local array declaration \<int[] a;> is defaulted to \<@Det int 
 The local declaration \code{MyClass<MyType> x;} is defaulted to
 \code{@NonDet MyClass<@Det MyType> x;}.
 
-
+\section{Implicit annotations\label{determinism-implicits}}
+The parameter type of the \code{main} method has an implicit annotation
+\<@Det String @Det[]>.
 
 %%  LocalWords:  DeterminismChecker HashSet InputFile NonDet Det MyClass
 %%  LocalWords:  OrderNonDet PolyDet UsePolyDet println MyType
