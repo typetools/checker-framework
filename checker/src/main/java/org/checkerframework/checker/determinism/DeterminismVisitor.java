@@ -21,6 +21,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Visitor for the determinism type-system. */
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
+    /** Calls the superclass constructor. */
     public DeterminismVisitor(BaseTypeChecker checker) {
         super(checker);
     }

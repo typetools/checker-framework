@@ -100,6 +100,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final TypeMirror EnumerationTypeMirror =
             TypesUtils.typeFromClass(Enumeration.class, types, processingEnv.getElementUtils());
 
+    /** Creates {@code @PolyDet} annotation mirror constants. */
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -370,7 +371,18 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 || isIterator(TypesUtils.getTypeElement(javaType).asType()));
     }
 
+    /**
+     * Adds default annotations for:
+     *
+     * <ol>
+     *   <li>component types of array parameters and returns.
+     *   <li>return types of methods with no unannotated or @PolyDet formal parameters and receiver.
+     * </ol>
+     *
+     * Adds implicit annotation for main method parameter.
+     */
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
+        /** Calls the superclass constructor. */
         public DeterminismTypeAnnotator(DeterminismAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
