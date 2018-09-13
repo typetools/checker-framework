@@ -38,7 +38,6 @@ public class AnnotationBuilderTest {
         // need to be initialized by setting the list of modules to nil.
         javac.initModules(List.nil());
         javac.enterDone();
-        ErrorReporter.setHandler(new TestChecker());
     }
 
     @Test
