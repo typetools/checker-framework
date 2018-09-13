@@ -34,8 +34,8 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Implements framework support for qualifier polymorphism.
  *
- * <p>{@link DefaultQualifierPolymorphism} implements this abstract methods in this class.
- * Subclasses can alter the way instantiations of polymorpich qualifiers are combined.
+ * <p>{@link DefaultQualifierPolymorphism} implements the abstract methods in this class. Subclasses
+ * can alter the way instantiations of polymorphic qualifiers are combined.
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
@@ -43,8 +43,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * The polymorphic qualifiers: mapping from a polymorphic of a qualifier hierarchy to the top
-     * qualifier of that hierarchy. Field always non-null but might be an empty mapping.
+     * The polymorphic qualifiers: mapping from a polymorphic qualifier of a qualifier hierarchy to
+     * the top qualifier of that hierarchy. Field always non-null but might be an empty mapping.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals;
 
@@ -71,8 +71,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
-     * querying type qualifiers and the given factory for getting annotated types. Subclass need to
-     * add polymorphic qualifiers to {@code polyQual}.
+     * querying type qualifiers and the given factory for getting annotated types. Subclasses need
+     * to add polymorphic qualifiers to {@code polyQuals}.
      *
      * @param env the processing environment
      * @param factory the factory for the current checker
@@ -91,6 +91,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.completer = new Completer();
         this.replacer = new Replacer();
     }
+
     /**
      * Reset to allow reuse of the same instance. Subclasses should override this method to clear
      * their additional state; they must call the super implementation.
@@ -109,8 +110,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     @Override
     public void annotate(MethodInvocationTree tree, AnnotatedExecutableType type) {
-        reset();
-
         if (polyQuals.isEmpty()) {
             return;
         }
@@ -148,11 +147,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         } else {
             completer.visit(type);
         }
+        reset();
     }
 
     @Override
     public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
-        reset();
         if (polyQuals.isEmpty()) {
             return;
         }
@@ -172,13 +171,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         } else {
             completer.visit(type);
         }
+        reset();
     }
 
     @Override
     public void annotate(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
-        reset();
-
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
             if (QualifierPolymorphism.isPolymorphicQualified(type)) {
                 // functional interface has a polymorphic qualifier, so they should not be resolved
@@ -212,6 +210,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             // TODO: Do we need this (return type?)
             completer.visit(memberReference);
         }
+        reset();
     }
 
     /**
@@ -277,8 +276,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * A Helper class that tries to resolve the polymorhpic qualifiers with the most restricted
-     * qualifier. The mapping is from the polymorhpic qualifier to the substitution for that
+     * A Helper class that tries to resolve the polymorphic qualifiers with the most restricted
+     * qualifier. The mapping is from the polymorphic qualifier to the substitution for that
      * qualifier, which is a set of qualifiers. For most polymorphic qualifiers this will be a
      * singleton set. For the @PolyAll qualifier, this might be a set of qualifiers.
      */
@@ -432,7 +431,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         @Override
         protected String defaultErrorMessage(
                 AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void aVoid) {
-            return null;
+            return String.format(
+                    "AbstractQualifierPolymorphism: Unexpected combination: type1: %s (%s) type2: %s (%s).",
+                    type1, type1.getKind(), type2, type2.getKind());
         }
 
         @Override
