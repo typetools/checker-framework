@@ -298,8 +298,8 @@ public class AnnotationUtils {
                         return 0;
                     }
 
-                    String n1 = a1 != null ? a1.toString() : "null";
-                    String n2 = a2 != null ? a2.toString() : "null";
+                    String n1 = a1.toString();
+                    String n2 = a2.toString();
 
                     // Because the AnnotationMirror.toString prints the annotation as it appears
                     // in source code, the order in which annotations of the same class are
