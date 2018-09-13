@@ -75,7 +75,7 @@ Section~\ref{determinism-polymorphism} explains polymorphic qualifiers.
 \end{figure}
 
 
-\section{Valid collection types\label{determinism-collection-types}}
+\section{Valid collection and array types\label{determinism-collection-types}}
 
 The (determinism) type of a Collection or Iterator must be a supertype or equal to
 the type of the type parameter (see Figure~\ref{fig-determinism-collections}).
@@ -97,21 +97,53 @@ These types are invalid:
     \item \code{@Det\ \ \ \ \ \ \ \ \ List<@OrderNonDet Set<...>\relax >}
   \end{itemize}
 
+Similarly, the (determinism) type of an array must be a supertype or equal to
+the type of the component type (see Figure~\ref{fig-determinism-collections}).
+
+For example, these types are valid:
+\begin{itemize}
+    \item \code{@NonDet int @NonDet \ \ \ \ []}
+    \item \code{@NonDet int @OrderNonDet[]}
+    \item \code{@Det \ \ \ int @NonDet \ \ \ \ []}
+    \item \code{@Det \ \ \ int @Det \ \ \ \ \ \ \ []}
+    \item \code{@Det \ \ \ int @OrderNonDet[] @OrderNonDet[]}
+\end{itemize}
+
+These types are invalid:
+\begin{itemize}
+    \item \code{@NonDet int @OrderNonDet[]}
+    \item \code{@NonDet int @Det \ \ \ \ \ \ \ []}
+\end{itemize}
+
 \begin{figure}
   \centering
   \begin{tabular}{|l|l|l|l|l|}
     \cline{3-5}
-    \multicolumn{2}{c|}{~}  &  \multicolumn{3}{c|}{Type Argument} \\ \cline{3-5}
+    \multicolumn{2}{c|}{~}  &  \multicolumn{3}{c|}{Type Argument (or array component type)} \\ \cline{3-5}
     \multicolumn{2}{c|}{~}  & NonDet     & OrderNonDet & Det \\ \hline
               & NonDet      &   valid    &  valid      & valid  \\ \cline{2-5}
-Collection    & OrderNonDet &   invalid  &  valid      & valid  \\ \cline{2-5}
+Collection (or array)   & OrderNonDet &   invalid  &  valid      & valid  \\ \cline{2-5}
               & Det         &   invalid  &  invalid    & invalid      \\ \hline
   \end{tabular}
-  \caption{Valid Collection declarations.  The Collection's type qualifier
-    must be a supertype or equal to the type argument.}
+  \caption{Valid Collection (and array) declarations.  The Collection's (or array's) type qualifier
+    must be a supertype or equal to the type argument (or array component type).}
   \label{fig-determinism-collections}
 \end{figure}
 
+\subsection{Valid user defined types\label{determinism-valid-user-types}}
+A user defined type may be annotated as \<@OrderNonDet> if and only if it
+is a subtype of Collection or Iterator.
+For example, if a user defines a type as
+\begin{Verbatim}
+    public class TestUserCollection<E> extends ArrayList<E> {...}
+\end{Verbatim}
+Writing \code{@OrderNonDet TestUserCollection<@Det Integer>} is valid.\\
+Writing \code{@OrderNonDet TestUserCollection<@NonDet Integer>} is invalid
+because the type of the type parameter (\code{@NonDet}) is not a subtype
+of the user defined Collection type (\code{@OrderNonDet}).
+
+User defined types that are not a subtype of Collection or Iterator
+may not be annotated as \code{@OrderNonDet}.
 %Formally, the type validity rule is stated as follows:
 
 %\begin{prooftree}
@@ -196,9 +228,9 @@ if \<@PolyDet> is applied to a collection somewhere in the method signature
 and if the return type isn't a collection, then the return type should be
 annotated as \<@PolyDet("up")> or \<@PolyDet("down")>.
 
-\subsubsection{Improved precision for Set equals\label{improved-precision-set-equals}}
+\subsubsection{Special handling of Set.equals()\label{determinism-improved-precision-set-equals}}
 
-In the JDK, \<equals()> method of \<Set> is annotated as
+In the JDK, the \<equals()> method of \<Set> is annotated as
 \begin{Verbatim}
 @PolyDet("up") boolean equals(@PolyDet Set<E> this, @PolyDet Object o);
 \end{Verbatim}
@@ -295,30 +327,37 @@ deterministic.  If it is be too restrictive for your program:
 
 The default annotation for most unannotated types is \<@Det>.
 
-The default annotation for an unannotated formal parameter or return type
-is \<@PolyDet> (for arrays, both the array type and its component type
-are defaulted to \<@PolyDet>).
-This permits all possible arguments to the method.
-As an exception, the return type of a method with no unannotated or
-\<@PolyDet> formal parameters (including the receiver)
-defaults to \<@Det>.
+\subsection{Method signatures\label{determinism-method-defaults}}
+\begin{itemize}
+\item
+  Formal parameter and return types default to \<@PolyDet>.
+\item
+  If a formal parameter/return type is an array, its component type defaults to
+  \<@PolyDet>.
+\item
+  As an exception, the return type of a method with no unannotated or
+  \<@PolyDet> formal parameters (including the receiver) defaults to
+  \<@Det>.
+\end{itemize}
 
+These choices permit all possible arguments to an unannotated method.
+
+\subsection{Constructor signatures\label{determinism-constructor-defaults}}
 The default annotation on constructor parameters and return types is also \<@PolyDet>.
-This scheme of defaulting allows the construction of Objects whose type
-is dependent on the types of constructor arguments. This causes the checker
+As a result, one can construct Objects whose type
+is dependent on the types of constructor arguments without any explicit
+annotations. This causes the checker
 to report errors in situations where the constructor modifies the fields of its class
 using these arguments. The reason for this is that the fields default to \<@Det>.
 As an illustration, consider the example below:
 
 \begin{Verbatim}
-public class Strings {
-    public static class StringHolder {
+    public class StringHolder {
         public String data;
         public StringHolder(String data) {
             this.data = data;
         }
     }
-}
 \end{Verbatim}
 
 In this example, the checker reports an error "assignment type incompatible"
@@ -328,6 +367,7 @@ as its default annotation. In such cases, you could either suppress the warning
 (to allow construction of \<@PolyDet> objects) or explicitly annotate the
 constructor arguments and return types.
 
+\subsection{Local array and generic types\label{determinism-array-defaults}}
 As with all type systems, defaulting is different for the array and
 component types in a locally-declared array or generic type without explicit type
 annotations.
@@ -338,7 +378,9 @@ For example, the local array declaration \<int[] a;> is defaulted to \<@Det int 
 The local declaration \code{MyClass<MyType> x;} is defaulted to
 \code{@NonDet MyClass<@Det MyType> x;}.
 
-
+\section{Implicit annotations\label{determinism-implicits}}
+The parameter type of the \code{main} method has an implicit annotation
+\<@Det String @Det[]>.
 
 %%  LocalWords:  DeterminismChecker HashSet InputFile NonDet Det MyClass
 %%  LocalWords:  OrderNonDet PolyDet UsePolyDet println MyType

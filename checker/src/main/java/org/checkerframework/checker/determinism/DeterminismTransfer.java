@@ -1,8 +1,12 @@
 package org.checkerframework.checker.determinism;
 
+import java.util.Comparator;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Name;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.determinism.qual.OrderNonDet;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -15,13 +19,6 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TypesUtils;
-
-// TODO-rashmi: type refinement for first argument of Collections.shuffle() from
-// @Det to @OrderNonDet doesn't seem to work.
-// result.getThenStore().insertValue(receiver, replaceType); replaces the
-// annotation on the receiver with the strongest of current annotation on receiver
-// and 'replaceType' in the lattice.
-// The annotation first argument of shuffle (@Det) is stronger than replaceType (@OrderNonDet).
 
 /**
  * Transfer function for the determinism type-system.
@@ -56,35 +53,39 @@ public class DeterminismTransfer extends CFTransfer {
         // Note: For static method calls, the receiver is the Class that declares the method.
         Node receiver = n.getTarget().getReceiver();
 
-        // TypesUtils.getTypeElement(receiver.getType()) is null for generic type arguments.
+        // TypesUtils.getTypeElement(receiver.getType()) is null
+        // if 'receiver' is a type variable.
+        // Example: T[] a1; a1[0].compareTo(...);
+        // When "visitMethodInvocation" is called on "compareTo",
+        // the receiver "a1[0]" is a type variable and the following
+        // condition is satisfied.
         if (TypesUtils.getTypeElement(receiver.getType()) == null) {
             return result;
         }
 
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(receiver.getType()).asType();
-        Name methName = n.getTarget().getMethod().getSimpleName();
+        ExecutableElement invokedMethod = n.getTarget().getMethod();
 
         // Type refinement for List.sort
-        if (isListSort(factory, receiver, underlyingTypeOfReceiver, methName)) {
-            AnnotationMirror receiverAnno =
-                    factory.getAnnotatedType(receiver.getTree()).getAnnotation(OrderNonDet.class);
-            if (receiverAnno != null) {
+        if (isListSort(factory, underlyingTypeOfReceiver, invokedMethod)) {
+            if (factory.getAnnotatedType(receiver.getTree()).hasAnnotation(OrderNonDet.class)) {
                 typeRefine(n.getTarget().getReceiver(), result, factory.DET, factory);
             }
         }
 
-        // Type refinement for Arrays.sort
-        if (isArraysSort(factory, underlyingTypeOfReceiver, methName)) {
+        // Type refinement for Arrays.sort() and Arrays.parallelSort()
+        // For Arrays.sort(int[] a), refines 'a' to @Det[..] if 'a' is of the type @OrderNonDet[..]
+        // For Arrays.sort(int[] a, int fromIndex, int toIndex), Arrays.sort(T[], Comparator<? super
+        // T> c),
+        // and all other variants of Arrays.sort() and Arrays.parallelSort(),
+        // refines the first argument if this first argument is annotated as @OrderNonDet[..]
+        // and all other arguments are annotated as @Det.
+        if (isArraysSort(factory, underlyingTypeOfReceiver, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
-
-                // Consider the call to Arrays.sort(T[], Comparator<? super T> c)
-                // The first argument of this method invocation must be type-refined
-                // iff it is annotated as @OrderNonDet and the second argument
-                // is annotated @Det (Not if it is @NonDet).
-                // The following code sets the flag typeRefine to true iff
+                // The following code sets the flag typeRefine to true if
                 // all arguments except the first are annotated as @Det.
                 boolean typeRefine = true;
                 for (int i = 1; i < n.getArguments().size(); i++) {
@@ -102,7 +103,7 @@ public class DeterminismTransfer extends CFTransfer {
         }
 
         // Type refinement for Collections.sort
-        if (isCollectionsSort(factory, underlyingTypeOfReceiver, methName)) {
+        if (isCollectionsSort(factory, underlyingTypeOfReceiver, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
@@ -111,7 +112,7 @@ public class DeterminismTransfer extends CFTransfer {
         }
 
         // Type refinement for Collections.shuffle
-        if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, methName)) {
+        if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.DET)) {
@@ -123,22 +124,28 @@ public class DeterminismTransfer extends CFTransfer {
     }
 
     /**
-     * Checks if the receiver is a List and the method invoked is sort().
+     * Checks if the receiver is a List or a subtype of List and the method invoked is sort().
      *
      * @param factory the determinism factory
-     * @param receiver the receiver Node
      * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
-     * @param methName the invoked method name
+     * @param invokedMethod the invoked method name
      * @return true if the receiver is a List and the method invoked is sort(), false otherwise
      */
     private boolean isListSort(
             DeterminismAnnotatedTypeFactory factory,
-            Node receiver,
             TypeMirror underlyingTypeOfReceiver,
-            Name methName) {
+            ExecutableElement invokedMethod) {
+        ProcessingEnvironment env = factory.getProcessingEnv();
+        Types types = env.getTypeUtils();
         return (factory.isList(underlyingTypeOfReceiver)
-                && methName.contentEquals("sort")
-                && receiver.getType().getAnnotationMirrors().size() > 0);
+                && invokedMethod.getSimpleName().contentEquals("sort")
+                && invokedMethod.getReturnType().getKind() == TypeKind.VOID
+                && invokedMethod.getParameters().size() == 1
+                && types.isSameType(
+                        types.erasure(invokedMethod.getParameters().get(0).asType()),
+                        types.erasure(
+                                TypesUtils.typeFromClass(
+                                        Comparator.class, types, env.getElementUtils()))));
     }
 
     /**
@@ -146,16 +153,16 @@ public class DeterminismTransfer extends CFTransfer {
      *
      * @param factory the determinism factory
      * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
-     * @param methName the invoked method name
+     * @param invokedMethod the invoked method name
      * @return true if the invoked method is Arrays.sort(), false otherwise
      */
     private boolean isArraysSort(
             DeterminismAnnotatedTypeFactory factory,
             TypeMirror underlyingTypeOfReceiver,
-            Name methName) {
-
+            ExecutableElement invokedMethod) {
         return (factory.isArrays(underlyingTypeOfReceiver)
-                && (methName.contentEquals("sort") || methName.contentEquals("parallelSort")));
+                && (invokedMethod.getSimpleName().contentEquals("sort")
+                        || invokedMethod.getSimpleName().contentEquals("parallelSort")));
     }
 
     /**
@@ -163,14 +170,15 @@ public class DeterminismTransfer extends CFTransfer {
      *
      * @param factory the determinism factory
      * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
-     * @param methName the invoked method name
+     * @param invokedMethod the invoked method name
      * @return true if the invoked method is Collections.sort(), false otherwise
      */
     private boolean isCollectionsSort(
             DeterminismAnnotatedTypeFactory factory,
             TypeMirror underlyingTypeOfReceiver,
-            Name methName) {
-        return (factory.isCollections(underlyingTypeOfReceiver) && methName.contentEquals("sort"));
+            ExecutableElement invokedMethod) {
+        return (factory.isCollections(underlyingTypeOfReceiver)
+                && invokedMethod.getSimpleName().contentEquals("sort"));
     }
 
     /**
@@ -178,19 +186,19 @@ public class DeterminismTransfer extends CFTransfer {
      *
      * @param factory the determinism factory
      * @param underlyingTypeOfReceiver the underlying type of the receiver (TypeMirror)
-     * @param methName the invoked method name
+     * @param invokedMethod the invoked method name
      * @return true if the invoked method is Collections.shuffle(), false otherwise
      */
     private boolean isCollectionsShuffle(
             DeterminismAnnotatedTypeFactory factory,
             TypeMirror underlyingTypeOfReceiver,
-            Name methName) {
+            ExecutableElement invokedMethod) {
         return (factory.isCollections(underlyingTypeOfReceiver)
-                && methName.contentEquals("shuffle"));
+                && invokedMethod.getSimpleName().contentEquals("shuffle"));
     }
 
     /**
-     * Helper method for type refinement.
+     * Refines the type of {@code node} to {@code replaceType}.
      *
      * @param node the node to be refined
      * @param result the determinism transfer result store
@@ -198,6 +206,13 @@ public class DeterminismTransfer extends CFTransfer {
      * @param factory the determinism factory
      */
     private void typeRefine(
+            // TODO-rashmi: type refinement for first argument of Collections.shuffle() from
+            // @Det to @OrderNonDet doesn't seem to work.
+            // result.getThenStore().insertValue(receiver, replaceType); replaces the
+            // annotation on the 'receiver' if 'replaceType' is stronger than
+            // the current annotation of 'receiver'.
+            // The annotation on first argument of shuffle (@Det) is stronger than 'replaceType'
+            // (@OrderNonDet).
             Node node,
             TransferResult<CFValue, CFStore> result,
             AnnotationMirror replaceType,

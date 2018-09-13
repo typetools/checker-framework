@@ -5,6 +5,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
@@ -14,10 +15,10 @@ import org.checkerframework.javacutil.TypesUtils;
  * Resolves polymorphic annotations at method invocations as follows:
  *
  * <ol>
- *   <li>Resolves a type annotated as {@code @PolyDet("up")} to {@code @NonDet} if the least upper
- *       bound of argument types resolves to {@code OrderNonDet}.
- *   <li>Resolves a type annotated as {@code @PolyDet("down")} to {@code @Det} if the least upper
- *       bound of argument types resolves to {@code OrderNonDet}.
+ *   <li>Resolves a type annotated as {@code @PolyDet("up")} to {@code @NonDet} if {@code @PolyDet}
+ *       resolves to {@code OrderNonDet}.
+ *   <li>Resolves a type annotated as {@code @PolyDet("down")} to {@code @Det} if {@code @PolyDet}
+ *       resolves to {@code OrderNonDet}.
  *   <li>Resolves a type annotated as {@code @PolyDet("use")} to the same annotation that
  *       {@code @PolyDet} resolves to for the other arguments.
  * </ol>
@@ -64,10 +65,18 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
 
         if (type.hasAnnotation(factory.POLYDET) || type.hasAnnotation(factory.POLYDET_USE)) {
-            Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry =
-                    replacements.entrySet().iterator().next();
-            AnnotationMirrorSet quals = pqentry.getValue();
+            AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
             type.replaceAnnotations(quals);
+        } else {
+            for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry :
+                    replacements.entrySet()) {
+                AnnotationMirror poly = pqentry.getKey();
+                if (type.hasAnnotation(poly)) {
+                    type.removeAnnotation(poly);
+                    AnnotationMirrorSet quals = pqentry.getValue();
+                    type.replaceAnnotations(quals);
+                }
+            }
         }
 
         if (type.hasAnnotation(factory.ORDERNONDET)) {
@@ -82,46 +91,53 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
 
     /**
      * If {@code type} has the annotation {@code @OrderNonDet}, this method replaces the annotation
-     * of {@code type} with {@code replaceType}.
+     * of {@code type} and all the nested type arguments of {@code type} with {@code replaceType}.
      *
      * @param type the polymorphic type to be replaced
      * @param replaceType the type to be replaced with
      */
     private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
-        if (!type.hasAnnotation(factory.ORDERNONDET)) return;
-
-        type.replaceAnnotation(replaceType);
-
-        // This check succeeds for @OrderNonDet Set<T> (Generic types)
-        if (TypesUtils.getTypeElement(type.getUnderlyingType()) == null) {
+        if (!type.hasAnnotation(factory.ORDERNONDET)) {
             return;
         }
-
         // TODO-rashmi: Handle Maps
         recursiveReplaceAnnotation(type, replaceType);
     }
 
     /**
-     * Iterates over all the nested Collection/Iterator type arguments of {@code type} and replaces
-     * their top-level annotations with {@code replaceType} if these top-level annotations are
-     * {@code OrderNonDet}. Example: If this method is called with {@code type} as
-     * {@code @OrderNonDet Set<@OrderNonDet Set<@Det Integer>>} and {@code replaceType} as
-     * {@code @NonDet}, the result will be {@code @NonDet Set<@NonDet Set<@Det Integer>>}.
+     * Replaces the annotation on {@code type} with {@code replaceType}. If {@code type} is a
+     * Collection (or a subtype) or an Iterator (or a subtype), iterates over all the nested
+     * Collection/Iterator type arguments of {@code type} and replaces their top-level annotations
+     * with {@code replaceType}.
+     *
+     * <p>Example1: If this method is called with {@code type} as {@code @OrderNonDet Integer} and
+     * {@code replaceType} as {@code @NonDet}, the resulting {@code type} will be {@code @NonDet
+     * Integer}.
+     *
+     * <p>Example2: If this method is called with {@code type} as {@code @OrderNonDet Set<@Det
+     * Integer>} and {@code replaceType} as {@code @NonDet}, the resulting {@code type} will be
+     * {@code @NonDet Set<@Det Integer>}.
+     *
+     * <p>Example3: If this method is called with {@code type} as {@code @OrderNonDet
+     * Set<@OrderNonDet Set<@Det Integer>>} and {@code replaceType} as {@code @NonDet}, the result
+     * will be {@code @NonDet Set<@NonDet Set<@Det Integer>>}.
+     *
+     * <p>Example4: If this method is called with {@code type} as {@code @OrderNonDet
+     * Set<@OrderNonDet Set<@OrderNonDet List<@Det Integer>>>} and {@code replaceType} as
+     * {@code @Det}, the result will be {@code @Det Set<@Det Set<@Det List<@Det Integer>>>}.
      */
     void recursiveReplaceAnnotation(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
+        type.replaceAnnotation(replaceType);
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
+
         if (!(factory.isCollection(underlyingTypeOfReceiver)
                 || factory.isIterator(underlyingTypeOfReceiver))) {
             return;
         }
 
-        AnnotatedTypeMirror.AnnotatedDeclaredType declaredTypeOuter =
-                (AnnotatedTypeMirror.AnnotatedDeclaredType) type;
+        AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
         AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
-        if (argType.hasAnnotation(factory.ORDERNONDET)) {
-            argType.replaceAnnotation(replaceType);
-        }
         recursiveReplaceAnnotation(argType, replaceType);
     }
 }
