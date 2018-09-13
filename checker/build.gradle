@@ -106,10 +106,11 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
 
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
+    if (jdkShaHash.is('local')) {
+        dependsOn(buildJdk)
+    }
     doLast {
-        if (jdkShaHash.is('local')) {
-            buildJdk.execute()
-        } else {
+        if (!jdkShaHash.is('local')) {
             File downloadedJdk = new File(buildDir, "jdk8-${jdkShaHash}.jar");
             if (!downloadedJdk.exists()) {
                 download {
