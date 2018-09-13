@@ -77,7 +77,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The java.util.AbstractList class. */
     private final TypeMirror AbstractListTypeMirror =
             TypesUtils.typeFromClass(AbstractList.class, types, processingEnv.getElementUtils());
-    /** The java.util.AbstractList class. */
+    /** The java.util.AbstractSequentialList class. */
     private final TypeMirror AbstractSequentialListTypeMirror =
             TypesUtils.typeFromClass(
                     AbstractSequentialList.class, types, processingEnv.getElementUtils());
