@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Default implementation of {@link AbstractQualifierPolymorphism}. The polymorphic qualifiers for a
- * checker that uses this class are found by searching all supported qualifiers. instantiations of a
+ * checker that uses this class are found by searching all supported qualifiers. Instantiations of a
  * polymorphic qualifier are combined using lub.
  */
 public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism {
