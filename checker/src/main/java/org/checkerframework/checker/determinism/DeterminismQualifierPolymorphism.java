@@ -91,8 +91,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     }
 
     /**
-     * If {@code type} has the annotation {@code @OrderNonDet}, this method replaces the annotation
-     * of {@code type} and all the nested type arguments of {@code type} with {@code replaceType}.
+     * This method replaces the annotation of {@code type} and all the nested type arguments of
+     * {@code type} with {@code replaceType}.
      *
      * @param type the polymorphic type to be replaced
      * @param replaceType the type to be replaced with
