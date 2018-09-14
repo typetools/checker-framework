@@ -79,13 +79,14 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             }
         }
 
-        if (type.hasAnnotation(factory.ORDERNONDET)) {
-            if (isPolyUp) {
-                replaceOrderNonDet(type, factory.NONDET);
-            }
-            if (isPolyDown) {
-                replaceOrderNonDet(type, factory.DET);
-            }
+        if (isPolyUp
+                && (type.hasAnnotation(factory.ORDERNONDET)
+                        || type.hasAnnotation(factory.NONDET))) {
+            replaceForPolyUpOrDown(type, factory.NONDET);
+        }
+        if (isPolyDown
+                && (type.hasAnnotation(factory.ORDERNONDET) || type.hasAnnotation(factory.DET))) {
+            replaceForPolyUpOrDown(type, factory.DET);
         }
     }
 
@@ -96,12 +97,15 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      * @param type the polymorphic type to be replaced
      * @param replaceType the type to be replaced with
      */
-    private void replaceOrderNonDet(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
-        if (!type.hasAnnotation(factory.ORDERNONDET)) {
+    private void replaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
+        type.replaceAnnotation(replaceType);
+        if (!(factory.isCollection(TypesUtils.getTypeElement(type.getUnderlyingType()).asType())
+                || factory.isIterator(
+                        TypesUtils.getTypeElement(type.getUnderlyingType()).asType()))) {
             return;
         }
         // TODO-rashmi: Handle Maps
-        recursiveReplaceAnnotation(type, replaceType);
+        recursiveReplaceForPolyUpOrDown(type, replaceType);
     }
 
     /**
@@ -126,18 +130,16 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      * Set<@OrderNonDet Set<@OrderNonDet List<@Det Integer>>>} and {@code replaceType} as
      * {@code @Det}, the result will be {@code @Det Set<@Det Set<@Det List<@Det Integer>>>}.
      */
-    void recursiveReplaceAnnotation(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
-        type.replaceAnnotation(replaceType);
+    void recursiveReplaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
+        AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
+        AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
         TypeMirror underlyingTypeOfReceiver =
-                TypesUtils.getTypeElement(type.getUnderlyingType()).asType();
-
+                TypesUtils.getTypeElement(argType.getUnderlyingType()).asType();
         if (!(factory.isCollection(underlyingTypeOfReceiver)
                 || factory.isIterator(underlyingTypeOfReceiver))) {
             return;
         }
-
-        AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
-        AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
-        recursiveReplaceAnnotation(argType, replaceType);
+        argType.replaceAnnotation(replaceType);
+        recursiveReplaceForPolyUpOrDown(argType, replaceType);
     }
 }
