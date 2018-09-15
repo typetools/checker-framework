@@ -67,14 +67,14 @@ public class NumberUtils {
     public static Range castRange(TypeMirror type, Range range) {
         TypeKind typeKind = unBoxPrimitive(type);
         switch (typeKind) {
-            case INT:
-                return range.intRange();
-            case SHORT:
-                return range.shortRange();
             case BYTE:
                 return range.byteRange();
             case CHAR:
                 return range.charRange();
+            case SHORT:
+                return range.shortRange();
+            case INT:
+                return range.intRange();
             case LONG:
             case FLOAT:
             case DOUBLE:

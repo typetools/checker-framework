@@ -39,11 +39,11 @@ public class Range {
     /** A range containing all possible 16-bit values. */
     public static final Range SHORT_EVERYTHING = new Range(Short.MIN_VALUE, Short.MAX_VALUE);
 
-    /** A range containing all possible 8-bit values. */
-    public static final Range BYTE_EVERYTHING = new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
-
     /** A range containing all possible char values. */
     public static final Range CHAR_EVERYTHING = new Range(Character.MIN_VALUE, Character.MAX_VALUE);
+
+    /** A range containing all possible 8-bit values. */
+    public static final Range BYTE_EVERYTHING = new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
     /** The empty range. */
     public static final Range NOTHING = new Range();
@@ -121,14 +121,14 @@ public class Range {
         return from == Short.MIN_VALUE && to == Short.MAX_VALUE;
     }
 
-    /** Return true if this range contains every {@code byte} value. */
-    public boolean isByteEverything() {
-        return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
-    }
-
     /** Return true if this range contains every {@code char} value. */
     public boolean isCharEverything() {
         return from == Character.MIN_VALUE && to == Character.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code byte} value. */
+    public boolean isByteEverything() {
+        return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
     }
 
     /** Return true if this range contains no values. */
@@ -140,7 +140,7 @@ public class Range {
     private static long integerWidth = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
 
     /**
-     * Converts a this range to a 32-bit integral range.
+     * Converts this range to a 32-bit integral range.
      *
      * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Integer range,
      * then that bound is set to the bound of the Integer range.
@@ -183,7 +183,7 @@ public class Range {
      * range of the Short class, return SHORT_EVERYTHING.
      *
      * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-     * 16-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
+     * 16-bit integers, convert the bounds to Short type in accordance with Java overflow rules,
      * e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
      */
     public Range shortRange() {
@@ -194,7 +194,7 @@ public class Range {
             return new Range(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
         }
         if (this.isWiderThan(shortWidth)) {
-            // short is be promoted to int before the operation so no need for explicit casting
+            // short is promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
         }
         short shortFrom = (short) this.from;
@@ -218,8 +218,8 @@ public class Range {
      * range of the Byte class, return BYTE_EVERYTHING.
      *
      * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-     * 8-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
-     * e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
+     * 8-bit integers, convert the bounds to Byte type in accordance with Java overflow rules, e.g.,
+     * Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
      */
     public Range byteRange() {
         if (this.isNothing()) {
@@ -229,7 +229,7 @@ public class Range {
             return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
         }
         if (this.isWiderThan(byteWidth)) {
-            // byte is be promoted to int before the operation so no need for explicit casting
+            // byte is promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;
         }
         byte byteFrom = (byte) this.from;
@@ -244,7 +244,7 @@ public class Range {
     private static long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
 
     /**
-     * Converts a this range to a char range.
+     * Converts this range to a char range.
      *
      * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Character range,
      * then that bound is set to the bound of the Character range.
@@ -253,8 +253,8 @@ public class Range {
      * range of the Character class, return CHAR_EVERYTHING.
      *
      * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-     * 8-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
-     * e.g., Character.MAX_VALUE + 1 is converted to Character.MIN_VALUE.
+     * 8-bit integers, convert the bounds to Character type in accordance with Java overflow rules
+     * (twos-complement), e.g., Character.MAX_VALUE + 1 is converted to Character.MIN_VALUE.
      */
     public Range charRange() {
         if (this.isNothing()) {
@@ -265,7 +265,7 @@ public class Range {
                     Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
         }
         if (this.isWiderThan(charWidth)) {
-            // char is be promoted to int before the operation so no need for explicit casting
+            // char is promoted to int before the operation so no need for explicit casting
             return CHAR_EVERYTHING;
         }
         char charFrom = (char) this.from;

@@ -23,14 +23,14 @@ public class RangeTest {
         Short.MIN_VALUE - 10L,
         Short.MIN_VALUE,
         Short.MIN_VALUE + 1L,
-        Byte.MIN_VALUE - 1000L,
         Character.MIN_VALUE - 1000L,
-        Byte.MIN_VALUE - 10L,
-        Byte.MIN_VALUE,
-        Byte.MIN_VALUE + 1L,
         Character.MIN_VALUE - 10L,
         Character.MIN_VALUE, // 0L
         Character.MIN_VALUE + 1L,
+        Byte.MIN_VALUE - 1000L,
+        Byte.MIN_VALUE - 10L,
+        Byte.MIN_VALUE,
+        Byte.MIN_VALUE + 1L,
         Byte.MAX_VALUE - 1L,
         Byte.MAX_VALUE,
         Byte.MAX_VALUE + 10L,
@@ -88,7 +88,7 @@ public class RangeTest {
 
     static final long BYTE_WIDTH = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
 
-    static final long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
+    static final long CHAR_WIDTH = Character.MAX_VALUE - Character.MIN_VALUE + 1;
 
     public RangeTest() {
         // Initialize the ranges list.
@@ -277,6 +277,28 @@ public class RangeTest {
     }
 
     @Test
+    public void testCharRange() {
+        Range.ignoreOverflow = false;
+        for (Range range : ranges) {
+            Range result = range.charRange();
+            for (long value : values) {
+                if (value < range.from + CHAR_WIDTH
+                        && value > range.to - CHAR_WIDTH
+                        && !result.isCharEverything()) {
+                    // filter out test data that would cause Range.CharRange to return
+                    // CHAR_EVERYTHING
+                    char charValue = (char) value;
+                    assert range.contains(value) && result.contains(charValue)
+                                    || !range.contains(value) && !result.contains(charValue)
+                            : String.format(
+                                    "Range.byteRange failure: %s => %s; witness = %s",
+                                    range, result, charValue);
+                }
+            }
+        }
+    }
+
+    @Test
     public void testByteRange() {
         for (Range range : ranges) {
             Range result = range.byteRange();
@@ -293,28 +315,6 @@ public class RangeTest {
                             : String.format(
                                     "Range.byteRange failure: %s => %s; witness = %s",
                                     range, result, byteValue);
-                }
-            }
-        }
-    }
-
-    @Test
-    public void testCharRange() {
-        Range.ignoreOverflow = false;
-        for (Range range : ranges) {
-            Range result = range.charRange();
-            for (long value : values) {
-                if (value < range.from + charWidth
-                        && value > range.to - charWidth
-                        && !result.isCharEverything()) {
-                    // filter out test data that would cause Range.CharRange to return
-                    // CHAR_EVERYTHING
-                    char charValue = (char) value;
-                    assert range.contains(value) && result.contains(charValue)
-                                    || !range.contains(value) && !result.contains(charValue)
-                            : String.format(
-                                    "Range.byteRange failure: %s => %s; witness = %s",
-                                    range, result, charValue);
                 }
             }
         }
