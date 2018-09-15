@@ -155,9 +155,8 @@ class declaration:
   public @Interned class MyInternedClass { ... }
 \end{Verbatim}
 
-This is equivalent to annotating every use of \code{MyInternedClass}, in a
-declaration or elsewhere.  For example, \code{enum} classes are implicitly
-so annotated.
+This makes every use of \code{MyInternedClass}, in a
+declaration or elsewhere, implicitly \<@Interned>.
 
 
 \subsection{Implicit qualifiers\label{interning-implicit-qualifiers}}
