@@ -241,10 +241,6 @@ This section describes how to create an annotated library.
       annotations exist, using \<-processor
       \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
     \end{itemize}
-  \item
-    When the build system creates a \<.jar> file, the resulting \<.jar>
-    file includes the contents of
-    \<checker-framework/checker/dist/checker-qual.jar>.
   \end{enumerate}
   \end{sloppypar}
 
@@ -252,9 +248,6 @@ This section describes how to create an annotated library.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
   unannotated type uses.
-  The reason to include the contents of \<checker-qual.jar> is so that
-  the resulting \<.jar> file can be used whether or not the Checker Framework
-  is being run.
 
 \item Annotate some files.
 %  You can determine which files need to be annotated by using the

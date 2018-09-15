@@ -21,12 +21,20 @@ public class Range {
     /**
      * Should ranges take overflow into account or ignore it?
      *
-     * <p>Any checker that uses this library should be sure to set this field. By default, this
-     * field is set to false (meaning overflow is taken into account), but a previous checker might
-     * have set it to true.
+     * <ul>
+     *   <li>If {@code ignoreOverflow} is true, then operations that would result in more than the
+     *       max value are clipped to the max value (and similarly for the min).
+     *   <li>If {@code ignoreOverflow} is false, then operations that would result in more than the
+     *       max wrap around according to the rules of twos-complement arithmetic and produce a
+     *       smaller value (and similarly for the min).
+     * </ul>
      *
-     * <p>A static field is used because passing an instance field throughout the class (and at all
-     * of its use cases) results in the code being unacceptably bloated.
+     * <p>Any checker that uses this library should set this field. By default, this field is set to
+     * false (meaning overflow is taken into account), but a previous checker might have set it to
+     * true.
+     *
+     * <p>A static field is used because passing an instance field throughout the class bloats the
+     * code.
      */
     public static boolean ignoreOverflow = false;
 
@@ -149,8 +157,8 @@ public class Range {
      * range of the Integer class, return INT_EVERYTHING.
      *
      * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-     * 32-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
-     * e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
+     * 32-bit integers, convert the bounds to Integer type in accordance with Java twos-complement
+     * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
      */
     public Range intRange() {
         if (this.isNothing()) {
@@ -183,8 +191,8 @@ public class Range {
      * range of the Short class, return SHORT_EVERYTHING.
      *
      * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-     * 16-bit integers, convert the bounds to Short type in accordance with Java overflow rules,
-     * e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
+     * 16-bit integers, convert the bounds to Short type in accordance with Java twos-complement
+     * overflow rules, e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
      */
     public Range shortRange() {
         if (this.isNothing()) {
@@ -218,8 +226,8 @@ public class Range {
      * range of the Byte class, return BYTE_EVERYTHING.
      *
      * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-     * 8-bit integers, convert the bounds to Byte type in accordance with Java overflow rules, e.g.,
-     * Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
+     * 8-bit integers, convert the bounds to Byte type in accordance with Java twos-complement
+     * overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
      */
     public Range byteRange() {
         if (this.isNothing()) {
@@ -588,7 +596,7 @@ public class Range {
         // 1. create different methods for int type and long type and use them accordingly
         // 2. add an additional boolean parameter to indicate the type of the left-hand operand
         //
-        // see https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.19 for more
+        // see https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.19 for more
         // detail.
         if (right.isWithin(0, 31)) {
             if (this.isWithinInteger()) {
@@ -1046,8 +1054,8 @@ public class Range {
      * return EVERYTHING.
      *
      * <p>If one of the BigInteger bounds is out of Long's range and {@link #ignoreOverflow} is
-     * false, convert the bounds to Long type in accordance with Java overflow rules, e.g.,
-     * Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
+     * false, convert the bounds to Long type in accordance with Java twos-complement overflow
+     * rules, e.g., Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
      *
      * <p>If one of the BigInteger bounds is out of Long's range and {@link #ignoreOverflow} is
      * true, convert the bound that is outside Long's range to max/min value of a Long.
