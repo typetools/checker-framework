@@ -518,7 +518,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * <p>Note: Even though {@code visitExecutable} and {@code addComputedTypeAnnotations} have the
      * same logic for adding defaults to parameter types, the code structure is different. This is
      * because the argument to {@code visitExecutable} is an {@code AnnotatedExecutableType} which
-     * represents the type of a method, constructor or an initializer and the argument to {@code
+     * represents the type of a method, constructor, or initializer, and the argument to {@code
      * addComputedTypeAnnotations} is any {@code Element}.
      */
     @Override
