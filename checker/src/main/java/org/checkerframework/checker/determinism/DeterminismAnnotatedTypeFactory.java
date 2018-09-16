@@ -379,7 +379,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *   <li>return types of methods with no unannotated or @PolyDet formal parameters and receiver.
      * </ol>
      *
-     * Adds implicit annotation for main method parameter.
+     * Adds implicit annotation for main method formal parameter.
      */
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
         /** Calls the superclass constructor. */
@@ -388,8 +388,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Places the implicit annotation {@code Det} on the type of the main method's parameter
-         * inside the main method body.
+         * Places the implicit annotation {@code Det} on the type of the main method's formal
+         * parameter inside the main method body.
          *
          * <p>Places the following default annotations:
          *
