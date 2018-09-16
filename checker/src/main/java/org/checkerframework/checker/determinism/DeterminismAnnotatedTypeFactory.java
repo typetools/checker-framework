@@ -498,8 +498,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Adds implicit annotation for main method parameter ({@code @Det}) and default annotations for
-     * the component types of other array parameters ({@code ...[@PolyDet]}).
+     * Adds implicit annotation for main method formal parameter ({@code @Det}) and default
+     * annotations for the component types of other array formal parameters ({@code ...[@PolyDet]}).
      *
      * <p>Note: The annotation on an array type defaults to {@code @PolyDet[]} and this defaulting
      * is handled by declarative mechanism.
