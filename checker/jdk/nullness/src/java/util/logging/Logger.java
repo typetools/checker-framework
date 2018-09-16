@@ -195,7 +195,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *
  * @since 1.4
  */
-// These annotations Mark every void method as @SideEffectFree.
+// These annotations mark every void method as @SideEffectFree.
 // This is questionable, because a call could change the logger (say, if it caches messages, such as concatenating them into a string).
 // However, logging generally cannot affect any other part of the program, so it seems reasonable to write these annotations.
 public class Logger {

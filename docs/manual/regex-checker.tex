@@ -68,9 +68,10 @@ Figure~\ref{fig-regex-hierarchy}.
 The Regex Checker adds
 implicit qualifiers, reducing the number of annotations that must appear
 in your code (see Section~\ref{effective-qualifier}).
-The checker implicitly adds the \code{Regex} qualifier with
-the parameter set to the correct number of capturing groups to
-any \code{String} literal that is a valid regex. The Regex Checker allows
+If a \code{String} literal is a valid regex,
+the checker implicitly adds the \code{@Regex} qualifier with
+the argument set to the correct number of capturing groups.
+The Regex Checker allows
 the \code{null} literal to be assigned to any type qualified with the
 \code{Regex} qualifier.
 
