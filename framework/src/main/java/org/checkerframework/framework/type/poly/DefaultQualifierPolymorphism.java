@@ -22,8 +22,8 @@ import org.checkerframework.javacutil.BugInCF;
 public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism {
 
     /**
-     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the given checker for
-     * querying type qualifiers and the given factory for getting annotated types.
+     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the given {@code factory}
+     * for querying type qualifiers and the given factory for getting annotated types.
      *
      * @param env the processing environment
      * @param factory the factory for the current checker
