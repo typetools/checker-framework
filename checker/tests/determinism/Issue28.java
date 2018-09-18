@@ -2,8 +2,7 @@ import org.checkerframework.checker.determinism.qual.*;
 
 // @skip-test
 public class Issue28 {
-    @PolyDet
-    int @PolyDet [] makeArr(@PolyDet int n) {
+    @PolyDet int @PolyDet [] makeArr(@PolyDet int n) {
         return new @PolyDet int @PolyDet [] {n};
     }
 
