@@ -57,47 +57,47 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET_USE;
 
     /** The java.util.Set interface. */
-    private final TypeMirror SetInterfaceTypeMirror =
+    private final TypeMirror setInterfaceTypeMirror =
             TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
     /** The java.util.List interface. */
-    private final TypeMirror ListInterfaceTypeMirror =
+    private final TypeMirror listInterfaceTypeMirror =
             TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
     /** The java.util.Collection class. */
-    private final TypeMirror CollectionInterfaceTypeMirror =
+    private final TypeMirror collectionInterfaceTypeMirror =
             TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
     /** The java.util.Iterator class. */
-    private final TypeMirror IteratorTypeMirror =
+    private final TypeMirror iteratorTypeMirror =
             TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
     /** The java.util.Arrays class. */
-    private final TypeMirror ArraysTypeMirror =
+    private final TypeMirror arraysTypeMirror =
             TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
     /** The java.util.Collections class. */
-    private final TypeMirror CollectionsTypeMirror =
+    private final TypeMirror collectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
     /** The java.util.AbstractList class. */
-    private final TypeMirror AbstractListTypeMirror =
+    private final TypeMirror abstractListTypeMirror =
             TypesUtils.typeFromClass(AbstractList.class, types, processingEnv.getElementUtils());
     /** The java.util.AbstractSequentialList class. */
-    private final TypeMirror AbstractSequentialListTypeMirror =
+    private final TypeMirror abstractSequentialListTypeMirror =
             TypesUtils.typeFromClass(
                     AbstractSequentialList.class, types, processingEnv.getElementUtils());
     /** The java.util.ArrayList class. */
-    private final TypeMirror ArrayListTypeMirror =
+    private final TypeMirror arrayListTypeMirror =
             TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
     /** The java.util.LinkedList class. */
-    private final TypeMirror LinkedListTypeMirror =
+    private final TypeMirror linkedListTypeMirror =
             TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
     /** The java.util.NavigableSet class. */
-    private final TypeMirror NavigableSetTypeMirror =
+    private final TypeMirror navigableSetTypeMirror =
             TypesUtils.typeFromClass(NavigableSet.class, types, processingEnv.getElementUtils());
     /** The java.util.SortedSet class. */
-    private final TypeMirror SortedSetTypeMirror =
+    private final TypeMirror sortedSetTypeMirror =
             TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
     /** The java.util.TreeSet class. */
-    private final TypeMirror TreeSetTypeMirror =
+    private final TypeMirror treeSetTypeMirror =
             TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
     /** The java.util.Enumeration interface. */
-    private final TypeMirror EnumerationTypeMirror =
+    private final TypeMirror enumerationTypeMirror =
             TypesUtils.typeFromClass(Enumeration.class, types, processingEnv.getElementUtils());
 
     /** Creates {@code @PolyDet} annotation mirror constants. */
@@ -186,11 +186,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, annotatedRetType);
             }
 
-            ExecutableElement m = methodFromUse(node).methodType.getElement();
+            ExecutableElement m = TreeUtils.elementFromUse(node);
 
             // If return type (non-array, non-collection, and non-iterator) resolves to
             // @OrderNonDet, replaces the annotation on the return type with @NonDet.
-            if (annotatedRetType.getAnnotations().contains(ORDERNONDET)
+            if (annotatedRetType.hasAnnotation(ORDERNONDET)
                     && !mayBeOrderNonDet(annotatedRetType.getUnderlyingType())) {
                 annotatedRetType.replaceAnnotation(NONDET);
             }
@@ -539,74 +539,74 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** @return true if {@code tm} is Set or a subtype of Set */
     private boolean isSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(SetInterfaceTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(setInterfaceTypeMirror));
     }
 
     /** @return true if {@code tm} is a List or a subtype of List */
     public boolean isList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(ListInterfaceTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(listInterfaceTypeMirror));
     }
 
     /** @return true if {@code tm} is Collection or a subtype of Collection */
     public boolean isCollection(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(CollectionInterfaceTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(collectionInterfaceTypeMirror));
     }
 
     /** @return true if {@code tm} is Iterator or a subtype of Iterator */
     public boolean isIterator(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(IteratorTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(iteratorTypeMirror));
     }
 
     /** @return true if {@code tm} is the Arrays class */
     public boolean isArrays(TypeMirror tm) {
-        return types.isSameType(tm, ArraysTypeMirror);
+        return types.isSameType(tm, arraysTypeMirror);
     }
 
     /** @return true if {@code tm} is the Collections class */
     public boolean isCollections(TypeMirror tm) {
-        return types.isSameType(tm, CollectionsTypeMirror);
+        return types.isSameType(tm, collectionsTypeMirror);
     }
 
     /** @return true if {@code tm} is AbstractList or a subtype of AbstractList */
     public boolean isAbstractList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(AbstractListTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(abstractListTypeMirror));
     }
 
     /**
      * @return true if {@code tm} is AbstractSequentialList or a subtype of AbstractSequentialList
      */
     public boolean isAbstractSequentialList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(AbstractSequentialListTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(abstractSequentialListTypeMirror));
     }
 
     /** @return true if {@code tm} is ArrayList or a subtype of ArrayList */
     public boolean isArrayList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(ArrayListTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(arrayListTypeMirror));
     }
 
     /** @return true if {@code tm} is LinkedList or a subtype of LinkedList */
     public boolean isLinkedList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(LinkedListTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(linkedListTypeMirror));
     }
 
     /** @return true if {@code tm} is NavigableSet or a subtype of NavigableSet */
     public boolean isNavigableSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(NavigableSetTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(navigableSetTypeMirror));
     }
 
     /** @return true if {@code tm} is SortedSet or a subtype of SortedSet */
     public boolean isSortedSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(SortedSetTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(sortedSetTypeMirror));
     }
 
     /** @return true if {@code tm} is TreeSet or a subtype of TreeSet */
     public boolean isTreeSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(TreeSetTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(treeSetTypeMirror));
     }
 
     /** @return true if {@code tm} is Enumeration or a subtype of Enumeration */
     public boolean isEnumeration(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(EnumerationTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(enumerationTypeMirror));
     }
 
     /**
