@@ -217,6 +217,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                     || AnnotationUtils.areSame(arrTopType, atypeFactory.NONDET)) {
                 valueType.replaceAnnotation(atypeFactory.NONDET);
             }
+            if (AnnotationUtils.areSame(arrTopType, atypeFactory.POLYDET)) {
+                valueType.replaceAnnotation(atypeFactory.POLYDET_UP);
+            }
         }
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }

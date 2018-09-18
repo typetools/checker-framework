@@ -467,7 +467,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return;
         }
         if (componentType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
-            annoArrType.getComponentType().replaceAnnotation(POLYDET);
+            componentType.replaceAnnotation(POLYDET);
         }
         if (componentType.getKind() != TypeKind.ARRAY) {
             return;
@@ -535,9 +535,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 elt);
                     }
                     type.addMissingAnnotations(Collections.singleton(DET));
+                } else {
+                    defaultArrayComponentTypeAsPolyDet(type);
                 }
-
-                defaultArrayComponentTypeAsPolyDet(type);
             }
         }
         super.addComputedTypeAnnotations(elt, type);
