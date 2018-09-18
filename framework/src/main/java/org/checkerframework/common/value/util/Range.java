@@ -212,7 +212,7 @@ public class Range {
         }
         return SHORT_EVERYTHING;
     }
-    
+
     /** The number of values representable in char: */
     private static long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
 
