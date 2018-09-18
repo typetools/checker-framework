@@ -388,10 +388,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Places the implicit annotation {@code Det} on the type of the main method's formal
-         * parameter inside the main method body.
-         *
-         * <p>Places the following default annotations:
+         * Places the following default annotations:
          *
          * <ol>
          *   <li>Defaults the component types of array parameters and return types as {@code
