@@ -367,8 +367,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public boolean mayBeOrderNonDet(TypeMirror javaType) {
         return (javaType.getKind() == TypeKind.ARRAY
-                || isCollection(TypesUtils.getTypeElement(javaType).asType())
-                || isIterator(TypesUtils.getTypeElement(javaType).asType()));
+                || isCollection(javaType)
+                || isIterator(javaType));
     }
 
     /**

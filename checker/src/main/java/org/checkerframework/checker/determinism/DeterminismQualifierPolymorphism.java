@@ -3,13 +3,11 @@ package org.checkerframework.checker.determinism;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Resolves polymorphic annotations at method invocations as follows:
@@ -99,9 +97,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      */
     private void replaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         type.replaceAnnotation(replaceType);
-        if (!(factory.isCollection(TypesUtils.getTypeElement(type.getUnderlyingType()).asType())
-                || factory.isIterator(
-                        TypesUtils.getTypeElement(type.getUnderlyingType()).asType()))) {
+        if (!(factory.isCollection(type.getUnderlyingType())
+                || factory.isIterator(type.getUnderlyingType()))) {
             return;
         }
         // TODO-rashmi: Handle Maps
@@ -133,10 +130,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     void recursiveReplaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
         AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
-        TypeMirror underlyingTypeOfReceiver =
-                TypesUtils.getTypeElement(argType.getUnderlyingType()).asType();
-        if (!(factory.isCollection(underlyingTypeOfReceiver)
-                || factory.isIterator(underlyingTypeOfReceiver))) {
+        if (!(factory.isCollection(argType.getUnderlyingType())
+                || factory.isIterator(argType.getUnderlyingType()))) {
             return;
         }
         argType.replaceAnnotation(replaceType);

@@ -64,12 +64,11 @@ public class DeterminismTransfer extends CFTransfer {
             return result;
         }
 
-        TypeMirror underlyingTypeOfReceiver =
-                TypesUtils.getTypeElement(receiver.getType()).asType();
+        TypeMirror receiverTypeMirror = receiver.getType();
         ExecutableElement invokedMethod = n.getTarget().getMethod();
 
         // Type refinement for List.sort
-        if (isListSort(factory, underlyingTypeOfReceiver, invokedMethod)) {
+        if (isListSort(factory, receiverTypeMirror, invokedMethod)) {
             if (factory.getAnnotatedType(receiver.getTree()).hasAnnotation(OrderNonDet.class)) {
                 typeRefine(n.getTarget().getReceiver(), result, factory.DET, factory);
             }
@@ -82,7 +81,7 @@ public class DeterminismTransfer extends CFTransfer {
         // and all other variants of Arrays.sort() and Arrays.parallelSort(),
         // refines the first argument if this first argument is annotated as @OrderNonDet[..]
         // and all other arguments are annotated as @Det.
-        if (isArraysSort(factory, underlyingTypeOfReceiver, invokedMethod)) {
+        if (isArraysSort(factory, receiverTypeMirror, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
@@ -104,7 +103,7 @@ public class DeterminismTransfer extends CFTransfer {
         }
 
         // Type refinement for Collections.sort
-        if (isCollectionsSort(factory, underlyingTypeOfReceiver, invokedMethod)) {
+        if (isCollectionsSort(factory, receiverTypeMirror, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
@@ -113,7 +112,7 @@ public class DeterminismTransfer extends CFTransfer {
         }
 
         // Type refinement for Collections.shuffle
-        if (isCollectionsShuffle(factory, underlyingTypeOfReceiver, invokedMethod)) {
+        if (isCollectionsShuffle(factory, receiverTypeMirror, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.DET)) {
