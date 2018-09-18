@@ -406,10 +406,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitExecutable(final AnnotatedExecutableType executableType, final Void p) {
-            if (isMainMethod(executableType.getElement())) {
-                AnnotatedTypeMirror paramType = executableType.getParameterTypes().get(0);
-                paramType.replaceAnnotation(DET);
-            } else {
+            if (!isMainMethod(executableType.getElement())) {
                 for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
                     defaultArrayComponentTypeAsPolyDet(paramType);
                 }
