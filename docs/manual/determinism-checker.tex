@@ -2,7 +2,7 @@
 \chapter{Determinism Checker\label{determinism-checker}}
 
 A nondeterministic program is one that may produce different output when
-it is run twice on the same input.
+it is run twice with the same input on the same machine.
 It is desirable for programs to be deterministic.
 It is easier to test a deterministic program, because nondeterminism can
 lead to flaky tests that sometimes succeed and sometimes fail.
@@ -33,7 +33,8 @@ Another common cause of nondeterminism is the operating system scheduler,
 for concurrent programs.  The Determinism Checker does not address this
 cause of nondeterminism.  Also, the Determinism Checker does not warn
 about the possibility that the file system contains different files or
-contents on different runs of a program.
+contents on different runs of a program, or that system properties (such as
+line and path separators) vary across different machines.
 
 To run the Determinism Checker, supply the
 \code{-processor DeterminismChecker}
@@ -52,14 +53,14 @@ For example:
 The Determinism type system uses the following type qualifiers (see Figure~\ref{fig-determinism-hierarchy}):
 \begin{description}
 \item[\refqualclass{checker/determinism/qual}{NonDet}] indicates
-  that the expression might have different values in two different executions.
+  that the expression might have different values in two different executions on the same machine.
 \item[\refqualclass{checker/determinism/qual}{OrderNonDet}] indicates that
   a collection will have the same elements in every execution, but in a
   possibly different order.  \<@OrderNonDet> may only be written on
   collections and arrays.
 \item[\refqualclass{checker/determinism/qual}{Det}] indicates that
-  the expression evaluates to the same value (with respect to .equals()) on all
-  executions; for a collection, iteration also yields the values in the same
+  the expression evaluates to the same value (with respect to \<.equals()>) in all
+  executions on the same machine; for a collection, iteration also yields the values in the same
   order.
   This is the default qualifier.
 \end{description}

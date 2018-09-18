@@ -379,7 +379,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *   <li>return types of methods with no unannotated or @PolyDet formal parameters and receiver.
      * </ol>
      *
-     * Adds implicit annotation for main method parameter.
+     * Adds implicit annotation for main method formal parameter.
      */
     protected class DeterminismTypeAnnotator extends TypeAnnotator {
         /** Calls the superclass constructor. */
@@ -388,10 +388,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Places the implicit annotation {@code Det} on the type of the main method's parameter
-         * inside the main method body.
-         *
-         * <p>Places the following default annotations:
+         * Places the following default annotations:
          *
          * <ol>
          *   <li>Defaults the component types of array parameters and return types as {@code
@@ -406,10 +403,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitExecutable(final AnnotatedExecutableType executableType, final Void p) {
-            if (isMainMethod(executableType.getElement())) {
-                AnnotatedTypeMirror paramType = executableType.getParameterTypes().get(0);
-                paramType.replaceAnnotation(DET);
-            } else {
+            if (!isMainMethod(executableType.getElement())) {
                 for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
                     defaultArrayComponentTypeAsPolyDet(paramType);
                 }
@@ -498,8 +492,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Adds implicit annotation for main method parameter ({@code @Det}) and default annotations for
-     * the component types of other array parameters ({@code ...[@PolyDet]}).
+     * Adds implicit annotation for main method formal parameter ({@code @Det}) and default
+     * annotations for the component types of other array formal parameters ({@code ...[@PolyDet]}).
      *
      * <p>Note: The annotation on an array type defaults to {@code @PolyDet[]} and this defaulting
      * is handled by declarative mechanism.
@@ -518,7 +512,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * <p>Note: Even though {@code visitExecutable} and {@code addComputedTypeAnnotations} have the
      * same logic for adding defaults to parameter types, the code structure is different. This is
      * because the argument to {@code visitExecutable} is an {@code AnnotatedExecutableType} which
-     * represents the type of a method, constructor or an initializer and the argument to {@code
+     * represents the type of a method, constructor, or initializer, and the argument to {@code
      * addComputedTypeAnnotations} is any {@code Element}.
      */
     @Override
