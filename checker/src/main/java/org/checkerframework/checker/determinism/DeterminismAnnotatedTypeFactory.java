@@ -33,10 +33,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 /** The annotated type factory for the determinism type-system. */
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -191,7 +188,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If return type (non-array, non-collection, and non-iterator) resolves to
             // @OrderNonDet, replaces the annotation on the return type with @NonDet.
             if (annotatedRetType.hasAnnotation(ORDERNONDET)
-                    && !mayBeOrderNonDet(annotatedRetType.getUnderlyingType())) {
+                    && !mayBeOrderNonDet(annotatedRetType)) {
                 annotatedRetType.replaceAnnotation(NONDET);
             }
 
@@ -219,10 +216,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             if (isEqualsMethod(m)) {
                 AnnotatedTypeMirror argument = getAnnotatedType(node.getArguments().get(0));
-                if (isSet(receiverUnderlyingType.asType())
+                if (isSubClassOf(receiverType, setInterfaceTypeMirror)
                         && receiverType.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(receiverType)
-                        && isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
+                        && isSubClassOf(argument, setInterfaceTypeMirror)
                         && argument.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(argument)) {
                     annotatedRetType.replaceAnnotation(DET);
@@ -240,11 +237,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Therefore, we do not annotate the return types of these methods in the JDK.
             // Instead, we annotate the return type at the method invocation.
             if (annotatedRetType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
-                if (isIteratorNext(receiverUnderlyingType, m)
-                        || isAbstractListWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isArrayListWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isLinkedListWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isEnumerationWithTypeVarReturn(receiverUnderlyingType, m)) {
+                if (isIteratorNext(receiverType, m)
+                        || isAbstractListWithTypeVarReturn(receiverType, m)
+                        || isArrayListWithTypeVarReturn(receiverType, m)
+                        || isLinkedListWithTypeVarReturn(receiverType, m)
+                        || isEnumerationWithTypeVarReturn(receiverType, m)) {
                     // Annotates the return types of these methods as @PolyDet("up").
                     if (isReceiverOrArgPoly(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(POLYDET_UP);
@@ -256,9 +253,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         annotatedRetType.replaceAnnotation(NONDET);
                     }
                 }
-                if (isTreeSetWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isNavigableSetWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isSortedSetWithTypeVarReturn(receiverUnderlyingType, m)) {
+                if (isTreeSetWithTypeVarReturn(receiverType, m)
+                        || isNavigableSetWithTypeVarReturn(receiverType, m)
+                        || isSortedSetWithTypeVarReturn(receiverType, m)) {
                     // Annotates the return types of these methods as @PolyDet("down").
                     if (isReceiverOrArgPoly(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(POLYDET_DOWN);
@@ -351,7 +348,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private boolean hasOrderNonDetListAsTypeArgument(AnnotatedTypeMirror atm) {
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) atm;
         for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
-            if (isList(argType.getUnderlyingType()) && argType.hasAnnotation(ORDERNONDET)) {
+            if (isSubClassOf(argType, listInterfaceTypeMirror)
+                    && argType.hasAnnotation(ORDERNONDET)) {
                 return true;
             }
         }
@@ -365,7 +363,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return true if {@code javaType} is Collection (or a subtype), Iterator (or a subtype), or an
      *     array
      */
-    public boolean mayBeOrderNonDet(TypeMirror javaType) {
+    public boolean mayBeOrderNonDet(AnnotatedTypeMirror javaType) {
         return (javaType.getKind() == TypeKind.ARRAY
                 || isCollection(javaType)
                 || isIterator(javaType));
@@ -537,24 +535,28 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(elt, type);
     }
 
-    /** @return true if {@code tm} is Set or a subtype of Set */
-    private boolean isSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(setInterfaceTypeMirror));
+    /** @return true if {@code subClass} is a subtype of {@code superClass} */
+    private boolean isSubClassOf(AnnotatedTypeMirror subClass, TypeMirror superClass) {
+        return types.isSubtype(
+                types.erasure(subClass.getUnderlyingType()), types.erasure(superClass));
+    }
+
+    /** @return true if {@code tm} is Collection or a subtype of Collection */
+    public boolean isCollection(AnnotatedTypeMirror tm) {
+        return types.isSubtype(
+                types.erasure(tm.getUnderlyingType()),
+                types.erasure(collectionInterfaceTypeMirror));
+    }
+
+    /** @return true if {@code tm} is Iterator or a subtype of Iterator */
+    public boolean isIterator(AnnotatedTypeMirror tm) {
+        return types.isSubtype(
+                types.erasure(tm.getUnderlyingType()), types.erasure(iteratorTypeMirror));
     }
 
     /** @return true if {@code tm} is a List or a subtype of List */
     public boolean isList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(listInterfaceTypeMirror));
-    }
-
-    /** @return true if {@code tm} is Collection or a subtype of Collection */
-    public boolean isCollection(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(collectionInterfaceTypeMirror));
-    }
-
-    /** @return true if {@code tm} is Iterator or a subtype of Iterator */
-    public boolean isIterator(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(iteratorTypeMirror));
     }
 
     /** @return true if {@code tm} is the Arrays class */
@@ -567,55 +569,13 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return types.isSameType(tm, collectionsTypeMirror);
     }
 
-    /** @return true if {@code tm} is AbstractList or a subtype of AbstractList */
-    public boolean isAbstractList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(abstractListTypeMirror));
-    }
-
-    /**
-     * @return true if {@code tm} is AbstractSequentialList or a subtype of AbstractSequentialList
-     */
-    public boolean isAbstractSequentialList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(abstractSequentialListTypeMirror));
-    }
-
-    /** @return true if {@code tm} is ArrayList or a subtype of ArrayList */
-    public boolean isArrayList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(arrayListTypeMirror));
-    }
-
-    /** @return true if {@code tm} is LinkedList or a subtype of LinkedList */
-    public boolean isLinkedList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(linkedListTypeMirror));
-    }
-
-    /** @return true if {@code tm} is NavigableSet or a subtype of NavigableSet */
-    public boolean isNavigableSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(navigableSetTypeMirror));
-    }
-
-    /** @return true if {@code tm} is SortedSet or a subtype of SortedSet */
-    public boolean isSortedSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(sortedSetTypeMirror));
-    }
-
-    /** @return true if {@code tm} is TreeSet or a subtype of TreeSet */
-    public boolean isTreeSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(treeSetTypeMirror));
-    }
-
-    /** @return true if {@code tm} is Enumeration or a subtype of Enumeration */
-    public boolean isEnumeration(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(enumerationTypeMirror));
-    }
-
     /**
      * Returns true if {@code receiverUnderlyingType} is Iterator and if the return type of {@code
      * invokedMethodElement} is a type variable.
      */
     private boolean isIteratorNext(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isIterator(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isIterator(receiverType)) {
             if (invokedMethodElement.getSimpleName().contentEquals("next")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().isEmpty()) {
@@ -630,10 +590,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * List and if the return type of {@code invokedMethodElement} is a type variable.
      */
     private boolean isAbstractListWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isAbstractList(receiverUnderlyingType.asType())
-                || isAbstractSequentialList(receiverUnderlyingType.asType())
-                || isList(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isSubClassOf(receiverType, abstractListTypeMirror)
+                || isSubClassOf(receiverType, abstractSequentialListTypeMirror)
+                || isSubClassOf(receiverType, listInterfaceTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("get")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().size() == 1
@@ -666,8 +626,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * {@code invokedMethodElement} is a type variable.
      */
     private boolean isNavigableSetWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isNavigableSet(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isSubClassOf(receiverType, navigableSetTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("lower")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().size() == 1
@@ -711,8 +671,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isArrayListWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isArrayList(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isSubClassOf(receiverType, arrayListTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("elementData")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().size() == 1
@@ -752,8 +712,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isLinkedListWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isLinkedList(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isSubClassOf(receiverType, linkedListTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("unlink")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().size() == 1
@@ -863,8 +823,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isSortedSetWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isSortedSet(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isSubClassOf(receiverType, sortedSetTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("first")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().isEmpty()) {
@@ -884,8 +844,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isTreeSetWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isTreeSet(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isSubClassOf(receiverType, treeSetTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("first")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().isEmpty()) {
@@ -943,8 +903,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * {@code invokedMethodElement} is a type variable.
      */
     private boolean isEnumerationWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isEnumeration(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        if (isSubClassOf(receiverType, enumerationTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("nextElement")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().isEmpty()) {

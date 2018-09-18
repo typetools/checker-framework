@@ -97,8 +97,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      */
     private void replaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         type.replaceAnnotation(replaceType);
-        if (!(factory.isCollection(type.getUnderlyingType())
-                || factory.isIterator(type.getUnderlyingType()))) {
+        if (!(factory.isCollection(type) || factory.isIterator(type))) {
             return;
         }
         // TODO-rashmi: Handle Maps
@@ -130,8 +129,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     void recursiveReplaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
         AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
-        if (!(factory.isCollection(argType.getUnderlyingType())
-                || factory.isIterator(argType.getUnderlyingType()))) {
+        if (!(factory.isCollection(argType) || factory.isIterator(argType))) {
             return;
         }
         argType.replaceAnnotation(replaceType);
