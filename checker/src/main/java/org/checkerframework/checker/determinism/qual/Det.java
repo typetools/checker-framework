@@ -5,10 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.qual.*;
 
 /**
  * An expression of type {@code @Det} evaluates to the same value (with respect to .equals()) on all
@@ -23,4 +20,14 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf({OrderNonDet.class})
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.LOWER_BOUND})
+@ImplicitFor(
+        literals = {
+            LiteralKind.STRING,
+            LiteralKind.INT,
+            LiteralKind.BOOLEAN,
+            LiteralKind.CHAR,
+            LiteralKind.DOUBLE,
+            LiteralKind.FLOAT,
+            LiteralKind.LONG
+        })
 public @interface Det {}
