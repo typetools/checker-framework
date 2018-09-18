@@ -284,9 +284,11 @@ public class RangeTest {
             for (long value : values) {
                 if (value < range.from + CHAR_WIDTH
                         && value > range.to - CHAR_WIDTH
-                        && !result.isCharEverything()) {
+                        && (Math.abs(range.from + Short.MIN_VALUE) - 1) / Short.MIN_VALUE
+                                == (Math.abs(range.to + Short.MIN_VALUE) - 1) / Short.MIN_VALUE) {
                     // filter out test data that would cause Range.CharRange to return
                     // CHAR_EVERYTHING
+                    // char range interval is a right shift of the short range interval
                     char charValue = (char) value;
                     assert range.contains(value) && result.contains(charValue)
                                     || !range.contains(value) && !result.contains(charValue)
