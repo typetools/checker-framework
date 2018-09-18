@@ -212,42 +212,7 @@ public class Range {
         }
         return SHORT_EVERYTHING;
     }
-
-    /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
-    private static long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
-
-    /**
-     * Converts a this range to a 8-bit byte range.
-     *
-     * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Byte range, then
-     * that bound is set to the bound of the Byte range.
-     *
-     * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-     * range of the Byte class, return BYTE_EVERYTHING.
-     *
-     * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-     * 8-bit integers, convert the bounds to Byte type in accordance with Java twos-complement
-     * overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
-     */
-    public Range byteRange() {
-        if (this.isNothing()) {
-            return this;
-        }
-        if (ignoreOverflow) {
-            return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
-        }
-        if (this.isWiderThan(byteWidth)) {
-            // byte is promoted to int before the operation so no need for explicit casting
-            return BYTE_EVERYTHING;
-        }
-        byte byteFrom = (byte) this.from;
-        byte byteTo = (byte) this.to;
-        if (byteFrom <= byteTo) {
-            return new Range(byteFrom, byteTo);
-        }
-        return BYTE_EVERYTHING;
-    }
-
+    
     /** The number of values representable in char: */
     private static long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
 
@@ -282,6 +247,41 @@ public class Range {
             return new Range(charFrom, charTo);
         }
         return CHAR_EVERYTHING;
+    }
+
+    /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
+    private static long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
+
+    /**
+     * Converts a this range to a 8-bit byte range.
+     *
+     * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Byte range, then
+     * that bound is set to the bound of the Byte range.
+     *
+     * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
+     * range of the Byte class, return BYTE_EVERYTHING.
+     *
+     * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
+     * 8-bit integers, convert the bounds to Byte type in accordance with Java twos-complement
+     * overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
+     */
+    public Range byteRange() {
+        if (this.isNothing()) {
+            return this;
+        }
+        if (ignoreOverflow) {
+            return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
+        }
+        if (this.isWiderThan(byteWidth)) {
+            // byte is promoted to int before the operation so no need for explicit casting
+            return BYTE_EVERYTHING;
+        }
+        byte byteFrom = (byte) this.from;
+        byte byteTo = (byte) this.to;
+        if (byteFrom <= byteTo) {
+            return new Range(byteFrom, byteTo);
+        }
+        return BYTE_EVERYTHING;
     }
 
     /** Returns true if the element is contained in this range. */
