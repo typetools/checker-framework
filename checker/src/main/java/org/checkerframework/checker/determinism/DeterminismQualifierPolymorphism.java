@@ -99,8 +99,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      */
     private void replaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         type.replaceAnnotation(replaceType);
-        if (!(factory.isCollection(TypesUtils.getTypeElement(type.getUnderlyingType()).asType())
-                || factory.isIterator(TypesUtils.getTypeElement(type.getUnderlyingType()).asType())
+        if (!(factory.isCollection(type)
+                || factory.isIterator(type)
                 || type.getKind() == TypeKind.ARRAY)) {
             return;
         }
@@ -137,8 +137,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      */
     void recursiveReplaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         AnnotatedTypeMirror argOrComponentType = null;
-        if (factory.isCollection(type.getUnderlyingType())
-                || factory.isIterator(type.getUnderlyingType())) {
+        if (factory.isCollection(type) || factory.isIterator(type)) {
             AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
             argOrComponentType = declaredTypeOuter.getTypeArguments().get(0);
         }
@@ -147,8 +146,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         }
         TypeMirror underlyingTypeOfReceiver =
                 TypesUtils.getTypeElement(argOrComponentType.getUnderlyingType()).asType();
-        if (!(factory.isCollection(underlyingTypeOfReceiver)
-                || factory.isIterator(underlyingTypeOfReceiver)
+        if (!(factory.isCollection(argOrComponentType)
+                || factory.isIterator(argOrComponentType)
                 || argOrComponentType.getKind() == TypeKind.ARRAY)) {
             return;
         }

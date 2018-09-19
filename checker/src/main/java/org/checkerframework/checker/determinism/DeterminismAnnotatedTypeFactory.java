@@ -3,6 +3,7 @@ package org.checkerframework.checker.determinism;
 import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
@@ -13,7 +14,6 @@ import org.checkerframework.checker.determinism.qual.OrderNonDet;
 import org.checkerframework.checker.determinism.qual.PolyDet;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -33,10 +33,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 /** The annotated type factory for the determinism type-system. */
 public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -57,47 +54,47 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror POLYDET_USE;
 
     /** The java.util.Set interface. */
-    private final TypeMirror SetInterfaceTypeMirror =
+    private final TypeMirror setInterfaceTypeMirror =
             TypesUtils.typeFromClass(Set.class, types, processingEnv.getElementUtils());
     /** The java.util.List interface. */
-    private final TypeMirror ListInterfaceTypeMirror =
+    private final TypeMirror listInterfaceTypeMirror =
             TypesUtils.typeFromClass(List.class, types, processingEnv.getElementUtils());
     /** The java.util.Collection class. */
-    private final TypeMirror CollectionInterfaceTypeMirror =
+    private final TypeMirror collectionInterfaceTypeMirror =
             TypesUtils.typeFromClass(Collection.class, types, processingEnv.getElementUtils());
     /** The java.util.Iterator class. */
-    private final TypeMirror IteratorTypeMirror =
+    private final TypeMirror iteratorTypeMirror =
             TypesUtils.typeFromClass(Iterator.class, types, processingEnv.getElementUtils());
     /** The java.util.Arrays class. */
-    private final TypeMirror ArraysTypeMirror =
+    private final TypeMirror arraysTypeMirror =
             TypesUtils.typeFromClass(Arrays.class, types, processingEnv.getElementUtils());
     /** The java.util.Collections class. */
-    private final TypeMirror CollectionsTypeMirror =
+    private final TypeMirror collectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
     /** The java.util.AbstractList class. */
-    private final TypeMirror AbstractListTypeMirror =
+    private final TypeMirror abstractListTypeMirror =
             TypesUtils.typeFromClass(AbstractList.class, types, processingEnv.getElementUtils());
     /** The java.util.AbstractSequentialList class. */
-    private final TypeMirror AbstractSequentialListTypeMirror =
+    private final TypeMirror abstractSequentialListTypeMirror =
             TypesUtils.typeFromClass(
                     AbstractSequentialList.class, types, processingEnv.getElementUtils());
     /** The java.util.ArrayList class. */
-    private final TypeMirror ArrayListTypeMirror =
+    private final TypeMirror arrayListTypeMirror =
             TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
     /** The java.util.LinkedList class. */
-    private final TypeMirror LinkedListTypeMirror =
+    private final TypeMirror linkedListTypeMirror =
             TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
     /** The java.util.NavigableSet class. */
-    private final TypeMirror NavigableSetTypeMirror =
+    private final TypeMirror navigableSetTypeMirror =
             TypesUtils.typeFromClass(NavigableSet.class, types, processingEnv.getElementUtils());
     /** The java.util.SortedSet class. */
-    private final TypeMirror SortedSetTypeMirror =
+    private final TypeMirror sortedSetTypeMirror =
             TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
     /** The java.util.TreeSet class. */
-    private final TypeMirror TreeSetTypeMirror =
+    private final TypeMirror treeSetTypeMirror =
             TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
     /** The java.util.Enumeration interface. */
-    private final TypeMirror EnumerationTypeMirror =
+    private final TypeMirror enumerationTypeMirror =
             TypesUtils.typeFromClass(Enumeration.class, types, processingEnv.getElementUtils());
 
     /** Creates {@code @PolyDet} annotation mirror constants. */
@@ -186,12 +183,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitMethodInvocation(node, annotatedRetType);
             }
 
-            ExecutableElement m = methodFromUse(node).methodType.getElement();
+            ExecutableElement m = TreeUtils.elementFromUse(node);
 
             // If return type (non-array, non-collection, and non-iterator) resolves to
             // @OrderNonDet, replaces the annotation on the return type with @NonDet.
-            if (annotatedRetType.getAnnotations().contains(ORDERNONDET)
-                    && !mayBeOrderNonDet(annotatedRetType.getUnderlyingType())) {
+            if (annotatedRetType.hasAnnotation(ORDERNONDET)
+                    && !mayBeOrderNonDet(annotatedRetType)) {
                 annotatedRetType.replaceAnnotation(NONDET);
             }
 
@@ -219,17 +216,17 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             if (isEqualsMethod(m)) {
                 AnnotatedTypeMirror argument = getAnnotatedType(node.getArguments().get(0));
-                if (isSet(receiverUnderlyingType.asType())
+                if (isSubClassOf(receiverType, setInterfaceTypeMirror)
                         && receiverType.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(receiverType)
-                        && isSet(TypesUtils.getTypeElement(argument.getUnderlyingType()).asType())
+                        && isSubClassOf(argument, setInterfaceTypeMirror)
                         && argument.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(argument)) {
                     annotatedRetType.replaceAnnotation(DET);
                 }
             }
 
-            // The following code fixes Issue#14
+            // The following code is a workaround for Issue#14
             // (https://github.com/t-rasmud/checker-framework/issues/14).
             // Checks if the return type is not a TYPEVAR, and if the invoked method belongs
             // to a set of (hardcoded) Collection methods in the JDK that return a generic type.
@@ -240,11 +237,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Therefore, we do not annotate the return types of these methods in the JDK.
             // Instead, we annotate the return type at the method invocation.
             if (annotatedRetType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
-                if (isIteratorNext(receiverUnderlyingType, m)
-                        || isAbstractListWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isArrayListWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isLinkedListWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isEnumerationWithTypeVarReturn(receiverUnderlyingType, m)) {
+                if (isIteratorNext(m)
+                        || isAbstractListWithTypeVarReturn(receiverType, m)
+                        || isArrayListWithTypeVarReturn(receiverType, m)
+                        || isLinkedListWithTypeVarReturn(receiverType, m)
+                        || isEnumerationWithTypeVarReturn(receiverType, m)) {
                     // Annotates the return types of these methods as @PolyDet("up").
                     if (isReceiverOrArgPoly(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(POLYDET_UP);
@@ -256,9 +253,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         annotatedRetType.replaceAnnotation(NONDET);
                     }
                 }
-                if (isTreeSetWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isNavigableSetWithTypeVarReturn(receiverUnderlyingType, m)
-                        || isSortedSetWithTypeVarReturn(receiverUnderlyingType, m)) {
+                if (isTreeSetWithTypeVarReturn(receiverType, m)
+                        || isNavigableSetWithTypeVarReturn(receiverType, m)
+                        || isSortedSetWithTypeVarReturn(receiverType, m)) {
                     // Annotates the return types of these methods as @PolyDet("down").
                     if (isReceiverOrArgPoly(receiverType, node)) {
                         annotatedRetType.replaceAnnotation(POLYDET_DOWN);
@@ -351,7 +348,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private boolean hasOrderNonDetListAsTypeArgument(AnnotatedTypeMirror atm) {
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) atm;
         for (AnnotatedTypeMirror argType : declaredType.getTypeArguments()) {
-            if (isList(argType.getUnderlyingType()) && argType.hasAnnotation(ORDERNONDET)) {
+            if (isSubClassOf(argType, listInterfaceTypeMirror)
+                    && argType.hasAnnotation(ORDERNONDET)) {
                 return true;
             }
         }
@@ -365,10 +363,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return true if {@code javaType} is Collection (or a subtype), Iterator (or a subtype), or an
      *     array
      */
-    public boolean mayBeOrderNonDet(TypeMirror javaType) {
+    public boolean mayBeOrderNonDet(AnnotatedTypeMirror javaType) {
         return (javaType.getKind() == TypeKind.ARRAY
-                || isCollection(TypesUtils.getTypeElement(javaType).asType())
-                || isIterator(TypesUtils.getTypeElement(javaType).asType()));
+                || isCollection(javaType)
+                || isIterator(javaType));
     }
 
     /**
@@ -537,92 +535,48 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(elt, type);
     }
 
-    /** @return true if {@code tm} is Set or a subtype of Set */
-    private boolean isSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(SetInterfaceTypeMirror));
+    /** @return true if {@code subClass} is a subtype of {@code superClass} */
+    private boolean isSubClassOf(AnnotatedTypeMirror subClass, TypeMirror superClass) {
+        return types.isSubtype(
+                types.erasure(subClass.getUnderlyingType()), types.erasure(superClass));
+    }
+
+    /** @return true if {@code tm} is Collection or a subtype of Collection */
+    public boolean isCollection(AnnotatedTypeMirror tm) {
+        return types.isSubtype(
+                types.erasure(tm.getUnderlyingType()),
+                types.erasure(collectionInterfaceTypeMirror));
+    }
+
+    /** @return true if {@code tm} is Iterator or a subtype of Iterator */
+    public boolean isIterator(AnnotatedTypeMirror tm) {
+        return types.isSubtype(
+                types.erasure(tm.getUnderlyingType()), types.erasure(iteratorTypeMirror));
     }
 
     /** @return true if {@code tm} is a List or a subtype of List */
     public boolean isList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(ListInterfaceTypeMirror));
-    }
-
-    /** @return true if {@code tm} is Collection or a subtype of Collection */
-    public boolean isCollection(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(CollectionInterfaceTypeMirror));
-    }
-
-    /** @return true if {@code tm} is Iterator or a subtype of Iterator */
-    public boolean isIterator(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(IteratorTypeMirror));
+        return types.isSubtype(types.erasure(tm), types.erasure(listInterfaceTypeMirror));
     }
 
     /** @return true if {@code tm} is the Arrays class */
     public boolean isArrays(TypeMirror tm) {
-        return types.isSameType(tm, ArraysTypeMirror);
+        return types.isSameType(tm, arraysTypeMirror);
     }
 
     /** @return true if {@code tm} is the Collections class */
     public boolean isCollections(TypeMirror tm) {
-        return types.isSameType(tm, CollectionsTypeMirror);
-    }
-
-    /** @return true if {@code tm} is AbstractList or a subtype of AbstractList */
-    public boolean isAbstractList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(AbstractListTypeMirror));
-    }
-
-    /**
-     * @return true if {@code tm} is AbstractSequentialList or a subtype of AbstractSequentialList
-     */
-    public boolean isAbstractSequentialList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(AbstractSequentialListTypeMirror));
-    }
-
-    /** @return true if {@code tm} is ArrayList or a subtype of ArrayList */
-    public boolean isArrayList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(ArrayListTypeMirror));
-    }
-
-    /** @return true if {@code tm} is LinkedList or a subtype of LinkedList */
-    public boolean isLinkedList(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(LinkedListTypeMirror));
-    }
-
-    /** @return true if {@code tm} is NavigableSet or a subtype of NavigableSet */
-    public boolean isNavigableSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(NavigableSetTypeMirror));
-    }
-
-    /** @return true if {@code tm} is SortedSet or a subtype of SortedSet */
-    public boolean isSortedSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(SortedSetTypeMirror));
-    }
-
-    /** @return true if {@code tm} is TreeSet or a subtype of TreeSet */
-    public boolean isTreeSet(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(TreeSetTypeMirror));
-    }
-
-    /** @return true if {@code tm} is Enumeration or a subtype of Enumeration */
-    public boolean isEnumeration(TypeMirror tm) {
-        return types.isSubtype(types.erasure(tm), types.erasure(EnumerationTypeMirror));
+        return types.isSameType(tm, collectionsTypeMirror);
     }
 
     /**
      * Returns true if {@code receiverUnderlyingType} is Iterator and if the return type of {@code
      * invokedMethodElement} is a type variable.
      */
-    private boolean isIteratorNext(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isIterator(receiverUnderlyingType.asType())) {
-            if (invokedMethodElement.getSimpleName().contentEquals("next")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+    private boolean isIteratorNext(ExecutableElement invokedMethodElement) {
+        ExecutableElement iteratorNext =
+                TreeUtils.getMethod("java.util.Iterator", "next", 0, getProcessingEnv());
+        return ElementUtils.isMethod(invokedMethodElement, iteratorNext, getProcessingEnv());
     }
 
     /**
@@ -630,35 +584,35 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * List and if the return type of {@code invokedMethodElement} is a type variable.
      */
     private boolean isAbstractListWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isAbstractList(receiverUnderlyingType.asType())
-                || isAbstractSequentialList(receiverUnderlyingType.asType())
-                || isList(receiverUnderlyingType.asType())) {
-            if (invokedMethodElement.getSimpleName().contentEquals("get")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("set")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 2
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT
-                    && invokedMethodElement.getParameters().get(1).asType().getKind()
-                            == TypeKind.TYPEVAR) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("remove")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT) {
-                return true;
-            }
-        }
-        return false;
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        ProcessingEnvironment env = getProcessingEnv();
+        ExecutableElement abstractListGet =
+                TreeUtils.getMethod("java.util.AbstractList", "get", 1, env);
+        ExecutableElement abstractSequentialListGet =
+                TreeUtils.getMethod("java.util.AbstractSequentialList", "get", 1, env);
+        ExecutableElement listGet = TreeUtils.getMethod("java.util.List", "get", 1, env);
+
+        ExecutableElement abstractListSet =
+                TreeUtils.getMethod("java.util.AbstractList", "set", 2, env);
+        ExecutableElement abstractSequentialListSet =
+                TreeUtils.getMethod("java.util.AbstractSequentialList", "set", 2, env);
+        ExecutableElement listSet = TreeUtils.getMethod("java.util.List", "set", 2, env);
+
+        ExecutableElement abstractListRemove =
+                TreeUtils.getMethod("java.util.AbstractList", "remove", 1, env);
+        ExecutableElement abstractSequentialListRemove =
+                TreeUtils.getMethod("java.util.AbstractSequentialList", "remove", 1, env);
+        ExecutableElement listRemove = TreeUtils.getMethod("java.util.List", "remove", env, "int");
+
+        return (ElementUtils.isMethod(invokedMethodElement, abstractListGet, env)
+                || ElementUtils.isMethod(invokedMethodElement, abstractSequentialListGet, env)
+                || ElementUtils.isMethod(invokedMethodElement, listGet, env)
+                || ElementUtils.isMethod(invokedMethodElement, abstractListSet, env)
+                || ElementUtils.isMethod(invokedMethodElement, abstractSequentialListSet, env)
+                || ElementUtils.isMethod(invokedMethodElement, listSet, env)
+                || ElementUtils.isMethod(invokedMethodElement, abstractListRemove, env)
+                || ElementUtils.isMethod(invokedMethodElement, abstractSequentialListRemove, env)
+                || ElementUtils.isMethod(invokedMethodElement, listRemove, env));
     }
 
     /**
@@ -666,8 +620,29 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * {@code invokedMethodElement} is a type variable.
      */
     private boolean isNavigableSetWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isNavigableSet(receiverUnderlyingType.asType())) {
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        //        ProcessingEnvironment env = getProcessingEnv();
+        //        ExecutableElement navigableSetLower =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "lower", 1, env);
+        //        ExecutableElement navigableSetFloor =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "floor", 1, env);
+        //        ExecutableElement navigableSetCeiling =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "ceiling", 0, env);
+        //        ExecutableElement navigableSetHigher =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "higher", 0, env);
+        //        ExecutableElement navigableSetPollFirst =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "pollFirst", 0, env);
+        //        ExecutableElement navigableSetPollLast =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "pollLast", 0, env);
+        //
+        //        return (ElementUtils.isMethod(invokedMethodElement, navigableSetLower, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetFloor, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetCeiling, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetHigher, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetPollFirst, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetPollLast,
+        // env));
+        if (isSubClassOf(receiverType, navigableSetTypeMirror)) {
             if (invokedMethodElement.getSimpleName().contentEquals("lower")
                     && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
                     && invokedMethodElement.getParameters().size() == 1
@@ -711,40 +686,19 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isArrayListWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isArrayList(receiverUnderlyingType.asType())) {
-            if (invokedMethodElement.getSimpleName().contentEquals("elementData")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("get")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("set")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 2
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT
-                    && invokedMethodElement.getParameters().get(1).asType().getKind()
-                            == TypeKind.TYPEVAR) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("remove")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT) {
-                return true;
-            }
-        }
-        return false;
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        ProcessingEnvironment env = getProcessingEnv();
+        ExecutableElement arrayListElementData =
+                TreeUtils.getMethod("java.util.ArrayList", "elementData", 1, env);
+        ExecutableElement arrayListGet = TreeUtils.getMethod("java.util.ArrayList", "get", 1, env);
+        ExecutableElement arrayListSet = TreeUtils.getMethod("java.util.ArrayList", "set", 2, env);
+        ExecutableElement arrayListRemove =
+                TreeUtils.getMethod("java.util.ArrayList", "remove", env, "int");
+
+        return (ElementUtils.isMethod(invokedMethodElement, arrayListElementData, env)
+                || ElementUtils.isMethod(invokedMethodElement, arrayListGet, env)
+                || ElementUtils.isMethod(invokedMethodElement, arrayListSet, env)
+                || ElementUtils.isMethod(invokedMethodElement, arrayListRemove, env));
     }
 
     /**
@@ -752,110 +706,60 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isLinkedListWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isLinkedList(receiverUnderlyingType.asType())) {
-            if (invokedMethodElement.getSimpleName().contentEquals("unlink")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && (types.isSameType(
-                            types.erasure(invokedMethodElement.getParameters().get(0).asType()),
-                            types.erasure(
-                                    TypesUtils.typeFromClass(
-                                            Node.class,
-                                            types,
-                                            processingEnv.getElementUtils()))))) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("getFirst")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("getLast")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("removeFirst")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("removeLast")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("get")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("set")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 2
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT
-                    && invokedMethodElement.getParameters().get(1).asType().getKind()
-                            == TypeKind.TYPEVAR) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("remove")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.INT) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("peek")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("element")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("poll")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("remove")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("peekFirst")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("peekLast")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("pop")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        ProcessingEnvironment env = getProcessingEnv();
+        ExecutableElement linkedListUnlink =
+                TreeUtils.getMethod("java.util.LinkedList", "unlink", 1, env);
+        ExecutableElement linkedListGetFirst =
+                TreeUtils.getMethod("java.util.LinkedList", "getFirst", 0, env);
+        ExecutableElement linkedListGetLast =
+                TreeUtils.getMethod("java.util.LinkedList", "getLast", 0, env);
+        ExecutableElement linkedListRemoveFirst =
+                TreeUtils.getMethod("java.util.LinkedList", "removeFirst", 0, env);
+        ExecutableElement linkedListRemoveLast =
+                TreeUtils.getMethod("java.util.LinkedList", "removeLast", 0, env);
+        ExecutableElement linkedListGet =
+                TreeUtils.getMethod("java.util.LinkedList", "get", 1, env);
+        ExecutableElement linkedListSet =
+                TreeUtils.getMethod("java.util.LinkedList", "set", 2, env);
+        ExecutableElement linkedListRemove =
+                TreeUtils.getMethod("java.util.LinkedList", "remove", env, "int");
+        ExecutableElement linkedListPeek =
+                TreeUtils.getMethod("java.util.LinkedList", "peek", 0, env);
+        ExecutableElement linkedListElement =
+                TreeUtils.getMethod("java.util.LinkedList", "element", 0, env);
+        ExecutableElement linkedListPoll =
+                TreeUtils.getMethod("java.util.LinkedList", "poll", 0, env);
+        ExecutableElement linkedListRemove0 =
+                TreeUtils.getMethod("java.util.LinkedList", "remove", 0, env);
+        ExecutableElement linkedListPeekFirst =
+                TreeUtils.getMethod("java.util.LinkedList", "peekFirst", 0, env);
+        ExecutableElement linkedListPeekLast =
+                TreeUtils.getMethod("java.util.LinkedList", "peekLast", 0, env);
+        ExecutableElement linkedListPollFirst =
+                TreeUtils.getMethod("java.util.LinkedList", "pollFirst", 0, env);
+        ExecutableElement linkedListPollLast =
+                TreeUtils.getMethod("java.util.LinkedList", "pollLast", 0, env);
+        ExecutableElement linkedListPop =
+                TreeUtils.getMethod("java.util.LinkedList", "pop", 0, env);
+
+        return (ElementUtils.isMethod(invokedMethodElement, linkedListUnlink, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListGetFirst, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListGetLast, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListRemoveFirst, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListRemoveLast, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListGet, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListSet, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListRemove, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListPeek, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListElement, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListPoll, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListRemove0, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListPeekFirst, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListPeekLast, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListPollFirst, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListPollLast, env)
+                || ElementUtils.isMethod(invokedMethodElement, linkedListPop, env));
     }
 
     /**
@@ -863,20 +767,14 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isSortedSetWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isSortedSet(receiverUnderlyingType.asType())) {
-            if (invokedMethodElement.getSimpleName().contentEquals("first")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("last")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        ProcessingEnvironment env = getProcessingEnv();
+        ExecutableElement sortedSetFirst =
+                TreeUtils.getMethod("java.util.SortedSet", "first", 0, env);
+        ExecutableElement sortedSetLast =
+                TreeUtils.getMethod("java.util.SortedSet", "last", 0, env);
+        return (ElementUtils.isMethod(invokedMethodElement, sortedSetFirst, env)
+                || ElementUtils.isMethod(invokedMethodElement, sortedSetLast, env));
     }
 
     /**
@@ -884,58 +782,29 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * invokedMethodElement} is a type variable.
      */
     private boolean isTreeSetWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isTreeSet(receiverUnderlyingType.asType())) {
-            if (invokedMethodElement.getSimpleName().contentEquals("first")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("last")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("lower")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.TYPEVAR) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("floor")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.TYPEVAR) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("ceiling")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.TYPEVAR) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("higher")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().size() == 1
-                    && invokedMethodElement.getParameters().get(0).asType().getKind()
-                            == TypeKind.TYPEVAR) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-            if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        ProcessingEnvironment env = getProcessingEnv();
+        ExecutableElement treeSetFirst = TreeUtils.getMethod("java.util.TreeSet", "first", 0, env);
+        ExecutableElement treeSetLast = TreeUtils.getMethod("java.util.TreeSet", "last", 0, env);
+        ExecutableElement treeSetLower = TreeUtils.getMethod("java.util.TreeSet", "lower", 1, env);
+        ExecutableElement treeSetFloor = TreeUtils.getMethod("java.util.TreeSet", "floor", 1, env);
+        ExecutableElement treeSetCeiling =
+                TreeUtils.getMethod("java.util.TreeSet", "ceiling", 1, env);
+        ExecutableElement treeSetHigher =
+                TreeUtils.getMethod("java.util.TreeSet", "higher", 1, env);
+        ExecutableElement treeSetPollFirst =
+                TreeUtils.getMethod("java.util.TreeSet", "pollFirst", 0, env);
+        ExecutableElement treeSetPollLast =
+                TreeUtils.getMethod("java.util.TreeSet", "pollLast", 0, env);
+
+        return (ElementUtils.isMethod(invokedMethodElement, treeSetFirst, env)
+                || ElementUtils.isMethod(invokedMethodElement, treeSetLast, env)
+                || ElementUtils.isMethod(invokedMethodElement, treeSetLower, env)
+                || ElementUtils.isMethod(invokedMethodElement, treeSetFloor, env)
+                || ElementUtils.isMethod(invokedMethodElement, treeSetCeiling, env)
+                || ElementUtils.isMethod(invokedMethodElement, treeSetHigher, env)
+                || ElementUtils.isMethod(invokedMethodElement, treeSetPollFirst, env)
+                || ElementUtils.isMethod(invokedMethodElement, treeSetPollLast, env));
     }
 
     /**
@@ -943,15 +812,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * {@code invokedMethodElement} is a type variable.
      */
     private boolean isEnumerationWithTypeVarReturn(
-            TypeElement receiverUnderlyingType, ExecutableElement invokedMethodElement) {
-        if (isEnumeration(receiverUnderlyingType.asType())) {
-            if (invokedMethodElement.getSimpleName().contentEquals("nextElement")
-                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
-                    && invokedMethodElement.getParameters().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+            AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
+        ProcessingEnvironment env = getProcessingEnv();
+        ExecutableElement enumerationNext =
+                TreeUtils.getMethod("java.util.Enumeration", "nextElement", 0, env);
+        return ElementUtils.isMethod(invokedMethodElement, enumerationNext, env);
     }
 
     @Override

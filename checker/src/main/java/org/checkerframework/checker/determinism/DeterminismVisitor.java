@@ -6,7 +6,6 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -66,11 +65,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        TypeMirror javaType = useType.getUnderlyingType();
-
         // Raises an error if a non-collection type is annotated with @OrderNonDet.
         if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
-                && !atypeFactory.mayBeOrderNonDet(javaType)) {
+                && !atypeFactory.mayBeOrderNonDet(useType)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
             return false;
         }
@@ -78,7 +75,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         // Raises an error if the annotation on the type argument of a collection (or iterator) is
         // a supertype of the annotation on the collection (or iterator).
         AnnotationMirror baseAnnotation = useType.getAnnotationInHierarchy(atypeFactory.NONDET);
-        if (atypeFactory.mayBeOrderNonDet(javaType)) {
+        if (atypeFactory.mayBeOrderNonDet(useType)) {
             for (AnnotatedTypeMirror argType : useType.getTypeArguments()) {
                 if (!argType.getAnnotations().isEmpty()) {
                     AnnotationMirror argAnnotation =
