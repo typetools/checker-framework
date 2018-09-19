@@ -112,6 +112,7 @@ checker/jtreg/multipleexecutions/Main.class
 
 # Source is copied from elsewhere.
 checker-qual/src
+checker-qual-android/src
 
 framework/tests/whole-program-inference/annotated/
 

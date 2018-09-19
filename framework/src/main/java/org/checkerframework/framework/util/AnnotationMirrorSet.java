@@ -132,4 +132,16 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
     public void clear() {
         shadowSet.clear();
     }
+
+    /**
+     * Returns a new {@link AnnotationMirrorSet} that contains {@code value}.
+     *
+     * @param value AnnotationMirror to put in the set
+     * @return a new {@link AnnotationMirrorSet} that contains {@code value}.
+     */
+    public static AnnotationMirrorSet singleElementSet(AnnotationMirror value) {
+        AnnotationMirrorSet newSet = new AnnotationMirrorSet();
+        newSet.add(value);
+        return newSet;
+    }
 }

@@ -2,11 +2,6 @@ import org.checkerframework.common.value.qual.*;
 
 class Overflows {
 
-    static void ints() {
-        int max = Integer.MAX_VALUE;
-        @IntVal(-2147483648) int maxPlus1 = max + 1;
-    }
-
     static void bytes() {
         byte max = Byte.MAX_VALUE;
         // :: warning: (cast.unsafe)
@@ -23,6 +18,11 @@ class Overflows {
         short max = Short.MAX_VALUE;
         // :: warning: (cast.unsafe)
         @IntVal(-32768) short maxPlus1 = (short) (max + 1);
+    }
+
+    static void ints() {
+        int max = Integer.MAX_VALUE;
+        @IntVal(-2147483648) int maxPlus1 = max + 1;
     }
 
     static void longs() {

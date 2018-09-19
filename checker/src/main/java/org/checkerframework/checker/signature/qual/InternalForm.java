@@ -7,10 +7,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The syntax for binary names that appears in a class file, as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.2">JVM Specification,
- * section 4.2</a>. A {@linkplain BinaryName binary name} is conceptually the name for the class or
- * interface in a compiled binary, but the actual representation of that name in its class file is
- * slightly different.
+ * href="https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.2">JVM
+ * Specification, section 4.2</a>. A {@linkplain BinaryName binary name} is conceptually the name
+ * for the class or interface in a compiled binary, but the actual representation of that name in
+ * its class file is slightly different.
  *
  * <p>Internal form is the same as the binary name, but with periods ({@code .}) replaced by forward
  * slashes ({@code /}).

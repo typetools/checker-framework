@@ -122,8 +122,11 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     /** Return the expressions that {@code node} are less than. */
     private List<String> getLessThanExpressions(Node node) {
         Set<AnnotationMirror> s = analysis.getValue(node).getAnnotations();
+        LessThanAnnotatedTypeFactory factory =
+                (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         if (s != null && !s.isEmpty()) {
-            return LessThanAnnotatedTypeFactory.getLessThanExpressions(s.iterator().next());
+            return LessThanAnnotatedTypeFactory.getLessThanExpressions(
+                    factory.getQualifierHierarchy().findAnnotationInHierarchy(s, factory.UNKNOWN));
         } else {
             return Collections.emptyList();
         }
