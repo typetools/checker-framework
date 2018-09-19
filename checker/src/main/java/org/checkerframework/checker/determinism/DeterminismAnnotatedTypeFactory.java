@@ -179,6 +179,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // ReceiverType is null for abstract classes
             // (Example: Ordering.natural() in tests/all-systems/PolyCollectorTypeVars.java)
+            // For static methods, receiverType is the AnnotatedTypeMirror of the class in which the
+            // invoked method "node" is declared.
             if (receiverType == null) {
                 return super.visitMethodInvocation(node, annotatedRetType);
             }
