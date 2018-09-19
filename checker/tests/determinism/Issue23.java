@@ -29,4 +29,9 @@ public class Issue23 {
     public static <T extends @Det Object> @Det String callToStringDet1(T @Det [] arr) {
         return arrToString1(arr);
     }
+
+    public static <T extends @NonDet Object> @Det String callToStringDet2(T @Det [] arr) {
+        // :: error: (return.type.incompatible)
+        return arrToString1(arr);
+    }
 }

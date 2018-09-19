@@ -602,7 +602,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 TreeUtils.getMethod("java.util.AbstractList", "remove", 1, env);
         ExecutableElement abstractSequentialListRemove =
                 TreeUtils.getMethod("java.util.AbstractSequentialList", "remove", 1, env);
-        ExecutableElement listRemove = TreeUtils.getMethod("java.util.List", "remove", 1, env);
+        ExecutableElement listRemove = TreeUtils.getMethod("java.util.List", "remove", env, "int");
 
         return (ElementUtils.isMethod(invokedMethodElement, abstractListGet, env)
                 || ElementUtils.isMethod(invokedMethodElement, abstractSequentialListGet, env)
@@ -621,26 +621,64 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private boolean isNavigableSetWithTypeVarReturn(
             AnnotatedTypeMirror receiverType, ExecutableElement invokedMethodElement) {
-        ProcessingEnvironment env = getProcessingEnv();
-        ExecutableElement navigableSetLower =
-                TreeUtils.getMethod("java.util.NavigableSet", "lower", 1, env);
-        ExecutableElement navigableSetFloor =
-                TreeUtils.getMethod("java.util.NavigableSet", "floor", 1, env);
-        ExecutableElement navigableSetCeiling =
-                TreeUtils.getMethod("java.util.NavigableSet", "ceiling", 0, env);
-        ExecutableElement navigableSetHigher =
-                TreeUtils.getMethod("java.util.NavigableSet", "higher", 0, env);
-        ExecutableElement navigableSetPollFirst =
-                TreeUtils.getMethod("java.util.NavigableSet", "pollFirst", 0, env);
-        ExecutableElement navigableSetPollLast =
-                TreeUtils.getMethod("java.util.NavigableSet", "pollLast", 0, env);
-
-        return (ElementUtils.isMethod(invokedMethodElement, navigableSetLower, env)
-                || ElementUtils.isMethod(invokedMethodElement, navigableSetFloor, env)
-                || ElementUtils.isMethod(invokedMethodElement, navigableSetCeiling, env)
-                || ElementUtils.isMethod(invokedMethodElement, navigableSetHigher, env)
-                || ElementUtils.isMethod(invokedMethodElement, navigableSetPollFirst, env)
-                || ElementUtils.isMethod(invokedMethodElement, navigableSetPollLast, env));
+        //        ProcessingEnvironment env = getProcessingEnv();
+        //        ExecutableElement navigableSetLower =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "lower", 1, env);
+        //        ExecutableElement navigableSetFloor =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "floor", 1, env);
+        //        ExecutableElement navigableSetCeiling =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "ceiling", 0, env);
+        //        ExecutableElement navigableSetHigher =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "higher", 0, env);
+        //        ExecutableElement navigableSetPollFirst =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "pollFirst", 0, env);
+        //        ExecutableElement navigableSetPollLast =
+        //                TreeUtils.getMethod("java.util.NavigableSet", "pollLast", 0, env);
+        //
+        //        return (ElementUtils.isMethod(invokedMethodElement, navigableSetLower, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetFloor, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetCeiling, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetHigher, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetPollFirst, env)
+        //                || ElementUtils.isMethod(invokedMethodElement, navigableSetPollLast,
+        // env));
+        if (isSubClassOf(receiverType, navigableSetTypeMirror)) {
+            if (invokedMethodElement.getSimpleName().contentEquals("lower")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("floor")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().size() == 1
+                    && invokedMethodElement.getParameters().get(0).asType().getKind()
+                            == TypeKind.TYPEVAR) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("ceiling")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().isEmpty()) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("higher")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().isEmpty()) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollFirst")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().isEmpty()) {
+                return true;
+            }
+            if (invokedMethodElement.getSimpleName().contentEquals("pollLast")
+                    && invokedMethodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+                    && invokedMethodElement.getParameters().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -655,7 +693,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ExecutableElement arrayListGet = TreeUtils.getMethod("java.util.ArrayList", "get", 1, env);
         ExecutableElement arrayListSet = TreeUtils.getMethod("java.util.ArrayList", "set", 2, env);
         ExecutableElement arrayListRemove =
-                TreeUtils.getMethod("java.util.ArrayList", "remove", 1, env);
+                TreeUtils.getMethod("java.util.ArrayList", "remove", env, "int");
 
         return (ElementUtils.isMethod(invokedMethodElement, arrayListElementData, env)
                 || ElementUtils.isMethod(invokedMethodElement, arrayListGet, env)
@@ -685,7 +723,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ExecutableElement linkedListSet =
                 TreeUtils.getMethod("java.util.LinkedList", "set", 2, env);
         ExecutableElement linkedListRemove =
-                TreeUtils.getMethod("java.util.LinkedList", "remove", 1, env);
+                TreeUtils.getMethod("java.util.LinkedList", "remove", env, "int");
         ExecutableElement linkedListPeek =
                 TreeUtils.getMethod("java.util.LinkedList", "peek", 0, env);
         ExecutableElement linkedListElement =
