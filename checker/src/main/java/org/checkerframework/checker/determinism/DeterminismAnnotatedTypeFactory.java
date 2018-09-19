@@ -169,7 +169,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * </ol>
          *
          * @param node method invocation tree
-         * @param annotatedRetType annotated return type
+         * @param annotatedRetType type of the method invocation
          * @return visitMethodInvocation() of the super class
          */
         @Override
