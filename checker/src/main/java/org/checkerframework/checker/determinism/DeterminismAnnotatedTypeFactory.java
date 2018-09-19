@@ -226,7 +226,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
-            // The following code fixes Issue#14
+            // The following code is a workaround for Issue#14
             // (https://github.com/t-rasmud/checker-framework/issues/14).
             // Checks if the return type is not a TYPEVAR, and if the invoked method belongs
             // to a set of (hardcoded) Collection methods in the JDK that return a generic type.
