@@ -3,11 +3,14 @@ package org.checkerframework.checker.determinism;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Resolves polymorphic annotations at method invocations as follows:
@@ -52,19 +55,27 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     @Override
     protected void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
-        boolean isPolyUp = false;
-        boolean isPolyDown = false;
-        if (type.hasAnnotation(factory.POLYDET_UP)) {
-            isPolyUp = true;
-            type.replaceAnnotation(factory.POLYDET);
-        } else if (type.hasAnnotation(factory.POLYDET_DOWN)) {
-            isPolyDown = true;
-            type.replaceAnnotation(factory.POLYDET);
-        }
-
         if (type.hasAnnotation(factory.POLYDET) || type.hasAnnotation(factory.POLYDET_USE)) {
             AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
             type.replaceAnnotations(quals);
+        } else if (type.hasAnnotation(factory.POLYDET_UP)) {
+            AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
+            if (quals.contains(factory.DET)) {
+                type.replaceAnnotations(quals);
+            }
+            if (replacements.get(factory.POLYDET).contains(factory.ORDERNONDET)
+                    || replacements.get(factory.POLYDET).contains(factory.NONDET)) {
+                replaceForPolyUpOrDown(type, factory.NONDET);
+            }
+        } else if (type.hasAnnotation(factory.POLYDET_DOWN)) {
+            AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
+            if (quals.contains(factory.NONDET)) {
+                type.replaceAnnotations(quals);
+            }
+            if (replacements.get(factory.POLYDET).contains(factory.ORDERNONDET)
+                    || replacements.get(factory.POLYDET).contains(factory.DET)) {
+                replaceForPolyUpOrDown(type, factory.DET);
+            }
         } else {
             for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry :
                     replacements.entrySet()) {
@@ -76,28 +87,21 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
                 }
             }
         }
-
-        if (isPolyUp
-                && (type.hasAnnotation(factory.ORDERNONDET)
-                        || type.hasAnnotation(factory.NONDET))) {
-            replaceForPolyUpOrDown(type, factory.NONDET);
-        }
-        if (isPolyDown
-                && (type.hasAnnotation(factory.ORDERNONDET) || type.hasAnnotation(factory.DET))) {
-            replaceForPolyUpOrDown(type, factory.DET);
-        }
     }
 
     /**
-     * This method replaces the annotation of {@code type} and all the nested type arguments of
-     * {@code type} with {@code replaceType}.
+     * This method replaces the annotation of {@code type} and all its nested type arguments (if
+     * {@code type} is a Collection or Iterator) or component types (if {@code type} is an array)
+     * with {@code replaceType}.
      *
      * @param type the polymorphic type to be replaced
      * @param replaceType the type to be replaced with
      */
     private void replaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
         type.replaceAnnotation(replaceType);
-        if (!(factory.isCollection(type) || factory.isIterator(type))) {
+        if (!(factory.isCollection(type)
+                || factory.isIterator(type)
+                || type.getKind() == TypeKind.ARRAY)) {
             return;
         }
         // TODO-rashmi: Handle Maps
@@ -108,7 +112,8 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      * Replaces the annotation on {@code type} with {@code replaceType}. If {@code type} is a
      * Collection (or a subtype) or an Iterator (or a subtype), iterates over all the nested
      * Collection/Iterator type arguments of {@code type} and replaces their top-level annotations
-     * with {@code replaceType}.
+     * with {@code replaceType}. If {@code type} is an array, iterates over all nested component
+     * types of {@code type} and replaces their top level annotations with {@code replaceType}.
      *
      * <p>Example1: If this method is called with {@code type} as {@code @OrderNonDet Integer} and
      * {@code replaceType} as {@code @NonDet}, the resulting {@code type} will be {@code @NonDet
@@ -125,14 +130,28 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
      * <p>Example4: If this method is called with {@code type} as {@code @OrderNonDet
      * Set<@OrderNonDet Set<@OrderNonDet List<@Det Integer>>>} and {@code replaceType} as
      * {@code @Det}, the result will be {@code @Det Set<@Det Set<@Det List<@Det Integer>>>}.
+     *
+     * <p>Example5: If this method is called with {@code type} as {@code @Det
+     * int @OrderNonDet[] @OrderNonDet} and {@code replaceType} as {@code @NonDet}, the result will
+     * be {@code @Det int @NonDet[] @NonDet}.
      */
     void recursiveReplaceForPolyUpOrDown(AnnotatedTypeMirror type, AnnotationMirror replaceType) {
-        AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
-        AnnotatedTypeMirror argType = declaredTypeOuter.getTypeArguments().get(0);
-        if (!(factory.isCollection(argType) || factory.isIterator(argType))) {
+        AnnotatedTypeMirror argOrComponentType = null;
+        if (factory.isCollection(type) || factory.isIterator(type)) {
+            AnnotatedDeclaredType declaredTypeOuter = (AnnotatedDeclaredType) type;
+            argOrComponentType = declaredTypeOuter.getTypeArguments().get(0);
+        }
+        if (type.getKind() == TypeKind.ARRAY) {
+            argOrComponentType = ((AnnotatedTypeMirror.AnnotatedArrayType) type).getComponentType();
+        }
+        TypeMirror underlyingTypeOfReceiver =
+                TypesUtils.getTypeElement(argOrComponentType.getUnderlyingType()).asType();
+        if (!(factory.isCollection(argOrComponentType)
+                || factory.isIterator(argOrComponentType)
+                || argOrComponentType.getKind() == TypeKind.ARRAY)) {
             return;
         }
-        argType.replaceAnnotation(replaceType);
-        recursiveReplaceForPolyUpOrDown(argType, replaceType);
+        argOrComponentType.replaceAnnotation(replaceType);
+        recursiveReplaceForPolyUpOrDown(argOrComponentType, replaceType);
     }
 }
