@@ -167,6 +167,11 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *         <li>the type is {@code @OrderNonDet Set}, and
          *         <li>its type argument is not {@code @OrderNonDet List} or a subtype
          *       </ol>
+         *   <li>Annotates the return types of System.getProperty("line.separator") and
+         *       System.getProperty("line.separator") as {@code Det}. Usually, the return type of
+         *       System.getProperty() is annotated as {@code NonDet}. We make an exception when the
+         *       argument is either {@code line.separator} or {@code path.separator} because they
+         *       will always produce the same result on the same machine.
          * </ol>
          *
          * @param node method invocation tree
@@ -225,6 +230,18 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && isSubClassOf(argument, setInterfaceTypeMirror)
                         && argument.hasAnnotation(ORDERNONDET)
                         && !hasOrderNonDetListAsTypeArgument(argument)) {
+                    annotatedRetType.replaceAnnotation(DET);
+                }
+            }
+
+            // Annotates the return types of method calls "System.getProperty("line.separator")"
+            // and "System.getProperty("path.separator")" as "@Det"
+            ExecutableElement systemGetProperty =
+                    TreeUtils.getMethod("java.lang.System", "getProperty", 1, getProcessingEnv());
+            if (ElementUtils.isMethod(m, systemGetProperty, getProcessingEnv())) {
+                String getPropoertyArgument = node.getArguments().get(0).toString();
+                if (getPropoertyArgument.equals("\"" + "line.separator" + "\"")
+                        || getPropoertyArgument.equals("\"" + "path.separator" + "\"")) {
                     annotatedRetType.replaceAnnotation(DET);
                 }
             }

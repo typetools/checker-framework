@@ -115,7 +115,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    abstract public E get(@PolyDet AbstractList<E> this, @PolyDet int index);
+    abstract public @PolyDet("up") E get(@PolyDet AbstractList<E> this, @PolyDet int index);
 
     /**
      * {@inheritDoc}
@@ -129,7 +129,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException      {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
-    public E set(@PolyDet AbstractList<E> this, @PolyDet("use") int index, E element) {
+    public @PolyDet("up") E set(@PolyDet AbstractList<E> this, @PolyDet("use") int index, E element) {
         throw new UnsupportedOperationException();
     }
 
@@ -158,7 +158,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws UnsupportedOperationException {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
-    public E remove(@PolyDet AbstractList<E> this, @PolyDet("use") int index) {
+    public @PolyDet("up") E remove(@PolyDet AbstractList<E> this, @PolyDet("use") int index) {
         throw new UnsupportedOperationException();
     }
 
