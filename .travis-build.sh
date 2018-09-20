@@ -67,10 +67,10 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew --console=plain --warning-mode=all allTests
+  ./gradlew allTests --console=plain --warning-mode=all -s
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
-  ./gradlew --console=plain --warning-mode=all :checker:exampleTests
+  ./gradlew :checker:exampleTests --console=plain --warning-mode=all
 fi
 
 if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
@@ -86,7 +86,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 
   export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew --console=plain --warning-mode=all dist test)
+  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s)
 
 fi
 
@@ -101,7 +101,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew --console=plain --warning-mode=all :checker:demosTests
+    ./gradlew :checker:demosTests --console=plain --warning-mode=all -s
   fi
 
   # Guava
@@ -115,7 +115,7 @@ fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew --console=plain --warning-mode=all IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk
+  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -126,13 +126,13 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew --console=plain --warning-mode=all checkBasicStyle checkFormat
+  ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all
 
   # Run error-prone
-  ./gradlew --console=plain --warning-mode=all runErrorProne
+  ./gradlew runErrorProne --console=plain --warning-mode=all
 
   # Documentation
-  ./gradlew --console=plain --warning-mode=all javadocPrivate
+  ./gradlew javadocPrivate --console=plain --warning-mode=all
   make -C docs/manual all
 
   echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
@@ -145,7 +145,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
 
   # HTML legality
-  ./gradlew --console=plain --warning-mode=all htmlValidate
+  ./gradlew htmlValidate --console=plain --warning-mode=all
 
 fi
 

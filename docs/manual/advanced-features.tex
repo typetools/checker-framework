@@ -93,32 +93,37 @@ probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
 In particular, qualifiers in method bodies are extremely rare.
 
-(Most of this section is applicable only to source code that is being
-checked by a checker.  This paragraph and
-Section~\ref{defaults-classfile} are about reading an already-compiled
-class file (say, \<A.class>).
-%
-If the checker ran during the compilation that created \<A.class>,
-then \<A.class> contains the explicit or defaulted
-annotations from the source code and no defaulting is necessary.
-%
-If the checker did not  run during the compilation that created \<A.class>,
-then \<A.class> file contains only explicit annotations and
-defaulting might be necessary; see Section~\ref{defaults-classfile}
-for these rules.)
+Most of this section is about defaults for source code that is read by
+the compiler.  When the compiler reads a \<.class> file, different
+defaulting rules apply.
+See Section~\ref{defaults-classfile} for these rules.
 
-  The following steps determine the effective
+The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
 
 \begin{enumerate}
 \item
   If a type qualifier is present in the source code, that qualifier is used.
 
-\item
-  The type system adds implicit qualifiers.  This happens whether or not
-  the programmer has written an explicit type qualifier.
+  If the type would have an implicit qualifier (step 2, immediately below),
+  then it is an error to write an
+  explicit qualifier that is equal to (redundant with) or a supertype of
+  (weaker than) the implicit qualifier.  A programmer may strengthen
+  (write a subtype of) an implicit qualifier, however.
 
-  Here are some examples of implicit qualifiers:
+\item
+  If there is no explicit type qualifier,
+  the type system adds implicit qualifiers.
+
+  Implicit qualifiers arise from two sources:
+\begin{description}
+\item[built-in]
+  Implicit qualifiers can be
+  built into a type system (Section~\ref{creating-type-introduction}), in
+  which case the type system's documentation explains all of the type
+  system's implicit qualifiers.
+
+  Here are some examples of built-in implicit qualifiers:
 
 \begin{itemize}
 \item
@@ -129,25 +134,21 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   string literals and \<enum> values are always interned.
 \end{itemize}
 
-  If the type has an implicit qualifier, then it is an error to write an
-  explicit qualifier that is equal to (redundant with) or a supertype of
-  (weaker than) the implicit qualifier.  A programmer may strengthen
-  (write a subtype of) an implicit qualifier, however.
-
-  Implicit qualifiers arise from two sources:
-\begin{description}
-\item[built-in]
-  Implicit qualifiers can be
-  built into a type system (Section~\ref{creating-type-introduction}), in
-  which case the type system's documentation explains all of the type
-  system's implicit qualifiers.  Both of the above examples are built into
-  the Nullness type system.
 \item[programmer-declared]
   A programmer may introduce an implicit annotation on each use of class
   $C$ by writing a qualifier on the declaration of class $C$.  If \<MyClass>
-  is declared as \<class @MyAnno MyClass \ttlcb...\ttrcb>, then each occurrence of
+  is declared as \<class @MyAnno MyClass \ttlcb...\ttrcb>, then each
+  unqualified occurrence of
   \<MyClass> in the source code is treated as if it were \<@MyAnno
   MyClass>.
+
+  A programmer may introduce an implicit annotation on each invocation of a
+  constructor
+  by writing a qualifier on the declaration of the constructor.  Given
+  declaration \<@MyAnno MyClass(int arg) \ttlcb...\ttrcb>, then each
+  unqualified occurrence of
+  \<new MyClass(myInt)> in the source code is treated as if it were \<new @MyAnno
+  MyClass(myInt)>.
 \end{description}
 
 
@@ -180,8 +181,9 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 \subsection{Default qualifier for unannotated types\label{defaults}}
 
-A type system designer, or an end-user programmer, can cause unannotated
-Java types to be treated as if they had a default annotation.
+An unannotated
+Java type is treated as if it had a default annotation.
+A type system designer, or an end-user programmer, can control the defaulting.
 Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.
 
@@ -209,7 +211,8 @@ rules are used in order, until one applies.
 % \refclass{framework/util}{QualifierDefaults} class.)
 
 
-The end-user programmer specifies a default qualifier by writing the \refqualclass{framework/qual}{DefaultQualifier}
+The end-user programmer specifies a default qualifier by writing the
+\refqualclass{framework/qual}{DefaultQualifier}\code{(\emph{ClassName}, }[\emph{locations}]\<)>
 annotation on a package, class, method, or variable declaration.  The
 argument to \refqualclass{framework/qual}{DefaultQualifier} is the \code{Class}
 name of an annotation.
@@ -295,19 +298,20 @@ implicit \<super void> clause.)
 
 \subsection{Defaulting rules and CLIMB-to-top\label{climb-to-top}}
 
-Each type system defines a default qualifier.  For example, the default
+Each type system defines a default qualifier (see
+Section~\ref{creating-typesystem-defaults}).  For example, the default
 qualifier for the Nullness Checker is
-\refqualclass{checker/nullness/qual}{NonNull}.  That means that when a user
-writes a type such as \<Date>, the Nullness Checker interprets it as
+\refqualclass{checker/nullness/qual}{NonNull}.  When a user
+writes an unqualified type such as \<Date>, the Nullness Checker interprets it as
 \<@NonNull Date>.
 
 The type system applies that default qualifier to most but
 not all types.  In particular, unless otherwise stated, every type system
 uses the CLIMB-to-top rule.  This
-rule states that the \emph{top} qualifier in the hierarchy is applied to
+rule states that the \emph{top} qualifier in the hierarchy is the default for
 the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
 and (some) i\textbf{M}plicit \textbf{B}ounds.
-For example, when the user writes a type such as \<Date> in such a
+For example, when the user writes an unqualified type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \refqualclass{checker/nullness/qual}{Nullable} is the top qualifier in the
 hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
@@ -336,34 +340,36 @@ result, a programmer rarely writes an explicit annotation on any of those
 locations.
 
 Variables defaulted to top include local variables, resource variables in the
-try-with-resources construct, variables in for statements, and catch
+try-with-resources construct, variables in \<for> statements, and \<catch>
 arguments (known as exception parameters in the Java Language Specification).
 Exception parameters need to have the top type because
 exceptions of arbitrary qualified types can be thrown and the Checker Framework
 does not provide runtime checks.
 
 \item
-Cast and instanceof types are not really defaulted to top.  Rather, they
-are given the same type as their argument, which is the most specific
-possible type.  That would also have been the effect if they were given the
+Cast and instanceof types
+are given the same type as their argument expression.  This has the same
+effect as if they were given the
 top type and then flow-sensitively refined to the type of their argument.
 
 \item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
-in any way.  If a user declared \code{class C<T> \ttlcb\ ... \ttrcb}, then
-we assume that the user intended to allow any instantiation of the class,
+in any way.  If a user declared \code{class C<T> \ttlcb\ ...\ \ttrcb}, then
+the Checker Framework assumes that the user intended to allow any instantiation of the class,
 and the declaration is interpreted as \code{class C<T extends @Nullable
-  Object> \ttlcb\ ... \ttrcb} rather than as \code{class C<T extends
-  @NonNull Object> \ttlcb\ ... \ttrcb}.  The latter would forbid
+  Object> \ttlcb\ ...\ \ttrcb} rather than as \code{class C<T extends
+  @NonNull Object> \ttlcb\ ...\ \ttrcb}.  The latter would forbid
 instantiations such as \code{C<@Nullable String>}, or would require
 rewriting of code.  On the other hand, if a user writes an explicit bound
-such as \code{class C<T extends D> \ttlcb\ ... \ttrcb}, then the user
+such as \code{class C<T extends D> \ttlcb\ ...\ \ttrcb}, then the user
 intends some restriction on instantiation and can write a qualifier on the
 upper bound as desired.
 
 This rule means that the upper bound of \code{class C<T>} is defaulted
-differently than the upper bound of \code{class C<T extends Object>}.  It
-would be more confusing for ``\code{Object}'' to be defaulted differently in \code{class C<T extends Object>} and in an
+differently than the upper bound of \code{class C<T extends Object>}.
+This may seem confusing, but it is the least bad option.  The
+more confusing alternative would be for ``\code{Object}'' to be defaulted
+differently in \code{class C<T extends Object>} and in an
 instantiation \code{C<Object>}, and for the upper bounds to be defaulted
 differently in \code{class C<T extends Object>}
 and \code{class C<T extends Date>}.
@@ -377,7 +383,10 @@ see Section~\ref{generics-defaults}.
 
 \end{itemize}
 
-Here is how the CLIMB-to-top rule is expressed for the Nullness Checker:
+A \refqualclass{framework/qual}{DefaultQualifier} that specifies a
+CLIMB-to-top location takes precedence over the CLIMB-to-top rule.
+
+Here is how the Nullness Checker overrides part of the CLIMB-to-top rule:
 
 \begin{Verbatim}
 @DefaultQualifierInHierarchy
@@ -391,11 +400,6 @@ public @interface Nullable { }
  As mentioned above, the exception parameters are always non-null, so
 \<@DefaultFor(\{ TypeUseLocation.EXCEPTION\_PARAMETER \})> on \<@NonNull> overrides
 the CLIMB-to-top rule.
-
-A type system designer can specify defaults that differ from the CLIMB-to-top rule.  In
-addition, a user may choose a different rule for defaults using the
-\refqualclass{framework/qual}{DefaultQualifier} annotation; see
-Section~\ref{defaults}.
 
 
 \subsection{Inherited defaults\label{inherited-defaults}}
@@ -447,7 +451,7 @@ corresponding type parameter.
 By contrast, if the bounds of a wildcard
 were defaulted differently from the bounds of its corresponding type
 parameter, then there would be many false positive
-\code{type.argument.type.incompatible} warnings
+\code{type.argument.type.incompatible} warnings.
 
 Here is another example of two equivalent wildcard declarations:
 
@@ -469,7 +473,7 @@ MyList<? extends Object> listOfNonNulls;
 MyList<@NonNull ? extends @NonNull Object> listOfNonNulls2;
 \end{Verbatim}
 
-Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
+Note, the upper bound of the wildcard \code{?~extends Object} is defaulted to
 \code{@NonNull} using the CLIMB-to-top rule (see Section~\ref{climb-to-top}).
 Also note that the \code{MyList} class declaration could have been more succinctly
 written as: \code{class MyList<T extends @Nullable Object>} where the lower bound
@@ -543,8 +547,7 @@ in a classfile would be interpreted as
 There is no single possible default that is sound for fields.  In the rare
 circumstance that there is a mutable public field in an unannotated
 library, the Checker Framework may fail to warn about code that can
-misbehave at run time.  The Checker Framework developers are working to
-improve handling of mutable public fields in unannotated libraries.
+misbehave at run time.
 
 %% TODO: The following rule is preferable to the current safe behavior.
 %% However, we have not yet figured out how to implement separate handling
