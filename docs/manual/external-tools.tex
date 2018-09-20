@@ -14,6 +14,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item javac (Section~\ref{javac-installation})
+\item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
 \item tIDE (Section~\ref{tide})
@@ -535,6 +536,27 @@ use the last one.
 %
 % This is a permanent change that only needs to be done once ever.
 % \end{itemize}
+
+
+\section{Lombok\label{lombok}}
+
+Project Lombok (\url{https://projectlombok.org/}) dramatically improved support
+for type use annotations starting with version 1.18.3 (2018-09-17 23:23:31 UTC).
+%
+Many standard Nullable/NonNull annotations are automatically transferred for
+generated setter/getter/builder methods.
+See variable \<BASE\_COPYABLE\_ANNOTATIONS>
+in \url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}
+for the list of supported annotations.
+%
+The \<lombok.copyableAnnotations> configuration key can be added to
+the \<lombok.config> file to support additional annotations.
+This is necessary for all \<org.checkerframework> annotations.
+
+% TODO: provide an example lombok.config file.
+
+% Link to discussion thread and pull request:
+% https://github.com/rzwitserloot/lombok/pull/1837
 
 
 \section{Maven\label{maven}}
