@@ -1557,8 +1557,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds annotations to the type based on the annotations from its class type if and only if no
-     * annotations are already present on the type.
+     * Adds implicit annotations to the type based on the annotations on the class declaration.
+     * Makes no changes if annotations are already present on the type.
      *
      * <p>The class type is found using {@link #fromElement(Element)}
      *
