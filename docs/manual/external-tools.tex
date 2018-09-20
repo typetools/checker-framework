@@ -540,18 +540,25 @@ use the last one.
 
 \section{Lombok\label{lombok}}
 
-Project Lombok (\url{https://projectlombok.org/}) dramatically improved support
-for type use annotations starting with version 1.18.3 (2018-09-17 23:23:31 UTC).
-%
-Many standard Nullable/NonNull annotations are automatically transferred for
+Project Lombok (\url{https://projectlombok.org/}) is ``a java library that
+automatically plugs into your editor and build tools, spicing up your java.''
+Starting with version 1.18.3 it is generally easy to combine Lombok and the
+Checker Framework, because type annotations are e.g. copied from fields to
 generated setter/getter/builder methods.
+
+Many standard Nullable/NonNull annotations are automatically copied, however the
+Checker Framework annotations in \<org.checkerframework> are currently not copied.
 See variable \<BASE\_COPYABLE\_ANNOTATIONS>
 in \url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}
 for the list of supported annotations.
 %
 The \<lombok.copyableAnnotations> configuration key can be added to
 the \<lombok.config> file to support additional annotations.
-This is necessary for all \<org.checkerframework> annotations.
+Type use annotations that might interact with a Lombok feature (e.g. a type use
+annotation on a field for which a \<@Getter> is generated) must be listed
+in \<lombok.copyableAnnotations>.
+This is necessary for all \<org.checkerframework> as well as for any custom type
+use annotations.
 
 % TODO: provide an example lombok.config file.
 
