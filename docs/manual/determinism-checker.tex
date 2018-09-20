@@ -364,9 +364,21 @@ As an illustration, consider the example below:
 In this example, the checker reports an error "assignment type incompatible"
 at the line \<this.data = data> because the field \<data> is annotated as
 \<@Det> by default, whereas the constructor argument has \<@PolyDet>
-as its default annotation. In such cases, you could either suppress the warning
-(to allow construction of \<@PolyDet> objects) or explicitly annotate the
-constructor arguments and return types.
+as its default annotation. In such cases, you could do either of the following:
+\begin{itemize}
+    \item Suppress the warning in the constructor (at line \<this.data = data> in the above example)
+    to allow construction of \<@PolyDet> objects.
+    \item Explicitly annotate the constructor arguments and return types. For example, to allow
+    the construction of only deterministic \<StringHolder> objects, annotate the above code as
+    \begin{Verbatim}
+        public class StringHolder {
+            public String data;
+            public @Det StringHolder(@Det String data) {
+            this.data = data;
+            }
+        }
+    \end{Verbatim}
+\end{itemize}
 
 \subsection{Local array and generic types\label{determinism-array-defaults}}
 As with all type systems, defaulting is different for the array and
