@@ -156,8 +156,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Replaces the annotation on the return type of a method invocation as follows:
          *
          * <ol>
-         *   <li>If {@code @PolyDet} resolves to {@code OrderNonDet} on a return type that isn't an
-         *       array or a collection, it is replaced with {@code @NonDet}.
+         *   <li>If the annotation on the type of method invocation resolves to {@code OrderNonDet}
+         *       and if the return type of the invoked method isn't an array or a collection,
+         *       replaces the annotation on {@code annotatedRetType} with {@code @NonDet}.
          *   <li>Return type of equals() gets the annotation {@code @Det}, when both the receiver
          *       and the argument satisfy these conditions (@see <a
          *       href="https://checkerframework.org/manual/#determinism-improved-precision-set-equals">Improves
