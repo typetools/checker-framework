@@ -21,16 +21,16 @@ class ValueCast {
         @IntRange(from = 0, to = Short.MAX_VALUE - 1) int z = x;
     }
 
-    void testByteFrom(@IntRange(from = 0) byte x) {
-        @IntRange(from = 0, to = Byte.MAX_VALUE) int y = x;
-        // :: error: (assignment.type.incompatible)
-        @IntRange(from = 0, to = Byte.MAX_VALUE - 1) int z = x;
-    }
-
     void testCharFrom(@IntRange(from = 0) char x) {
         @IntRange(from = 0, to = Character.MAX_VALUE) int y = x;
         // :: error: (assignment.type.incompatible)
         @IntRange(from = 0, to = Character.MAX_VALUE - 1) int z = x;
+    }
+
+    void testByteFrom(@IntRange(from = 0) byte x) {
+        @IntRange(from = 0, to = Byte.MAX_VALUE) int y = x;
+        // :: error: (assignment.type.incompatible)
+        @IntRange(from = 0, to = Byte.MAX_VALUE - 1) int z = x;
     }
 
     void testIntTo(@IntRange(to = 0) int x) {
@@ -45,15 +45,15 @@ class ValueCast {
         @IntRange(to = 0, from = Short.MIN_VALUE + 1) int z = x;
     }
 
-    void testByteTo(@IntRange(to = 0) byte x) {
-        @IntRange(to = 0, from = Byte.MIN_VALUE) int y = x;
-        // :: error: (assignment.type.incompatible)
-        @IntRange(to = 0, from = Byte.MIN_VALUE + 1) int z = x;
-    }
-
     void testCharTo(@IntRange(to = 1) char x) {
         @IntRange(to = 1, from = Character.MIN_VALUE) int y = x;
         // :: error: (assignment.type.incompatible)
         @IntRange(to = 1, from = Character.MIN_VALUE + 1) int z = x;
+    }
+
+    void testByteTo(@IntRange(to = 0) byte x) {
+        @IntRange(to = 0, from = Byte.MIN_VALUE) int y = x;
+        // :: error: (assignment.type.incompatible)
+        @IntRange(to = 0, from = Byte.MIN_VALUE + 1) int z = x;
     }
 }
