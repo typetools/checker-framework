@@ -229,6 +229,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
+            //            ExecutableElement systemGetProperty =
+            //                    TreeUtils.getMethod("java.lang.System", "get", 1,
+            // getProcessingEnv());
+
             // The following code is a workaround for Issue#14
             // (https://github.com/t-rasmud/checker-framework/issues/14).
             // Checks if the return type is not a TYPEVAR, and if the invoked method belongs
@@ -239,38 +243,39 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // constrains both its upper and lower bounds which was the root cause for Issue#14.
             // Therefore, we do not annotate the return types of these methods in the JDK.
             // Instead, we annotate the return type at the method invocation.
-            if (annotatedRetType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
-                if (isIteratorNext(m)
-                        || isAbstractListWithTypeVarReturn(receiverType, m)
-                        || isArrayListWithTypeVarReturn(receiverType, m)
-                        || isLinkedListWithTypeVarReturn(receiverType, m)
-                        || isEnumerationWithTypeVarReturn(receiverType, m)) {
-                    // Annotates the return types of these methods as @PolyDet("up").
-                    if (isReceiverOrArgPoly(receiverType, node)) {
-                        annotatedRetType.replaceAnnotation(POLYDET_UP);
-                        return super.visitMethodInvocation(node, annotatedRetType);
-                    }
-                    if (isReceiverAndArgsDet(receiverType, node)) {
-                        annotatedRetType.replaceAnnotation(DET);
-                    } else {
-                        annotatedRetType.replaceAnnotation(NONDET);
-                    }
-                }
-                if (isTreeSetWithTypeVarReturn(receiverType, m)
-                        || isNavigableSetWithTypeVarReturn(receiverType, m)
-                        || isSortedSetWithTypeVarReturn(receiverType, m)) {
-                    // Annotates the return types of these methods as @PolyDet("down").
-                    if (isReceiverOrArgPoly(receiverType, node)) {
-                        annotatedRetType.replaceAnnotation(POLYDET_DOWN);
-                        return super.visitMethodInvocation(node, annotatedRetType);
-                    }
-                    if (isReceiverAndArgsDetOrOrderNonDet(receiverType, node)) {
-                        annotatedRetType.replaceAnnotation(DET);
-                    } else {
-                        annotatedRetType.replaceAnnotation(NONDET);
-                    }
-                }
-            }
+            //            if (annotatedRetType.getUnderlyingType().getKind() != TypeKind.TYPEVAR) {
+            //                if (isIteratorNext(m)
+            //                        || isAbstractListWithTypeVarReturn(receiverType, m)
+            //                        || isArrayListWithTypeVarReturn(receiverType, m)
+            //                        || isLinkedListWithTypeVarReturn(receiverType, m)
+            //                        || isEnumerationWithTypeVarReturn(receiverType, m)) {
+            //                    // Annotates the return types of these methods as @PolyDet("up").
+            //                    if (isReceiverOrArgPoly(receiverType, node)) {
+            //                        annotatedRetType.replaceAnnotation(POLYDET_UP);
+            //                        return super.visitMethodInvocation(node, annotatedRetType);
+            //                    }
+            //                    if (isReceiverAndArgsDet(receiverType, node)) {
+            //                        annotatedRetType.replaceAnnotation(DET);
+            //                    } else {
+            //                        annotatedRetType.replaceAnnotation(NONDET);
+            //                    }
+            //                }
+            //                if (isTreeSetWithTypeVarReturn(receiverType, m)
+            //                        || isNavigableSetWithTypeVarReturn(receiverType, m)
+            //                        || isSortedSetWithTypeVarReturn(receiverType, m)) {
+            //                    // Annotates the return types of these methods as
+            // @PolyDet("down").
+            //                    if (isReceiverOrArgPoly(receiverType, node)) {
+            //                        annotatedRetType.replaceAnnotation(POLYDET_DOWN);
+            //                        return super.visitMethodInvocation(node, annotatedRetType);
+            //                    }
+            //                    if (isReceiverAndArgsDetOrOrderNonDet(receiverType, node)) {
+            //                        annotatedRetType.replaceAnnotation(DET);
+            //                    } else {
+            //                        annotatedRetType.replaceAnnotation(NONDET);
+            //                    }
+            //                }
+            //            }
 
             return super.visitMethodInvocation(node, annotatedRetType);
         }
