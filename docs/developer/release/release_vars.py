@@ -134,7 +134,7 @@ CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
-CF_VERSION = execute("./gradlew -q version", True, True, TMP_DIR + "/checker-framework").strip()
+CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
 
 CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
 CHECKER_LIBS_DIR = os.path.join(CHECKER_FRAMEWORK, "checker", "build", "libs")
