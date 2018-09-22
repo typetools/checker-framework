@@ -1,6 +1,7 @@
 import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
+// :: error: (invalid.upper.bound.on.type.argument)
 public class TestUserCollection<E> extends ArrayList<E> {
     public @PolyDet("down") boolean contains(@PolyDet Object o) {
         return true;
