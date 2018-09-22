@@ -106,6 +106,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                             ((AnnotatedTypeVariable) argType)
                                     .getUpperBound()
                                     .getAnnotationInHierarchy(atypeFactory.NONDET);
+                    // "typevarAnnotation" is null for wildcards
                     if (typevarAnnotation != null
                             && !isSubtype(
                                     typevarAnnotation,
@@ -167,12 +168,11 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                             ((AnnotatedTypeVariable) componentType)
                                     .getUpperBound()
                                     .getAnnotationInHierarchy(atypeFactory.NONDET);
-                    if (componentUpperBoundAnnotation != null
-                            && !isSubtype(
-                                    componentUpperBoundAnnotation,
-                                    arrayType,
-                                    tree,
-                                    INVALID_UPPER_BOUND_TYPE_ARGUMENT_ARRAY)) {
+                    if (!isSubtype(
+                            componentUpperBoundAnnotation,
+                            arrayType,
+                            tree,
+                            INVALID_UPPER_BOUND_TYPE_ARGUMENT_ARRAY)) {
                         return false;
                     }
                 }
