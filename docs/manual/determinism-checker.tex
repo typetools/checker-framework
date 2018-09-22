@@ -89,6 +89,8 @@ For example, these types are valid:
     \item \code{@Det\ \ \ \ \ \ \ \ \ List<@Det\ \ \ \ \ \ \ \ \ Integer>}
     \item \code{@OrderNonDet Set <@OrderNonDet Set<...>\relax >}
     \item \code{@OrderNonDet Set <@Det String>}
+    \item \code{@NonDet Set \ <T extends @NonDet Object>}
+    \item \code{@NonDet Set \ <T extends @Det Object>}
 \end{itemize}
 
 These types are invalid:
@@ -96,6 +98,7 @@ These types are invalid:
     \item \code{@OrderNonDet Set <@NonDet\ \ \ \ \ \ Integer>}
     \item \code{@Det\ \ \ \ \ \ \ \ \ List<@NonDet\ \ \ \ \ \ Integer>}
     \item \code{@Det\ \ \ \ \ \ \ \ \ List<@OrderNonDet Set<...>\relax >}
+    \item \code{@Det\ \ \ \ \ \ \ \ \ List<T extends @NonDet Object>}
   \end{itemize}
 
 Similarly, the (determinism) type of an array must be a supertype or equal to
