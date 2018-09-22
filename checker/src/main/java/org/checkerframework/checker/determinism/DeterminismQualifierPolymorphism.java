@@ -4,13 +4,11 @@ import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Resolves polymorphic annotations at method invocations as follows:
@@ -144,8 +142,6 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
         if (type.getKind() == TypeKind.ARRAY) {
             argOrComponentType = ((AnnotatedTypeMirror.AnnotatedArrayType) type).getComponentType();
         }
-        TypeMirror underlyingTypeOfReceiver =
-                TypesUtils.getTypeElement(argOrComponentType.getUnderlyingType()).asType();
         if (!(factory.isCollection(argOrComponentType)
                 || factory.isIterator(argOrComponentType)
                 || argOrComponentType.getKind() == TypeKind.ARRAY)) {
