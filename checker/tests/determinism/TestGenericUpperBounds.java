@@ -12,4 +12,14 @@ public class TestGenericUpperBounds {
         // :: error: (invalid.upper.bound.on.type.argument)
         foo(lst);
     }
+
+    // :: error: (invalid.upper.bound.on.type.argument)
+    void wildCardList(@Det List<?> lst) {}
+
+    // :: error: (invalid.upper.bound.on.type.argument)
+    void wildCardListBoundedIncorrect(@Det List<? extends @NonDet Object> lst) {}
+
+    void wildCardListBoundedCorrect(@Det List<? extends @Det Object> lst) {}
+
+    public static <Z> void copy(List<? extends Z> src) {}
 }

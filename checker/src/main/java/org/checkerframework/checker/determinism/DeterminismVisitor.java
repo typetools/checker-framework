@@ -106,7 +106,21 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                             ((AnnotatedTypeVariable) argType)
                                     .getUpperBound()
                                     .getAnnotationInHierarchy(atypeFactory.NONDET);
-                    // "typevarAnnotation" is null for wildcards
+                    // typevarAnnotation is null for "<Z>  List<? extends Z>"
+                    if (typevarAnnotation != null
+                            && !isSubtype(
+                                    typevarAnnotation,
+                                    baseAnnotation,
+                                    tree,
+                                    INVALID_UPPER_BOUND_TYPE_ARGUMENT)) {
+                        return false;
+                    }
+                }
+                if (argType.getKind() == TypeKind.WILDCARD) {
+                    AnnotationMirror typevarAnnotation =
+                            ((AnnotatedTypeMirror.AnnotatedWildcardType) argType)
+                                    .getExtendsBound()
+                                    .getAnnotationInHierarchy(atypeFactory.NONDET);
                     if (typevarAnnotation != null
                             && !isSubtype(
                                     typevarAnnotation,
@@ -290,7 +304,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         if (atypeFactory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation)) {
             return true;
         }
-        checker.report(Result.failure(errorMessage, superAnnotation, subAnnotation), tree);
+        checker.report(Result.failure(errorMessage, subAnnotation, superAnnotation), tree);
         return false;
     }
 
