@@ -15,7 +15,7 @@ set -e
 CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/BadCast1.java$' | grep -v '/BadCast2.java$' ` || true
 # echo CHANGED_JAVA_FILES "'"${CHANGED_JAVA_FILES}"'"
 if [ ! -z "$CHANGED_JAVA_FILES" ]; then
-    ./gradlew -q  getCodeFormatScripts
+    ./gradlew getCodeFormatScripts -q
     ## For debugging:
     # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
     python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running: ./gradlew reformat" && /bin/false)

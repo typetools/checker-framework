@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -16,6 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Visitor for the determinism type-system. */
@@ -36,6 +38,18 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     /** Error message key for assignment to a deterministic array at a non-deterministic index. */
     public static final @CompilerMessageKey String INVALID_ARRAY_ASSIGNMENT =
             "invalid.array.assignment";
+    /**
+     * Error message key for collections whose type is a subtype of the upper bound of their type
+     * arguments.
+     */
+    public static final @CompilerMessageKey String INVALID_UPPER_BOUND_TYPE_ARGUMENT =
+            "invalid.upper.bound.on.type.argument";
+    /**
+     * Error message key for arrays whose type is a subtype of the upper bound of their type
+     * arguments.
+     */
+    public static final @CompilerMessageKey String INVALID_UPPER_BOUND_TYPE_ARGUMENT_ARRAY =
+            "invalid.upper.bound.on.type.argument.of.array";
 
     /**
      * The lower bound for exception parameters is {@code @Det}.
@@ -54,6 +68,9 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      *   <li>When a non-collection is annotated as {@code @OrderNonDet}.
      *   <li>When the annotation on the type argument of a Collection or Iterator is a supertype of
      *       the annotation on the Collection. Example: {@code @Det List<@OrderNonDet String>}.
+     *   <li>When the annotation on the upper bound of the type argument of a Collection or Iterator
+     *       is a supertype of the annotation on the Collection. Example: {@code @Det List<T
+     *       extends @NonDet Object>}.
      * </ol>
      *
      * @param declarationType the type of any non-primitive, non-array class (TypeElement)
@@ -84,9 +101,54 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                         return false;
                     }
                 }
+                if (argType.getKind() == TypeKind.TYPEVAR) {
+                    AnnotatedTypeMirror argTypeUpperBound =
+                            ((AnnotatedTypeVariable) argType).getUpperBound();
+                    AnnotationMirror typevarAnnotation = getUpperBound(argTypeUpperBound);
+                    if (!isSubtype(
+                            typevarAnnotation,
+                            baseAnnotation,
+                            tree,
+                            INVALID_UPPER_BOUND_TYPE_ARGUMENT)) {
+                        return false;
+                    }
+                }
+                if (argType.getKind() == TypeKind.WILDCARD) {
+                    AnnotatedTypeMirror argTypeExtendsBound =
+                            ((AnnotatedTypeMirror.AnnotatedWildcardType) argType).getExtendsBound();
+                    AnnotationMirror typevarAnnotation = getUpperBound(argTypeExtendsBound);
+                    if (!isSubtype(
+                            typevarAnnotation,
+                            baseAnnotation,
+                            tree,
+                            INVALID_UPPER_BOUND_TYPE_ARGUMENT)) {
+                        return false;
+                    }
+                }
             }
         }
         return true;
+    }
+
+    /**
+     * Returns annotation on the upper bound of {@code argTypeUpperBound}
+     *
+     * <p>Example 1: If this method is called with {@code argTypeUpperBound} as {@code Z
+     * extends @NonDet T}, it returns {@code NonDet}.
+     *
+     * <p>Example 2: If this method is called with {@code argTypeUpperBound} as {@code @Det Z}, it
+     * returns {@code Det}.
+     */
+    private AnnotationMirror getUpperBound(AnnotatedTypeMirror argTypeUpperBound) {
+        AnnotationMirror typevarAnnotation =
+                argTypeUpperBound.getAnnotationInHierarchy(atypeFactory.NONDET);
+        // typevarAnnotation is null for "<Z>  List<? extends Z>", "<Z,T>  List<T extends Z>"
+        while (typevarAnnotation == null) {
+            argTypeUpperBound =
+                    ((AnnotatedTypeMirror.AnnotatedTypeVariable) argTypeUpperBound).getUpperBound();
+            typevarAnnotation = argTypeUpperBound.getAnnotationInHierarchy(atypeFactory.NONDET);
+        }
+        return typevarAnnotation;
     }
 
     /**
@@ -106,8 +168,15 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Reports an error if the component type of an array has an annotation that is a supertype of
-     * the array annotation. Example: {@code @NonDet int @Det[]} is invalid.
+     * Reports errors for the following conditions:
+     *
+     * <ol>
+     *   <li>If the component type of an array has an annotation that is a supertype of the array
+     *       annotation. Example: {@code @NonDet int @Det[]} is invalid.
+     *   <li>If the component type is a type variable and if the annotation on the upper bound of
+     *       the type variable is a supertype of the array annotation. Example: {@code <T
+     *       extends @NonDet Object> T @Det[]} is invalid.
+     * </ol>
      *
      * @param type the array type use
      * @param tree the tree where the type is used
@@ -115,13 +184,28 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      */
     @Override
     public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
-        if (!type.getAnnotations().isEmpty()
-                && !type.getComponentType().getAnnotations().isEmpty()) {
+        AnnotatedTypeMirror componentType = type.getComponentType();
+        if (!type.getAnnotations().isEmpty()) {
             AnnotationMirror arrayType = type.getAnnotationInHierarchy(atypeFactory.NONDET);
-            AnnotationMirror elementType =
-                    type.getComponentType().getAnnotationInHierarchy(atypeFactory.NONDET);
-            if (!isSubtype(elementType, arrayType, tree, INVALID_ARRAY_COMPONENT_TYPE)) {
-                return false;
+            if (!componentType.getAnnotations().isEmpty()) {
+                AnnotationMirror componentAnno =
+                        componentType.getAnnotationInHierarchy(atypeFactory.NONDET);
+                if (!isSubtype(componentAnno, arrayType, tree, INVALID_ARRAY_COMPONENT_TYPE)) {
+                    return false;
+                }
+                if (componentType.getKind() == TypeKind.TYPEVAR) {
+                    AnnotationMirror componentUpperBoundAnnotation =
+                            ((AnnotatedTypeVariable) componentType)
+                                    .getUpperBound()
+                                    .getAnnotationInHierarchy(atypeFactory.NONDET);
+                    if (!isSubtype(
+                            componentUpperBoundAnnotation,
+                            arrayType,
+                            tree,
+                            INVALID_UPPER_BOUND_TYPE_ARGUMENT_ARRAY)) {
+                        return false;
+                    }
+                }
             }
         }
         return true;
@@ -236,7 +320,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         if (atypeFactory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation)) {
             return true;
         }
-        checker.report(Result.failure(errorMessage, superAnnotation, subAnnotation), tree);
+        checker.report(Result.failure(errorMessage, subAnnotation, superAnnotation), tree);
         return false;
     }
 

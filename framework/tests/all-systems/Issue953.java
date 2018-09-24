@@ -12,12 +12,14 @@ class Issue953 {
         }
     }
 
+    @SuppressWarnings("determinism")
     public static void test(MyStream<Integer> y) {
         // Type argument inference fails, so a checker may report a type checking error.
         @SuppressWarnings("")
         List<Integer> counts = y.collect(toList());
     }
 
+    @SuppressWarnings("determinism")
     static <H> MyCollector<H, ?, List<H>> toList() {
         throw new RuntimeException();
     }
