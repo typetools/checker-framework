@@ -21,5 +21,9 @@ public class TestGenericUpperBounds {
 
     void wildCardListBoundedCorrect(@Det List<? extends @Det Object> lst) {}
 
+    // :: error: (invalid.upper.bound.on.type.argument)
     public static <Z> void copy(List<? extends Z> src) {}
+
+    // :: error: (invalid.upper.bound.on.type.argument)
+    public static <Z extends T, T> void copy1(List<? extends Z> src) {}
 }

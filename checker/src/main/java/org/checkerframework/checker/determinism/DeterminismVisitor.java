@@ -102,37 +102,53 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                     }
                 }
                 if (argType.getKind() == TypeKind.TYPEVAR) {
-                    AnnotationMirror typevarAnnotation =
-                            ((AnnotatedTypeVariable) argType)
-                                    .getUpperBound()
-                                    .getAnnotationInHierarchy(atypeFactory.NONDET);
-                    // typevarAnnotation is null for "<Z>  List<? extends Z>"
-                    if (typevarAnnotation != null
-                            && !isSubtype(
-                                    typevarAnnotation,
-                                    baseAnnotation,
-                                    tree,
-                                    INVALID_UPPER_BOUND_TYPE_ARGUMENT)) {
+                    AnnotatedTypeMirror argTypeUpperBound =
+                            ((AnnotatedTypeVariable) argType).getUpperBound();
+                    AnnotationMirror typevarAnnotation = getUpperBound(argTypeUpperBound);
+                    if (!isSubtype(
+                            typevarAnnotation,
+                            baseAnnotation,
+                            tree,
+                            INVALID_UPPER_BOUND_TYPE_ARGUMENT)) {
                         return false;
                     }
                 }
                 if (argType.getKind() == TypeKind.WILDCARD) {
-                    AnnotationMirror typevarAnnotation =
-                            ((AnnotatedTypeMirror.AnnotatedWildcardType) argType)
-                                    .getExtendsBound()
-                                    .getAnnotationInHierarchy(atypeFactory.NONDET);
-                    if (typevarAnnotation != null
-                            && !isSubtype(
-                                    typevarAnnotation,
-                                    baseAnnotation,
-                                    tree,
-                                    INVALID_UPPER_BOUND_TYPE_ARGUMENT)) {
+                    AnnotatedTypeMirror argTypeExtendsBound =
+                            ((AnnotatedTypeMirror.AnnotatedWildcardType) argType).getExtendsBound();
+                    AnnotationMirror typevarAnnotation = getUpperBound(argTypeExtendsBound);
+                    if (!isSubtype(
+                            typevarAnnotation,
+                            baseAnnotation,
+                            tree,
+                            INVALID_UPPER_BOUND_TYPE_ARGUMENT)) {
                         return false;
                     }
                 }
             }
         }
         return true;
+    }
+
+    /**
+     * Returns annotation on the upper bound of {@code argTypeUpperBound}
+     *
+     * <p>Example 1: If this method is called with {@code argTypeUpperBound} as {@code Z
+     * extends @NonDet T}, it returns {@code NonDet}.
+     *
+     * <p>Example 2: If this method is called with {@code argTypeUpperBound} as {@code @Det Z}, it
+     * returns {@code Det}.
+     */
+    private AnnotationMirror getUpperBound(AnnotatedTypeMirror argTypeUpperBound) {
+        AnnotationMirror typevarAnnotation =
+                argTypeUpperBound.getAnnotationInHierarchy(atypeFactory.NONDET);
+        // typevarAnnotation is null for "<Z>  List<? extends Z>", "<Z,T>  List<T extends Z>"
+        while (typevarAnnotation == null) {
+            argTypeUpperBound =
+                    ((AnnotatedTypeMirror.AnnotatedTypeVariable) argTypeUpperBound).getUpperBound();
+            typevarAnnotation = argTypeUpperBound.getAnnotationInHierarchy(atypeFactory.NONDET);
+        }
+        return typevarAnnotation;
     }
 
     /**
