@@ -17,7 +17,9 @@ public class TestTreeSet {
         }
     }
 
+    // :: error: (invalid.upper.bound.on.type.argument)
     void testTreeIterator(@OrderNonDet TreeSet<@OrderNonDet TreeSet> treeSet) {
+        // :: error: (invalid.upper.bound.on.type.argument)
         @Det NavigableSet<@Det TreeSet> nSet = treeSet.descendingSet();
     }
 

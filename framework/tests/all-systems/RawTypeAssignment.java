@@ -3,6 +3,7 @@ import java.util.Calendar;
 
 class Component {}
 
+@SuppressWarnings("determinism")
 class Components extends ArrayList {}
 
 // If we include a type parameter in the superclass, then there

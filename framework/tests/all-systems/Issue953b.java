@@ -19,6 +19,7 @@ public class Issue953b {
         List<Integer> counts = y.collect(toList());
     }
 
+    @SuppressWarnings("determinism")
     static <H> MyCollector<H, ?, List<H>> toList() {
         throw new RuntimeException();
     }

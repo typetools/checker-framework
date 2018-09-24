@@ -646,7 +646,7 @@ public final class System {
      * @return the system-dependent line separator string
      * @since 1.7
      */
-    public static @NonDet String lineSeparator() {
+    public static @Det String lineSeparator() {
         return lineSeparator;
     }
 
@@ -712,7 +712,7 @@ public final class System {
      * @see        java.lang.SecurityManager#checkPropertyAccess(java.lang.String)
      * @see        java.lang.System#getProperties()
      */
-    public static @NonDet String getProperty(@NonDet String key) {
+    public static @NonDet String getProperty(@PolyDet String key) {
         checkKey(key);
         SecurityManager sm = getSecurityManager();
         if (sm != null) {
@@ -748,7 +748,7 @@ public final class System {
      * @see        java.lang.SecurityManager#checkPropertyAccess(java.lang.String)
      * @see        java.lang.System#getProperties()
      */
-    public static @NonDet String getProperty(@NonDet String key, @NonDet String def) {
+    public static @NonDet String getProperty(@PolyDet String key, @PolyDet String def) {
         checkKey(key);
         SecurityManager sm = getSecurityManager();
         if (sm != null) {
@@ -787,7 +787,7 @@ public final class System {
      * @see        SecurityManager#checkPermission
      * @since      1.2
      */
-    public static @NonDet String setProperty(@NonDet String key, @NonDet String value) {
+    public static @NonDet String setProperty(@PolyDet String key, @PolyDet String value) {
         checkKey(key);
         SecurityManager sm = getSecurityManager();
         if (sm != null) {
@@ -825,7 +825,7 @@ public final class System {
      * @see        java.lang.SecurityManager#checkPropertiesAccess()
      * @since 1.5
      */
-    public static @NonDet String clearProperty(@NonDet String key) {
+    public static @NonDet String clearProperty(@PolyDet String key) {
         checkKey(key);
         SecurityManager sm = getSecurityManager();
         if (sm != null) {
@@ -890,7 +890,7 @@ public final class System {
      * @see    #getenv()
      * @see    ProcessBuilder#environment()
      */
-    public static @NonDet String getenv(@NonDet String name) {
+    public static @NonDet String getenv(@PolyDet String name) {
         SecurityManager sm = getSecurityManager();
         if (sm != null) {
             sm.checkPermission(new RuntimePermission("getenv."+name));
@@ -1084,7 +1084,7 @@ public final class System {
      * @see        java.lang.SecurityManager#checkLink(java.lang.String)
      */
     @CallerSensitive
-    public static void load(@NonDet String filename) {
+    public static void load(@PolyDet String filename) {
         Runtime.getRuntime().load0(Reflection.getCallerClass(), filename);
     }
 
@@ -1120,7 +1120,7 @@ public final class System {
      * @see        java.lang.SecurityManager#checkLink(java.lang.String)
      */
     @CallerSensitive
-    public static void loadLibrary(@NonDet String libname) {
+    public static void loadLibrary(@PolyDet String libname) {
         Runtime.getRuntime().loadLibrary0(Reflection.getCallerClass(), libname);
     }
 
@@ -1136,7 +1136,7 @@ public final class System {
      * @see        java.lang.ClassLoader#findLibrary(java.lang.String)
      * @since      1.2
      */
-    public static native @NonDet String mapLibraryName(@NonDet String libname);
+    public static native @NonDet String mapLibraryName(@PolyDet String libname);
 
     /**
      * Create PrintStream for stdout/err based on encoding.

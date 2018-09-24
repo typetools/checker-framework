@@ -415,7 +415,7 @@ public class ArrayList<E> extends AbstractList<E>
     // Positional Access Operations
 
     @SuppressWarnings("unchecked")
-    @PolyDet E elementData(@PolyDet ArrayList<E> this, @PolyDet int index) {
+    @PolyDet("up") E elementData(@PolyDet ArrayList<E> this, @PolyDet int index) {
         return (E) elementData[index];
     }
 
@@ -426,7 +426,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E get(@PolyDet ArrayList<E> this, @PolyDet int index) {
+    public @PolyDet("up") E get(@PolyDet ArrayList<E> this, @PolyDet int index) {
         rangeCheck(index);
 
         return elementData(index);
@@ -441,7 +441,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E set(@PolyDet ArrayList<E> this, @PolyDet("use") int index, E element) {
+    public @PolyDet("up") E set(@PolyDet ArrayList<E> this, @PolyDet("use") int index, E element) {
         rangeCheck(index);
 
         E oldValue = elementData(index);
@@ -489,7 +489,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element that was removed from the list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E remove(@PolyDet ArrayList<E> this, @PolyDet("use") int index) {
+    public @PolyDet("up") E remove(@PolyDet ArrayList<E> this, @PolyDet("use") int index) {
         rangeCheck(index);
 
         modCount++;

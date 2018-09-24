@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Issue1709 {
+    @SuppressWarnings("determinism")
     public static void m(final List<? super Integer> l) {
         Iterator<? super Integer> it = l.iterator();
     }

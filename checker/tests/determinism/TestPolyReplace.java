@@ -2,6 +2,7 @@ import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 public class TestPolyReplace {
+    // :: error: (invalid.upper.bound.on.type.argument)
     <T> void testPolyDown(@OrderNonDet Set<T> set, @Det T elem) {
         @Det boolean out = set.contains(elem);
     }
