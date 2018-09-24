@@ -47,6 +47,9 @@ public class Range {
     /** A range containing all possible 16-bit values. */
     public static final Range SHORT_EVERYTHING = new Range(Short.MIN_VALUE, Short.MAX_VALUE);
 
+    /** A range containing all possible char values. */
+    public static final Range CHAR_EVERYTHING = new Range(Character.MIN_VALUE, Character.MAX_VALUE);
+
     /** A range containing all possible 8-bit values. */
     public static final Range BYTE_EVERYTHING = new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
@@ -126,6 +129,11 @@ public class Range {
         return from == Short.MIN_VALUE && to == Short.MAX_VALUE;
     }
 
+    /** Return true if this range contains every {@code char} value. */
+    public boolean isCharEverything() {
+        return from == Character.MIN_VALUE && to == Character.MAX_VALUE;
+    }
+
     /** Return true if this range contains every {@code byte} value. */
     public boolean isByteEverything() {
         return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
@@ -140,7 +148,7 @@ public class Range {
     private static long integerWidth = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
 
     /**
-     * Converts a this range to a 32-bit integral range.
+     * Converts this range to a 32-bit integral range.
      *
      * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Integer range,
      * then that bound is set to the bound of the Integer range.
@@ -203,6 +211,42 @@ public class Range {
             return new Range(shortFrom, shortTo);
         }
         return SHORT_EVERYTHING;
+    }
+
+    /** The number of values representable in char: */
+    private static long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
+
+    /**
+     * Converts this range to a char range.
+     *
+     * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Character range,
+     * then that bound is set to the bound of the Character range.
+     *
+     * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
+     * range of the Character class, return CHAR_EVERYTHING.
+     *
+     * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
+     * 8-bit integers, convert the bounds to Character type in accordance with Java overflow rules
+     * (twos-complement), e.g., Character.MAX_VALUE + 1 is converted to Character.MIN_VALUE.
+     */
+    public Range charRange() {
+        if (this.isNothing()) {
+            return this;
+        }
+        if (ignoreOverflow) {
+            return new Range(
+                    Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
+        }
+        if (this.isWiderThan(charWidth)) {
+            // char is promoted to int before the operation so no need for explicit casting
+            return CHAR_EVERYTHING;
+        }
+        char charFrom = (char) this.from;
+        char charTo = (char) this.to;
+        if (charFrom <= charTo) {
+            return new Range(charFrom, charTo);
+        }
+        return CHAR_EVERYTHING;
     }
 
     /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
