@@ -478,12 +478,13 @@ public class AnnotationClassLoader {
             try {
                 connection = (JarURLConnection) resourceURL.openConnection();
 
-                // openConnection() returns a sun.net.www.protocol.jar.JarURLConnection object. As
-                // such, both cache flags must be set to false due to this bug
-                // https://bugs.java.com/view_bug.do?bug_id=6947916
+                // disable caching / connection sharing of the low level URLConnection to the Jar
+                // file
                 connection.setDefaultUseCaches(false);
                 connection.setUseCaches(false);
-                connection.connect(); // connect to the Jar file
+
+                // connect to the Jar file
+                connection.connect();
             } catch (IOException e) {
                 throw new BugInCF(
                         "AnnotationClassLoader: cannot open a connection to the Jar file "
