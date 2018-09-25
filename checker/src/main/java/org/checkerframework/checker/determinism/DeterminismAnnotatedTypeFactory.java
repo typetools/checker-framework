@@ -517,6 +517,30 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && AnnotationUtils.areSame(superAnno, POLYDET)) {
                 return false;
             }
+            if (AnnotationUtils.areSame(subAnno, POLYDET_DOWN)
+                    && AnnotationUtils.areSame(superAnno, POLYDET)) {
+                return true;
+            }
+            if (AnnotationUtils.areSame(subAnno, POLYDET)
+                    && AnnotationUtils.areSame(superAnno, POLYDET_DOWN)) {
+                return false;
+            }
+            if (AnnotationUtils.areSame(subAnno, POLYDET_DOWN)
+                    && AnnotationUtils.areSame(superAnno, POLYDET_UP)) {
+                return true;
+            }
+            if (AnnotationUtils.areSame(subAnno, POLYDET_UP)
+                    && AnnotationUtils.areSame(superAnno, POLYDET_DOWN)) {
+                return false;
+            }
+            if (AnnotationUtils.areSame(subAnno, POLYDET_USE)
+                    && AnnotationUtils.areSame(superAnno, POLYDET)) {
+                return true;
+            }
+            if (AnnotationUtils.areSame(subAnno, POLYDET)
+                    && AnnotationUtils.areSame(superAnno, POLYDET_USE)) {
+                return false;
+            }
             if (AnnotationUtils.areSameIgnoringValues(subAnno, POLYDET)) {
                 subAnno = POLYDET;
             }
