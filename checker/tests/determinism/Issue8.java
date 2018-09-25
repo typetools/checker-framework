@@ -9,6 +9,7 @@ class Issue8 {
             @PolyDet List<T> strings) {
         @PolyDet List<T> result = (@PolyDet ArrayList<T>) new @PolyDet ArrayList<T>();
         for (T s : strings) {
+            // :: error: (argument.type.incompatible)
             result.add(s);
         }
         return result;
@@ -20,7 +21,8 @@ class Issue8 {
                 (@PolyDet ArrayList<@PolyDet("use") String>)
                         new @PolyDet ArrayList<@PolyDet("use") String>();
         for (String s : strings) {
-            result.add(s);
+            // :: error: (argument.type.incompatible)
+            result.add(s.trim());
         }
         return result;
     }
