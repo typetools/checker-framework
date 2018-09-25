@@ -332,22 +332,23 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // t.getReceiverType() is null for both "Object <init>()"
                 // and for static methods.
-                if (executableType.getReturnType().getAnnotations().isEmpty()
-                        && (executableType.getReceiverType() == null)) {
-                    boolean unannotatedOrPolyDet = false;
-                    for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
-                        // The default is @PolyDet, so treat unannotated the same as @PolyDet
-                        if (paramType.getAnnotations().isEmpty()
-                                || paramType.hasAnnotation(POLYDET)) {
-                            unannotatedOrPolyDet = true;
-                            break;
+                if (executableType.getReturnType().getAnnotations().isEmpty()) {
+                    if (executableType.getReceiverType() == null) {
+                        boolean unannotatedOrPolyDet = false;
+                        for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
+                            // The default is @PolyDet, so treat unannotated the same as @PolyDet
+                            if (paramType.getAnnotations().isEmpty()
+                                    || paramType.hasAnnotation(POLYDET)) {
+                                unannotatedOrPolyDet = true;
+                                break;
+                            }
+                        }
+                        if (!unannotatedOrPolyDet) {
+                            executableType.getReturnType().replaceAnnotation(DET);
                         }
                     }
-                    if (!unannotatedOrPolyDet) {
-                        executableType.getReturnType().replaceAnnotation(DET);
-                    }
+                    defaultArrayComponentTypeAsPolyDet(executableType.getReturnType());
                 }
-                defaultArrayComponentTypeAsPolyDet(executableType.getReturnType());
             }
             return super.visitExecutable(executableType, p);
         }
