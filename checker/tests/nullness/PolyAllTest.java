@@ -1,3 +1,5 @@
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.PolyAll;
 
@@ -30,5 +32,14 @@ public class PolyAllTest<T extends Comparable<T>> {
             assert elt1.equals(elt2);
         }
         return a1.length - a2.length;
+    }
+
+    void test(
+            PolyAllTest<@NonNull String> nonnull,
+            @NonNull String[] nonnullArray,
+            @Nullable String[] nullableArray) {
+        nonnull.compare(nonnullArray, nonnullArray);
+        nonnull.compare(nullableArray, nonnullArray);
+        nonnull.compare(nullableArray, nullableArray);
     }
 }
