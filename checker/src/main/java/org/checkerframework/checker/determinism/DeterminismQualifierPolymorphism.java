@@ -61,7 +61,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             if (quals.contains(factory.DET)) {
                 type.replaceAnnotations(quals);
             }
-            if (replacements.get(factory.POLYDET).contains(factory.ORDERNONDET)
+            if (quals.contains(factory.ORDERNONDET)
                     || replacements.get(factory.POLYDET).contains(factory.NONDET)) {
                 replaceForPolyUpOrDown(type, factory.NONDET);
             }
@@ -70,7 +70,7 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
             if (quals.contains(factory.NONDET)) {
                 type.replaceAnnotations(quals);
             }
-            if (replacements.get(factory.POLYDET).contains(factory.ORDERNONDET)
+            if (quals.contains(factory.ORDERNONDET)
                     || replacements.get(factory.POLYDET).contains(factory.DET)) {
                 replaceForPolyUpOrDown(type, factory.DET);
             }
