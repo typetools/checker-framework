@@ -504,8 +504,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Treats {@code @PolyDet} with values as {@code @PolyDet} without values in the qualifier
-         * hierarchy.
+         * Adds the following subtyping rules for {@code @PolyDet}:
+         *
+         * <ol>
+         *   <li>{@code @PolyDet("down")} <: {@code @PolyDet} <: {@code @PolyDet("up")}
+         *   <li>{@code @PolyDet("use")} <: {@code @PolyDet}
+         * </ol>
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
