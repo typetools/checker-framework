@@ -18,6 +18,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -129,7 +130,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
-                Arrays.asList(Det.class, OrderNonDet.class, NonDet.class, PolyDet.class));
+                Arrays.asList(
+                        Det.class, OrderNonDet.class, NonDet.class, PolyDet.class, PolyAll.class));
     }
 
     @Override
@@ -330,22 +332,23 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // t.getReceiverType() is null for both "Object <init>()"
                 // and for static methods.
-                if (executableType.getReturnType().getAnnotations().isEmpty()
-                        && (executableType.getReceiverType() == null)) {
-                    boolean unannotatedOrPolyDet = false;
-                    for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
-                        // The default is @PolyDet, so treat unannotated the same as @PolyDet
-                        if (paramType.getAnnotations().isEmpty()
-                                || paramType.hasAnnotation(POLYDET)) {
-                            unannotatedOrPolyDet = true;
-                            break;
+                if (executableType.getReturnType().getAnnotations().isEmpty()) {
+                    if (executableType.getReceiverType() == null) {
+                        boolean unannotatedOrPolyDet = false;
+                        for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
+                            // The default is @PolyDet, so treat unannotated the same as @PolyDet
+                            if (paramType.getAnnotations().isEmpty()
+                                    || paramType.hasAnnotation(POLYDET)) {
+                                unannotatedOrPolyDet = true;
+                                break;
+                            }
+                        }
+                        if (!unannotatedOrPolyDet) {
+                            executableType.getReturnType().replaceAnnotation(DET);
                         }
                     }
-                    if (!unannotatedOrPolyDet) {
-                        executableType.getReturnType().replaceAnnotation(DET);
-                    }
+                    defaultArrayComponentTypeAsPolyDet(executableType.getReturnType());
                 }
-                defaultArrayComponentTypeAsPolyDet(executableType.getReturnType());
             }
             return super.visitExecutable(executableType, p);
         }
