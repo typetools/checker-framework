@@ -154,12 +154,12 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <!-- checker-qual-compat -->
-        <update file="${checker.binary.poms}/checkerCompatQualPom.xml"
+        <!-- checker-qual-android -->
+        <update file="${checker.binary.poms}/checkerQualAndroidPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checker.release.poms}/checkerCompatQualReleasePom.xml"
+        <update file="${checker.release.poms}/checkerQualAndroidReleasePom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -286,8 +286,8 @@
     <target name="jar-maven-extras" description="Create jars with readmes to fill in for required maven artifacts!">
         <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
              At the moment we only have these for the checker artifact. Since the checker artifact source/javadoc
-             jars contain all the resources needed for checker-qual and checker-compat-qual artifacts, the sources/javadoc
-             jars for the checker artifact are re-used for the checker-qual and checker-compat-qual artifacts.
+             jars contain all the resources needed for checker-qual and checker-qual-android artifacts, the sources/javadoc
+             jars for the checker artifact are re-used for the checker-qual and checker-qual-android artifacts.
 
              For other artifacts, we create dummies with READMEs in them and pass those to Central.
 
