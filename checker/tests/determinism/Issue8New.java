@@ -4,7 +4,7 @@ import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 // @skip-test
-class Issue8 {
+class Issue8New {
     public static <T extends @PolyDet("use") String> @PolyDet List<T> copyList(
             @PolyDet List<T> strings) {
         @PolyDet List<T> result = (@PolyDet ArrayList<T>) new @PolyDet ArrayList<T>();
@@ -20,7 +20,7 @@ class Issue8 {
                 (@PolyDet ArrayList<@PolyDet("use") String>)
                         new @PolyDet ArrayList<@PolyDet("use") String>();
         for (String s : strings) {
-            result.add(s);
+            result.add(s.trim());
         }
         return result;
     }
