@@ -1,7 +1,3 @@
-sourceSets {
-    compatQual
-}
-
 task copySources(type: Copy) {
     description 'Copy checker-qual source from other projects.'
     includeEmptyDirs = false
@@ -30,62 +26,6 @@ task copySources(type: Copy) {
 
 compileJava {
     dependsOn copySources
-}
-
-task copyCompatQual(type: Copy) {
-    description 'Copy checker-compat-qual source from other projects.'
-    includeEmptyDirs = false
-    doFirst {
-        // Delete the directory in case a previously copied file should no longer be in checker-qual.
-        delete file('src/compatQual/java')
-    }
-
-    from files('../checker/src/main/java', '../framework/src/main/java')
-    include "**/compatqual/*.java"
-    // Make files read only.
-    fileMode(0444)
-
-    into file('src/compatQual/java')
-}
-
-compileCompatQualJava {
-    dependsOn copyCompatQual
-    doFirst {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-    }
-}
-
-task compatQualJavadoc(type: Javadoc) {
-    source = sourceSets.compatQual.java
-}
-
-task compatQualJar(type: Jar, dependsOn: compileCompatQualJava) {
-    baseName = 'checker-compat-qual'
-    from compileCompatQualJava.outputs
-    manifest {
-        attributes('Automatic-Module-Name': "org.checkerframework.checker.qual")
-    }
-}
-
-task compatQualSourcesJar(type: Jar) {
-    description 'Creates compat-qual sources jar.'
-    classifier = 'source'
-    baseName = 'checker-compat-qual'
-    from sourceSets.compatQual.java
-}
-
-// Create a javadocJar task for each subproject
-task compatQualJavadocJar(type: Jar, dependsOn: compatQualJavadoc) {
-    description 'Creates compat-qual javadoc jar.'
-    classifier = 'javadoc'
-    baseName = 'checker-compat-qual'
-    from compatQualJavadoc.destinationDir
-}
-
-
-artifacts {
-    archives compatQualJar
 }
 
 clean {

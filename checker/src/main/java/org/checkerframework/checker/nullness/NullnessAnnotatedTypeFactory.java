@@ -103,7 +103,9 @@ public class NullnessAnnotatedTypeFactory
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
                     "org.netbeans.api.annotations.common.NonNull",
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
-                    "org.springframework.lang.NonNull");
+                    "org.springframework.lang.NonNull",
+                    "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NonNullType");
 
     // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
     /** Aliases for {@code @Nullable}. */
@@ -139,7 +141,9 @@ public class NullnessAnnotatedTypeFactory
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
                     "org.netbeans.api.annotations.common.NullUnknown",
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
-                    "org.springframework.lang.Nullable");
+                    "org.springframework.lang.Nullable",
+                    "org.checkerframework.checker.nullness.compatqual.NullableDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NullableType");
 
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
@@ -162,22 +166,14 @@ public class NullnessAnnotatedTypeFactory
 
         // Add compatibility annotations:
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
+                "org.checkerframework.checker.nullness.compatqual.PolyNullDecl", POLYNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class,
+                "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl",
                 MONOTONIC_NONNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
+                "org.checkerframework.checker.nullness.compatqual.PolyNullType", POLYNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class,
+                "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
