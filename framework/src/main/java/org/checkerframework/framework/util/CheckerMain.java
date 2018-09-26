@@ -64,9 +64,6 @@ public class CheckerMain {
     /** The path to the javacJar to use. */
     protected final File javacJar;
 
-    /** The path to the jsr308 Langtools Type Annotations Compiler JDK. */
-    protected final File javacJdkJar;
-
     /** The path to the jar containing CheckerMain.class (i.e. checker.jar). */
     protected final File checkerJar;
 
@@ -114,9 +111,6 @@ public class CheckerMain {
 
         this.javacJar =
                 extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
-        this.javacJdkJar =
-                extractFileArg(
-                        PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac-jdk.jar"), args);
 
         final String jdkJarName = PluginUtil.getJdkJarName();
         this.jdkJar =
@@ -135,7 +129,7 @@ public class CheckerMain {
     }
 
     protected void assertValidState() {
-        assertFilesExist(Arrays.asList(javacJar, javacJdkJar, jdkJar, checkerJar, checkerQualJar));
+        assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
     }
 
     public void addToClasspath(List<String> cpOpts) {
@@ -151,11 +145,11 @@ public class CheckerMain {
     }
 
     protected List<String> createRuntimeClasspath(final List<String> argsList) {
-        return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
+        return new ArrayList<>();
     }
 
     protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
-        return new ArrayList<String>(Arrays.asList(javacJdkJar.getAbsolutePath()));
+        return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
