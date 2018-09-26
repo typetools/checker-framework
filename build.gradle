@@ -1,5 +1,4 @@
 import de.undercouch.gradle.tasks.download.Download
-import org.gradle.internal.jvm.Jvm
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.4'
@@ -59,15 +58,10 @@ allprojects {
 
     configurations {
         javacJar
-        toolsJar
     }
 
     dependencies {
-//        javacJar 'org.checkerframework:compiler:2.4.0'
         javacJar group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
-
-        // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
-//        toolsJar files(Jvm.current().toolsJar)
     }
 
     // After all the tasks have been created, modify some of them.
