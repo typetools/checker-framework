@@ -5,16 +5,6 @@ import org.checkerframework.checker.determinism.qual.*;
 
 // @skip-test
 class Issue8 {
-    public static <T extends @PolyDet("use") String> @PolyDet List<T> copyList(
-            @PolyDet List<T> strings) {
-        @PolyDet List<T> result = (@PolyDet ArrayList<T>) new @PolyDet ArrayList<T>();
-        for (T s : strings) {
-            // :: error: (argument.type.incompatible)
-            result.add(s);
-        }
-        return result;
-    }
-
     public static @PolyDet List<@PolyDet("use") String> copyStringList(
             @PolyDet List<@PolyDet("use") String> strings) {
         @PolyDet List<@PolyDet("use") String> result =
