@@ -56,16 +56,6 @@ allprojects {
     repositories {
         mavenCentral()
     }
-    configurations {
-        jsr308Javac
-    }
-    dependencies {
-        jsr308Javac group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
-
-        // Comment the above and uncomment the below to use jsr308-langtools.
-        // jsr308Javac files("${jsr308}/jsr308-langtools/cfmake/javac-jdk.jar")
-        // jsr308Javac files("${jsr308}/jsr308-langtools/cfmake/javac.jar")
-    }
 
     configurations {
         javacJar
@@ -74,10 +64,10 @@ allprojects {
 
     dependencies {
 //        javacJar 'org.checkerframework:compiler:2.4.0'
-        javacJar 'com.google.errorprone:error_prone_ant:2.3.1'
+        javacJar group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
 
         // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
-        toolsJar files(Jvm.current().toolsJar)
+//        toolsJar files(Jvm.current().toolsJar)
     }
 
     // After all the tasks have been created, modify some of them.
@@ -116,7 +106,7 @@ allprojects {
             ]
             options.encoding = 'UTF-8'
             options.fork = true
-            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.jsr308Javac.asPath}"]
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
         }
     }
 }
@@ -491,7 +481,7 @@ subprojects {
                 systemProperties += ["emit.test.debug": 'true']
             }
 
-            jvmArgs "-Xbootclasspath/p:${configurations.jsr308Javac.asPath}"
+            jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
 
             testLogging {
                 showStandardStreams = true
