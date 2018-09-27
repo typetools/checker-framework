@@ -10,7 +10,7 @@ public class TestOverride {
         return new ArrayList<Integer>(a);
     }
 
-    protected @PolyDet int getList(@PolyDet ArrayList<Integer> a) {
+    protected @PolyDet("up") int getList(@PolyDet ArrayList<Integer> a) {
         return a.get(0);
     }
 

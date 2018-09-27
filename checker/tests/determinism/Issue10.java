@@ -15,7 +15,7 @@ public class Issue10 {
         @Det int x = obj.arrParam(a);
     }
 
-    public int arrParam(int[] str) {
+    public @PolyDet("up") int arrParam(int[] str) {
         return str[0];
     }
 }

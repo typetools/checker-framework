@@ -290,6 +290,8 @@ E set(   @Det List<E> this,    @Det int index, E element)
 However, it should \emph{not} be legal for a client to make a call such as
 the following:
 
+Note that it is illegal to write \<@PolyDet("use")> on any type that is not
+a formal parameter or a type parameter inside a method.
 \begin{Verbatim}
 @Det List<...> myDetList;
 @NonDet int random;
