@@ -15,8 +15,8 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -148,7 +148,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         applyThrowsAnnotations(targetTypeToAnno.get(TargetType.THROWS));
 
         if (unmatched.size() > 0) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Unexpected annotations ( "
                             + PluginUtil.join(",", unmatched)
                             + " ) for"
@@ -179,7 +179,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
                 typeToAnnos.get(thrownType).add(anno);
 
             } else {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "MethodApplier.applyThrowsAnnotation: "
                                 + "invalid throws index "
                                 + annoPos.type_index

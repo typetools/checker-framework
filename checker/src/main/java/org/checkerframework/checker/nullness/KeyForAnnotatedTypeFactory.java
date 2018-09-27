@@ -23,7 +23,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -34,7 +33,6 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class KeyForAnnotatedTypeFactory
@@ -79,11 +77,9 @@ public class KeyForAnnotatedTypeFactory
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
-            NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> result =
-                super.constructorFromUse(tree);
-        keyForPropagator.propagateNewClassTree(tree, result.first.getReturnType(), this);
+    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
+        ParameterizedMethodType result = super.constructorFromUse(tree);
+        keyForPropagator.propagateNewClassTree(tree, result.methodType.getReturnType(), this);
         return result;
     }
 

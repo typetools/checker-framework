@@ -177,15 +177,23 @@ public class PluginUtil {
         return sb.toString();
     }
 
+    /**
+     * Returns a list of command-line arguments: one that sets the given property, plus everything
+     * in extras. Returns the empty list if prop is not found in props (or is empty there), even if
+     * extras is not empty.
+     *
+     * @param prop the property to look up in props
+     * @param cmdLineArgStart the command-line argument that introduces prop
+     */
     public static List<String> getStringProp(
             final Map<CheckerProp, Object> props,
             final CheckerProp prop,
-            final String tag,
+            final String cmdLineArgStart,
             final String... extras) {
         final List<String> out = new ArrayList<>();
         final String strProp = (String) props.get(prop);
         if (strProp != null && !strProp.isEmpty()) {
-            out.add(tag + strProp);
+            out.add(cmdLineArgStart + strProp);
             for (final String extra : extras) {
                 out.add(extra);
             }
@@ -195,26 +203,19 @@ public class PluginUtil {
     }
 
     /**
-     * If prop is in props, return a 1-element list containing tag. Otherwise, return a 0-element
-     * list.
+     * If prop is in props, return a 1-element list containing {@code cmdLineArg}. Otherwise, return
+     * a 0-element list.
      */
     public static List<String> getBooleanProp(
-            final Map<CheckerProp, Object> props, final CheckerProp prop, final String tag) {
+            final Map<CheckerProp, Object> props, final CheckerProp prop, final String cmdLineArg) {
         Boolean aSkip = (Boolean) props.get(prop);
         if (aSkip != null && aSkip) {
-            return Arrays.asList(tag);
+            return Arrays.asList(cmdLineArg);
         }
         return new ArrayList<>();
     }
 
     public enum CheckerProp {
-        IMPLICIT_IMPORTS() {
-            @Override
-            public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
-                return getStringProp(props, this, "-J-Djsr308_imports=", "-implicit:class");
-            }
-        },
-
         MISC_COMPILER() {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
@@ -557,9 +558,9 @@ public class PluginUtil {
 
     /**
      * Determine the version of the JRE that we are currently running and select a jdkX where X is
-     * the version of Java that is being run (e.g. 6, 7, ...)
+     * the version of Java that is being run (e.g. 8, 9, ...)
      *
-     * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 8, 9, ...)
      */
     public static String getJdkJarPrefix() {
         final int jreVersion = getJreVersion();
@@ -576,9 +577,9 @@ public class PluginUtil {
 
     /**
      * Determine the version of the JRE that we are currently running and select a jdkX.jar where X
-     * is the version of Java that is being run (e.g. 6, 7, ...)
+     * is the version of Java that is being run (e.g. 8, 9, ...)
      *
-     * @return the jdkX.jar where X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return the jdkX.jar where X is the version of Java that is being run (e.g. 8, 9, ...)
      */
     public static String getJdkJarName() {
         final String fileName = getJdkJarPrefix() + ".jar";

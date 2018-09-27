@@ -3,8 +3,8 @@
  * @summary Test case for Issue 1275.
  * https://github.com/typetools/checker-framework/issues/1275
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Lib.java
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Crash.java
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Lib.java
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Crash.java
  */
 class Crash {
     void crash(Sub o) {

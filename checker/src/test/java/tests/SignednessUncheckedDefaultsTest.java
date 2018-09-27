@@ -14,7 +14,6 @@ public class SignednessUncheckedDefaultsTest extends CheckerFrameworkPerDirector
                 org.checkerframework.checker.signedness.SignednessChecker.class,
                 "signedness",
                 "-Anomsgtext",
-                "-AprintErrorStack",
                 "-AuseDefaultsForUncheckedCode=-source,bytecode");
     }
 

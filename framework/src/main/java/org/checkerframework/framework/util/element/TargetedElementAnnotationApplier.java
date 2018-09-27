@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -139,7 +139,7 @@ abstract class TargetedElementAnnotationApplier {
                             + PluginUtil.join(", ", annotatedTargets())
                             + "; Valid annotations: "
                             + PluginUtil.join(", ", validTargets()));
-            ErrorReporter.errorAbort(msg.toString());
+            throw new BugInCF(msg.toString());
         }
     }
 
@@ -190,7 +190,7 @@ abstract class TargetedElementAnnotationApplier {
      */
     public void extractAndApply() {
         if (!isAccepted()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "LocalVariableExtractor.extractAndApply: "
                             + "Invalid variable and element passed to "
                             + this.getClass().getName()

@@ -20,7 +20,7 @@ import org.checkerframework.framework.util.element.SuperTypeApplier;
 import org.checkerframework.framework.util.element.TypeDeclarationApplier;
 import org.checkerframework.framework.util.element.TypeVarUseApplier;
 import org.checkerframework.framework.util.element.VariableApplier;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -71,7 +71,7 @@ public class ElementAnnotationApplier {
             final Element element,
             final AnnotatedTypeFactory typeFactory) {
         if (element == null) {
-            ErrorReporter.errorAbort("ElementAnnotationUtil.apply: element cannot be null");
+            throw new BugInCF("ElementAnnotationUtil.apply: element cannot be null");
 
         } else if (TypeVarUseApplier.accepts(type, element)) {
             TypeVarUseApplier.apply(type, element, typeFactory);
@@ -104,7 +104,7 @@ public class ElementAnnotationApplier {
             // Types resulting from capture conversion cannot have explicit annotations
 
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ElementAnnotationUtil.apply: illegal argument: "
                             + element
                             + " ["

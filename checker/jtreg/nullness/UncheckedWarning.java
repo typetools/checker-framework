@@ -3,7 +3,7 @@
  * @summary Test that unchecked warnings are issued, without and with processor
  *
  * @compile/ref=UncheckedWarning.out -XDrawDiagnostics -Xlint:unchecked UncheckedWarning.java
- * @compile/ref=UncheckedWarning.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Alint UncheckedWarning.java
+ * @compile/ref=UncheckedWarning.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Alint UncheckedWarning.java
  */
 
 import java.util.ArrayList;

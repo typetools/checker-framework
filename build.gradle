@@ -1,5 +1,4 @@
 import de.undercouch.gradle.tasks.download.Download
-import org.gradle.internal.jvm.Jvm
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.4'
@@ -18,23 +17,16 @@ ext {
     release = false
     assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
 
-    jsr308 = System.getenv("JSR308") ?: "${rootDir}/../"
-    jsr308 = file(jsr308).absolutePath
+    parentDir = file("${rootDir}/../").absolutePath
 
-    annotationTools = "${jsr308}/annotation-tools"
+    annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
     afuJar = "${afu}/annotation-file-utilities.jar"
-    if (!file(afuJar).exists()) {
-        println "${afuJar} does not exist"
-    }
 
-    stubparser = "${jsr308}/stubparser"
+    stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
-    if (!file(stubparserJar).exists()) {
-        println "${stubparserJar} does not exist"
-    }
 
-    jtregHome = "${jsr308}/jtreg"
+    jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
@@ -58,31 +50,18 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.4'
+    version '2.5.5'
 
     repositories {
         mavenCentral()
     }
-    configurations {
-        jsr308Javac
-    }
-    dependencies {
-        jsr308Javac group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
-
-        // Comment the above and uncomment the below to use jsr308-langtools.
-        // jsr308Javac files("${jsr308}/jsr308-langtools/cfmake/javac-jdk.jar")
-        // jsr308Javac files("${jsr308}/jsr308-langtools/cfmake/javac.jar")
-    }
 
     configurations {
         javacJar
-        toolsJar
     }
 
     dependencies {
-        javacJar 'org.checkerframework:compiler:2.4.0'
-        // Change the JDK via -Dorg.gradle.java.home=JDK_PATH
-        toolsJar files(Jvm.current().toolsJar)
+        javacJar group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
     }
 
     // After all the tasks have been created, modify some of them.
@@ -121,7 +100,7 @@ allprojects {
             ]
             options.encoding = 'UTF-8'
             options.fork = true
-            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.jsr308Javac.asPath}"]
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
         }
     }
 }
@@ -241,11 +220,13 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     }
 }
 
+javadoc.dependsOn(allJavadoc)
+
 configurations {
     requireJavadoc
 }
 dependencies {
-    compile group: 'org.plumelib', name: 'require-javadoc', version: '0.0.7'
+    compile group: 'org.plumelib', name: 'require-javadoc', version: '0.1.0'
 }
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
@@ -335,7 +316,7 @@ subprojects {
     task checkFormat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
         description 'Check whether the source code is properly formatted'
         // jdk8 and checker-qual have no source, so skip
-        onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
+        onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
         executable 'python'
 
         doFirst {
@@ -354,7 +335,7 @@ subprojects {
     task reformat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
         description 'Format the Java source code'
         // jdk8 and checker-qual have no source, so skip
-        onlyIf { !project.name.is('jdk8') && !project.name.is('checker-qual') }
+        onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
         executable 'python'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
@@ -376,7 +357,7 @@ subprojects {
         // relocate 'javax','org.checkerframework.javax'
         // relocate 'jdk', 'org.checkerframework.jdk'
 
-        // These appear in annotation-file-utilities.jar:
+        // These appear in annotation-file-utilities-all.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
@@ -386,7 +367,7 @@ subprojects {
         relocate 'plume', 'org.checkerframework.plume'
     }
 
-    if (!project.name.is('checker-qual') && !project.name.is('jdk8')) {
+    if (!project.name.startsWith('checker-qual') && !project.name.is('jdk8')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
             commandLine "bash", "-c", "find . \\( -name jdk \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
@@ -452,14 +433,14 @@ subprojects {
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
                                 // Must use langtools javap.jar rather than tools.jar because the
                                 // tools.jar in the docker vm doesn't have the required classes.
-                                "-vmoptions:-Xbootclasspath/p:${jsr308}/jsr308-langtools/dist/lib/javac.jar:" +
-                                        "${jsr308}/jsr308-langtools/dist/lib/javap.jar:" +
+                                "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
+                                        "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
 
                                 "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +
-                                        "${jsr308}/jsr308-langtools/dist/lib/javac.jar",
+                                "${configurations.javacJar.asPath}",
                                 "-javacoptions:-source 8",
-                                "-javacoptions:-target 8",
+                                "-javacoptions:-target 8"
                         ]
                         if (project.name.is('checker')) {
                             args += [
@@ -494,7 +475,7 @@ subprojects {
                 systemProperties += ["emit.test.debug": 'true']
             }
 
-            jvmArgs "-Xbootclasspath/p:${configurations.jsr308Javac.asPath}"
+            jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
 
             testLogging {
                 showStandardStreams = true

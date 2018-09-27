@@ -75,8 +75,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -96,6 +96,14 @@ public class StubParser {
      * false.
      */
     private final boolean warnIfNotFound;
+
+    /**
+     * Whether to ignore missing classes even when warnIfNotFound is set to true. This allows the
+     * stubs to contain classes not in the classpath (even if another class in the classpath has the
+     * same package), but still warn if members of the class (methods, fields) are missing. This
+     * option does nothing unless warnIfNotFound is also set.
+     */
+    private final boolean warnIfNotFoundIgnoresClasses;
 
     /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
     private final boolean warnIfStubOverwritesBytecode;
@@ -180,6 +188,7 @@ public class StubParser {
 
         Map<String, String> options = processingEnv.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
+        this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
         this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
         this.debugStubParser = options.containsKey("stubDebug");
 
@@ -455,7 +464,8 @@ public class StubParser {
         if (typeElt == null) {
             if (debugStubParser
                     || (!hasNoStubParserWarning(typeDecl.getAnnotations())
-                            && !hasNoStubParserWarning(packageAnnos))) {
+                            && !hasNoStubParserWarning(packageAnnos)
+                            && !warnIfNotFoundIgnoresClasses)) {
                 stubWarnNotFound("Type not found: " + fqTypeName);
             }
             return;
@@ -606,7 +616,7 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    throw new Error(
+                    throw new BugInCF(
                             "StubParser: could not find superclass "
                                     + superType
                                     + " from type "
@@ -621,7 +631,7 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    throw new Error(
+                    throw new BugInCF(
                             "StubParser: could not find superinterface "
                                     + superType
                                     + " from type "
@@ -884,6 +894,23 @@ public class StubParser {
                 break;
             case WILDCARD:
                 AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
+                // Ensure that the stub also has a wildcard type, report an error otherwise
+                if (!typeDef.isWildcardType()) {
+                    // We throw an error here, as otherwise we are just getting a generic cast error
+                    // on the very next line.
+                    throw new Error(
+                            "StubParser: Wildcard type <"
+                                    + atype.toString()
+                                    + "> doesn't match type in stubs file: <"
+                                    + typeDef.toString()
+                                    + ">"
+                                    + LINE_SEPARATOR
+                                    + "In file "
+                                    + filename
+                                    + LINE_SEPARATOR
+                                    + "While parsing "
+                                    + parseState.toString());
+                }
                 WildcardType wildcardDef = (WildcardType) typeDef;
                 if (wildcardDef.getExtendedType().isPresent()) {
                     annotate(
@@ -1369,8 +1396,7 @@ public class StubParser {
             }
             return builder.build();
         } else {
-            ErrorReporter.errorAbort("StubParser: unknown annotation type: " + annotation);
-            annoMirror = null; // dead code
+            throw new BugInCF("StubParser: unknown annotation type: " + annotation);
         }
         return annoMirror;
     }
@@ -1517,8 +1543,7 @@ public class StubParser {
             case DOUBLE:
                 return number.doubleValue() * scalefactor;
             default:
-                ErrorReporter.errorAbort("Unexpected expectedKind: " + expectedKind);
-                return null;
+                throw new BugInCF("Unexpected expectedKind: " + expectedKind);
         }
     }
 
@@ -1602,7 +1627,7 @@ public class StubParser {
         } else if (value instanceof VariableElement) {
             builder.setValue(name, (VariableElement) value);
         } else {
-            ErrorReporter.errorAbort("Unexpected builder value: %s", value);
+            throw new BugInCF("Unexpected builder value: %s", value);
         }
     }
 
@@ -1698,8 +1723,7 @@ public class StubParser {
     /** Just like Map.put, but does not override any existing value in the map. */
     private static <K, V> void putNoOverride(Map<K, V> m, K key, V value) {
         if (key == null) {
-            ErrorReporter.errorAbort("StubParser: key is null!");
-            return;
+            throw new BugInCF("StubParser: key is null");
         }
         if (!m.containsKey(key)) {
             m.put(key, value);
@@ -1726,8 +1750,7 @@ public class StubParser {
     private static void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null) {
-            ErrorReporter.errorAbort("StubParser: key is null!");
-            return;
+            throw new BugInCF("StubParser: key is null");
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);
@@ -1777,7 +1800,7 @@ public class StubParser {
     }
 
     /**
-     * Issues a warning, onlyif it has not been previously issued.
+     * Issues a warning, only if it has not been previously issued.
      *
      * @param warning a format string
      * @param args the arguments for {@code warning}
