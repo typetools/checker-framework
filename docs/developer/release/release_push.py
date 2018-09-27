@@ -102,10 +102,10 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-compat-qual.jar, so use the same javadoc jar
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
-                            CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_COMPAT_QUAL_SOURCE),
+    # checker.jar is a superset of checker-qual-andriod.jar, so use the same javadoc jar
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_ANDROID_RELEASE_POM,
+                            CHECKER_QUAL_ANDROID,
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_ANDROID_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 

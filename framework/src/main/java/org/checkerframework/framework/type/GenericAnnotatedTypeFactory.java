@@ -678,12 +678,23 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates {@link QualifierPolymorphism} which supports QualifierPolymorphism mechanism.
+     * Creates the {@link QualifierPolymorphism} instance which supports the QualifierPolymorphism
+     * mechanism.
      *
-     * @return the QualifierPolymorphism class
+     * @return the QualifierPolymorphism instance to use
      */
-    public QualifierPolymorphism createQualifierPolymorphism() {
+    protected QualifierPolymorphism createQualifierPolymorphism() {
         return new DefaultQualifierPolymorphism(processingEnv, this);
+    }
+
+    /**
+     * Gives the current {@link QualifierPolymorphism} instance which supports the
+     * QualifierPolymorphism mechanism.
+     *
+     * @return the QualifierPolymorphism instance to use
+     */
+    public QualifierPolymorphism getQualifierPolymorphism() {
+        return this.poly;
     }
 
     // **********************************************************************

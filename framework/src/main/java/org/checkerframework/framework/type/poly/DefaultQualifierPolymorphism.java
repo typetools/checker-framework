@@ -22,8 +22,8 @@ import org.checkerframework.javacutil.BugInCF;
 public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism {
 
     /**
-     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the given checker for
-     * querying type qualifiers and the given factory for getting annotated types.
+     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the given {@code factory}
+     * for querying type qualifiers and the given factory for getting annotated types.
      *
      * @param env the processing environment
      * @param factory the factory for the current checker
@@ -38,34 +38,33 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                 continue;
             }
             AnnotationMirrorSet topsSeen = new AnnotationMirrorSet();
-            for (AnnotationMirror aa : aam.getAnnotationType().asElement().getAnnotationMirrors()) {
-                if (aa.getAnnotationType()
-                        .toString()
-                        .equals(PolymorphicQualifier.class.getCanonicalName())) {
-                    Name plval = AnnotationUtils.getElementValueClassName(aa, "value", true);
-                    AnnotationMirror ttreetop;
-                    if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
-                        if (topQuals.size() != 1) {
-                            throw new BugInCF(
-                                    "DefaultQualifierPolymorphism: PolymorphicQualifier has to specify type hierarchy, if more than one exist; top types: "
-                                            + topQuals);
-                        }
-                        ttreetop = topQuals.iterator().next();
-                    } else {
-                        AnnotationMirror ttree = AnnotationBuilder.fromName(elements, plval);
-                        ttreetop = qualhierarchy.getTopAnnotation(ttree);
-                    }
-                    if (topsSeen.contains(ttreetop)) {
-                        throw new BugInCF(
-                                "DefaultQualifierPolymorphism: checker has multiple polymorphic qualifiers: "
-                                        + polys.get(ttreetop)
-                                        + " and "
-                                        + aam);
-                    }
-                    topsSeen.add(ttreetop);
-                    polys.put(aam, ttreetop);
-                }
+            AnnotationMirror aa = QualifierPolymorphism.getPolymorphicQualifier(aam);
+            if (aa == null) {
+                continue;
             }
+
+            Name plval = AnnotationUtils.getElementValueClassName(aa, "value", true);
+            AnnotationMirror ttreetop;
+            if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
+                if (topQuals.size() != 1) {
+                    throw new BugInCF(
+                            "DefaultQualifierPolymorphism: PolymorphicQualifier has to specify type hierarchy, if more than one exist; top types: "
+                                    + topQuals);
+                }
+                ttreetop = topQuals.iterator().next();
+            } else {
+                AnnotationMirror ttree = AnnotationBuilder.fromName(elements, plval);
+                ttreetop = qualhierarchy.getTopAnnotation(ttree);
+            }
+            if (topsSeen.contains(ttreetop)) {
+                throw new BugInCF(
+                        "DefaultQualifierPolymorphism: checker has multiple polymorphic qualifiers: "
+                                + polys.get(ttreetop)
+                                + " and "
+                                + aam);
+            }
+            topsSeen.add(ttreetop);
+            polys.put(aam, ttreetop);
         }
 
         this.polyQuals.putAll(polys);

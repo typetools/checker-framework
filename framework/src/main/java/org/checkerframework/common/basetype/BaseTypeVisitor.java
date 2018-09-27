@@ -2615,7 +2615,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // Use the function type's parameters to resolve polymorphic qualifiers.
-        QualifierPolymorphism poly = atypeFactory.createQualifierPolymorphism();
+        QualifierPolymorphism poly = atypeFactory.getQualifierPolymorphism();
         poly.annotate(functionType, invocationType);
 
         AnnotatedTypeMirror invocationReturnType;

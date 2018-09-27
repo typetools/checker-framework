@@ -2,14 +2,16 @@ import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 public class TestPolyUseValidity {
+    @PolyDet("use")
     // :: error: (invalid.polydet.use)
-    @PolyDet("use") int invalidReturn(@PolyDet int a) {
+    int invalidReturn(@PolyDet int a) {
         return a;
     }
 
     void invalidLocal(@PolyDet int a) {
+        @PolyDet("use")
         // :: error: (invalid.polydet.use)
-        @PolyDet("use") int local;
+        int local;
         // :: error: (invalid.polydet.use)
         @PolyDet int @PolyDet("use") [] local1;
     }
