@@ -226,6 +226,10 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      */
     private boolean reportInvalidPolyDetUse(AnnotatedTypeMirror type, Tree tree) {
         if (type.hasAnnotation(atypeFactory.POLYDET_USE)) {
+            if (tree.getKind() == Tree.Kind.EXTENDS_WILDCARD
+                    || tree.getKind() == Tree.Kind.SUPER_WILDCARD) {
+                return true;
+            }
             Element element = TreeUtils.elementFromTree(tree);
             if (element.getKind() == ElementKind.TYPE_PARAMETER
                     && element.getEnclosingElement().getKind() != ElementKind.METHOD) {
