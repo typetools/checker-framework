@@ -146,9 +146,10 @@ CHECKER_QUAL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual", "build",
 CHECKER_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-source.jar')
 CHECKER_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-javadoc.jar')
 
-CHECKER_QUAL_ANDROID = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'.jar')
-CHECKER_QUAL_ANDROID_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-source.jar')
-CHECKER_QUAL_ANDROID_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-javadoc.jar')
+CHECKER_QUAL_ANDROID_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual-android", "build", "libs")
+CHECKER_QUAL_ANDROID = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'.jar')
+CHECKER_QUAL_ANDROID_SOURCE = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-source.jar')
+CHECKER_QUAL_ANDROID_JAVADOC_JAR = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-javadoc.jar')
 
 JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "build", "libs")
 JAVACUTIL_BINARY = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+".jar")
