@@ -450,7 +450,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (jreVersion != 8) {
             throw new UserError(
                     String.format(
-                            "The Checker Framework must be run under JDK 1.8.  You are using version %f.",
+                            "The Checker Framework must be run under JDK 8.  You are using version %d.",
                             jreVersion));
         }
     }
