@@ -947,18 +947,32 @@ These instructions are relevant if you use Eclipse as your IDE\@.
 \begin{enumerate}
 \item Follow the instructions earlier in Section~\ref{build-source} to
 clone and build all projects from their sources.
+\item Follow the instructions in the \<README-eclipse> document found in the
+\<\$CHECKERFRAMEWORK/../annotation-tools/annotation-file-utilities/lib>
+directory to download JDK 8 source code and create symbolic links to
+\<tools.jar> and \<src.zip>.
 \item Download Eclipse from
 the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
 and install it.
-\item Run Eclipse.
-\item Enter the main Eclipse working screen and in the ``File'' menu,
-select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
-Projects into Workspace''.
+\item Run Eclipse and enter the main Eclipse working screen.
+\item Checker Framework's sources depend on classes packaged in \<rt.jar> from
+the JRE. Attaching the source code to \<rt.jar> makes it easier to understand
+and work with these classes:
+In the ``Window'' menu, select ``Preferences'' $\rightarrow$ ``Java''
+$\rightarrow$ ``Installed JREs''. Select the Java 8 JRE, then Select ``Edit''.
+In the list of JRE system libraries, select \<rt.jar>. Select
+``Source Attachment'' $\rightarrow$ ``External location'' $\rightarrow$
+``External File''. Locate the directory pointed to by \<\$JAVA\_HOME>, select
+\<src.zip> and then OK to attach the source. Select ``Finish'' and
+``Apply and Close''.
+\item In the ``File'' menu, select ``Import'' $\rightarrow$ ``General''
+$\rightarrow$ ``Existing Projects into Workspace''.
 \item After the ``Import Projects'' window appears, select ``Select
 Root Directory'', and select the parent of the \code{\$CHECKERFRAMEWORK} directory.
 \item Ensure ``Search for nested projects'' is selected in the Options panel.
-\item Select all the projects in the folder except for ``personalblog-demo'',
-then select ``Finish'' to import the projects.
+\item Select all the projects in the list except for ``personalblog-demo''
+and ``jsr308-langtools'', then select ``Finish'' to import the projects.
+
 \end{enumerate}
 Eclipse should successfully build all the imported projects.
 If Eclipse reports any errors, ensure you followed the instructions
