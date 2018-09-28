@@ -4,8 +4,6 @@ import com.sun.source.tree.*;
 import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -19,7 +17,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /** Visitor for the determinism type-system. */
 public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedTypeFactory> {
@@ -52,12 +49,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     public static final @CompilerMessageKey String INVALID_UPPER_BOUND_TYPE_ARGUMENT_ARRAY =
             "invalid.upper.bound.on.type.argument.of.array";
     /**
-     * Error message key for writing {@code @PolyDet("use")} on any use of a type other than formal
-     * parameters and method type parameters.
-     */
-    public static final @CompilerMessageKey String INVALID_POLYDET_USE = "invalid.polydet.use";
-
-    /**
      * The lower bound for exception parameters is {@code @Det}.
      *
      * @return set of lower bound annotations for exception parameters
@@ -77,8 +68,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      *   <li>When the annotation on the upper bound of the type argument of a Collection or Iterator
      *       is a supertype of the annotation on the Collection. Example: {@code @Det List<T
      *       extends @NonDet Object>}.
-     *   <li>When {@code @PolyDet("use")} is written on any use type other than formal parameters
-     *       and type parameters inside methods.
      * </ol>
      *
      * @param declarationType the type of any non-primitive, non-array class (TypeElement)
@@ -94,9 +83,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         if (useType.hasAnnotation(atypeFactory.ORDERNONDET)
                 && !atypeFactory.mayBeOrderNonDet(useType)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
-            return false;
-        }
-        if (!reportInvalidPolyDetUse(useType, tree)) {
             return false;
         }
 
@@ -142,13 +128,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     }
 
     /**
-     * Reports an error under the following conditions:
-     *
-     * <ol>
-     *   <li>If {@code @OrderNonDet} is used with a primitive type.
-     *   <li>If {@code @PolyDet("use")} is written on a primitive type that is not a formal
-     *       parameter.
-     * </ol>
+     * Reports an error if {@code @OrderNonDet} is used with a primitive type.
      *
      * @param type the use of the primitive type
      * @param tree the tree where the type is used; used only for error reporting
@@ -158,9 +138,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         if (type.hasAnnotation(atypeFactory.ORDERNONDET)) {
             checker.report(Result.failure(ORDERNONDET_ON_NONCOLLECTION), tree);
-            return false;
-        }
-        if (!reportInvalidPolyDetUse(type, tree)) {
             return false;
         }
         return true;
@@ -175,7 +152,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
      *   <li>If the component type is a type variable and if the annotation on the upper bound of
      *       the type variable is a supertype of the array annotation. Example: {@code <T
      *       extends @NonDet Object> T @Det[]} is invalid.
-     *   <li>If {@code @PolyDet("use")} is written on an array type that is not a formal parameter.
      * </ol>
      *
      * @param type the array type use
@@ -208,64 +184,7 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 }
             }
         }
-        if (!reportInvalidPolyDetUse(type, tree)) {
-            return false;
-        }
         return true;
-    }
-
-    /**
-     * Reports an error and returns false if {@code type} is annotated as {@code @PolyDet("use")}
-     * and one of the following conditions is true:
-     *
-     * <ol>
-     *   <li>If {@code tree} is a type parameter tree that does not belong to a method.
-     *   <li>If {@code tree} is a local variable tree.
-     *   <li>If {@code tree} represents a return type.
-     * </ol>
-     */
-    private boolean reportInvalidPolyDetUse(AnnotatedTypeMirror type, Tree tree) {
-        if (type.hasAnnotation(atypeFactory.POLYDET_USE)) {
-            if (tree.getKind() == Tree.Kind.EXTENDS_WILDCARD
-                    || tree.getKind() == Tree.Kind.SUPER_WILDCARD) {
-                return true;
-            }
-            Element element = TreeUtils.elementFromTree(tree);
-            if (element.getKind() == ElementKind.TYPE_PARAMETER
-                    && element.getEnclosingElement().getKind() != ElementKind.METHOD) {
-                checker.report(Result.failure(INVALID_POLYDET_USE), tree);
-                return false;
-            }
-            if (element.getKind() == ElementKind.LOCAL_VARIABLE) {
-                checker.report(Result.failure(INVALID_POLYDET_USE), tree);
-                return false;
-            }
-            if (element.getKind() == ElementKind.METHOD) {
-                checker.report(Result.failure(INVALID_POLYDET_USE), tree);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Reports an error if a class type paremter is annotated as {@code @PolyDet("use")}. Example:
-     * Writing {@code class InnerClass2<@PolyDet("use") Integer>} is invalid.
-     */
-    @Override
-    public Void visitTypeParameter(TypeParameterTree node, Void p) {
-        if (!node.getAnnotations().isEmpty()) {
-            if (AnnotationUtils.areSame(
-                    TreeUtils.annotationFromAnnotationTree(node.getAnnotations().get(0)),
-                    atypeFactory.POLYDET_USE)) {
-                Element element = TreeUtils.elementFromTree(node);
-                if (element.getEnclosingElement().getKind() != ElementKind.METHOD) {
-                    checker.report(Result.failure(INVALID_POLYDET_USE), node);
-                }
-            }
-        }
-
-        return super.visitTypeParameter(node, p);
     }
 
     /**
