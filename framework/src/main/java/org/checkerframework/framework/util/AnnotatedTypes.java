@@ -629,7 +629,7 @@ public class AnnotatedTypes {
 
         parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
         for (int i = args.size() - parameters.size(); i > 0; --i) {
-            parameters.add(varargs.getComponentType());
+            parameters.add(varargs.getComponentType().shallowCopy());
         }
 
         return parameters;
