@@ -101,6 +101,11 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>If you have never made a release before, follow the instructions in the
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
+  <li>
+    Rebuild jdk8.jar and upload it to https://github.com/typetools/annotated-libraries.
+    See <a href="https://github.com/typetools/annotated-libraries/blob/master/README.md">the README</a> for instructions.
+    Change typetools/master to use the new version and check that all tests pass.
+  </li>
   <li> Update the Checker Framework version in <code>checker-framework/build.gradle</code>,
     in the <code>allprojects</code> block.  Commit and push this change to typetools/master.
     (The AFU version is updated as part of the release scripts.)
@@ -121,6 +126,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Review the changelogs and documentation</strong><br/>
+      This part of the release script is broken because all of the Checker Framework dependencies must be built to build the manual.
       Ensure that the changelogs and documentation for the Checker Framework and
       AFU are complete.  First follow the instructions at <a href="#content_guidelines">content guidelines</a>.  Then,
       run release_build in a mode that reviews the documentation only:
@@ -263,7 +269,7 @@ git config --global user.email you@example.com</pre>
       <td><strong>Run release_build once</strong><br/>
         To save time on release day addressing potential configuration issues, before your first
         release day, ensure that <code>release_build</code> is working correctly
-        by following steps 2, 4, 5, and 7 of the <a href="#step_by_step">Step by Step</a> section.
+        by following steps 3, 5, 6, and 8 of the <a href="#step_by_step">Step by Step</a> section.
         <code>release_build</code> still needs to be re-run on release day (even if no changes
         were pushed to any repositories since the last run of <code>release_build</code>) in
         order for the release date to be correct in all documents.
