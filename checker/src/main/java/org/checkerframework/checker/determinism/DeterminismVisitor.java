@@ -302,6 +302,19 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
+    /** Reports an error if the type of the condition of {@code node} is not {@code @Det}. */
+    @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+        Void result = super.visitConditionalExpression(node, p);
+        ExpressionTree conditionalExpression = node.getCondition();
+        if (!atypeFactory.getAnnotatedType(conditionalExpression).hasAnnotation(atypeFactory.DET)) {
+            checker.report(
+                    Result.failure("invalid.type.on.conditional.expression"),
+                    conditionalExpression);
+        }
+        return result;
+    }
+
     /**
      * Reports the given {@code errorMessage} if {@code subAnnotation} is not a subtype of {@code
      * superAnnotation}.

@@ -6,6 +6,7 @@ abstract class Issue988 {
 
     abstract Class<?> getGenericClass();
 
+    @SuppressWarnings("determinism:invalid.type.on.conditional.expression")
     Class<?> getWithArg(boolean generic) {
         return generic ? getGenericClass() : getRawClass();
     }

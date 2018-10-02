@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/671
 class Issue671 {
 
+    @SuppressWarnings("determinism:invalid.type.on.conditional.expression")
     void foo() {
         byte var = 0;
         boolean f = (var == (method() ? 2 : 0));

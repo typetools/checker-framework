@@ -5,6 +5,7 @@
 
 class InferTypeArgsConditionalExpression {
 
+    @SuppressWarnings("determinism:invalid.type.on.conditional.expression")
     public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
         bar(flag ? real : other);
     }
