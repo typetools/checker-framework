@@ -1,3 +1,4 @@
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue2171 {
@@ -14,5 +15,20 @@ public class Issue2171 {
         varArgsMethod(pn, nble);
         varArgsMethod(pn, nn);
         varArgsMethod(pn, pn);
+    }
+
+    static void genVarArgsMethod(List<? extends @PolyNull Object>... args) {}
+
+    static void genCallToVarArgsObject(
+            List<@PolyNull Object> pn, List<@NonNull Object> nn, List<@Nullable Object> nble) {
+        genVarArgsMethod(nble, nble);
+        genVarArgsMethod(nble, nn);
+        genVarArgsMethod(nble, pn);
+        genVarArgsMethod(nn, nble);
+        genVarArgsMethod(nn, nn);
+        genVarArgsMethod(nn, pn);
+        genVarArgsMethod(pn, nble);
+        genVarArgsMethod(pn, nn);
+        genVarArgsMethod(pn, pn);
     }
 }
