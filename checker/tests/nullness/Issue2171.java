@@ -17,8 +17,10 @@ public class Issue2171 {
         varArgsMethod(pn, pn);
     }
 
+    @SuppressWarnings("unchecked")
     static void genVarArgsMethod(List<? extends @PolyNull Object>... args) {}
 
+    @SuppressWarnings("unchecked")
     static void genCallToVarArgsObject(
             List<@PolyNull Object> pn, List<@NonNull Object> nn, List<@Nullable Object> nble) {
         genVarArgsMethod(nble, nble);
