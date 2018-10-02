@@ -299,7 +299,6 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 valueType.replaceAnnotation(atypeFactory.POLYDET_UP);
             }
         }
-        Thread.currentThread().getStackTrace();
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
