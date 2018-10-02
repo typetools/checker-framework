@@ -299,20 +299,62 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
                 valueType.replaceAnnotation(atypeFactory.POLYDET_UP);
             }
         }
+        Thread.currentThread().getStackTrace();
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
-    /** Reports an error if the type of the condition of {@code node} is not {@code @Det}. */
+    /**
+     * Reports an error if the condition of the ternary expression {@code node} is not {@code @Det}.
+     */
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
         Void result = super.visitConditionalExpression(node, p);
         ExpressionTree conditionalExpression = node.getCondition();
-        if (!atypeFactory.getAnnotatedType(conditionalExpression).hasAnnotation(atypeFactory.DET)) {
-            checker.report(
-                    Result.failure("invalid.type.on.conditional.expression"),
-                    conditionalExpression);
-        }
+        checkForDetConditional(conditionalExpression);
         return result;
+    }
+
+    /** Reports an error if the condition of the If statement {@code node} is not {@code @Det}. */
+    @Override
+    public Void visitIf(IfTree node, Void aVoid) {
+        Void result = super.visitIf(node, aVoid);
+        ExpressionTree conditionalExpression = node.getCondition();
+        checkForDetConditional(conditionalExpression);
+        return result;
+    }
+
+    /** Reports an error if the condition of the For loop {@code node} is not {@code @Det}. */
+    @Override
+    public Void visitForLoop(ForLoopTree node, Void aVoid) {
+        Void result = super.visitForLoop(node, aVoid);
+        ExpressionTree conditionalExpression = node.getCondition();
+        checkForDetConditional(conditionalExpression);
+        return result;
+    }
+
+    /** Reports an error if the condition of the While loop {@code node} is not {@code @Det}. */
+    @Override
+    public Void visitWhileLoop(WhileLoopTree node, Void aVoid) {
+        Void result = super.visitWhileLoop(node, aVoid);
+        ExpressionTree conditionalExpression = node.getCondition();
+        checkForDetConditional(conditionalExpression);
+        return result;
+    }
+
+    /** Reports an error if the condition of the Do While loop {@code node} is not {@code @Det}. */
+    @Override
+    public Void visitDoWhileLoop(DoWhileLoopTree node, Void aVoid) {
+        Void result = super.visitDoWhileLoop(node, aVoid);
+        ExpressionTree conditionalExpression = node.getCondition();
+        checkForDetConditional(conditionalExpression);
+        return result;
+    }
+
+    /** if {@code conditionalExpression} does not have the type {@code @Det}, reports an error. */
+    private void checkForDetConditional(ExpressionTree conditionalExpression) {
+        if (!atypeFactory.getAnnotatedType(conditionalExpression).hasAnnotation(atypeFactory.DET)) {
+            checker.report(Result.failure("invalid.type.on.conditional"), conditionalExpression);
+        }
     }
 
     /**

@@ -8,7 +8,7 @@ class Issue1043 {
 
     void bar(Object p) {}
 
-    @SuppressWarnings("determinism:invalid.type.on.conditional.expression")
+    @SuppressWarnings("determinism:invalid.type.on.conditional")
     void baz() {
         bar(foo(this.getClass()) ? "a" : "b");
     }

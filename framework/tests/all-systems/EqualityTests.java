@@ -8,6 +8,7 @@ public class EqualityTests {
         return !(((v1 == 0) || (v2 == 0)) && (v1 != v2));
     }
 
+    @SuppressWarnings("determinism:invalid.type.on.conditional")
     public int charEquals(boolean cond) {
         char result = 'F';
         if (cond) {

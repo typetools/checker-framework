@@ -5,7 +5,7 @@ class AssignmentContext {
 
     void foo(String[] a) {}
 
-    @SuppressWarnings("determinism:invalid.type.on.conditional.expression")
+    @SuppressWarnings("determinism:invalid.type.on.conditional")
     void t1(boolean b) {
         String[] s = b ? new String[] {""} : null;
     }
@@ -20,7 +20,7 @@ class AssignmentContext {
         return b ? new String[] {""} : null;
     }
 
-    @SuppressWarnings("determinism:invalid.type.on.conditional.expression")
+    @SuppressWarnings("determinism:invalid.type.on.conditional")
     void t4(boolean b) {
         String[] s = null;
         s = b ? new String[] {""} : null;

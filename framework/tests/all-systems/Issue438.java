@@ -4,6 +4,7 @@
 import java.util.HashSet;
 import java.util.List;
 
+@SuppressWarnings("determinism:invalid.type.on.conditional")
 public class Issue438 {
     boolean foo(List<String> list) {
         if (list.isEmpty()) {
