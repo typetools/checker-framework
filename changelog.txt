@@ -2,7 +2,7 @@
 Version 2.5.6, October 2, 2018
 
 Introduce checker-qual-android artifact with Android-compatible qualifiers
-that use only source-code retention.
+that use only classfile retention.
 
 Remove the checker-compat-qual artifact.
 
