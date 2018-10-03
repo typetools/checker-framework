@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------
+Version 2.5.6, October 2, 2018
+
+Introduce checker-qual-android artifact with Android-compatible qualifiers
+that use only classfile retention.
+
+Remove the checker-compat-qual artifact.
+
+Closed issues:
+
+2135, 2157, 2158, 2164.
+
+---------------------------------------------------------------------------
 Version 2.5.5, August 30, 2018
 
 Implicit imports (deprecated in November 2014) are no longer supported.
