@@ -444,7 +444,7 @@ def main(argv):
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
-        print_step("Push Step 11. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
+        print_step("Push Step 10. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
                "* Download the following files to your local machine." +
@@ -470,7 +470,7 @@ def main(argv):
 
         print  msg
 
-        print_step("Push Step 10. Announce the release.") # MANUAL
+        print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
                          "Note that this text may have changed since the last time a release was performed.\n" +
                          get_announcement_email(new_checker_version))
