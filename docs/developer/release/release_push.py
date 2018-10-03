@@ -444,11 +444,6 @@ def main(argv):
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
-        print_step("Push Step 10. Announce the release.") # MANUAL
-        continue_or_exit("Please announce the release using the email structure below.\n" +
-                         "Note that this text may have changed since the last time a release was performed.\n" +
-                         get_announcement_email(new_checker_version))
-
         print_step("Push Step 11. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
@@ -473,7 +468,12 @@ def main(argv):
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 
-    print  msg
+        print  msg
+
+        print_step("Push Step 10. Announce the release.") # MANUAL
+        continue_or_exit("Please announce the release using the email structure below.\n" +
+                         "Note that this text may have changed since the last time a release was performed.\n" +
+                         get_announcement_email(new_checker_version))
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
