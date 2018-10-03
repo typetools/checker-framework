@@ -53,9 +53,14 @@ public class DeterminismQualifierPolymorphism extends DefaultQualifierPolymorphi
     @Override
     protected void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
-        if (type.hasAnnotation(factory.POLYDET) || type.hasAnnotation(factory.POLYDET_USE)) {
+        if (type.hasAnnotation(factory.POLYDET)) {
             AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
             type.replaceAnnotations(quals);
+        } else if (type.hasAnnotation(factory.POLYDET_USE)) {
+            AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
+            if (!quals.contains(factory.POLYDET)) {
+                type.replaceAnnotations(quals);
+            }
         } else if (type.hasAnnotation(factory.POLYDET_UP)) {
             AnnotationMirrorSet quals = replacements.get(factory.POLYDET);
             if (quals.contains(factory.DET)) {
