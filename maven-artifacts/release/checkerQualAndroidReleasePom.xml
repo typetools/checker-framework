@@ -22,7 +22,7 @@
     </description>
 
     <groupId>org.checkerframework</groupId>
-    <artifactId>checker-compat-qual</artifactId>
+    <artifactId>checker-qual-android</artifactId>
 
     <licenses>
 
