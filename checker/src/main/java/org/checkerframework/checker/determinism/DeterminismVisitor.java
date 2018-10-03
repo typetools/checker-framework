@@ -2,8 +2,10 @@ package org.checkerframework.checker.determinism;
 
 import com.sun.source.tree.*;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -354,6 +356,61 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
         if (!atypeFactory.getAnnotatedType(conditionalExpression).hasAnnotation(atypeFactory.DET)) {
             checker.report(Result.failure("invalid.type.on.conditional"), conditionalExpression);
         }
+    }
+
+    /**
+     * Reports an error if {@code @PolyDet("up")}, {@code @PolyDet("down")} or
+     * {@code @PolyDet("use")} is written on a formal parameter or a return type and none of the
+     * formal parameters or the receiver has the type {@code @PolyDet}.
+     */
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        HashSet<AnnotationMirror> polyAnnotations = new HashSet<>();
+        VariableTree receiverParam = node.getReceiverParameter();
+        if (receiverParam != null) {
+            polyAnnotations.add(
+                    atypeFactory
+                            .getAnnotatedType(receiverParam)
+                            .getAnnotationInHierarchy(atypeFactory.NONDET));
+        } else if (!node.getModifiers().getFlags().contains(Modifier.STATIC)) {
+            polyAnnotations.add(atypeFactory.POLYDET);
+        }
+        for (VariableTree param : node.getParameters()) {
+            polyAnnotations.add(
+                    atypeFactory
+                            .getAnnotatedType(param)
+                            .getAnnotationInHierarchy(atypeFactory.NONDET));
+        }
+        boolean isPolyPresent = false;
+        boolean isPolyUpPresent = false;
+        boolean isPolyDownPresent = false;
+        boolean isPolyUsePresent = false;
+        for (AnnotationMirror atm : polyAnnotations) {
+            if (AnnotationUtils.areSame(atm, atypeFactory.POLYDET_UP)) {
+                isPolyUpPresent = true;
+            }
+            if (AnnotationUtils.areSame(atm, atypeFactory.POLYDET_DOWN)) {
+                isPolyDownPresent = true;
+            }
+            if (AnnotationUtils.areSame(atm, atypeFactory.POLYDET_USE)) {
+                isPolyUsePresent = true;
+            }
+            if (AnnotationUtils.areSame(atm, atypeFactory.POLYDET)) {
+                isPolyPresent = true;
+            }
+        }
+        if (!isPolyPresent) {
+            if (isPolyUpPresent) {
+                checker.report(Result.failure("invalid.polydet.up"), node);
+            }
+            if (isPolyDownPresent) {
+                checker.report(Result.failure("invalid.polydet.down"), node);
+            }
+            if (isPolyUsePresent) {
+                checker.report(Result.failure("invalid.polydet.use"), node);
+            }
+        }
+        return super.visitMethod(node, p);
     }
 
     /**

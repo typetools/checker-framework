@@ -3,21 +3,13 @@ import org.checkerframework.checker.determinism.qual.*;
 
 // @skip-test
 public class Issue48 {
-    //    static void testParams(@PolyDet Integer a) {}
-    //
-    //    static void callTestParams(@PolyDet List<@PolyDet Integer> list) {
-    //        testParams(list.get(0));
-    //    }
-    //
-    //    public static void f(@PolyDet int a) {}
-    //
-    //    public static void g(@PolyDet int @PolyDet [] arr) {
-    //        f(arr[0]);
-    //    }
+    static void testParams(@PolyDet Integer a) {}
 
-    static void testDet(@Det int a) {}
+    static void callTestParams(@PolyDet List<@PolyDet Integer> list) {
+        testParams(list.get(0));
+    }
 
-    static void callTestDet(@NonDet int @NonDet [] arr) {
-        testDet(arr[0]);
+    public static void g(@PolyDet Integer @PolyDet [] arr) {
+        testParams(arr[0]);
     }
 }
