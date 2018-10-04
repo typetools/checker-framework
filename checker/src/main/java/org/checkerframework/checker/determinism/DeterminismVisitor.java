@@ -353,8 +353,13 @@ public class DeterminismVisitor extends BaseTypeVisitor<DeterminismAnnotatedType
 
     /** if {@code conditionalExpression} does not have the type {@code @Det}, reports an error. */
     private void checkForDetConditional(ExpressionTree conditionalExpression) {
-        if (!atypeFactory.getAnnotatedType(conditionalExpression).hasAnnotation(atypeFactory.DET)) {
-            checker.report(Result.failure("invalid.type.on.conditional"), conditionalExpression);
+        AnnotatedTypeMirror conditionType = atypeFactory.getAnnotatedType(conditionalExpression);
+        if (!conditionType.hasAnnotation(atypeFactory.DET)) {
+            checker.report(
+                    Result.failure(
+                            "invalid.type.on.conditional",
+                            conditionType.getAnnotationInHierarchy(atypeFactory.NONDET)),
+                    conditionalExpression);
         }
     }
 
