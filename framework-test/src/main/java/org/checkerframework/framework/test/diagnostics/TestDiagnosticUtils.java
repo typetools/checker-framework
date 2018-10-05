@@ -18,7 +18,7 @@ public class TestDiagnosticUtils {
 
     // this regex represents how the diagnostics appear in Java source files
     public static final String DIAGNOSTIC_IN_JAVA_REGEX =
-            "\\s*(error|fixable-error|warning|other):\\s*(\\(?.*\\)?)\\s*";
+            "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(\\(?.*\\)?)\\s*";
     public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
             Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
 

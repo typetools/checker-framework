@@ -167,8 +167,9 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Returns whether or not {@code field} has the invariant annotation.
      *
-     * <p>This method is a convenience method for {@link
-     * #hasFieldInvariantAnnotation(AnnotatedTypeMirror)}.
+     * <p>This method is a convenience method for {@link *
+     * #hasFieldInvariantAnnotation(AnnotatedTypeMirror, VariableElement)}.
+     * #hasFieldInvariantAnnotation(AnnotatedTypeMirror, VariableElement)}.
      *
      * <p>If the {@code field} is a type variable, this method returns true if any possible
      * instantiation of the type parameter could have the invariant annotation. See {@link
@@ -179,7 +180,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected final boolean hasFieldInvariantAnnotation(VariableTree field) {
         AnnotatedTypeMirror type = getAnnotatedType(field);
-        return hasFieldInvariantAnnotation(type);
+        VariableElement fieldElement = TreeUtils.elementFromDeclaration(field);
+        return hasFieldInvariantAnnotation(type, fieldElement);
     }
 
     /**
@@ -192,7 +194,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param type of field that might have invariant annotation
      * @return whether or not the type has the invariant annotation
      */
-    protected abstract boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type);
+    protected abstract boolean hasFieldInvariantAnnotation(
+            AnnotatedTypeMirror type, VariableElement fieldElement);
 
     /**
      * Creates a {@link UnderInitialization} annotation with the given type as its type frame
@@ -658,8 +661,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 // The receiver is not initialized for this frame and the type being computed is not
                 // a LHS.
                 // Replace all annotations with the top annotation for that hierarchy.
-                type.clearAnnotations();
-                type.addAnnotations(qualHierarchy.getTopAnnotations());
+                type.replaceAnnotation(qualHierarchy.getTopAnnotation(COMMITTED));
             }
 
             if (!AnnotationUtils.containsSame(declaredFieldAnnotations, NOT_ONLY_COMMITTED)
