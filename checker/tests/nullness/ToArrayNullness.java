@@ -4,8 +4,8 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class ToArrayNullness {
-    private List<@Nullable String> nullableList = new ArrayList<@Nullable String>();
-    private List<@NonNull String> nonnullList = new ArrayList<@NonNull String>();
+    private List<@Nullable String> nullableList = new ArrayList<>();
+    private List<@NonNull String> nonnullList = new ArrayList<>();
 
     void listToArrayObject() {
         for (@Nullable Object o : nullableList.toArray()) ;

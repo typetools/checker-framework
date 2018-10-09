@@ -26,21 +26,21 @@ public class AssignmentsGeneric {
         // :: warning: (cast.unsafe)
         @Odd String s = (@Odd String) "";
 
-        List<@Odd String> lst = new LinkedList<@Odd String>();
+        List<@Odd String> lst = new LinkedList<>();
         lst = new ArrayList<@Odd String>();
 
         methodA(lst);
     }
 
     public void testEnhancedForLoop() {
-        List<@Odd String> lst = new LinkedList<@Odd String>();
+        List<@Odd String> lst = new LinkedList<>();
         for (@Odd String str : lst) {
             System.out.println(str);
         }
     }
 
     public void testGenericInvocation() {
-        List<@Odd String> lst = new LinkedList<@Odd String>();
+        List<@Odd String> lst = new LinkedList<>();
         // :: warning: (cast.unsafe)
         @Odd String s = (@Odd String) "";
         lst.add(s);

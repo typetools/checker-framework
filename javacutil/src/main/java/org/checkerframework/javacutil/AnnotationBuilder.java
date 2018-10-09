@@ -62,7 +62,7 @@ public class AnnotationBuilder {
 
     /** Caching for annotation creation. */
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
+            Collections.synchronizedMap(new HashMap<>());
 
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());

@@ -8,7 +8,7 @@ public class List<T> {
     @NotOnlyInitialized Node<T> sentinel;
 
     public List() {
-        this.sentinel = new Node<T>(this);
+        this.sentinel = new Node<>(this);
     }
 
     void insert(@Nullable T data) {
@@ -16,7 +16,7 @@ public class List<T> {
     }
 
     public static void main() {
-        List<Integer> l = new List<Integer>();
+        List<Integer> l = new List<>();
         l.insert(1);
         l.insert(2);
     }
@@ -47,7 +47,7 @@ class Node<T> {
     }
 
     void insertAfter(@Nullable T data) {
-        Node<T> n = new Node<T>(this, this.next, data);
+        Node<T> n = new Node<>(this, this.next, data);
         this.next.prev = n;
         this.next = n;
     }
