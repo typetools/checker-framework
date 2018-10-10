@@ -1989,14 +1989,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
      * List)} for the checks of type argument well-formedness.
      *
-     * <p>Note that "this" and "super" constructor invocations are also handled by this method.
-     * Method {@link #constructorFromUse(NewClassTree)} is only used for a constructor invocation in
-     * a "new" expression.
+     * <p>Note that "this" and "super" constructor invocations are also handled by this method
+     * (explicit or implicit ones, at the beginning of a constructor). Method {@link
+     * #constructorFromUse(NewClassTree)} is only used for a constructor invocation in a "new"
+     * expression.
      *
      * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
      */
     public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
+        System.out.printf("methodFromUse(%s)%n", tree);
+
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
 
