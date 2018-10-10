@@ -1998,8 +1998,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the method type being invoked with tree and the (inferred) type arguments
      */
     public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
-        System.out.printf("methodFromUse(%s)%n", tree);
-
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
 
