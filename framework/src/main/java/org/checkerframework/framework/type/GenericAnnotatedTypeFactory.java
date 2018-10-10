@@ -724,6 +724,10 @@ public abstract class GenericAnnotatedTypeFactory<
             MemberReferenceTree memberReferenceTree, AnnotatedExecutableType constructorType) {
         assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
 
+        System.out.printf(
+                "getResultingTypeOfConstructorMemberReference(%s, %s)%n",
+                memberReferenceTree, constructorType);
+
         // The return type for constructors should only have explicit annotations from the
         // constructor.  Recreate some of the logic from TypeFromTree.visitNewClass here.
 
