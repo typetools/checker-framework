@@ -2145,18 +2145,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     (inferred) type arguments
      */
     public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        System.out.printf("constructorFromUse(%s)%n", tree);
-
         ExecutableElement ctor = TreeUtils.constructor(tree);
-        System.out.printf("ctor = %s%n", ctor);
         AnnotatedTypeMirror type = fromNewClass(tree);
-        System.out.printf("type = %s%n", type);
         addComputedTypeAnnotations(tree.getIdentifier(), type);
-        System.out.printf("type = %s%n", type);
         AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-        System.out.printf("con = %s%n", con);
-
-        con.apply(glb(con, type));
 
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
                 && isSyntheticArgument(tree.getArguments().get(0))) {
@@ -2178,10 +2170,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);
         }
-
-        System.out.printf(
-                "new ParameterizedMethodType(%s, %s) => %s%n",
-                con, typeargs, new ParameterizedMethodType(con, typeargs));
 
         return new ParameterizedMethodType(con, typeargs);
     }
