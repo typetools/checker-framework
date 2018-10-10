@@ -722,7 +722,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns a mutable set of annotation classes that are supported by a checker
+     * Returns a mutable set of annotation classes that are supported by a checker.
      *
      * <p>Subclasses may override this method and to return a mutable set of their supported type
      * qualifiers through one of the 5 approaches shown below.

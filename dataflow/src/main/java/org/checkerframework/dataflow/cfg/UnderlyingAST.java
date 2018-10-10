@@ -11,12 +11,12 @@ import com.sun.source.tree.Tree;
  */
 public abstract class UnderlyingAST {
     public enum Kind {
-        /** The underlying code is a whole method */
+        /** The underlying code is a whole method. */
         METHOD,
-        /** The underlying code is a lambda expression */
+        /** The underlying code is a lambda expression. */
         LAMBDA,
 
-        /** The underlying code is an arbitrary Java statement or expression */
+        /** The underlying code is an arbitrary Java statement or expression. */
         ARBITRARY_CODE,
     }
 
@@ -36,7 +36,7 @@ public abstract class UnderlyingAST {
     /** If the underlying AST is a method. */
     public static class CFGMethod extends UnderlyingAST {
 
-        /** The method declaration */
+        /** The method declaration. */
         protected final MethodTree method;
 
         /** The class tree this method belongs to. */

@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
-    /** Annotated type factory */
+    /** Annotated type factory. */
     protected final AnnotatedTypeFactory atypeFactory;
 
     /**

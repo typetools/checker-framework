@@ -205,7 +205,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Get a list of all successor Blocks for cur
+     * Get a list of all successor Blocks for cur.
      *
      * @return a Deque of successor Blocks
      */

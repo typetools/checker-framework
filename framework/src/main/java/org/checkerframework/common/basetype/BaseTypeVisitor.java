@@ -2050,7 +2050,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
                 new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                    /** Maps from a type's toString to its verbose toString */
+                    /** Maps from a type's toString to its verbose toString. */
                     Map<String, String> map = new HashMap<>();
 
                     @Override
@@ -3340,7 +3340,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the variable accessed is an assignable variable or not, given the current scope
+     * Tests whether the variable accessed is an assignable variable or not, given the current
+     * scope.
      *
      * <p>TODO: document which parameters are nullable; e.g. receiverType is null in many cases,
      * e.g. local variables.

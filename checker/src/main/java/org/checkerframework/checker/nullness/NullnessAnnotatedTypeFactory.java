@@ -145,7 +145,7 @@ public class NullnessAnnotatedTypeFactory
                     "org.checkerframework.checker.nullness.compatqual.NullableDecl",
                     "org.checkerframework.checker.nullness.compatqual.NullableType");
 
-    /** Creates NullnessAnnotatedTypeFactory */
+    /** Creates NullnessAnnotatedTypeFactory. */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
 
