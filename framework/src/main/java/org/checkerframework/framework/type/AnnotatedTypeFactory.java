@@ -128,6 +128,9 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *
  * This implementation only adds qualifiers explicitly specified by the programmer.
  *
+ * <p>Unless otherwise indicated, each public method in this class returns a "fully annotated" type,
+ * which is one that has an annotation in all positions.
+ *
  * <p>Type system checker writers may need to subclass this class, to add implicit and default
  * qualifiers according to the type system semantics. Subclasses should especially override {@link
  * AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)} and {@link
