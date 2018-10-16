@@ -126,7 +126,9 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *   <li>{@link #getAnnotatedType(Element)}
  * </ul>
  *
- * This implementation only adds qualifiers explicitly specified by the programmer.
+ * This implementation only adds qualifiers explicitly specified by the programmer. Subclasses
+ * override {@link #addComputedTypeAnnotations} to add defaults, implicits, flow-sensitive
+ * refinemont, and type-system-specific rules.
  *
  * <p>Unless otherwise indicated, each public method in this class returns a "fully annotated" type,
  * which is one that has an annotation in all positions.
