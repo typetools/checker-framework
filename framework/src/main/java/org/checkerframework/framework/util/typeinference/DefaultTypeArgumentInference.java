@@ -404,7 +404,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * If we have inferred a type argument from the supertype constraints and this type argument is
-     * BELOW the lower bound, make it AT the lower bound
+     * BELOW the lower bound, make it AT the lower bound.
      *
      * <p>e.g.
      *

@@ -33,7 +33,7 @@ public class AssertIfFalseTest {
         }
     }
 
-    /** Returns whether or not constant_value is a legal constant */
+    /** Returns whether or not constant_value is a legal constant. */
     @EnsuresNonNullIf(result = false, expression = "#1")
     static boolean legalConstant(final @Nullable Object constant_value) {
         if ((constant_value == null)

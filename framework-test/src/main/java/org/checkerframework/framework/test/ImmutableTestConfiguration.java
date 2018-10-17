@@ -39,7 +39,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
      */
     private final List<File> testSourceFiles;
 
-    /** A list of AnnotationProcessors (usually checkers) to pass to the compiler for this test */
+    /** A list of AnnotationProcessors (usually checkers) to pass to the compiler for this test. */
     private final List<String> processors;
 
     private final boolean shouldEmitDebugInfo;

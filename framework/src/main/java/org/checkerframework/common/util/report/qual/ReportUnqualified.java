@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * An annotation intended solely for representing an unqualified type in the qualifier hierarchy for
- * the Report Checker
+ * the Report Checker.
  *
  * <p>Note that because of the missing RetentionPolicy, the qualifier will not be stored in
  * bytecode.

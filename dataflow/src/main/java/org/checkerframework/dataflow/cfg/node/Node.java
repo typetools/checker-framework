@@ -91,7 +91,7 @@ public abstract class Node {
     }
 
     /**
-     * Accept method of the visitor pattern
+     * Accept method of the visitor pattern.
      *
      * @param <R> result type of the operation
      * @param <P> parameter type

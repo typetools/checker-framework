@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.reflection.qual.MethodVal;
 
-/** Testing that reflection resolution uses more precise annotations for the Nullness Checker */
+/** Testing that reflection resolution uses more precise annotations for the Nullness Checker. */
 public class NullnessReflectionResolutionTest {
     @NonNull Object returnNonNull() {
         return new Object();
