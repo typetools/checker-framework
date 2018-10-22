@@ -1,8 +1,6 @@
 // Test case for Issue 979:
 // https://github.com/typetools/checker-framework/issues/979
 
-// @below-java8-jdk-skip-test
-
 import java.util.List;
 
 @SuppressWarnings("nullness") // don't bother with implementations

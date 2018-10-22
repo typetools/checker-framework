@@ -10,7 +10,7 @@
 #
 # 1.  Clone and build the checker framework from source.
 #     git clone https://github.com/typetools/checker-framework
-#     cd checker-framework && ant
+#     cd checker-framework && ./gradlew assemble
 #
 # 2.  Clone the OpenJDK 8u repository and sub-repositories.
 #     hg clone http://hg.openjdk.java.net/jdk8u/jdk8u  [yes, jdk8u*2]
@@ -45,7 +45,7 @@
 # 0. save the newly created jdk8.jar somewhere;
 # 1. check out and build annotated-jdk branch;
 # 2. copy the newly created jdk8.jar to checker/dist; and
-# 3. run "ant tests-nobuildjdk" from Checker Framework's base directory.
+# 3. run "./gradlew build" from Checker Framework's base directory.
 
 export SCRIPTDIR=`cd \`dirname $0\` && pwd`
 export WD="`pwd`"            # run from top directory of jdk8u clone
@@ -55,15 +55,13 @@ export JAIFDIR="${WD}/jaifs" # directory for generated JAIFs
 export PATCH=${SCRIPTDIR}/ad-hoc.diff
 
 # parameters derived from environment
-export JSR308=`[ -d "${CHECKERFRAMEWORK}" ] && cd "${CHECKERFRAMEWORK}/.." && pwd`
-export AFU="${JSR308}/annotation-tools"
-export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities.jar"
+export PARENTDIR=`readlink -e "${CHECKERFRAMEWORK}/.."`
+export AFU="${PARENTDIR}/annotation-tools"
+export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities-all.jar"
 export CFJAR="${CHECKERFRAMEWORK}/checker/dist/checker.jar"
-export LTJAR="${JSR308}/jsr308-langtools/dist/lib/javac.jar"
-export JDJAR="${JSR308}/jsr308-langtools/dist/lib/javadoc.jar"
 export JAVAC="java -jar ${CHECKERFRAMEWORK}/checker/dist/checker.jar"
-export JFLAGS="-Xbootclasspath/p:${CLASSPATH}/checker/dist/javac.jar -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 -source 8 -target 8 -encoding ascii"
-export CLASSPATH=".:${JDK}/build/classes:${LTJAR}:${JDJAR}:${CFJAR}:${AFUJAR}:${CLASSPATH}"
+export JFLAGS=" -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 -source 8 -target 8 -encoding ascii"
+export CLASSPATH=".:${JDK}/build/classes:${JDJAR}:${CFJAR}:${AFUJAR}:${CLASSPATH}"
 
 # return value
 export RET=0

@@ -10,7 +10,7 @@ javac.bat - Is the equivalent of the javac script for Windows systems.
 
 
 The directory "checker/dist/" houses all jars built for the binary distribution.
-To build these jars, run "ant clean dist" from the "checker" directory.
+To build these jars, run "./gradlew assemble buildJdk" from the "checker-framework" directory.
 Afterward, the directory will contain all jars needed to run the
 Checker Framework.
 
@@ -23,11 +23,11 @@ itself, all built-in checkers, and the annotations found in checker-qual.jar.
 javac.jar - Contains the Type Annotations Compiler
 (see https://checkerframework.org/README-jsr308.html)
 
-jdk<x>.jar - Each jdk<x>.jar, where <x> is a major java version (e.g., 6, 7,
-8, or 9), contains a version of the OpenJDK annotated with Checker Framework
+jdk<x>.jar - Each jdk<x>.jar, where <x> is a major java version (e.g.,
+8 or 9), contains a version of the OpenJDK annotated with Checker Framework
 annotations.  Which jdk<x>.jar version is built depends on what version of
 java is found in the "JAVA_HOME" environment variable.  You can also build
-all versions of jdk<x>.jar by running "ant all.jdks.jar".
+all versions of jdk<x>.jar by running "./gradlew buildJdk".
 
 
 maven-artifacts/poms - this directory contains Maven POM files for each of the

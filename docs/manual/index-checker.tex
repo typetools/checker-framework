@@ -58,6 +58,22 @@ To run the Index Checker, run the command
   javac -processor index \emph{MyJavaFile}.java
 \end{alltt}
 
+Recall that in Java, type annotations are written before the type;
+in particular,
+array annotations appear immediately before ``\<[]>''.
+Here is how to declare a length-9 array of positive integers:
+
+\begin{Verbatim}
+  @Positive int @ArrayLen(9) []
+\end{Verbatim}
+
+Multi-dimensional arrays are similar.
+Here is how to declare a length-2 array of length-4 arrays:
+
+\begin{Verbatim}
+  String @ArrayLen(2) [] @ArrayLen(4) []
+\end{Verbatim}
+
 
 \section{Index Checker structure and annotations\label{index-annotations}}
 
@@ -307,6 +323,42 @@ or \code{@LTOMLengthOf("arr")}.
 
 \end{description}
 
+The following method annotations can be used to establish a postcondition
+of a method which ensures that a certain expression is a valid index for a sequence:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOf}{String[] value, String[] targetValue, String[] offset}]
+  When the method with this annotation returns, the expression (or all the expressions) given in the \code{value} element
+  is less than the length of the given sequences with the given offsets. More preciesly, the expression
+  has the \code{@LTLengthOf} qualifier with the \code{value} and \code{offset} arguments
+  taken from the \code{targetValue} and \code{offset} elements of this annotation.
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOfIf}{String[] expression, boolean result, String[] targetValue, String[] offset}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions)
+  is less than the length of the given sequences with the given offsets.
+\end{description}
+
+The Upper Bound Checker also supports a declaration annotation
+\refqualclasswithparams{checker/index/qual}{HasSubsequence}{String[] value, String[] from, String[] to}. This annotation
+can be written on sequence declarations to indicate that a sequence has a named subsequence with the given name,
+which ranges from \code{from} to \code{to} in the annotated sequence. So, for example:
+
+\begin{Verbatim}
+  @HasSubsequence(value="this", from="this.start", to="this.end") int [] array;
+\end{Verbatim}
+
+The array declaration above indicates that the \code{this} object is a subsequence of \code{array},
+and that valid indexes to \code{this} translate to indexes \code{start} to \code{end - 1} in \code{array}.
+The length of \code{this}
+is \code{end - start}. When an array is assigned to \code{array}, three facts are checked: that \code{start}
+is non-negative, that \code{start} is less than or equal to \code{end}, and that \code{end} is less than or
+equal to the length of \code{array}. Note that this doesn't guarantee that \code{this} is in fact a subsequence,
+just that there is a such a subsequence. The programmer must manually verify that \code{this} actually refers
+to that subsequence. Such a subsequence annotation permits additional types to be inferred for binary expressions
+involving either the \code{from} or \code{to} parameter to the annotation. If \code{x} is \code{@IndexFor("this")}
+in the example above, then \code{start + x} is \code{@IndexFor("array")}. If \code{y} is \code{@IndexFor("array")} and
+\code{@LessThan("end")}, then \code{y - start} is \code{@IndexFor("this")}.
+Finally, \code{end - start} is \code{@IndexOrHigh("this")}.
 
 \section{Sequence minimum lengths\label{index-minlen}}
 
@@ -338,6 +390,8 @@ annotated as
 
 The MinLen type qualifier is implemented in practice by the Constant Value Checker,
 using \<@ArrayLenRange> annotations (see \chapterpageref{constant-value-checker}).
+This means that errors related to the minimum lengths of arrays must be suppressed using
+the "value" argument to \<@SuppressWarnings>.
 \refqualclass{common/value/qual}{ArrayLenRange} and \refqualclass{common/value/qual}{ArrayLen}
 annotations can also be used to establish the minimum length of a sequence, if a
 more precise estimate of length is known. For example,
@@ -386,6 +440,16 @@ can establish the minimum length of a sequence:
     internally by the type system.}
   \label{fig-index-array-types}
 \end{figure}
+
+The following method annotation can be used to establish a postcondition
+of a method which ensures that a certain sequence has a minimum length:
+
+\begin{description}
+\item[\refqualclasswithparams{common/value/qual}{EnsuresMinLenIf}{String[] expression, boolean result, int targetValue}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions) is a sequence
+  with at least \code{targetValue} elements.
+\end{description}
 
 \section{Sequences of the same length\label{index-samelen}}
 
@@ -619,6 +683,26 @@ the example type-check without false positives, a new annotation such as
 \<@SubstringIndexFor\allowbreak(value = "receiver", offset = "substring.length()-1")>
 is necessary.
 
+\section{Inequalities\label{index-inequalities}}
+
+The Index Checker estimates which expression's values are less than other expressions' values.
+
+\begin{description}
+
+\item[\refqualclasswithparams{checker/index/qual}{LessThan}{String[] values}]
+  An expression with this type has a value that is less than the value of each
+  expression listed in \<values>. The expressions in values must be composed of
+  final or effectively final variables and constants.
+
+\item[\refqualclass{checker/index/qual}{LessThanUnknown}]
+  There is no information about the value of an expression this type relative to other expressions.
+  This is the top type, and should not be written by the programer.
+
+ \item[\refqualclass{checker/index/qual}{LessThanBottom}]
+   This is the bottom type for the less than type system. It should
+   never need to be written by the programmer.
+
+\end{description}
 
 \section{Annotating fixed-size data structures\label{index-annotating-fixed-size}}
 

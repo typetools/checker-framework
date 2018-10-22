@@ -9,9 +9,8 @@ public class Foo {
 
     @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
     @EnsuresNonNullIf(
-        expression = {"theObject", "getTheObject()"},
-        result = true
-    )
+            expression = {"theObject", "getTheObject()"},
+            result = true)
     public boolean hasTheObject() {
         return false;
     }

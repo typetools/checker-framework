@@ -3,14 +3,12 @@ import java.util.List;
 
 interface A<ID> {}
 
-@SuppressWarnings("nullness") // Why is there a nullness warning?
 class B1<ID> implements A<ID> {}
 
 interface B2 extends A<Long> {}
 
 class C extends B1<Long> implements B2 {}
 
-@SuppressWarnings("nullness") // Why is there a nullness warning?
 class Upper<ID, X extends A<ID>, Y extends X> {}
 
 class Lower extends Upper<Long, B2, C> {}

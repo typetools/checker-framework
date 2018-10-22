@@ -30,7 +30,7 @@ build: classes
 
 ############## Validate annotated jdk against missing methods ##############
 
-SOURCES = $(shell find src/java src/javax src/org -name '*.java' | sort)
+SOURCES = $(shell find src/java src/javax src/org -name '[A-Za-z_]*.java' | sort)
 # CLASSES = $(shell find src/java src/javax src/org -name '*.class' | sort)
 DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 
@@ -38,8 +38,9 @@ DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 classes: $(SOURCES)
 	mkdir -p build
 	@echo "Building the JDK..."
+	@echo 'Ignore "warning: You do not seem to be using the distributed annotated JDK."'
 # TODO: fix all issues and remove -Awarns
-	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns -Xmaxwarns 5000 $?
+	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -Awarns -Xmaxwarns 5000 $?
 
 build/%.expected: build/%.class
 	@$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@

@@ -1,0 +1,8 @@
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile configurations.javacJar
+    compileOnly project(':checker-qual')
+}

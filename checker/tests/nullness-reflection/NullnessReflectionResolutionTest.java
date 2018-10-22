@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.reflection.qual.MethodVal;
 
-/** Testing that reflection resolution uses more precise annotations for the Nullness Checker */
+/** Testing that reflection resolution uses more precise annotations for the Nullness Checker. */
 public class NullnessReflectionResolutionTest {
     @NonNull Object returnNonNull() {
         return new Object();
@@ -11,10 +11,9 @@ public class NullnessReflectionResolutionTest {
 
     void testReturnNonNull(
             @MethodVal(
-                        className = "NullnessReflectionResolutionTest",
-                        methodName = "returnNonNull",
-                        params = 0
-                    )
+                            className = "NullnessReflectionResolutionTest",
+                            methodName = "returnNonNull",
+                            params = 0)
                     Method m)
             throws Exception {
         @NonNull Object o = m.invoke(this);
@@ -24,10 +23,9 @@ public class NullnessReflectionResolutionTest {
 
     void testParamNullable(
             @MethodVal(
-                        className = "NullnessReflectionResolutionTest",
-                        methodName = "paramNullable",
-                        params = 2
-                    )
+                            className = "NullnessReflectionResolutionTest",
+                            methodName = "paramNullable",
+                            params = 2)
                     Method m)
             throws Exception {
         @NonNull Object o = m.invoke(this, null, null);
@@ -40,10 +38,9 @@ public class NullnessReflectionResolutionTest {
 
     void testParamAndReturnNonNullStatic(
             @MethodVal(
-                        className = "NullnessReflectionResolutionTest",
-                        methodName = "paramAndReturnNonNullStatic",
-                        params = 2
-                    )
+                            className = "NullnessReflectionResolutionTest",
+                            methodName = "paramAndReturnNonNullStatic",
+                            params = 2)
                     Method m)
             throws Exception {
         @NonNull Object o1 = m.invoke(this, null, null);

@@ -88,21 +88,7 @@ transformation:
 * eliminate postInit method
 
 * load javac via a classloader rather than by starting a new process -- this
-  may avoid some problems with the Maven and Eclipse plugins?
-
-
-* use a single Processor implementation and ensure checker writers never have
-to worry about the Processor interface.  Invocation could be done a number of
-ways:
-javac --processor checkerFramework.CheckerFramework -Acheckers:checker1:checker2:checker
-javac --checkers checker1:checker2:checkers3
-By the way, the second option will work with both the jsr308 and Java8
-compilers as the --checkers could be translated by CheckerMain into the first
-form.  [I don't see how a Java 8 compiler could handle the --checkers
-option; it will only work with a non-standard javac binary.  But maybe the
-proposal is to always require that (e.g., via "java -jar checker.jar") and
-never support direct use of javac.]
-[This feels low-priority to Mike.]
+  may avoid some problems with the Maven plugin?
 
 ===========================================================================
 

@@ -1,7 +1,7 @@
 package java.util;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public interface ListIterator<E extends @Nullable Object> extends Iterator<E> {
+public interface ListIterator<E> extends Iterator<E> {
   public abstract boolean hasNext();
   public abstract E next();
   public abstract boolean hasPrevious();

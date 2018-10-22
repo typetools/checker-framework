@@ -1,0 +1,33 @@
+task copySources(type: Copy) {
+    description 'Copy checker-qual source from other projects.'
+    includeEmptyDirs = false
+    doFirst {
+        // Delete the directory in case a previously copied file should no longer be in checker-qual
+        delete file('src/main/java')
+    }
+
+    from files('../checker/src/main/java', '../dataflow/src/main/java', '../framework/src/main/java')
+    include "**/FormatUtil.java"
+    include "**/NullnessUtil.java"
+    include "**/RegexUtil.java"
+    include "**/UnitsTools.java"
+    include "**/SignednessUtil.java"
+    include "**/I18nFormatUtil.java"
+    include '**/org/checkerframework/**/qual/*.java'
+    include '**/Opt.java'
+    // TODO: Should we move this into a qual directory?
+    include '**/PurityUnqualified.java'
+
+    // Make files read only.
+    fileMode(0444)
+
+    into file('src/main/java')
+}
+
+compileJava {
+    dependsOn copySources
+}
+
+clean {
+    delete file('generated-src/')
+}

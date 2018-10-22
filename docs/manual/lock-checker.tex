@@ -38,7 +38,7 @@ A monitor lock is acquired upon entry to a \<synchronized> method or block,
 and is released on exit from that method or block.
 %  (More precisely,
 %  the current thread locks the monitor associated with the value of
-%  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
+%  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
 An explicit lock is acquired by a method call such as
 \sunjavadoc{java/util/concurrent/locks/Lock.html\#lock--}{Lock.lock()},
 and is released by another method call such as
@@ -720,7 +720,7 @@ Java provides two types of locking:  monitor locks and explicit locks.
   modifier acquires the lock on the method receiver when called.
   (More precisely,
   the current thread locks the monitor associated with the value of
-  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
+  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
   The lock is automatically released when execution exits the block or the
   method body, respectively.
   We use the term ``monitor lock'' for a lock acquired using a
@@ -879,8 +879,10 @@ elsewhere.
 If your code is already annotated with a different lock
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
-exactly as if you had written the corresponding annotation from the
+as if you had written the corresponding annotation from the
 Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
 
 
 % These lists should be kept in sync with LockAnnotatedTypeFactory.java .

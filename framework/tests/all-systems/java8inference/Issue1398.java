@@ -1,6 +1,5 @@
 // Test case for Issue 1398
 // https://github.com/typetools/checker-framework/issues/1398
-// @below-java8-jdk-skip-test
 
 public class Issue1398 {
 

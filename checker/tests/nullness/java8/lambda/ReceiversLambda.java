@@ -1,4 +1,3 @@
-// @below-java8-jdk-skip-test
 // Test references to this and super in a lambda.
 
 import org.checkerframework.checker.nullness.qual.*;
@@ -16,6 +15,7 @@ class ReceiverTest {
 
     // :: error: (method.invocation.invalid)
     FunctionRT<String, String> f1 = s -> this.toString();
+    // :: error: (method.invocation.invalid)
     FunctionRT<String, String> f2 = s -> super.toString();
 
     void context1(@NonNull ReceiverTest this) {

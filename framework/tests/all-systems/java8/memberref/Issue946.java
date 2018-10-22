@@ -1,6 +1,5 @@
 // Test case for Issue 946
 // https://github.com/typetools/checker-framework/issues/946
-// @below-java8-jdk-skip-test
 
 interface Supply946<R> {
     R supply();

@@ -1,0 +1,20 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <name>Checker Qual Android</name>
+    <groupId>org.checkerframework</groupId>
+    <artifactId>checker-qual-android</artifactId>
+
+    <!-- Note: It's important that this is the first <version/> element to appear in this document (by line)
+         Because there is a simple logic in the release script to replace the version number of pom files -->
+    <version><!-- checker-framework-version -->2.5.6<!-- /checker-framework-version --></version>
+
+    <distributionManagement>
+        <repository>
+            <id>checker-releases</id>
+            <url>https://checkerframework.org/dev/m2-repo</url>
+        </repository>
+    </distributionManagement>
+</project>

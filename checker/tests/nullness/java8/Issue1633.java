@@ -1,6 +1,5 @@
 // Test case for Issue 1633:
 // https://github.com/typetools/checker-framework/issues/1633
-// @below-java8-jdk-skip-test
 
 import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.*;
@@ -80,7 +79,7 @@ class Issue1633 {
 @Covariant(0)
 final @NonNull class Optional1633<T extends @Nullable Object> {
 
-    /** If non-null, the value; if null, indicates no value is present */
+    /** If non-null, the value; if null, indicates no value is present. */
     private final @Nullable T value = null;
 
     // TODO: there are conceptually two versions of this method:

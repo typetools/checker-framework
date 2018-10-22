@@ -1,33 +1,12 @@
 This directory contains annotated versions of the JDK.
 
-(Annotated versions of non-JDK libraries appear either as .jar files in
-checker-framework/checker/lib or as stub files in a directory such as
-checker-framework/checker/src/org/checkerframework/checker/nullness/astubs/ .)
+(For non-JDK libraries, you can find annotated source code in forks in
+https://github.com/typetools/ .  Compiled versions appear in the Central
+Repository:
+https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
+.  See section "Using annotated libraries" in the Checker Framework Manual
+for information on using the compiled libraries in the Central Repository.)
 
-See chapter "Annotating libraries" in the Checker Framework Manual for
-information on using these classes.
-
-Some generated .jar files are checked into the repository, because
-generating them requires external dependencies (the Annotation File
-Utilities) and because it prevents bugs related to different people using
-different versions of the JDK.
-
-If you need stub files for additional library classes -- in the JDK or another
-library -- those can be generated using the StubGenerator tool along with some
-manual annotating.  The "Annotating libraries" chapter of the manual describes
-this process as well.
-
-If you do create new stub files please share them with us via email at
-checker-framework-dev@googlegroups.com.  Thanks!
-
-We do not add annotations for single methods.  Our policy is to only add a
-class when it is fully-annotated, with correct annotations for all of its
-methods.  This avoids confusion that could result from some methods in a
-class being correctly annotated and other methods not being annotated.  So,
-it is best if you can provide a fully-annotated class (this requires
-examining all the methods in the class).  Otherwise, provide what you can,
-but the annotations won't be added to the Checker Framework distribution
-until someone else gets a chance to examine all the other methods.
-
-When adding a file, currently you should use the JDK 7 version of the file,
-so that it can be compiled using JDK 7.
+The jdk.jar and jdk8.jar files in this directory are built from here, then
+copied to ../dist/ .  The Checker Framework always uses a jdk*.jar file
+from checker/dist/, never from here.

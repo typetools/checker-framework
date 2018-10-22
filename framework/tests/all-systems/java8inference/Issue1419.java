@@ -1,6 +1,5 @@
 // Test case for Issue 1419.
 // https://github.com/typetools/checker-framework/issues/1419
-// @below-java8-jdk-skip-test
 
 abstract class Issue1419 {
     class Map<A> {}

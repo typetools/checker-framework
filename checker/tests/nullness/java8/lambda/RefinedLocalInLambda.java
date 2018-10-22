@@ -1,6 +1,5 @@
 // Test case for issue #1248:
 // https://github.com/typetools/checker-framework/issues/1248
-// @skip-test until the issue is fixed
 
 import java.util.function.Predicate;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -13,10 +12,12 @@ public class RefinedLocalInLambda {
     }
 
     public static void printIntegersGreaterThan(@Nullable Integer limit) {
+        // :: error: (unboxing.of.nullable)
+        printIntegersWithPredicate(i -> i > limit); // type-checking fails
         if (limit == null) {
             return;
         }
-        printIntegersWithPredicate(i -> i > limit); // type-checking fails
+        printIntegersWithPredicate(i -> i > limit); // type-checking succeeds
         @NonNull Integer limit2 = limit;
         printIntegersWithPredicate(i -> i > limit2); // type-checking succeeds
         Integer limit3 = limit;

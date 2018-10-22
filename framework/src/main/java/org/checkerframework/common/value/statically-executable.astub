@@ -1,0 +1,409 @@
+import org.checkerframework.common.value.qual.*;
+
+package java.lang;
+
+class Boolean{
+    @StaticallyExecutable Boolean(boolean value);
+    @StaticallyExecutable Boolean(String s);
+    @StaticallyExecutable boolean booleanValue();
+    @StaticallyExecutable static boolean getBoolean(String name);
+    @StaticallyExecutable static boolean parseBoolean(String s);
+    @StaticallyExecutable @StringVal({"true", "false"}) String toString();
+    @StaticallyExecutable static @StringVal({"true", "false"}) String toString(boolean b);
+    @StaticallyExecutable static Boolean valueOf(boolean b);
+    @StaticallyExecutable static Boolean valueOf(String s);
+}
+
+class Byte{
+    @StaticallyExecutable Byte(byte value);
+    @StaticallyExecutable Byte(String s);
+
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Byte this);
+    @StaticallyExecutable static Byte decode(String nm);
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Byte this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Byte this);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Byte this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Byte this);
+    @StaticallyExecutable static byte parseByte(String s);
+    @StaticallyExecutable static byte parseByte(String s, int radix);
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Byte this);
+    @StaticallyExecutable @ArrayLen({1,2,3,4}) String toString();
+    @StaticallyExecutable static @ArrayLen({1,2,3,4}) String toString(byte b);
+    @StaticallyExecutable static @PolyValue Byte valueOf(@PolyValue byte b);
+    @StaticallyExecutable static Byte valueOf(String s);
+    @StaticallyExecutable static Byte valueOf(String s, int radix);
+}
+
+class Character{
+    @StaticallyExecutable Character(char value);
+
+    @StaticallyExecutable static int charCount(int codePoint);
+    @StaticallyExecutable char charValue();
+    @StaticallyExecutable static int codePointAt(char[] a, int index);
+    @StaticallyExecutable static int codePointAt(char[] a, int index, int limit);
+    @StaticallyExecutable static int codePointAt(CharSequence seq, int index);
+    @StaticallyExecutable static int codePointBefore(char[] a, int index);
+    @StaticallyExecutable static int codePointBefore(char[] a, int index, int start);
+    @StaticallyExecutable static int codePointBefore(CharSequence seq, int index);
+    @StaticallyExecutable static int codePointCount(char[] a, int offset, int count);
+    @StaticallyExecutable static int codePointCount(CharSequence seq, int beginIndex, int endIndex);
+    @StaticallyExecutable static int digit(char ch, int radix);
+    @StaticallyExecutable static int digit(int codePoint, int radix);
+    @StaticallyExecutable static char forDigit(int digit, int radix);
+    @StaticallyExecutable static byte getDirectionality(char ch);
+    @StaticallyExecutable static byte getDirectionality(int codePoint);
+    @StaticallyExecutable static int getNumericValue(char ch);
+    @StaticallyExecutable static int getNumericValue(int codePoint);
+    @StaticallyExecutable static int getType(char ch);
+    @StaticallyExecutable static int getType(int codePoint);
+    @StaticallyExecutable static boolean isDefined(char ch);
+    @StaticallyExecutable static boolean isDefined(int codePoint);
+    @StaticallyExecutable static boolean isDigit(char ch);
+    @StaticallyExecutable static boolean isDigit(int codePoint);
+    @StaticallyExecutable static boolean isHighSurrogate(char ch);
+    @StaticallyExecutable static boolean isIdentifierIgnorable(char ch);
+    @StaticallyExecutable static boolean isIdentifierIgnorable(int codePoint);
+    @StaticallyExecutable static boolean isISOControl(char ch);
+    @StaticallyExecutable static boolean isISOControl(int codePoint);
+    @StaticallyExecutable static boolean isJavaIdentifierPart(char ch);
+    @StaticallyExecutable static boolean isJavaIdentifierPart(int codePoint);
+    @StaticallyExecutable static boolean isJavaIdentifierStart(char ch);
+    @StaticallyExecutable static boolean isJavaIdentifierStart(int codePoint);
+    @StaticallyExecutable static boolean isJavaLetter(char ch);
+    @StaticallyExecutable static boolean isJavaLetterOrDigit(char ch);
+    @StaticallyExecutable static boolean isLetter(char ch);
+    @StaticallyExecutable static boolean isLetter(int codePoint);
+    @StaticallyExecutable static boolean isLetterOrDigit(char ch);
+    @StaticallyExecutable static boolean isLetterOrDigit(int codePoint);
+    @StaticallyExecutable static boolean isLowerCase(char ch);
+    @StaticallyExecutable static boolean isLowerCase(int codePoint);
+    @StaticallyExecutable static boolean isLowSurrogate(char ch);
+    @StaticallyExecutable static boolean isMirrored(char ch);
+    @StaticallyExecutable static boolean isMirrored(int codePoint);
+    @StaticallyExecutable static boolean isSpace(char ch);
+    @StaticallyExecutable static boolean isSpaceChar(char ch);
+    @StaticallyExecutable static boolean isSpaceChar(int codePoint);
+    @StaticallyExecutable static boolean isSupplementaryCodePoint(int codePoint);
+    @StaticallyExecutable static boolean isSurrogatePair(char high, char low);
+    @StaticallyExecutable static boolean isTitleCase(char ch);
+    @StaticallyExecutable static boolean isTitleCase(int codePoint);
+    @StaticallyExecutable static boolean isUnicodeIdentifierPart(char ch);
+    @StaticallyExecutable static boolean isUnicodeIdentifierPart(int codePoint);
+    @StaticallyExecutable static boolean isUnicodeIdentifierStart(char ch);
+    @StaticallyExecutable static boolean isUnicodeIdentifierStart(int codePoint);
+    @StaticallyExecutable static boolean isUpperCase(char ch);
+    @StaticallyExecutable static boolean isUpperCase(int codePoint);
+    @StaticallyExecutable static boolean isValidCodePoint(int codePoint);
+    @StaticallyExecutable static boolean isWhitespace(char ch);
+    @StaticallyExecutable static boolean isWhitespace(int codePoint);
+    @StaticallyExecutable static int offsetByCodePoints(char[] a, int start, int count, int index, int codePointOffset);
+    @StaticallyExecutable static int offsetByCodePoints(CharSequence seq, int index, int codePointOffset);
+    @StaticallyExecutable static char reverseBytes(char ch);
+    @StaticallyExecutable static char[] toChars(int codePoint);
+    @StaticallyExecutable static int toChars(int codePoint, char[] dst, int dstIndex);
+    @StaticallyExecutable static int toCodePoint(char high, char low);
+    @StaticallyExecutable static char toLowerCase(char ch);
+    @StaticallyExecutable static int toLowerCase(int codePoint);
+    @StaticallyExecutable @ArrayLen(1) String toString();
+    @StaticallyExecutable static @ArrayLen(1) String toString(char c);
+    @StaticallyExecutable static char toTitleCase(char ch);
+    @StaticallyExecutable static int toTitleCase(int codePoint);
+    @StaticallyExecutable static char toUpperCase(char ch);
+    @StaticallyExecutable static int toUpperCase(int codePoint);
+    @StaticallyExecutable static @PolyValue Character valueOf(@PolyValue char c);
+}
+
+class Double{
+    @StaticallyExecutable Double(double value);
+    @StaticallyExecutable Double(String s);
+
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Double this);
+    @StaticallyExecutable static int compare(double d1, double d2);
+    @StaticallyExecutable static long doubleToLongBits(double value);
+    @StaticallyExecutable static long doubleToRawLongBits(double value);
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Double this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Double this);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Double this);
+    @StaticallyExecutable boolean isInfinite();
+    @StaticallyExecutable static boolean isInfinite(double v);
+    @StaticallyExecutable boolean isNaN();
+    @StaticallyExecutable static boolean isNaN(double v);
+    @StaticallyExecutable static double longBitsToDouble(long bits);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Double this);
+    @StaticallyExecutable static double parseDouble(String s);
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Double this);
+    @StaticallyExecutable static String toHexString(double d);
+    @StaticallyExecutable String toString();
+    @StaticallyExecutable static String toString(double d);
+    @StaticallyExecutable static @PolyValue Double valueOf(@PolyValue double d);
+    @StaticallyExecutable static Double valueOf(String s);
+}
+class Float{
+    @StaticallyExecutable Float(double value);
+    @StaticallyExecutable Float(float value);
+    @StaticallyExecutable Float(String s);
+
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Float this);
+    @StaticallyExecutable static int compare(float f1, float f2);
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Float this);
+    @StaticallyExecutable static int floatToIntBits(float value);
+    @StaticallyExecutable static int floatToRawIntBits(float value);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Float this);
+    @StaticallyExecutable static float intBitsToFloat(int bits);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Float this);
+    @StaticallyExecutable boolean isInfinite();
+    @StaticallyExecutable static boolean isInfinite(float v);
+    @StaticallyExecutable boolean isNaN();
+    @StaticallyExecutable static boolean isNaN(float v);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Float this);
+    @StaticallyExecutable static float parseFloat(String s);
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Float this);
+    @StaticallyExecutable static String toHexString(float f);
+    @StaticallyExecutable String toString();
+    @StaticallyExecutable static String toString(float f);
+    @StaticallyExecutable static @PolyValue Float valueOf(@PolyValue float f);
+    @StaticallyExecutable static Float valueOf(String s);
+}
+
+class Integer{
+    @StaticallyExecutable Integer(int value);
+    @StaticallyExecutable Integer(String s);
+
+    @StaticallyExecutable static int bitCount(int i);
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Integer this);
+    @StaticallyExecutable static Integer decode(String nm);
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Integer this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Integer this);
+    @StaticallyExecutable static Integer getInteger(String nm);
+    @StaticallyExecutable static Integer getInteger(String nm, int val);
+    @StaticallyExecutable static Integer getInteger(String nm, Integer val);
+    @StaticallyExecutable static int highestOneBit(int i);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Integer this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Integer this);
+    @StaticallyExecutable static int lowestOneBit(int i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 32) int numberOfLeadingZeros(int i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 32) int numberOfTrailingZeros(int i);
+    @StaticallyExecutable static int parseInt(String s);
+    @StaticallyExecutable static int parseInt(String s, int radix);
+    @StaticallyExecutable static int reverse(int i);
+    @StaticallyExecutable static int reverseBytes(int i);
+    @StaticallyExecutable static int rotateLeft(int i, int distance);
+    @StaticallyExecutable static int rotateRight(int i, int distance);
+    @StaticallyExecutable short  shortValue();
+    @StaticallyExecutable static int signum(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 32) String toBinaryString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 8) String toHexString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String toOctalString(int i);
+    @StaticallyExecutable @ArrayLenRange(from = 1, to = 11) String toString();
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String toString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1) String toString(int i, int radix);
+    @StaticallyExecutable static @PolyValue Integer valueOf(@PolyValue int i);
+    @StaticallyExecutable static Integer valueOf(String s);
+    @StaticallyExecutable static Integer valueOf(String s, int radix);
+}
+
+class Long{
+    @StaticallyExecutable Long(long value);
+    @StaticallyExecutable Long(String s);
+
+    @StaticallyExecutable static int bitCount(long i);
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Long this);
+    @StaticallyExecutable static Long decode(String nm);
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Long this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Long this);
+    @StaticallyExecutable static Long getLong(String nm);
+    @StaticallyExecutable static Long getLong(String nm, long val);
+    @StaticallyExecutable static Long getLong(String nm, Long val);
+    @StaticallyExecutable static long highestOneBit(long i);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Long this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Long this);
+    @StaticallyExecutable static long lowestOneBit(long i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 64) int numberOfLeadingZeros(long i);
+    @StaticallyExecutable static @IntRange(from = 0, to = 64) int numberOfTrailingZeros(long i);
+    @StaticallyExecutable static long parseLong(String s);
+    @StaticallyExecutable static long parseLong(String s, int radix);
+    @StaticallyExecutable static long reverse(long i);
+    @StaticallyExecutable static long reverseBytes(long i);
+    @StaticallyExecutable static long rotateLeft(long i, int distance);
+    @StaticallyExecutable static long rotateRight(long i, int distance);
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Long this);
+    @StaticallyExecutable static int signum(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 64) String toBinaryString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 16) String toHexString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 22) String toOctalString(long i);
+    @StaticallyExecutable @ArrayLenRange(from = 1, to = 20) String toString();
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 20) String toString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1) String toString(long i, int radix);
+    @StaticallyExecutable static @PolyValue Long valueOf(@PolyValue long l);
+    @StaticallyExecutable static Long valueOf(String s);
+    @StaticallyExecutable static Long valueOf(String s, int radix);
+}
+
+class Short{
+    @StaticallyExecutable Short(short value);
+    @StaticallyExecutable Short(String s);
+
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Short this);
+    @StaticallyExecutable static Short decode(String nm);
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Short this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Short this);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Short this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Short this);
+    @StaticallyExecutable static short parseShort(String s);
+    @StaticallyExecutable static short parseShort(String s, int radix);
+    @StaticallyExecutable static short reverseBytes(short i);
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Short this);
+    @StaticallyExecutable @ArrayLen({1, 2, 3, 4, 5, 6}) String toString();
+    @StaticallyExecutable static @ArrayLen({1, 2, 3, 4, 5, 6}) String toString(short s);
+    @StaticallyExecutable static @PolyValue Short valueOf(@PolyValue short s);
+    @StaticallyExecutable static Short valueOf(String s);
+    @StaticallyExecutable static Short valueOf(String s, int radix);
+}
+
+class String{
+    @StaticallyExecutable String();
+    @StaticallyExecutable @PolyValue String(@PolyValue String original);
+    @StaticallyExecutable String(StringBuffer buffer);
+    @StaticallyExecutable String(StringBuilder builder);
+    @StaticallyExecutable @PolyValue String(char @PolyValue[] value);
+    @StaticallyExecutable String(char[] value, int offset, int count);
+    @StaticallyExecutable String(int[] codePoints, int offset, int count);
+
+    @StaticallyExecutable char charAt(int index);
+    @StaticallyExecutable int codePointAt(int index);
+    @StaticallyExecutable int codePointBefore(int index);
+    @StaticallyExecutable int codePointCount(int beginIndex, int endIndex);
+    @StaticallyExecutable int compareTo(String anotherString);
+    @StaticallyExecutable int compareToIgnoreCase(String str);
+    @StaticallyExecutable String concat(String str);
+    @StaticallyExecutable boolean contains(CharSequence s);
+    @StaticallyExecutable boolean contentEquals(CharSequence cs);
+    @StaticallyExecutable boolean contentEquals(StringBuffer sb);
+    @StaticallyExecutable static @PolyValue String copyValueOf(char @PolyValue[] data);
+    @StaticallyExecutable static String copyValueOf(char[] data, int offset, int count);
+    @StaticallyExecutable boolean endsWith(String suffix);
+    @StaticallyExecutable boolean equalsIgnoreCase(String anotherString);
+    @StaticallyExecutable static String format(Locale l, String format, Object... args);
+    @StaticallyExecutable static String format(String format, Object... args);
+    byte[] getBytes();
+    byte[] getBytes(Charset charset);
+    void getBytes(int srcBegin, int srcEnd, byte[] dst, int dstBegin);
+    byte[] getBytes(String charsetName);
+    void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin);
+    @StaticallyExecutable int indexOf(int ch);
+    @StaticallyExecutable int indexOf(int ch, int fromIndex);
+    @StaticallyExecutable int indexOf(String str);
+    @StaticallyExecutable int indexOf(String str, int fromIndex);
+    @StaticallyExecutable @PolyValue String intern(@PolyValue String this);
+    @StaticallyExecutable @EnsuresMinLenIf(expression="this", result=false, targetValue=1) boolean isEmpty();
+    @StaticallyExecutable int lastIndexOf(int ch);
+    @StaticallyExecutable int lastIndexOf(int ch, int fromIndex);
+    @StaticallyExecutable int lastIndexOf(String str);
+    @StaticallyExecutable int lastIndexOf(String str, int fromIndex);
+    @StaticallyExecutable int length();
+    @StaticallyExecutable boolean matches(String regex);
+    @StaticallyExecutable int offsetByCodePoints(int index, int codePointOffset);
+    @StaticallyExecutable boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len);
+    @StaticallyExecutable boolean regionMatches(int toffset, String other, int ooffset, int len);
+    @StaticallyExecutable String replace(char oldChar, char newChar);
+    @StaticallyExecutable String replace(CharSequence target, CharSequence replacement);
+    @StaticallyExecutable String replaceAll(String regex, String replacement);
+    @StaticallyExecutable String replaceFirst(String regex, String replacement);
+    String @MinLen(1) [] split(String regex);
+    String @MinLen(1) [] split(String regex, int limit);
+    @StaticallyExecutable boolean  startsWith(String prefix);
+    @StaticallyExecutable boolean  startsWith(String prefix, int toffset);
+    @StaticallyExecutable CharSequence subSequence(int beginIndex, int endIndex);
+    @StaticallyExecutable String substring(int beginIndex);
+    @StaticallyExecutable String substring(int beginIndex, int endIndex);
+    @StaticallyExecutable char @PolyValue[] toCharArray(@PolyValue String this);
+    @StaticallyExecutable String toLowerCase();
+    @StaticallyExecutable String toLowerCase(Locale locale);
+    @StaticallyExecutable @PolyValue String toString(@PolyValue String this);
+    @StaticallyExecutable String toUpperCase();
+    @StaticallyExecutable String toUpperCase(Locale locale);
+    @StaticallyExecutable String trim();
+    @StaticallyExecutable static @StringVal({"true", "false"}) String valueOf(boolean b);
+    @StaticallyExecutable static @ArrayLen(1) String valueOf(char c);
+    @StaticallyExecutable static @PolyValue String valueOf(char @PolyValue[] data);
+    @StaticallyExecutable static String valueOf(char[] data, int offset, int count);
+    @StaticallyExecutable static String valueOf(double d);
+    @StaticallyExecutable static String valueOf(float f);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String valueOf(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 20) String valueOf(long l);
+    @StaticallyExecutable static String valueOf(Object obj) ;
+}
+
+package java.math;
+
+class BigInteger {
+    BigInteger(@IntRange(from = -1, to = 1) int signum, byte[] magnitude);
+    BigInteger(String val, @IntRange(from = 2, to = 36) int radix);
+
+    @IntRange(from = -1, to = 1) int compareTo(BigInteger val);
+    @PolyValue double doubleValue(@PolyValue BigInteger this);
+    @PolyValue float floatValue(@PolyValue BigInteger this);
+    @PolyValue int intValue(@PolyValue BigInteger this);
+    @PolyValue long longValue(@PolyValue BigInteger this);
+    @IntRange(from = -1, to = 1) int signum();
+}
+
+package java.util.regex;
+
+class Pattern {
+    String @MinLen(1) [] split(CharSequence input, int limit) ;
+    String @MinLen(1) [] split(CharSequence input) ;
+}
+
+package java.util;
+
+class StringTokenizer {
+    @MinLen(1) String nextToken();
+    @MinLen(1) String nextToken(String delim);
+}
+
+class Arrays {
+    static @MinLen(2) String toString(long[] a);
+    static @MinLen(2) String toString(int[] a);
+    static @MinLen(2) String toString(short[] a);
+    static @MinLen(2) String toString(char[] a);
+    static @MinLen(2) String toString(byte[] a);
+    static @MinLen(2) String toString(boolean[] a);
+    static @MinLen(2) String toString(float[] a);
+    static @MinLen(2) String toString(double[] a);
+    static @MinLen(2) String toString(Object[] a);
+    static @MinLen(2) String deepToString(Object[] a);
+}
+
+class Calendar {
+    public @IntRange(from = 1, to = 7) int getFirstDayOfWeek();
+    public void setFirstDayOfWeek(@IntRange(from = 1, to = 7) int value);
+    public @IntRange(from = 1, to = 7) int getMinimalDaysInFirstWeek();
+    public void setMinimalDaysInFirstWeek(@IntRange(from = 1, to = 7) int value);
+}
+
+package java.awt.image;
+
+class ColorModel {
+   public int @PolyValue [] getComponents(int pixel, int @PolyValue [] components, int offset);
+   public int @PolyValue [] getComponents(Object pixel, int @PolyValue [] components, int offset);
+}
+
+package java.text;
+
+class DateFormatSymbols {
+    public String @ArrayLen(2) [] getEras();
+    public void setEras(String @ArrayLen(2) [] newEras);
+    public String @ArrayLen(13) [] getMonths();
+    public void setMonths(String @ArrayLen(13) [] newMonths);
+    public String @ArrayLen(13) [] getShortMonths();
+    public void setShortMonths(String @ArrayLen(13) [] newShortMonths);
+    public String @ArrayLen(8) [] getWeekdays();
+    public void setWeekdays(String @ArrayLen(8) [] newWeekdays);
+    public String @ArrayLen(8) [] getShortWeekdays();
+    public void setShortWeekdays(String @ArrayLen(8) [] newShortWeekdays);
+    public String @ArrayLen(2) [] getAmPmStrings();
+    public void setAmPmStrings(String @ArrayLen(2) [] newAmpms);
+    public String @ArrayLen(2) [] @MinLen(5) [] getZoneStrings();
+    public void setZoneStrings(String @ArrayLen(2) [] @MinLen(5) [] newZoneStrings);
+}

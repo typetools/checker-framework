@@ -52,15 +52,19 @@ public class TestProgram {
                         safecons.runAsync(this); // Should be error, this:@UI
                     }
                 });
+        // Test that the package annotation works
+        // :: error: (call.invalid.ui)
+        UIByPackageDecl.implicitlyUI();
+        // Test that @SafeType works: SafeByDecl is inside a @UIPackage
+        SafeByDecl.safeByTypeDespiteUIPackage();
         safecons.runAsync(
+                // :: error: (argument.type.incompatible)
                 new IGenericTask() {
                     @Override
                     public void doGenericStuff() {
-                        // Test that the package annotation works
-                        // :: error: (call.invalid.ui)
+                        // Safe here due to anonymous inner class effect inference, but will trigger
+                        // an error above due to safecons.runAsync not taking an @UI IGenericTask.
                         UIByPackageDecl.implicitlyUI();
-                        // Test that @SafeType works: SafeByDecl is inside a @UIPackage
-                        SafeByDecl.safeByTypeDespiteUIPackage();
                     }
                 });
         safecons.runAsync(

@@ -5,7 +5,7 @@ These are locations that an annotation is needed for it to
 type-check. Also, these tests must ONLY have expected error comments for those
 cases -- no other expected errors comments should be added.
 
-The ant test target (whole-program-inference-tests) tests the whole-program inference
+The task wholeProgramInferenceTests tests the whole-program inference
 in three steps:
 1. The WholeProgramInferenceTest Checker will type-check all files in the
 "non-annotated" folder, writing the inferred types of some elements into

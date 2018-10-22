@@ -2,8 +2,8 @@
  * @test
  * @summary Test case for Issue 820 https://github.com/typetools/checker-framework/issues/820
  *
- * @compile/fail/ref=Class1Class2-err.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class1.java Class2.java
- * @compile/fail/ref=Class2Class1-err.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class2.java Class1.java
+ * @compile/fail/ref=Class1Class2-err.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class1.java Class2.java
+ * @compile/fail/ref=Class2Class1-err.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class2.java Class1.java
  *
  */
 

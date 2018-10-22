@@ -4,12 +4,9 @@
 This chapter describes support for Java generics (also known as
 ``parametric polymorphism'') and polymorphism over type qualifiers.
 
-The Checker Framework currently supports two schemes for polymorphism over
+Section~\ref{qualifier-polymorphism} describes support for polymorphism over
 type qualifiers.
 
-Section~\ref{qualifier-polymorphism} describes the
-original scheme, which uses method-based annotations that are meta-annotated
-with \refqualclass{framework/qual}{PolymorphicQualifier}.
 
 \section{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
@@ -134,16 +131,29 @@ It is an error if the lower bound is not a subtype of the upper bound.
 
 
 \subsubsection{Defaults\label{generics-defaults}}
+
+A generic type parameter or wildcard is written as \code{class
+  MyClass<\emph{@LowerBound} T extends \emph{@UpperBound} JavaUpperBound>} or as
+\code{MyClass<\emph{@UpperBound} ? super \emph{@LowerBound} JavaLowerBound>}, where
+``\<\emph{@LowerBound}>'' and ``\<\emph{@UpperBound}>'' are type qualifiers.
+
+For lower bounds:
+If no type annotation is written in front of \<?>,
+then the lower bound defaults to \<@\emph{BottomType} void>.
+
+For upper bounds:
+\begin{itemize}
+\item
 If the \<extends> clause is omitted,
 then the upper bound defaults to \<@\emph{TopType} Object>.
-If no type annotation is written on the type parameter name,
-then the lower bound defaults to \<@\emph{BottomType} void>.
+\item
 If the \<extends> clause is written but contains no type qualifier,
 then the normal defaulting rules apply to the type in the \<extends>
 clause (see Section~\ref{climb-to-top}).
+\end{itemize}
 
-These rules mean that even though in Java the following two declarations
-are equivalent:
+The upper-bound rules mean that even though in Java the following two
+declarations are equivalent:
 
 \begin{Verbatim}
   class MyClass<T>
@@ -151,12 +161,43 @@ are equivalent:
 \end{Verbatim}
 
 \noindent
-they may specify different type qualifiers on the upper bound, depending on
-the type system's defaulting rules.
-% Cross-reference to the justification for this?
+they specify different type qualifiers on the upper bound,
+if the type system's default annotation is not its top annotation.
 
-%% Mike is concerned that an exhaustive example here would take too
-%% much space for not enough benefit.
+The Nullness type system is an example.
+
+\begin{Verbatim}
+  class MyClass<T>                 ==  class MyClass<T extends @Nullable Object>
+  class MyClass<T extends Object>  ==  class MyClass<T extends @NonNull Object>
+\end{Verbatim}
+
+The rationale for this choice is:
+\begin{itemize}
+\item
+  The ``\code{<T>}'' in \code{MyClass<T>} means ``fully unconstrained'',
+  and the rules maintain that, without the need for a programmer to
+  change existing code.
+\item
+  The ``\code{Object}'' in \code{MyClass<T extends Object>} is treated
+  exactly like every other occurrence of \code{Object} in the program ---
+  it would be confusing for different occurrences of \code{Object} to mean
+  different annotated types.
+\end{itemize}
+
+Because of these rules, the recommended style is:
+\begin{itemize}
+\item
+  Use ``\code{<T>}'' when there are no constraints on the type qualifiers.
+  This is short and is what already appears in source code.
+\item
+  Whenever you write an \<extends> clause, write an explicit type
+  annotation on it.  For example, for the Nullness Checker, write
+  \code{class MyClass<T>} rather than \code{class MyClass<T extends
+    @Nullable Object>}, and write \code{class MyClass<T extends @NonNull
+    Object>} rather than \code{class MyClass<T extends Object>}.
+\end{itemize}
+
+For further discussion, see Section~\ref{faq-implicit-bounds}.
 
 
 \subsection{Type annotations on a use of a generic type variable\label{type-variable-use}}
@@ -201,6 +242,12 @@ In \code{MyClass2<@Interned String>},
 % \code{T}.
 
 
+Defaulting never affects a use of a type variable, even if the type
+variable use has no explicit annotation.  Defaulting helps to choose a
+single type qualifier for a concrete Java class or interface.  By contrast,
+a type variable use represents a set of possible types.
+
+
 \subsection{Annotations on wildcards\label{annotations-on-wildcards}}
 
 At an instantiation of a generic type, a Java wildcard indicates that some
@@ -218,7 +265,7 @@ some unknown subtype of \<CharSequence>:
 For more details about wildcards, see the
 \href{https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html}{Java
   tutorial on wildcards} or
-\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.5.1}{JLS
+\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.5.1}{JLS
   \S 4.5.1}.
 
 You can write a type annotation on the bound of a wildcard:
@@ -418,7 +465,7 @@ type qualifiers. In such situations, you might need to provide
 explicit method type arguments, for which the syntax is as follows:
 
 \begin{alltt}
-    Collections.</*@MyTypeAnnotation*/ Object>sort(l, c);
+    Collections.<@MyTypeAnnotation Object>sort(l, c);
 \end{alltt}
 
 \noindent

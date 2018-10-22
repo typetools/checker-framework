@@ -34,13 +34,13 @@ from failure to use interning.
 Interning is such an important design pattern that Java builds it in for
 these types: \<String>, \<Boolean>, \<Byte>, \<Character>, \<Integer>,
 \<Short>.  Every string literal in the program is guaranteed to be interned
-(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.10.5}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-3.html#jls-3.10.5}{JLS
   \S3.10.5}), and the
 \sunjavadoc{java/lang/String.html\#intern--}{String.intern()} method
 performs interning for strings that are computed at run time.
 The \<valueOf> methods in wrapper classes always (\<Boolean>, \<Byte>) or
 sometimes (\<Character>, \<Integer>, \<Short>) return an interned result
-(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
+(\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
 Users can also write their own interning methods for other types.
 
 It is a proper optimization to use \code{==}, rather than \code{equals()},
@@ -155,9 +155,8 @@ class declaration:
   public @Interned class MyInternedClass { ... }
 \end{Verbatim}
 
-This is equivalent to annotating every use of \code{MyInternedClass}, in a
-declaration or elsewhere.  For example, \code{enum} classes are implicitly
-so annotated.
+This makes every use of \code{MyInternedClass}, in a
+declaration or elsewhere, implicitly \<@Interned>.
 
 
 \subsection{Implicit qualifiers\label{interning-implicit-qualifiers}}
@@ -295,7 +294,7 @@ subclasses and superclasses of the given class.
 The Interning Checker conservatively assumes that the \<Character>, \<Integer>,
 and \<Short> \<valueOf> methods return a non-interned value.  In fact, these
 methods sometimes return an interned value and sometimes a non-interned
-value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.7}{JLS
+value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.7}{JLS
 \S5.1.7}).  If you know that the run-time argument to \<valueOf> implies that
 the result is interned, then you will need to suppress an error.
 (The Interning Checker should make use of the Value Checker to estimate the upper
@@ -336,7 +335,7 @@ The compiler will issue an error regarding violation of the semantics of
 
 The Daikon invariant detector
 (\myurl{http://plse.cs.washington.edu/daikon/}) is also annotated with
-\refqualclass{checker/interning/qual}{Interned}.  From directory \code{java},
+\refqualclass{checker/interning/qual}{Interned}.  From directory \code{java/},
 run \code{make check-interning}.
 
 
@@ -349,8 +348,10 @@ elsewhere.
 If your code is already annotated with a different interning
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
-exactly as if you had written the corresponding annotation from the
+as if you had written the corresponding annotation from the
 Interning Checker, as described in Figure~\ref{fig-interning-refactoring}.
+If the other annotation is a declaration annotation, it may be moved; see
+Section~\ref{declaration-annotations-moved}.
 
 
 % These lists should be kept in sync with InterningAnnotatedTypeFactory.java .

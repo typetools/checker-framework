@@ -1,0 +1,156 @@
+sourceSets {
+    main {
+        resources {
+            // Stub files, message.properties, etc.
+            srcDirs = ['src/main/java']
+            exclude '**/*.java'
+        }
+    }
+    testannotations
+    test {
+        java {
+            // Tests that fail by design.
+            exclude 'tests/SubtypingStringPatternsPartialTest.java'
+        }
+    }
+}
+
+dependencies {
+    compile project(':dataflow')
+    compile project(':javacutil')
+    compile files("${stubparserJar}")
+    compile files("${afuJar}")
+    compileOnly project(':checker-qual')
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile project(':framework-test')
+    testCompile sourceSets.testannotations.output
+}
+
+task checkDependencies() {
+    doLast {
+        if (!file(afuJar).exists()) {
+            if (!file(stubparserJar).exists()) {
+                throw new GradleException("${afuJar} and ${stubparserJar} do not exist")
+            }
+            throw new GradleException("${afuJar} does not exist")
+        }
+        if (!file(stubparserJar).exists()) {
+            throw new GradleException("${stubparserJar} does not exist")
+        }
+    }
+}
+
+compileJava.dependsOn(checkDependencies)
+
+shadowJar {
+    description 'Creates the "fat" framework.jar in dist'
+    destinationDir = file("${projectDir}/dist")
+    archiveName = "framework.jar"
+    manifest {
+        attributes('Automatic-Module-Name': "org.checkerframework.framework")
+    }
+}
+
+createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")
+checkCompilerMessages {
+    options.compilerArgs += [
+            '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+    ]
+}
+
+task testWPI(type: Test) {
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+task testWPIValidate(type: Test) {
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using .jaif files'
+    dependsOn(compileTestJava)
+    outputs.upToDateWhen { false }
+
+    doLast {
+        delete("tests/whole-program-inference/annotated")
+        testWPI.execute()
+
+        // Copying all test files to another directory, removing all expected errors that should not
+        // occur after inserting inferred annotations from .jaif files.
+        copy {
+            from files('tests/whole-program-inference/non-annotated')
+            into file('tests/whole-program-inference/annotated')
+            filter { String line ->
+                line.contains('// :: error:') ? null : line
+            }
+        }
+        // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over
+        delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
+        copy {
+            from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')
+            into file('tests/whole-program-inference/annotated')
+        }
+
+        // Inserting annotations from .jaif files in-place.
+        List<File> jaifs = fileTree("${buildDir}/whole-program-inference/").matching {
+            include '*.jaif'
+        }.asList()
+        List<File> javas = fileTree("tests/whole-program-inference/annotated/").matching {
+            include '*.java'
+        }.asList()
+        exec {
+            executable "${afu}/scripts/insert-annotations-to-source"
+            args = ['-i']
+            for (File jaif : jaifs) {
+                args += [jaif.toString()]
+            }
+            for (File javaFile : javas) {
+                args += [javaFile.toString()]
+            }
+        }
+
+
+        testWPIValidate.execute()
+        delete("tests/whole-program-inference/annotated")
+    }
+}
+
+task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for the annotation class loader'
+    dependsOn(compileTestJava)
+    dependsOn project(':checker-qual').tasks.jar
+    doLast {
+        copy {
+            from file(project(':checker-qual').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                fileName.replace(fileName, "checker-qual.jar")
+            }
+        }
+
+        exec {
+            executable 'make'
+            environment JAVAC: 'javac', STUBPARSERJAR: "${stubparserJar}"
+            args = ['-C', "tests/annotationclassloader/", "all"]
+        }
+    }
+}

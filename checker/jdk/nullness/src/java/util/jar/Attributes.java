@@ -38,7 +38,9 @@ import sun.util.logging.PlatformLogger;
 import java.util.Comparator;
 import sun.misc.ASCIICaseInsensitiveComparator;
 
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * The Attributes class maps Manifest attribute names to associated string
@@ -228,6 +230,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
     /**
      * Returns the number of attributes in this Map.
      */
+    @Pure
     public int size() {
         return map.size();
     }
@@ -242,7 +245,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
     /**
      * Returns a Set view of the attribute names (keys) contained in this Map.
      */
-    public Set<Object> keySet() {
+    public Set<@KeyFor("this") Object> keySet() {
         return map.keySet();
     }
 

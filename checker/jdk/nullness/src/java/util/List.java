@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,11 +25,12 @@
 
 package java.util;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
+import java.util.function.UnaryOperator;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * An ordered collection (also known as a <i>sequence</i>).  The user of this
@@ -178,7 +179,7 @@ public interface List<E> extends Collection<E> {
     // Element annotation should be the same as that on the type parameter E.
     // It's @Nullable here because that is most lenient.
     // Eventually, figure out how to express this, or hard-code in the checker.
-    Object[] toArray();
+    public @PolyNull Object[] toArray(List<@PolyNull E> this);
 
     /**
      * Returns an array containing all of the elements in this list in
@@ -203,8 +204,9 @@ public interface List<E> extends Collection<E> {
      * The following code can be used to dump the list into a newly
      * allocated array of <tt>String</tt>:
      *
-     * <pre>
-     *     String[] y = x.toArray(new String[0]);</pre>
+     * <pre>{@code
+     *     String[] y = x.toArray(new String[0]);
+     * }</pre>
      *
      * Note that <tt>toArray(new Object[0])</tt> is identical in function to
      * <tt>toArray()</tt>.
@@ -220,7 +222,7 @@ public interface List<E> extends Collection<E> {
      */
     // @Nullable because, if there is room in the argument a1, the method
     // puts null after the elements of this.
-    <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
+    <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
 
 
     // Modification Operations
@@ -391,6 +393,67 @@ public interface List<E> extends Collection<E> {
     boolean retainAll(Collection<?> c);
 
     /**
+     * Replaces each element of this list with the result of applying the
+     * operator to that element.  Errors or runtime exceptions thrown by
+     * the operator are relayed to the caller.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code list}:
+     * <pre>{@code
+     *     final ListIterator<E> li = list.listIterator();
+     *     while (li.hasNext()) {
+     *         li.set(operator.apply(li.next()));
+     *     }
+     * }</pre>
+     *
+     * If the list's list-iterator does not support the {@code set} operation
+     * then an {@code UnsupportedOperationException} will be thrown when
+     * replacing the first element.
+     *
+     * @param operator the operator to apply to each element
+     * @throws UnsupportedOperationException if this list is unmodifiable.
+     *         Implementations may throw this exception if an element
+     *         cannot be replaced or if, in general, modification is not
+     *         supported
+     * @throws NullPointerException if the specified operator is null or
+     *         if the operator result is a null value and this list does
+     *         not permit null elements
+     *         (<a href="Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    default void replaceAll(UnaryOperator<E> operator) {
+        Objects.requireNonNull(operator);
+        final ListIterator<E> li = this.listIterator();
+        while (li.hasNext()) {
+            li.set(operator.apply(li.next()));
+        }
+    }
+
+    /**
+     * Sorts this list using the supplied {@code Comparator} to compare elements.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code list}:
+     * <pre>Collections.sort(list, c)</pre>
+     *
+     * @param c the {@code Comparator} used to compare list elements.
+     *          A {@code null} value indicates that the elements'
+     *          {@linkplain Comparable natural ordering} should be used
+     * @throws ClassCastException if the list contains elements that are not
+     *         <i>mutually comparable</i> using the specified comparator
+     * @throws UnsupportedOperationException if the list's list-iterator does
+     *         not support the {@code set} operation
+     * @throws IllegalArgumentException
+     *         (<a href="Collection.html#optional-restrictions">optional</a>)
+     *         if the comparator is found to violate the {@link Comparator}
+     *         contract
+     * @since 1.8
+     */
+    default void sort(Comparator<? super E> c) {
+        Collections.sort(this, c);
+    }
+
+    /**
      * Removes all of the elements from this list (optional operation).
      * The list will be empty after this call returns.
      *
@@ -422,11 +485,11 @@ public interface List<E> extends Collection<E> {
     /**
      * Returns the hash code value for this list.  The hash code of a list
      * is defined to be the result of the following calculation:
-     * <pre>
-     *  int hashCode = 1;
-     *  for (E e : list)
-     *      hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-     * </pre>
+     * <pre>{@code
+     *     int hashCode = 1;
+     *     for (E e : list)
+     *         hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
+     * }</pre>
      * This ensures that <tt>list1.equals(list2)</tt> implies that
      * <tt>list1.hashCode()==list2.hashCode()</tt> for any two lists,
      * <tt>list1</tt> and <tt>list2</tt>, as required by the general
@@ -597,9 +660,9 @@ public interface List<E> extends Collection<E> {
      * a list can be used as a range operation by passing a subList view
      * instead of a whole list.  For example, the following idiom
      * removes a range of elements from a list:
-     * <pre>
+     * <pre>{@code
      *      list.subList(from, to).clear();
-     * </pre>
+     * }</pre>
      * Similar idioms may be constructed for <tt>indexOf</tt> and
      * <tt>lastIndexOf</tt>, and all of the algorithms in the
      * <tt>Collections</tt> class can be applied to a subList.<p>
@@ -619,4 +682,29 @@ public interface List<E> extends Collection<E> {
      */
     @SideEffectFree
     List<E> subList(int fromIndex, int toIndex);
+
+    /**
+     * Creates a {@link Spliterator} over the elements in this list.
+     *
+     * <p>The {@code Spliterator} reports {@link Spliterator#SIZED} and
+     * {@link Spliterator#ORDERED}.  Implementations should document the
+     * reporting of additional characteristic values.
+     *
+     * @implSpec
+     * The default implementation creates a
+     * <em><a href="Spliterator.html#binding">late-binding</a></em> spliterator
+     * from the list's {@code Iterator}.  The spliterator inherits the
+     * <em>fail-fast</em> properties of the list's iterator.
+     *
+     * @implNote
+     * The created {@code Spliterator} additionally reports
+     * {@link Spliterator#SUBSIZED}.
+     *
+     * @return a {@code Spliterator} over the elements in this list
+     * @since 1.8
+     */
+    @Override
+    default Spliterator<E> spliterator() {
+        return Spliterators.spliterator(this, Spliterator.ORDERED);
+    }
 }

@@ -68,6 +68,7 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
+docs/manual/contributors.txt
 docs/manual/figures/*.eps
 docs/manual/figures/*.pdf
 docs/manual/figures/*.png
@@ -109,14 +110,15 @@ checker/tests/nullness-temp/*.class
 
 checker/jtreg/multipleexecutions/Main.class
 
+# Source is copied from elsewhere.
+checker-qual/src
+checker-qual-android/src
+
 framework/tests/whole-program-inference/annotated/
 
-docs/tutorial/eclipse-projects.zip
-docs/tutorial/eclipse-projects/README.txt
-docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
-docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
+docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
+docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
 docs/tutorial/sourcefiles.zip
-docs/tutorial/src
 
 # release tmps
 tmp
@@ -130,3 +132,4 @@ target/
 *.ipr
 *.iws
 *.iml
+/.gradle/

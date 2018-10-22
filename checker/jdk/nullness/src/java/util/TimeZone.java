@@ -1,4 +1,5 @@
 package java.util;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -13,14 +14,14 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable{
   public abstract int getRawOffset();
   public String getID() { throw new RuntimeException("skeleton method"); }
   public void setID(String a1) { throw new RuntimeException("skeleton method"); }
-  public final String getDisplayName() { throw new RuntimeException("skeleton method"); }
-  public final String getDisplayName(Locale a1) { throw new RuntimeException("skeleton method"); }
-  public final String getDisplayName(boolean a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public String getDisplayName(boolean a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
-  public int getDSTSavings() { throw new RuntimeException("skeleton method"); }
-  public abstract boolean useDaylightTime();
-  public abstract boolean inDaylightTime(Date a1);
-  public static synchronized TimeZone getTimeZone(String a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public final String getDisplayName() { throw new RuntimeException("skeleton method"); }
+  @Pure public final String getDisplayName(Locale a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public final String getDisplayName(boolean a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public String getDisplayName(boolean a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
+  @Pure public int getDSTSavings() { throw new RuntimeException("skeleton method"); }
+  @Pure public abstract boolean useDaylightTime();
+  @Pure public abstract boolean inDaylightTime(Date a1);
+  @Pure public static synchronized TimeZone getTimeZone(String a1) { throw new RuntimeException("skeleton method"); }
   public static synchronized String[] getAvailableIDs(int a1) { throw new RuntimeException("skeleton method"); }
   public static synchronized String[] getAvailableIDs() { throw new RuntimeException("skeleton method"); }
   public static TimeZone getDefault() { throw new RuntimeException("skeleton method"); }

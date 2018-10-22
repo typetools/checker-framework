@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checker Framework developer manual</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+<h1>Checker Framework developer manual</h1>
+
+<p>
+  If you wish to use the Checker Framework, see its user manual
+  (<a href="https://checkerframework.org/manual/">HTML</a>,
+  <a href="https://checkerframework.org/manual/checker-framework-manual.pdf">PDF</a>).
+</p>
+
+<p>
+This document contains information for Checker Framework developers,
+including people who wish to edit its source code or make pull requests.
+</p>
+
+
+<h2>Directory structure</h2>
+
+<p>
+The <a href="https://github.com/typetools/checker-framework">checker-framework
+repository</a> contains several related projects:
+</p>
+
+<pre>
+ framework     the "framework" aspects of the Checker Framework
+ checker       the type checkers provided with the Checker Framework
+ javacutil     utilities for javac
+ dataflow      a dataflow framework
+</pre>
+
+<p>
+Each of these directories contains Eclipse project configuration files.
+</p>
+
+<p>
+The repository also contains the following directories:
+</p>
+<pre>
+ docs          documentation: manual, tutorial, examples, developer docs
+ maven-artifacts  artifacts to be uploaded to Maven Central
+</pre>
+
+
+<h2> Gradle build scripts</h2>
+
+<p>
+Full instructions for building the Checker Framework from sources appear in the <a href="https://checkerframework.org/manual/#build-source">Checker Framework manual</a>. This section describes the build scripts themselves.
+</p>
+
+<p>
+Don't run the <code>gradle</code> command, which would use your local installation of gradle.
+Instead, use
+the <code>gradlew</code> script in the <code>checker-framework</code> directory.
+</p>
+
+<p>
+Frequently-used tasks:
+</p>
+<ul>
+  <li> <code>assemble</code>: builds all jars except <code>jdk8.jar</code>, including javadoc jars and fat jars that contain all dependencies.
+  <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
+  <li> <code>buildJdk</code>: builds <code>jdk8.jar</code>.
+  <li> <code>allTests</code>: runs all tests.
+  <li> <code>reformat</code>: reformats Java files.
+  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessFbcTest</code>.
+  <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
+</ul>
+
+<p>
+If you run a task from the main directory, then it will run that task in all
+subprojects with a task by that name. So, if you run <code>./gradlew
+allTests</code> that runs all tests everywhere. But <code>(cd
+framework &amp;&amp; ../gradlew allTests)</code> only runs tests in
+framework. Alternatively, calling <code>:framework:allTests</code> from the
+main directory or any subproject has the same effect.  </p>
+
+
+<h2>Coding style</h2>
+
+<p>
+When editing files in the Checker Framework,
+see <a href="https://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
+Ernst's coding style guidelines</a>.  You may also wish to
+see <a href="http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248">Oracle's
+Java code conventions</a>.
+</p>
+
+<p>
+The codebase conforms to a consistent indentation style, which is enforced
+by a git pre-commit hook. The pre-commit hook runs <code>./gradlew
+checkFormat</code> in the top level directory. <code>./gradlew reformat</code>
+will format all files such that <code>./gradlew checkFormat</code> succeeds.
+</p>
+
+<p>
+We don't use <code>@author</code> Javadoc tags in code files.
+Doing so clutters the code, and is misleading once that individual
+is no longer maintaining the code.
+Authorship (and who has made changes recently) can be obtained from the
+version control system.
+</p>
+
+
+<h2>Make commits logically uniform</h2>
+
+<p>
+Each commit should address a single issue, rather than a commit addressing
+multiple issues such as fixing a bug, adding a feature, and changing
+formatting.  Focusing each commit on a single issue makes the commit easier
+to understand and review; it also eases diagnosis and (if necessary)
+rollback.
+</p>
+
+<p>
+Likewise, each pull request should address a single issue.
+</p>
+
+
+<h2>Pull requests</h2>
+
+<p>
+It is acceptable to commit small, noncontroversial changes directly to
+master.  (This policy differs from some projects, which require an issue
+tracker issue and a pull request for every change, however minor.)
+For any change where you want feedback, or where others might have
+useful comments or might disagree, please submit a pull request.  Be
+conservative in your judgment; others might consider something
+controversial that you do not.
+</p>
+
+<p>
+Work on a branch if you are going to submit a pull request.
+This enables others to make changes directly to your branch when that
+is more efficient than leaving comments in a pull request.
+</p>
+
+<p>
+Try to address pull requests promptly, to avoid stalling others while
+waiting for your feedback.  If you have been waiting for more than a week
+after the pull request was assigned with no feedback, then ping the
+assignee, wait at least another business day, and then go ahead and push
+your changes.  It's great if reviewers can give feedback, but if they are
+too busy to do so, you should recognize that and move on.
+</p>
+
+<p>
+Also
+see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
+    Ernst's advice about creating GitHub pull requests</a>.
+</p>
+
+
+<h2>Changelog</h2>
+
+<p>
+Don't forget to update the changelog if you make changes that are worthy of
+telling developers about.  This makes it much easier for someone to make a
+release.
+</p>
+
+
+<h2>Documenting refactoring ideas</h2>
+
+<p>
+If you have an idea for a code improvement (such as a refactoring), please
+document it.  If it can be described concisely and is low priority,
+a TODO comment in the code is more appropriate than an
+enhancement request in the issue tracker.  The code comment is more likely
+to be noticed by someone working with the code, and it is equally easy to
+search for.  Furthermore, it doesn't clutter the issue tracker, which
+reduces morale and makes the project appear lower-quality than it actually
+is.
+</p>
+
+
+<h2>Version numbers for annotated libraries</h2>
+
+<p>
+Annotated libraries should be based on a released version of the upstream
+library, not an arbitrary commit in the upstream library's version control
+system.
+</p>
+
+<p>
+When making a new version of an annotated library, between upstream
+releases, add ".0.1" to the end of the version number.  For example, we
+already uploaded version 6.2 to Maven Central, the next version would be
+6.2.0.1.  This accommodates the possibility that the upstream maintainers
+release 6.2.1.
+</p>
+
+
+<h2>Making a Checker Framework release</h2>
+
+<p>
+See a separate document about the
+<a href="release/README-release-process.html">Checker Framework release process</a>.
+</p>
+
+
+</body>
+</html>
+
+<!--  LocalWords:  TODO
+ -->

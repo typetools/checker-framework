@@ -155,6 +155,7 @@ Its command-line arguments are:
 \item Paths to \<.java> files in the program.
 \end{enumerate}
 
+% TODO: Change the example project that is being annotated, since plume-lib is now deprecated.
 For example, to add annotations to the \<plume-lib> project:
 \begin{Verbatim}
 git clone https://github.com/mernst/plume-lib.git
@@ -162,7 +163,6 @@ cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
     "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar \
-    -AprintErrorStack \
     `find java/src/plume/ -name "*.java"`
 # View the results
 git diff
@@ -300,7 +300,7 @@ skip this section.
 If you
 supply to javac the command-line option \code{-Ainfer}, then the
 checker outputs \<.jaif> files with refined types for fields and method signatures.
-The output .jaif files are located in the folder \code{build/whole-program-inference},
+The output \<.jaif> files are located in the folder \code{build/whole-program-inference},
 relative to where you executed the javac command.
 
 You can use the Annotation File Utilities
