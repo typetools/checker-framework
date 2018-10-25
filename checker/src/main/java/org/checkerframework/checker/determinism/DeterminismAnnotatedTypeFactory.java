@@ -261,7 +261,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
                 if (arrType.hasAnnotation(POLYDET)) {
-                    annotatedTypeMirror.replaceAnnotation(POLYDET_UP);
+                    annotatedTypeMirror.replaceAnnotation(POLYDET_DOWN);
                 }
             }
             return super.visitMemberSelect(node, annotatedTypeMirror);
