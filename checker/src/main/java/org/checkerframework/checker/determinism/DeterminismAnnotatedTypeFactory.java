@@ -250,7 +250,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(node, annotatedRetType);
         }
 
-        /** Annotates the length property of a {@code @NonDet} array as {@code @NonDet}. */
+        /**
+         * Annotates the length property of a {@code @NonDet} or a {@code @PolyDet} array as
+         * {@code @NonDet} or {@code @PolyDet("down")} respectively.
+         */
         @Override
         public Void visitMemberSelect(
                 MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
