@@ -45,7 +45,7 @@ public class TreeParser {
     }
 
     /**
-     * Parses the snippet in the string as an internal Javac AST expression node
+     * Parses the snippet in the string as an internal Javac AST expression node.
      *
      * @param s the java snippet
      * @return the AST corresponding to the snippet

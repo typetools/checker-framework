@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'd7c50126251d341b576f7ed5219d9a84773d5f95'
+    jdkShaHash = 'ce75ee76c8fbe68b77009435cf8b1eab02d5086e'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -27,6 +27,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile project(':framework-test')
     testCompile sourceSets.testannotations.output
+    testCompile group: 'org.checkerframework', name: 'checker-compat-qual', version: '2.5.5'
 
     testannotationsCompile project(':checker-qual')
 }
@@ -78,7 +79,7 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
             throw new GradleException("Environment variable JAVA_HOME is not set.")
         }
         if (!jdkShaHash.is('local')) {
-            throw new GradleException('To build jdk.jar, set jdkShaHash to \'local\' in checker/build.gradle.')
+            throw new GradleException('To build jdk.jar, pass -PuseLocalJdk, or set jdkShaHash to \'local\' in checker/build.gradle.')
         }
         delete 'dist/jdk8.jar'
         exec {

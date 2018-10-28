@@ -18,7 +18,7 @@ public class TypecheckExecutor {
 
     public TypecheckExecutor() {}
 
-    /** Runs a typechecking test using the given configuration and returns the test result */
+    /** Runs a typechecking test using the given configuration and returns the test result. */
     public TypecheckResult runTest(TestConfiguration configuration) {
         CompilationResult result = compile(configuration);
         return interpretResults(configuration, result);

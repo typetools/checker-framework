@@ -355,11 +355,18 @@ warnings, because the JDK is built using the \<-Awarns> command-line
 option.
 
 \item
-Build the annotated JDK:
-\begin{enumerate}
-\item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
-\item run \<./gradlew buildJdk>
-\end{enumerate}
+Build the annotated JDK\@.  There are two ways:
+\begin{itemize}
+\item
+  Run \<./gradlew buildJdk -PuseLocalJdk>
+  % Is any more advice needed here, such as supplying -PuseLocalJdk to
+  % other commands?
+\item
+  \begin{enumerate}
+  \item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
+  \item run \<./gradlew buildJdk>
+  \end{enumerate}
+\end{itemize}
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively

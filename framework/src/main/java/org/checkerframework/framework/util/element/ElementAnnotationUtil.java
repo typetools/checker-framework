@@ -78,8 +78,8 @@ public class ElementAnnotationUtil {
      * may move the annotation before replacing it by the canonical version.
      *
      * <p>If the annotation is one of the Checker Framework compatibility annotations, for example
-     * {@link org.checkerframework.checker.nullness.compatqual.NonNullDecl}, then it is interpreted
-     * as a type annotation in the same location.
+     * org.checkerframework.checker.nullness.compatqual.NonNullDecl, then it is interpreted as a
+     * type annotation in the same location.
      *
      * @param type the type to annotate
      * @param annotations the annotations to add

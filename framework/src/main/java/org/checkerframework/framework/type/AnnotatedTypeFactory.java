@@ -126,7 +126,12 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *   <li>{@link #getAnnotatedType(Element)}
  * </ul>
  *
- * This implementation only adds qualifiers explicitly specified by the programmer.
+ * This implementation only adds qualifiers explicitly specified by the programmer. Subclasses
+ * override {@link #addComputedTypeAnnotations} to add defaults, implicits, flow-sensitive
+ * refinemont, and type-system-specific rules.
+ *
+ * <p>Unless otherwise indicated, each public method in this class returns a "fully annotated" type,
+ * which is one that has an annotation in all positions.
  *
  * <p>Type system checker writers may need to subclass this class, to add implicit and default
  * qualifiers according to the type system semantics. Subclasses should especially override {@link
@@ -722,7 +727,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns a mutable set of annotation classes that are supported by a checker
+     * Returns a mutable set of annotation classes that are supported by a checker.
      *
      * <p>Subclasses may override this method and to return a mutable set of their supported type
      * qualifiers through one of the 5 approaches shown below.
@@ -1557,8 +1562,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds annotations to the type based on the annotations from its class type if and only if no
-     * annotations are already present on the type.
+     * Adds implicit annotations to the type based on the annotations on the class declaration.
+     * Makes no changes if annotations are already present on the type.
      *
      * <p>The class type is found using {@link #fromElement(Element)}
      *
@@ -1989,9 +1994,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
      * List)} for the checks of type argument well-formedness.
      *
-     * <p>Note that "this" and "super" constructor invocations are also handled by this method.
-     * Method {@link #constructorFromUse(NewClassTree)} is only used for a constructor invocation in
-     * a "new" expression.
+     * <p>Note that "this" and "super" constructor invocations are also handled by this method
+     * (explicit or implicit ones, at the beginning of a constructor). Method {@link
+     * #constructorFromUse(NewClassTree)} is only used for a constructor invocation in a "new"
+     * expression.
      *
      * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments

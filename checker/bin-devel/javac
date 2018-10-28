@@ -75,5 +75,4 @@ eval "java" \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \
-     "-AprintErrorStack" \
      ${args}

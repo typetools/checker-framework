@@ -54,10 +54,8 @@ public class KeyForAnnotatedTypeFactory
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
         // Add compatibility annotations:
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
+        addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
+        addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForType", KEYFOR);
 
         TypeMirror mapType = TypesUtils.typeFromClass(Map.class, types, elements);
         erasedMapType = types.erasure(mapType);

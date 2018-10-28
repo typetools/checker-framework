@@ -635,7 +635,7 @@ public class CFGBuilder {
         }
     }
 
-    /** A TryFinallyFrame applies to exceptions of any type */
+    /** A TryFinallyFrame applies to exceptions of any type. */
     protected static class TryFinallyFrame implements TryFrame {
         protected Label finallyLabel;
 
@@ -2585,7 +2585,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Find nearest owner element(Method or Class) which holds current tree
+         * Find nearest owner element(Method or Class) which holds current tree.
          *
          * @return Nearest owner element of current tree
          */
