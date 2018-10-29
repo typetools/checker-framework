@@ -11,7 +11,7 @@ public class BugInCF extends RuntimeException {
      * @param message the detail message
      */
     public BugInCF(String message) {
-        this(message, (Throwable) null);
+        this(message, new Throwable());
     }
 
     /**
@@ -22,19 +22,22 @@ public class BugInCF extends RuntimeException {
      * @param args the arguments for the format string
      */
     public BugInCF(String fmt, Object... args) {
-        this(String.format(fmt, args));
+        this(String.format(fmt, args), new Throwable());
     }
 
     /**
      * Constructs a new CheckerError with the specified detail message and cause.
      *
      * @param message the detail message
-     * @param cause the cause, or null
+     * @param cause the cause
      */
     public BugInCF(String message, Throwable cause) {
         super(message, cause);
         if (message == null) {
-            throw new Error("Must have a detail message.");
+            throw new BugInCF("Must have a detail message.");
+        }
+        if (cause == null) {
+            throw new BugInCF("Must have a cause throwable.");
         }
     }
 }
