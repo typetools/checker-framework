@@ -54,7 +54,12 @@ public class DependentTypesError {
     }
 
     /** Create a DependentTypesError by parsing a printed one. */
-    public DependentTypesError(String error) {
+    public static DependentTypesError unparse(String error) {
+        return new DependentTypesError(error);
+    }
+
+    /** Create a DependentTypesError by parsing a printed one. */
+    private DependentTypesError(String error) {
         Matcher matcher = ERROR_PATTERN.matcher(error);
         if (matcher.matches()) {
             assert matcher.groupCount() == 2;

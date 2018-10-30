@@ -621,7 +621,7 @@ public class DependentTypesHelper {
                     AnnotationUtils.getElementValueArray(am, element, String.class, true);
             for (String v : value) {
                 if (DependentTypesError.isExpressionError(v)) {
-                    errors.add(new DependentTypesError(v));
+                    errors.add(DependentTypesError.unparse(v));
                 }
             }
         }
