@@ -47,13 +47,13 @@ public interface QualifierPolymorphism {
     }
 
     /**
-     * If {@code qual} is a polymorphic qualifier, then the class specified by the the {@link
+     * If {@code qual} is a polymorphic qualifier, then the class specified by the {@link
      * PolymorphicQualifier} meta-annotation on the polymorphic qualifier is returned. Otherwise,
      * null is returned.
      *
-     * @param qual
-     * @return the class specified by the the {@link PolymorphicQualifier} meta-annotation on {@code
-     *     qual}, if {@code qual} is a polymorphich qualifier; otherwise, null.
+     * @param qual an annotation
+     * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
+     *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
      */
     static Class<? extends Annotation> getPolymorphicQualifierTop(AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
