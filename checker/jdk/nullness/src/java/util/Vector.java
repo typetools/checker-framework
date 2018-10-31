@@ -701,6 +701,7 @@ public class Vector<E>
      *
      * @since 1.2
      */
+    @SideEffectFree
     public @PolyNull Object[] toArray(Vector<@PolyNull E> this) {
         return Arrays.copyOf(elementData, elementCount);
     }
@@ -729,6 +730,7 @@ public class Vector<E>
      * @since 1.2
      */
     @SuppressWarnings("unchecked")
+    @SideEffectFree
     public synchronized <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a) {
         if (a.length < elementCount)
             return (T[]) Arrays.copyOf(elementData, elementCount, a.getClass());
@@ -1134,6 +1136,7 @@ public class Vector<E>
      *
      * @return an iterator over the elements in this list in proper sequence
      */
+    @SideEffectFree
     public synchronized Iterator<E> iterator() {
         return new Itr();
     }
@@ -1357,6 +1360,7 @@ public class Vector<E>
      * @since 1.8
      */
     @Override
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         return new VectorSpliterator<>(this, null, 0, -1, 0);
     }
