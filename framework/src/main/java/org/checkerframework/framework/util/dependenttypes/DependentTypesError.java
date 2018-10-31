@@ -47,11 +47,13 @@ public class DependentTypesError {
     /** An error message about that expression. */
     public final String error;
 
+    /** Create a DependentTypesError for the given expression and error message. */
     public DependentTypesError(String expression, String error) {
         this.expression = expression;
         this.error = error;
     }
 
+    /** Create a DependentTypesError for the given expression and exception. */
     public DependentTypesError(String expression, FlowExpressionParseException e) {
         StringBuilder buf = new StringBuilder();
         List<Result.DiagMessage> msgs = e.getResult().getDiagMessages();
