@@ -10,6 +10,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -69,6 +70,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /** Replaces each polymorphic qualifier with its instantiation. */
     private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
 
+    /** Utility class for working with {@link TypeMirror}s. */
+    private final Types typeUtils;
+
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
      * querying type qualifiers and the given factory for getting annotated types. Subclasses need
@@ -81,6 +85,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.atypeFactory = factory;
         this.qualhierarchy = factory.getQualifierHierarchy();
         this.topQuals = new AnnotationMirrorSet(qualhierarchy.getTopAnnotations());
+        this.typeUtils = env.getTypeUtils();
 
         Elements elements = env.getElementUtils();
         this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
@@ -387,9 +392,16 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
                 switch (polyType.getKind()) {
                     case WILDCARD:
-                        AnnotatedTypeMirror asSuper =
-                                AnnotatedTypes.asSuper(atypeFactory, wildcardType, polyType);
-                        return visit(asSuper, polyType, null);
+                        if (typeUtils.isSubtype(
+                                wildcardType.getUnderlyingType(), polyType.getUnderlyingType())) {
+                            AnnotatedTypeMirror asSuper =
+                                    AnnotatedTypes.asSuper(atypeFactory, wildcardType, polyType);
+                            return visit(asSuper, polyType, null);
+                        } else {
+                            // TODO: is this the right thing to do?
+                            // See Issue #2190.
+                            return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+                        }
                     case TYPEVAR:
                         return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                     default:
