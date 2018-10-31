@@ -147,7 +147,7 @@ public class Object {
      * @see     #hashCode()
      * @see     java.util.HashMap
      */
-    public @PolyDet boolean equals(@PolyDet Object this, @PolyDet Object obj) {
+    public @PolyDet("up") boolean equals(@PolyDet Object this, @PolyDet Object obj) {
         return (this == obj);
     }
 
@@ -234,7 +234,7 @@ public class Object {
      *
      * @return  a string representation of the object.
      */
-    public @PolyDet String toString(@PolyDet Object this) {
+    public @PolyDet("up") String toString(@PolyDet Object this) {
         return getClass().getName() + "@" + Integer.toHexString(hashCode());
     }
 
