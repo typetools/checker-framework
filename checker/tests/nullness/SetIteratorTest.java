@@ -1,5 +1,6 @@
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -25,6 +26,7 @@ public class SetIteratorTest {
 
         if (edges.get(parentNode) != null) {
             for (String childNode : edges.get(parentNode).keySet()) {
+                // :: error: (dereference.of.nullable)
                 edges.get(parentNode).toString();
                 for (String childNodeEdgeX : edges.get(parentNode).get(childNode)) {
                     childrenString += " " + childNode + "(" + childNodeEdgeX + ")";
@@ -33,6 +35,16 @@ public class SetIteratorTest {
         }
 
         return childrenString;
+    }
+
+    public void listChildren2(String parentNode) {
+        if (edges.get(parentNode) != null) {
+            Iterator<String> itor = edges.get(parentNode).keySet().iterator();
+            edges.get(parentNode).toString();
+            String s = itor.next();
+            // :: error: (dereference.of.nullable)
+            edges.get(parentNode).toString();
+        }
     }
 
     public boolean containsNode(String node) {
