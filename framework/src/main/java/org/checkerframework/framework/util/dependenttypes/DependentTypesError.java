@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.javacutil.BugInCF;
 
 // TODO: The design is gross, both because this is returned instead of thrown, and because errors
 // are propagated in strings and then unparsed later.  The Checker Framework should report the
@@ -47,7 +48,12 @@ public class DependentTypesError {
     /** An error message about that expression. */
     public final String error;
 
-    /** Create a DependentTypesError for the given expression and error message. */
+    /**
+     * Create a DependentTypesError for the given expression and error message.
+     *
+     * @param expression the incorrect Java expression
+     * @param error an error message about the expression
+     */
     public DependentTypesError(String expression, String error) {
         this.expression = expression;
         this.error = error;
@@ -55,6 +61,7 @@ public class DependentTypesError {
 
     /** Create a DependentTypesError for the given expression and exception. */
     public DependentTypesError(String expression, FlowExpressionParseException e) {
+        this.expression = expression;
         StringBuilder buf = new StringBuilder();
         List<Result.DiagMessage> msgs = e.getResult().getDiagMessages();
 
@@ -62,24 +69,30 @@ public class DependentTypesError {
             buf.append(msg.getArgs()[0]);
         }
         this.error = buf.toString();
-        this.expression = expression;
     }
 
-    /** Create a DependentTypesError by parsing a printed one. */
-    public static DependentTypesError unparse(String error) {
-        return new DependentTypesError(error);
+    /**
+     * Create a DependentTypesError by parsing a printed one.
+     *
+     * @param formattedError the toString() representation of a DependentTypesError
+     */
+    public static DependentTypesError unparse(String formattedError) {
+        return new DependentTypesError(formattedError);
     }
 
-    /** Create a DependentTypesError by parsing a printed one. */
-    private DependentTypesError(String error) {
-        Matcher matcher = ERROR_PATTERN.matcher(error);
+    /**
+     * Create a DependentTypesError by parsing a printed one.
+     *
+     * @param formattedError the toString() representation of a DependentTypesError
+     */
+    private DependentTypesError(String formattedError) {
+        Matcher matcher = ERROR_PATTERN.matcher(formattedError);
         if (matcher.matches()) {
             assert matcher.groupCount() == 2;
             this.expression = matcher.group(1);
             this.error = matcher.group(2);
         } else {
-            this.expression = "";
-            this.error = error;
+            throw new BugInCF("Cannot unparse: " + formattedError);
         }
     }
 
