@@ -434,20 +434,19 @@ public class FlowExpressionParseUtil {
         if (classType != null) {
             return new ClassName(classType);
         }
-        for (Tree t : path) {
-            if (t.getKind() == Tree.Kind.METHOD) {
-                List<? extends VariableTree> params = ((MethodTree) t).getParameters();
-                for (int i = 0; i < params.size(); i++) {
-                    if (params.get(i).getName().contentEquals(s)) {
-                        throw constructParserException(
-                                s,
-                                String.format(
-                                        DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
-                    }
+
+        MethodTree enclMethod = TreeUtils.enclosingMethod(path);
+        if (enclMethod != null) {
+            List<? extends VariableTree> params = enclMethod.getParameters();
+            for (int i = 0; i < params.size(); i++) {
+                if (params.get(i).getName().contentEquals(s)) {
+                    throw constructParserException(
+                            s,
+                            String.format(DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
                 }
-                break;
             }
         }
+
         throw constructParserException(s, "identifier not found");
     }
 
