@@ -427,6 +427,7 @@ public class DelayQueue<E extends @NonNull Delayed> extends AbstractQueue<E>
      *
      * @return an array containing all of the elements in this queue
      */
+    @SideEffectFree
     public @PolyNull Object[] toArray(DelayQueue<@PolyNull E> this) {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -472,6 +473,7 @@ public class DelayQueue<E extends @NonNull Delayed> extends AbstractQueue<E>
      *         this queue
      * @throws NullPointerException if the specified array is null
      */
+    @SideEffectFree
     public <T> T[] toArray(T[] a) {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -524,6 +526,7 @@ public class DelayQueue<E extends @NonNull Delayed> extends AbstractQueue<E>
      *
      * @return an iterator over the elements in this queue
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return new Itr(toArray());
     }

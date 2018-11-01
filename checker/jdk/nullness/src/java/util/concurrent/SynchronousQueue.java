@@ -1071,6 +1071,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      *
      * @return an empty iterator
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return Collections.emptyIterator();
     }
@@ -1082,6 +1083,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * @return an empty spliterator
      * @since 1.8
      */
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         return Spliterators.emptySpliterator();
     }
@@ -1090,6 +1092,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * Returns a zero-length array.
      * @return a zero-length array
      */
+    @SideEffectFree
     public @PolyNull Object[] toArray(SynchronousQueue<@PolyNull E> this) {
         return new Object[0];
     }
@@ -1102,6 +1105,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * @return the specified array
      * @throws NullPointerException if the specified array is null
      */
+    @SideEffectFree
     public <T> T[] toArray(T[] a) {
         if (a.length > 0)
             a[0] = null;

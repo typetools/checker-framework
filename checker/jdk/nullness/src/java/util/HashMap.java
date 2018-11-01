@@ -920,11 +920,13 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     final class KeySet extends AbstractSet<K> {
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
+        @SideEffectFree
         public final Iterator<K> iterator()     { return new KeyIterator(); }
         public final boolean contains(Object o) { return containsKey(o); }
         public final boolean remove(Object key) {
             return removeNode(hash(key), key, null, false, true) != null;
         }
+        @SideEffectFree
         public final Spliterator<K> spliterator() {
             return new KeySpliterator<>(HashMap.this, 0, -1, 0, 0);
         }
@@ -968,8 +970,10 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     final class Values extends AbstractCollection<V> {
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
+        @SideEffectFree
         public final Iterator<V> iterator()     { return new ValueIterator(); }
         public final boolean contains(Object o) { return containsValue(o); }
+        @SideEffectFree
         public final Spliterator<V> spliterator() {
             return new ValueSpliterator<>(HashMap.this, 0, -1, 0, 0);
         }
@@ -1014,6 +1018,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
+        @SideEffectFree
         public final Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator();
         }
@@ -1034,6 +1039,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
             }
             return false;
         }
+        @SideEffectFree
         public final Spliterator<Map.Entry<K,V>> spliterator() {
             return new EntrySpliterator<>(HashMap.this, 0, -1, 0, 0);
         }

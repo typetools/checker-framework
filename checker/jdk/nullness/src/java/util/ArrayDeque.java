@@ -36,12 +36,15 @@ public class ArrayDeque<E extends @NonNull Object> extends AbstractCollection<E>
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
   @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree
   public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
 
   @SideEffectFree public ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }

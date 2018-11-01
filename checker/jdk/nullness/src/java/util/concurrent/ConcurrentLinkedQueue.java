@@ -585,6 +585,7 @@ public class ConcurrentLinkedQueue<E extends @NonNull Object> extends AbstractQu
      *
      * @return an array containing all of the elements in this queue
      */
+    @SideEffectFree
     public @PolyNull Object[] toArray(ConcurrentLinkedQueue<@PolyNull E> this) {
         // Use ArrayList to deal with resizing.
         ArrayList<E> al = new ArrayList<E>();
@@ -632,6 +633,7 @@ public class ConcurrentLinkedQueue<E extends @NonNull Object> extends AbstractQu
      * @throws NullPointerException if the specified array is null
      */
     @SuppressWarnings("unchecked")
+    @SideEffectFree
     public <T> T[] toArray(T[] a) {
         // try to use sent-in array
         int k = 0;
@@ -666,6 +668,7 @@ public class ConcurrentLinkedQueue<E extends @NonNull Object> extends AbstractQu
      *
      * @return an iterator over the elements in this queue in proper sequence
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return new Itr();
     }
@@ -911,6 +914,7 @@ public class ConcurrentLinkedQueue<E extends @NonNull Object> extends AbstractQu
     /*
     @Override
     */
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         return null;
         /*
