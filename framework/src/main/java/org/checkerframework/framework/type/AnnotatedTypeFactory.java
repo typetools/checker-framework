@@ -2224,7 +2224,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // When the diamond operator is used, fromTypeTree() above does not appropriately
             // populate the type arguments on the type. To do this, we need to create the type
             // mirror again, using toAnnotatedType(). However, this does not populate any
-            // annotations -- so we need to take these from the fromTreeType() mirror.
+            // annotations -- so we need to take these from the fromTypeTree() mirror.
             AnnotatedDeclaredType typeWithInferences =
                     (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
             typeWithInferences.addAnnotations(type.getAnnotations());
