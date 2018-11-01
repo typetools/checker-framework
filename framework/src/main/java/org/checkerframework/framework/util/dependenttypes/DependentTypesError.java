@@ -77,20 +77,10 @@ public class DependentTypesError {
      * @param formattedError the toString() representation of a DependentTypesError
      */
     public static DependentTypesError unparse(String formattedError) {
-        return new DependentTypesError(formattedError);
-    }
-
-    /**
-     * Create a DependentTypesError by parsing a printed one.
-     *
-     * @param formattedError the toString() representation of a DependentTypesError
-     */
-    private DependentTypesError(String formattedError) {
         Matcher matcher = ERROR_PATTERN.matcher(formattedError);
         if (matcher.matches()) {
             assert matcher.groupCount() == 2;
-            this.expression = matcher.group(1);
-            this.error = matcher.group(2);
+            return new DependentTypesError(matcher.group(1), matcher.group(2));
         } else {
             throw new BugInCF("Cannot unparse: " + formattedError);
         }
