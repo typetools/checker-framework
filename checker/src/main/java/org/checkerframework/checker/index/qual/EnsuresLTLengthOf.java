@@ -28,8 +28,8 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * where {@code end} is annotated as {@code @NonNegative @LTEqLengthOf("array") int end;}
  *
- * <p>What this method guarantees is that end has a particular type - @LTLengthOf(value="array",
- * offset="x - 1") - after the method returns. This is useful in cases like this one:
+ * <p>This method guarantees that {@code end} has type {@code @LTLengthOf(value="array", offset="x -
+ * 1")} after the method returns. This is useful in cases like this one:
  *
  * <pre>{@code
  * public void useShiftIndex(@NonNegative int x) {
