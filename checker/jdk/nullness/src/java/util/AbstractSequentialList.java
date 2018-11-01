@@ -27,6 +27,7 @@ package java.util;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class provides a skeletal implementation of the <tt>List</tt>
@@ -240,6 +241,7 @@ public abstract class AbstractSequentialList<E> extends AbstractList<E> {
      *
      * @return an iterator over the elements in this list (in proper sequence)
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return listIterator();
     }

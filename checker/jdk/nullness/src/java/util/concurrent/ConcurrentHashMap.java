@@ -4424,12 +4424,14 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
          *
          * @return an iterator over the elements in this collection
          */
+        @SideEffectFree
         public abstract Iterator<E> iterator();
         public abstract boolean contains(Object o);
         public abstract boolean remove(Object o);
 
         private static final String oomeMsg = "Required array size too large";
 
+        @SideEffectFree
         public final Object[] toArray() {
             long sz = map.mappingCount();
             if (sz > MAX_ARRAY_SIZE)
@@ -4453,6 +4455,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
         }
 
         @SuppressWarnings("unchecked")
+        @SideEffectFree
         public final <T> T[] toArray(T[] a) {
             long sz = map.mappingCount();
             if (sz > MAX_ARRAY_SIZE)
@@ -4594,6 +4597,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
         /**
          * @return an iterator over the keys of the backing map
          */
+        @SideEffectFree
         public Iterator<K> iterator() {
             Node<K,V>[] t;
             ConcurrentHashMap<K,V> m = map;
@@ -4655,6 +4659,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
                      (containsAll(c) && c.containsAll(this))));
         }
 
+        @SideEffectFree
         public Spliterator<K> spliterator() {
             Node<K,V>[] t;
             ConcurrentHashMap<K,V> m = map;
@@ -4699,6 +4704,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
             return false;
         }
 
+        @SideEffectFree
         public final Iterator<V> iterator() {
             ConcurrentHashMap<K,V> m = map;
             Node<K,V>[] t;
@@ -4713,6 +4719,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
             throw new UnsupportedOperationException();
         }
 
+        @SideEffectFree
         public Spliterator<V> spliterator() {
             Node<K,V>[] t;
             ConcurrentHashMap<K,V> m = map;
@@ -4762,6 +4769,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
         /**
          * @return an iterator over the entries of the backing map
          */
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             ConcurrentHashMap<K,V> m = map;
             Node<K,V>[] t;
@@ -4801,6 +4809,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
                      (containsAll(c) && c.containsAll(this))));
         }
 
+        @SideEffectFree
         public Spliterator<Map.Entry<K,V>> spliterator() {
             Node<K,V>[] t;
             ConcurrentHashMap<K,V> m = map;

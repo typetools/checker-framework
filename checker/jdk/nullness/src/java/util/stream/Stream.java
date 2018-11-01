@@ -16,6 +16,7 @@ import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
 
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public interface Stream<T> extends BaseStream<T,Stream<T>> {
     Stream<T> filter(Predicate<? super T> arg0);
@@ -35,7 +36,9 @@ public interface Stream<T> extends BaseStream<T,Stream<T>> {
     Stream<T> skip(long arg0);
     void forEach(Consumer<? super T> arg0);
     void forEachOrdered(Consumer<? super T> arg0);
+    @SideEffectFree
     public @PolyNull Object[] toArray(Stream<@PolyNull T> this);
+    @SideEffectFree
     <A> A[] toArray(IntFunction<A[]> arg0);
     T reduce(T arg0, BinaryOperator<T> arg1);
     Optional<T> reduce(BinaryOperator<T> arg0);

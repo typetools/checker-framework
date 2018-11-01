@@ -543,6 +543,7 @@ public class LinkedHashMap<K, V>
     final class LinkedKeySet extends AbstractSet<K> {
         public final int size()                 { return size; }
         public final void clear()               { LinkedHashMap.this.clear(); }
+        @SideEffectFree
         public final Iterator<K> iterator() {
             return new LinkedKeyIterator();
         }
@@ -550,6 +551,7 @@ public class LinkedHashMap<K, V>
         public final boolean remove(Object key) {
             return removeNode(hash(key), key, null, false, true) != null;
         }
+        @SideEffectFree
         public final Spliterator<K> spliterator()  {
             return Spliterators.spliterator(this, Spliterator.SIZED |
                                             Spliterator.ORDERED |
@@ -592,10 +594,12 @@ public class LinkedHashMap<K, V>
     final class LinkedValues extends AbstractCollection<V> {
         public final int size()                 { return size; }
         public final void clear()               { LinkedHashMap.this.clear(); }
+        @SideEffectFree
         public final Iterator<V> iterator() {
             return new LinkedValueIterator();
         }
         public final boolean contains(Object o) { return containsValue(o); }
+        @SideEffectFree
         public final Spliterator<V> spliterator() {
             return Spliterators.spliterator(this, Spliterator.SIZED |
                                             Spliterator.ORDERED);
@@ -639,6 +643,7 @@ public class LinkedHashMap<K, V>
     final class LinkedEntrySet extends AbstractSet<Map.Entry<K,V>> {
         public final int size()                 { return size; }
         public final void clear()               { LinkedHashMap.this.clear(); }
+        @SideEffectFree
         public final Iterator<Map.Entry<K,V>> iterator() {
             return new LinkedEntryIterator();
         }
@@ -659,6 +664,7 @@ public class LinkedHashMap<K, V>
             }
             return false;
         }
+        @SideEffectFree
         public final Spliterator<Map.Entry<K,V>> spliterator() {
             return Spliterators.spliterator(this, Spliterator.SIZED |
                                             Spliterator.ORDERED |

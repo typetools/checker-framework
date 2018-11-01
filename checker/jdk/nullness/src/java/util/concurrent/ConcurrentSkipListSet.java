@@ -277,6 +277,7 @@ public class ConcurrentSkipListSet<E extends @NonNull Object>
      *
      * @return an iterator over the elements in this set in ascending order
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return m.navigableKeySet().iterator();
     }
@@ -505,6 +506,7 @@ public class ConcurrentSkipListSet<E extends @NonNull Object>
      * @since 1.8
      */
     @SuppressWarnings("unchecked")
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         if (m instanceof ConcurrentSkipListMap)
             return ((ConcurrentSkipListMap<E,?>)m).keySpliterator();

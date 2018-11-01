@@ -1030,6 +1030,7 @@ public class TreeMap<K, V>
     // View class support
 
     class Values extends AbstractCollection<V> {
+        @SideEffectFree
         public Iterator<V> iterator() {
             return new ValueIterator(getFirstEntry());
         }
@@ -1056,12 +1057,14 @@ public class TreeMap<K, V>
             TreeMap.this.clear();
         }
 
+        @SideEffectFree
         public Spliterator<V> spliterator() {
             return new ValueSpliterator<K,V>(TreeMap.this, null, null, 0, -1, 0);
         }
     }
 
     class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator(getFirstEntry());
         }
@@ -1096,6 +1099,7 @@ public class TreeMap<K, V>
             TreeMap.this.clear();
         }
 
+        @SideEffectFree
         public Spliterator<Map.Entry<K,V>> spliterator() {
             return new EntrySpliterator<K,V>(TreeMap.this, null, null, 0, -1, 0);
         }
@@ -1121,6 +1125,7 @@ public class TreeMap<K, V>
         private final NavigableMap<E, ?> m;
         KeySet(NavigableMap<E,?> map) { m = map; }
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             if (m instanceof TreeMap)
                 return ((TreeMap<E,?>)m).keyIterator();
@@ -1183,6 +1188,7 @@ public class TreeMap<K, V>
             return new KeySet<>(m.descendingMap());
         }
 
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return keySpliteratorFor(m);
         }
@@ -1910,6 +1916,7 @@ public class TreeMap<K, V>
         }
 
         final class AscendingEntrySetView extends EntrySetView {
+            @SideEffectFree
             public Iterator<Map.Entry<K,V>> iterator() {
                 return new SubMapEntryIterator(absLowest(), absHighFence());
             }
@@ -1995,6 +2002,7 @@ public class TreeMap<K, V>
         }
 
         final class DescendingEntrySetView extends EntrySetView {
+            @SideEffectFree
             public Iterator<Map.Entry<K,V>> iterator() {
                 return new DescendingSubMapEntryIterator(absHighest(), absLowFence());
             }
