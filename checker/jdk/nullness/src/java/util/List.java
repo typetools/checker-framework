@@ -158,6 +158,7 @@ public interface List<E> extends Collection<E> {
      *
      * @return an iterator over the elements in this list in proper sequence
      */
+    @SideEffectFree
     Iterator<E> iterator();
 
     /**
@@ -179,6 +180,7 @@ public interface List<E> extends Collection<E> {
     // Element annotation should be the same as that on the type parameter E.
     // It's @Nullable here because that is most lenient.
     // Eventually, figure out how to express this, or hard-code in the checker.
+    @SideEffectFree
     public @PolyNull Object[] toArray(List<@PolyNull E> this);
 
     /**
@@ -222,6 +224,7 @@ public interface List<E> extends Collection<E> {
      */
     // @Nullable because, if there is room in the argument a1, the method
     // puts null after the elements of this.
+    @SideEffectFree
     <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
 
 
@@ -704,6 +707,7 @@ public interface List<E> extends Collection<E> {
      * @since 1.8
      */
     @Override
+    @SideEffectFree
     default Spliterator<E> spliterator() {
         return Spliterators.spliterator(this, Spliterator.ORDERED);
     }
