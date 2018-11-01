@@ -50,6 +50,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.Resolver;
@@ -432,6 +433,20 @@ public class FlowExpressionParseUtil {
         TypeMirror classType = ElementUtils.getType(classElem);
         if (classType != null) {
             return new ClassName(classType);
+        }
+        for (Tree t : path) {
+            if (t.getKind() == Tree.Kind.METHOD) {
+                List<? extends VariableTree> params = ((MethodTree) t).getParameters();
+                for (int i = 0; i < params.size(); i++) {
+                    if (params.get(i).getName().contentEquals(s)) {
+                        throw constructParserException(
+                                s,
+                                String.format(
+                                        DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
+                    }
+                }
+                break;
+            }
         }
         throw constructParserException(s, "identifier not found");
     }
