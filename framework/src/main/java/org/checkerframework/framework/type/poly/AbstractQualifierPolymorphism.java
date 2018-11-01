@@ -398,6 +398,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             }
 
             AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(atypeFactory, type, polyType);
+
             return visit(asSuper, polyType, null);
         }
 
