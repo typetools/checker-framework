@@ -17,7 +17,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * <p>Consider the following example, from the Index Checker's regression tests:
  *
  * <pre>
- *
  * {@code @EnsuresLTLengthOf(value = "end", targetValue = "array", offset = "#1 - 1")
  *  public void shiftIndex(@NonNegative int x) {
  *      int newEnd = end - x;
