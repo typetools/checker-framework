@@ -2210,36 +2210,45 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedDeclaredType
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-        if (TreeUtils.isDiamondTree(newClassTree)) {
-            AnnotatedDeclaredType type =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-            if (((com.sun.tools.javac.code.Type) type.actualType)
-                    .tsym
-                    .getTypeParameters()
-                    .nonEmpty()) {
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    AnnotatedTypeMirror ctxtype = ctx.second;
-                    fromNewClassContextHelper(type, ctxtype);
-                }
-            }
-            return type;
-        } else if (newClassTree.getClassBody() != null) {
-            AnnotatedDeclaredType type =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+        AnnotatedDeclaredType type;
+        if (newClassTree.getClassBody() != null) {
+            type = (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
             // If newClassTree creates an anonymous class, then annotations in this location:
             //   new @HERE Class() {}
             // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
             List<? extends AnnotationTree> annos =
                     newClassTree.getClassBody().getModifiers().getAnnotations();
             type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
-            return type;
         } else {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
-            return (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
+            type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
         }
+
+        if (TreeUtils.isDiamondTree(newClassTree)) {
+            // When the diamond operator is used, fromTypeTree() above does not appropriately
+            // populate the type arguments on the type. To do this, we need to create the type
+            // mirror again, using toAnnotatedType(). However, this does not populate any
+            // annotations -- so we need to take these from the fromTypeTree() mirror.
+            AnnotatedDeclaredType typeWithInferences =
+                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+            typeWithInferences.addAnnotations(type.getAnnotations());
+
+            if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
+                    .tsym
+                    .getTypeParameters()
+                    .nonEmpty()) {
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    AnnotatedTypeMirror ctxtype = ctx.second;
+                    fromNewClassContextHelper(typeWithInferences, ctxtype);
+                }
+            }
+
+            return typeWithInferences;
+        }
+        return type;
     }
 
     // This method extracts the ugly hacky parts.
