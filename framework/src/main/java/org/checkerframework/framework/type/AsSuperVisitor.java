@@ -335,6 +335,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
         }
 
+        if (type.getUnderlyingType().asElement().getKind().isInterface()) {
+            // An interface might actually implement the supertype.
+            return superType;
+        }
+
         return errorTypeNotErasedSubtypeOfSuperType(type, superType, p);
     }
 
