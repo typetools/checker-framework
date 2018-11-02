@@ -153,7 +153,8 @@ public interface ConcurrentMap<K extends @NonNull Object, V extends @NonNull Obj
      * @throws IllegalArgumentException if some property of the specified key
      *         or value prevents it from being stored in this map
      */
-     @Nullable V putIfAbsent(K key, V value);
+    @EnsuresKeyFor(key="key", map="this")
+    @Nullable V putIfAbsent(K key, V value);
 
     /**
      * Removes the entry for a key only if currently mapped to a given value.

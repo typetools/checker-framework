@@ -11,6 +11,7 @@ public abstract class Dictionary<K, V> {
   public abstract Enumeration<K> keys();
   public abstract Enumeration<V> elements();
   @Pure public abstract @Nullable V get(@Nullable Object a1);
+  @EnsuresKeyFor(key="key", map="this")
   public abstract @Nullable V put(K a1, V a2);
   public abstract @Nullable V remove(Object a1);
 }

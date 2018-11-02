@@ -235,6 +235,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
+    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
     public boolean containsKey(@Nullable Object key) {
         return getEntry(key) != null;
     }
@@ -539,6 +540,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
+    @EnsuresKeyFor(key="key", map="this")
     public @Nullable V put(K key, V value) {
         Entry<K,V> t = root;
         if (t == null) {
@@ -1515,10 +1517,12 @@ public class TreeMap<K, V>
             return (fromStart && toEnd) ? m.size() : entrySet().size();
         }
 
+        @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
         public final boolean containsKey(Object key) {
             return inRange(key) && m.containsKey(key);
         }
 
+        @EnsuresKeyFor(key="key", map="this")
         public final V put(K key, V value) {
             if (!inRange(key))
                 throw new IllegalArgumentException("key out of range");

@@ -971,6 +971,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      * @throws NullPointerException if the specified key is null
      */
     @Pure
+    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
     public boolean containsKey(Object key) {
         return get(key) != null;
     }
@@ -1014,6 +1015,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      *         {@code null} if there was no mapping for {@code key}
      * @throws NullPointerException if the specified key or value is null
      */
+    @EnsuresKeyFor(key="key", map="this")
     public @Nullable V put(K key, V value) {
         return putVal(key, value, false);
     }
@@ -1546,6 +1548,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      *         or {@code null} if there was no mapping for the key
      * @throws NullPointerException if the specified key or value is null
      */
+    @EnsuresKeyFor(key="key", map="this")
     public @Nullable V putIfAbsent(K key, V value) {
         return putVal(key, value, true);
     }

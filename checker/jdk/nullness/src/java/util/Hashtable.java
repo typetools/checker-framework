@@ -341,6 +341,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      * @see     #contains(Object)
      */
     @Pure
+    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
     public synchronized boolean containsKey(@Nullable Object key) {
         Entry<?,?> tab[] = table;
         int hash = key.hashCode();
@@ -465,6 +466,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      * @see     Object#equals(Object)
      * @see     #get(Object)
      */
+    @EnsuresKeyFor(key="key", map="this")
     public synchronized @Nullable V put(K key, V value) {
         // Make sure the value is not null
         if (value == null) {
@@ -928,6 +930,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     @Override
+    @EnsuresKeyFor(key="key", map="this")
     public synchronized V putIfAbsent(K key, V value) {
         Objects.requireNonNull(value);
 

@@ -190,6 +190,7 @@ public class CompositeType extends OpenType<CompositeData> {
      *
      * @return true if an item of this name is present.
      */
+    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
     public boolean containsKey(@Nullable String itemName) {
 
         if (itemName == null) {

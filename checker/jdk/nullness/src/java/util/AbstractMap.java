@@ -150,6 +150,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException {@inheritDoc}
      */
     @Pure
+    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
     public boolean containsKey(@Nullable Object key) {
         Iterator<Map.Entry<K,V>> i = entrySet().iterator();
         if (key==null) {
@@ -216,6 +217,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException          {@inheritDoc}
      * @throws IllegalArgumentException      {@inheritDoc}
      */
+    @EnsuresKeyFor(key="key", map="this")
     public @Nullable V put(K key, V value) {
         throw new UnsupportedOperationException();
     }

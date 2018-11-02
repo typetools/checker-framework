@@ -228,6 +228,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *            key
      */
     @Pure
+    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
     public boolean containsKey(@Nullable Object key) {
         return isValidKey(key) && vals[((Enum<?>)key).ordinal()] != null;
     }
@@ -273,6 +274,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *     <tt>null</tt> with the specified key.)
      * @throws NullPointerException if the specified key is null
      */
+    @EnsuresKeyFor(key="key", map="this")
     public @Nullable V put(K key, V value) {
         typeCheck(key);
 
