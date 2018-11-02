@@ -34,14 +34,11 @@ public class DependentTypesError {
     }
 
     /** How to format warnings about use of formal parameter name. */
-    private static final String USE_FORMAL_PARAM_NUMBER_STRING = "Use \"#%d\" rather than \"%s\"";
+    public static final String FORMAL_PARAM_NAME_STRING = "Use \"#%d\" rather than \"%s\"";
     /** Matches warnings about use of formal parameter name. */
-    private static final Pattern USE_FORMAL_PARAM_NUMBER_PATTERN =
-            Pattern.compile("^Use \"#\\d+\" rather than \"([a-zA-Z_$][a-zA-Z0-9_$]*)\"$");
-    /** Returns true if the string is a warning about use of formal parameter name. */
-    private boolean isFormalParamNameError(String expression) {
-        return USE_FORMAL_PARAM_NUMBER_PATTERN.matcher(expression).matches();
-    }
+    private static final Pattern FORMAL_PARAM_NAME_PATTERN =
+            Pattern.compile(
+                    "^'([a-zA-Z_$][a-zA-Z0-9_$]*)' because (Use \"#\\d+\" rather than \"\\1\")$");
 
     /** The expression that is unparseable or otherwise problematic. */
     public final String expression;
@@ -112,10 +109,14 @@ public class DependentTypesError {
         return String.format(FORMAT_STRING, expression, error);
     }
 
-    /** Like toString, but uses better formatting sometimes. */
+    /**
+     * Like toString, but uses better formatting sometimes. Use this only for the final output,
+     * because of the design that hides error messages in toString().
+     */
     public String format() {
-        if (isFormalParamNameError(error)) {
-            return error;
+        Matcher m = FORMAL_PARAM_NAME_PATTERN.matcher(error);
+        if (m.matches()) {
+            return m.group(2);
         }
         return toString();
     }
