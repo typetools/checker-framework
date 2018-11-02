@@ -64,6 +64,7 @@ public class AnnotationBuilder {
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
             Collections.synchronizedMap(new HashMap<>());
 
+    /** Create a new AnnotationBuilder for the given annotation and environment. */
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
