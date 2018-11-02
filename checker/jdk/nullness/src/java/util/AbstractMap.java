@@ -152,7 +152,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException {@inheritDoc}
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(@Nullable Object key) {
         Iterator<Map.Entry<K,V>> i = entrySet().iterator();
         if (key==null) {

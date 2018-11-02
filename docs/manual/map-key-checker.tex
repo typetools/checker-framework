@@ -44,13 +44,13 @@ The following method annotations can be used to establish a postcondition
 of a method which ensures that a certain expression is a key for a map:
 
 \begin{description}
-\item[\refqualclasswithparams{checker/index/qual}{EnsuresKeyFor}{String[] value, String[] targetValue}]
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresKeyFor}{String[] value, String[] map}]
   When the method with this annotation returns, the expression (or all the
   expressions) given in the \code{value} element is a key for the given
   maps. More preciesly, the expression has the \code{@KeyFor} qualifier
   with the \code{value} arguments taken from the \code{targetValue} element
   of this annotation.
-\item[\refqualclasswithparams{checker/index/qual}{EnsuresKeyForIf}{String[] expression, boolean result, String[] targetValue}]
+\item[\refqualclasswithparams{checker/index/qual}{EnsuresKeyForIf}{String[] expression, boolean result, String[] map}]
   If the method with this annotation returns the given boolean value,
   then the given expression (or all the given expressions)
   is a key for the given maps.

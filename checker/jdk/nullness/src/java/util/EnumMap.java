@@ -230,7 +230,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *            key
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(@Nullable Object key) {
         return isValidKey(key) && vals[((Enum<?>)key).ordinal()] != null;
     }

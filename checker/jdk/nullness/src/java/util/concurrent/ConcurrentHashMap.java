@@ -973,7 +973,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      * @throws NullPointerException if the specified key is null
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(Object key) {
         return get(key) != null;
     }

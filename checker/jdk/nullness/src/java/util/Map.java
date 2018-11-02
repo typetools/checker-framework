@@ -175,7 +175,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     boolean containsKey(@Nullable Object key);
 
     /**

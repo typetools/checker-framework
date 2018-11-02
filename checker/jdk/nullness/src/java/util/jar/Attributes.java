@@ -204,7 +204,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @param name the attribute name
      * @return true if this Map contains the specified attribute name
      */
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(Object name) {
         return map.containsKey(name);
     }

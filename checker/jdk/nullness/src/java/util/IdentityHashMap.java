@@ -369,7 +369,7 @@ public class IdentityHashMap<K, V>
      * @see     #containsValue(Object)
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(Object key) {
         Object k = maskNull(key);
         Object[] tab = table;

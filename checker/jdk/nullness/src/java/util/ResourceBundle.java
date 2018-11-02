@@ -40,7 +40,7 @@ public abstract class ResourceBundle{
   public final static void clearCache() { throw new RuntimeException("skeleton method"); }
   public final static void clearCache(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public abstract Enumeration<String> getKeys();
-  @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+  @EnsuresKeyForIf(result=true, expression="key", map="this")
   @Pure public boolean containsKey(String a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Set<@KeyFor("this") String> keySet() { throw new RuntimeException("skeleton method"); }
 }

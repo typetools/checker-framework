@@ -1523,7 +1523,7 @@ public class Collections {
 
         public int size()                        {return m.size();}
         public boolean isEmpty()                 {return m.isEmpty();}
-        @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+        @EnsuresKeyForIf(result=true, expression="key", map="this")
         public boolean containsKey(Object key)   {return m.containsKey(key);}
         public boolean containsValue(Object val) {return m.containsValue(val);}
         public V get(Object key)                 {return m.get(key);}
@@ -2659,7 +2659,7 @@ public class Collections {
         public boolean isEmpty() {
             synchronized (mutex) {return m.isEmpty();}
         }
-        @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+        @EnsuresKeyForIf(result=true, expression="key", map="this")
         public boolean containsKey(Object key) {
             synchronized (mutex) {return m.containsKey(key);}
         }
@@ -3699,7 +3699,7 @@ public class Collections {
 
         public int size()                      { return m.size(); }
         public boolean isEmpty()               { return m.isEmpty(); }
-        @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+        @EnsuresKeyForIf(result=true, expression="key", map="this")
         public boolean containsKey(Object key) { return m.containsKey(key); }
         public boolean containsValue(Object v) { return m.containsValue(v); }
         public V get(Object key)               { return m.get(key); }
@@ -4679,7 +4679,7 @@ public class Collections {
 
         public int size()                          {return 0;}
         public boolean isEmpty()                   {return true;}
-        @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+        @EnsuresKeyForIf(result=true, expression="key", map="this")
         public boolean containsKey(Object key)     {return false;}
         public boolean containsValue(Object value) {return false;}
         public V get(Object key)                   {return null;}
@@ -4984,7 +4984,7 @@ public class Collections {
 
         public int size()                                           {return 1;}
         public boolean isEmpty()                                {return false;}
-        @EnsuresKeyForIf(result="true", key="key", map="this")
+        @EnsuresKeyForIf(result=true, key="key", map="this")
         public boolean containsKey(Object key)             {return eq(key, k);}
         public boolean containsValue(Object value)       {return eq(value, v);}
         public V get(Object key)              {return (eq(key, k) ? v : null);}

@@ -425,7 +425,7 @@ public class WeakHashMap<K, V>
      *         <tt>false</tt> otherwise
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(@Nullable Object key) {
         return getEntry(key) != null;
     }

@@ -602,7 +602,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
      * key.
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(@Nullable Object key) {
         return getNode(hash(key), key) != null;
     }

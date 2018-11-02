@@ -343,7 +343,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      * @see     #contains(Object)
      */
     @Pure
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public synchronized boolean containsKey(@Nullable Object key) {
         Entry<?,?> tab[] = table;
         int hash = key.hashCode();

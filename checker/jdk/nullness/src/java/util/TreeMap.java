@@ -237,7 +237,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
-    @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+    @EnsuresKeyForIf(result=true, expression="key", map="this")
     public boolean containsKey(@Nullable Object key) {
         return getEntry(key) != null;
     }
@@ -1519,7 +1519,7 @@ public class TreeMap<K, V>
             return (fromStart && toEnd) ? m.size() : entrySet().size();
         }
 
-        @EnsuresKeyForIf(result="true", expression="key", targetValue="this")
+        @EnsuresKeyForIf(result=true, expression="key", map="this")
         public final boolean containsKey(Object key) {
             return inRange(key) && m.containsKey(key);
         }
