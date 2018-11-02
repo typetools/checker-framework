@@ -3,7 +3,7 @@
  * @summary Test the defaulting mechanism for binary files.
  *
  * @compile -XDrawDiagnostics -Xlint:unchecked BinaryDefaultTestBinary.java
- * @compile -XDrawDiagnostics -Xlint:unchecked -processor lubglb.LubGlbChecker BinaryDefaultTest.java -AuseDefaultsForUncheckedCode=-source,bytecode -AprintErrorStack
+ * @compile -XDrawDiagnostics -Xlint:unchecked -processor lubglb.LubGlbChecker BinaryDefaultTest.java -AuseDefaultsForUncheckedCode=-source,bytecode
  */
 
 import lubglb.quals.B;

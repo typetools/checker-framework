@@ -11,7 +11,7 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for method invocation
+ * A node for method invocation.
  *
  * <pre>
  *   <em>target(arg1, arg2, ...)</em>

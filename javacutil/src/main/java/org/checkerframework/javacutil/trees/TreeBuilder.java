@@ -224,7 +224,7 @@ public class TreeBuilder {
     }
 
     /**
-     * Builds an AST Tree to dereference the length field of an array
+     * Builds an AST Tree to dereference the length field of an array.
      *
      * @param expression the array expression whose length is being accessed
      * @return a MemberSelectTree to dereference the length of the array

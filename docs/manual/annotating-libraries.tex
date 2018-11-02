@@ -207,7 +207,7 @@ This section describes how to create an annotated library.
 
 \begin{enumerate}
 \item See the
-  \ahref{https://search.maven.org/#search|gav|1|g:"org.checkerframework.annotatedlib"}{the
+  \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
@@ -241,10 +241,6 @@ This section describes how to create an annotated library.
       annotations exist, using \<-processor
       \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
     \end{itemize}
-  \item
-    When the build system creates a \<.jar> file, the resulting \<.jar>
-    file includes the contents of
-    \<checker-framework/checker/dist/checker-qual.jar>.
   \end{enumerate}
   \end{sloppypar}
 
@@ -252,9 +248,6 @@ This section describes how to create an annotated library.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
   unannotated type uses.
-  The reason to include the contents of \<checker-qual.jar> is so that
-  the resulting \<.jar> file can be used whether or not the Checker Framework
-  is being run.
 
 \item Annotate some files.
 %  You can determine which files need to be annotated by using the
@@ -336,12 +329,12 @@ Get Java 8 source code (must be version 8)
 \item
 Set up the Checker Framework (replace \textit{mychecker} with the name of your checker)
 \begin{enumerate}
-\item \<mkdir \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
-  \<cd \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
+\item \<mkdir \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
+  \<cd \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
   \code{echo "include ../Makefile.jdk" > Makefile}
 
 \item Add \textit{mychecker} to
-  \<\$JSR308/checker-framework/checker/jdk/MakeFile> in the  definition of
+  \<\$CHECKERFRAMEWORK/checker/jdk/MakeFile> in the  definition of
   \<CHECKER\_DIRS> and in the definition of \<ANNOTATED\_CLASSES> (don't forget
   to add a closing parenthesis at the end of the definition of \<ANNOTATED\_CLASSES>!).
 
@@ -350,7 +343,7 @@ Set up the Checker Framework (replace \textit{mychecker} with the name of your c
 \item
 For each file you want to annotate, copy the JDK version into the
 directory
-\<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}/src/>, using
+\<\$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/src/>, using
 the same directory structure as the JDK\@.
 
 Whenever you add a file, fully annotate it, as described in
@@ -362,11 +355,18 @@ warnings, because the JDK is built using the \<-Awarns> command-line
 option.
 
 \item
-Build the annotated JDK:
-\begin{enumerate}
-\item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
-\item run \<./gradlew buildJdk>
-\end{enumerate}
+Build the annotated JDK\@.  There are two ways:
+\begin{itemize}
+\item
+  Run \<./gradlew buildJdk -PuseLocalJdk>
+  % Is any more advice needed here, such as supplying -PuseLocalJdk to
+  % other commands?
+\item
+  \begin{enumerate}
+  \item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
+  \item run \<./gradlew buildJdk>
+  \end{enumerate}
+\end{itemize}
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively
@@ -620,7 +620,7 @@ and then annotate it.  The rest of this section describes this approach.
 
 \begin{Verbatim}
   cd nullness-stub
-  java -cp $JSR308/checker-framework/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to

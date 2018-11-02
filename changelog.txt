@@ -1,4 +1,35 @@
+Version ?.?.?, ??, 2018
+
+The manual links to the Rx Thread & Effect Checker.
+
+---------------------------------------------------------------------------
+Version 2.5.6, October 3, 2018
+
+Introduce checker-qual-android artifact with Android-compatible qualifiers
+that use only classfile retention.
+
+Remove the checker-compat-qual artifact, which was only useful for Java 7,
+which the Checker Framework no longer supports.
+
+Closed issues:
+
+2135, 2157, 2158, 2164, 2171.
+
+---------------------------------------------------------------------------
+Version 2.5.5, August 30, 2018
+
+Implicit imports (deprecated in November 2014) are no longer supported.
+
 Renamed the testlib Maven artifact to framework-test.
+
+Removed command-line option -AprintErrorStack, which is now the default.
+Added -AnoPrintErrorStack to disable it (which should be rare).
+
+Replaced ErrorReporter class with BugInCF and UserError exceptions.
+
+Closed issues:
+
+1999, 2008, 2023, 2029, 2074, 2088, 2098, 2099, 2102, 2107.
 
 ---------------------------------------------------------------------------
 Version 2.5.4, August 1, 2018

@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for new object creation
+ * A node for new object creation.
  *
  * <pre>
  *   <em>new constructor(arg1, arg2, ...)</em>

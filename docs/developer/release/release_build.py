@@ -180,7 +180,7 @@ def build_and_locally_deploy_maven(version):
 
     execute("mkdir -p " + maven_dev_repo_without_protocol)
 
-    # Deploy jsr308 and checker-qual jars to maven repo
+    # Deploy jars to Maven Central repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
     mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)
@@ -383,12 +383,15 @@ def main(argv):
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
 
         print "Verify that all changelog messages follow the guidelines found in README-release-process.html#changelog_guide\n"
+        print "You'll need to review the changelogs on GitHub.\n"
 
-        print "Ensure that the changelogs end with a line that lists resolved issues in numerical order, like"
-        print "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374.\n"
+        print "Ensure that the changelogs end with the list of resolved issues in numerical order, like"
+        print "Closed issues:\n"
+        print "200, 300, 332, 336, 357, 359, 373, 374.\n"
 
         print("To ensure AFU and the Checker Framework changelogs are correct and complete, " +
               "please follow the Content Guidelines found in README-release-process.html#content_guidelines\n")
+        print "If the changelogs need to be updated, then exit this script, make changes, push the changes, and then restart this script.\n"
 
         prompt_to_continue()
 

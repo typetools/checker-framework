@@ -83,35 +83,6 @@ on your classpath.  See the installation instructions
 (Section~\ref{installation}).
 
 \item
-If you get an error such as
-
-\begin{Verbatim}
-package org.checkerframework.checker.nullness.qual does not exist
-\end{Verbatim}
-
-  \noindent
-\begin{sloppypar}
-  despite no apparent use of \code{import org.checkerframework.checker.nullness.qual.*;} in
-  the source code, then perhaps
-  \code{jsr308\_imports} is set as a Java system property, a shell
-  environment variable, or a command-line option.
-  You should solve this by unsetting the variable/option, which is deprecated.
-\end{sloppypar}
-
-If the error is
-
-% Don't remove the apostrophe here
-\begin{Verbatim}
-package 'org.checkerframework.checker.nullness.qual does not exist
-\end{Verbatim}
-
-\begin{sloppypar}
-\noindent
-(note the extra apostrophe!), then you have probably misused quoting when
-supplying the (deprecated) \code{jsr308\_imports} environment variable.
-\end{sloppypar}
-
-\item
 If you get an error like one of the following,
 
 %BEGIN LATEX
@@ -657,7 +628,7 @@ helpful if you:
 
 \begin{itemize}
 \item
-  Add \code{-version -verbose -AprintErrorStack -AprintAllQualifiers}
+  Add \code{-version -verbose -AprintAllQualifiers}
   to the javac options.  This causes the compiler to output
   debugging information, including its version number.
 \item
@@ -769,7 +740,7 @@ Follow the instructions for your operating system.
 % Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdkany
 \begin{Verbatim}
 sudo apt-get -qqy update
-sudo apt-get -qqy install ant cpp git gradle junit4  libcurl3-gnutls \
+sudo apt-get -qqy install ant cpp git gradle junit4 libcurl3-gnutls \
  make maven mercurial unzip wget openjdk-8-jdk \
  dia hevea latexmk librsvg2-bin maven python-pip \
  texlive-font-utils texlive-fonts-recommended \
@@ -828,14 +799,12 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Hom
 Obtain the latest source code from the version control repository:
 
 \begin{Verbatim}
-export JSR308=$HOME/jsr308
-mkdir -p $JSR308
-cd $JSR308
 git clone https://github.com/typetools/checker-framework.git checker-framework
+export CHECKERFRAMEWORK=`pwd`/checker-framework
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-You might want to add the \<export JSR308=\$HOME/jsr308> line to your
+You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \<.bashrc> file.
 
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
@@ -890,7 +859,7 @@ the Checker Framework anyway.)
 Run \code{./gradlew cloneAndBuildDependencies} to build the Checker Framework dependencies:
 
 \begin{Verbatim}
-  cd $JSR308/checker-framework
+  cd $CHECKERFRAMEWORK
   ./gradlew cloneAndBuildDependencies
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
@@ -899,7 +868,7 @@ Run \code{./gradlew cloneAndBuildDependencies} to build the Checker Framework de
 Run \code{./gradlew assemble} to build the Checker Framework:
 
 \begin{Verbatim}
-  cd $JSR308/checker-framework
+  cd $CHECKERFRAMEWORK
   ./gradlew assemble
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
@@ -909,7 +878,7 @@ Once it is built, you may wish to put the Checker Framework's \<javac>
 even earlier in your \<PATH>:
 
 \begin{Verbatim}
-export PATH=$JSR308/checker-framework/checker/bin:$JSR308/jsr308-langtools/dist/bin:${PATH}
+export PATH=$CHECKERFRAMEWORK/checker/bin:${PATH}
 \end{Verbatim}
 
 The Checker Framework's \code{javac} ensures that all required
@@ -931,13 +900,13 @@ errors.
 To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
 
 \begin{Verbatim}
-export PATH=$JSR308/checker-framework/checker/bin-devel:$JSR308/jsr308-langtools/dist/bin:${PATH}
+export PATH=$CHECKERFRAMEWORK/checker/bin-devel:${PATH}
 \end{Verbatim}
 
 The developer version of \<javac> allows you to not have to rebuild
 the jar files after every code change, in turn allowing you to test
-your changes faster. Source files can be compiled using command \<ant
-build> in the \<checker> directory, or can be automatically compiled by
+your changes faster. Source files can be compiled using command \<./gradlew
+compile> in the \<checker> directory, or can be automatically compiled by
 an IDE such as Eclipse.
 
 \item Test that everything works:
@@ -946,7 +915,7 @@ an IDE such as Eclipse.
 
   \item Run \code{./gradlew allTests}:
 \begin{Verbatim}
-  cd $JSR308/checker-framework
+  cd $CHECKERFRAMEWORK
   ./gradlew allTests
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
@@ -986,7 +955,7 @@ and install it.
 select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
 Projects into Workspace''.
 \item After the ``Import Projects'' window appears, select ``Select
-Root Directory'', and select the directory pointed to by \code{\$JSR308}.
+Root Directory'', and select the parent of the \code{\$CHECKERFRAMEWORK} directory.
 \item Ensure ``Search for nested projects'' is selected in the Options panel.
 \item Select all the projects in the folder except for ``personalblog-demo'',
 then select ``Finish'' to import the projects.
@@ -1068,7 +1037,7 @@ changes, and try the commit operation again.
 \section{Contributing fixes (creating a pull request)\label{pull-request}}
 
 Please see the document
-\ahref{http://homes.cs.washington.edu/\%7emernst/advice/github-pull-request.html}{How
+\ahref{https://homes.cs.washington.edu/\%7emernst/advice/github-pull-request.html}{How
   to create and review a GitHub pull request} for instructions about how to
 create a pull request, which is the way you can contribute code to the
 Checker Framework project.  Thanks in advance for your participation!
@@ -1084,7 +1053,7 @@ Here are two technical papers about the Checker Framework itself:
 \begin{itemize}
 \item
 ``Practical pluggable types for Java''~\cite{PapiACPE2008}
-(ISSTA 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
+(ISSTA 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
 describes the design and implementation of the Checker Framework.
 The paper also describes case
 studies in which the Nullness, Interning, Javari, and IGJ Checkers found
@@ -1094,7 +1063,7 @@ The case studies also yielded new insights about type systems.
 \item
 ``Building and using pluggable
 type-checkers''~\cite{DietlDEMS2011}
-(ICSE 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
+(ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
 discusses further experience with the Checker Framework, increasing the
 number of lines of verified code to 3 million.  The case studies are of the
 Fake Enum, Signature String, Interning, and Nullness Checkers.
@@ -1112,7 +1081,7 @@ using the Checker Framework:
 See the two papers about the Checker Framework, described above.
 
 \item[Rawness initialization (Section~\ref{initialization-rawness-checker})]
-``Inference of field initialization'' (ICSE 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
+``Inference of field initialization'' (ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
 describes inference for the Rawness Initialization Checker.
 
 \item[Interning (Chapter~\ref{interning-checker})]
@@ -1120,29 +1089,29 @@ See the two papers about the Checker Framework, described above.
 
 \item[Locking (Chapter~\ref{lock-checker})]
 ``Locking discipline inference and checking'' (ICSE 2016,
-\myurl{http://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
 describes the Lock Checker.
 
 \item[Fake enumerations, type aliases, and typedefs (Chapter~\ref{fenum-checker})]
 See the ICSE 2011 paper about the Checker Framework, described above.
 
 \item[Regular expressions (Chapter~\ref{regex-checker})]
-``A type system for regular expressions''~\cite{SpishakDE2012} (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/regex-types-ftfjp2012-abstract.html})
+``A type system for regular expressions''~\cite{SpishakDE2012} (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/regex-types-ftfjp2012-abstract.html})
             describes the Regex Checker.
 
 \item[Format Strings (Chapter~\ref{formatter-checker})]
-``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA 2014, \myurl{http://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
+``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
             describes the Format String Checker.
 
 \item[Signature strings (Chapter~\ref{signature-checker})]
 See the ICSE 2011 paper about the Checker Framework, described above.
 
 \item[GUI Effects (Chapter~\ref{guieffect-checker})]
-``JavaUI: Effects for controlling UI object access''~\cite{GordonDEG2013} (ECOOP 2013, \myurl{http://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html})
+``JavaUI: Effects for controlling UI object access''~\cite{GordonDEG2013} (ECOOP 2013, \myurl{https://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html})
             describes the GUI Effect Checker.
 
 \item
-``Verification games: Making verification fun'' (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
+``Verification games: Making verification fun'' (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
             describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
 
 \item[Thread locality (Section~\ref{loci-thread-locality-checker})]
@@ -1152,48 +1121,48 @@ See the ICSE 2011 paper about the Checker Framework, described above.
 \item[Security (Section~\ref{sparta-checker})]
 ``Static analysis of implicit control flow: Resolving Java reflection and
   Android intents''~\cite{BarrosJMVDdAE2015} (ASE 2015,
-  \myurl{http://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
+  \myurl{https://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
   describes the SPARTA toolset and information flow type-checker.
 
 ``Boolean formulas for the static identification of injection attacks in
-  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{http://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
+  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{https://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
 
 \item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
     Types} (Section~\ref{gut-checker})]
-``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
+``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
             describes inference for the Generic Universe Types type system.
 
 Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
-``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
+``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
 
 \item[Approximate data (Section~\ref{enerj-checker})]
 ``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
 
 \item[Information flow and tainting (Section~\ref{sparta-checker})]
 ``Collaborative Verification of Information Flow
-for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
+for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
 
 \item[IGJ and OIGJ immutability (Section~\ref{igj-checker})]
-``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
+``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{https://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
 and
-``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
+``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
             describe the IGJ and OIGJ immutability type systems.
 For further case studies, also see the ISSTA 2008 paper about the Checker
 Framework, described above.
 
 \item[Javari immutability (Section~\ref{javari-checker})]
-``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
+``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
             describes the Javari type system.
 For inference, see
-``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
+``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
 and
-``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{http://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
+``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{https://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
 For further case studies, also see the ISSTA 2008 paper about the Checker
 Framework, described above.
 
 \item[ReIm immutability]
 % TODO:  (Section~\ref{reim-checker})
-``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
+``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
             describes the ReIm immutability type system.
 
 \end{description}
@@ -1387,7 +1356,7 @@ For details, see file
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
 % LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
-%  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
+%  LocalWords:  extJavac ZipFile AnoPrintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
 %  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
 %  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre

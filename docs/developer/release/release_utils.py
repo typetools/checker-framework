@@ -373,13 +373,6 @@ def push_changes_prompt_if_fail(repo_root):
         if is_git(repo_root):
             cmd = '(cd %s && git push --tags)' % repo_root
             result = os.system(cmd)
-            if result == 0:
-                break
-            else:
-                print "Could not push tags from: " + repo_root + "; result=" + str(result) + " for command: `" + cmd + "` in " + os.getcwd()
-                if not prompt_yn("Try again (responding 'n' will skip this push command but will not exit the script) ?"):
-                    break
-        if is_git(repo_root):
             cmd = '(cd %s && git push origin master)' % repo_root
         else:
             cmd = 'hg -R %s push' % repo_root
@@ -829,10 +822,9 @@ def get_announcement_email(version):
     Subject: Release %s of the Checker Framework
 
     We have released a new version of the Checker Framework.
+    The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
 
-    * The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
-
-    You can find documentation and download links for these projects at:
+    You can find documentation and download links at:
     http://CheckerFramework.org/
 
     Changes for the Checker Framework

@@ -178,6 +178,7 @@ import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.dataflow.util.MostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -634,7 +635,7 @@ public class CFGBuilder {
         }
     }
 
-    /** A TryFinallyFrame applies to exceptions of any type */
+    /** A TryFinallyFrame applies to exceptions of any type. */
     protected static class TryFinallyFrame implements TryFrame {
         protected Label finallyLabel;
 
@@ -2584,7 +2585,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Find nearest owner element(Method or Class) which holds current tree
+         * Find nearest owner element(Method or Class) which holds current tree.
          *
          * @return Nearest owner element of current tree
          */
@@ -3907,8 +3908,7 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
-                        throw new IllegalArgumentException(
-                                "unexpected element kind : " + element.getKind());
+                        throw new BugInCF("bad element kind " + element.getKind());
                 }
             }
             extendWithNode(node);
@@ -4841,14 +4841,12 @@ public class CFGBuilder {
 
         @Override
         public Node visitWildcard(WildcardTree tree, Void p) {
-            assert false : "WildcardTree is unexpected in AST to CFG translation";
-            return null;
+            throw new BugInCF("WildcardTree is unexpected in AST to CFG translation");
         }
 
         @Override
         public Node visitOther(Tree tree, Void p) {
-            assert false : "Unknown AST element encountered in AST to CFG translation.";
-            return null;
+            throw new BugInCF("Unknown AST element encountered in AST to CFG translation.");
         }
     }
 

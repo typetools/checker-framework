@@ -10,7 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
- * A node for new array creation
+ * A node for new array creation.
  *
  * <pre>
  *   <em>new type [1][2]</em>

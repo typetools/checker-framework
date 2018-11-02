@@ -49,7 +49,7 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -404,7 +404,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * If we have inferred a type argument from the supertype constraints and this type argument is
-     * BELOW the lower bound, make it AT the lower bound
+     * BELOW the lower bound, make it AT the lower bound.
      *
      * <p>e.g.
      *
@@ -477,8 +477,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 AnnotatedTypes.expandVarArgsFromTypes(methodType, argTypes);
 
         if (argTypes.size() != paramTypes.size()) {
-            ErrorReporter.errorAbort(
-                    "Mismatch between formal parameter count and argument count!\n"
+            throw new BugInCF(
+                    "Mismatch between formal parameter count and argument count.\n"
                             + "paramTypes="
                             + PluginUtil.join(",", paramTypes)
                             + "\n"
@@ -782,8 +782,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     }
 
                     if (!handled) {
-                        ErrorReporter.errorAbort(
-                                "Unhandled constraint type: " + constraint.toString());
+                        throw new BugInCF("Unhandled constraint type: " + constraint.toString());
                     }
 
                     toProcess.addAll(newConstraints);
@@ -799,7 +798,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final Set<TUConstraint> outgoing = new LinkedHashSet<>();
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "All afConstraints should be irreducible before conversion.\n"
                                 + "afConstraints=[ "
                                 + PluginUtil.join(", ", afConstraints)

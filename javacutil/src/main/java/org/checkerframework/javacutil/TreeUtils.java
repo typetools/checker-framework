@@ -99,7 +99,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Checks if the method invocation is a call to this.
+     * Checks if the method invocation is a call to "this".
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to this
@@ -108,25 +108,15 @@ public final class TreeUtils {
         return isNamedMethodCall("this", tree);
     }
 
+    /**
+     * Checks if the method call is a call to the given method name.
+     *
+     * @param name a method name
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to the given method
+     */
     protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
-        @Nullable ExpressionTree mst = tree.getMethodSelect();
-        assert mst != null; /*nninvariant*/
-
-        if (mst.getKind() == Tree.Kind.IDENTIFIER) {
-            return ((IdentifierTree) mst).getName().contentEquals(name);
-        }
-
-        if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
-            MemberSelectTree selectTree = (MemberSelectTree) mst;
-
-            if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
-                return false;
-            }
-
-            return ((IdentifierTree) selectTree.getExpression()).getName().contentEquals(name);
-        }
-
-        return false;
+        return getMethodName(tree.getMethodSelect()).equals(name);
     }
 
     /**
@@ -258,7 +248,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, of the specified class
+     * Gets the first enclosing tree in path, of the specified class.
      *
      * @param path the path defining the tree node
      * @param treeClass the class of the desired tree
@@ -430,13 +420,11 @@ public final class TreeUtils {
      */
     public static @Nullable Element elementFromTree(Tree tree) {
         if (tree == null) {
-            ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
-            return null; // dead code
+            throw new BugInCF("InternalUtils.symbol: tree is null");
         }
 
         if (!(tree instanceof JCTree)) {
-            ErrorReporter.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
-            return null; // dead code
+            throw new BugInCF("InternalUtils.symbol: tree is not a valid Javac tree");
         }
 
         if (isExpressionTree(tree)) {
@@ -562,8 +550,7 @@ public final class TreeUtils {
     public static ExecutableElement constructor(NewClassTree tree) {
 
         if (!(tree instanceof JCTree.JCNewClass)) {
-            ErrorReporter.errorAbort("InternalUtils.constructor: not a javac internal tree");
-            return null; // dead code
+            throw new BugInCF("InternalUtils.constructor: not a javac internal tree");
         }
 
         JCNewClass newClassTree = (JCNewClass) tree;
@@ -618,8 +605,7 @@ public final class TreeUtils {
         } else if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree) expr).getIdentifier();
         }
-        ErrorReporter.errorAbort("TreeUtils.methodName: cannot be here: " + node);
-        return null; // dead code
+        throw new BugInCF("TreeUtils.methodName: cannot be here: " + node);
     }
 
     /**
@@ -698,12 +684,12 @@ public final class TreeUtils {
         }
     }
 
-    /** Returns true if the tree represents a {@code String} concatenation operation */
+    /** Returns true if the tree represents a {@code String} concatenation operation. */
     public static final boolean isStringConcatenation(Tree tree) {
         return (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree)));
     }
 
-    /** Returns true if the compound assignment tree is a string concatenation */
+    /** Returns true if the compound assignment tree is a string concatenation. */
     public static final boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
         return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
                 && TypesUtils.isString(TreeUtils.typeOf(tree)));
@@ -738,7 +724,7 @@ public final class TreeUtils {
         }
     }
 
-    /** Returns the receiver tree of a field access or a method invocation */
+    /** Returns the receiver tree of a field access or a method invocation. */
     public static ExpressionTree getReceiverTree(ExpressionTree expression) {
         ExpressionTree receiver = TreeUtils.skipParens(expression);
 
@@ -860,8 +846,7 @@ public final class TreeUtils {
         if (methods.size() == 1) {
             return methods.get(0);
         }
-        ErrorReporter.errorAbort("TreeUtils.getMethod: expected 1 match, found " + methods.size());
-        return null; // dead code
+        throw new BugInCF("TreeUtils.getMethod: expected 1 match, found " + methods.size());
     }
 
     /**
@@ -906,14 +891,13 @@ public final class TreeUtils {
                 }
             }
         }
-        ErrorReporter.errorAbort(
+        throw new BugInCF(
                 "TreeUtils.getMethod: found no match for "
                         + typeName
                         + "."
                         + methodName
                         + "("
                         + Arrays.toString(paramTypes));
-        return null; // dead code
     }
 
     /**
@@ -941,7 +925,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether {@code tree} is a class literal, such as
+     * Determine whether {@code tree} is a class literal, such as.
      *
      * <pre>
      *   <em>Object</em> . <em>class</em>
@@ -957,7 +941,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether {@code tree} is a field access expressions, such as
+     * Determine whether {@code tree} is a field access expressions, such as.
      *
      * <pre>
      *   <em>f</em>
@@ -1001,7 +985,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether {@code tree} refers to a method element, such as
+     * Determine whether {@code tree} refers to a method element, such as.
      *
      * <pre>
      *   <em>m</em>(...)
@@ -1089,8 +1073,7 @@ public final class TreeUtils {
                 return var;
             }
         }
-        ErrorReporter.errorAbort("TreeUtils.getField: shouldn't be here!");
-        return null; // dead code
+        throw new BugInCF("TreeUtils.getField: shouldn't be here");
     }
 
     /**

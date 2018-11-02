@@ -134,7 +134,7 @@ CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
-CF_VERSION = execute("./gradlew -q version", True, True, TMP_DIR + "/checker-framework").strip()
+CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
 
 CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
 CHECKER_LIBS_DIR = os.path.join(CHECKER_FRAMEWORK, "checker", "build", "libs")
@@ -146,9 +146,10 @@ CHECKER_QUAL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual", "build",
 CHECKER_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-source.jar')
 CHECKER_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-javadoc.jar')
 
-CHECKER_COMPAT_QUAL = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'.jar')
-CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'-source.jar')
-CHECKER_COMPAT_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'-javadoc.jar')
+CHECKER_QUAL_ANDROID_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual-android", "build", "libs")
+CHECKER_QUAL_ANDROID = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'.jar')
+CHECKER_QUAL_ANDROID_SOURCE = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-source.jar')
+CHECKER_QUAL_ANDROID_JAVADOC_JAR = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-javadoc.jar')
 
 JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "build", "libs")
 JAVACUTIL_BINARY = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+".jar")
@@ -169,8 +170,6 @@ JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
 
-JSR308_LANGTOOLS = os.path.join(BUILD_DIR, 'jsr308-langtools')
-
 ANNO_TOOLS = os.path.join(BUILD_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, 'annotation-file-utilities')
 AFU_CHANGELOG = os.path.join(ANNO_FILE_UTILITIES, 'changelog.html')
@@ -189,14 +188,14 @@ MAVEN_POMS_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'poms')
 CHECKER_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml')
 CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_QUAL7_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQual7Pom.xml')
-CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
+CHECKER_QUAL_ANDROID_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualAndroidPom.xml')
 
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
 MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
 CHECKER_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerReleasePom.xml')
 CHECKER_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml')
-CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompatQualReleasePom.xml')
+CHECKER_QUAL_ANDROID_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualAndroidReleasePom.xml')
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
@@ -228,7 +227,7 @@ LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE = datetime.date.today()
 
-os.environ['JSR308'] = BUILD_DIR
+os.environ['PARENT_DIR'] = BUILD_DIR
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 # Environment variables for tools needed during the build

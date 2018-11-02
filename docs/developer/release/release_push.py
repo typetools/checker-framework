@@ -67,17 +67,6 @@ def copy_releases_to_live_site(checker_version, afu_version):
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
     promote_release(AFU_LIVE_RELEASES_DIR, afu_version)
 
-### def update_release_symlinks(checker_version, afu_version):
-###     """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
-###     and the Checker Framework live sites to point to the new releases of each
-###     project."""
-###     afu_relative_latest_release_dir = os.path.join("releases", afu_version)
-###     checker_and_jsr308_relative_latest_release_dir = os.path.join("releases", checker_version)
-###
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, "current"))
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, "current"))
-###     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, "current"))
-
 def ensure_group_access_to_releases():
     """Gives group access to all files and directories in the \"releases\"
     subdirectories on the live web site for the AFU and the
@@ -113,10 +102,10 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-compat-qual.jar, so use the same javadoc jar
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
-                            CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_COMPAT_QUAL_SOURCE),
+    # checker.jar is a superset of checker-qual-andriod.jar, so use the same javadoc jar
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_ANDROID_RELEASE_POM,
+                            CHECKER_QUAL_ANDROID,
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_ANDROID_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
@@ -270,7 +259,7 @@ def main(argv):
 
     if not os.path.exists(RELEASE_BUILD_COMPLETED_FLAG_FILE):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
-                         "the JSR308, AFU, or Checker Framework repositories.  Please ensure it has " +
+                         "the AFU or Checker Framework repositories.  Please ensure it has " +
                          "been run.")
 
     # The release script checks that the new release version is greater than the previous release version.
@@ -455,12 +444,7 @@ def main(argv):
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
-        print_step("Push Step 10. Announce the release.") # MANUAL
-        continue_or_exit("Please announce the release using the email structure below.\n" +
-                         "Note that this text may have changed since the last time a release was performed.\n" +
-                         get_announcement_email(new_checker_version))
-
-        print_step("Push Step 11. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
+        print_step("Push Step 10. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
                "* Download the following files to your local machine." +
@@ -484,7 +468,12 @@ def main(argv):
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 
-    print  msg
+        print  msg
+
+        print_step("Push Step 11. Announce the release.") # MANUAL
+        continue_or_exit("Please announce the release using the email structure below.\n" +
+                         "Note that this text may have changed since the last time a release was performed.\n" +
+                         get_announcement_email(new_checker_version))
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 

@@ -1,9 +1,6 @@
 package org.checkerframework.javacutil;
 
-import static com.sun.tools.javac.code.Flags.ABSTRACT;
-import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
-import static com.sun.tools.javac.code.Flags.FINAL;
-
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -38,7 +35,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element
+     * Returns the innermost type element enclosing the given element.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element
@@ -96,7 +93,7 @@ public class ElementUtils {
 
     /**
      * Returns true if the element is a static element: whether it is a static field, static method,
-     * or static class
+     * or static class.
      *
      * @return true if element is static
      */
@@ -105,7 +102,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns true if the element is a final element: a final field, final method, or final class
+     * Returns true if the element is a final element: a final field, final method, or final class.
      *
      * @return true if the element is final
      */
@@ -121,10 +118,10 @@ public class ElementUtils {
     public static boolean isEffectivelyFinal(Element element) {
         Symbol sym = (Symbol) element;
         if (sym.getEnclosingElement().getKind() == ElementKind.METHOD
-                && (sym.getEnclosingElement().flags() & ABSTRACT) != 0) {
+                && (sym.getEnclosingElement().flags() & Flags.ABSTRACT) != 0) {
             return true;
         }
-        return (sym.flags() & (FINAL | EFFECTIVELY_FINAL)) != 0;
+        return (sym.flags() & (Flags.FINAL | Flags.EFFECTIVELY_FINAL)) != 0;
     }
 
     /**
@@ -185,7 +182,7 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /** Returns true if the element is a constant time reference */
+    /** Returns true if the element is a constant time reference. */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
@@ -234,7 +231,7 @@ public class ElementUtils {
         return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
 
-    /** Returns the field of the class */
+    /** Returns the field of the class. */
     public static VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().contentEquals(name)) {
@@ -366,7 +363,6 @@ public class ElementUtils {
                 // Looking up a supertype failed. This sometimes happens
                 // when transitive dependencies are not on the classpath.
                 // As javac didn't complain, let's also not complain.
-                // TODO: Use an expanded ErrorReporter to output a message.
                 supertypecls = null;
             }
 

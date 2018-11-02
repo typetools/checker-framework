@@ -84,11 +84,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
-ifdef PLUMEBIB
-	ln -s ${PLUMEBIB} bib
-else
 	git clone https://github.com/mernst/plume-bib.git bib
-endif
 .PHONY: bib-update
 bib-update: bib
 # Even if this command fails, it does not terminate the make job.

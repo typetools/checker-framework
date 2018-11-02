@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.checker.signature.qual.SignatureBottom;
 import org.checkerframework.checker.signature.qual.SignatureUnknown;
@@ -29,9 +30,14 @@ import org.checkerframework.javacutil.TreeUtils;
 /** Accounts for the effects of certain calls to String.replace. */
 public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    /** {@literal @}SignatureUnknown annotation. */
     protected final AnnotationMirror SIGNATURE_UNKNOWN;
+    /** {@literal @}BinaryName annotation. */
     protected final AnnotationMirror BINARY_NAME;
+    /** {@literal @}InternalForm annotation. */
     protected final AnnotationMirror INTERNAL_FORM;
+    /** {@literal @}DotSeparatedIdentifiers annotation. */
+    protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS;
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar;
@@ -39,12 +45,14 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@link String#replace(CharSequence, CharSequence)} method. */
     private final ExecutableElement replaceCharSequenceCharSequence;
 
+    /** Creates a SignatureAnnotatedTypeFactory. */
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         SIGNATURE_UNKNOWN = AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
         BINARY_NAME = AnnotationBuilder.fromClass(elements, BinaryName.class);
         INTERNAL_FORM = AnnotationBuilder.fromClass(elements, InternalForm.class);
-
+        DOT_SEPARATED_IDENTIFIERS =
+                AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
         replaceCharChar =
                 TreeUtils.getMethod(
                         java.lang.String.class.getName(), "replace", processingEnv, "char", "char");
@@ -106,44 +114,40 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)) {
-                ExpressionTree arg0 = tree.getArguments().get(0);
-                ExpressionTree arg1 = tree.getArguments().get(1);
-                if (arg0.getKind() == Tree.Kind.CHAR_LITERAL
-                        && arg1.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    char const0 = (char) ((LiteralTree) arg0).getValue();
-                    char const1 = (char) ((LiteralTree) arg1).getValue();
-                    ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-                    final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
-                    if (const0 == '.'
-                            && const1 == '/'
-                            && receiverType.getAnnotation(BinaryName.class) != null) {
-                        type.replaceAnnotation(INTERNAL_FORM);
-                    } else if (const0 == '/'
-                            && const1 == '.'
-                            && receiverType.getAnnotation(InternalForm.class) != null) {
-                        type.replaceAnnotation(BINARY_NAME);
+            if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)
+                    || TreeUtils.isMethodInvocation(
+                            tree, replaceCharSequenceCharSequence, processingEnv)) {
+                char oldChar = ' '; // initial dummy value
+                char newChar = ' '; // initial dummy value
+                if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)) {
+                    ExpressionTree arg0 = tree.getArguments().get(0);
+                    ExpressionTree arg1 = tree.getArguments().get(1);
+                    if (arg0.getKind() == Tree.Kind.CHAR_LITERAL
+                            && arg1.getKind() == Tree.Kind.CHAR_LITERAL) {
+                        oldChar = (char) ((LiteralTree) arg0).getValue();
+                        newChar = (char) ((LiteralTree) arg1).getValue();
+                    }
+                } else {
+                    ExpressionTree arg0 = tree.getArguments().get(0);
+                    ExpressionTree arg1 = tree.getArguments().get(1);
+                    if (arg0.getKind() == Tree.Kind.STRING_LITERAL
+                            && arg1.getKind() == Tree.Kind.STRING_LITERAL) {
+                        String const0 = (String) ((LiteralTree) arg0).getValue();
+                        String const1 = (String) ((LiteralTree) arg1).getValue();
+                        if (const0.length() == 1 && const1.length() == 1) {
+                            oldChar = const0.charAt(0);
+                            newChar = const1.charAt(0);
+                        }
                     }
                 }
-            } else if (TreeUtils.isMethodInvocation(
-                    tree, replaceCharSequenceCharSequence, processingEnv)) {
-                ExpressionTree arg0 = tree.getArguments().get(0);
-                ExpressionTree arg1 = tree.getArguments().get(1);
-                if (arg0.getKind() == Tree.Kind.STRING_LITERAL
-                        && arg1.getKind() == Tree.Kind.STRING_LITERAL) {
-                    String const0 = (String) ((LiteralTree) arg0).getValue();
-                    String const1 = (String) ((LiteralTree) arg1).getValue();
-                    ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-                    final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
-                    if (const0.equals(".")
-                            && const1.equals("/")
-                            && receiverType.getAnnotation(BinaryName.class) != null) {
-                        type.replaceAnnotation(INTERNAL_FORM);
-                    } else if (const0.equals("/")
-                            && const1.equals(".")
-                            && receiverType.getAnnotation(InternalForm.class) != null) {
-                        type.replaceAnnotation(BINARY_NAME);
-                    }
+                ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+                final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
+                if ((oldChar == '.' && newChar == '/')
+                        && receiverType.getAnnotation(BinaryName.class) != null) {
+                    type.replaceAnnotation(INTERNAL_FORM);
+                } else if ((oldChar == '/' && newChar == '.')
+                        && receiverType.getAnnotation(InternalForm.class) != null) {
+                    type.replaceAnnotation(BINARY_NAME);
                 }
             }
             return super.visitMethodInvocation(tree, type);
