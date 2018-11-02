@@ -1,3 +1,6 @@
+// Test for https://github.com/t-rasmud/checker-framework/issues/66
+// @skip-test until the issue is fixed
+
 import org.checkerframework.checker.determinism.qual.*;
 
 public class ConstructorReceivers<T extends @NonDet Object> {
