@@ -175,7 +175,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    @EnsuresKeyForIf(result=true, expression="key", map="this")
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     boolean containsKey(@Nullable Object key);
 
     /**
@@ -261,7 +261,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @throws IllegalArgumentException if some property of the specified key
      *         or value prevents it from being stored in this map
      */
-    @EnsuresKeyFor(value="key", map="this")
+    @EnsuresKeyFor(value="#1", map="this")
     @Nullable V put(K key, V value);
 
     /**
@@ -771,7 +771,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    @EnsuresKeyFor(value="key", map="this")
+    @EnsuresKeyFor(value="#1", map="this")
     default V putIfAbsent(K key, V value) {
         V v = get(key);
         if (v == null) {

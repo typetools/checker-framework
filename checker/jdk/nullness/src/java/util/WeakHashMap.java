@@ -425,7 +425,7 @@ public class WeakHashMap<K, V>
      *         <tt>false</tt> otherwise
      */
     @Pure
-    @EnsuresKeyForIf(result=true, expression="key", map="this")
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(@Nullable Object key) {
         return getEntry(key) != null;
     }
@@ -457,7 +457,7 @@ public class WeakHashMap<K, V>
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
-    @EnsuresKeyFor(value="key", map="this")
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V put(K key, V value) {
         Object k = maskNull(key);
         int h = hash(k);
