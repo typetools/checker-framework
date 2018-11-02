@@ -440,7 +440,7 @@ public class IdentityHashMap<K, V>
      * @see     #get(Object)
      * @see     #containsKey(Object)
      */
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public V put(K key, V value) {
         Object k = maskNull(key);
         Object[] tab = table;

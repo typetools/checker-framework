@@ -466,7 +466,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      * @see     Object#equals(Object)
      * @see     #get(Object)
      */
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public synchronized @Nullable V put(K key, V value) {
         // Make sure the value is not null
         if (value == null) {
@@ -930,7 +930,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     @Override
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public synchronized V putIfAbsent(K key, V value) {
         Objects.requireNonNull(value);
 

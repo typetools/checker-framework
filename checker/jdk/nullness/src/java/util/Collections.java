@@ -1526,7 +1526,7 @@ public class Collections {
         public boolean containsValue(Object val) {return m.containsValue(val);}
         public V get(Object key)                 {return m.get(key);}
 
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V put(K key, V value) {
             throw new UnsupportedOperationException();
         }
@@ -1585,7 +1585,7 @@ public class Collections {
         }
 
         @Override
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V putIfAbsent(K key, V value) {
             throw new UnsupportedOperationException();
         }
@@ -2668,7 +2668,7 @@ public class Collections {
             synchronized (mutex) {return m.get(key);}
         }
 
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V put(K key, V value) {
             synchronized (mutex) {return m.put(key, value);}
         }
@@ -2736,7 +2736,7 @@ public class Collections {
             synchronized (mutex) {m.replaceAll(function);}
         }
         @Override
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V putIfAbsent(K key, V value) {
             synchronized (mutex) {return m.putIfAbsent(key, value);}
         }
@@ -3709,7 +3709,7 @@ public class Collections {
         public int hashCode()                  { return m.hashCode(); }
         public String toString()               { return m.toString(); }
 
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V put(K key, V value) {
             typeCheck(key, value);
             return m.put(key, value);
@@ -3756,7 +3756,7 @@ public class Collections {
         }
 
         @Override
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V putIfAbsent(K key, V value) {
             typeCheck(key, value);
             return m.putIfAbsent(key, value);
@@ -4709,7 +4709,7 @@ public class Collections {
         }
 
         @Override
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V putIfAbsent(K key, V value) {
             throw new UnsupportedOperationException();
         }
@@ -5027,7 +5027,7 @@ public class Collections {
         }
 
         @Override
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public V putIfAbsent(K key, V value) {
             throw new UnsupportedOperationException();
         }

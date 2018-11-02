@@ -617,7 +617,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public @Nullable V put(K key, V value) {
         return putVal(hash(key), key, value, false, true);
     }
@@ -1070,7 +1070,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     @Override
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public V putIfAbsent(K key, V value) {
         return putVal(hash(key), key, value, true, true);
     }

@@ -148,7 +148,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @exception ClassCastException if the name is not a Attributes.Name
      *            or the value is not a String
      */
-    @EnsuresKeyFor(key="name", map="this")
+    @EnsuresKeyFor(value="name", map="this")
     public @Nullable Object put(Object name, Object value) {
         return map.put((Attributes.Name)name, (String)value);
     }

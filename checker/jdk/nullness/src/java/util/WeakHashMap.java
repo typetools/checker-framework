@@ -455,7 +455,7 @@ public class WeakHashMap<K, V>
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public @Nullable V put(K key, V value) {
         Object k = maskNull(key);
         int h = hash(k);

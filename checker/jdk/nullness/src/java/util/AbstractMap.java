@@ -217,7 +217,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException          {@inheritDoc}
      * @throws IllegalArgumentException      {@inheritDoc}
      */
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public @Nullable V put(K key, V value) {
         throw new UnsupportedOperationException();
     }

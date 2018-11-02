@@ -540,7 +540,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
-    @EnsuresKeyFor(key="key", map="this")
+    @EnsuresKeyFor(value="key", map="this")
     public @Nullable V put(K key, V value) {
         Entry<K,V> t = root;
         if (t == null) {
@@ -1522,7 +1522,7 @@ public class TreeMap<K, V>
             return inRange(key) && m.containsKey(key);
         }
 
-        @EnsuresKeyFor(key="key", map="this")
+        @EnsuresKeyFor(value="key", map="this")
         public final V put(K key, V value) {
             if (!inRange(key))
                 throw new IllegalArgumentException("key out of range");
