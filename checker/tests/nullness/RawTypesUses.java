@@ -9,7 +9,7 @@ public abstract class RawTypesUses {
     }
 
     void foo() {
-        Generic<@Nullable String> notRawNullable = new Generic<@Nullable String>();
+        Generic<@Nullable String> notRawNullable = new Generic<>();
         // :: error: (assignment.type.incompatible)
         @NonNull Object o1 = notRawNullable.foo();
 
@@ -18,7 +18,7 @@ public abstract class RawTypesUses {
         //// :: error: (assignment.type.incompatible)
         @NonNull Object o2 = rawNullable.foo();
 
-        Generic<@NonNull String> notRawNonNull = new Generic<@NonNull String>();
+        Generic<@NonNull String> notRawNonNull = new Generic<>();
         @NonNull Object o3 = notRawNonNull.foo();
 
         Generic rawNonNull = new Generic<@NonNull String>();

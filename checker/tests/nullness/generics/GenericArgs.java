@@ -8,10 +8,10 @@ import org.checkerframework.dataflow.qual.*;
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 public class GenericArgs {
 
-    public @NonNull Set<@NonNull String> strings = new HashSet<@NonNull String>();
+    public @NonNull Set<@NonNull String> strings = new HashSet<>();
 
     void test() {
-        @NonNull HashSet<@NonNull String> s = new HashSet<@NonNull String>();
+        @NonNull HashSet<@NonNull String> s = new HashSet<>();
 
         strings.addAll(s);
         strings.add("foo");

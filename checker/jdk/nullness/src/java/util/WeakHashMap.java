@@ -881,6 +881,7 @@ public class WeakHashMap<K, V>
     }
 
     private class KeySet extends AbstractSet<K> {
+        @SideEffectFree
         public Iterator<K> iterator() {
             return new KeyIterator();
         }
@@ -906,6 +907,7 @@ public class WeakHashMap<K, V>
             WeakHashMap.this.clear();
         }
 
+        @SideEffectFree
         public Spliterator<K> spliterator() {
             return new KeySpliterator<>(WeakHashMap.this, 0, -1, 0, 0);
         }
@@ -931,6 +933,7 @@ public class WeakHashMap<K, V>
     }
 
     private class Values extends AbstractCollection<V> {
+        @SideEffectFree
         public Iterator<V> iterator() {
             return new ValueIterator();
         }
@@ -947,6 +950,7 @@ public class WeakHashMap<K, V>
             WeakHashMap.this.clear();
         }
 
+        @SideEffectFree
         public Spliterator<V> spliterator() {
             return new ValueSpliterator<>(WeakHashMap.this, 0, -1, 0, 0);
         }
@@ -973,6 +977,7 @@ public class WeakHashMap<K, V>
     }
 
     private class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator();
         }
@@ -1004,14 +1009,17 @@ public class WeakHashMap<K, V>
             return list;
         }
 
+        @SideEffectFree
         public Object[] toArray() {
             return deepCopy().toArray();
         }
 
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             return deepCopy().toArray(a);
         }
 
+        @SideEffectFree
         public Spliterator<Map.Entry<K,V>> spliterator() {
             return new EntrySpliterator<>(WeakHashMap.this, 0, -1, 0, 0);
         }

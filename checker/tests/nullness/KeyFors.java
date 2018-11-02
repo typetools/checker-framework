@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class KeyFors {
 
     public void withoutKeyFor() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         String key = "key";
 
         // :: error: (assignment.type.incompatible)
@@ -19,7 +19,7 @@ public class KeyFors {
     }
 
     public void withKeyFor() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         @SuppressWarnings("assignment.type.incompatible")
         @KeyFor("map") String key = "key";
 
@@ -27,8 +27,8 @@ public class KeyFors {
     }
 
     public void withCollection() {
-        Map<String, String> map = new HashMap<String, String>();
-        List<@KeyFor("map") String> keys = new ArrayList<@KeyFor("map") String>();
+        Map<String, String> map = new HashMap<>();
+        List<@KeyFor("map") String> keys = new ArrayList<>();
 
         @KeyFor("map") String key = keys.get(0);
         @NonNull String value = map.get(key);
@@ -37,7 +37,7 @@ public class KeyFors {
 
     public void withIndirectReference() {
         class Container {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
         }
 
         Container container = new Container();
@@ -53,7 +53,7 @@ public class KeyFors {
         throw new RuntimeException();
     }
 
-    static HashMap<Integer, Object> call_hashmap = new HashMap<Integer, Object>();
+    static HashMap<Integer, Object> call_hashmap = new HashMap<>();
 
     public void testForLoop(HashMap<String, String> lastMap) {
         Collection<@KeyFor("lastMap") String> sorted = sortedKeySet(lastMap);
@@ -64,7 +64,7 @@ public class KeyFors {
     }
 
     static class Otherclass {
-        static Map<String, String> map = new HashMap<String, String>();
+        static Map<String, String> map = new HashMap<>();
     }
 
     public void testStaticKeyFor(@KeyFor("Otherclass.map") String s1, String s2) {
@@ -113,7 +113,7 @@ public class KeyFors {
     KeyFor annotations.*/
 
     void keyForFlow() {
-        Map<String, String> leaders = new LinkedHashMap<String, String>();
+        Map<String, String> leaders = new LinkedHashMap<>();
         Set<@KeyFor("leaders") String> varsUsedPreviously =
                 new LinkedHashSet<@KeyFor("leaders") String>();
         String varName = "hello";

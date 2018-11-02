@@ -85,7 +85,7 @@ public class KeyForChecked {
     }
 
     void incorrect2() {
-        KFMap<String, Object> m = new KFHashMap<String, Object>();
+        KFMap<String, Object> m = new KFHashMap<>();
         m.put("a", new Object());
         m.put("b", new Object());
         m.put("c", new Object());
@@ -101,7 +101,7 @@ public class KeyForChecked {
     }
 
     void correct2() {
-        KFMap<String, Object> m = new KFHashMap<String, Object>();
+        KFMap<String, Object> m = new KFHashMap<>();
         m.put("a", new Object());
         m.put("b", new Object());
         m.put("c", new Object());
@@ -116,7 +116,7 @@ public class KeyForChecked {
     }
 
     void iter() {
-        KFMap<String, Object> emap = new KFHashMap<String, Object>();
+        KFMap<String, Object> emap = new KFHashMap<>();
         Set<@KeyFor("emap") String> s = emap.keySet();
         Iterator<@KeyFor("emap") String> it = emap.keySet().iterator();
         Iterator<@KeyFor("emap") String> it2 = s.iterator();
@@ -137,7 +137,7 @@ public class KeyForChecked {
     }
 
     void entrySet() {
-        KFMap<String, Object> emap = new KFHashMap<String, Object>();
+        KFMap<String, Object> emap = new KFHashMap<>();
         Set<KFMap.Entry<@KeyFor("emap") String, Object>> es = emap.entrySet();
 
         // KeyFor has to be explicit on the component to Entry sets because

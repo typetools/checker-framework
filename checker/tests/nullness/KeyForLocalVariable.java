@@ -11,14 +11,14 @@ class KeyForLocalVariable {
         // :: error: (expression.unparsable.type.invalid)
         @KeyFor("m0") String kk;
         {
-            Map<String, Integer> m0 = new HashMap<String, Integer>();
+            Map<String, Integer> m0 = new HashMap<>();
             @SuppressWarnings("keyfor")
             @KeyFor("m0") String k = "key";
             // :: error: (assignment.type.incompatible)
             kk = k;
         }
         {
-            Map<String, Integer> m0 = new HashMap<String, Integer>();
+            Map<String, Integer> m0 = new HashMap<>();
             // :: error: (assignment.type.incompatible)
             @KeyFor("m0") String k2 = kk;
         }

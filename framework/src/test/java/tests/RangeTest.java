@@ -92,7 +92,7 @@ public class RangeTest {
 
     public RangeTest() {
         // Initialize the ranges list.
-        List<Range> rangesList = new ArrayList<Range>();
+        List<Range> rangesList = new ArrayList<>();
         for (long lowerbound : rangeBounds) {
             for (long upperbound : rangeBounds) {
                 if (lowerbound <= upperbound) {

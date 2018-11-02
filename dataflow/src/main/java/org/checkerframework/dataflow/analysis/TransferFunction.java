@@ -20,9 +20,9 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  *       an incoming store, and produces a {@link RegularTransferResult}.
  * </ul>
  *
- * <p><em>Important</em>: The individual transfer functions ( {@code visit*}) are allowed to use
- * (and modify) the stores contained in the argument passed; the ownership is transfered from the
- * caller to that function.
+ * <p><em>Important</em>: The individual transfer functions ({@code visit*}) are allowed to use (and
+ * modify) the stores contained in the argument passed; the ownership is transfered from the caller
+ * to that function.
  *
  * @param <S> the {@link Store} used to keep track of intermediate results
  */

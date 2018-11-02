@@ -20,7 +20,7 @@ abstract class BasicFunctionality {
         String t = encrypt("bar"); // valid (subtype)
         sendOverTheInternet(t); // valid (flow)
 
-        List<@Encrypted String> lst = new LinkedList<@Encrypted String>();
+        List<@Encrypted String> lst = new LinkedList<>();
         lst.add(s);
         lst.add(t);
 

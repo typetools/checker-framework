@@ -657,6 +657,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     private class KeySet extends AbstractSet<K> {
+        @SideEffectFree
         public Iterator<K> iterator() {
             return getIterator(KEYS);
         }
@@ -698,6 +699,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     private class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             return getIterator(ENTRIES);
         }
@@ -781,6 +783,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     private class ValueCollection extends AbstractCollection<V> {
+        @SideEffectFree
         public Iterator<V> iterator() {
             return getIterator(VALUES);
         }

@@ -9,7 +9,7 @@ class Issue67 {
     private static final String KEY2 = "key2";
 
     void test() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         if (map.containsKey(KEY)) {
             map.get(KEY).toString(); // no problem
         }

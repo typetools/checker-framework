@@ -369,6 +369,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return an array containing all of the elements in this list in
      *         proper sequence
      */
+    @SideEffectFree
     public @PolyNull Object[] toArray(ArrayList<@PolyNull E> this) {
         return Arrays.copyOf(elementData, size);
     }
@@ -398,6 +399,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws NullPointerException if the specified array is null
      */
     @SuppressWarnings("unchecked")
+    @SideEffectFree
     public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a) {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
@@ -828,6 +830,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return an iterator over the elements in this list in proper sequence
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return new Itr();
     }
@@ -1081,6 +1084,7 @@ public class ArrayList<E> extends AbstractList<E>
             return true;
         }
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             return listIterator();
         }
@@ -1229,6 +1233,7 @@ public class ArrayList<E> extends AbstractList<E>
                 throw new ConcurrentModificationException();
         }
 
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             checkForComodification();
             return new ArrayListSpliterator<E>(ArrayList.this, offset,
@@ -1265,6 +1270,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @since 1.8
      */
     @Override
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         return new ArrayListSpliterator<>(this, 0, -1, 0);
     }

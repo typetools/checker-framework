@@ -3,10 +3,10 @@ import org.checkerframework.checker.nullness.qual.*;
 class NullnessBound {
 
     public void test() {
-        Gen1<@Nullable String> t1 = new Gen1<@Nullable String>();
+        Gen1<@Nullable String> t1 = new Gen1<>();
         t1.add(null);
 
-        Gen2<@Nullable String> t2 = new Gen2<@Nullable String>();
+        Gen2<@Nullable String> t2 = new Gen2<>();
         t2.add(null);
 
         Gen1<@NonNull String> t3;
