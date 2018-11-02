@@ -4984,7 +4984,7 @@ public class Collections {
 
         public int size()                                           {return 1;}
         public boolean isEmpty()                                {return false;}
-        @EnsuresKeyForIf(result=true, key="key", map="this")
+        @EnsuresKeyForIf(result=true, expression="key", map="this")
         public boolean containsKey(Object key)             {return eq(key, k);}
         public boolean containsValue(Object value)       {return eq(value, v);}
         public V get(Object key)              {return (eq(key, k) ? v : null);}
