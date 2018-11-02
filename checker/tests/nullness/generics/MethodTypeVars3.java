@@ -9,13 +9,13 @@ import org.checkerframework.checker.nullness.qual.*;
 class MethodTypeVars3 {
     public static <@KeyFor("#1") T extends @KeyFor("#1") Object> Map<T, List<T>> dominators(
             Map<T, List<T>> preds) {
-        List<T> nodes = new ArrayList<T>(preds.keySet());
+        List<T> nodes = new ArrayList<>(preds.keySet());
 
         // Compute roots & non-roots, for convenience
-        List<@KeyFor("preds") T> roots = new ArrayList<@KeyFor("preds") T>();
-        List<@KeyFor("preds") T> non_roots = new ArrayList<@KeyFor("preds") T>();
+        List<@KeyFor("preds") T> roots = new ArrayList<>();
+        List<@KeyFor("preds") T> non_roots = new ArrayList<>();
 
-        Map<@KeyFor("preds") T, List<T>> dom = new HashMap<@KeyFor("preds") T, List<T>>();
+        Map<@KeyFor("preds") T, List<T>> dom = new HashMap<>();
 
         // Initialize result:  for roots just the root, otherwise everything
         for (@KeyFor("preds") T node : preds.keySet()) {

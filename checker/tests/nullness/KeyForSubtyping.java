@@ -2,9 +2,9 @@ import java.util.HashMap;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class KeyForSubtyping {
-    HashMap<String, String> mapA = new HashMap<String, String>();
-    HashMap<String, String> mapB = new HashMap<String, String>();
-    HashMap<String, String> mapC = new HashMap<String, String>();
+    HashMap<String, String> mapA = new HashMap<>();
+    HashMap<String, String> mapB = new HashMap<>();
+    HashMap<String, String> mapC = new HashMap<>();
 
     public void testSubtypeAssignments(
             String not_a_key,
@@ -111,8 +111,8 @@ public class KeyForSubtyping {
     // Test overriding
 
     static class Super {
-        HashMap<String, String> map1 = new HashMap<String, String>();
-        HashMap<String, String> map2 = new HashMap<String, String>();
+        HashMap<String, String> map1 = new HashMap<>();
+        HashMap<String, String> map2 = new HashMap<>();
 
         void method1(@KeyFor({"this.map1", "this.map2"}) String s) {}
 

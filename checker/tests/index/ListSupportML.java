@@ -6,7 +6,7 @@ import org.checkerframework.common.value.qual.MinLen;
 class ListSupportML {
 
     void newListMinLen() {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
 
         // :: error: (assignment.type.incompatible)
         @MinLen(1) List<Integer> list2 = list;

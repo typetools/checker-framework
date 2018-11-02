@@ -33,7 +33,7 @@ public class PrimitivesInterning {
         index = Integer.decode("22"); // valid: auto-unboxing conversion
 
         // auto-unboxing conversion again
-        Map<String, Integer> m = new HashMap<String, Integer>();
+        Map<String, Integer> m = new HashMap<>();
         if (m.get("hello") == 22) {
             System.out.println("hello maps to 22");
         }

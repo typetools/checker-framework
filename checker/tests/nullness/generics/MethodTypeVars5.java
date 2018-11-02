@@ -13,7 +13,7 @@ class MethodTypeVars5 {
         }
     }
 
-    B<String> b = new B<String>("Hello World");
+    B<String> b = new B<>("Hello World");
 
     String doit1() {
         return doit1(b);
@@ -43,6 +43,10 @@ class MethodTypeVars5 {
         return doit3(new B<String>("Hi"));
     }
 
+    String doit3b2() {
+        return doit3(new B<>("Hi"));
+    }
+
     String doit3c() {
         // :: error: (return.type.incompatible)
         return doit3(new B<@Nullable String>("Hi"));
@@ -55,6 +59,10 @@ class MethodTypeVars5 {
 
     void doit3e() {
         String s = doit3(new B<String>("Hi"));
+    }
+
+    void doit3e2() {
+        String s = doit3(new B<>("Hi"));
     }
 
     <T extends @Nullable Object> T doit3(@Nullable B<T> x) {

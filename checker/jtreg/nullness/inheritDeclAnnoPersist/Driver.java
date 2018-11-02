@@ -76,7 +76,7 @@ public class Driver {
             return null;
         }
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         if (ta != null) {
             result.add(expectedOf(ta));

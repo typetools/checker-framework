@@ -9,7 +9,7 @@ class EntryReader {
 
 class TryCatch {
     void constructorException() throws IOException {
-        List<Exception> file_errors = new ArrayList<Exception>();
+        List<Exception> file_errors = new ArrayList<>();
         try {
             new EntryReader();
         } catch (FileNotFoundException e) {
