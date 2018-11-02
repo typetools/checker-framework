@@ -319,7 +319,7 @@ public class TestDiagnosticUtils {
      * individually)
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        final List<String> strings = new ArrayList<String>(diagnostics.size());
+        final List<String> strings = new ArrayList<>(diagnostics.size());
         for (TestDiagnostic diagnostic : diagnostics) {
             strings.add(diagnostic.toString());
         }

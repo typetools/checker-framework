@@ -5,8 +5,9 @@ The manual links to the Rx Thread & Effect Checker.
 ---------------------------------------------------------------------------
 Version 2.5.6, October 3, 2018
 
-Introduce checker-qual-android artifact with Android-compatible qualifiers
-that use only classfile retention.
+Introduce checker-qual-android artifact that is just like the checker-qual
+artifact, but the qualifiers have classfile retention.  This is useful for
+Android projects.
 
 Remove the checker-compat-qual artifact, which was only useful for Java 7,
 which the Checker Framework no longer supports.

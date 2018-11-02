@@ -183,8 +183,10 @@ synonyms.
 
 \begin{sloppypar}
 This section describes how to install the Checker Framework.
-(If you wish to try the Checker Framework without installing it, use the
-\href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.)
+If you use a build system that automatically downloads dependencies,
+such as Gradle or Maven, you do not need to perform any installation.
+If you wish to try the Checker Framework without installing it, use the
+\href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.
 \end{sloppypar}
 
 The Checker Framework release contains everything that you need, both to
@@ -1111,6 +1113,28 @@ You should use annotations to specify \emph{normal} behavior.  The
 annotations indicate all the values that you \emph{want} to flow to a
 reference --- not every value that might possibly flow there if your
 program has a bug.
+
+As an example, the goal of the Nullness Checker is to guarantee that your
+program does not crash due to a null value.  In a method like this:
+
+\begin{Verbatim}
+  /** @throws IllegalArgumentException if arg is null */
+  void m(Object arg) {
+    if (arg == null) {
+      throw new IllegalArgumentException();
+    }
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+the program crashes if \<null> is passed.  Therefore, the type of \<arg>
+should be \<@NonNull Object> (which you can write as just \<Object> due to
+defaulting).  The Nullness Checker will warn whenever a client passes a
+value that might cause m to crash.  If you wrote the type of the formal
+parameter as \<@Nullable Object>, the Nullness Checker would permit clients
+to make calls that lead to a crash.
+
 
 Many methods are guaranteed to throw an exception if they are passed \code{null}
 as an argument.  Examples include

@@ -86,7 +86,7 @@ public class TestTreeKinds {
         int l;
     }
 
-    @GuardedBy("lock") MyParametrizedType<MyClass> myParametrizedType = new MyParametrizedType<MyClass>();
+    @GuardedBy("lock") MyParametrizedType<MyClass> myParametrizedType = new MyParametrizedType<>();
 
     MyClass getFooWithWrongReturnType() {
         // :: error: (return.type.incompatible)
