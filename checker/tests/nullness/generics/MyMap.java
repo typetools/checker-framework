@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // https://github.com/typetools/checker-framework/issues/173
 public abstract class MyMap<K, V> implements Map<K, V> {
     @Override
+    // :: error: (contracts.postcondition.not.satisfied)
     public @Nullable V put(K key, V value) {
         return null;
     }
