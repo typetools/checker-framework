@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -603,9 +604,14 @@ public class DependentTypesHelper {
         if (errors.isEmpty()) {
             return;
         }
+        StringJoiner errorsFormatted = new StringJoiner("\n");
+        for (DependentTypesError dte : errors) {
+            errorsFormatted.add(dte.format());
+        }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = PluginUtil.join("\n", errors);
-        checker.report(Result.failure("expression.unparsable.type.invalid", error), errorTree);
+        checker.report(
+                Result.failure("expression.unparsable.type.invalid", errorsFormatted.toString()),
+                errorTree);
     }
 
     /**
