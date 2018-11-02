@@ -444,6 +444,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         }
 
         @Override
+        public AnnotationMirrorMap<AnnotationMirrorSet> visitDeclared_Array(
+                AnnotatedDeclaredType type1, AnnotatedArrayType type2, Void aVoid) {
+            // TODO: anything else to be done?
+            return mapQualifierToPoly(type1, type2);
+        }
+
+        @Override
         public AnnotationMirrorMap<AnnotationMirrorSet> visitDeclared_Declared(
                 AnnotatedDeclaredType type1, AnnotatedDeclaredType type2, Void aVoid) {
             // Don't call super because asSuper has to be called on each type argument.
