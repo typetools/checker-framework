@@ -350,8 +350,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         // Each type in the intersection must be a supertype of type, so call asSuper on all types
         // in the intersection.
         for (AnnotatedDeclaredType superDirect : superType.directSuperTypes()) {
-            AnnotatedDeclaredType found = (AnnotatedDeclaredType) visit(type, superDirect, p);
-            newDirectSupertypes.add(found);
+            if (types.isSubtype(type.getUnderlyingType(), superDirect.getUnderlyingType())) {
+                AnnotatedDeclaredType found = (AnnotatedDeclaredType) visit(type, superDirect, p);
+                newDirectSupertypes.add(found);
+            }
         }
         // The ATM for each type in an intersection is stored in the direct super types field.
         superType.setDirectSuperTypes(newDirectSupertypes);
