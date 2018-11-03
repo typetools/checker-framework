@@ -14,7 +14,7 @@ class RawTypesNullness {
     Generic rawField = new Generic();
 
     void use() {
-        Generic rawLocal = new Generic<String>();
+        Generic rawLocal = new Generic<>();
         Generic<?> generic1 = rawReturn();
         Generic<?> generic2 = rawField;
         Generic<?> generic3 = rawLocal;

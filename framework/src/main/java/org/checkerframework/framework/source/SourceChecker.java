@@ -632,7 +632,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     // TODO: do we want this?
     // Cache the keys that we already warned about to prevent repetitions.
-    // private Set<String> warnedOnLint = new HashSet<String>();
+    // private Set<String> warnedOnLint = new HashSet<>();
 
     private Set<String> createActiveLints(Map<String, String> options) {
         if (!options.containsKey("lint")) {

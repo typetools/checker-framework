@@ -36,7 +36,7 @@ public class Arrays {
     public final @Interned class InternedClass {}
 
     private static InternedClass[] returnToArray() {
-        List<InternedClass> li = new ArrayList<InternedClass>();
+        List<InternedClass> li = new ArrayList<>();
         return li.toArray(new InternedClass[li.size()]);
     }
 

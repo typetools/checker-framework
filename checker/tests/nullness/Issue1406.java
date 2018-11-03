@@ -14,7 +14,7 @@ public class Issue1406 {
     @Pure
     @EnsuresNonNull("myMethod(#1).get(0)")
     List<String> myMethod(int arg) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         result.add("non-null value");
         return result;
     }
@@ -26,7 +26,7 @@ public class Issue1406 {
     @Pure
     @EnsuresNonNull("myMethod2().get(0)")
     List<String> myMethod2() {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         result.add("non-null value");
         return result;
     }

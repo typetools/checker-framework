@@ -8,6 +8,8 @@ import org.checkerframework.framework.qual.PolyAll;
 
 // test related to issue 429: https://github.com/typetools/checker-framework/issues/429
 class KeyForPolyAll {
+    // TODO: Figure out why diamond operator does not work:
+    // Map<@KeyFor("dict") String, String> dict = new HashMap<>();
     Map<@KeyFor("dict") String, String> dict = new HashMap<@KeyFor("dict") String, String>();
 
     void m() {

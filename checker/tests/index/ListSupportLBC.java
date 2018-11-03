@@ -9,7 +9,7 @@ class ListSupportLBC {
 
     void testGet() {
 
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         int i = -1;
         int j = 0;
 
@@ -23,7 +23,7 @@ class ListSupportLBC {
 
     void testArrayListGet() {
 
-        ArrayList<Integer> list = new ArrayList<Integer>();
+        ArrayList<Integer> list = new ArrayList<>();
         int i = -1;
         int j = 0;
 
@@ -36,7 +36,7 @@ class ListSupportLBC {
     }
 
     void testSet() {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         int i = -1;
         int j = 0;
 
@@ -49,7 +49,7 @@ class ListSupportLBC {
     }
 
     void testIndexOf() {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         @GTENegativeOne int a = list.indexOf(1);
 
         // :: error: (assignment.type.incompatible)
@@ -62,7 +62,7 @@ class ListSupportLBC {
     }
 
     void testSize() {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         @NonNegative int s = list.size();
 
         // :: error: (assignment.type.incompatible)
@@ -70,7 +70,7 @@ class ListSupportLBC {
     }
 
     void testSublist() {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         int i = -1;
         int j = 0;
 

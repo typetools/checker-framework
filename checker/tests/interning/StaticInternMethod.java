@@ -4,7 +4,7 @@ import org.checkerframework.checker.interning.qual.*;
 
 public class StaticInternMethod {
 
-    private static Map<Integer, @Interned Foo> pool = new HashMap<Integer, @Interned Foo>();
+    private static Map<Integer, @Interned Foo> pool = new HashMap<>();
 
     @SuppressWarnings("interning")
     public static @Interned Foo intern(Integer i) {

@@ -21,7 +21,7 @@ public class ReferenceInfoUtil {
     public static final int IGNORE_VALUE = -321;
 
     public static List<TypeAnnotation> extendedAnnotationsOf(ClassFile cf) {
-        List<TypeAnnotation> annos = new ArrayList<TypeAnnotation>();
+        List<TypeAnnotation> annos = new ArrayList<>();
         findAnnotations(cf, annos);
         return annos;
     }

@@ -10,7 +10,7 @@ class BoxingGenerics {
     }
 
     public void getText() {
-        X<Integer> var = new X<Integer>();
+        X<Integer> var = new X<>();
         X.foo(new Integer(5)).bar(var);
         X.foo(5).bar(var);
     }

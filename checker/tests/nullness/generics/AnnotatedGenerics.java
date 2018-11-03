@@ -11,7 +11,7 @@ class AnnotatedGenerics {
                 return f;
             }
         }
-        Test<Iterable<String>> l = new Test<Iterable<String>>();
+        Test<Iterable<String>> l = new Test<>();
         // :: error: (iterating.over.nullable)
         for (String s : l.get()) ;
     }
@@ -22,9 +22,9 @@ class AnnotatedGenerics {
                 throw new RuntimeException();
             }
         }
-        Test<@Nullable Iterable<String>> l = new Test<@Nullable Iterable<String>>();
+        Test<@Nullable Iterable<String>> l = new Test<>();
         for (String s : l.get()) ;
-        Test<Iterable<String>> n = new Test<Iterable<String>>();
+        Test<Iterable<String>> n = new Test<>();
         for (String s : n.get()) ;
     }
 
@@ -40,7 +40,7 @@ class AnnotatedGenerics {
         public void remove() {}
 
         static void test() {
-            MyClass<String> c = new MyClass<String>();
+            MyClass<String> c = new MyClass<>();
             String c1 = c.next();
             @Nullable String c2 = c.next();
             // :: error: (assignment.type.incompatible)

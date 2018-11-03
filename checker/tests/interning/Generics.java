@@ -12,7 +12,7 @@ public class Generics {
     void testGenerics() {
 
         Map<String, @Interned String> map = null;
-        map = new HashMap<String, @Interned String>();
+        map = new HashMap<>();
 
         String a = new String("foo");
         @Interned String b = "bar";
@@ -38,8 +38,7 @@ public class Generics {
         notInternedSet = map.values(); // error
         internedSet = map.values(); // valid
 
-        HashMap<@Interned String, Vector<@Interned Integer>> all_nums =
-                new HashMap<@Interned String, Vector<@Interned Integer>>();
+        HashMap<@Interned String, Vector<@Interned Integer>> all_nums = new HashMap<>();
         Vector<@Interned Integer> v = all_nums.get("Hello");
     }
 
@@ -52,8 +51,8 @@ public class Generics {
         }
     }
 
-    List<@Interned String> istrings = new ArrayList<@Interned String>();
-    List<String> strings = new ArrayList<String>();
+    List<@Interned String> istrings = new ArrayList<>();
+    List<String> strings = new ArrayList<>();
     @Interned String istring = "interned";
     String string = new String("uninterned");
 
@@ -94,6 +93,7 @@ public class Generics {
             Map<@Interned String, @Interned String> mymap;
             mymap = theDefault.map;
             mymap = new HashMap<@Interned String, @Interned String>(theDefault.map);
+            mymap = new HashMap<>(theDefault.map);
         }
     }
 
@@ -123,7 +123,7 @@ public class Generics {
 
         /** Factory method with short name and no need to name type parameters. */
         public static <A, B> Pair<A, B> of(A a, B b) {
-            return new Pair<A, B>(a, b);
+            return new Pair<>(a, b);
         }
     }
 
