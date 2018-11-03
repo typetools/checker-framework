@@ -37,6 +37,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>{@link DefaultQualifierPolymorphism} implements the abstract methods in this class. Subclasses
  * can alter the way instantiations of polymorphic qualifiers are combined.
+ *
+ * <p>An "instantiation" is a mapping from declaration type to use-site type &mdash; that is, a
+ * mapping from {@code @Poly*} to concrete qualifiers. (The code replaces everything; but the
+ * instantiation only contains {@code @Poly*} as keys.)
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
