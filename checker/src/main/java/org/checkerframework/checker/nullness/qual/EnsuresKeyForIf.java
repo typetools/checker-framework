@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * <p>As an example, consider the following method in {@code java.util.Map}:
  *
  * <pre>
- *   &#64;EnsuresKeyForIf(result=true, value="key", map="this")
+ *   &#64;EnsuresKeyForIf(result=true, expression="key", map="this")
  *   public boolean containsKey(String key) { ... }
  * </pre>
  *
