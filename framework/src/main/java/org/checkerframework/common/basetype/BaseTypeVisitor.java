@@ -1969,8 +1969,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     checker.report(
                             Result.failure(
                                     "monotonic.type.incompatible",
-                                    mono.getCanonicalName(),
-                                    mono.getCanonicalName(),
+                                    mono.getSimpleName(),
+                                    mono.getSimpleName(),
                                     valueType.toString()),
                             valueTree);
                     return;
