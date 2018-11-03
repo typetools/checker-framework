@@ -1,5 +1,8 @@
 Version ?.?.?, ??, 2018
 
+New @EnsuresKeyFor and @EnsuresKeyForIf method annotations permit
+specifying the postcondition that a method gives some value a @KeyFor type.
+
 The manual links to the Rx Thread & Effect Checker.
 
 ---------------------------------------------------------------------------
