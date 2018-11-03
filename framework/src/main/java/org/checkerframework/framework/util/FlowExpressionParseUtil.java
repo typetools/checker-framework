@@ -171,10 +171,15 @@ public class FlowExpressionParseUtil {
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
         } else {
+            String message;
+            if (expression.equals("#0")) {
+                message = "Use \"this\" for the receiver or \"#1\" for the first formal parameter.";
+            } else {
+                message = String.format("unrecognized expression '%s'", expression);
+            }
             throw constructParserException(
                     expression,
-                    String.format("unrecognized expression '%s'", expression)
-                            + (context.parsingMember ? " in context with parsingMember=true" : ""));
+                    message + (context.parsingMember ? " in context with parsingMember=true" : ""));
         }
     }
 
