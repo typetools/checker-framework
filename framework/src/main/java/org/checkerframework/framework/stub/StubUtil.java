@@ -151,7 +151,7 @@ public class StubUtil {
      *
      * <p>The canonical representation contains simple names of the types only.
      */
-    /*package-scope*/ static String toString(ExecutableElement element) {
+    public static String toString(ExecutableElement element) {
         StringBuilder sb = new StringBuilder();
 
         // note: constructor simple name is <init>
