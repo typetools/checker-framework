@@ -6,6 +6,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,6 +62,7 @@ import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.stub.StubUtil;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -1058,7 +1061,7 @@ public abstract class CFAbstractTransfer<
                 Result result;
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];
-                    args[0] = ElementUtils.getVerboseName(TreeUtils.elementFromUse(n.getTree()));
+                    args[0] = StubUtil.toString(TreeUtils.elementFromUse(n.getTree()));
                     System.arraycopy(e.args, 0, args, 1, e.args.length);
                     result = Result.failure("flowexpr.parse.error.postcondition", args);
                 } else {
@@ -1070,6 +1073,19 @@ public abstract class CFAbstractTransfer<
             }
         }
     }
+
+    private static String methodSymbolToString(MethodSymbol m) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(m.getSimpleName());
+        sb.append("(");
+        for (VarSymbol v : m.getParameters()) {
+            sb.append(v.toString());
+            sb.append(", "); // TODO fencepost
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
     /**
      * A case produces no value, but it may imply some facts about the argument to the switch
      * statement.
