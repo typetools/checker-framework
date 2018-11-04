@@ -80,8 +80,18 @@ public class ContractsUtils {
         /** The annotation that expressed this contact; used for diagnostic messages. */
         public final AnnotationMirror contractAnnotation;
 
+        /** The kind of contract: precondition, postcondition, or conditional postcondition. */
         public final Kind kind;
 
+        /**
+         * Creates a new Contract.
+         *
+         * @param expression the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the pre- or post-condition annotation that the programmer
+         *     wrote; used for diagnostic messages
+         * @param kind precondition, postcondition, or conditional postcondition
+         */
         public Contract(
                 String expression,
                 AnnotationMirror annotation,
@@ -126,6 +136,7 @@ public class ContractsUtils {
         }
     }
 
+    /** A precondition annotation. */
     public static class Precondition extends Contract {
         public Precondition(
                 String expression,
@@ -135,6 +146,7 @@ public class ContractsUtils {
         }
     }
 
+    /** A postcondition annotation. */
     public static class Postcondition extends Contract {
         public Postcondition(
                 String expression,
@@ -160,6 +172,16 @@ public class ContractsUtils {
          */
         public final boolean annoResult;
 
+        /**
+         * Creates a new conditional postcondition.
+         *
+         * @param expression the Java expression that should have a type qualifier
+         * @param annoResult whether the condition is the method returning true or false
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the pre- or post-condition annotation that the programmer
+         *     wrote; used for diagnostic messages
+         * @param kind precondition, postcondition, or conditional postcondition
+         */
         public ConditionalPostcondition(
                 String expression,
                 boolean annoResult,
