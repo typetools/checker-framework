@@ -211,8 +211,8 @@ public class PurityChecker {
                             || PurityUtils.isSideEffectFree(annoProvider, methodElement));
             if (!deterministic) {
                 purityResult.addNotDetReason(node, "object.creation");
-            } else if (!sideEffectFree) {
-                // TODO: THIS SHOULD BE: purity.not.sideeffectfree.call.constructor
+            }
+            if (!sideEffectFree) {
                 purityResult.addNotSEFreeReason(node, "call.constructor");
             }
 
