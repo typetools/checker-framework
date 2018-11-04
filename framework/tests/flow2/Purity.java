@@ -17,7 +17,7 @@ class Purity {
     private static class PureClass {
         @Pure
         // :: warning: (purity.deterministic.constructor)
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call.method)
         public PureClass() {}
     }
 
@@ -54,9 +54,9 @@ class Purity {
 
     @Pure
     String t3() {
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call.method)
         nonpure();
-        // :: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.deterministic.call.method)
         t16b(); // Calling a @SideEffectFree method
         // :: error: (purity.not.sideeffectfree.call)
         t16c(); // Calling a @Deterministic method
@@ -209,14 +209,16 @@ class Purity {
         f1 = "";
         // :: error: (purity.not.deterministic.assign.array)
         l.a[0] = "";
-        // :: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.deterministic.call.method)
         nonpure();
-        // :: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.deterministic.call.method)
         return t16b(); // Calling a @SideEffectFree method
     }
 
     @SideEffectFree
     String t17b() {
+        // :: error: (purity.not.sideeffectfree.assign.field)
+        f1 = "";
         // :: error: (purity.not.sideeffectfree.object.creation)
         NonPureClass p = new NonPureClass();
         // :: error: (purity.not.sideeffectfree.call)

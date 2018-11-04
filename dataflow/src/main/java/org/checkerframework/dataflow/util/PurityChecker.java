@@ -152,17 +152,17 @@ public class PurityChecker {
         public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
             Element elt = TreeUtils.elementFromUse(node);
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
-                purityResult.addNotBothReason(node, "call");
+                purityResult.addNotBothReason(node, "call.method");
             } else {
                 boolean det = PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree =
                         (assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt));
                 if (!det && !seFree) {
-                    purityResult.addNotBothReason(node, "call");
+                    purityResult.addNotBothReason(node, "call.method");
                 } else if (!det) {
-                    purityResult.addNotDetReason(node, "call");
+                    purityResult.addNotDetReason(node, "call.method");
                 } else if (!seFree) {
-                    purityResult.addNotSEFreeReason(node, "call");
+                    purityResult.addNotSEFreeReason(node, "call.method");
                 }
             }
             return super.visitMethodInvocation(node, ignore);
@@ -199,7 +199,7 @@ public class PurityChecker {
 
             // Object creation is usually prohibited, but permit "throw new SomeException();"
             // if it is not contained within any try statement that has a catch clause.
-            // (There is no need to check the latter condition, because the purity checker
+            // (There is no need to check the latter condition, because the Purity Checker
             // forbids all catch statements.)
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
@@ -209,12 +209,11 @@ public class PurityChecker {
             boolean sideEffectFree =
                     (assumeSideEffectFree
                             || PurityUtils.isSideEffectFree(annoProvider, methodElement));
-            if (!sideEffectFree && !deterministic) {
-                purityResult.addNotBothReason(node, "object.creation");
-            } else if (!deterministic) {
+            if (!deterministic) {
                 purityResult.addNotDetReason(node, "object.creation");
             } else if (!sideEffectFree) {
-                purityResult.addNotSEFreeReason(node, "object.creation");
+                // TODO: THIS SHOULD BE: purity.not.sideeffectfree.call.constructor
+                purityResult.addNotSEFreeReason(node, "call.constructor");
             }
 
             // TODO: if okThrowDeterministic, permit arguments to the newClass to be
