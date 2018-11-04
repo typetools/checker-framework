@@ -138,11 +138,13 @@ public class ContractsUtils {
 
     /** A precondition contract. */
     public static class Precondition extends Contract {
-        /* Create a precondition contract.
+        /**
+         * Create a precondition contract.
+         *
          * @param expression the Java expression that should have a type qualifier
          * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the precondition annotation that the programmer
-         *     wrote; used for diagnostic messages
+         * @param contractAnnotation the precondition annotation that the programmer wrote; used for
+         *     diagnostic messages
          */
         public Precondition(
                 String expression,
@@ -154,11 +156,13 @@ public class ContractsUtils {
 
     /** A postcondition contract. */
     public static class Postcondition extends Contract {
-        /* Create a postcondition contract.
+        /**
+         * Create a postcondition contract.
+         *
          * @param expression the Java expression that should have a type qualifier
          * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the postcondition annotation that the programmer
-         *     wrote; used for diagnostic messages
+         * @param contractAnnotation the postcondition annotation that the programmer wrote; used
+         *     for diagnostic messages
          */
         public Postcondition(
                 String expression,
