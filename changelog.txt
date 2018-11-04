@@ -3,7 +3,8 @@ Version ?.?.?, ??, 2018
 New @EnsuresKeyFor and @EnsuresKeyForIf method annotations permit
 specifying the postcondition that a method gives some value a @KeyFor type.
 
-The manual links to the Rx Thread & Effect Checker.
+The manual links to the Rx Thread & Effect Checker, which enforces
+UI Thread safety properties for stream-based Android applications.
 
 ---------------------------------------------------------------------------
 Version 2.5.6, October 3, 2018
