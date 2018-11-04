@@ -24,7 +24,7 @@ class Purity {
     // class with a side-effect-free constructor
     private static class SEClass {
         @SideEffectFree
-        // :: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call.method)
         public SEClass() {}
     }
 
@@ -58,7 +58,7 @@ class Purity {
         nonpure();
         // :: error: (purity.not.deterministic.call.method)
         t16b(); // Calling a @SideEffectFree method
-        // :: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call.method)
         t16c(); // Calling a @Deterministic method
         return "";
     }
@@ -219,11 +219,11 @@ class Purity {
     String t17b() {
         // :: error: (purity.not.sideeffectfree.assign.field)
         f1 = "";
-        // :: error: (purity.not.sideeffectfree.object.creation)
+        // :: error: (purity.not.sideeffectfree.call.constructor)
         NonPureClass p = new NonPureClass();
-        // :: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call.method)
         nonpure();
-        // :: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call.method)
         return t16c(); // Calling a @Deterministic method
     }
 
