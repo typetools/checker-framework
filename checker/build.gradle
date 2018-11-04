@@ -27,7 +27,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile project(':framework-test')
     testCompile sourceSets.testannotations.output
-    testCompile group: 'org.checkerframework', name: 'checker-compat-qual', version: '2.5.5'
 
     testannotationsCompile project(':checker-qual')
 }
