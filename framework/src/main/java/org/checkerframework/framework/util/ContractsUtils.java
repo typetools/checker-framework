@@ -77,11 +77,29 @@ public class ContractsUtils {
         /** The annotation that must be on the type of expression as part of this contract. */
         public final AnnotationMirror annotation;
 
+        /** The annotation that expressed this contact; used for diagnostic messages. */
+        public final AnnotationMirror contractAnnotation;
+
+        /** The kind of contract: precondition, postcondition, or conditional postcondition. */
         public final Kind kind;
 
-        public Contract(String expression, AnnotationMirror annotation, Kind kind) {
+        /**
+         * Creates a new Contract.
+         *
+         * @param expression the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the pre- or post-condition annotation that the programmer
+         *     wrote; used for diagnostic messages
+         * @param kind precondition, postcondition, or conditional postcondition
+         */
+        public Contract(
+                String expression,
+                AnnotationMirror annotation,
+                AnnotationMirror contractAnnotation,
+                Kind kind) {
             this.expression = expression;
             this.annotation = annotation;
+            this.contractAnnotation = contractAnnotation;
             this.kind = kind;
         }
 
@@ -118,15 +136,23 @@ public class ContractsUtils {
         }
     }
 
+    /** A precondition annotation. */
     public static class Precondition extends Contract {
-        public Precondition(String expression, AnnotationMirror annotation) {
-            super(expression, annotation, Kind.PRECONDITION);
+        public Precondition(
+                String expression,
+                AnnotationMirror annotation,
+                AnnotationMirror contractAnnotation) {
+            super(expression, annotation, contractAnnotation, Kind.PRECONDITION);
         }
     }
 
+    /** A postcondition annotation. */
     public static class Postcondition extends Contract {
-        public Postcondition(String expression, AnnotationMirror annotation) {
-            super(expression, annotation, Kind.POSTCONDTION);
+        public Postcondition(
+                String expression,
+                AnnotationMirror annotation,
+                AnnotationMirror contractAnnotation) {
+            super(expression, annotation, contractAnnotation, Kind.POSTCONDTION);
         }
     }
 
@@ -146,9 +172,21 @@ public class ContractsUtils {
          */
         public final boolean annoResult;
 
+        /**
+         * Creates a new conditional postcondition.
+         *
+         * @param expression the Java expression that should have a type qualifier
+         * @param annoResult whether the condition is the method returning true or false
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the pre- or post-condition annotation that the programmer
+         *     wrote; used for diagnostic messages
+         */
         public ConditionalPostcondition(
-                String expression, boolean annoResult, AnnotationMirror annotation) {
-            super(expression, annotation, Kind.CONDITIONALPOSTCONDTION);
+                String expression,
+                boolean annoResult,
+                AnnotationMirror annotation,
+                AnnotationMirror contractAnnotation) {
+            super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDTION);
             this.annoResult = annoResult;
         }
 
@@ -213,12 +251,12 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            AnnotationMirror precondtionAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
-            if (precondtionAnno == null) {
+            AnnotationMirror precondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            if (precondAnno == null) {
                 continue;
             }
             for (String expr : expressions) {
-                result.add(new Precondition(expr, precondtionAnno));
+                result.add(new Precondition(expr, precondAnno, anno));
             }
         }
         return result;
@@ -339,7 +377,7 @@ public class ContractsUtils {
             return result;
         }
         for (String expr : expressions) {
-            result.add(new Precondition(expr, postcondAnno));
+            result.add(new Precondition(expr, postcondAnno, requiresAnnotation));
         }
         return result;
     }
@@ -378,7 +416,7 @@ public class ContractsUtils {
                 continue;
             }
             for (String expr : expressions) {
-                result.add(new Postcondition(expr, postcondAnno));
+                result.add(new Postcondition(expr, postcondAnno, anno));
             }
         }
         return result;
@@ -398,7 +436,7 @@ public class ContractsUtils {
             return result;
         }
         for (String expr : expressions) {
-            result.add(new Postcondition(expr, postcondAnno));
+            result.add(new Postcondition(expr, postcondAnno, ensuresAnnotation));
         }
         return result;
     }
@@ -444,7 +482,7 @@ public class ContractsUtils {
             boolean annoResult =
                     AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
-                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno));
+                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
             }
         }
         return result;
@@ -470,7 +508,9 @@ public class ContractsUtils {
         boolean annoResult =
                 AnnotationUtils.getElementValue(ensuresQualifierIf, "result", Boolean.class, false);
         for (String expr : expressions) {
-            result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno));
+            result.add(
+                    new ConditionalPostcondition(
+                            expr, annoResult, postcondAnno, ensuresQualifierIf));
         }
         return result;
     }

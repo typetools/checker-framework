@@ -114,10 +114,13 @@ public class DependentTypesError {
      * because of the design that hides error messages in toString().
      */
     public String format() {
-        Matcher m = FORMAL_PARAM_NAME_PATTERN.matcher(error);
-        if (m.matches()) {
-            return m.group(2);
+        {
+            Matcher m = FORMAL_PARAM_NAME_PATTERN.matcher(error);
+            if (m.matches()) {
+                return m.group(2);
+            }
         }
+
         return toString();
     }
 }
