@@ -180,7 +180,6 @@ public class ContractsUtils {
          * @param annotation the type qualifier that {@code expression} should have
          * @param contractAnnotation the pre- or post-condition annotation that the programmer
          *     wrote; used for diagnostic messages
-         * @param kind precondition, postcondition, or conditional postcondition
          */
         public ConditionalPostcondition(
                 String expression,
