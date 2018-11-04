@@ -136,8 +136,14 @@ public class ContractsUtils {
         }
     }
 
-    /** A precondition annotation. */
+    /** A precondition contract. */
     public static class Precondition extends Contract {
+        /* Create a precondition contract.
+         * @param expression the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the precondition annotation that the programmer
+         *     wrote; used for diagnostic messages
+         */
         public Precondition(
                 String expression,
                 AnnotationMirror annotation,
@@ -146,8 +152,14 @@ public class ContractsUtils {
         }
     }
 
-    /** A postcondition annotation. */
+    /** A postcondition contract. */
     public static class Postcondition extends Contract {
+        /* Create a postcondition contract.
+         * @param expression the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the postcondition annotation that the programmer
+         *     wrote; used for diagnostic messages
+         */
         public Postcondition(
                 String expression,
                 AnnotationMirror annotation,
@@ -173,13 +185,13 @@ public class ContractsUtils {
         public final boolean annoResult;
 
         /**
-         * Creates a new conditional postcondition.
+         * Create a new conditional postcondition.
          *
          * @param expression the Java expression that should have a type qualifier
          * @param annoResult whether the condition is the method returning true or false
          * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the pre- or post-condition annotation that the programmer
-         *     wrote; used for diagnostic messages
+         * @param contractAnnotation the postcondition annotation that the programmer wrote; used
+         *     for diagnostic messages
          */
         public ConditionalPostcondition(
                 String expression,
