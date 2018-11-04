@@ -704,7 +704,7 @@ Chapter~\ref{suppressing-warnings} discusses suppressing warnings.
 
 When a declaration annotation is an alias for a type annotation, then the
 Checker Framework may move the annotation before replacing it by the
-canonical version. (If the declaration annotation is in an org.checkerframework
+canonical version. (If the declaration annotation is in an \<org.checkerframework>
 package, it is not moved.)
 
 For example,
@@ -731,19 +731,28 @@ is understood to apply to the top-level return type of the annotated method.
 When possible, you should use type annotations rather than declaration
 annotations.
 
+Users who are using old Java 5--7 declaration annotations (for instance,
+FindBugs annotations, which are no longer supported) can use annotations in
+package \<org.checkerframework.checker.nullness.compatqual> to avoid name
+conflicts.  These are available in package
+\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
+on Maven Central.  Once the users are ready to upgrade to Java 8+ type
+annotations, those compatibility annotations are no longer necessary.
+
 
 % LocalWords:  quals skipUses un AskipUses Alint annotationname javac's Awarns
-% LocalWords:  Xlint dotequals castNonNull XDTA Formatter jsr
+% LocalWords:  Xlint dotequals castNonNull XDTA Formatter jsr subpart
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
 % LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr
 %  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
 %  LocalWords:  ing warningkey redundantNullComparison qual proc Decl
-%  LocalWords:  lastsinglesuppression classfiles
+%  LocalWords:  lastsinglesuppression classfiles AwarnUnneededSuppressions
 %%  LocalWords:  AshowSuppressWarningKeys NullableType NonNullType JUnit's
 %%  LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
 %%  LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl
 %%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
 %%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
+% LocalWords:  AuseDefaultsForUncheckedCode checkerframework
