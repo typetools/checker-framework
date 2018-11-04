@@ -212,8 +212,11 @@ apply to the method itself rather than to some particular type.
 
 \item[\refqualclass{checker/nullness/qual}{RequiresNonNull}]
   indicates a method precondition:  The annotated method expects the
-  specified variables (typically field references) to be non-null when the
-  method is invoked.
+  specified variables to be non-null when the
+  method is invoked.  Don't use this for formal parameters (just annotate
+  their type as \<@NonNull>).  \<@RequiresNonNull> is appropriate for
+  a field that is \<@Nullable> in general, but some method requires the
+  field to be non-null.
 
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNull}]
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}]
