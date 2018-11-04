@@ -323,8 +323,8 @@ or \code{@LTOMLengthOf("arr")}.
 
 \end{description}
 
-The following method annotations can be used to establish a postcondition
-of a method which ensures that a certain expression is a valid index for a sequence:
+The following method annotations can be used to establish a method postcondition
+that ensures that a certain expression is a valid index for a sequence:
 
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOf}{String[] value, String[] targetValue, String[] offset}]
@@ -441,8 +441,8 @@ can establish the minimum length of a sequence:
   \label{fig-index-array-types}
 \end{figure}
 
-The following method annotation can be used to establish a postcondition
-of a method which ensures that a certain sequence has a minimum length:
+The following method annotation can be used to establish a method postcondition
+that ensures that a certain sequence has a minimum length:
 
 \begin{description}
 \item[\refqualclasswithparams{common/value/qual}{EnsuresMinLenIf}{String[] expression, boolean result, int targetValue}]
