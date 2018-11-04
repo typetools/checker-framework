@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
 @InheritedAnnotation
 public @interface EnsuresKeyForIf {
-    /** The value of the method must return, in order for the postcondition to hold. */
+    /** The value the method must return, in order for the postcondition to hold. */
     boolean result();
 
     /**
@@ -47,6 +47,8 @@ public @interface EnsuresKeyForIf {
     /**
      * Java expressions that are maps, each of which contains each of the expressions' value after
      * the method returns the given result.
+     *
+     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     @JavaExpression
     @QualifierArgument("value")
