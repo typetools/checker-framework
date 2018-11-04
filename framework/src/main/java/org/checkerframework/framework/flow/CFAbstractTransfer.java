@@ -6,8 +6,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1072,18 +1070,6 @@ public abstract class CFAbstractTransfer<
                 analysis.checker.report(result, tree);
             }
         }
-    }
-
-    private static String methodSymbolToString(MethodSymbol m) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(m.getSimpleName());
-        sb.append("(");
-        for (VarSymbol v : m.getParameters()) {
-            sb.append(v.toString());
-            sb.append(", "); // TODO fencepost
-        }
-        sb.append(")");
-        return sb.toString();
     }
 
     /**
