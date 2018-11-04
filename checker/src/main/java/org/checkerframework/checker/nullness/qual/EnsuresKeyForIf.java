@@ -26,8 +26,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * @see KeyFor
  * @see EnsuresKeyFor
- * @see org.checkerframework.checker.index.IndexChecker
- * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #map-key-checker Map Key Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
