@@ -67,7 +67,7 @@
                 with="${release.ver}, ${release.date}"/>
 
         <update file="${cf.docs}/manual/checkerframework.gradle"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                start="${gradle.ver.0}" end="${gradle.ver.1}"
                 with="${release.ver}, ${release.date}"/>
 
         <update file="${checkerWebPage}"
