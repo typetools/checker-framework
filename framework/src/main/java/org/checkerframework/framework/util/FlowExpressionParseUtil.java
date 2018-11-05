@@ -1323,7 +1323,7 @@ public class FlowExpressionParseUtil {
          */
         public FlowExpressionContext copyAndUseOuterReceiver() {
             return new FlowExpressionContext(
-                    outerReceiver, // NOTE different than receiver
+                    outerReceiver, // NOTE different than in this object
                     outerReceiver,
                     arguments,
                     checkerContext,
