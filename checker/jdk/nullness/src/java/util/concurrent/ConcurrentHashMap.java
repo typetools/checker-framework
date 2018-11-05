@@ -72,6 +72,8 @@ import java.util.function.ToLongBiFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Stream;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -971,6 +973,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      * @throws NullPointerException if the specified key is null
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(Object key) {
         return get(key) != null;
     }
@@ -1014,6 +1017,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      *         {@code null} if there was no mapping for {@code key}
      * @throws NullPointerException if the specified key or value is null
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V put(K key, V value) {
         return putVal(key, value, false);
     }
@@ -1546,6 +1550,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
      *         or {@code null} if there was no mapping for the key
      * @throws NullPointerException if the specified key or value is null
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V putIfAbsent(K key, V value) {
         return putVal(key, value, true);
     }
