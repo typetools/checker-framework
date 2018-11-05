@@ -99,6 +99,12 @@
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-${release.version.regexp}{0,1}" replace="checker-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-qual-${release.version.regexp}{0,1}" replace="checker-qual-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
