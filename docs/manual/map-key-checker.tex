@@ -177,7 +177,8 @@ coll.add(x);      // OK
 
 \section{Inference of @KeyFor annotations\label{map-key-annotations-inference}}
 
-Within a method body, you usually do not have to write \<@KeyFor> explicitly,
+Within a method body, you usually do not have to write \<@KeyFor>
+explicitly (except sometimes on type arguments),
 because the checker infers it based on usage patterns.  When the Map Key
 Checker encounters a run-time check for map keys, such as
 ``\<if (m.containsKey(k)) ...>'', then the Map Key Checker refines the type of
