@@ -2,6 +2,8 @@ package java.util;
 
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -38,6 +40,7 @@ public abstract class ResourceBundle{
   public final static void clearCache() { throw new RuntimeException("skeleton method"); }
   public final static void clearCache(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public abstract Enumeration<String> getKeys();
+  @EnsuresKeyForIf(result=true, expression="#1", map="this")
   @Pure public boolean containsKey(String a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Set<@KeyFor("this") String> keySet() { throw new RuntimeException("skeleton method"); }
 }

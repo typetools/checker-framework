@@ -311,6 +311,12 @@ classes such as \<List> have a type parameter.  The discrepancy causes a
 problem.  To fix the problem, supply \<-source 1.5> or later, or no
 \<-source> command-line argument.
 
+\item
+An ``error: package ... does not exist'' or ``error: cannot find symbol''
+about classes in your own project or its dependencies means that you have
+left your own project or its dependencies off the classpath when you
+invoked the compiler.
+
 \end{itemize}
 
 
@@ -540,7 +546,7 @@ you will get an error such as
 \begin{smaller}
 \begin{Verbatim}[]
 [expression.unparsable.type.invalid] Expression in dependent type annotation invalid:
-[error for expression: myParamName error: myParamName: identifier not found]
+Use "#1" rather than "value"
 \end{Verbatim}
 \end{smaller}
 

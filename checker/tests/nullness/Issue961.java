@@ -18,7 +18,7 @@ public class Issue961 {
         @SuppressWarnings("method.invocation.invalid")
         V def = setDef();
 
-        Map<K, V> map = new HashMap<K, V>();
+        Map<K, V> map = new HashMap<>();
 
         V get(K p) {
             if (!map.containsKey(p)) {

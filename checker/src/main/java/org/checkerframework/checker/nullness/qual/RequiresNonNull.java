@@ -15,22 +15,38 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * <!-- The "&nbsp;" is to hide the at-signs from Javadoc. -->
  *
  * <pre>
- * &nbsp;@Nullable Object field1;
- * &nbsp;@Nullable Object field2;
+ * class MyClass {
+ * &nbsp; @Nullable Object field1;
+ * &nbsp; @Nullable Object field2;
  *
- * &nbsp;@RequiresNonNull("field1")
- *  void method1() {
- *    field1.toString();        // OK, field1 is known to be non-null
- *    field2.toString();        // error, might throw NullPointerException
- *  }
+ * &nbsp; @RequiresNonNull({"field1", "other.field1"})
+ *   void method1(@NonNull MyClass other) {
+ *     field1.toString();           // OK, this.field1 is known to be non-null
+ *     field2.toString();           // error, might throw NullPointerException
+ *     other.field1.toString();     // OK, other.field1 is known to be non-null
+ *     other.field2.toString();     // error, might throw NullPointerException
+ *   }
  *
- *  void method2() {
- *    field1 = new Object();
- *    method1();                // OK, satisfies method precondition
- *    field1 = null;
- *    method1();                // error, does not satisfy method precondition
- *  }
+ *   void method2() {
+ *     MyClass other = new MyClass();
+ *
+ *     field1 = new Object();
+ *     other.field1 = new Object();
+ *     method1();                   // OK, satisfies method precondition
+ *
+ *     field1 = null;
+ *     other.field1 = new Object();
+ *     method1();                   // error, does not satisfy this.field1 method precondition
+ *
+ *     field1 = new Object();
+ *     other.field1 = null;
+ *     method1();                   // error, does not satisfy other.field1 method precondition
+ *   }
  * </pre>
+ *
+ * Do not use this annotation for formal parameters (instead, give them a {@code @NonNull} type,
+ * which is the default and need not be written). The {@code @RequiresNonNull} annotation is
+ * intended for other expressions, such as field accesses or method calls.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */

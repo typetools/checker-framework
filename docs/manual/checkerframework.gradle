@@ -7,10 +7,6 @@ repositories {
 }
 
 configurations {
-  checkerFrameworkCheckerJar {
-    description = 'the Checker Framework, including the Type Annotations compiler'
-  }
-
   checkerFrameworkAnnotatedJDK {
     description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
   }
@@ -20,9 +16,9 @@ configurations {
 // Pass -PcfLocal to use a locally-built version of the Checker Framework.
 dependencies {
   if (!rootProject.hasProperty('cfLocal')) {
-    ext.checkerFrameworkVersion = '2.5.4'
+    ext.checkerFrameworkVersion = '2.5.7'
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
-    checkerFrameworkCheckerJar "org.checkerframework:checker:${checkerFrameworkVersion}"
+    annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
   } else if (System.getenv("CHECKERFRAMEWORK") == null) {
     throw new GradleException("Environment variable CHECKERFRAMEWORK is not set")
@@ -31,7 +27,7 @@ dependencies {
   } else {
     ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
     checkerFrameworkAnnotatedJDK fileTree(dir: "${ext.checkerframeworkdist}", include: "jdk8.jar")
-    checkerFrameworkCheckerJar fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
+    annotationProcessor fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker.jar')
     implementation fileTree(dir: "${ext.checkerframeworkdist}", include: 'checker-qual.jar')
   }
 }
@@ -45,7 +41,6 @@ dependencies {
 //         '-Xmaxerrs', '10000',
 //         '-Awarns',    // -Awarns turns Checker Framework errors into warnings
 //         '-AcheckPurityAnnotations',
-//         '-processorpath', "${configurations.checkerFrameworkCheckerJar.asPath}",
 //         "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}",
 //         "-Astubs=$System.env.CHECKERFRAMEWORK/checker/resources/javadoc.astub" // TODO: does not work when downloading from Maven Central
 //       ]
@@ -63,7 +58,6 @@ compileJava {
         '-Xmaxwarns', '10000',
         // '-Awarns',      // -Awarns turns Checker Framework errors into warnings
         '-AcheckPurityAnnotations',
-        '-processorpath', "${configurations.checkerFrameworkCheckerJar.asPath}",
         "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
     ]
   }

@@ -9,7 +9,7 @@ class SomeClass<@Nullable T> {
 class AnnotatedTypeParams {
 
     void testPositive() {
-        SomeClass<@Nullable String> l = new SomeClass<@Nullable String>();
+        SomeClass<@Nullable String> l = new SomeClass<>();
         // :: error: (dereference.of.nullable)
         l.get().toString();
     }

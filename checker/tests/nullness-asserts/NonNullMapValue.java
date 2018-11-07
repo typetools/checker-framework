@@ -108,7 +108,7 @@ public class NonNullMapValue {
     }
 
     public static void process_unmatched_procedure_entries() {
-        HashMap<Integer, Date> call_hashmap = new HashMap<Integer, Date>();
+        HashMap<Integer, Date> call_hashmap = new HashMap<>();
         for (Integer i : call_hashmap.keySet()) {
             @NonNull Date d = call_hashmap.get(i);
         }

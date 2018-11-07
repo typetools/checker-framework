@@ -685,7 +685,7 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(finishValue(resultValue, store), store);
     }
 
-    /** Revert the role of the 'thenStore' and 'elseStore'. */
+    /** Reverse the role of the 'thenStore' and 'elseStore'. */
     @Override
     public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitConditionalNot(n, p);

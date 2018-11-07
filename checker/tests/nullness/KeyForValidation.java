@@ -74,7 +74,7 @@ public class KeyForValidation {
         // :: error: (expression.unparsable.type.invalid)
         new ArrayList<@KeyFor("BAD") String>(keySet);
         // :: error: (expression.unparsable.type.invalid)
-        List<@KeyFor("BAD") String> list = new ArrayList<@KeyFor("BAD") String>();
+        List<@KeyFor("BAD") String> list = new ArrayList<>();
 
         // :: error: (expression.unparsable.type.invalid)
         for (@KeyFor("BAD") String s : list) {}
@@ -116,7 +116,7 @@ public class KeyForValidation {
         // :: error: (expression.unparsable.type.invalid)
         new ArrayList<@KeyFor("this.instanceField") String>();
 
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         // :: error: (enhancedfor.type.incompatible) :: error: (expression.unparsable.type.invalid)
         for (@KeyFor("this.instanceField") String s : list) {}
     }

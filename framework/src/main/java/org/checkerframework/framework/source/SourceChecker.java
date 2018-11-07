@@ -632,7 +632,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     // TODO: do we want this?
     // Cache the keys that we already warned about to prevent repetitions.
-    // private Set<String> warnedOnLint = new HashSet<String>();
+    // private Set<String> warnedOnLint = new HashSet<>();
 
     private Set<String> createActiveLints(Map<String, String> options) {
         if (!options.containsKey("lint")) {
@@ -737,21 +737,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /** Log an internal error in the framework or a checker. */
     private void logBugInCF(BugInCF ce) {
-        // TODO: do this at construction time.
-        if (ce.getMessage() == null) {
-            final String stackTrace = formatStackTrace(ce.getStackTrace());
-            throw new BugInCF(
-                    "Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
-        }
-
         StringBuilder msg = new StringBuilder(ce.getMessage());
         boolean noPrintErrorStack =
                 (processingEnv != null
                         && processingEnv.getOptions() != null
                         && processingEnv.getOptions().containsKey("noPrintErrorStack"));
-        if (ce.getCause() == null) {
-            msg.append("; The Checker Framework crashed.  Please report the crash.");
-        } else if (noPrintErrorStack) {
+
+        if (noPrintErrorStack) {
             msg.append(
                     "; The Checker Framework crashed.  Please report the crash.  To see "
                             + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
@@ -759,6 +751,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
+
             if (this.visitor != null) {
                 DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
                 DiagnosticSource source =

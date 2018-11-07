@@ -201,6 +201,14 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         return areEqual(type1.getComponentType(), type2.getComponentType());
     }
 
+    /** A declared type is equal to an array type if the main qualifiers match. */
+    @Override
+    public Boolean visitDeclared_Array(
+            final AnnotatedDeclaredType type1, final AnnotatedArrayType type2, final Void p) {
+        // TODO: type1 is guaranteed by Java to be j.l.Object and therefore we don't need more.
+        return arePrimeAnnosEqual(type1, type2);
+    }
+
     /**
      * Two declared types are equal if:
      *

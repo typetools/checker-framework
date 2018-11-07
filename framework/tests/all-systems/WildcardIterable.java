@@ -4,7 +4,7 @@ import java.util.List;
 public class WildcardIterable {
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {
-        final List<T> newList = new ArrayList<T>();
+        final List<T> newList = new ArrayList<>();
 
         for (T listObject : list) {
             newList.add(listObject);

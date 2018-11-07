@@ -38,7 +38,7 @@ public class PerFileSuite extends Suite {
     @Target(ElementType.METHOD)
     public @interface Name {}
 
-    private final ArrayList<Runner> runners = new ArrayList<Runner>();
+    private final ArrayList<Runner> runners = new ArrayList<>();
 
     @Override
     protected List<Runner> getChildren() {
