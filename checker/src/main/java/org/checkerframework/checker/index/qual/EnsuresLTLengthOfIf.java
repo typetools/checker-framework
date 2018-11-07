@@ -46,7 +46,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * @see LTLengthOf
  * @see EnsuresLTLengthOf
- * @see org.checkerframework.checker.index.IndexChecker
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented

@@ -92,6 +92,9 @@ public class NullnessAnnotatedTypeFactory
                     "javax.validation.constraints.NotNull",
                     // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/NonNull.java
                     "lombok.NonNull",
+                    // https://search.maven.org/search?q=a:checker-compat-qual
+                    "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NonNullType",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -103,9 +106,7 @@ public class NullnessAnnotatedTypeFactory
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
                     "org.netbeans.api.annotations.common.NonNull",
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
-                    "org.springframework.lang.NonNull",
-                    "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
-                    "org.checkerframework.checker.nullness.compatqual.NonNullType");
+                    "org.springframework.lang.NonNull");
 
     // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
     /** Aliases for {@code @Nullable}. */
@@ -126,6 +127,9 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
                     "javax.annotation.CheckForNull",
                     "javax.annotation.Nullable",
+                    // https://search.maven.org/search?q=a:checker-compat-qual
+                    "org.checkerframework.checker.nullness.compatqual.NullableDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NullableType",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
@@ -141,9 +145,7 @@ public class NullnessAnnotatedTypeFactory
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
                     "org.netbeans.api.annotations.common.NullUnknown",
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
-                    "org.springframework.lang.Nullable",
-                    "org.checkerframework.checker.nullness.compatqual.NullableDecl",
-                    "org.checkerframework.checker.nullness.compatqual.NullableType");
+                    "org.springframework.lang.Nullable");
 
     /** Creates NullnessAnnotatedTypeFactory. */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {

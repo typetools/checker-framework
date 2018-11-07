@@ -35,6 +35,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -600,6 +602,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
      * key.
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(@Nullable Object key) {
         return getNode(hash(key), key) != null;
     }
@@ -616,6 +619,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V put(K key, V value) {
         return putVal(hash(key), key, value, false, true);
     }
@@ -1068,6 +1072,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     @Override
+    @EnsuresKeyFor(value="#1", map="this")
     public V putIfAbsent(K key, V value) {
         return putVal(hash(key), key, value, true, true);
     }
