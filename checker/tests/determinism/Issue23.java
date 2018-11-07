@@ -2,11 +2,11 @@ import org.checkerframework.checker.determinism.qual.*;
 
 public class Issue23 {
 
-    public static <T> String arrToString(T[] arr) {
+    public static <T> @PolyDet("up") String arrToString(T[] arr) {
         return arr.toString();
     }
 
-    public static <T> String callToString(T[] arr) {
+    public static <T> @PolyDet("up") String callToString(T[] arr) {
         return arrToString(arr);
     }
 
@@ -18,11 +18,12 @@ public class Issue23 {
         return arrToString(arr);
     }
 
-    public static @PolyDet String arrToString1(@PolyDet Object @PolyDet [] arr) {
+    public static @PolyDet("up") String arrToString1(@PolyDet Object @PolyDet [] arr) {
         return arr.toString();
     }
 
-    public static <T extends @PolyDet Object> @PolyDet String callToString1(T @PolyDet [] arr) {
+    public static <T extends @PolyDet Object> @PolyDet("up") String callToString1(
+            T @PolyDet [] arr) {
         return arrToString1(arr);
     }
 
