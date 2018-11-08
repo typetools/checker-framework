@@ -96,7 +96,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         Element typeParamElement = TypesUtils.wildcardToTypeParam(wildcard);
         if (typeParamElement == null) {
             typeParamElement =
-                    (parents.isEmpty())
+                    parents.isEmpty()
                             ? null
                             : getTypeParamFromEnclosingClass(wildcardAtm, parents.peekFirst());
         }

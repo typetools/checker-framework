@@ -310,7 +310,7 @@ subprojects {
     }
 
     dependencies {
-        errorprone group: 'com.google.errorprone', name: 'error_prone_ant', version: '2.2.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.2'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {

@@ -534,7 +534,7 @@ public class Range {
                     // When this range contains Long.MIN_VALUE, which would have a remainder of 0 if
                     // divided by Long.MIN_VALUE, the result range is {0} unioned with [from + 1,
                     // to]
-                    range = (new Range(from + 1, to)).union(new Range(0, 0));
+                    range = new Range(from + 1, to).union(new Range(0, 0));
                 }
             } else { // (from > Long.MIN_VALUE)
                 // When this range doesn't contain Long.MIN_VALUE, the remainder of each value
@@ -557,7 +557,7 @@ public class Range {
         // then the result range would be [-3, 4]. In general, the result range is {0} union with
         // this range excluding the value Long.MIN_VALUE.
         Range range1 =
-                (new Range(Math.max(Long.MIN_VALUE + 1, from), Math.max(Long.MIN_VALUE + 1, to)))
+                new Range(Math.max(Long.MIN_VALUE + 1, from), Math.max(Long.MIN_VALUE + 1, to))
                         .union(new Range(0, 0));
         // Calculate range2: the result range of range EVERYTHING divided by the right range. For
         // example, if the right range is [-5, 3], then the result range would be [-4, 4]. If the
