@@ -69,8 +69,12 @@ public class DeterminismTransfer extends CFTransfer {
 
         // Type refinement for List.sort
         if (isListSort(factory, receiverTypeMirror, invokedMethod)) {
-            if (factory.getAnnotatedType(receiver.getTree()).hasAnnotation(OrderNonDet.class)) {
+            AnnotatedTypeMirror receiverTreeTypeMirror =
+                    factory.getAnnotatedType(receiver.getTree());
+            if (receiverTreeTypeMirror.hasAnnotation(OrderNonDet.class)) {
                 typeRefine(n.getTarget().getReceiver(), result, factory.DET, factory);
+            } else if (receiverTreeTypeMirror.hasAnnotation(PolyDet.class)) {
+                typeRefine(n.getTarget().getReceiver(), result, factory.POLYDET_DOWN, factory);
             }
         }
 
@@ -84,21 +88,12 @@ public class DeterminismTransfer extends CFTransfer {
         if (isArraysSort(factory, receiverTypeMirror, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
-            if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
-                // The following code sets the flag typeRefine to true if
-                // all arguments except the first are annotated as @Det.
-                boolean typeRefine = true;
-                for (int i = 1; i < n.getArguments().size(); i++) {
-                    AnnotatedTypeMirror otherArgType =
-                            factory.getAnnotatedType(n.getTree().getArguments().get(i));
-                    if (!otherArgType.hasAnnotation(factory.DET)) {
-                        typeRefine = false;
-                        break;
-                    }
-                }
-                if (typeRefine) {
-                    typeRefine(n.getArgument(0), result, factory.DET, factory);
-                }
+            if (firstArg.hasAnnotation(factory.ORDERNONDET)
+                    && restOfArgumentsAreSubtype(factory, n, factory.DET)) {
+                typeRefine(n.getArgument(0), result, factory.DET, factory);
+            } else if (firstArg.hasAnnotation(factory.POLYDET_DOWN)
+                    && restOfArgumentsAreSubtype(factory, n, factory.POLYDET)) {
+                typeRefine(n.getArgument(0), result, factory.POLYDET_DOWN, factory);
             }
         }
 
@@ -108,6 +103,8 @@ public class DeterminismTransfer extends CFTransfer {
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
                 typeRefine(n.getArgument(0), result, factory.DET, factory);
+            } else if (firstArg.hasAnnotation(factory.POLYDET)) {
+                typeRefine(n.getArgument(0), result, factory.POLYDET_DOWN, factory);
             }
         }
 
@@ -195,6 +192,46 @@ public class DeterminismTransfer extends CFTransfer {
             ExecutableElement invokedMethod) {
         return (factory.isCollections(underlyingTypeOfReceiver)
                 && invokedMethod.getSimpleName().contentEquals("shuffle"));
+    }
+
+    /**
+     * Checks if all arguments past the first to the given method invocation have annotations that
+     * are subtypes of superAnnotation
+     *
+     * @param factory the determinism factory
+     * @param n the method invocation node to check
+     * @param superAnnotation the annotation to check the arguments are subtypes of
+     * @return true if every argument except possibly the first of n has an annotation that's a
+     *     subtype of supperAnnotation, false otherwise
+     */
+    private boolean restOfArgumentsAreSubtype(
+            DeterminismAnnotatedTypeFactory factory,
+            MethodInvocationNode n,
+            AnnotationMirror superAnnotation) {
+        for (int i = 1; i < n.getArguments().size(); i++) {
+            AnnotatedTypeMirror argType =
+                    factory.getAnnotatedType(n.getTree().getArguments().get(i));
+            if (!isSubtype(factory, argType, superAnnotation)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if the annotation for subType is a subtype of superAnnotation
+     *
+     * @param factory the determinism factory
+     * @param subType the type to check the annotation of
+     * @param superAnnotation the annotation that subType's annotation must be a subtype of
+     * @return true if the annotation for subType is a subtype of superAnnotation, false otherwise
+     */
+    private boolean isSubtype(
+            DeterminismAnnotatedTypeFactory factory,
+            AnnotatedTypeMirror subType,
+            AnnotationMirror superAnnotation) {
+        AnnotationMirror subAnnotation = subType.getAnnotationInHierarchy(factory.NONDET);
+        return factory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation);
     }
 
     /**
