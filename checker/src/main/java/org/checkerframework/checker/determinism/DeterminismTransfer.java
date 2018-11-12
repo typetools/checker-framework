@@ -204,14 +204,14 @@ public class DeterminismTransfer extends CFTransfer {
     }
 
     /**
-     * Checks if all arguments past the first to the given method invocation have annotations that
-     * are subtypes of {@code superAnnotation}.
+     * Checks if the annotations of all arguments past the first to the given method invocation are
+     * subtypes of {@code superAnnotation}.
      *
      * @param factory the determinism factory
      * @param n the method invocation node to check
      * @param superAnnotation the annotation to check the arguments are subtypes of
-     * @return true if every argument except possibly the first of {@code n} has an annotation
-     *     that's a subtype of supperAnnotation, false otherwise
+     * @return true if the annotation every argument except possibly the first of {@code n} is a
+     *     subtype of {@code supperAnnotation}, false otherwise
      */
     private boolean restOfArgumentsAreSubtype(
             DeterminismAnnotatedTypeFactory factory,
@@ -232,7 +232,7 @@ public class DeterminismTransfer extends CFTransfer {
      *
      * @param factory the determinism factory
      * @param type the type to check the annotation of
-     * @param superAnnotation the annotation that type's annotation must be a subtype of
+     * @param superAnnotation the annotation that {@code type}'s annotation must be a subtype of
      * @return true if the annotation for {@code type} is a subtype of {@code superAnnotation},
      *     false otherwise
      */
@@ -245,16 +245,16 @@ public class DeterminismTransfer extends CFTransfer {
     }
 
     /**
-     * Checks if the annotations for all type arguments for type are subtypes of {@code
+     * Checks if the annotations for all type arguments of type are subtypes of {@code
      * superAnnotation}.
      *
      * @param factory the determinism factory
      * @param type the type to check the type arguments of
-     * @param superAnnotation the annotation that type's type arguments must have annotations that
-     *     are a subytep of
-     * @return true if every type argument of {@code type} has an annotation that's a subtype of
-     *     {@code superAnnotation}, false otherwise. If any type argument is a generic type or a
-     *     wildcard, examines its upper bound.
+     * @param superAnnotation the annotation that {@code type}'s type arguments must have
+     *     annotations that are a subtype of
+     * @return true if the annotation of every type argument of {@code type} is a subtype of {@code
+     *     superAnnotation}, false otherwise. If any type argument is a generic type or a wildcard,
+     *     examines its upper bound.
      */
     private boolean typeArgumentsAreSubtype(
             DeterminismAnnotatedTypeFactory factory,
@@ -265,10 +265,9 @@ public class DeterminismTransfer extends CFTransfer {
             // TODO: Does this make it return true if the type args don't have annotations, which
             // would not be what we want? Is it here to prevent returning false on generic type
             // parameters, wildcards, etc.?
-            if (!typeArg.getAnnotations().isEmpty()) {
-                if (!isSubtype(factory, typeArg, superAnnotation)) {
-                    return false;
-                }
+            if (!typeArg.getAnnotations().isEmpty()
+                    && !isSubtype(factory, typeArg, superAnnotation)) {
+                return false;
             }
             if (typeArg.getKind() == TypeKind.TYPEVAR) {
                 AnnotatedTypeMirror typeArgUpperBound =
@@ -293,7 +292,7 @@ public class DeterminismTransfer extends CFTransfer {
     }
 
     /**
-     * Checks if the component type of {@code type} has an annotation that's a subtype of {@code
+     * Checks if the annotation of the component type of {@code type} is a subtype of {@code
      * superAnnotation}.
      *
      * @param factory the determinism factory
@@ -335,7 +334,7 @@ public class DeterminismTransfer extends CFTransfer {
      *
      * @param factory the determinism factory
      * @param argTypeUpperBound a type representing an upper bound to check
-     * @return annotation on the upper bound of {@code argTypeUpperBound}.
+     * @return annotation on the upper bound of {@code argTypeUpperBound}
      */
     private AnnotationMirror getUpperBound(
             DeterminismAnnotatedTypeFactory factory, AnnotatedTypeMirror argTypeUpperBound) {
