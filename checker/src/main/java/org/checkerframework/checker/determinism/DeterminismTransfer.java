@@ -17,7 +17,9 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -90,12 +92,15 @@ public class DeterminismTransfer extends CFTransfer {
         if (isArraysSort(factory, receiverTypeMirror, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
-            if (firstArg.hasAnnotation(factory.ORDERNONDET)
-                    && restOfArgumentsAreSubtype(factory, n, factory.DET)) {
-                typeRefine(n.getArgument(0), result, factory.DET, factory);
-            } else if (firstArg.hasAnnotation(factory.POLYDET)
-                    && restOfArgumentsAreSubtype(factory, n, factory.POLYDET)) {
-                typeRefine(n.getArgument(0), result, factory.POLYDET_DOWN, factory);
+            AnnotatedArrayType arrayType = (AnnotatedArrayType) firstArg;
+            if (arrayComponentTypeIsSubtype(factory, arrayType, factory.DET)) {
+                if (firstArg.hasAnnotation(factory.ORDERNONDET)
+                        && restOfArgumentsAreSubtype(factory, n, factory.DET)) {
+                    typeRefine(n.getArgument(0), result, factory.DET, factory);
+                } else if (firstArg.hasAnnotation(factory.POLYDET)
+                        && restOfArgumentsAreSubtype(factory, n, factory.POLYDET)) {
+                    typeRefine(n.getArgument(0), result, factory.POLYDET_DOWN, factory);
+                }
             }
         }
 
@@ -200,13 +205,13 @@ public class DeterminismTransfer extends CFTransfer {
 
     /**
      * Checks if all arguments past the first to the given method invocation have annotations that
-     * are subtypes of superAnnotation
+     * are subtypes of {@code superAnnotation}.
      *
      * @param factory the determinism factory
      * @param n the method invocation node to check
      * @param superAnnotation the annotation to check the arguments are subtypes of
-     * @return true if every argument except possibly the first of n has an annotation that's a
-     *     subtype of supperAnnotation, false otherwise
+     * @return true if every argument except possibly the first of {@code n} has an annotation
+     *     that's a subtype of supperAnnotation, false otherwise
      */
     private boolean restOfArgumentsAreSubtype(
             DeterminismAnnotatedTypeFactory factory,
@@ -223,32 +228,126 @@ public class DeterminismTransfer extends CFTransfer {
     }
 
     /**
-     * Checks if the annotation for subType is a subtype of superAnnotation
+     * Checks if the annotation for {@code type} is a subtype of {@code superAnnotation}.
      *
      * @param factory the determinism factory
-     * @param subType the type to check the annotation of
-     * @param superAnnotation the annotation that subType's annotation must be a subtype of
-     * @return true if the annotation for subType is a subtype of superAnnotation, false otherwise
+     * @param type the type to check the annotation of
+     * @param superAnnotation the annotation that type's annotation must be a subtype of
+     * @return true if the annotation for {@code type} is a subtype of {@code superAnnotation},
+     *     false otherwise
      */
     private boolean isSubtype(
             DeterminismAnnotatedTypeFactory factory,
-            AnnotatedTypeMirror subType,
+            AnnotatedTypeMirror type,
             AnnotationMirror superAnnotation) {
-        AnnotationMirror subAnnotation = subType.getAnnotationInHierarchy(factory.NONDET);
-        return factory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation);
+        return factory.getQualifierHierarchy()
+                .isSubtype(type.getAnnotationInHierarchy(factory.NONDET), superAnnotation);
     }
 
+    /**
+     * Checks if the annotations for all type arguments for type are subtypes of {@code
+     * superAnnotation}.
+     *
+     * @param factory the determinism factory
+     * @param type the type to check the type arguments of
+     * @param superAnnotation the annotation that type's type arguments must have annotations that
+     *     are a subytep of
+     * @return true if every type argument of {@code type} has an annotation that's a subtype of
+     *     {@code superAnnotation}, false otherwise. If any type argument is a generic type or a
+     *     wildcard, examines its upper bound.
+     */
     private boolean typeArgumentsAreSubtype(
             DeterminismAnnotatedTypeFactory factory,
             AnnotatedTypeMirror type,
             AnnotationMirror superAnnotation) {
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
         for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
-            if (!isSubtype(factory, typeArg, superAnnotation)) {
-                return false;
+            // TODO: Does this make it return true if the type args don't have annotations, which
+            // would not be what we want? Is it here to prevent returning false on generic type
+            // parameters, wildcards, etc.?
+            if (!typeArg.getAnnotations().isEmpty()) {
+                if (!isSubtype(factory, typeArg, superAnnotation)) {
+                    return false;
+                }
+            }
+            if (typeArg.getKind() == TypeKind.TYPEVAR) {
+                AnnotatedTypeMirror typeArgUpperBound =
+                        ((AnnotatedTypeVariable) typeArg).getUpperBound();
+                AnnotationMirror typevarAnnotation = getUpperBound(factory, typeArgUpperBound);
+                if (!factory.getQualifierHierarchy()
+                        .isSubtype(typevarAnnotation, superAnnotation)) {
+                    return false;
+                }
+            }
+            if (typeArg.getKind() == TypeKind.WILDCARD) {
+                AnnotatedTypeMirror typeArgExtendsBound =
+                        ((AnnotatedTypeMirror.AnnotatedWildcardType) typeArg).getExtendsBound();
+                AnnotationMirror typevarAnnotation = getUpperBound(factory, typeArgExtendsBound);
+                if (!factory.getQualifierHierarchy()
+                        .isSubtype(typevarAnnotation, superAnnotation)) {
+                    return false;
+                }
             }
         }
         return true;
+    }
+
+    /**
+     * Checks if the component type of {@code type} has an annotation that's a subtype of {@code
+     * superAnnotation}.
+     *
+     * @param factory the determinism factory
+     * @param type the array type to check the component type of
+     * @param superAnnotation the annotation that the component type must be a subtype of
+     * @return true if the annotation of the component type of {@code type} is a subtype of {@code
+     *     superAnnotation}. If the component type is a generic type, examines its upper bound.
+     */
+    private boolean arrayComponentTypeIsSubtype(
+            DeterminismAnnotatedTypeFactory factory,
+            AnnotatedArrayType type,
+            AnnotationMirror superAnnotation) {
+        AnnotatedTypeMirror componentType = type.getComponentType();
+        // TODO: Should this check be here?
+        if (!componentType.getAnnotations().isEmpty()) {
+            if (!isSubtype(factory, componentType, superAnnotation)) {
+                return false;
+            }
+            if (componentType.getKind() == TypeKind.TYPEVAR) {
+                AnnotatedTypeMirror componentUpperBound =
+                        ((AnnotatedTypeVariable) componentType).getUpperBound();
+                if (!isSubtype(factory, componentUpperBound, superAnnotation)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // TODO: Instead of copying method from DeterminismVisitor, make it public and use that one.
+    /**
+     * Returns annotation on the upper bound of {@code argTypeUpperBound}.
+     *
+     * <p>Example 1: If this method is called with {@code argTypeUpperBound} as {@code Z
+     * extends @NonDet T}, it returns {@code NonDet}.
+     *
+     * <p>Example 2: If this method is called with {@code argTypeUpperBound} as {@code @Det Z}, it
+     * returns {@code Det}.
+     *
+     * @param factory the determinism factory
+     * @param argTypeUpperBound a type representing an upper bound to check
+     * @return annotation on the upper bound of {@code argTypeUpperBound}.
+     */
+    private AnnotationMirror getUpperBound(
+            DeterminismAnnotatedTypeFactory factory, AnnotatedTypeMirror argTypeUpperBound) {
+        AnnotationMirror typevarAnnotation =
+                argTypeUpperBound.getAnnotationInHierarchy(factory.NONDET);
+        // typevarAnnotation is null for "<Z>  List<? extends Z>", "<Z,T>  List<T extends Z>"
+        while (typevarAnnotation == null) {
+            argTypeUpperBound =
+                    ((AnnotatedTypeMirror.AnnotatedTypeVariable) argTypeUpperBound).getUpperBound();
+            typevarAnnotation = argTypeUpperBound.getAnnotationInHierarchy(factory.NONDET);
+        }
+        return typevarAnnotation;
     }
 
     /**
