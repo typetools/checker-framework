@@ -7,7 +7,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.checkerframework.checker.determinism.qual.OrderNonDet;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -18,6 +17,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -69,12 +69,14 @@ public class DeterminismTransfer extends CFTransfer {
 
         // Type refinement for List.sort
         if (isListSort(factory, receiverTypeMirror, invokedMethod)) {
-            AnnotatedTypeMirror receiverTreeTypeMirror =
+            AnnotatedTypeMirror annotatedReceiverTypeMirror =
                     factory.getAnnotatedType(receiver.getTree());
-            if (receiverTreeTypeMirror.hasAnnotation(OrderNonDet.class)) {
-                typeRefine(n.getTarget().getReceiver(), result, factory.DET, factory);
-            } else if (receiverTreeTypeMirror.hasAnnotation(PolyDet.class)) {
-                typeRefine(n.getTarget().getReceiver(), result, factory.POLYDET_DOWN, factory);
+            if (typeArgumentsAreSubtype(factory, annotatedReceiverTypeMirror, factory.DET)) {
+                if (annotatedReceiverTypeMirror.hasAnnotation(factory.ORDERNONDET)) {
+                    typeRefine(n.getTarget().getReceiver(), result, factory.DET, factory);
+                } else if (annotatedReceiverTypeMirror.hasAnnotation(factory.POLYDET)) {
+                    typeRefine(n.getTarget().getReceiver(), result, factory.POLYDET_DOWN, factory);
+                }
             }
         }
 
@@ -91,7 +93,7 @@ public class DeterminismTransfer extends CFTransfer {
             if (firstArg.hasAnnotation(factory.ORDERNONDET)
                     && restOfArgumentsAreSubtype(factory, n, factory.DET)) {
                 typeRefine(n.getArgument(0), result, factory.DET, factory);
-            } else if (firstArg.hasAnnotation(factory.POLYDET_DOWN)
+            } else if (firstArg.hasAnnotation(factory.POLYDET)
                     && restOfArgumentsAreSubtype(factory, n, factory.POLYDET)) {
                 typeRefine(n.getArgument(0), result, factory.POLYDET_DOWN, factory);
             }
@@ -101,10 +103,12 @@ public class DeterminismTransfer extends CFTransfer {
         if (isCollectionsSort(factory, receiverTypeMirror, invokedMethod)) {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
-            if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
-                typeRefine(n.getArgument(0), result, factory.DET, factory);
-            } else if (firstArg.hasAnnotation(factory.POLYDET)) {
-                typeRefine(n.getArgument(0), result, factory.POLYDET_DOWN, factory);
+            if (typeArgumentsAreSubtype(factory, firstArg, factory.DET)) {
+                if (firstArg.hasAnnotation(factory.ORDERNONDET)) {
+                    typeRefine(n.getArgument(0), result, factory.DET, factory);
+                } else if (firstArg.hasAnnotation(factory.POLYDET)) {
+                    typeRefine(n.getArgument(0), result, factory.POLYDET_DOWN, factory);
+                }
             }
         }
 
@@ -232,6 +236,19 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotationMirror superAnnotation) {
         AnnotationMirror subAnnotation = subType.getAnnotationInHierarchy(factory.NONDET);
         return factory.getQualifierHierarchy().isSubtype(subAnnotation, superAnnotation);
+    }
+
+    private boolean typeArgumentsAreSubtype(
+            DeterminismAnnotatedTypeFactory factory,
+            AnnotatedTypeMirror type,
+            AnnotationMirror superAnnotation) {
+        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+        for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
+            if (!isSubtype(factory, typeArg, superAnnotation)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
