@@ -342,7 +342,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (executableType.getReceiverType() == null) {
                         boolean unannotatedOrPolyDet = false;
                         for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
-                            // The default is @PolyDet, so treat unannotated the same as @PolyDet
+                            // The default is @PolyDet, so treat unannotated the same as @PolyDet.
+                            // Note: "paramType.getAnnotations().isEmpty()" is true when there are
+                            // no explicit annotations on "paramType".
                             if (paramType.getAnnotations().isEmpty()
                                     || paramType.hasAnnotation(POLYDET)) {
                                 unannotatedOrPolyDet = true;
