@@ -29,7 +29,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>You do not usually need to write {@code @KeyFor} on the key type in a map. That is, you can
  * declare variable {@code Map<String, Integer> myMap;} and the Nullness Checker will apply
  * {@code @KeyFor} as appropriate. If you redundantly write {@code @KeyFor}, as in {@code
- * Map<@KeyFor("myMap") String, Integer> myMap;}, then your code is more verbase, and more seriously
+ * Map<@KeyFor("myMap") String, Integer> myMap;}, then your code is more verbose, and more seriously
  * the Nullness Checker will issue errors when calling methods such as {@code Map.put}.
  *
  * @see EnsuresKeyFor
