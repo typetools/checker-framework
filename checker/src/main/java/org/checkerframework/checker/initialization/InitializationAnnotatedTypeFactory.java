@@ -514,14 +514,20 @@ public abstract class InitializationAnnotatedTypeFactory<
                 break;
             }
         }
-        if (superClass == null) {
-            superClass = Object.class;
-        }
         // Create annotation.
-        if (useFbc) {
-            annotation = createFreeAnnotation(superClass);
+        if (superClass != null) {
+            if (useFbc) {
+                annotation = createFreeAnnotation(superClass);
+            } else {
+                annotation = createUnclassifiedAnnotation(superClass);
+            }
         } else {
-            annotation = createUnclassifiedAnnotation(superClass);
+            // Use Object as a valid super-class, using overloaded version of constructors
+            if (useFbc) {
+                annotation = createFreeAnnotation(Object.class);
+            } else {
+                annotation = createUnclassifiedAnnotation(Object.class);
+            }
         }
         return annotation;
     }
