@@ -1853,8 +1853,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type of {@code this} in the current location, which can be used if {@code this}
-     * has a special semantics (e.g. {@code this} is non-null).
+     * Returns the type of {@code this} in the given location, which can be used if {@code this} has
+     * a special semantics (e.g. {@code this} is non-null).
      *
      * <p>The parameter is an arbitrary tree and does not have to mention "this", neither explicitly
      * nor implicitly. This method should be overridden for type-system specific behavior.
@@ -1879,6 +1879,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (enclosingClass.getSimpleName().length() != 0 && enclosingMethod != null) {
             AnnotatedDeclaredType methodReceiver;
             if (TreeUtils.isConstructor(enclosingMethod)) {
+                // This seems questionable, since it's the type of `this` after the constructor
+                // returns, not at tree which is inside the constructor.
                 methodReceiver =
                         (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
             } else {
