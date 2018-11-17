@@ -1,7 +1,9 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
+
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 // Subclasses of this interface/class may opt to prohibit
 // null elements
@@ -31,6 +33,7 @@ public interface Deque<E> extends Queue<E> {
   public abstract boolean remove(@Nullable Object a1);
   @Pure public abstract boolean contains(@Nullable Object a1);
   @Pure public abstract int size();
+  @SideEffectFree
   public abstract Iterator<E> iterator();
   public abstract Iterator<E> descendingIterator();
   @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)

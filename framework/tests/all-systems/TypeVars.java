@@ -11,7 +11,7 @@ class TypeVars {
         class Inner1<X extends T> {}
 
         public Inner1<T> method1() {
-            return new Inner1<T>();
+            return new Inner1<>();
         }
     }
 

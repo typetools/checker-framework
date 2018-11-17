@@ -24,7 +24,7 @@ class AnnotatedGenerics3 {
     }
 
     void run() {
-        Cell<@NonNull Object> c = new Cell<@NonNull Object>(new Object());
+        Cell<@NonNull Object> c = new Cell<>(new Object());
         // :: error: (argument.type.incompatible)
         c.setNull(c);
         c.f.hashCode();

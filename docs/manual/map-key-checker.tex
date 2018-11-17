@@ -40,6 +40,22 @@ These qualifiers are part of the Map Key type system:
 
 \end{description}
 
+The following method annotations can be used to establish a method postcondition
+that ensures that a certain expression is a key for a map:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/nullness/qual}{EnsuresKeyFor}{String[] value, String[] map}]
+  When the method with this annotation returns, the expression (or all the
+  expressions) given in the \code{value} element is a key for the given
+  maps. More preciesly, the expression has the \code{@KeyFor} qualifier
+  with the \code{value} arguments taken from the \code{targetValue} element
+  of this annotation.
+\item[\refqualclasswithparams{checker/nullness/qual}{EnsuresKeyForIf}{String[] expression, boolean result, String[] map}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions)
+  is a key for the given maps.
+\end{description}
+
 \begin{figure}
 \includeimage{map-key-keyfor}{5cm}
 \caption{The subtyping relationship of the Map Key Checker's qualifiers.
@@ -161,7 +177,8 @@ coll.add(x);      // OK
 
 \section{Inference of @KeyFor annotations\label{map-key-annotations-inference}}
 
-Within a method body, you usually do not have to write \<@KeyFor> explicitly,
+Within a method body, you usually do not have to write \<@KeyFor>
+explicitly (except sometimes on type arguments),
 because the checker infers it based on usage patterns.  When the Map Key
 Checker encounters a run-time check for map keys, such as
 ``\<if (m.containsKey(k)) ...>'', then the Map Key Checker refines the type of
@@ -177,7 +194,7 @@ For more details about type refinement, see Section~\ref{type-refinement}.
 Suppose we have these declarations:
 
 \begin{verbatim}
-Map<String,Date> m = new Map<String,Date>();
+Map<String,Date> m = new Map<>();
 String k = "key";
 @KeyFor("m") String km;
 \end{verbatim}

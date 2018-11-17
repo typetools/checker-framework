@@ -91,7 +91,8 @@ qualifier at all.
 Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
-In particular, qualifiers in method bodies are extremely rare.
+In particular, qualifiers in method bodies are rare (except occasionally on
+type arguments).
 
 Most of this section is about defaults for source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
@@ -1129,6 +1130,8 @@ expression as an argument include:
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}
 % Not implemented: \refqualclass{checker/nullness/qual}{AssertNonNullIfNonNull}
 \item \refqualclass{checker/nullness/qual}{KeyFor}
+\item \refqualclass{checker/nullness/qual}{EnsuresKeyFor}
+\item \refqualclass{checker/nullness/qual}{EnsuresKeyForIf}
 \item \refqualclass{checker/i18nformatter/qual}{I18nFormatFor}
 \item \refqualclass{checker/lock/qual}{EnsuresLockHeld}
 \item \refqualclass{checker/lock/qual}{EnsuresLockHeldIf}
@@ -1298,7 +1301,7 @@ This annotation is inherited:  if a superclass is annotated with
 \<@FieldInvariant>, its subclasses have the same annotation. If a subclass has its
 own \<@FieldInvariant>, then it must include the fields in the superclass
 annotation and those fields' annotations must be a subtype (or equal) to the
-annotations for those fields in the the superclass \<@FieldInvariant>.
+annotations for those fields in the superclass \<@FieldInvariant>.
 
 Currently, the \<@FieldInvariant> annotation is trusted rather than
 checked.  In other words, the \<@FieldInvariant> annotation introduces a

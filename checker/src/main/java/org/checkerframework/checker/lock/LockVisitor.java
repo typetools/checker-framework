@@ -1297,7 +1297,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         LockExpression lockExpression = new LockExpression(expression);
         if (DependentTypesError.isExpressionError(expression)) {
-            lockExpression.error = new DependentTypesError(expression);
+            lockExpression.error = DependentTypesError.unparse(expression);
             return lockExpression;
         }
 

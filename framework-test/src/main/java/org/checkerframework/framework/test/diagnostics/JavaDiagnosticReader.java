@@ -115,7 +115,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     /** Converts a list of TestDiagnosticLine into a list of TestDiagnostic. */
     private static List<TestDiagnostic> getDiagnostics(List<TestDiagnosticLine> lines) {
-        List<TestDiagnostic> result = new ArrayList<TestDiagnostic>((int) (lines.size() * 1.1));
+        List<TestDiagnostic> result = new ArrayList<>((int) (lines.size() * 1.1));
         for (TestDiagnosticLine line : lines) {
             result.addAll(line.getDiagnostics());
         }

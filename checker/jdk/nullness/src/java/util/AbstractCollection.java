@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 public abstract class AbstractCollection<E> implements Collection<E> {
   protected AbstractCollection() {}
   @Override
-  public abstract Iterator<E> iterator();
+  @SideEffectFree public abstract Iterator<E> iterator();
   @Override
   @Pure public abstract int size();
   @Override
@@ -19,9 +19,9 @@ public abstract class AbstractCollection<E> implements Collection<E> {
   @Override
   @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public Object [] toArray() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   @Override
-  public <T> @Nullable T @PolyNull [] toArray(@Nullable T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public <T> @Nullable T @PolyNull [] toArray(@Nullable T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
   @Override
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   @Override

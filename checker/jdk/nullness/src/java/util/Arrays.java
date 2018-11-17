@@ -3827,12 +3827,14 @@ public class Arrays {
         }
 
         @Override
+        @SideEffectFree
         public @PolyNull Object[] toArray(ArrayList<@PolyNull E> this) {
             return a.clone();
         }
 
         @Override
         @SuppressWarnings("unchecked")
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             int size = size();
             if (a.length < size)
@@ -3876,6 +3878,7 @@ public class Arrays {
         }
 
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return Spliterators.spliterator(a, Spliterator.ORDERED);
         }
@@ -4850,6 +4853,7 @@ public class Arrays {
      * @return a spliterator for the array elements
      * @since 1.8
      */
+    @SideEffectFree
     public static <T> Spliterator<T> spliterator(T[] array) {
         return Spliterators.spliterator(array,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);
@@ -4874,6 +4878,7 @@ public class Arrays {
      *         the array size
      * @since 1.8
      */
+    @SideEffectFree
     public static <T> Spliterator<T> spliterator(T[] array, int startInclusive, int endExclusive) {
         return Spliterators.spliterator(array, startInclusive, endExclusive,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);
@@ -4890,6 +4895,7 @@ public class Arrays {
      * @return a spliterator for the array elements
      * @since 1.8
      */
+    @SideEffectFree
     public static Spliterator.OfInt spliterator(int[] array) {
         return Spliterators.spliterator(array,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);
@@ -4913,6 +4919,7 @@ public class Arrays {
      *         the array size
      * @since 1.8
      */
+    @SideEffectFree
     public static Spliterator.OfInt spliterator(int[] array, int startInclusive, int endExclusive) {
         return Spliterators.spliterator(array, startInclusive, endExclusive,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);
@@ -4929,6 +4936,7 @@ public class Arrays {
      * @return the spliterator for the array elements
      * @since 1.8
      */
+    @SideEffectFree
     public static Spliterator.OfLong spliterator(long[] array) {
         return Spliterators.spliterator(array,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);
@@ -4952,6 +4960,7 @@ public class Arrays {
      *         the array size
      * @since 1.8
      */
+    @SideEffectFree
     public static Spliterator.OfLong spliterator(long[] array, int startInclusive, int endExclusive) {
         return Spliterators.spliterator(array, startInclusive, endExclusive,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);
@@ -4969,6 +4978,7 @@ public class Arrays {
      * @return a spliterator for the array elements
      * @since 1.8
      */
+    @SideEffectFree
     public static Spliterator.OfDouble spliterator(double[] array) {
         return Spliterators.spliterator(array,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);
@@ -4992,6 +5002,7 @@ public class Arrays {
      *         the array size
      * @since 1.8
      */
+    @SideEffectFree
     public static Spliterator.OfDouble spliterator(double[] array, int startInclusive, int endExclusive) {
         return Spliterators.spliterator(array, startInclusive, endExclusive,
                                         Spliterator.ORDERED | Spliterator.IMMUTABLE);

@@ -11,7 +11,7 @@ class Issue1838 {
     }
 
     public static void f() {
-        List<@Nullable Object> list = new ArrayList<@Nullable Object>();
+        List<@Nullable Object> list = new ArrayList<>();
         list.add(null);
         List<List<@Nullable Object>> listList = new ArrayList<List<@Nullable Object>>();
         listList.add(list);

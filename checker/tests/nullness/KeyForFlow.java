@@ -5,11 +5,11 @@ import org.checkerframework.checker.nullness.qual.*;
 public class KeyForFlow extends HashMap<String, Object> {
 
     String k = "key";
-    HashMap<String, Object> m = new HashMap<String, Object>();
+    HashMap<String, Object> m = new HashMap<>();
 
     void testContainsKeyForLocalKeyAndLocalMap() {
         String k_local = "key";
-        HashMap<String, Object> m_local = new HashMap<String, Object>();
+        HashMap<String, Object> m_local = new HashMap<>();
 
         if (m_local.containsKey(k_local)) {
             @KeyFor("m_local") Object s = k_local;
@@ -31,7 +31,7 @@ public class KeyForFlow extends HashMap<String, Object> {
     }
 
     void testContainsKeyForFieldKeyAndLocalMap() {
-        HashMap<String, Object> m_local = new HashMap<String, Object>();
+        HashMap<String, Object> m_local = new HashMap<>();
 
         if (m_local.containsKey(k)) {
             @KeyFor("m_local") Object s = k;
@@ -61,7 +61,7 @@ public class KeyForFlow extends HashMap<String, Object> {
         @KeyFor("m") String s2 = k_s;
     }
 
-    static HashMap<String, Object> m_s = new HashMap<String, Object>();
+    static HashMap<String, Object> m_s = new HashMap<>();
 
     void testContainsKeyForFieldKeyAndStaticMap() {
         if (m_s.containsKey(k)) {
@@ -82,8 +82,11 @@ public class KeyForFlow extends HashMap<String, Object> {
         @KeyFor("this") String s2 = k;
     }
 
+    // TODO: The diamond operator does not work here:
+    //    Vector<@KeyFor("m2") String> coll = new Vector<>();
+    // Figure out why not.
     Vector<@KeyFor("m2") String> coll = new Vector<@KeyFor("m2") String>();
-    HashMap<String, Object> m2 = new HashMap<String, Object>();
+    HashMap<String, Object> m2 = new HashMap<>();
     String k2 = "key2";
 
     void testCallingPutAfterAdd() {
@@ -93,8 +96,8 @@ public class KeyForFlow extends HashMap<String, Object> {
     }
 
     void testPutForLocalKeyAndLocalMap() {
-        HashMap<String, Object> m2_local = new HashMap<String, Object>();
-        Vector<@KeyFor("m2_local") String> coll_local = new Vector<@KeyFor("m2_local") String>();
+        HashMap<String, Object> m2_local = new HashMap<>();
+        Vector<@KeyFor("m2_local") String> coll_local = new Vector<>();
         String k2_local = "key2";
 
         m2_local.put(k2_local, new Object());
@@ -109,8 +112,8 @@ public class KeyForFlow extends HashMap<String, Object> {
     }
 
     void testPutForFieldKeyAndLocalMap() {
-        HashMap<String, Object> m2_local = new HashMap<String, Object>();
-        Vector<@KeyFor("m2_local") String> coll_local = new Vector<@KeyFor("m2_local") String>();
+        HashMap<String, Object> m2_local = new HashMap<>();
+        Vector<@KeyFor("m2_local") String> coll_local = new Vector<>();
 
         m2_local.put(k2, new Object());
         coll_local.add(k2);
@@ -127,14 +130,14 @@ public class KeyForFlow extends HashMap<String, Object> {
     However this seems like a low-priority scenario to enable.
 
     void testPutForFieldKeyAndReceiverMap() {
-      Vector<@KeyFor("this") String> coll_local = new Vector<@KeyFor("this") String>();
+      Vector<@KeyFor("this") String> coll_local = new Vector<>();
 
       put(k2, new Object());
       coll_local.add(k2);
     }*/
 
     class foo {
-        public HashMap<String, Object> m = new HashMap<String, Object>();
+        public HashMap<String, Object> m = new HashMap<>();
     }
 
     void testContainsKeyForFieldKeyAndMapFieldOfOtherClass() {
@@ -150,7 +153,7 @@ public class KeyForFlow extends HashMap<String, Object> {
 
     void testPutForFieldKeyAndMapFieldOfOtherClass() {
         foo f = new foo();
-        Vector<@KeyFor("f.m") String> coll_local = new Vector<@KeyFor("f.m") String>();
+        Vector<@KeyFor("f.m") String> coll_local = new Vector<>();
         f.m.put(k2, new Object());
         coll_local.add(k2);
     }
