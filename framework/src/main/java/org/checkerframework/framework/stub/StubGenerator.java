@@ -271,7 +271,7 @@ public class StubGenerator {
     }
 
     /**
-     * Helper method that outputs the method declaration for the given method
+     * Helper method that outputs the method declaration for the given method.
      *
      * <p>IT indicates whether the field is {@code protected}.
      */

@@ -12,6 +12,7 @@ public interface NavigableSet<E> extends SortedSet<E> {
   public abstract @Nullable E higher(E a1);
   public abstract @Nullable E pollFirst();
   public abstract @Nullable E pollLast();
+  @SideEffectFree
   public abstract Iterator<E> iterator();
   public abstract NavigableSet<E> descendingSet();
   public abstract Iterator<E> descendingIterator();

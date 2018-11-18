@@ -16,6 +16,8 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.ObjDoubleConsumer;
 import java.util.function.Supplier;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
 public interface DoubleStream extends BaseStream<Double,DoubleStream> {
     DoubleStream filter(DoublePredicate arg0);
     DoubleStream map(DoubleUnaryOperator arg0);
@@ -30,6 +32,7 @@ public interface DoubleStream extends BaseStream<Double,DoubleStream> {
     DoubleStream skip(long arg0);
     void forEach(DoubleConsumer arg0);
     void forEachOrdered(DoubleConsumer arg0);
+    @SideEffectFree
     double[] toArray();
     double reduce(double arg0, DoubleBinaryOperator arg1);
     OptionalDouble reduce(DoubleBinaryOperator arg0);
@@ -51,8 +54,10 @@ public interface DoubleStream extends BaseStream<Double,DoubleStream> {
     @Override
     DoubleStream parallel();
     @Override
+    @SideEffectFree
     PrimitiveIterator.OfDouble iterator();
     @Override
+    @SideEffectFree
     Spliterator.OfDouble spliterator();
 
     static Builder builder() { throw new RuntimeException("skeleton method"); }

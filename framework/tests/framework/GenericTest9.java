@@ -7,14 +7,14 @@ class GenericTest9 {
 
     class C<X, Y extends X> {}
 
-    C<Object, Entry<String>> f = new C<Object, Entry<String>>();
+    C<Object, Entry<String>> f = new C<>();
 
     interface Entry<S> {}
 
     <V> void testclass() {
         // :: error: (type.argument.type.incompatible)
-        C<@Odd Object, Entry<V>> c1 = new C<@Odd Object, Entry<V>>();
-        C<@Odd Object, @Odd Entry<V>> c2 = new C<@Odd Object, @Odd Entry<V>>();
+        C<@Odd Object, Entry<V>> c1 = new C<>();
+        C<@Odd Object, @Odd Entry<V>> c2 = new C<>();
     }
 
     // Make sure that substitutions on method type variables work correctly

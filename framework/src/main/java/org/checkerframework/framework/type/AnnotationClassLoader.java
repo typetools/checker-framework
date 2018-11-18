@@ -473,18 +473,32 @@ public class AnnotationClassLoader {
             // resource URL for the qual directory will have the protocol
             // "jar". This means the whole checker is loaded as a jar file.
 
-            JarFile jarFile = null;
-            // open up that jar file and extract annotation class names
+            JarURLConnection connection;
+            // create a connection to the jar file
             try {
-                JarURLConnection connection = (JarURLConnection) resourceURL.openConnection();
-                jarFile = connection.getJarFile();
+                connection = (JarURLConnection) resourceURL.openConnection();
+
+                // disable caching / connection sharing of the low level URLConnection to the Jar
+                // file
+                connection.setDefaultUseCaches(false);
+                connection.setUseCaches(false);
+
+                // connect to the Jar file
+                connection.connect();
+            } catch (IOException e) {
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open a connection to the Jar file "
+                                + resourceURL.getFile());
+            }
+
+            // open up that jar file and extract annotation class names
+            try (JarFile jarFile = connection.getJarFile()) {
+                // get class names inside the jar file within the particular package
+                annotationNames = getBundledAnnotationNamesFromJar(jarFile);
             } catch (IOException e) {
                 throw new BugInCF(
                         "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
             }
-
-            // get class names inside the jar file within the particular package
-            annotationNames = getBundledAnnotationNamesFromJar(jarFile);
 
         } else if (resourceURL.getProtocol().contentEquals("file")) {
             // if the checker class file is found within the file system itself

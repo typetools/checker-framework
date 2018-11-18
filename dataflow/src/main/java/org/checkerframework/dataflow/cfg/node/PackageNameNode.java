@@ -11,7 +11,7 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node representing a package name used in an expression such as a constructor invocation
+ * A node representing a package name used in an expression such as a constructor invocation.
  *
  * <p><em>package</em>.class.object(...)
  *
@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class PackageNameNode extends Node {
 
     protected final Tree tree;
-    /** The package named by this node */
+    /** The package named by this node. */
     protected final Element element;
 
     /** The parent name, if any. */

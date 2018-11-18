@@ -212,8 +212,11 @@ apply to the method itself rather than to some particular type.
 
 \item[\refqualclass{checker/nullness/qual}{RequiresNonNull}]
   indicates a method precondition:  The annotated method expects the
-  specified variables (typically field references) to be non-null when the
-  method is invoked.
+  specified variables to be non-null when the
+  method is invoked.  Don't use this for formal parameters (just annotate
+  their type as \<@NonNull>).  \<@RequiresNonNull> is appropriate for
+  a field that is \<@Nullable> in general, but some method requires the
+  field to be non-null.
 
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNull}]
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}]
@@ -813,7 +816,7 @@ Section~\ref{declaration-annotations-moved}.
 
 
 % These lists should be kept in sync with
-% ../../checker/src/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java
+% ../../checker/src/main/java/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java
 \begin{figure}
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
@@ -828,6 +831,8 @@ Section~\ref{declaration-annotations-moved}.
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NonNullDecl~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NonNullType~ \\ \hline
  ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
  ~org.eclipse.jgit.annotations.NonNull~ \\ \hline
  ~org.jetbrains.annotations.NotNull~ \\ \hline
@@ -852,6 +857,8 @@ $\Rightarrow$
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
+ ~org.checkerframework.checker.nullness.compatqual.NullableType~ \\ \hline
  ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
  ~org.eclipse.jgit.annotations.Nullable~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
@@ -922,7 +929,7 @@ as \<@NonNull>.
 Different tools are appropriate in different circumstances.  Here is a
 brief comparison with FindBugs, but similar points apply to other tools.
 (For example, the \href{https://github.com/uber/NullAway}{NullAway} and
-\href{http://fbinfer.com/docs/eradicate.html}{Eradicate} tools are more
+\href{https://fbinfer.com/docs/eradicate.html}{Eradicate} tools are more
 like sound type-checking than FindBugs, but all of those tools accept
 unsoundness --- that is, false negatives or missed warnings --- in exchange
 for analysis speed.)
@@ -1066,7 +1073,7 @@ Chapter~\ref{optional-checker}) that guarantees that programmers use
 There are some limitations to the utility of \code{Optional}, which might
 lead to you choose to use regular Java references rather than \<Optional>.
 (For more details, see the article
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
+\href{https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
   is better than Java's \<Optional> class''}.)
 
 \begin{itemize}
@@ -1631,7 +1638,7 @@ consider a doubly linked list:
     Node<T> sentinel;
 
     public List() {
-      this.sentinel = new Node<T>(this);
+      this.sentinel = new Node<>(this);
     }
 
     void insert(@Nullable T data) {
@@ -1639,7 +1646,7 @@ consider a doubly linked list:
     }
 
     public static void main() {
-      List<Integer> l = new List<Integer>();
+      List<Integer> l = new List<>();
       l.insert(1);
       l.insert(2);
     }
@@ -1674,7 +1681,7 @@ consider a doubly linked list:
     }
 
     void insertAfter(@Nullable T data) {
-      Node<T> n = new Node<T>(this, this.next, data);
+      Node<T> n = new Node<>(this, this.next, data);
       this.next.prev = n;
       this.next = n;
     }

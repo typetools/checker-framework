@@ -37,7 +37,7 @@ public class SimpleOptionMap {
     }
 
     /**
-     * A method to easily add Strings to an option that takes a filepath as an argument
+     * A method to easily add Strings to an option that takes a filepath as an argument.
      *
      * @param key an option with an argument of the form "arg1[path-separator]arg2..." e.g., "-cp
      *     myDir:myDir2:myDir3"
@@ -69,7 +69,7 @@ public class SimpleOptionMap {
     }
 
     /**
-     * Adds an option that takes no argument
+     * Adds an option that takes no argument.
      *
      * @param option the no-argument option to add to this object
      */
@@ -78,7 +78,7 @@ public class SimpleOptionMap {
     }
 
     /**
-     * Adds an option that takes an argument
+     * Adds an option that takes an argument.
      *
      * @param option the option to add to this object
      * @param value the argument to the option
@@ -88,7 +88,7 @@ public class SimpleOptionMap {
     }
 
     /**
-     * Adds the option only if value is a non-null, non-empty String
+     * Adds the option only if value is a non-null, non-empty String.
      *
      * @param option the option to add to this object
      * @param value the argument to the option (or null)
@@ -100,7 +100,7 @@ public class SimpleOptionMap {
     }
 
     /**
-     * Adds all of the options in the given map to this one
+     * Adds all of the options in the given map to this one.
      *
      * @param options the options to add to this object
      */

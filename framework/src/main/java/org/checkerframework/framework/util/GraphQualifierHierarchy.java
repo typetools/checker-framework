@@ -50,7 +50,8 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     }
 
     /**
-     * Returns the top qualifier for this hierarchy.
+     * Returns the top qualifiers for this hierarchy. Returns multiple values for a compound checker
+     * (such as the Nullness Checker).
      *
      * <p>The top qualifier is inferred from the hierarchy, as being the only one without any super
      * qualifiers

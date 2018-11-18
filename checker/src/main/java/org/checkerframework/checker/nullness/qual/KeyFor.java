@@ -26,6 +26,14 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * indicates that "HOSTNAME" is a key in {@code config} and in {@code defaultConfig}.
  *
+ * <p>You do not usually need to write {@code @KeyFor} on the key type in a map. That is, you can
+ * declare variable {@code Map<String, Integer> myMap;} and the Nullness Checker will apply
+ * {@code @KeyFor} as appropriate. If you redundantly write {@code @KeyFor}, as in {@code
+ * Map<@KeyFor("myMap") String, Integer> myMap;}, then your code is more verbose, and more seriously
+ * the Nullness Checker will issue errors when calling methods such as {@code Map.put}.
+ *
+ * @see EnsuresKeyFor
+ * @see EnsuresKeyForIf
  * @checker_framework.manual #map-key-checker Map Key Checker
  */
 @SubtypeOf(UnknownKeyFor.class)

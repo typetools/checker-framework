@@ -1347,7 +1347,7 @@ named \<\emph{MyChecker}Transfer> that extends
 \refclass{framework/flow}{CFTransfer}.
 
 Leave the class body empty for now.  Your class will add functionality by
-overriding methods of CFTransfer, which performs the default Checker
+overriding methods of \<CFTransfer>, which performs the default Checker
 Framework type refinement.
 
 As an example, the Regex Checker's extended
@@ -1451,7 +1451,7 @@ a transfer class.)
 
 \subsection{Override methods that handle Nodes of interest\label{creating-dataflow-override-methods}}
 
-Decide what source code syntax is relevant to the the run-time checks or
+Decide what source code syntax is relevant to the run-time checks or
 run-time operations you are trying to support.  The CFG (control flow
 graph) represents source code as \refclass{dataflow/cfg/node}{Node}, a
 node in the abstract syntax tree of the program being checked (see
@@ -1832,6 +1832,23 @@ about intermediate steps in method type argument inference
 
 \subsection{Visualizing the dataflow graph\label{creating-debugging-dataflow-graph}}
 
+To understand control flow in your program and the resulting type
+refinement, you can create a graphical representation of the CFG.
+
+Typical use is:
+
+\begin{Verbatim}
+javac -processor myProcessor -Aflowdotdir=someDirectory MyClass.java
+cd someDirectory
+dot -Tpdf -o MyClass.pdf MyClass.dot
+\end{Verbatim}
+
+\noindent
+where the first command creates file \<someDirectory/myClass.dot> that
+represents the CFG, and the last command draws the CFG in a PDF file.
+The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
+
+
 \begin{itemize}
 
 \item \code{-Aflowdotdir=\emph{somedir}}:
@@ -1861,12 +1878,6 @@ about intermediate steps in method type argument inference
 
 \end{itemize}
 
-You can visualize \<.dot> graph files with the \ahref{http://www.graphviz.org}{Graphviz} program.  For
-example, to convert a \<.dot> file to PDF:
-
-\begin{Verbatim}
-dot -Tpdf -o myfile.pdf myfile.dot
-\end{Verbatim}
 
 \subsection{Miscellaneous debugging options\label{creating-debugging-options-misc}}
 

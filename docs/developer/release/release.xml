@@ -67,7 +67,7 @@
                 with="${release.ver}, ${release.date}"/>
 
         <update file="${cf.docs}/manual/checkerframework.gradle"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                start="${gradle.ver.0}" end="${gradle.ver.1}"
                 with="${release.ver}, ${release.date}"/>
 
         <update file="${checkerWebPage}"
@@ -97,6 +97,12 @@
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-${release.version.regexp}{0,1}" replace="checker-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-qual-${release.version.regexp}{0,1}" replace="checker-qual-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
@@ -136,15 +142,6 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <!-- checker-qual7 -->
-        <update file="${checker.binary.poms}/checkerQual7Pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/checkerQual7ReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
         <!-- checker-qual -->
         <update file="${checker.binary.poms}/checkerQualPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -154,12 +151,12 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <!-- checker-qual-compat -->
-        <update file="${checker.binary.poms}/checkerCompatQualPom.xml"
+        <!-- checker-qual-android -->
+        <update file="${checker.binary.poms}/checkerQualAndroidPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checker.release.poms}/checkerCompatQualReleasePom.xml"
+        <update file="${checker.release.poms}/checkerQualAndroidReleasePom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -286,8 +283,8 @@
     <target name="jar-maven-extras" description="Create jars with readmes to fill in for required maven artifacts!">
         <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
              At the moment we only have these for the checker artifact. Since the checker artifact source/javadoc
-             jars contain all the resources needed for checker-qual and checker-compat-qual artifacts, the sources/javadoc
-             jars for the checker artifact are re-used for the checker-qual and checker-compat-qual artifacts.
+             jars contain all the resources needed for checker-qual and checker-qual-android artifacts, the sources/javadoc
+             jars for the checker artifact are re-used for the checker-qual and checker-qual-android artifacts.
 
              For other artifacts, we create dummies with READMEs in them and pass those to Central.
 

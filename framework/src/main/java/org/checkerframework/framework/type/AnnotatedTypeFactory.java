@@ -126,7 +126,12 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *   <li>{@link #getAnnotatedType(Element)}
  * </ul>
  *
- * This implementation only adds qualifiers explicitly specified by the programmer.
+ * This implementation only adds qualifiers explicitly specified by the programmer. Subclasses
+ * override {@link #addComputedTypeAnnotations} to add defaults, implicits, flow-sensitive
+ * refinemont, and type-system-specific rules.
+ *
+ * <p>Unless otherwise indicated, each public method in this class returns a "fully annotated" type,
+ * which is one that has an annotation in all positions.
  *
  * <p>Type system checker writers may need to subclass this class, to add implicit and default
  * qualifiers according to the type system semantics. Subclasses should especially override {@link
@@ -722,7 +727,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns a mutable set of annotation classes that are supported by a checker
+     * Returns a mutable set of annotation classes that are supported by a checker.
      *
      * <p>Subclasses may override this method and to return a mutable set of their supported type
      * qualifiers through one of the 5 approaches shown below.
@@ -1557,8 +1562,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds annotations to the type based on the annotations from its class type if and only if no
-     * annotations are already present on the type.
+     * Adds implicit annotations to the type based on the annotations on the class declaration.
+     * Makes no changes if annotations are already present on the type.
      *
      * <p>The class type is found using {@link #fromElement(Element)}
      *
@@ -1989,9 +1994,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
      * List)} for the checks of type argument well-formedness.
      *
-     * <p>Note that "this" and "super" constructor invocations are also handled by this method.
-     * Method {@link #constructorFromUse(NewClassTree)} is only used for a constructor invocation in
-     * a "new" expression.
+     * <p>Note that "this" and "super" constructor invocations are also handled by this method
+     * (explicit or implicit ones, at the beginning of a constructor). Method {@link
+     * #constructorFromUse(NewClassTree)} is only used for a constructor invocation in a "new"
+     * expression.
      *
      * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
@@ -2204,36 +2210,45 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedDeclaredType
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-        if (TreeUtils.isDiamondTree(newClassTree)) {
-            AnnotatedDeclaredType type =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-            if (((com.sun.tools.javac.code.Type) type.actualType)
-                    .tsym
-                    .getTypeParameters()
-                    .nonEmpty()) {
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    AnnotatedTypeMirror ctxtype = ctx.second;
-                    fromNewClassContextHelper(type, ctxtype);
-                }
-            }
-            return type;
-        } else if (newClassTree.getClassBody() != null) {
-            AnnotatedDeclaredType type =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+        AnnotatedDeclaredType type;
+        if (newClassTree.getClassBody() != null) {
+            type = (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
             // If newClassTree creates an anonymous class, then annotations in this location:
             //   new @HERE Class() {}
             // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
             List<? extends AnnotationTree> annos =
                     newClassTree.getClassBody().getModifiers().getAnnotations();
             type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
-            return type;
         } else {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
-            return (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
+            type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
         }
+
+        if (TreeUtils.isDiamondTree(newClassTree)) {
+            // When the diamond operator is used, fromTypeTree() above does not appropriately
+            // populate the type arguments on the type. To do this, we need to create the type
+            // mirror again, using toAnnotatedType(). However, this does not populate any
+            // annotations -- so we need to take these from the fromTypeTree() mirror.
+            AnnotatedDeclaredType typeWithInferences =
+                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+            typeWithInferences.addAnnotations(type.getAnnotations());
+
+            if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
+                    .tsym
+                    .getTypeParameters()
+                    .nonEmpty()) {
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    AnnotatedTypeMirror ctxtype = ctx.second;
+                    fromNewClassContextHelper(typeWithInferences, ctxtype);
+                }
+            }
+
+            return typeWithInferences;
+        }
+        return type;
     }
 
     // This method extracts the ugly hacky parts.

@@ -30,6 +30,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -235,6 +237,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(@Nullable Object key) {
         return getEntry(key) != null;
     }
@@ -539,6 +542,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V put(K key, V value) {
         Entry<K,V> t = root;
         if (t == null) {
@@ -1030,6 +1034,7 @@ public class TreeMap<K, V>
     // View class support
 
     class Values extends AbstractCollection<V> {
+        @SideEffectFree
         public Iterator<V> iterator() {
             return new ValueIterator(getFirstEntry());
         }
@@ -1056,12 +1061,14 @@ public class TreeMap<K, V>
             TreeMap.this.clear();
         }
 
+        @SideEffectFree
         public Spliterator<V> spliterator() {
             return new ValueSpliterator<K,V>(TreeMap.this, null, null, 0, -1, 0);
         }
     }
 
     class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator(getFirstEntry());
         }
@@ -1096,6 +1103,7 @@ public class TreeMap<K, V>
             TreeMap.this.clear();
         }
 
+        @SideEffectFree
         public Spliterator<Map.Entry<K,V>> spliterator() {
             return new EntrySpliterator<K,V>(TreeMap.this, null, null, 0, -1, 0);
         }
@@ -1121,6 +1129,7 @@ public class TreeMap<K, V>
         private final NavigableMap<E, ?> m;
         KeySet(NavigableMap<E,?> map) { m = map; }
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             if (m instanceof TreeMap)
                 return ((TreeMap<E,?>)m).keyIterator();
@@ -1183,6 +1192,7 @@ public class TreeMap<K, V>
             return new KeySet<>(m.descendingMap());
         }
 
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return keySpliteratorFor(m);
         }
@@ -1509,10 +1519,12 @@ public class TreeMap<K, V>
             return (fromStart && toEnd) ? m.size() : entrySet().size();
         }
 
+        @EnsuresKeyForIf(result=true, expression="#1", map="this")
         public final boolean containsKey(Object key) {
             return inRange(key) && m.containsKey(key);
         }
 
+        @EnsuresKeyFor(value="#1", map="this")
         public final V put(K key, V value) {
             if (!inRange(key))
                 throw new IllegalArgumentException("key out of range");
@@ -1910,6 +1922,7 @@ public class TreeMap<K, V>
         }
 
         final class AscendingEntrySetView extends EntrySetView {
+            @SideEffectFree
             public Iterator<Map.Entry<K,V>> iterator() {
                 return new SubMapEntryIterator(absLowest(), absHighFence());
             }
@@ -1995,6 +2008,7 @@ public class TreeMap<K, V>
         }
 
         final class DescendingEntrySetView extends EntrySetView {
+            @SideEffectFree
             public Iterator<Map.Entry<K,V>> iterator() {
                 return new DescendingSubMapEntryIterator(absHighest(), absLowFence());
             }

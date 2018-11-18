@@ -1,3 +1,28 @@
+Version 2.5.7, November 4, 2018
+
+New @EnsuresKeyFor and @EnsuresKeyForIf method annotations permit
+specifying the postcondition that a method gives some value a @KeyFor type.
+
+The manual links to the Rx Thread & Effect Checker, which enforces
+UI Thread safety properties for stream-based Android applications.
+
+Closed issues:
+1014, 2151, 2178, 2180, 2183, 2188, 2190, 2195, 2196, 2198, 2199
+
+---------------------------------------------------------------------------
+Version 2.5.6, October 3, 2018
+
+Introduce checker-qual-android artifact that is just like the checker-qual
+artifact, but the qualifiers have classfile retention.  This is useful for
+Android projects.
+
+Remove the checker-compat-qual artifact, which was only useful for Java 7,
+which the Checker Framework no longer supports.  It remains available on
+Maven Central, with versions 2.5.5 and earlier.
+
+Closed issues:
+2135, 2157, 2158, 2164, 2171.
+
 ---------------------------------------------------------------------------
 Version 2.5.5, August 30, 2018
 
@@ -11,21 +36,18 @@ Added -AnoPrintErrorStack to disable it (which should be rare).
 Replaced ErrorReporter class with BugInCF and UserError exceptions.
 
 Closed issues:
-
 1999, 2008, 2023, 2029, 2074, 2088, 2098, 2099, 2102, 2107.
 
 ---------------------------------------------------------------------------
 Version 2.5.4, August 1, 2018
 
 Closed issues:
-
 2030, 2048, 2052, 2059, 2065, 2067, 2073, 2082.
 
 ---------------------------------------------------------------------------
 Version 2.5.3, July 2, 2018
 
 Closed issues:
-
 266, 1248, 1678, 2010, 2011, 2018, 2020, 2046, 2047, 2054.
 
 ---------------------------------------------------------------------------
@@ -35,7 +57,6 @@ In the Map Key Checker, null is now @UnknownKeyFor.  See the "Map Key Checker"
 chapter in the manual for more details.
 
 Closed issues:
-
 370, 469, 1701, 1916, 1922, 1959, 1976, 1978, 1981, 1983, 1984, 1991, 1992.
 
 ---------------------------------------------------------------------------
@@ -44,7 +65,6 @@ Version 2.5.1, May 1, 2018
 Added a Maven artifact of the Checker Framework testing library, testlib.
 
 Closed issues:
-
 849, 1739, 1838, 1847, 1890, 1901, 1911, 1912, 1913, 1934, 1936, 1941, 1942,
 1945, 1946, 1948, 1949, 1952, 1953, 1956, 1958.
 
@@ -61,7 +81,6 @@ annotations in comments" section in the "Handling legacy code" chapter in the
 manual for instructions on how to remove annotations from comments.
 
 Closed issues:
-
 515, 1667, 1739, 1776, 1819, 1863, 1864, 1865, 1866, 1867, 1870, 1876, 1879,
 1882, 1898, 1903, 1905, 1906, 1910, 1914, 1915, 1920.
 
@@ -94,7 +113,6 @@ Simplified the instructions for running the Checker Framework with Gradle.
 The Checker Framework Eclipse plugin is no longer released nor supported.
 
 Closed issues:
-
 65, 66, 100, 108, 175, 184, 190, 194, 209, 239, 260, 270, 274, 293, 302, 303,
 306, 321, 325, 341, 356, 360, 361, 371, 383, 385, 391, 397, 398, 410, 423, 424,
 431, 430, 432, 548, 1131, 1148, 1213, 1455, 1504, 1642, 1685, 1770, 1796, 1797,
@@ -106,7 +124,6 @@ Closed issues:
 Version 2.3.2, February 1, 2018
 
 Closed issues:
-
 946, 1133, 1232, 1319, 1625, 1633, 1696, 1709, 1712, 1734, 1738, 1749, 1754,
 1760, 1761, 1768, 1769, 1781.
 

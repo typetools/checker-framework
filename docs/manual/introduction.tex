@@ -183,8 +183,10 @@ synonyms.
 
 \begin{sloppypar}
 This section describes how to install the Checker Framework.
-(If you wish to try the Checker Framework without installing it, use the
-\href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.)
+If you use a build system that automatically downloads dependencies,
+such as Gradle or Maven, you do not need to perform any installation.
+If you wish to try the Checker Framework without installing it, use the
+\href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.
 \end{sloppypar}
 
 The Checker Framework release contains everything that you need, both to
@@ -197,7 +199,7 @@ build the latest development version from source
 You must have \textbf{JDK 8}
 % or later
 installed.  You can get the JDK from
-\href{http://www.oracle.com/technetwork/java/javase/downloads/index.html}{Oracle}
+\href{https://www.oracle.com/technetwork/java/javase/downloads/index.html}{Oracle}
 or elsewhere.
 
 The installation process is simple!  It has two required steps and one
@@ -208,7 +210,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.5.zip}
+  \url{https://checkerframework.org/checker-framework-2.5.7.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -228,10 +230,11 @@ We recommend that you work through the
 \ahreforurl{https://checkerframework.org/tutorial/}{Checker
 Framework tutorial}, which walks you through how to use the Checker
 Framework on
-the command line.
+the command line (Nullness, Regex, and Tainting Checkers).
 There is also a
 \ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker
-tutorial} by David B\"urgin.
+tutorial} by David B\"urgin; the setup instructions are out of date, but
+you can read through the steps.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
@@ -437,8 +440,8 @@ them.  Here are a few examples of type annotations:
 \end{smaller}
 %END LATEX
 
-You only need to write annotations on method signatures and fields.
-Annotations within method bodies are inferred for you; for more details,
+You only need to write annotations on method signatures, fields, and some type arguments.
+Most annotations within method bodies are inferred for you; for more details,
 see  Section~\ref{type-refinement}.
 
 \section{Running a checker\label{running}}
@@ -1071,8 +1074,8 @@ Do not write unnecessary annotations.
   annotations for local variables (see Section~\ref{type-refinement}).
   Usually, you only need to annotate fields and method signatures.  You
   should add annotations inside method bodies only if the checker is unable
-  to infer the correct annotation.
-
+  to infer the correct annotation (usually on type arguments, rather than
+  on local variables).
   % or if
   % you need to suppress a warning (see Chapter~\ref{suppressing-warnings}).
 
@@ -1111,6 +1114,28 @@ You should use annotations to specify \emph{normal} behavior.  The
 annotations indicate all the values that you \emph{want} to flow to a
 reference --- not every value that might possibly flow there if your
 program has a bug.
+
+As an example, the goal of the Nullness Checker is to guarantee that your
+program does not crash due to a null value.  In a method like this:
+
+\begin{Verbatim}
+  /** @throws IllegalArgumentException if arg is null */
+  void m(Object arg) {
+    if (arg == null) {
+      throw new IllegalArgumentException();
+    }
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+the program crashes if \<null> is passed.  Therefore, the type of \<arg>
+should be \<@NonNull Object> (which you can write as just \<Object> due to
+defaulting).  The Nullness Checker will warn whenever a client passes a
+value that might cause m to crash.  If you wrote the type of the formal
+parameter as \<@Nullable Object>, the Nullness Checker would permit clients
+to make calls that lead to a crash.
+
 
 Many methods are guaranteed to throw an exception if they are passed \code{null}
 as an argument.  Examples include

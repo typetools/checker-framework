@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  *
  * @see org.checkerframework.checker.nullness.qual.PolyNull
  * @see org.checkerframework.checker.interning.qual.PolyInterned
- * @see org.checkerframework.framework.util.QualifierPolymorphism
+ * @see org.checkerframework.framework.type.poly.QualifierPolymorphism
  * @checker_framework.manual #polyall The @PolyAll qualifier applies to every type system
  */
 @Documented

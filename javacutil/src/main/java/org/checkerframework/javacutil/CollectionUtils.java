@@ -3,11 +3,11 @@ package org.checkerframework.javacutil;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Utility methods related to Java Collections */
+/** Utility methods related to Java Collections. */
 public class CollectionUtils {
 
     /**
-     * A Utility method for creating LRU cache
+     * A Utility method for creating LRU cache.
      *
      * @param size size of the cache
      * @return a new cache with the provided size

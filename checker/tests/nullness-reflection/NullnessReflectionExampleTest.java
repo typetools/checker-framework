@@ -3,7 +3,7 @@ import java.lang.reflect.Method;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.reflection.qual.MethodVal;
 
-/** Example used in the reflection resolution section of the Checker Framework manual */
+/** Example used in the reflection resolution section of the Checker Framework manual. */
 public class NullnessReflectionExampleTest {
     @NonNull Location getCurrentLocation() {
         // ...
