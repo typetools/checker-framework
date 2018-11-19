@@ -143,7 +143,6 @@ def createCheckTypeTask(projectName, checker, shortName) {
                 '-processor', "${checker}",
                 '-proc:only',
                 '-Xlint:-processing',
-                '-AprintErrorStack',
                 "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar",
                 "-source",
                 "8",
