@@ -396,6 +396,12 @@ public class TypeAnnotationUtils {
 
     public static Type unannotatedType(final TypeMirror in) {
         final Type impl = (Type) in;
-        return impl.stripMetadata();
+        if (impl.isPrimitive()) {
+            // TODO: file an issue that stripMetadata doesn't work for primitives.
+            // See eisop/checker-framework issue #21.
+            return impl.baseType();
+        } else {
+            return impl.stripMetadata();
+        }
     }
 }
