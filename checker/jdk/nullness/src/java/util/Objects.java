@@ -211,6 +211,7 @@ public final class Objects {
      * @see java.util.function.Predicate
      * @since 1.8
      */
+    @EnsuresNonNullIf(expression="#1", result=false)
     @Pure public static boolean isNull(@Nullable Object obj) { throw new RuntimeException(); }
 
     /**
