@@ -74,8 +74,6 @@ public class CheckerMain {
 
     private final List<String> runtimeClasspath;
 
-    private final List<String> runtimeBootclasspath;
-
     private final List<String> jvmOpts;
 
     /**
@@ -118,7 +116,6 @@ public class CheckerMain {
 
         this.compilationBootclasspath = createCompilationBootclasspath(args);
         this.runtimeClasspath = createRuntimeClasspath(args);
-        this.runtimeBootclasspath = createRuntimeBootclasspath(args);
         this.jvmOpts = extractJvmOpts(args);
 
         this.cpOpts = createCpOpts(args);
@@ -145,7 +142,7 @@ public class CheckerMain {
     }
 
     protected List<String> createRuntimeClasspath(final List<String> argsList) {
-        return new ArrayList<>();
+        return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
     protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
