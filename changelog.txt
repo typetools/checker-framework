@@ -1,3 +1,9 @@
+Version 2.5.8, December 3, 2018
+
+Some error messages have been changed to improve comprehensibility,
+such as by adjusting wording or adding additional information.
+
+---------------------------------------------------------------------------
 Version 2.5.7, November 4, 2018
 
 New @EnsuresKeyFor and @EnsuresKeyForIf method annotations permit
