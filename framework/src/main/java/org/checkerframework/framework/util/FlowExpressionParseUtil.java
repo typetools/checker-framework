@@ -340,7 +340,7 @@ public class FlowExpressionParseUtil {
 
     private static boolean isThisLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
-            // TODO: this is probably wrong because you could have and inner class receiver
+            // TODO: this is probably wrong because you could have an inner class receiver
             // Outer.this
             return false;
         }

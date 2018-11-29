@@ -102,19 +102,6 @@ public class TypecheckResult {
             summaryBuilder.append(String.join("\n", getErrorHeaders()));
             summaryBuilder.append("\n");
 
-            if (!missingDiagnostics.isEmpty()) {
-                summaryBuilder.append(
-                        missingDiagnostics.size() == 1
-                                ? "1 expected diagnostic was not found:\n"
-                                : missingDiagnostics.size()
-                                        + " expected diagnostics were not found:\n");
-
-                for (TestDiagnostic missing : missingDiagnostics) {
-                    summaryBuilder.append(missing);
-                    summaryBuilder.append("\n");
-                }
-            }
-
             if (!unexpectedDiagnostics.isEmpty()) {
                 summaryBuilder.append(
                         unexpectedDiagnostics.size() == 1
@@ -124,6 +111,19 @@ public class TypecheckResult {
 
                 for (TestDiagnostic unexpected : unexpectedDiagnostics) {
                     summaryBuilder.append(unexpected);
+                    summaryBuilder.append("\n");
+                }
+            }
+
+            if (!missingDiagnostics.isEmpty()) {
+                summaryBuilder.append(
+                        missingDiagnostics.size() == 1
+                                ? "1 expected diagnostic was not found:\n"
+                                : missingDiagnostics.size()
+                                        + " expected diagnostics were not found:\n");
+
+                for (TestDiagnostic missing : missingDiagnostics) {
+                    summaryBuilder.append(missing);
                     summaryBuilder.append("\n");
                 }
             }

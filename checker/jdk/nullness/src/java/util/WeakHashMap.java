@@ -32,6 +32,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -423,6 +425,7 @@ public class WeakHashMap<K, V>
      *         <tt>false</tt> otherwise
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(@Nullable Object key) {
         return getEntry(key) != null;
     }
@@ -454,6 +457,7 @@ public class WeakHashMap<K, V>
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V put(K key, V value) {
         Object k = maskNull(key);
         int h = hash(k);

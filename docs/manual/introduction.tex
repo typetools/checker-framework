@@ -210,7 +210,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.6.zip}
+  \url{https://checkerframework.org/checker-framework-2.5.7.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -230,10 +230,11 @@ We recommend that you work through the
 \ahreforurl{https://checkerframework.org/tutorial/}{Checker
 Framework tutorial}, which walks you through how to use the Checker
 Framework on
-the command line.
+the command line (Nullness, Regex, and Tainting Checkers).
 There is also a
 \ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker
-tutorial} by David B\"urgin.
+tutorial} by David B\"urgin; the setup instructions are out of date, but
+you can read through the steps.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
@@ -439,8 +440,8 @@ them.  Here are a few examples of type annotations:
 \end{smaller}
 %END LATEX
 
-You only need to write annotations on method signatures and fields.
-Annotations within method bodies are inferred for you; for more details,
+You only need to write annotations on method signatures, fields, and some type arguments.
+Most annotations within method bodies are inferred for you; for more details,
 see  Section~\ref{type-refinement}.
 
 \section{Running a checker\label{running}}
@@ -1073,8 +1074,8 @@ Do not write unnecessary annotations.
   annotations for local variables (see Section~\ref{type-refinement}).
   Usually, you only need to annotate fields and method signatures.  You
   should add annotations inside method bodies only if the checker is unable
-  to infer the correct annotation.
-
+  to infer the correct annotation (usually on type arguments, rather than
+  on local variables).
   % or if
   % you need to suppress a warning (see Chapter~\ref{suppressing-warnings}).
 

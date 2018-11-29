@@ -31,6 +31,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -367,6 +369,7 @@ public class IdentityHashMap<K, V>
      * @see     #containsValue(Object)
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
@@ -439,6 +442,7 @@ public class IdentityHashMap<K, V>
      * @see     #get(Object)
      * @see     #containsKey(Object)
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public V put(K key, V value) {
         Object k = maskNull(key);
         Object[] tab = table;
