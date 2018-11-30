@@ -1,3 +1,10 @@
+Version 2.5.8, December 3, 2018
+
+The manual now links to the AWS KMS compliance checker, which enforces
+that calls to AWS KMS only generate 256-bit keys.
+
+---------------------------------------------------------------------------
+
 Version 2.5.7, November 4, 2018
 
 New @EnsuresKeyFor and @EnsuresKeyForIf method annotations permit
