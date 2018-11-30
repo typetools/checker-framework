@@ -61,7 +61,8 @@ public abstract class QualifierHierarchy {
 
     /**
      * @param start any qualifier from the type hierarchy
-     * @return the polymorphic qualifier for that hierarchy
+     * @return the polymorphic qualifier for that hierarchy, null if the type system doesn't have a
+     *     polymorphic qualifier
      */
     public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
 
