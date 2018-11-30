@@ -18,7 +18,6 @@ public class LessThanChecker extends BaseTypeChecker {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
         checkers.add(ValueChecker.class);
-        ;
         return checkers;
     }
 }

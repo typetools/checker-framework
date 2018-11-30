@@ -11,11 +11,15 @@ type qualifiers.
 \section{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
 The Checker Framework fully supports
-type-qualified Java generic types and methods (also known in the research literature as ``parametric
+type-qualified Java generic types and methods (also known as ``parametric
 polymorphism'').
 When instantiating a generic type,
 clients supply the qualifier along with the type argument, as in
 \code{List<@NonNull String>}.
+When using a type variable \code{T} within the implementation of a generic type,
+typically no type qualifier is written (see Section~\ref{type-variable-use});
+rather, the instantiation of the type parameter is restricted (see
+Section~\ref{generics-instantiation}).
 
 
 \subsection{Raw types\label{generics-raw-types}}
@@ -207,7 +211,9 @@ qualifier (in the same type hierarchy) on the corresponding actual type
 argument.  For example, suppose that \code{T} is a formal type parameter.
 Then using \code{@Nullable T} within the scope of \code{T} applies the type
 qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}\@.
-This feature is only rarely used.
+This feature is sometimes useful, but more often the implementation of a
+generic type just uses the type variable \code{T}, whose instantiation is
+restricted (see Section~\ref{generics-instantiation}).
 
 Here is an example of applying a type annotation to a generic type
 variable:
