@@ -1139,18 +1139,20 @@ particular, the Nullness Checker issues a warning for code like this:
 \begin{Verbatim}
   public class MyClass {
     private @NonNull Object f;
-    public MyClass(int x, int y) {
+    public MyClass(int x) {
       // Error because constructor contains no assignment to this.f.
       // By the time the constructor exits, f must be initialized to a non-null value.
     }
-    public MyClass(int x) {
+    public MyClass(int x, int y) {
       // Error because this.f is accessed before f is initialized.
       // At the beginning of the constructor's execution, accessing this.f
       // yields null, even though field f has a non-null type.
       this.f.toString();
+      f = new Object();
     }
     public MyClass(int x, int y, int z) {
       m();
+      f = new Object();
     }
     public void m() {
       // Error because this.f is accessed before f is initialized,
@@ -1175,81 +1177,6 @@ These distinctions are mostly relevant within the constructor, or for
 references to \code{this} that escape the constructor (say, by being stored
 in a field or passed to a method before initialization is complete).
 Use of initialization annotations is rare in most code.
-
-\label{underinitialization-examples}
-
-The most common use for the \<@UnderInitialization> annotation is for a
-helper routine that is called by constructor.  For example:
-
-\begin{Verbatim}
-  class MyClass {
-    Object field1;
-    Object field2;
-    Object field3;
-
-    public MyClass(String arg1) {
-      this.field1 = arg1;
-      init_other_fields();
-    }
-
-    // A helper routine that initializes all the fields other than field1.
-    @EnsuresNonNull({"field2", "field3"})
-    private void init_other_fields(@UnderInitialization(Object.class) MyClass this) {
-      field2 = new Object();
-      field3 = new Object();
-    }
-
-    public MyClass(String arg1, String arg2, String arg3) {
-      this.field1 = arg1;
-      this.field2 = arg2;
-      this.field3 = arg3;
-      checkRep();
-    }
-
-    // Verify that the representation invariants are satisfied.
-    // Works as long as the MyClass fields are initialized, even if the receiver's
-    // class is a subclass of MyClass and not all of the subclass fields are initialized.
-    private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
-      ...
-    }
-
-
-  }
-\end{Verbatim}
-
-% Most readers can
-% skip this section on first reading; you can return to it once you have
-% mastered the rest of the Nullness Checker.
-
-At the end of the constructor, \<this> is not fully initialized. Rather,
-it is \<@UnderInitialization(\emph{CurrentClass.class})>.
-The reason is that there might be subclasses with uninitialized fields.
-The following example illustrates this:
-
-\begin{Verbatim}
-class A {
-   @NonNull String a;
-   public A() {
-       a = "";
-       // Now, all fields of A are initialized.
-       // However, if this constructor is invoked as part of 'new B()', then
-       // the fields of B are not yet initialized.
-       // If we would type 'this' as @Initialized, then the following call is valid:
-       foo();
-   }
-   void foo() {}
-}
-
-class B extends A {
-   @NonNull String b;
-   @Override
-   void foo() {
-       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
-       // However, when executing 'new B()', this line throws a null-pointer exception.
-       b.toString();
-   }
-}
-\end{Verbatim}
 
 
 \subsectionAndLabel{Initialization qualifiers}{initialization-qualifiers}
@@ -1406,6 +1333,82 @@ for all the fields that the helper method assigns.
 %   @EnsuresNonNull("b")
 % when we are dealing with a field of primitive type.
 % But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
+
+
+\subsectionAndLabel{\code{@UnderInitialization} examples}{underinitialization-examples}
+
+The most common use for the \<@UnderInitialization> annotation is for a
+helper routine that is called by constructor.  For example:
+
+\begin{Verbatim}
+  class MyClass {
+    Object field1;
+    Object field2;
+    Object field3;
+
+    public MyClass(String arg1) {
+      this.field1 = arg1;
+      init_other_fields();
+    }
+
+    // A helper routine that initializes all the fields other than field1.
+    @EnsuresNonNull({"field2", "field3"})
+    private void init_other_fields(@UnderInitialization(Object.class) MyClass this) {
+      field2 = new Object();
+      field3 = new Object();
+    }
+
+    public MyClass(String arg1, String arg2, String arg3) {
+      this.field1 = arg1;
+      this.field2 = arg2;
+      this.field3 = arg3;
+      checkRep();
+    }
+
+    // Verify that the representation invariants are satisfied.
+    // Works as long as the MyClass fields are initialized, even if the receiver's
+    // class is a subclass of MyClass and not all of the subclass fields are initialized.
+    private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
+      ...
+    }
+
+
+  }
+\end{Verbatim}
+
+% Most readers can
+% skip this section on first reading; you can return to it once you have
+% mastered the rest of the Nullness Checker.
+
+At the end of the constructor, \<this> is not fully initialized. Rather,
+it is \<@UnderInitialization(\emph{CurrentClass.class})>.
+The reason is that there might be subclasses with uninitialized fields.
+The following example illustrates this:
+
+\begin{Verbatim}
+class A {
+   @NonNull String a;
+   public A() {
+       a = "";
+       // Now, all fields of A are initialized.
+       // However, if this constructor is invoked as part of 'new B()', then
+       // the fields of B are not yet initialized.
+       // If we would type 'this' as @Initialized, then the following call is valid:
+       foo();
+   }
+   void foo() {}
+}
+
+class B extends A {
+   @NonNull String b;
+   @Override
+   void foo() {
+       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
+       // However, when executing 'new B()', this line throws a null-pointer exception.
+       b.toString();
+   }
+}
+\end{Verbatim}
 
 
 \subsectionAndLabel{Partial initialization}{partial-initialization}
