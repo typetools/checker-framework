@@ -299,19 +299,6 @@ nested class.
 Similar arguments apply when annotating \<package.Outer.Nested>.
 
 \item
-A message of the form
-
-\begin{Verbatim}
-warning: StubParser: annotateTypeParameters: mismatched sizes
-\end{Verbatim}
-
-might be because you compiled your project with \<-source 1.4>.  Java 1.4
-doesn't support type parameters, but the Checker Framework expects that
-classes such as \<List> have a type parameter.  The discrepancy causes a
-problem.  To fix the problem, supply \<-source 1.5> or later, or no
-\<-source> command-line argument.
-
-\item
 An ``error: package ... does not exist'' or ``error: cannot find symbol''
 about classes in your own project or its dependencies means that you have
 left your own project or its dependencies off the classpath when you
