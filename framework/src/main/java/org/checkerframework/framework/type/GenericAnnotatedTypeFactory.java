@@ -18,7 +18,6 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -75,9 +74,11 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.qual.Unqualified;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -90,7 +91,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -581,28 +581,18 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param defs QualifierDefault object to which defaults are added
      */
     protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        boolean foundOtherwise = false;
         // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 final TypeUseLocation[] locations = defaultFor.value();
                 defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
-                foundOtherwise =
-                        foundOtherwise
-                                || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defs.addCheckedCodeDefault(
                         AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
-                foundOtherwise = true;
             }
-        }
-        // If Unqualified is a supported qualifier, make it the default.
-        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
-        if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
-            defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
         }
     }
 
@@ -688,12 +678,23 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates {@link QualifierPolymorphism} which supports QualifierPolymorphism mechanism.
+     * Creates the {@link QualifierPolymorphism} instance which supports the QualifierPolymorphism
+     * mechanism.
      *
-     * @return the QualifierPolymorphism class
+     * @return the QualifierPolymorphism instance to use
      */
     protected QualifierPolymorphism createQualifierPolymorphism() {
-        return new QualifierPolymorphism(processingEnv, this);
+        return new DefaultQualifierPolymorphism(processingEnv, this);
+    }
+
+    /**
+     * Gives the current {@link QualifierPolymorphism} instance which supports the
+     * QualifierPolymorphism mechanism.
+     *
+     * @return the QualifierPolymorphism instance to use
+     */
+    public QualifierPolymorphism getQualifierPolymorphism() {
+        return this.poly;
     }
 
     // **********************************************************************

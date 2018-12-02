@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ClassNameNode extends Node {
 
     protected final Tree tree;
-    /** The class named by this node */
+    /** The class named by this node. */
     protected final Element element;
 
     /** The parent name, if any. */

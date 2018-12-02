@@ -4,6 +4,10 @@ class APair<S extends @Nullable Object, T extends @Nullable Object> {
     static <U extends @Nullable Object, V extends @Nullable Object> APair<U, V> of(U p1, V p2) {
         return new APair<U, V>();
     }
+
+    static <U extends @Nullable Object, V extends @Nullable Object> APair<U, V> of2(U p1, V p2) {
+        return new APair<>();
+    }
 }
 
 class PairSub<SS extends @Nullable Object, TS extends @Nullable Object> extends APair<SS, TS> {
@@ -15,8 +19,8 @@ class PairSub<SS extends @Nullable Object, TS extends @Nullable Object> extends 
 
 class PairSubSwitching<SS extends @Nullable Object, TS extends @Nullable Object>
         extends APair<TS, SS> {
-    static <US extends @Nullable Object, VS extends @Nullable Object> PairSubSwitching<US, VS> of2(
-            US p1, VS p2) {
+    static <US extends @Nullable Object, VS extends @Nullable Object>
+            PairSubSwitching<US, VS> ofPSS(US p1, VS p2) {
         return new PairSubSwitching<US, VS>();
     }
 }
@@ -52,7 +56,7 @@ class Test4 {
     // :: error: (assignment.type.incompatible)
     APair<String, Integer> psi3 = PairSub.of(null, 42);
 
-    APair<@Nullable String, Integer> psisw = PairSubSwitching.of2(42, null);
+    APair<@Nullable String, Integer> psisw = PairSubSwitching.ofPSS(42, null);
     // :: error: (assignment.type.incompatible)
-    APair<String, Integer> psisw2 = PairSubSwitching.of2(42, null);
+    APair<String, Integer> psisw2 = PairSubSwitching.ofPSS(42, null);
 }

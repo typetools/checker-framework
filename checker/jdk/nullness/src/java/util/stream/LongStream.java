@@ -17,6 +17,8 @@ import java.util.function.LongUnaryOperator;
 import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
 public interface LongStream extends BaseStream<Long,LongStream> {
     LongStream filter(LongPredicate arg0);
     LongStream map(LongUnaryOperator arg0);
@@ -31,6 +33,7 @@ public interface LongStream extends BaseStream<Long,LongStream> {
     LongStream skip(long arg0);
     void forEach(LongConsumer arg0);
     void forEachOrdered(LongConsumer arg0);
+    @SideEffectFree
     long[] toArray();
     long reduce(long arg0, LongBinaryOperator arg1);
     OptionalLong reduce(LongBinaryOperator arg0);
@@ -53,8 +56,10 @@ public interface LongStream extends BaseStream<Long,LongStream> {
     @Override
     LongStream parallel();
     @Override
+    @SideEffectFree
     PrimitiveIterator.OfLong iterator();
     @Override
+    @SideEffectFree
     Spliterator.OfLong spliterator();
 
     static Builder builder() { throw new RuntimeException("skeleton method"); }

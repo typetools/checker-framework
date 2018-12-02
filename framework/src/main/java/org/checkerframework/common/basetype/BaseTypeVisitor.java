@@ -93,6 +93,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
@@ -104,7 +105,6 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1722,6 +1722,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // **********************************************************************
 
     /**
+     * Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once.
+     */
+    private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCache = null;
+    /** The same as {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache. */
+    private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCached() {
+        if (getExceptionParameterLowerBoundAnnotationsCache == null) {
+            getExceptionParameterLowerBoundAnnotationsCache =
+                    getExceptionParameterLowerBoundAnnotations();
+        }
+        return getExceptionParameterLowerBoundAnnotationsCache;
+    }
+
+    /**
      * Issue error if the exception parameter is not a supertype of the annotation specified by
      * {@link #getExceptionParameterLowerBoundAnnotations()}, which is top by default.
      *
@@ -1734,7 +1747,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkExceptionParameter(CatchTree node) {
 
         Set<? extends AnnotationMirror> requiredAnnotations =
-                getExceptionParameterLowerBoundAnnotations();
+                getExceptionParameterLowerBoundAnnotationsCached();
         AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(node.getParameter());
 
         for (AnnotationMirror required : requiredAnnotations) {
@@ -2037,7 +2050,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
                 new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                    /** Maps from a type's toString to its verbose toString */
+                    /** Maps from a type's toString to its verbose toString. */
                     Map<String, String> map = new HashMap<>();
 
                     @Override
@@ -2602,8 +2615,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // Use the function type's parameters to resolve polymorphic qualifiers.
-        QualifierPolymorphism poly =
-                new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
+        QualifierPolymorphism poly = atypeFactory.getQualifierPolymorphism();
         poly.annotate(functionType, invocationType);
 
         AnnotatedTypeMirror invocationReturnType;
@@ -3021,7 +3033,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
             // Fix up method reference parameters.
-            // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1
+            // See https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.13.1
             if (methodReference) {
                 // The functional interface of an unbound member reference has an extra parameter
                 // (the receiver).
@@ -3094,6 +3106,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 msgKey,
+                                overrider.getElement().getParameters().get(index).toString(),
                                 overriderMeth,
                                 overriderTyp,
                                 overriddenMeth,
@@ -3328,7 +3341,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the variable accessed is an assignable variable or not, given the current scope
+     * Tests whether the variable accessed is an assignable variable or not, given the current
+     * scope.
      *
      * <p>TODO: document which parameters are nullable; e.g. receiverType is null in many cases,
      * e.g. local variables.

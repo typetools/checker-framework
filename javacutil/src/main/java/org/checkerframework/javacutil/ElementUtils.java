@@ -35,7 +35,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element
+     * Returns the innermost type element enclosing the given element.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element
@@ -93,7 +93,7 @@ public class ElementUtils {
 
     /**
      * Returns true if the element is a static element: whether it is a static field, static method,
-     * or static class
+     * or static class.
      *
      * @return true if element is static
      */
@@ -102,7 +102,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns true if the element is a final element: a final field, final method, or final class
+     * Returns true if the element is a final element: a final field, final method, or final class.
      *
      * @return true if the element is final
      */
@@ -182,7 +182,7 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /** Returns true if the element is a constant time reference */
+    /** Returns true if the element is a constant time reference. */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
@@ -231,7 +231,7 @@ public class ElementUtils {
         return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
 
-    /** Returns the field of the class */
+    /** Returns the field of the class. */
     public static VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().contentEquals(name)) {

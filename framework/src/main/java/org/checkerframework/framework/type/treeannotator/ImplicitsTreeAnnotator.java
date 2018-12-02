@@ -115,7 +115,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for a particular {@link Tree} class
+     * Added an implicit rule for a particular {@link Tree} class.
      *
      * @param treeClass tree class that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeClass}
@@ -178,7 +178,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for all String literals that match the given pattern
+     * Added an implicit rule for all String literals that match the given pattern.
      *
      * @param pattern pattern to match Strings against
      * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern

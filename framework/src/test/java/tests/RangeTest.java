@@ -23,11 +23,14 @@ public class RangeTest {
         Short.MIN_VALUE - 10L,
         Short.MIN_VALUE,
         Short.MIN_VALUE + 1L,
+        Character.MIN_VALUE - 1000L,
+        Character.MIN_VALUE - 10L,
+        Character.MIN_VALUE, // 0L
+        Character.MIN_VALUE + 1L,
         Byte.MIN_VALUE - 1000L,
         Byte.MIN_VALUE - 10L,
         Byte.MIN_VALUE,
         Byte.MIN_VALUE + 1L,
-        0L,
         Byte.MAX_VALUE - 1L,
         Byte.MAX_VALUE,
         Byte.MAX_VALUE + 10L,
@@ -36,6 +39,10 @@ public class RangeTest {
         Short.MAX_VALUE,
         Short.MAX_VALUE + 10L,
         Short.MAX_VALUE + 1000L,
+        Character.MAX_VALUE - 1L,
+        Character.MAX_VALUE,
+        Character.MAX_VALUE + 10L,
+        Character.MAX_VALUE + 1000L,
         Integer.MAX_VALUE - 1,
         Integer.MAX_VALUE,
         Integer.MAX_VALUE + 10L,
@@ -56,8 +63,8 @@ public class RangeTest {
         -4L,
         -2L,
         -1L,
-        0L,
-        1L,
+        Character.MIN_VALUE, // 0L
+        Character.MIN_VALUE + 1L, // 1L
         2L,
         4L,
         8L,
@@ -65,6 +72,8 @@ public class RangeTest {
         Byte.MAX_VALUE,
         Short.MAX_VALUE - 1L,
         Short.MAX_VALUE,
+        Character.MAX_VALUE - 1L,
+        Character.MAX_VALUE,
         Integer.MAX_VALUE - 1L,
         Integer.MAX_VALUE,
         Long.MAX_VALUE - 1L,
@@ -79,9 +88,11 @@ public class RangeTest {
 
     static final long BYTE_WIDTH = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
 
+    static final long CHAR_WIDTH = Character.MAX_VALUE - Character.MIN_VALUE + 1;
+
     public RangeTest() {
         // Initialize the ranges list.
-        List<Range> rangesList = new ArrayList<Range>();
+        List<Range> rangesList = new ArrayList<>();
         for (long lowerbound : rangeBounds) {
             for (long upperbound : rangeBounds) {
                 if (lowerbound <= upperbound) {
@@ -260,6 +271,30 @@ public class RangeTest {
                             : String.format(
                                     "Range.shortRange failure: %s => %s; witness = %s",
                                     range, result, shortValue);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testCharRange() {
+        Range.ignoreOverflow = false;
+        for (Range range : ranges) {
+            Range result = range.charRange();
+            for (long value : values) {
+                if (value < range.from + CHAR_WIDTH
+                        && value > range.to - CHAR_WIDTH
+                        && (Math.abs(range.from + Short.MIN_VALUE) - 1) / Short.MIN_VALUE
+                                == (Math.abs(range.to + Short.MIN_VALUE) - 1) / Short.MIN_VALUE) {
+                    // filter out test data that would cause Range.CharRange to return
+                    // CHAR_EVERYTHING
+                    // char range interval is a right shift of the short range interval
+                    char charValue = (char) value;
+                    assert range.contains(value) && result.contains(charValue)
+                                    || !range.contains(value) && !result.contains(charValue)
+                            : String.format(
+                                    "Range.byteRange failure: %s => %s; witness = %s",
+                                    range, result, charValue);
                 }
             }
         }

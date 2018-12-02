@@ -13,7 +13,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.javacutil.Pair;
 
-/** A set of utilities and factory methods useful for working with TestDiagnostics */
+/** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
 
     // this regex represents how the diagnostics appear in Java source files
@@ -240,7 +240,7 @@ public class TestDiagnosticUtils {
         return originalLine.trim().substring(2).trim();
     }
 
-    /** Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine */
+    /** Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine. */
     public static TestDiagnosticLine fromJavaSourceLine(
             String filename, String originalLine, long lineNumber) {
         final String trimmedLine = originalLine.trim();
@@ -278,7 +278,7 @@ public class TestDiagnosticUtils {
         }
     }
 
-    /** Convert a line in a DiagnosticFile to a TestDiagnosticLine */
+    /** Convert a line in a DiagnosticFile to a TestDiagnosticLine. */
     public static TestDiagnosticLine fromDiagnosticFileLine(String diagnosticLine) {
         final String trimmedLine = diagnosticLine.trim();
         if (trimmedLine.startsWith("#") || trimmedLine.isEmpty()) {
@@ -319,7 +319,7 @@ public class TestDiagnosticUtils {
      * individually)
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        final List<String> strings = new ArrayList<String>(diagnostics.size());
+        final List<String> strings = new ArrayList<>(diagnostics.size());
         for (TestDiagnostic diagnostic : diagnostics) {
             strings.add(diagnostic.toString());
         }

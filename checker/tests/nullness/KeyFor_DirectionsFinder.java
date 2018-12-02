@@ -18,9 +18,8 @@ public class KeyFor_DirectionsFinder {
     }
 
     public void buildGraph(List<StreetSegment> segs) {
-        Map<GeoPoint, Set<StreetSegment>> endMap = new HashMap<GeoPoint, Set<StreetSegment>>();
-        Map<@KeyFor("endMap") GeoPoint, Set<StreetSegment>> beginMap =
-                new HashMap<@KeyFor("endMap") GeoPoint, Set<StreetSegment>>();
+        Map<GeoPoint, Set<StreetSegment>> endMap = new HashMap<>();
+        Map<@KeyFor("endMap") GeoPoint, Set<StreetSegment>> beginMap = new HashMap<>();
         Graph graph = new Graph();
 
         for (StreetSegment seg : segs) {

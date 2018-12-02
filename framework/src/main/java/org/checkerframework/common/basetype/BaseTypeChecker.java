@@ -124,7 +124,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     private List<BaseTypeChecker> immediateSubcheckers;
 
-    /** Supported options for this checker */
+    /** Supported options for this checker. */
     private Set<String> supportedOptions;
 
     /**

@@ -10,7 +10,7 @@ public class TestDiagnostic {
     private final DiagnosticKind kind;
     private final String filename;
 
-    /** Whether this diagnostic should no longer be reported after whole program inference */
+    /** Whether this diagnostic should no longer be reported after whole program inference. */
     private final boolean isFixable;
 
     /**
@@ -79,7 +79,7 @@ public class TestDiagnostic {
     }
 
     /**
-     * Equality is compared without isFixable/omitParentheses
+     * Equality is compared without isFixable/omitParentheses.
      *
      * @return true if this and otherObj are equal according to lineNumber, kind, and message
      */

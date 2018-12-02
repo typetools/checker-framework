@@ -8,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** A node for the single expression body of a single expression lambda */
+/** A node for the single expression body of a single expression lambda. */
 public class LambdaResultExpressionNode extends Node {
 
     protected final ExpressionTree tree;

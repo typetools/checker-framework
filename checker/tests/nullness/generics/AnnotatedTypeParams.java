@@ -6,7 +6,7 @@ class MyClass<@Nullable T> {
     }
 
     void testPositive() {
-        MyClass<@Nullable String> l = new MyClass<@Nullable String>();
+        MyClass<@Nullable String> l = new MyClass<>();
         // :: error: (dereference.of.nullable)
         l.get().toString();
     }

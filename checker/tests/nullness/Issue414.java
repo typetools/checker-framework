@@ -10,22 +10,22 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 class Issue414 {
 
     void simple(String s) {
-        Map<String, Integer> mymap = new HashMap<String, Integer>();
+        Map<String, Integer> mymap = new HashMap<>();
         mymap.put(s, 1);
         @KeyFor("mymap") String s2 = s;
     }
 
-    Map<String, Integer> someField = new HashMap<String, Integer>();
+    Map<String, Integer> someField = new HashMap<>();
 
     void semiSimple(@KeyFor("this.someField") String s) {
-        Map<String, Integer> mymap = new HashMap<String, Integer>();
+        Map<String, Integer> mymap = new HashMap<>();
         mymap.put(s, 1);
         @KeyFor({"this.someField", "mymap"}) String s2 = s;
     }
 
     void dominatorsNoGenerics(Map<String, Integer> preds) {
 
-        Map<String, Integer> dom = new HashMap<String, Integer>();
+        Map<String, Integer> dom = new HashMap<>();
         @KeyFor({"preds", "dom"}) String root;
 
         List<@KeyFor({"preds", "dom"}) String> roots = new ArrayList<String>();
@@ -39,7 +39,7 @@ class Issue414 {
 
     <T> void dominators(Map<T, List<T>> preds) {
 
-        Map<T, Integer> dom = new HashMap<T, Integer>();
+        Map<T, Integer> dom = new HashMap<>();
 
         @KeyFor({"preds", "dom"}) T root;
 

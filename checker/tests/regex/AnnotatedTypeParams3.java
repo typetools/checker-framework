@@ -42,7 +42,7 @@ class AnnotatedTypeParams3 {
 
 class OuterClass<E> {
     public InnerClass<E> method() {
-        return new InnerClass<E>();
+        return new InnerClass<>();
     }
 
     class InnerClass<A extends E> {}

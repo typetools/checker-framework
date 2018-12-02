@@ -88,6 +88,8 @@ public class Standardize {
     Object dict = new Object();
 
     void typvar() {
+        // TODO: Why doesn't the diamond operator work?
+        // Map<@FlowExp("this.dict") String, String> that = new HashMap<>();
         Map<@FlowExp("this.dict") String, String> that =
                 new HashMap<@FlowExp("dict") String, String>();
     }

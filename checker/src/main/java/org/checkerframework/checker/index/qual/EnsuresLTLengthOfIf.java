@@ -17,7 +17,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * <p>As an example, consider the following method:
  *
  * <pre>
- *
  *      &#64;EnsuresLTLengthOfIf(
  *          expression = "end",
  *          result = true,
@@ -38,7 +37,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * {@code array} in the following code:
  *
  * <pre>
- *
  *      public void useTryShiftIndex(&#64;NonNegative int x) {
  *          if (tryShiftIndex(x)) {
  *              Arrays.fill(array, end, end + x, null);
@@ -48,7 +46,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * @see LTLengthOf
  * @see EnsuresLTLengthOf
- * @see org.checkerframework.checker.index.IndexChecker
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented

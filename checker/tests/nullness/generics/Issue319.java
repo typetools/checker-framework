@@ -9,7 +9,7 @@ class Issue319 {
     }
 
     <T> Foo<T> newFoo(@Nullable T t) {
-        return new Foo<T>(t);
+        return new Foo<>(t);
     }
 
     void pass() {
@@ -31,7 +31,7 @@ class Issue319NN {
     }
 
     <T> Foo<T> newFoo(@NonNull T t) {
-        return new Foo<T>(t);
+        return new Foo<>(t);
     }
 
     void pass() {
