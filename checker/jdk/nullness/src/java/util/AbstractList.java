@@ -292,6 +292,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      *
      * @return an iterator over the elements in this list in proper sequence
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return new Itr();
     }
@@ -698,6 +699,7 @@ class SubList<E> extends AbstractList<E> {
         return true;
     }
 
+    @SideEffectFree
     public Iterator<E> iterator() {
         return listIterator();
     }

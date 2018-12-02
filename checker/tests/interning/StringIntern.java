@@ -18,7 +18,7 @@ public class StringIntern {
     }
 
     static class Foo {
-        private static Map<Foo, @Interned Foo> pool = new HashMap<Foo, @Interned Foo>();
+        private static Map<Foo, @Interned Foo> pool = new HashMap<>();
 
         @SuppressWarnings("interning")
         public @Interned Foo intern() {

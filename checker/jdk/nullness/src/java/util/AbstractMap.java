@@ -26,6 +26,8 @@
 package java.util;
 import java.util.Map.Entry;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -150,6 +152,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException {@inheritDoc}
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(@Nullable Object key) {
         Iterator<Map.Entry<K,V>> i = entrySet().iterator();
         if (key==null) {
@@ -216,6 +219,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException          {@inheritDoc}
      * @throws IllegalArgumentException      {@inheritDoc}
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V put(K key, V value) {
         throw new UnsupportedOperationException();
     }

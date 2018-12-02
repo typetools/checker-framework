@@ -6,8 +6,11 @@ plugins {
     id "de.undercouch.download" version "3.3.0"
     id 'java'
     id "net.ltgt.errorprone-base" version "0.0.13"
+    id 'org.ajoberstar.grgit' version '2.3.0' apply false
 }
 apply plugin: "de.undercouch.download"
+
+import org.ajoberstar.grgit.Grgit
 
 repositories {
     jcenter()
@@ -51,7 +54,7 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.5'
+    version '2.5.7'
 
     repositories {
         mavenCentral()
@@ -271,22 +274,22 @@ task downloadJtreg(type: Download) {
     }
 }
 
-task getCodeFormatScripts() {
-    description 'Obtain or update the run-google-java-format scripts'
-    if (file(formatScriptsHome).exists()) {
-        exec {
-            workingDir formatScriptsHome
-            executable 'git'
-            args = ['pull', '-q']
-            ignoreExitValue = true
-        }
+task getCodeFormatScripts {
+  description "Obtain the run-google-java-format scripts"
+  doLast {
+    if (! new File(formatScriptsHome).exists()) {
+      def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/plume-lib/run-google-java-format.git')
     } else {
-        exec {
-            workingDir "${formatScriptsHome}/../"
-            executable 'git'
-            args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
-        }
+      def rgjfGit = Grgit.open(dir: formatScriptsHome)
+      rgjfGit.pull()
     }
+  }
+}
+
+task pythonIsInstalled(type: Exec) {
+  description "Check that the python executable is installed."
+  executable = "python"
+  args "--version"
 }
 
 task tags {
@@ -310,14 +313,14 @@ subprojects {
         errorprone group: 'com.google.errorprone', name: 'error_prone_ant', version: '2.2.0'
     }
 
-    task checkFormat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
+    task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
         // jdk8 and checker-qual have no source, so skip
         onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
         executable 'python'
 
         doFirst {
-            args+= "${formatScriptsHome}/check-google-java-format.py"
+            args += "${formatScriptsHome}/check-google-java-format.py"
             args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
         }
@@ -329,7 +332,7 @@ subprojects {
         }
     }
 
-    task reformat(type: Exec, dependsOn: getCodeFormatScripts, group: 'Format') {
+    task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Format the Java source code'
         // jdk8 and checker-qual have no source, so skip
         onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
@@ -647,7 +650,7 @@ task releaseBuild(type: GradleBuild) {
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
     // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
-    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', ':checker-qual:compatQualSourcesJar', ':checker-qual:compatQualJavadocJar']
+    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and runn allTests'

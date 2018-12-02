@@ -3,13 +3,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <name>Checker Qual</name>
+    <name>Checker Qual Android</name>
     <groupId>org.checkerframework</groupId>
-    <artifactId>checker-compat-qual</artifactId>
+    <artifactId>checker-qual-android</artifactId>
 
     <!-- Note: It's important that this is the first <version/> element to appear in this document (by line)
          Because there is a simple logic in the release script to replace the version number of pom files -->
-    <version><!-- checker-framework-version -->2.5.5<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.5.7<!-- /checker-framework-version --></version>
 
     <distributionManagement>
         <repository>

@@ -727,6 +727,11 @@ public abstract class AnnotatedTypeMirror {
     public abstract AnnotatedTypeMirror deepCopy(final boolean copyAnnotations);
 
     /**
+     * Returns a deep copy of this type with annotations.
+     *
+     * <p>Each subclass implements this method with the subclass return type. The method body must
+     * always be a call to deepCopy(true).
+     *
      * @return a deep copy of this type with annotations
      * @see #deepCopy(boolean)
      */
@@ -734,7 +739,7 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns a shallow copy of this type. A shallow copy implies that each component type in the
-     * output copy refers to the same object as the object being copie.
+     * output copy refers to the same object as the object being copied.
      *
      * @param copyAnnotations whether copy should have annotations, i.e. whether field {@code
      *     annotations} should be copied.
@@ -743,6 +748,9 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns a shallow copy of this type with annotations.
+     *
+     * <p>Each subclass implements this method with the subclass return type. The method body must
+     * always be a call to shallowCopy(true).
      *
      * @see #shallowCopy(boolean)
      */
@@ -1388,7 +1396,7 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Set the lower bound of this variable type
+         * Set the lower bound of this variable type.
          *
          * <p>Returns the lower bound of this type variable. While a type parameter cannot include
          * an explicit lower bound declaration, capture conversion can produce a type variable with

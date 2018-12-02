@@ -24,6 +24,7 @@
  */
 
 package java.util;
+
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
@@ -38,9 +39,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class consists exclusively of static methods that operate on or return
@@ -1096,10 +1100,13 @@ public class Collections {
         public int size()                   {return c.size();}
         public boolean isEmpty()            {return c.isEmpty();}
         public boolean contains(Object o)   {return c.contains(o);}
+        @SideEffectFree
         public @PolyNull Object[] toArray(UnmodifiableCollection<@PolyNull E> this) {return c.toArray();}
+        @SideEffectFree
         public <T> T[] toArray(T[] a)       {return c.toArray(a);}
         public String toString()            {return c.toString();}
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             return new Iterator<E>() {
                 private final Iterator<? extends E> i = c.iterator();
@@ -1151,6 +1158,7 @@ public class Collections {
         }
         @SuppressWarnings("unchecked")
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return (Spliterator<E>)c.spliterator();
         }
@@ -1515,10 +1523,12 @@ public class Collections {
 
         public int size()                        {return m.size();}
         public boolean isEmpty()                 {return m.isEmpty();}
+        @EnsuresKeyForIf(result=true, expression="#1", map="this")
         public boolean containsKey(Object key)   {return m.containsKey(key);}
         public boolean containsValue(Object val) {return m.containsValue(val);}
         public V get(Object key)                 {return m.get(key);}
 
+        @EnsuresKeyFor(value="#1", map="this")
         public V put(K key, V value) {
             throw new UnsupportedOperationException();
         }
@@ -1577,6 +1587,7 @@ public class Collections {
         }
 
         @Override
+        @EnsuresKeyFor(value="#1", map="this")
         public V putIfAbsent(K key, V value) {
             throw new UnsupportedOperationException();
         }
@@ -1701,6 +1712,7 @@ public class Collections {
             }
 
             @SuppressWarnings("unchecked")
+            @SideEffectFree
             public Spliterator<Entry<K,V>> spliterator() {
                 return new UnmodifiableEntrySetSpliterator<>(
                         (Spliterator<Map.Entry<K, V>>) c.spliterator());
@@ -1716,6 +1728,7 @@ public class Collections {
                 return StreamSupport.stream(spliterator(), true);
             }
 
+            @SideEffectFree
             public Iterator<Map.Entry<K,V>> iterator() {
                 return new Iterator<Map.Entry<K,V>>() {
                     private final Iterator<? extends Map.Entry<? extends K, ? extends V>> i = c.iterator();
@@ -1733,6 +1746,7 @@ public class Collections {
             }
 
             @SuppressWarnings("unchecked")
+            @SideEffectFree
             public Object[] toArray() {
                 Object[] a = c.toArray();
                 for (int i=0; i<a.length; i++)
@@ -1741,6 +1755,7 @@ public class Collections {
             }
 
             @SuppressWarnings("unchecked")
+            @SideEffectFree
             public <T> T[] toArray(T[] a) {
                 // We don't pass a to c.toArray, to avoid window of
                 // vulnerability wherein an unscrupulous multithreaded client
@@ -2086,13 +2101,16 @@ public class Collections {
         public boolean contains(Object o) {
             synchronized (mutex) {return c.contains(o);}
         }
+        @SideEffectFree
         public @PolyNull Object[] toArray(SynchronizedCollection<@PolyNull E> this) {
             synchronized (mutex) {return c.toArray();}
         }
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             synchronized (mutex) {return c.toArray(a);}
         }
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             return c.iterator(); // Must be manually synched by user!
         }
@@ -2132,6 +2150,7 @@ public class Collections {
             synchronized (mutex) {return c.removeIf(filter);}
         }
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return c.spliterator(); // Must be manually synched by user!
         }
@@ -2640,6 +2659,7 @@ public class Collections {
         public boolean isEmpty() {
             synchronized (mutex) {return m.isEmpty();}
         }
+        @EnsuresKeyForIf(result=true, expression="#1", map="this")
         public boolean containsKey(Object key) {
             synchronized (mutex) {return m.containsKey(key);}
         }
@@ -2650,6 +2670,7 @@ public class Collections {
             synchronized (mutex) {return m.get(key);}
         }
 
+        @EnsuresKeyFor(value="#1", map="this")
         public V put(K key, V value) {
             synchronized (mutex) {return m.put(key, value);}
         }
@@ -2717,6 +2738,7 @@ public class Collections {
             synchronized (mutex) {m.replaceAll(function);}
         }
         @Override
+        @EnsuresKeyFor(value="#1", map="this")
         public V putIfAbsent(K key, V value) {
             synchronized (mutex) {return m.putIfAbsent(key, value);}
         }
@@ -3117,7 +3139,9 @@ public class Collections {
         public int size()                 { return c.size(); }
         public boolean isEmpty()          { return c.isEmpty(); }
         public boolean contains(Object o) { return c.contains(o); }
+        @SideEffectFree
         public @PolyNull Object[] toArray(CheckedCollection<@PolyNull E> this) { return c.toArray(); }
+        @SideEffectFree
         public <T> T[] toArray(T[] a)     { return c.toArray(a); }
         public String toString()          { return c.toString(); }
         public boolean remove(Object o)   { return c.remove(o); }
@@ -3133,6 +3157,7 @@ public class Collections {
             return c.retainAll(coll);
         }
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             // JDK-6363904 - unwrapped iterator could be typecast to
             // ListIterator with unsafe set()
@@ -3194,6 +3219,7 @@ public class Collections {
             return c.removeIf(filter);
         }
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {return c.spliterator();}
         @Override
         public Stream<E> stream()           {return c.stream();}
@@ -3673,6 +3699,7 @@ public class Collections {
 
         public int size()                      { return m.size(); }
         public boolean isEmpty()               { return m.isEmpty(); }
+        @EnsuresKeyForIf(result=true, expression="#1", map="this")
         public boolean containsKey(Object key) { return m.containsKey(key); }
         public boolean containsValue(Object v) { return m.containsValue(v); }
         public V get(Object key)               { return m.get(key); }
@@ -3684,6 +3711,7 @@ public class Collections {
         public int hashCode()                  { return m.hashCode(); }
         public String toString()               { return m.toString(); }
 
+        @EnsuresKeyFor(value="#1", map="this")
         public V put(K key, V value) {
             typeCheck(key, value);
             return m.put(key, value);
@@ -3730,6 +3758,7 @@ public class Collections {
         }
 
         @Override
+        @EnsuresKeyFor(value="#1", map="this")
         public V putIfAbsent(K key, V value) {
             typeCheck(key, value);
             return m.putIfAbsent(key, value);
@@ -3816,6 +3845,7 @@ public class Collections {
                 throw new UnsupportedOperationException();
             }
 
+            @SideEffectFree
             public Iterator<Map.Entry<K,V>> iterator() {
                 final Iterator<Map.Entry<K, V>> i = s.iterator();
                 final Class<V> valueType = this.valueType;
@@ -3831,6 +3861,7 @@ public class Collections {
             }
 
             @SuppressWarnings("unchecked")
+            @SideEffectFree
             public Object[] toArray() {
                 Object[] source = s.toArray();
 
@@ -3849,6 +3880,7 @@ public class Collections {
             }
 
             @SuppressWarnings("unchecked")
+            @SideEffectFree
             public <T> T[] toArray(T[] a) {
                 // We don't pass a to s.toArray, to avoid window of
                 // vulnerability wherein an unscrupulous multithreaded client
@@ -4379,6 +4411,7 @@ public class Collections {
     {
         private static final long serialVersionUID = 1582296315990362920L;
 
+        @SideEffectFree
         public Iterator<E> iterator() { return emptyIterator(); }
 
         public int size() {return 0;}
@@ -4387,8 +4420,10 @@ public class Collections {
         public boolean contains(Object obj) {return false;}
         public boolean containsAll(Collection<?> c) { return c.isEmpty(); }
 
+        @SideEffectFree
         public @PolyNull Object[] toArray(EmptySet<@PolyNull E> this) { return new Object[0]; }
 
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             if (a.length > 0)
                 a[0] = null;
@@ -4406,6 +4441,7 @@ public class Collections {
             return false;
         }
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() { return Spliterators.emptySpliterator(); }
 
         // Preserves singleton property
@@ -4495,6 +4531,7 @@ public class Collections {
         implements RandomAccess, Serializable {
         private static final long serialVersionUID = 8842843931221139166L;
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             return emptyIterator();
         }
@@ -4508,8 +4545,10 @@ public class Collections {
         public boolean contains(Object obj) {return false;}
         public boolean containsAll(Collection<?> c) { return c.isEmpty(); }
 
+        @SideEffectFree
         public @PolyNull Object[] toArray(EmptyList<@PolyNull E> this) { return new Object[0]; }
 
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             if (a.length > 0)
                 a[0] = null;
@@ -4546,6 +4585,7 @@ public class Collections {
         }
 
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() { return Spliterators.emptySpliterator(); }
 
         // Preserves singleton property
@@ -4639,6 +4679,7 @@ public class Collections {
 
         public int size()                          {return 0;}
         public boolean isEmpty()                   {return true;}
+        @EnsuresKeyForIf(result=true, expression="#1", map="this")
         public boolean containsKey(Object key)     {return false;}
         public boolean containsValue(Object value) {return false;}
         public V get(Object key)                   {return null;}
@@ -4670,6 +4711,7 @@ public class Collections {
         }
 
         @Override
+        @EnsuresKeyFor(value="#1", map="this")
         public V putIfAbsent(K key, V value) {
             throw new UnsupportedOperationException();
         }
@@ -4819,6 +4861,7 @@ public class Collections {
 
         SingletonSet(E e) {element = e;}
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             return singletonIterator(element);
         }
@@ -4833,6 +4876,7 @@ public class Collections {
             action.accept(element);
         }
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return singletonSpliterator(element);
         }
@@ -4868,6 +4912,7 @@ public class Collections {
 
         SingletonList(E obj)                {element = obj;}
 
+        @SideEffectFree
         public Iterator<E> iterator() {
             return singletonIterator(element);
         }
@@ -4899,6 +4944,7 @@ public class Collections {
         public void sort(Comparator<? super E> c) {
         }
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return singletonSpliterator(element);
         }
@@ -4938,6 +4984,7 @@ public class Collections {
 
         public int size()                                           {return 1;}
         public boolean isEmpty()                                {return false;}
+        @EnsuresKeyForIf(result=true, expression="#1", map="this")
         public boolean containsKey(Object key)             {return eq(key, k);}
         public boolean containsValue(Object value)       {return eq(value, v);}
         public V get(Object key)              {return (eq(key, k) ? v : null);}
@@ -4982,6 +5029,7 @@ public class Collections {
         }
 
         @Override
+        @EnsuresKeyFor(value="#1", map="this")
         public V putIfAbsent(K key, V value) {
             throw new UnsupportedOperationException();
         }
@@ -5092,6 +5140,7 @@ public class Collections {
             return element;
         }
 
+        @SideEffectFree
         public @PolyNull Object[] toArray(CopiesList<@PolyNull E> this) {
             final Object[] a = new Object[n];
             if (element != null)
@@ -5100,6 +5149,7 @@ public class Collections {
         }
 
         @SuppressWarnings("unchecked")
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             final int n = this.n;
             if (a.length < n) {
@@ -5138,6 +5188,7 @@ public class Collections {
         }
 
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {
             return stream().spliterator();
         }
@@ -5525,8 +5576,11 @@ public class Collections {
         public boolean contains(Object o) { return m.containsKey(o); }
         public boolean remove(Object o)   { return m.remove(o) != null; }
         public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
+        @SideEffectFree
         public Iterator<E> iterator()     { return s.iterator(); }
+        @SideEffectFree
         public @PolyNull Object[] toArray(SetFromMap<@PolyNull E> this) { return s.toArray(); }
+        @SideEffectFree
         public <T> T[] toArray(T[] a)     { return s.toArray(a); }
         public String toString()          { return s.toString(); }
         public int hashCode()             { return s.hashCode(); }
@@ -5547,6 +5601,7 @@ public class Collections {
         }
 
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {return s.spliterator();}
         @Override
         public Stream<E> stream()           {return s.stream();}
@@ -5604,8 +5659,11 @@ public class Collections {
         public boolean isEmpty()          { return q.isEmpty(); }
         public boolean contains(Object o) { return q.contains(o); }
         public boolean remove(Object o)   { return q.remove(o); }
+        @SideEffectFree
         public Iterator<E> iterator()     { return q.iterator(); }
+        @SideEffectFree
         public @PolyNull Object[] toArray(AsLIFOQueue<@PolyNull E> this) { return q.toArray(); }
+        @SideEffectFree
         public <T> T[] toArray(T[] a)     { return q.toArray(a); }
         public String toString()          { return q.toString(); }
         public boolean containsAll(Collection<?> c) {return q.containsAll(c);}
@@ -5621,6 +5679,7 @@ public class Collections {
             return q.removeIf(filter);
         }
         @Override
+        @SideEffectFree
         public Spliterator<E> spliterator() {return q.spliterator();}
         @Override
         public Stream<E> stream()           {return q.stream();}

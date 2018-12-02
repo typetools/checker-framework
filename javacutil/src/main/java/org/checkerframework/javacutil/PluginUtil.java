@@ -278,7 +278,7 @@ public class PluginUtil {
     }
 
     /**
-     * Any options found in props to the cmd list
+     * Any options found in props to the cmd list.
      *
      * @param cmd a list to which the options should be added
      * @param props the map of checker properties too search for options in

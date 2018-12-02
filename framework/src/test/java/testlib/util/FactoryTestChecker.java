@@ -125,7 +125,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
     /** Builds the expected type for the trees from the source file of the tree compilation unit. */
     // This method is extremely ugly
     private Map<TreeSpec, String> buildExpected(CompilationUnitTree tree) {
-        Map<TreeSpec, String> expected = new HashMap<TreeSpec, String>();
+        Map<TreeSpec, String> expected = new HashMap<>();
         try {
             JavaFileObject o = tree.getSourceFile();
             File sourceFile = new File(o.toUri());

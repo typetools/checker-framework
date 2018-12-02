@@ -822,10 +822,9 @@ def get_announcement_email(version):
     Subject: Release %s of the Checker Framework
 
     We have released a new version of the Checker Framework.
+    The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
 
-    * The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
-
-    You can find documentation and download links for these projects at:
+    You can find documentation and download links at:
     http://CheckerFramework.org/
 
     Changes for the Checker Framework

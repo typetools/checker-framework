@@ -14,6 +14,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -84,8 +85,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             }
 
             Class<? extends Annotation> pqtopclass =
-                    QualifierPolymorphism.getPolymorphicQualifierTop(
-                            atypeFactory.getElementUtils(), qual);
+                    QualifierPolymorphism.getPolymorphicQualifierTop(qual);
             if (pqtopclass != null) {
                 AnnotationMirror pqtop =
                         AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), pqtopclass);

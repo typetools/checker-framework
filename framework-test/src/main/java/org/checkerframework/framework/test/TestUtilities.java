@@ -104,7 +104,7 @@ public class TestUtilities {
     }
 
     public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
-        List<Object[]> files = new ArrayList<Object[]>();
+        List<Object[]> files = new ArrayList<>();
         for (String fileName : fileNames) {
             files.add(new Object[] {new File(parent, fileName)});
         }
@@ -118,7 +118,7 @@ public class TestUtilities {
      * @return a list of Java test files found in the directories
      */
     public static List<File> getJavaFilesAsArgumentList(File... dirs) {
-        List<File> arguments = new ArrayList<File>();
+        List<File> arguments = new ArrayList<>();
         for (File dir : dirs) {
             List<File> javaFiles = deeplyEnclosedJavaTestFiles(dir);
 
@@ -129,7 +129,7 @@ public class TestUtilities {
         return arguments;
     }
 
-    /** Returns all the java files that are descendants of the given directory */
+    /** Returns all the java files that are descendants of the given directory. */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
         if (!directory.exists()) {
             throw new IllegalArgumentException(
@@ -139,7 +139,7 @@ public class TestUtilities {
             throw new IllegalArgumentException("found file instead of directory: " + directory);
         }
 
-        List<File> javaFiles = new ArrayList<File>();
+        List<File> javaFiles = new ArrayList<>();
 
         File[] in = directory.listFiles();
         Arrays.sort(
@@ -232,7 +232,7 @@ public class TestUtilities {
     public static Set<String> diagnosticsToStrings(
             final Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics,
             boolean usingAnomsgtxt) {
-        Set<String> actualDiagnosticsStr = new LinkedHashSet<String>();
+        Set<String> actualDiagnosticsStr = new LinkedHashSet<>();
         for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
             String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
             if (diagnosticStr != null) {

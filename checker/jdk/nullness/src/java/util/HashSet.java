@@ -9,6 +9,7 @@ public class HashSet<E> extends AbstractSet<E> implements Set<E>, Cloneable, jav
   public HashSet(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public HashSet(int a1, float a2) { throw new RuntimeException("skeleton method"); }
   public HashSet(int a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }

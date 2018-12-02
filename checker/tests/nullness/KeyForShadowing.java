@@ -7,8 +7,8 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class KeyForShadowing {
     public static void main(String... p) {
-        Map<String, Integer> m0 = new HashMap<String, Integer>();
-        Map<String, Integer> m1 = new HashMap<String, Integer>();
+        Map<String, Integer> m0 = new HashMap<>();
+        Map<String, Integer> m1 = new HashMap<>();
         String k = "key";
         m0.put(k, 1); // k is @KeyFor("m0") after this line
 

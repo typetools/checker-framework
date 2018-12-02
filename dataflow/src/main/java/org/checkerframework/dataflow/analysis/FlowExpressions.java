@@ -375,7 +375,7 @@ public class FlowExpressions {
     }
 
     /**
-     * Returns either a new ClassName or ThisReference Receiver object for the enclosingType
+     * Returns either a new ClassName or ThisReference Receiver object for the enclosingType.
      *
      * <p>The Tree should be an expression or a statement that does not have a receiver or an
      * implicit receiver. For example, a local variable declaration.

@@ -1,7 +1,7 @@
 import testlib.util.Critical;
 
 /**
- * Tests the symantics for throwable exception
+ * Tests the symantics for throwable exception.
  *
  * @on-hold
  * @skip-test

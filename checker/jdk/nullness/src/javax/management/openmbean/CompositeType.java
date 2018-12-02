@@ -37,6 +37,8 @@ import java.util.Iterator;
 //
 
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -190,6 +192,7 @@ public class CompositeType extends OpenType<CompositeData> {
      *
      * @return true if an item of this name is present.
      */
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(@Nullable String itemName) {
 
         if (itemName == null) {

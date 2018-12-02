@@ -8,7 +8,7 @@ class Enumeration {
         NO_DUPS
     };
 
-    public MyEnumSet<VarFlags> var_flags = new MyEnumSet<VarFlags>();
+    public MyEnumSet<VarFlags> var_flags = new MyEnumSet<>();
 
     VarFlags f1 = VarFlags.IS_PARAM;
 

@@ -39,6 +39,7 @@ class ChapterExamples {
     }
 
     private abstract class Values<V> extends AbstractCollection<V> {
+        @SuppressWarnings("method.guarantee.violated") // side effect is only to local iterator
         public <T> T[] toArray(T[] a) {
             Collection<V> c = new ArrayList<V>(size());
             for (Iterator<V> i = iterator(); i.hasNext(); ) {

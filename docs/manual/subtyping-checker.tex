@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Subtyping Checker\label{subtyping-checker}}
+\chapterAndLabel{Subtyping Checker}{subtyping-checker}
 
 The Subtyping Checker enforces only subtyping rules.  It operates over
 annotations specified by a user on the command line.  Thus, users can
@@ -29,7 +29,7 @@ dereferences of possibly-null values), you will need to write code and
 extend the framework as discussed in Chapter~\ref{creating-a-checker}.
 
 
-\section{Using the Subtyping Checker\label{subtyping-using}}
+\sectionAndLabel{Using the Subtyping Checker}{subtyping-using}
 
 \begin{sloppypar}
 The Subtyping Checker is used in the same way as other checkers (using the
@@ -94,7 +94,7 @@ as your \code{@SuppressWarnings} key and stick with it for that entire type
 hierarchy.)
 
 
-\section{Subtyping Checker example\label{subtyping-example}\label{encrypted-example}}
+\sectionAndLabel{Subtyping Checker example\label{encrypted-example}}{subtyping-example}
 
 Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
 representation of an object (such as a \code{String}, \code{CharSequence}, or
@@ -233,7 +233,7 @@ commands:
 Also, see the example project in the \<docs/examples/subtyping-extension> directory.
 
 
-\section{Type aliases and typedefs\label{subtyping-type-alias}}
+\sectionAndLabel{Type aliases and typedefs}{subtyping-type-alias}
 
 A type alias or typedef is a type that shares the same representation as
 another type but is conceptually distinct from it.  For example, some

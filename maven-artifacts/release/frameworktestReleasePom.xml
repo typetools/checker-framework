@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>javacutil</artifactId>
-            <version><!-- checker-framework-version -->2.5.5<!-- /checker-framework-version --></version>
+            <version><!-- checker-framework-version -->2.5.7<!-- /checker-framework-version --></version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -44,7 +44,7 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->2.5.5<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.5.7<!-- /checker-framework-version --></version>
 
     <scm>
         <url>https://github.com/typetools/checker-framework.git</url>
@@ -54,10 +54,10 @@
     <developers>
 
         <developer>
-            <id>Michael Ernst &lt;mernst@cs.washington.edu&gt;</id>
+            <id>mernst</id>
             <name>Michael Ernst</name>
             <email>mernst@cs.washington.edu</email>
-            <url>http://homes.cs.washington.edu/~mernst/</url>
+            <url>https://homes.cs.washington.edu/~mernst/</url>
             <organization>University of Washington</organization>
             <organizationUrl>https://www.cs.washington.edu/</organizationUrl>
         </developer>
@@ -71,7 +71,7 @@
         </developer>
 
         <developer>
-            <id>Suzanne Millstein  &lt;smillst@cs.washington.edu&gt;</id>
+            <id>smillst</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
             <organization>University of Washington PLSE Group</organization>

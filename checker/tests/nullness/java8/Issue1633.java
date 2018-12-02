@@ -79,7 +79,7 @@ class Issue1633 {
 @Covariant(0)
 final @NonNull class Optional1633<T extends @Nullable Object> {
 
-    /** If non-null, the value; if null, indicates no value is present */
+    /** If non-null, the value; if null, indicates no value is present. */
     private final @Nullable T value = null;
 
     // TODO: there are conceptually two versions of this method:

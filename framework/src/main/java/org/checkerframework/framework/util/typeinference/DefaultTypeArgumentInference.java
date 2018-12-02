@@ -58,7 +58,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
- * <a href="https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.12.2.7">JLS
+ * <a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS
  * &sect;5.12.2.7</a>
  *
  * <p>Note, there are some deviations JLS 7 for the following cases:
@@ -404,7 +404,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * If we have inferred a type argument from the supertype constraints and this type argument is
-     * BELOW the lower bound, make it AT the lower bound
+     * BELOW the lower bound, make it AT the lower bound.
      *
      * <p>e.g.
      *

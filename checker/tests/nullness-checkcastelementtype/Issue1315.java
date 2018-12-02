@@ -26,7 +26,7 @@ public class Issue1315 {
 
     static class Casts {
         public static void test() {
-            Box<String> bs = new Box<String>("");
+            Box<String> bs = new Box<>("");
             bs.f = bs.test1(null);
             // :: error: (argument.type.incompatible)
             bs.f = bs.test2(null);

@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -628,7 +629,7 @@ public class AnnotatedTypes {
 
         parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
         for (int i = args.size() - parameters.size(); i > 0; --i) {
-            parameters.add(varargs.getComponentType());
+            parameters.add(varargs.getComponentType().deepCopy());
         }
 
         return parameters;

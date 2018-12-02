@@ -307,7 +307,7 @@ public class TypeArgumentMapper {
 
     /**
      * Maps a class or interface's declaration element to the type it would be if viewed from a
-     * subtype class or interface
+     * subtype class or interface.
      *
      * <p>e.g. suppose we have the elements for the declarations:
      *

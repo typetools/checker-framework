@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.cfg.block;
 /** Represents a basic block in a control flow graph. */
 public interface Block {
 
-    /** The types of basic blocks */
+    /** The types of basic blocks. */
     public static enum BlockType {
 
         /** A regular basic block. */
