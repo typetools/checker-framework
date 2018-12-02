@@ -1,3 +1,5 @@
+sudo: false
+
 language: generic
 
 ## Sometimes, the cache gets corrupted.  So don't cache.
