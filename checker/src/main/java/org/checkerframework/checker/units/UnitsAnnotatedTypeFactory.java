@@ -508,8 +508,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 factory, AnnotationBuilder.fromClass(elements, UnitsBottom.class));
     }
 
+    /** Qualifier Hierarchy for the Units Checker. */
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
 
+        /** Constructor. */
         public UnitsQualifierHierarchy(MultiGraphFactory mgf, AnnotationMirror unitsBottom) {
             super(mgf, unitsBottom);
         }
