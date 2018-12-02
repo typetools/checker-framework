@@ -951,6 +951,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (p.getCompilationUnit() != currentRoot) {
             currentRoot = p.getCompilationUnit();
             if (hasOption("filenames")) {
+                // Add timestamp to indicate how long operations are taking
+                message(Kind.NOTE, new java.util.Date().toString());
                 message(
                         Kind.NOTE,
                         "Checker: %s is type-checking: %s",
