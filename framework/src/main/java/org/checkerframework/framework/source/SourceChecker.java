@@ -919,7 +919,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
-        if ((!warnedAboutSourceLevel) && (!source.allowTypeAnnotations())) {
+        if (!warnedAboutSourceLevel && !source.allowTypeAnnotations()) {
             messager.printMessage(
                     javax.tools.Diagnostic.Kind.WARNING,
                     "-source " + source.name + " does not support type annotations");

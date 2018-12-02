@@ -510,8 +510,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public UnitsQualifierHierarchy(MultiGraphFactory mgf, AnnotationMirror bottom) {
-            super(mgf, bottom);
+        public UnitsQualifierHierarchy(MultiGraphFactory mgf, AnnotationMirror unitsBottom) {
+            super(mgf, unitsBottom);
         }
 
         @Override
