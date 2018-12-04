@@ -717,7 +717,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         Element refElt = TreeUtils.elementFromUse(member.getExpression());
 
                         if (!((refElt.equals(lhs) && argElt.equals(rhs))
-                                || ((refElt.equals(rhs) && argElt.equals(lhs))))) {
+                                || (refElt.equals(rhs) && argElt.equals(lhs)))) {
                             return false;
                         }
                         return true;

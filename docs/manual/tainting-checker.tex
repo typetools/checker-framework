@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Tainting Checker\label{tainting-checker}}
+\chapterAndLabel{Tainting Checker}{tainting-checker}
 
 The Tainting Checker prevents certain kinds of trust errors.
 A \emph{tainted}, or untrusted, value is one that comes from an arbitrary,
@@ -41,7 +41,7 @@ command-line option to javac.
 %TODO: For examples, see Section~\ref{tainting-examples}.
 
 
-\section{Tainting annotations\label{tainting-annotations}}
+\sectionAndLabel{Tainting annotations}{tainting-annotations}
 
 % TODO: add both qualifiers explicitly, and then describe their relationship.
 
@@ -61,7 +61,7 @@ The Tainting type system uses the following annotations:
 \end{itemize}
 
 
-\section{Tips on writing \code{@Untainted} annotations\label{writing-untainted}}
+\sectionAndLabel{Tips on writing \code{@Untainted} annotations}{writing-untainted}
 
 Most programs are designed with a boundary that surrounds sensitive
 computations, separating them from untrusted values.  Outside this
@@ -110,7 +110,7 @@ libraries):
 \end{Verbatim}
 
 
-\section{\code{@Tainted} and \code{@Untainted} can be used for many purposes\label{tainting-many-uses}}
+\sectionAndLabel{\code{@Tainted} and \code{@Untainted} can be used for many purposes}{tainting-many-uses}
 
 The \code{@Tainted} and \code{@Untainted} annotations have only minimal
 built-in semantics.  In fact, the Tainting Checker provides only a small
