@@ -99,8 +99,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * Reset to allow reuse of the same instance. Subclasses should override this method to clear
-     * their additional state and to the super implementation.
+     * Reset to allow reuse of the same instance. Subclasses should override this method. The
+     * overriding implementation should clear its additional state and then call the super
+     * implementation.
      */
     protected void reset() {
         completer.reset();
