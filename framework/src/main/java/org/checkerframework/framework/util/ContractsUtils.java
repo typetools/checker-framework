@@ -372,12 +372,12 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(requiresAnnotation);
-        if (postcondAnno == null) {
+        AnnotationMirror precondAnno = getAnnotationMirrorOfContractAnnotation(requiresAnnotation);
+        if (precondAnno == null) {
             return result;
         }
         for (String expr : expressions) {
-            result.add(new Precondition(expr, postcondAnno, requiresAnnotation));
+            result.add(new Precondition(expr, precondAnno, requiresAnnotation));
         }
         return result;
     }
