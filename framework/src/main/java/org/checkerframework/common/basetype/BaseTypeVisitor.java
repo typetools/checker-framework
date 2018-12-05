@@ -767,7 +767,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param methodTree declaration of the method
      * @param annotation expression's type must have this annotation
-     * @param expression the expression that the postcondition concerns
+     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
+     *     expression}. Used only for diagnostic messages.
+     * @param expression the expression that the postcondition {@code contractAnnotation} concerns
      */
     protected void checkPostcondition(
             MethodTree methodTree,
