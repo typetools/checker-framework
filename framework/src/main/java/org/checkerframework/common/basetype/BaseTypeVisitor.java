@@ -698,7 +698,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.warning(
                                 key,
-                                amToSimpleName(contract.contractAnnotation),
+                                contract.contractAnnotation
+                                        .getAnnotationType()
+                                        .asElement()
+                                        .getSimpleName(),
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
@@ -708,16 +711,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
         }
-    }
-
-    /** Return the simple name of an annotation, as in "@Nullable". */
-    private static String amToSimpleName(AnnotationMirror am) {
-        String annoName = am.toString();
-        int periodPos = annoName.lastIndexOf(".");
-        if (periodPos != 0) {
-            annoName = annoName.substring(periodPos + 1);
-        }
-        return "@" + annoName;
     }
 
     /** Standardize a type qualifier annotation obtained from a contract. */
@@ -793,7 +786,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.postcondition.not.satisfied",
-                                amToSimpleName(contractAnnotation),
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
                                 expression.toString()),
                         methodTree);
             }
@@ -864,7 +857,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.conditional.postcondition.not.satisfied",
-                                amToSimpleName(contractAnnotation),
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
                                 expression.toString()),
                         returnStmt.getTree());
             }
