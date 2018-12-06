@@ -1,7 +1,7 @@
 %\htmlhr
 % Reinstate when lists are supported:
-% \chapter{Index Checker for sequence bounds (arrays, strings, lists)\label{index-checker}}
-\chapter{Index Checker for sequence bounds (arrays and strings)\label{index-checker}}
+% \chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
+\chapterAndLabel{Index Checker for sequence bounds (arrays and strings)}{index-checker}
 
 The Index Checker warns about potentially out-of-bounds accesses to sequence
 data structures, such as arrays
@@ -75,7 +75,7 @@ Here is how to declare a length-2 array of length-4 arrays:
 \end{Verbatim}
 
 
-\section{Index Checker structure and annotations\label{index-annotations}}
+\sectionAndLabel{Index Checker structure and annotations}{index-annotations}
 
 Internally, the Index Checker computes information about integers that
 might be indices:
@@ -192,7 +192,7 @@ annotations, each from a different type system:
 
 \end{description}
 
-\section{Lower bounds\label{index-lowerbound}}
+\sectionAndLabel{Lower bounds}{index-lowerbound}
 
 The Index Checker issues an error when
 a sequence is indexed by an integer that might be negative.
@@ -242,7 +242,7 @@ qualifiers:
 \end{figure}
 
 
-\section{Upper bounds\label{index-upperbound}}
+\sectionAndLabel{Upper bounds}{index-upperbound}
 
 The Index Checker issues an error when a sequence index might be
 too high. To do this, it maintains information about which expressions are
@@ -360,7 +360,7 @@ in the example above, then \code{start + x} is \code{@IndexFor("array")}. If \co
 \code{@LessThan("end")}, then \code{y - start} is \code{@IndexFor("this")}.
 Finally, \code{end - start} is \code{@IndexOrHigh("this")}.
 
-\section{Sequence minimum lengths\label{index-minlen}}
+\sectionAndLabel{Sequence minimum lengths}{index-minlen}
 
 The Index Checker estimates, for each sequence expression, how long its value
 might be at run time by computing a minimum length that
@@ -451,7 +451,7 @@ that ensures that a certain sequence has a minimum length:
   with at least \code{targetValue} elements.
 \end{description}
 
-\section{Sequences of the same length\label{index-samelen}}
+\sectionAndLabel{Sequences of the same length}{index-samelen}
 
 The Index Checker determines whether two or more sequences have the same length.
 This enables it to verify that all the indexing operations are safe in code
@@ -494,7 +494,7 @@ When needed, you can specify which sequences have the same length using the foll
 \end{description}
 
 
-\section{Binary search indices\label{index-searchindex}}
+\sectionAndLabel{Binary search indices}{index-searchindex}
 
 The JDK's
 \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}
@@ -536,7 +536,7 @@ The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) h
 \end{description}
 
 
-\section{Substring indices\label{index-substringindex}}
+\sectionAndLabel{Substring indices}{index-substringindex}
 
 The methods
 \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
@@ -620,7 +620,7 @@ qualifiers:
 \end{description}
 
 
-\subsection{The need for the \<@SubstringIndexFor> annotation\label{index-substringindex-justification}}
+\subsectionAndLabel{The need for the \<@SubstringIndexFor> annotation}{index-substringindex-justification}
 
 No other annotation supported by the Index Checker precisely represents the
 possible return values of methods
@@ -683,7 +683,7 @@ the example type-check without false positives, a new annotation such as
 \<@SubstringIndexFor\allowbreak(value = "receiver", offset = "substring.length()-1")>
 is necessary.
 
-\section{Inequalities\label{index-inequalities}}
+\sectionAndLabel{Inequalities}{index-inequalities}
 
 The Index Checker estimates which expression's values are less than other expressions' values.
 
@@ -704,7 +704,7 @@ The Index Checker estimates which expression's values are less than other expres
 
 \end{description}
 
-\section{Annotating fixed-size data structures\label{index-annotating-fixed-size}}
+\sectionAndLabel{Annotating fixed-size data structures}{index-annotating-fixed-size}
 
 The Index Checker has built-in support for Strings and arrays.
 You can add support for additional fixed-size data structures by writing

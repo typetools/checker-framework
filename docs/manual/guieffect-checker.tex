@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{GUI Effect Checker\label{guieffect-checker}}
+\chapterAndLabel{GUI Effect Checker}{guieffect-checker}
 
 One of the most prevalent GUI-related bugs is \emph{invalid UI update} or \emph{invalid thread access}:  accessing the UI directly from a
 background thread.
@@ -94,7 +94,7 @@ The GUI Effect Checker's annotations fall into three categories:
 \end{itemize}
 
 
-\section{GUI effect annotations\label{guieffect-annotations}}
+\sectionAndLabel{GUI effect annotations}{guieffect-annotations}
 
 There are two primary GUI effect annotations:
 \begin{itemize}
@@ -116,7 +116,7 @@ call a \code{@SafeEffect} method anywhere it is permitted to call a
 \centerline{\code{@SafeEffect} $\prec$ \code{@UIEffect}}
 
 
-\section{What the GUI Effect Checker checks\label{guieffect-checks}}
+\sectionAndLabel{What the GUI Effect Checker checks}{guieffect-checks}
 
 The GUI Effect Checker ensures that only the UI thread accesses UI objects.
 This prevents GUI errors such
@@ -156,7 +156,7 @@ issues a warning (not an error).
 % dispatching code to run on the UI thread (in which case the code may have the \code{@UIEffect}).
 
 
-\section{Running the GUI Effect Checker\label{guieffect-running}}
+\sectionAndLabel{Running the GUI Effect Checker}{guieffect-running}
 
 The GUI Effect Checker can be invoked by running the following command:
 \begin{Verbatim}
@@ -164,7 +164,7 @@ The GUI Effect Checker can be invoked by running the following command:
 \end{Verbatim}
 
 
-\section{Annotation defaults\label{guieffect-defaults}}
+\sectionAndLabel{Annotation defaults}{guieffect-defaults}
 
 The default method annotation is \code{@SafeEffect}, since most code in most programs is not related
 to the UI\@.  This also means that typically, code that is unrelated to the UI need not be annotated
@@ -199,7 +199,7 @@ the parent's effect.  Methods of the anonymous inner class that are not inherite
 follow the standard defaulting rules.
 
 
-\section{Polymorphic effects\label{guieffect-polymorphism}}
+\sectionAndLabel{Polymorphic effects}{guieffect-polymorphism}
 
 Sometimes a type is reused for both UI-specific and background-thread work.  A good example is the
 \code{Runnable} interface, which is used both for creating new background threads (in which case the
@@ -220,7 +220,7 @@ To \emph{instantiate} a generic type, you write its name along with a type
 argument; for example, \code{List<Date> myDates;}.
 
 
-\subsection{Defining an effect-polymorphic type\label{guieffect-polymorphism-defining}}
+\subsectionAndLabel{Defining an effect-polymorphic type}{guieffect-polymorphism-defining}
 
 To declare that a class is effect-polymorphic, annotate its definition with
 \refqualclass{checker/guieffect/qual}{PolyUIType}.
@@ -245,7 +245,7 @@ generic effect, and that when \<Runnable> is instantiated, the effect
 argument will be used as the effect for the \<run> method.
 
 
-\subsection{Using an effect-polymorphic type\label{guieffect-polymorphism-using}}
+\subsectionAndLabel{Using an effect-polymorphic type}{guieffect-polymorphism-using}
 
 To instantiate an effect-polymorphic type, write one of these three type
 qualifiers before a use of the type:
@@ -282,7 +282,7 @@ does not require a type use annotation, although the variable, field, or argumen
 Instead, the GUI Effect Checker will infer the effect qualifier based on the method being called from within the
 members of that specific anonymous class.
 
-\subsection{Subclassing a specific instantiation of an effect-polymorphic type\label{guieffect-subclassing}}
+\subsectionAndLabel{Subclassing a specific instantiation of an effect-polymorphic type}{guieffect-subclassing}
 
 Sometimes you may wish to subclass a specific instantiation of an effect-polymorphic type, just as
 you may extend \code{List<String>}.
@@ -301,7 +301,7 @@ being defined extends or implements.  (This means you cannot write a class that 
 \code{@AlwaysSafe Foo} and a \code{@UI Bar}, but this has not been a problem in our experience.)
 
 
-\subsection{Subtyping with polymorphic effects\label{guieffect-subtyping}}
+\subsectionAndLabel{Subtyping with polymorphic effects}{guieffect-subtyping}
 
 With three effect annotations, we must extend the static sub-effecting relationship:
 
@@ -325,7 +325,7 @@ safe to call in place of a method instantiated according to one of its super-qua
 This allows clients to pass ``safer'' instances of some object type to a given method.
 
 
-\subsubsection{Effect polymorphism and arguments\label{guieffect-overrides}}
+\subsubsectionAndLabel{Effect polymorphism and arguments}{guieffect-overrides}
 
 Sometimes it is useful to have \code{@PolyUI} parameters on a method.  As a trivial example, this
 permits us to specify an identity method that works for both \code{@UI Runnable} and
@@ -411,7 +411,7 @@ permissible.  But when that is done, the polymorphic arguments may no longer be 
 with the receiver.
 
 
-\section{References\label{guieffect-references}}
+\sectionAndLabel{References}{guieffect-references}
 
 The ECOOP 2013 paper ``JavaUI: Effects for Controlling UI Object Access''
     includes some case
