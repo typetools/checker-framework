@@ -6,7 +6,9 @@ public class InnerGenerics {
     class ListInner<T> {}
 
     void testInner1() {
+        // :: warning: (cast.unsafe)
         @Odd ListOuter<String> o = new @Odd ListOuter<String>();
+        // :: warning: (cast.unsafe)
         @Odd ListInner<String> i = new @Odd ListInner<String>();
     }
 

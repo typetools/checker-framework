@@ -6,7 +6,7 @@ class AnonymousClasses {
     private <@H1S1 T extends @H1S1 Comparator<T>> void testGenericAnonymous() {
         // :: error: (type.argument.type.incompatible) :: error: (constructor.invocation.invalid)
         new @H1S1 Gen<T>() {};
-        // :: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible) :: warning: (cast.unsafe)
         new @H1S1 GenInter<T>() {};
     }
 }

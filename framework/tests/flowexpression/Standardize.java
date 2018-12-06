@@ -73,6 +73,7 @@ public class Standardize {
     }
 
     void testNewClassTree() {
+        // :: warning: (cast.unsafe)
         @FlowExp("this.field") Object o = new @FlowExp("field") Object();
     }
 

@@ -287,6 +287,7 @@ public class MethodTest {
     }
 
     public void fail7() {
+        // :: warning: (cast.unsafe)
         @Sibling2 MethodTest inst = new @Sibling2 MethodTest();
         try {
             Class<?> c = MethodTest.class;

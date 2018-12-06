@@ -2372,6 +2372,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     newClassTree);
             return false;
         }
+
+        if (!(atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation))) {
+            checker.report(
+                    Result.warning(
+                            "cast.unsafe", returnType.toString(true), invocation.toString(true)),
+                    newClassTree);
+        }
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?

@@ -13,8 +13,10 @@ public class Varargs {
         // With invariant array subtyping, this will fail, as the main
         // type is a subtype.
         moreVarargs(new String @Odd [1]);
+        // :: warning: (cast.unsafe)
         moreVarargs(new @Odd String(), new @Odd String());
         // :: error: (argument.type.incompatible)
+        // :: warning: (cast.unsafe)
         moreVarargs(new String(), new @Odd String());
         moreVarargs(
                 // :: error: (argument.type.incompatible)

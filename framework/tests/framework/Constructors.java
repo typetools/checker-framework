@@ -5,6 +5,7 @@ public class Constructors {
 
     public void testConstructors() {
         Constructors c = null;
+        // :: warning: (cast.unsafe)
         new @Odd Constructors(c);
     }
 
