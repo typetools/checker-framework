@@ -2373,7 +2373,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return false;
         }
 
-        if (!(atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation))) {
+        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
             checker.report(
                     Result.warning(
                             "cast.unsafe", returnType.toString(true), invocation.toString(true)),
