@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Generics and polymorphism\label{polymorphism}}
+\chapterAndLabel{Generics and polymorphism}{polymorphism}
 
 This chapter describes support for Java generics (also known as
 ``parametric polymorphism'') and polymorphism over type qualifiers.
@@ -8,17 +8,21 @@ Section~\ref{qualifier-polymorphism} describes support for polymorphism over
 type qualifiers.
 
 
-\section{Generics (parametric polymorphism or type polymorphism)\label{generics}}
+\sectionAndLabel{Generics (parametric polymorphism or type polymorphism)}{generics}
 
 The Checker Framework fully supports
-type-qualified Java generic types and methods (also known in the research literature as ``parametric
+type-qualified Java generic types and methods (also known as ``parametric
 polymorphism'').
 When instantiating a generic type,
 clients supply the qualifier along with the type argument, as in
 \code{List<@NonNull String>}.
+When using a type variable \code{T} within the implementation of a generic type,
+typically no type qualifier is written (see Section~\ref{type-variable-use});
+rather, the instantiation of the type parameter is restricted (see
+Section~\ref{generics-instantiation}).
 
 
-\subsection{Raw types\label{generics-raw-types}}
+\subsectionAndLabel{Raw types}{generics-raw-types}
 
 Before running any pluggable type-checker, we recommend that you eliminate
 raw types from your code (e.g., your code should use \code{List<...>} as
@@ -39,7 +43,7 @@ Checker Framework to ignore all subtype tests for type arguments that
 were inferred for a raw type.
 
 
-\subsection{Restricting instantiation of a generic class\label{generics-instantiation}}
+\subsectionAndLabel{Restricting instantiation of a generic class}{generics-instantiation}
 
 When you define a generic class in Java, the \<extends> clause
 of the generic type parameter (known as the ``upper bound'') requires that
@@ -130,7 +134,7 @@ It is an error if the lower bound is not a subtype of the upper bound.
 %END LATEX
 
 
-\subsubsection{Defaults\label{generics-defaults}}
+\subsubsectionAndLabel{Defaults}{generics-defaults}
 
 A generic type parameter or wildcard is written as \code{class
   MyClass<\emph{@LowerBound} T extends \emph{@UpperBound} JavaUpperBound>} or as
@@ -200,14 +204,16 @@ Because of these rules, the recommended style is:
 For further discussion, see Section~\ref{faq-implicit-bounds}.
 
 
-\subsection{Type annotations on a use of a generic type variable\label{type-variable-use}}
+\subsectionAndLabel{Type annotations on a use of a generic type variable}{type-variable-use}
 
 A type annotation on a use of a generic type variable overrides/ignores any type
 qualifier (in the same type hierarchy) on the corresponding actual type
 argument.  For example, suppose that \code{T} is a formal type parameter.
 Then using \code{@Nullable T} within the scope of \code{T} applies the type
 qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}\@.
-This feature is only rarely used.
+This feature is sometimes useful, but more often the implementation of a
+generic type just uses the type variable \code{T}, whose instantiation is
+restricted (see Section~\ref{generics-instantiation}).
 
 Here is an example of applying a type annotation to a generic type
 variable:
@@ -248,7 +254,7 @@ single type qualifier for a concrete Java class or interface.  By contrast,
 a type variable use represents a set of possible types.
 
 
-\subsection{Annotations on wildcards\label{annotations-on-wildcards}}
+\subsectionAndLabel{Annotations on wildcards}{annotations-on-wildcards}
 
 At an instantiation of a generic type, a Java wildcard indicates that some
 constraints are known on the type argument, but the type argument is not known
@@ -321,7 +327,7 @@ Section~\ref{inherited-wildcard-annotations}).
 %% doesn't justify why it is desirable to be able to constrain both the
 %% upper and the lower bound of a type.  If readers believe that, they will
 %% be OK with the syntax.
-% \subsubsection{Type parameter declaration annotation rationale\label{type-parameter-rationale}}
+% \subsubsectionAndLabel{Type parameter declaration annotation rationale}{type-parameter-rationale}
 %
 % It is desirable to be able to constrain both the upper and the lower bound
 % of a type, as in
@@ -342,7 +348,7 @@ Section~\ref{inherited-wildcard-annotations}).
 % single annotation in front of the type variable name or \<?>.
 
 
-\subsection{Examples of qualifiers on a type parameter\label{type-parameter-qualifier-examples}}
+\subsectionAndLabel{Examples of qualifiers on a type parameter}{type-parameter-qualifier-examples}
 
 Recall that \<@Nullable \emph{X}> is a supertype of \<@NonNull \emph{X}>,
 for any \emph{X}\@.
@@ -420,7 +426,7 @@ The differences are more
 significant when the qualifier hierarchy is more complicated than just
 \<@Nullable> and \<@NonNull>.
 
-\subsection{Covariant type parameters\label{covariant-type-parameters}}
+\subsectionAndLabel{Covariant type parameters}{covariant-type-parameters}
 
 Java types are \emph{invariant} in their type parameter.  This means that
 \code{A<X>} is a subtype of \code{B<Y>} only if \<X> is identical to \<Y>.  For
@@ -458,7 +464,7 @@ For example, it would be incorrect to annotate the type parameter of
 operation.
 
 
-\subsection{Method type argument inference and type qualifiers\label{infer-method-type-qualifiers}}
+\subsectionAndLabel{Method type argument inference and type qualifiers}{infer-method-type-qualifiers}
 
 Sometimes method type argument inference does not interact well with
 type qualifiers. In such situations, you might need to provide
@@ -472,7 +478,7 @@ explicit method type arguments, for which the syntax is as follows:
 This uses Java's existing syntax for specifying a method call's type arguments.
 
 
-\subsection{The Bottom type\label{bottom-type}}
+\subsectionAndLabel{The Bottom type}{bottom-type}
 
 Many type systems have a \<*Bottom> type that is used only for the \<null>
 value, dead code, and some erroneous situations.  A programmer should
@@ -488,7 +494,7 @@ public static void addNumbers(List<? super @SignednessBottom Integer> list) { ..
 \end{Verbatim}
 
 
-\section{Qualifier polymorphism\label{qualifier-polymorphism}}
+\sectionAndLabel{Qualifier polymorphism}{qualifier-polymorphism}
 
 The Checker Framework supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
@@ -534,7 +540,7 @@ See Section~\ref{polyall} for a way you can sometimes avoid defining a new
 polymorphic qualifier.
 
 
-\subsection{Examples of using polymorphic qualifiers\label{qualifier-polymorphism-examples}}
+\subsectionAndLabel{Examples of using polymorphic qualifiers}{qualifier-polymorphism-examples}
 
 As an example of the use of \<@PolyNull>, method
 \sunjavadoc{java/lang/Class.html\#cast-java.lang.Object-}{Class.cast}
@@ -585,7 +591,7 @@ then the unification (lub) is \<@Nullable>, and so is the return type.
 
 
 
-\subsection{Relationship to subtyping and generics\label{qualifier-polymorhism-vs-subtyping}}
+\subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorhism-vs-subtyping}
 
 Qualifier polymorphism has the same purpose and plays the same role as
 Java's generics.  You use them in the same cases, such as:
@@ -616,9 +622,9 @@ that is declared to take a \<String> parameter can also be called on an
 \<@Interned String> argument.
 
 
-\subsection{The \code{@PolyAll} qualifier applies to every type system\label{polyall}}
+\subsectionAndLabel{The \code{@PolyAll} qualifier applies to every type system}{polyall}
 
-Each type system has its own polymorphic type qualifier.
+Each type system may have its own polymorphic type qualifier.
 If some method is qualifier-polymorphic over every type qualifier
 hierarchy, then you can use \refqualclass{framework/qual}{PolyAll}.
 This is better than trying to write every \<@Poly*> qualifier on that method.
@@ -644,7 +650,7 @@ no matter what the array's element types are:
 
 %% TODO: Polymorphic qualifiers such as @PolyAll do not yet take an optional argument.
 %
-% \subsection{Multiple instances of polymorphic qualifiers (the index argument)\label{qualifier-polymorphism-multiple-instances}}
+% \subsectionAndLabel{Multiple instances of polymorphic qualifiers (the index argument)}{qualifier-polymorphism-multiple-instances}
 %
 % Each polymorphic qualifier such as \refqualclass{framework/qual}{PolyAll}
 % takes an optional argument so that you can
@@ -736,7 +742,7 @@ no matter what the array's element types are:
 % \end{Verbatim}
 
 
-\subsection{Using multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
+\subsectionAndLabel{Using multiple polymorphic qualifiers in a method signature}{qualifier-polymorphism-multiple-qualifiers}
 
 %% I can't think of a non-clumsy way to say this.
 % Each method containing a polymorphic qualifier is (conceptually) expanded
@@ -802,7 +808,7 @@ such a method is
 \sunjavadoc{java/util/Collections.html\#emptyList--}{Collections.emptyList()}.
 
 
-\subsection{Using a single polymorphic qualifier in a method signature\label{qualifier-polymorphism-single-qualifier}}
+\subsectionAndLabel{Using a single polymorphic qualifier in a method signature}{qualifier-polymorphism-single-qualifier}
 
 As explained in Section~\ref{qualifier-polymorphism-multiple-qualifiers},
 you will usually use a polymorphic qualifier
@@ -814,7 +820,7 @@ but in legacy code it may not be possible for you to change a method to be
 generic.
 
 
-\subsubsection{Using a single polymorphic qualifier on an element type\label{qualifier-polymorphism-element-types}}
+\subsubsectionAndLabel{Using a single polymorphic qualifier on an element type}{qualifier-polymorphism-element-types}
 
 It can make sense to use a polymorphic qualifier just once, on an array or
 generic element type.
@@ -849,7 +855,7 @@ This example uses arrays, but analogous examples exist that
 use collections.
 
 
-\subsubsection{Using a single polymorphic qualifier to indicate all arguments are legal\label{qualifier-polymorphism-top-type}}
+\subsubsectionAndLabel{Using a single polymorphic qualifier to indicate all arguments are legal}{qualifier-polymorphism-top-type}
 
 A single \<@PolyAll> annotation can indicate that any possible value is
 permitted to be passed.  For example:

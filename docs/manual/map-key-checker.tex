@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Map Key Checker\label{map-key-checker}}
+\chapterAndLabel{Map Key Checker}{map-key-checker}
 
 The Map Key Checker tracks which values are keys for which maps.  If variable
 \code{v} has type \code{@KeyFor("m")...}, then the value of \code{v} is a key
@@ -18,7 +18,7 @@ other checkers, in particular the Nullness Checker.
 You can suppress warnings related to map keys with
 \<@SuppressWarnings("keyfor")>; see \chapterpageref{suppressing-warnings}.
 
-\section{Map key annotations\label{map-key-annotations}}
+\sectionAndLabel{Map key annotations}{map-key-annotations}
 
 These qualifiers are part of the Map Key type system:
 
@@ -65,14 +65,14 @@ never be written by a programmer.}
 \label{fig-map-key-keyfor-hierarchy}
 \end{figure}
 
-\section{Default annotations\label{map-key-defaults}}
+\sectionAndLabel{Default annotations}{map-key-defaults}
 
 The \code{null} literal is implicitly annotated with \code{@UnknownKeyFor}.
 If \code{null} were \code{@KeyForBottom}, that would mean that
 \code{null} is guaranteed to be a key for every map (which is not
 necessarily true).
 
-\subsection{Default for lower bounds\label{map-key-defaults-lowerbound}}
+\subsectionAndLabel{Default for lower bounds}{map-key-defaults-lowerbound}
 
 Lower bounds are defaulted to \code{@UnknownKeyFor}.
 However, in \<java.*> packages, the default for lower bounds is
@@ -137,7 +137,7 @@ as in \<MySet2> (and \<Set>).
 
 
 
-\section{Examples\label{map-key-examples}}
+\sectionAndLabel{Examples}{map-key-examples}
 
 The Map Key Checker keeps track of which variables reference keys to
 which maps.  A variable annotated with \<@KeyFor(\emph{mapSet})> can only
@@ -175,7 +175,7 @@ coll.add(x);      // OK
 
 
 
-\section{Inference of @KeyFor annotations\label{map-key-annotations-inference}}
+\sectionAndLabel{Inference of @KeyFor annotations}{map-key-annotations-inference}
 
 Within a method body, you usually do not have to write \<@KeyFor>
 explicitly (except sometimes on type arguments),

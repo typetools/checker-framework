@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Property File Checker\label{propkey-checker}}
+\chapterAndLabel{Property File Checker}{propkey-checker}
 
 The Property File Checker ensures that a property file or resource bundle (both
 of which act like maps from keys to values) is only accessed with valid keys.
@@ -24,7 +24,7 @@ your purposes.
 
 
 
-\section{General Property File Checker\label{genpropkey-checker}}
+\sectionAndLabel{General Property File Checker}{genpropkey-checker}
 
 The general Property File Checker ensures that a resource key is located
 in a specified property file or resource bundle.
@@ -81,7 +81,7 @@ following two command-line options:
 
 
 
-\section{Internationalization Checker (I18n Checker)\label{i18n-checker}}
+\sectionAndLabel{Internationalization Checker (I18n Checker)}{i18n-checker}
 
 The Internationalization Checker, or I18n Checker, verifies that your code is properly
 internationalized.  Internationalization is the process of designing software so that
@@ -127,7 +127,7 @@ used with arguments of the proper type, so that
 \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
 does not fail at run time.
 
-\subsection{Internationalization annotations\label{i18n-annotations}}
+\subsectionAndLabel{Internationalization annotations}{i18n-annotations}
 
 The Internationalization Checker supports two annotations:
 
@@ -147,7 +147,7 @@ You may need to add the \code{@Localized} annotation to more methods in the
 JDK or other libraries, or in your own code.
 
 
-\subsection{Running the Internationalization Checker\label{i18n-running}}
+\subsectionAndLabel{Running the Internationalization Checker}{i18n-running}
 
 The Internationalization Checker can be invoked by running the following
 command:
@@ -172,7 +172,7 @@ or property files using the
 
 
 
-\section{Compiler Message Key Checker\label{compilermsgs-checker}}
+\sectionAndLabel{Compiler Message Key Checker}{compilermsgs-checker}
 
 The Checker Framework uses compiler message keys to output error messages.
 These keys are substituted by localized strings for user-visible error messages.

@@ -137,9 +137,9 @@ public final class TypesUtils {
      */
     public static boolean isAnonymous(TypeMirror type) {
         return (type instanceof DeclaredType)
-                && (((TypeElement) ((DeclaredType) type).asElement())
+                && ((TypeElement) ((DeclaredType) type).asElement())
                         .getNestingKind()
-                        .equals(NestingKind.ANONYMOUS));
+                        .equals(NestingKind.ANONYMOUS);
     }
 
     /**

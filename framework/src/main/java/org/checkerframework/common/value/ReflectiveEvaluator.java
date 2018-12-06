@@ -181,7 +181,7 @@ public class ReflectiveEvaluator {
                 checker.report(
                         Result.warning(
                                 "class.find.failed",
-                                (TreeUtils.elementFromUse(tree)).getEnclosingElement()),
+                                TreeUtils.elementFromUse(tree).getEnclosingElement()),
                         tree);
             }
             return null;
