@@ -437,8 +437,7 @@ subprojects {
                                         "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
 
-                                "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +
-                                        "${configurations.javacJar.asPath}",
+                                "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
                             args += [
