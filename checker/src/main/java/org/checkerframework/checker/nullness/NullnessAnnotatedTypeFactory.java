@@ -80,6 +80,8 @@ public class NullnessAnnotatedTypeFactory
     /** Aliases for {@code @Nonnull}. */
     private static final List<String> NONNULL_ALIASES =
             Arrays.asList(
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/NonNull.java
+                    "androidx.annotation.NonNull",
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
                     "android.annotation.NonNull",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/NonNull.java
@@ -112,6 +114,8 @@ public class NullnessAnnotatedTypeFactory
     /** Aliases for {@code @Nullable}. */
     private static final List<String> NULLABLE_ALIASES =
             Arrays.asList(
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/Nullable.java
+                    "androidx.annotation.Nullable",
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
                     "android.annotation.Nullable",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/Nullable.java
