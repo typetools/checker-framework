@@ -1,4 +1,3 @@
-// @skip-test
 // Test case for issue 278: https://github.com/typetools/checker-framework/issues/278
 
 import org.checkerframework.checker.tainting.qual.Tainted;

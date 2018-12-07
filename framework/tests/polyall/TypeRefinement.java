@@ -1,4 +1,3 @@
-// @skip-test
 import polyall.quals.*;
 import polyall.quals.H1Invalid;
 

@@ -1,4 +1,3 @@
-// @skip-test
 import org.checkerframework.checker.interning.qual.Interned;
 
 public class Creation {

@@ -1,4 +1,3 @@
-// @skip-test
 package pkg2;
 
 import pkg1.Class1;

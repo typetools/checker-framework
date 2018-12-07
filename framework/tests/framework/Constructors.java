@@ -1,4 +1,3 @@
-// @skip-test
 import testlib.util.Odd;
 
 public class Constructors {

@@ -1,4 +1,3 @@
-// @skip-test
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.qual.TypeUseLocation;
