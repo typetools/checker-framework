@@ -1,3 +1,4 @@
+// @skip-test
 import org.checkerframework.common.value.qual.*;
 
 /** Test subtyping, LUB and annotation replacement in special cases. */

@@ -1,3 +1,4 @@
+// @skip-test
 package flowexpression;
 
 import java.io.FileInputStream;

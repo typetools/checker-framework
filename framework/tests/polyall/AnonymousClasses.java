@@ -1,3 +1,4 @@
+// @skip-test
 import java.util.Comparator;
 import polyall.quals.H1S1;
 import polyall.quals.H1S2;

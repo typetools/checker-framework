@@ -1,3 +1,4 @@
+// @skip-test
 import org.checkerframework.common.value.qual.*;
 
 public class StaticExTest {

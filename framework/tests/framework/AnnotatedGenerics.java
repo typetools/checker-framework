@@ -1,3 +1,4 @@
+// @skip-test
 import testlib.util.*;
 
 class AnnotatedGenerics {

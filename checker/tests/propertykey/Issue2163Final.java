@@ -1,3 +1,5 @@
+// @skip-test
+
 import org.checkerframework.checker.propkey.qual.*;
 
 // @C <: @B <: @A

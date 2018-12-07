@@ -1,3 +1,4 @@
+// @skip-test
 import java.lang.reflect.Method;
 import testlib.reflection.qual.ReflectBottom;
 import testlib.reflection.qual.Sibling1;
