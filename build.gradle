@@ -655,7 +655,7 @@ task releaseBuild(type: GradleBuild) {
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
-    description 'Build everything required for a release and runn allTests'
+    description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
