@@ -437,8 +437,7 @@ subprojects {
                                         "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
 
-                                "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +
-                                        "${configurations.javacJar.asPath}",
+                                "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
                             args += [
@@ -655,7 +654,7 @@ task releaseBuild(type: GradleBuild) {
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
-    description 'Build everything required for a release and runn allTests'
+    description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
