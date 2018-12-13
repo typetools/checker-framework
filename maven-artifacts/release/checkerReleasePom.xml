@@ -38,7 +38,7 @@
     <developers>
 
         <developer>
-            <id>Michael Ernst</id>
+            <id>mernst</id>
             <name>Michael Ernst</name>
             <email>mernst@cs.washington.edu</email>
             <url>https://homes.cs.washington.edu/~mernst/</url>
@@ -55,7 +55,7 @@
         </developer>
 
         <developer>
-            <id>Suzanne Millstein</id>
+            <id>smillst</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
             <organization>University of Washington</organization>
