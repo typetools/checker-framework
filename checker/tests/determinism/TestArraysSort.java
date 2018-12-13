@@ -57,6 +57,16 @@ public class TestArraysSort {
         // ::error: assignment.type.incompatible
         @PolyDet("down") int @PolyDet("down") [] tmp = a;
     }
+
+    <T> void testSort9(@Det T @OrderNonDet [] a) {
+        Arrays.sort(a);
+        System.out.println(a);
+    }
+
+    <T extends @Det Object> void testSort10(T @OrderNonDet [] a) {
+        Arrays.sort(a);
+        System.out.println(a);
+    }
 }
 
 class IntComparator implements Comparator<@NonDet Integer> {

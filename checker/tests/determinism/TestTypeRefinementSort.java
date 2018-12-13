@@ -111,4 +111,9 @@ public class TestTypeRefinementSort {
         list.sort(cmp);
         @PolyDet("down") List<@Det T> tmp = list;
     }
+
+    <T extends @Det Object> void sortGeneric4(@OrderNonDet List<T> list, @Det Comparator<T> cmp) {
+        list.sort(cmp);
+        System.out.println(list);
+    }
 }

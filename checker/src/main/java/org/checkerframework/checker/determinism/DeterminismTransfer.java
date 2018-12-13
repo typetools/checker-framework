@@ -245,9 +245,6 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotationMirror annotation) {
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
         for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
-            if (!typeArg.hasAnnotation(annotation)) {
-                return false;
-            }
             if (typeArg.getKind() == TypeKind.TYPEVAR) {
                 AnnotatedTypeMirror typeArgUpperBound =
                         ((AnnotatedTypeVariable) typeArg).getUpperBound();
@@ -256,8 +253,7 @@ public class DeterminismTransfer extends CFTransfer {
                 if (!AnnotationUtils.areSame(typevarAnnotation, annotation)) {
                     return false;
                 }
-            }
-            if (typeArg.getKind() == TypeKind.WILDCARD) {
+            } else if (typeArg.getKind() == TypeKind.WILDCARD) {
                 AnnotatedTypeMirror typeArgExtendsBound =
                         ((AnnotatedTypeMirror.AnnotatedWildcardType) typeArg).getExtendsBound();
                 AnnotationMirror typevarAnnotation =
@@ -265,6 +261,8 @@ public class DeterminismTransfer extends CFTransfer {
                 if (!AnnotationUtils.areSame(typevarAnnotation, annotation)) {
                     return false;
                 }
+            } else if (!typeArg.hasAnnotation(annotation)) {
+                return false;
             }
         }
         return true;
@@ -284,15 +282,14 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotatedArrayType type,
             AnnotationMirror annotation) {
         AnnotatedTypeMirror componentType = type.getComponentType();
-        if (!componentType.hasAnnotation(annotation)) {
-            return false;
-        }
         if (componentType.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeMirror componentUpperBound =
                     ((AnnotatedTypeVariable) componentType).getUpperBound();
             if (!componentUpperBound.hasAnnotation(annotation)) {
                 return false;
             }
+        } else if (!componentType.hasAnnotation(annotation)) {
+            return false;
         }
         return true;
     }
