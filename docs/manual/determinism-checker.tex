@@ -166,6 +166,26 @@ may not be annotated as \code{@OrderNonDet}.
 % }
 % \end{verbatim}
 
+\subsection{Sorting\label{determinism-sorting}}
+If the ordering of elements in a collection is unknown, sorting it should put
+them in a deterministic order. Thus, the Determinism Checker automatically
+performs type refinement for the following methods: \code{Arrays.sort},
+\code{Collections.sort} and the \code{sort} method in the \code{List} interface.
+For this to occur, the element type of the collection must be \code{@Det}. Then,
+if the collection type is \code{@OrderNonDet} the sorted collection will be
+refined to \code{@Det}. If the collection type is \code{@PolyDet}, it will be
+refined to \code{@PolyDet("down")}.
+
+This allows deterministic or \code{@PolyDet("down")} results on collections that
+aren't strictly determistic. For example, the following code type checks:
+
+\begin{Verbatim}
+    public static @Det int min(@OrderNonDet List<@Det Integer> list) {
+        Collections.sort(list);
+        return list.get(0);
+    }
+\end{Verbatim}
+
 
 \section{Controlling polymorphism\label{determinism-polymorphism}}
 
