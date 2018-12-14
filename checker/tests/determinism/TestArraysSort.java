@@ -38,6 +38,35 @@ public class TestArraysSort {
         @NonDet IntComparator c = new @NonDet IntComparator();
         Arrays.sort(a, c);
     }
+
+    void testSort6(
+            @OrderNonDet List<@Det Integer> @OrderNonDet [] a,
+            @Det Comparator<@OrderNonDet List<@Det Integer>> c) {
+        Arrays.sort(a, c);
+        // ::error: argument.type.incompatible
+        System.out.println(a[0]);
+    }
+
+    void testSort7(@Det int @PolyDet [] a) {
+        Arrays.sort(a);
+        @Det int @PolyDet("down") [] tmp = a;
+    }
+
+    void testSort8(@PolyDet int @PolyDet [] a) {
+        Arrays.sort(a);
+        // ::error: assignment.type.incompatible
+        @PolyDet("down") int @PolyDet("down") [] tmp = a;
+    }
+
+    <T> void testSort9(@Det T @OrderNonDet [] a) {
+        Arrays.sort(a);
+        System.out.println(a);
+    }
+
+    <T extends @Det Object> void testSort10(T @OrderNonDet [] a) {
+        Arrays.sort(a);
+        System.out.println(a);
+    }
 }
 
 class IntComparator implements Comparator<@NonDet Integer> {
