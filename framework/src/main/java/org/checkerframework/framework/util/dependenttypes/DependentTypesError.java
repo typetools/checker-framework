@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.javacutil.BugInCF;
 
 // TODO: The design is gross, both because this is returned instead of thrown, and because errors
 // are propagated in strings and then unparsed later.  The Checker Framework should report the
@@ -33,26 +34,31 @@ public class DependentTypesError {
     }
 
     /** How to format warnings about use of formal parameter name. */
-    private static final String USE_FORMAL_PARAM_NUMBER_STRING = "Use \"#%d\" rather than \"%s\"";
+    public static final String FORMAL_PARAM_NAME_STRING = "Use \"#%d\" rather than \"%s\"";
     /** Matches warnings about use of formal parameter name. */
-    private static final Pattern USE_FORMAL_PARAM_NUMBER_PATTERN =
-            Pattern.compile("^Use \"#\\d+\" rather than \"([a-zA-Z_$][a-zA-Z0-9_$]*)\"$");
-    /** Returns true if the string is a warning about use of formal parameter name. */
-    private boolean isFormalParamNameError(String expression) {
-        return USE_FORMAL_PARAM_NUMBER_PATTERN.matcher(expression).matches();
-    }
+    private static final Pattern FORMAL_PARAM_NAME_PATTERN =
+            Pattern.compile(
+                    "^'([a-zA-Z_$][a-zA-Z0-9_$]*)' because (Use \"#\\d+\" rather than \"\\1\")$");
 
     /** The expression that is unparseable or otherwise problematic. */
     public final String expression;
     /** An error message about that expression. */
     public final String error;
 
+    /**
+     * Create a DependentTypesError for the given expression and error message.
+     *
+     * @param expression the incorrect Java expression
+     * @param error an error message about the expression
+     */
     public DependentTypesError(String expression, String error) {
         this.expression = expression;
         this.error = error;
     }
 
+    /** Create a DependentTypesError for the given expression and exception. */
     public DependentTypesError(String expression, FlowExpressionParseException e) {
+        this.expression = expression;
         StringBuilder buf = new StringBuilder();
         List<Result.DiagMessage> msgs = e.getResult().getDiagMessages();
 
@@ -60,19 +66,20 @@ public class DependentTypesError {
             buf.append(msg.getArgs()[0]);
         }
         this.error = buf.toString();
-        this.expression = expression;
     }
 
-    /** Create a DependentTypesError by parsing a printed one. */
-    public DependentTypesError(String error) {
-        Matcher matcher = ERROR_PATTERN.matcher(error);
+    /**
+     * Create a DependentTypesError by parsing a printed one.
+     *
+     * @param formattedError the toString() representation of a DependentTypesError
+     */
+    public static DependentTypesError unparse(String formattedError) {
+        Matcher matcher = ERROR_PATTERN.matcher(formattedError);
         if (matcher.matches()) {
             assert matcher.groupCount() == 2;
-            this.expression = matcher.group(1);
-            this.error = matcher.group(2);
+            return new DependentTypesError(matcher.group(1), matcher.group(2));
         } else {
-            this.expression = "";
-            this.error = error;
+            throw new BugInCF("Cannot unparse: " + formattedError);
         }
     }
 
@@ -102,10 +109,14 @@ public class DependentTypesError {
         return String.format(FORMAT_STRING, expression, error);
     }
 
-    /** Like toString, but uses better formatting sometimes. */
+    /**
+     * Like toString, but uses better formatting sometimes. Use this only for the final output,
+     * because of the design that hides error messages in toString().
+     */
     public String format() {
-        if (isFormalParamNameError(error)) {
-            return error;
+        Matcher m = FORMAL_PARAM_NAME_PATTERN.matcher(error);
+        if (m.matches()) {
+            return m.group(2);
         }
         return toString();
     }

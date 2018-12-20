@@ -17,6 +17,8 @@ import java.util.function.IntUnaryOperator;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Supplier;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
 public interface IntStream extends BaseStream<Integer,IntStream> {
     IntStream filter(IntPredicate arg0);
     IntStream map(IntUnaryOperator arg0);
@@ -31,6 +33,7 @@ public interface IntStream extends BaseStream<Integer,IntStream> {
     IntStream skip(long arg0);
     void forEach(IntConsumer arg0);
     void forEachOrdered(IntConsumer arg0);
+    @SideEffectFree
     int[] toArray();
     int reduce(int arg0, IntBinaryOperator arg1);
     OptionalInt reduce(IntBinaryOperator arg0);
@@ -54,8 +57,10 @@ public interface IntStream extends BaseStream<Integer,IntStream> {
     @Override
     IntStream parallel();
     @Override
+    @SideEffectFree
     PrimitiveIterator.OfInt iterator();
     @Override
+    @SideEffectFree
     Spliterator.OfInt spliterator();
     static Builder builder() { throw new RuntimeException("skeleton method"); }
     static IntStream empty() { throw new RuntimeException("skeleton method"); }

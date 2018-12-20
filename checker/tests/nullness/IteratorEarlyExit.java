@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class IteratorEarlyExit {
     public static void m1() {
-        List<String> array = new ArrayList<String>();
+        List<String> array = new ArrayList<>();
         String local = null;
         for (String str : array) {
             local = str;
@@ -16,7 +16,7 @@ public class IteratorEarlyExit {
     }
 
     public static void m2() {
-        List<String> array = new ArrayList<String>();
+        List<String> array = new ArrayList<>();
         String local = null;
         for (String str : array) {
             local = str;
@@ -26,7 +26,7 @@ public class IteratorEarlyExit {
     }
 
     public static void m3() {
-        List<String> array = new ArrayList<String>();
+        List<String> array = new ArrayList<>();
         Object local = new Object();
         for (String str : array) {
             // :: error: (dereference.of.nullable)

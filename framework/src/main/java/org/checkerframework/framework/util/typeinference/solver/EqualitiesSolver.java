@@ -345,11 +345,9 @@ public class EqualitiesSolver {
         }
 
         // add all the annotations from the primaries
-        final AnnotationMirrorSet foundHierarchies = new AnnotationMirrorSet();
         for (final AnnotationMirror top : missingAnnos) {
             final AnnotationMirror anno = primaries.get(top);
             if (anno != null) {
-                foundHierarchies.add(top);
                 mergedType.replaceAnnotation(anno);
             }
         }

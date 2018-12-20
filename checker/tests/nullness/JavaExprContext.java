@@ -20,7 +20,7 @@ public class JavaExprContext {
     // be tested as field initializers.
 
     public static class staticGraphClass {
-        private Map<String, Integer> adjList = new HashMap<String, Integer>();
+        private Map<String, Integer> adjList = new HashMap<>();
 
         public boolean addEdge(@KeyFor("adjList") String source) {
             return true;
@@ -37,7 +37,7 @@ public class JavaExprContext {
     }
 
     public class nonstaticGraphClass {
-        private Map<String, Integer> adjList = new HashMap<String, Integer>();
+        private Map<String, Integer> adjList = new HashMap<>();
 
         public boolean addEdge(@KeyFor("adjList") String source) {
             return true;

@@ -85,8 +85,7 @@ class ClassNameValidator extends BaseTypeValidator {
      */
     private boolean isJavaIdentifier(String identifier) {
         char[] identifierChars = identifier.toCharArray();
-        if (!(identifierChars.length > 0
-                && (Character.isJavaIdentifierStart(identifierChars[0])))) {
+        if (!(identifierChars.length > 0 && Character.isJavaIdentifierStart(identifierChars[0]))) {
             return false;
         }
         for (int i = 1; i < identifierChars.length; i++) {

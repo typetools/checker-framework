@@ -135,10 +135,11 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *
  * <p>Type system checker writers may need to subclass this class, to add implicit and default
  * qualifiers according to the type system semantics. Subclasses should especially override {@link
- * AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)} and {@link
- * #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. (Also, {@link
- * #addDefaultAnnotations(AnnotatedTypeMirror)} adds annotations, but that method is a work around
- * for Issue 979.)
+ * #addComputedTypeAnnotations(Element, AnnotatedTypeMirror)} and {@link
+ * #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)} to handle implicit annotations. (Also,
+ * {@link #addDefaultAnnotations(AnnotatedTypeMirror)} adds annotations, but that method is a
+ * workaround for <a href="https://github.com/typetools/checker-framework/issues/979">Issue
+ * 979</a>.)
  *
  * @checker_framework.manual #creating-a-checker How to write a checker plug-in
  */
@@ -1279,9 +1280,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // **********************************************************************
 
     /**
-     * Adds implicit annotations to a type obtained from a {@link Tree}. By default, this method
-     * does nothing. Subclasses should use this method to implement implicit annotations specific to
-     * their type systems.
+     * Changes annotations on a type obtained from a {@link Tree}. By default, this method does
+     * nothing. GenericAnnotatedTypeFactory uses this method to implement implicit annotations,
+     * defaulting, and inference (flow-sensitive type refinement). Its subclasses usually override
+     * it only to customize implicit annotations.
+     *
+     * <p>Subclasses that override this method should also override {@link
+     * #addComputedTypeAnnotations(Element, AnnotatedTypeMirror)}.
      *
      * @param tree an AST node
      * @param type the type obtained from {@code tree}
@@ -1291,9 +1296,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds implicit annotations to a type obtained from a {@link Element}. By default, this method
-     * does nothing. Subclasses should use this method to implement implicit annotations specific to
-     * their type systems.
+     * Changes annotations on a type obtained from an {@link Element}. By default, this method does
+     * nothing. GenericAnnotatedTypeFactory uses this method to implement defaulting.
+     *
+     * <p>Subclasses that override this method should also override {@link
+     * #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
      *
      * @param elt an element
      * @param type the type obtained from {@code elt}
@@ -1304,7 +1311,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Adds default annotations to {@code type}. This method should only be used in places where the
-     * correct annotations cannot be compute because of uninferred type arguments. (See {@link
+     * correct annotations cannot be computed because of uninferred type arguments. (See {@link
      * AnnotatedWildcardType#isUninferredTypeArgument()}.)
      *
      * @param type annotated type to which default annotations are added
@@ -2210,36 +2217,45 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedDeclaredType
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-        if (TreeUtils.isDiamondTree(newClassTree)) {
-            AnnotatedDeclaredType type =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-            if (((com.sun.tools.javac.code.Type) type.actualType)
-                    .tsym
-                    .getTypeParameters()
-                    .nonEmpty()) {
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    AnnotatedTypeMirror ctxtype = ctx.second;
-                    fromNewClassContextHelper(type, ctxtype);
-                }
-            }
-            return type;
-        } else if (newClassTree.getClassBody() != null) {
-            AnnotatedDeclaredType type =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+        AnnotatedDeclaredType type;
+        if (newClassTree.getClassBody() != null) {
+            type = (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
             // If newClassTree creates an anonymous class, then annotations in this location:
             //   new @HERE Class() {}
             // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
             List<? extends AnnotationTree> annos =
                     newClassTree.getClassBody().getModifiers().getAnnotations();
             type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
-            return type;
         } else {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
-            return (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
+            type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
         }
+
+        if (TreeUtils.isDiamondTree(newClassTree)) {
+            // When the diamond operator is used, fromTypeTree() above does not appropriately
+            // populate the type arguments on the type. To do this, we need to create the type
+            // mirror again, using toAnnotatedType(). However, this does not populate any
+            // annotations -- so we need to take these from the fromTypeTree() mirror.
+            AnnotatedDeclaredType typeWithInferences =
+                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+            typeWithInferences.addAnnotations(type.getAnnotations());
+
+            if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
+                    .tsym
+                    .getTypeParameters()
+                    .nonEmpty()) {
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    AnnotatedTypeMirror ctxtype = ctx.second;
+                    fromNewClassContextHelper(typeWithInferences, ctxtype);
+                }
+            }
+
+            return typeWithInferences;
+        }
+        return type;
     }
 
     // This method extracts the ugly hacky parts.

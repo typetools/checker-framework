@@ -11,10 +11,10 @@ public class Issue459 {
     }
 
     void f(Iface<Object, Object> arg, @NonNull String nnString) {
-        final Generic<String, Integer> obj = new Generic<String, Integer>();
+        final Generic<String, Integer> obj = new Generic<>();
         arg.foo(obj);
 
-        final Generic<@Nullable String, Integer> obj2 = new Generic<@Nullable String, Integer>();
+        final Generic<@Nullable String, Integer> obj2 = new Generic<>();
         arg.foo2(obj2, nnString);
     }
 }

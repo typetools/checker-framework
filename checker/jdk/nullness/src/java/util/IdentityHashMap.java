@@ -31,6 +31,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -367,6 +369,7 @@ public class IdentityHashMap<K, V>
      * @see     #containsValue(Object)
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
@@ -439,6 +442,7 @@ public class IdentityHashMap<K, V>
      * @see     #get(Object)
      * @see     #containsKey(Object)
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public V put(K key, V value) {
         Object k = maskNull(key);
         Object[] tab = table;
@@ -991,6 +995,7 @@ public class IdentityHashMap<K, V>
     }
 
     private class KeySet extends AbstractSet<K> {
+        @SideEffectFree
         public Iterator<K> iterator() {
             return new KeyIterator();
         }
@@ -1030,10 +1035,12 @@ public class IdentityHashMap<K, V>
                 result += System.identityHashCode(key);
             return result;
         }
+        @SideEffectFree
         public Object[] toArray() {
             return toArray(new Object[0]);
         }
         @SuppressWarnings("unchecked")
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             int expectedModCount = modCount;
             int size = size();
@@ -1062,6 +1069,7 @@ public class IdentityHashMap<K, V>
             return a;
         }
 
+        @SideEffectFree
         public Spliterator<K> spliterator() {
             return new KeySpliterator<>(IdentityHashMap.this, 0, -1, 0, 0);
         }
@@ -1097,6 +1105,7 @@ public class IdentityHashMap<K, V>
     }
 
     private class Values extends AbstractCollection<V> {
+        @SideEffectFree
         public Iterator<V> iterator() {
             return new ValueIterator();
         }
@@ -1118,10 +1127,12 @@ public class IdentityHashMap<K, V>
         public void clear() {
             IdentityHashMap.this.clear();
         }
+        @SideEffectFree
         public Object[] toArray() {
             return toArray(new Object[0]);
         }
         @SuppressWarnings("unchecked")
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             int expectedModCount = modCount;
             int size = size();
@@ -1149,6 +1160,7 @@ public class IdentityHashMap<K, V>
             return a;
         }
 
+        @SideEffectFree
         public Spliterator<V> spliterator() {
             return new ValueSpliterator<>(IdentityHashMap.this, 0, -1, 0, 0);
         }
@@ -1202,6 +1214,7 @@ public class IdentityHashMap<K, V>
     }
 
     private class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator();
         }
@@ -1240,11 +1253,13 @@ public class IdentityHashMap<K, V>
             return modified;
         }
 
+        @SideEffectFree
         public Object[] toArray() {
             return toArray(new Object[0]);
         }
 
         @SuppressWarnings("unchecked")
+        @SideEffectFree
         public <T> T[] toArray(T[] a) {
             int expectedModCount = modCount;
             int size = size();
@@ -1273,6 +1288,7 @@ public class IdentityHashMap<K, V>
             return a;
         }
 
+        @SideEffectFree
         public Spliterator<Map.Entry<K,V>> spliterator() {
             return new EntrySpliterator<>(IdentityHashMap.this, 0, -1, 0, 0);
         }

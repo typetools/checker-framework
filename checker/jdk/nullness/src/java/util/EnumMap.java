@@ -29,10 +29,13 @@ import java.util.Map.Entry;
 import sun.misc.SharedSecrets;
 
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * A specialized {@link Map} implementation for use with enum type keys.  All
@@ -227,6 +230,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *            key
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(@Nullable Object key) {
         return isValidKey(key) && vals[((Enum<?>)key).ordinal()] != null;
     }
@@ -272,6 +276,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *     <tt>null</tt> with the specified key.)
      * @throws NullPointerException if the specified key is null
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable V put(K key, V value) {
         typeCheck(key);
 
@@ -400,6 +405,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
     }
 
     private class KeySet extends AbstractSet<K> {
+        @SideEffectFree
         public Iterator<K> iterator() {
             return new KeyIterator();
         }
@@ -440,6 +446,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
     }
 
     private class Values extends AbstractCollection<V> {
+        @SideEffectFree
         public Iterator<V> iterator() {
             return new ValueIterator();
         }
@@ -484,6 +491,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
     }
 
     private class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator();
         }
@@ -506,6 +514,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
         public void clear() {
             EnumMap.this.clear();
         }
+        @SideEffectFree
         public Object[] toArray() {
             return fillEntryArray(new Object[size]);
         }
@@ -515,6 +524,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
             "nullness:override.param.invalid" // Annotation for toArray are technically incorrect. Refer
              // to note on toArray in Collection.java
          })
+        @SideEffectFree
         public <T> @Nullable T[] toArray(@Nullable T[] a) {
             int size = size();
             if (a.length < size)

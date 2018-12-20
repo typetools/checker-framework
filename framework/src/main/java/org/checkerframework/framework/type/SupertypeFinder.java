@@ -405,7 +405,7 @@ class SupertypeFinder {
                     Element elem = types.asElement(arg.getUnderlyingType());
                     if ((elem != null)
                             && (elem.getKind() == ElementKind.TYPE_PARAMETER)
-                            && (mapping.containsKey(elem))) {
+                            && mapping.containsKey(elem)) {
                         AnnotatedTypeMirror other = mapping.get(elem).deepCopy();
                         other.replaceAnnotations(arg.getAnnotationsField());
                         args.add(other);
@@ -428,7 +428,7 @@ class SupertypeFinder {
                 AnnotatedTypeMirror other;
                 if ((elem != null)
                         && (elem.getKind() == ElementKind.TYPE_PARAMETER)
-                        && (mapping.containsKey(elem))) {
+                        && mapping.containsKey(elem)) {
                     other = mapping.get(elem);
                     other.replaceAnnotations(comptype.getAnnotationsField());
                     type.setComponentType(other);
