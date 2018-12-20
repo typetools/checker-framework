@@ -32,8 +32,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Implements framework support for qualifier polymorphism. Works for a particular type system,
- * whose relevant components are passed to the constructor.
+ * Implements framework support for qualifier polymorphism.
  *
  * <p>{@link DefaultQualifierPolymorphism} implements the abstract methods in this class. Subclasses
  * can alter the way instantiations of polymorphic qualifiers are combined.

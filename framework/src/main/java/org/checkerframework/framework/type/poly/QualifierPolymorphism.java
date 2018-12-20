@@ -13,8 +13,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /**
  * Interface to implement qualifier polymorphism.
  *
- * <p>A client instantiates QualifierPolymorphism with respect to some type system.
- *
  * @see PolymorphicQualifier
  * @see AbstractQualifierPolymorphism
  * @see DefaultQualifierPolymorphism
@@ -75,10 +73,6 @@ public interface QualifierPolymorphism {
     /**
      * Resolves polymorphism annotations for the given type.
      *
-     * <p>On entry, {@code type} is the type of a method declaration.
-     *
-     * <p>On exit, {@code type} is the type of the method invocation {@code tree}.
-     *
      * @param tree the tree associated with the type
      * @param type the type to annotate; is side-effected by this method
      */
@@ -86,10 +80,6 @@ public interface QualifierPolymorphism {
 
     /**
      * Resolves polymorphism annotations for the given type.
-     *
-     * <p>On entry, {@code type} is the type of a class declaration.
-     *
-     * <p>On exit, {@code type} is the type of the constructor invocation {@code tree}.
      *
      * @param tree the tree associated with the type
      * @param type the type to annotate; is side-effected by this method
