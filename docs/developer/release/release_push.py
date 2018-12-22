@@ -51,7 +51,7 @@ def promote_release(path_to_releases, release_version):
     from_dir = os.path.join(path_to_releases, release_version)
     to_dir = os.path.join(path_to_releases, "..")
     # Trailing slash is crucial.
-    cmd = "rsync -a --omit-dir-times %s/ %s" % (from_dir, to_dir)
+    cmd = "rsync -aJ --omit-dir-times %s/ %s" % (from_dir, to_dir)
     execute(cmd)
 
 def copy_htaccess():
@@ -336,9 +336,8 @@ def main(argv):
         print_step("4b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
-            " * Browse to https://oss.sonatype.org/\n" +
+            " * Browse to https://oss.sonatype.org/#stagingRepositories\n" +
             " * Log in using your Sonatype credentials\n" +
-            " * Click \"Staging Repositories\" or browse to https://oss.sonatype.org/#stagingRepositories\n" +
             " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +

@@ -231,7 +231,7 @@ public class I18nFormatterTreeUtil {
                 AnnotatedTypeFactory atypeFactory) {
             this.tree = tree;
             this.atypeFactory = atypeFactory;
-            List<? extends ExpressionTree> theargs = (tree).getArguments();
+            List<? extends ExpressionTree> theargs = tree.getArguments();
             this.args = null;
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);

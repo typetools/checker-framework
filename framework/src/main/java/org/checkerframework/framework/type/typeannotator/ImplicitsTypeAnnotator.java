@@ -22,11 +22,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * Adds annotations to a type based on the contents of a type. By default, this class honors the
  * {@link ImplicitFor} annotation and applies implicit annotations specified by {@link ImplicitFor}
  * for any type whose visitor is not overridden or does not call {@code super}; it is designed to be
- * invoked from {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Element,
- * org.checkerframework.framework.type.AnnotatedTypeMirror)} and {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
- * org.checkerframework.framework.type.AnnotatedTypeMirror)}.
+ * invoked from {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Element,
+ * AnnotatedTypeMirror)} and {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
+ * AnnotatedTypeMirror)}.
  *
  * <p>{@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips the
  * method receiver of executable types (for interoperability with {@link

@@ -1121,7 +1121,7 @@ public abstract class AnnotatedTypeMirror {
                     && !ElementUtils.isStatic(getElement())
                     // Array constructors should also not have a receiver. Array members have a
                     // getEnclosingElement().getEnclosingElement() of NONE
-                    && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
+                    && !(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
                                     .getSimpleName()
@@ -1132,7 +1132,7 @@ public abstract class AnnotatedTypeMirror {
                                             .getEnclosingElement()
                                             .asType()
                                             .getKind()
-                                    == TypeKind.NONE))
+                                    == TypeKind.NONE)
                     // Top-level constructors don't have a receiver
                     && (getElement().getKind() != ElementKind.CONSTRUCTOR
                             || getElement().getEnclosingElement().getEnclosingElement().getKind()
