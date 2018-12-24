@@ -1008,7 +1008,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         AnnotatedTypeMirror type;
-        if (TreeUtils.isClassTree(tree)) {
+        if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+            type = fromNewClass((NewClassTree) tree);
+        } else if (TreeUtils.isClassTree(tree)) {
             type = fromClass((ClassTree) tree);
         } else if (tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(tree);
