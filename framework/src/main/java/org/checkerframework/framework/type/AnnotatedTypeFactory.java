@@ -1008,15 +1008,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         AnnotatedTypeMirror type;
-        if (tree.getKind() == Tree.Kind.NEW_CLASS) {
-            type = fromNewClass((NewClassTree) tree);
-        } else if (TreeUtils.isClassTree(tree)) {
+        if (TreeUtils.isClassTree(tree)) {
             type = fromClass((ClassTree) tree);
         } else if (tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
+            if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+                List<? extends AnnotationMirror> explicitNewClassAnnotations =
+                        TreeUtils.typeOf(((NewClassTree) tree).getIdentifier())
+                                .getAnnotationMirrors();
+                Set<AnnotationMirror> newClassAnnotations = type.getAnnotations();
+                Set<AnnotationMirror> annotationsToRemove = new HashSet<>();
+                Set<AnnotationMirror> annotationsToAdd = new HashSet<>();
+                for (AnnotationMirror explicitAnno : explicitNewClassAnnotations) {
+                    for (AnnotationMirror newClassAnno : newClassAnnotations) {
+                        if (qualHierarchy.isSubtype(explicitAnno, newClassAnno)
+                                || qualHierarchy.isSubtype(newClassAnno, explicitAnno)) {
+                            annotationsToRemove.add(newClassAnno);
+                            annotationsToAdd.add(explicitAnno);
+                        }
+                    }
+                }
+
+                for (AnnotationMirror rem : annotationsToRemove) {
+                    type.removeAnnotation(rem);
+                }
+                for (AnnotationMirror ad : annotationsToAdd) {
+                    type.addAnnotation(ad);
+                }
+            }
         } else {
             throw new BugInCF(
                     "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
@@ -2232,6 +2254,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
+
             type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
         }
 
