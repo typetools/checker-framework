@@ -1886,8 +1886,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (enclosingClass.getSimpleName().length() != 0 && enclosingMethod != null) {
             AnnotatedDeclaredType methodReceiver;
             if (TreeUtils.isConstructor(enclosingMethod)) {
-                // This seems questionable, since it's the type of `this` after the constructor
-                // returns, not at tree which is inside the constructor.
+                // The type of `this` in a constructor is usually the constructor return type.
+                // Certain type systems, in particular the Initialization Checker, need custom
+                // logic.
                 methodReceiver =
                         (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
             } else {

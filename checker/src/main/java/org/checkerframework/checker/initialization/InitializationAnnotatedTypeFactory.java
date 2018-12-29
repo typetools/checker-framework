@@ -523,7 +523,6 @@ public abstract class InitializationAnnotatedTypeFactory<
             }
         } else {
             // Use Object as a valid super-class.
-            // The createFreeAnnotation method here is an overload of the one just above.
             if (useFbc) {
                 annotation = createFreeAnnotation(Object.class);
             } else {
