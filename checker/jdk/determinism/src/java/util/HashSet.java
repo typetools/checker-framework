@@ -102,7 +102,7 @@ public class HashSet<E>
      * Constructs a new, empty set; the backing <tt>HashMap</tt> instance has
      * default initial capacity (16) and load factor (0.75).
      */
-    public HashSet() {
+    public @OrderNonDet HashSet() {
         map = new HashMap<>();
     }
 
@@ -115,7 +115,7 @@ public class HashSet<E>
      * @param c the collection whose elements are to be placed into this set
      * @throws NullPointerException if the specified collection is null
      */
-    public @PolyDet HashSet(@PolyDet Collection<? extends E> c) {
+    public @OrderNonDet HashSet(@Det Collection<? extends E> c) {
         map = new HashMap<>(Math.max((int) (c.size()/.75f) + 1, 16));
         addAll(c);
     }
@@ -129,7 +129,7 @@ public class HashSet<E>
      * @throws     IllegalArgumentException if the initial capacity is less
      *             than zero, or if the load factor is nonpositive
      */
-    public @PolyDet HashSet(@PolyDet int initialCapacity, @PolyDet float loadFactor) {
+    public @OrderNonDet HashSet(@NonDet int initialCapacity, @NonDet float loadFactor) {
         map = new HashMap<>(initialCapacity, loadFactor);
     }
 
@@ -141,7 +141,7 @@ public class HashSet<E>
      * @throws     IllegalArgumentException if the initial capacity is less
      *             than zero
      */
-    public @PolyDet HashSet(@PolyDet int initialCapacity) {
+    public @OrderNonDet HashSet(@NonDet int initialCapacity) {
         map = new HashMap<>(initialCapacity);
     }
 
@@ -158,7 +158,7 @@ public class HashSet<E>
      * @throws     IllegalArgumentException if the initial capacity is less
      *             than zero, or if the load factor is nonpositive
      */
-    HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+    @OrderNonDet HashSet(@NonDet int initialCapacity, @NonDet float loadFactor, @NonDet boolean dummy) {
         map = new LinkedHashMap<>(initialCapacity, loadFactor);
     }
 
