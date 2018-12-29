@@ -2254,7 +2254,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
-
             type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
         }
 
