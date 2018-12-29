@@ -51,9 +51,14 @@ public interface QualifierPolymorphism {
      * PolymorphicQualifier} meta-annotation on the polymorphic qualifier is returned. Otherwise,
      * null is returned.
      *
+     * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier belongs.
+     * By convention, it is the top qualifier of the hierarchy. The default value {@code
+     * PolymorphicQualifier.class} can be used if there is no ambiguity.
+     *
      * @param qual an annotation
      * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
      *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
+     * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
      */
     static Class<? extends Annotation> getPolymorphicQualifierTop(AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
