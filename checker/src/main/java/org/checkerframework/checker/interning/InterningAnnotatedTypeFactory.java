@@ -104,7 +104,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 type.replaceAnnotation(INTERNED);
             } else if (TreeUtils.isStringConcatenation(node)) {
                 type.replaceAnnotation(TOP);
-            } else if ((type.getKind().isPrimitive())
+            } else if (type.getKind().isPrimitive()
                     || node.getKind() == Tree.Kind.EQUAL_TO
                     || node.getKind() == Tree.Kind.NOT_EQUAL_TO) {
                 type.replaceAnnotation(INTERNED);

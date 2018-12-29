@@ -218,8 +218,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Returns the number of groups in the given regex String. */
-    public static int getGroupCount(@Regex String regex) {
-        return Pattern.compile(regex).matcher("").groupCount();
+    public static int getGroupCount(@Regex String regexp) {
+        return Pattern.compile(regexp).matcher("").groupCount();
     }
 
     /**

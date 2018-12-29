@@ -182,7 +182,7 @@ public class TypeArgInferenceUtil {
             Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
 
             if (enclosing.getKind() == Kind.METHOD) {
-                res = (atypeFactory.getAnnotatedType((MethodTree) enclosing)).getReturnType();
+                res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
             } else {
                 Pair<AnnotatedDeclaredType, AnnotatedExecutableType> fninf =
                         atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);

@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Nullness Checker\label{nullness-checker}}
+\chapterAndLabel{Nullness Checker}{nullness-checker}
 
 If the Nullness Checker issues no warnings for a given program, then
 running that program will never throw a null pointer exception.  This
@@ -28,7 +28,7 @@ Their type hierarchies are completely independent, but they work together
 to provide precise nullness checking.
 
 
-\section{What the Nullness Checker checks\label{nullness-checks}}
+\sectionAndLabel{What the Nullness Checker checks}{nullness-checks}
 
 The checker issues a warning in these cases:
 
@@ -80,14 +80,16 @@ command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
 
-\label{lint-nulltest-section}
+
+\subsectionAndLabel{Nullness Checker optional warnings}{nullness-lint}
+
 \begin{enumerate}
 \item
   Options that control soundness:
 
 \begin{itemize}
 \item
-  \label{lint-nonnullarraycomponents-item}%
+  \label{nullness-lint-nonnullarraycomponents}%
   If you supply the \code{-Alint=forbidnonnullarraycomponents} command-line
   option, then the checker warns if it encounters an array creation
   with a non-null component type.
@@ -101,7 +103,7 @@ command-line option.)
 
 \begin{itemize}
 \item
-  \label{lint-nulltest-item}%
+  \label{nullness-lint-nulltest}%
   If you supply the \code{-Alint=redundantNullComparison} command-line option, then the
   checker warns when a null check is performed against a value that is
   guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
@@ -113,7 +115,7 @@ command-line option.)
 \end{enumerate}
 
 
-\section{Nullness annotations\label{nullness-annotations}}
+\sectionAndLabel{Nullness annotations}{nullness-annotations}
 
 The Nullness Checker uses three separate type hierarchies:  one for nullness,
 one for rawness (Section~\ref{initialization-rawness-checker}),
@@ -123,7 +125,7 @@ type qualifiers, nullness method annotations, rawness type qualifiers, and
 map key type
 qualifiers.
 
-\subsection{Nullness qualifiers\label{nullness-qualifiers}}
+\subsectionAndLabel{Nullness qualifiers}{nullness-qualifiers}
 
 The nullness hierarchy contains these qualifiers:
 
@@ -202,7 +204,7 @@ and one for map keys (\chapterpageref{map-key-checker}).}
 \end{figure}
 
 
-\subsection{Nullness method annotations\label{nullness-method-annotations}}
+\subsectionAndLabel{Nullness method annotations}{nullness-method-annotations}
 
 The Nullness Checker supports several annotations that specify method
 behavior.  These are declaration annotations, not type annotations:  they
@@ -231,7 +233,7 @@ apply to the method itself rather than to some particular type.
 \end{description}
 
 
-\subsection{Initialization qualifiers\label{initialization-qualifiers-overview}}
+\subsectionAndLabel{Initialization qualifiers}{initialization-qualifiers-overview}
 
 The Nullness Checker invokes an Initialization Checker, whose annotations indicate whether
 an object is fully initialized --- that is, whether all of its fields have
@@ -261,7 +263,7 @@ Figure~\ref{fig-rawness-hierarchy} shows its type hierarchy.  For
 details, see Section~\ref{initialization-rawness-checker}.
 
 
-\subsection{Map key qualifiers\label{map-key-qualifiers}}
+\subsectionAndLabel{Map key qualifiers}{map-key-qualifiers}
 
 \begin{description}
 \item[\refqualclass{checker/nullness/qual}{KeyFor}]
@@ -291,9 +293,9 @@ are satisfied:
 If either of these two conditions is violated, then \<mymap.get(mykey)> has
 the possibility of returning \<null>.
 
-\section{Writing nullness annotations\label{writing-nullness-annotations}}
+\sectionAndLabel{Writing nullness annotations}{writing-nullness-annotations}
 
-\subsection{Implicit qualifiers\label{nullness-implicit-qualifiers}}
+\subsectionAndLabel{Implicit qualifiers}{nullness-implicit-qualifiers}
 
 The Nullness Checker
 adds implicit qualifiers, reducing the number of annotations that must
@@ -306,7 +308,7 @@ implementation of \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
 
 
 
-\subsection{Default annotation\label{null-defaults}}
+\subsectionAndLabel{Default annotation}{null-defaults}
 
 Unannotated references are treated as if they had a default annotation.
 The standard defaulting rule is CLIMB-to-top,  described in
@@ -369,7 +371,7 @@ class MyClass {
 % %END LATEX
 
 
-\subsection{Conditional nullness\label{conditional-nullness}}
+\subsectionAndLabel{Conditional nullness}{conditional-nullness}
 
 The Nullness Checker supports a form of conditional nullness types, via the
 \refqualclass{checker/nullness/qual}{EnsuresNonNullIf} method annotations.
@@ -420,7 +422,7 @@ More examples of the use of these annotations appear in the Javadoc for
 \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}.
 
 
-\subsection{Nullness and arrays\label{nullness-arrays}}
+\subsectionAndLabel{Nullness and arrays}{nullness-arrays}
 
 Suppose that you declare an array to contain non-null elements.
 Currently, the Nullness Checker does not verify that all the elements of the
@@ -464,7 +466,7 @@ then write a \<@SuppressWarnings> annotation.
 
 
 
-\subsection{Run-time checks for nullness\label{nullness-runtime-checks}}
+\subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
 
 When you perform a run-time check for nullness, such as \<if (x != null)
 ...>, then the Nullness Checker refines the type of \<x> to
@@ -473,7 +475,7 @@ or until \<x> may be side-effected.  For more details, see
 Section~\ref{type-refinement}.
 
 
-\subsection{Additional details\label{nullness-additional-details}}
+\subsectionAndLabel{Additional details}{nullness-additional-details}
 
 The Nullness Checker does some special checks in certain circumstances, in
 order to soundly reduce the number of warnings that it produces.
@@ -500,7 +502,7 @@ the system properties; the Nullness Checker assumes this bizarre coding
 pattern does not happen.)
 
 
-\subsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
+\subsectionAndLabel{Inference of \code{@NonNull} and \code{@Nullable} annotations}{nullness-inference}
 
 It can be tedious to write annotations in your code.  Tools exist that
 can automatically infer annotations and insert them in your source code.
@@ -543,7 +545,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 
 
-\section{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
+\sectionAndLabel{Suppressing nullness warnings}{suppressing-warnings-nullness}
 
 When the Nullness Checker reports a warning, it's best to change the code
 or its annotations, to eliminate the warning.  Alternately, you can
@@ -586,7 +588,7 @@ suppress warnings; see below.
 % TODO: check whether the SuppressWarnings keys are correct.
 
 
-\subsection{Suppressing warnings with assertions and method calls\label{suppressing-warnings-with-assertions}}
+\subsectionAndLabel{Suppressing warnings with assertions and method calls}{suppressing-warnings-with-assertions}
 
 Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
@@ -641,9 +643,9 @@ the distinction between warning suppression and defensive programming.
 \end{sloppypar}
 
 
-\section{Examples\label{nullness-example}}
+\sectionAndLabel{Examples}{nullness-example}
 
-\subsection{Tiny examples\label{nullness-tiny-examples}}
+\subsectionAndLabel{Tiny examples}{nullness-tiny-examples}
 
 To try the Nullness Checker on a source file that uses the \refqualclass{checker/nullness/qual}{NonNull} qualifier,
 use the following command (where \code{javac} is the Checker Framework compiler that
@@ -678,7 +680,7 @@ The compiler will issue two warnings regarding violation of the semantics of
 % in the \code{NonNullExampleWithWarnings.java} file.
 
 
-\subsection{Example annotated source code\label{nullness-annotated-library}}
+\subsectionAndLabel{Example annotated source code}{nullness-annotated-library}
 
 Some libraries that are annotated with nullness qualifiers are:
 
@@ -699,7 +701,7 @@ Run the command \code{make check-nullness}.
 \end{itemize}
 
 
-\section{Tips for getting started\label{nullness-getting-started}}
+\sectionAndLabel{Tips for getting started}{nullness-getting-started}
 
 Here are some tips about getting started using the Nullness Checker on a
 legacy codebase.  For more generic advice (not specific to the Nullness
@@ -789,7 +791,7 @@ assert var != null : "@AssumeAssertion(nullness)";
 
 
 
-\section{Other tools for nullness checking\label{nullness-related-work}}
+\sectionAndLabel{Other tools for nullness checking}{nullness-related-work}
 
 \newcommand{\linktoNonNull}{\refclass{checker/nullness/qual}{NonNull}}
 \newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
@@ -826,6 +828,7 @@ Section~\ref{declaration-annotations-moved}.
 \hline
  ~android.annotation.NonNull~ \\ \hline
  ~android.support.annotation.NonNull~ \\ \hline
+ ~androidx.annotation.NonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
@@ -850,6 +853,7 @@ $\Rightarrow$
 \hline
  ~android.annotation.Nullable~ \\ \hline
  ~android.support.annotation.Nullable~ \\ \hline
+ ~androidx.annotation.Nullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
@@ -924,7 +928,7 @@ them in fully-qualified form, as \<@android.annotation.NonNull> rather than
 as \<@NonNull>.
 
 
-\subsection{Which tool is right for you?\label{choosing-nullness-tool}}
+\subsectionAndLabel{Which tool is right for you?}{choosing-nullness-tool}
 
 Different tools are appropriate in different circumstances.  Here is a
 brief comparison with FindBugs, but similar points apply to other tools.
@@ -960,7 +964,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 
 
-\subsection{Incompatibility note about FindBugs \tt{@Nullable}\label{findbugs-nullable}}
+\subsectionAndLabel{Incompatibility note about FindBugs \tt{@Nullable}}{findbugs-nullable}
 
 FindBugs has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
 documented in its own
@@ -1056,7 +1060,7 @@ tool like the Checker Framework.)
 %    In the Checker Framework, this corresponds to @Nullable.
 
 
-\subsection{Relationship to \tt{Optional<T>}\label{nullness-vs-optional}}
+\subsectionAndLabel{Relationship to \tt{Optional<T>}}{nullness-vs-optional}
 
 Many null pointer exceptions occur because the programmer forgets to check
 whether a reference is null before dereferencing it.  Java 8's
@@ -1074,7 +1078,7 @@ There are some limitations to the utility of \code{Optional}, which might
 lead to you choose to use regular Java references rather than \<Optional>.
 (For more details, see the article
 \href{https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
-  is better than Java's \<Optional> class''}.)
+  is better than the \<Optional> type''}.)
 
 \begin{itemize}
 \item
@@ -1106,7 +1110,7 @@ using \<Optional>.  The Nullness Checker provides an
 but written for regular possibly-null Java references.
 
 
-\section{Initialization Checker\label{initialization-checker}}
+\sectionAndLabel{Initialization Checker}{initialization-checker}
 
 The Initialization Checker determines whether an object is initialized or
 not.  For any object that is not fully initialized, the Nullness Checker
@@ -1137,18 +1141,20 @@ particular, the Nullness Checker issues a warning for code like this:
 \begin{Verbatim}
   public class MyClass {
     private @NonNull Object f;
-    public MyClass(int x, int y) {
+    public MyClass(int x) {
       // Error because constructor contains no assignment to this.f.
       // By the time the constructor exits, f must be initialized to a non-null value.
     }
-    public MyClass(int x) {
+    public MyClass(int x, int y) {
       // Error because this.f is accessed before f is initialized.
       // At the beginning of the constructor's execution, accessing this.f
       // yields null, even though field f has a non-null type.
       this.f.toString();
+      f = new Object();
     }
     public MyClass(int x, int y, int z) {
       m();
+      f = new Object();
     }
     public void m() {
       // Error because this.f is accessed before f is initialized,
@@ -1174,83 +1180,8 @@ references to \code{this} that escape the constructor (say, by being stored
 in a field or passed to a method before initialization is complete).
 Use of initialization annotations is rare in most code.
 
-\label{underinitialization-examples}
 
-The most common use for the \<@UnderInitialization> annotation is for a
-helper routine that is called by constructor.  For example:
-
-\begin{Verbatim}
-  class MyClass {
-    Object field1;
-    Object field2;
-    Object field3;
-
-    public MyClass(String arg1) {
-      this.field1 = arg1;
-      init_other_fields();
-    }
-
-    // A helper routine that initializes all the fields other than field1.
-    @EnsuresNonNull({"field2", "field3"})
-    private void init_other_fields(@UnderInitialization(Object.class) MyClass this) {
-      field2 = new Object();
-      field3 = new Object();
-    }
-
-    public MyClass(String arg1, String arg2, String arg3) {
-      this.field1 = arg1;
-      this.field2 = arg2;
-      this.field3 = arg3;
-      checkRep();
-    }
-
-    // Verify that the representation invariants are satisfied.
-    // Works as long as the MyClass fields are initialized, even if the receiver's
-    // class is a subclass of MyClass and not all of the subclass fields are initialized.
-    private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
-      ...
-    }
-
-
-  }
-\end{Verbatim}
-
-% Most readers can
-% skip this section on first reading; you can return to it once you have
-% mastered the rest of the Nullness Checker.
-
-At the end of the constructor, \<this> is not fully initialized. Rather,
-it is \<@UnderInitialization(\emph{CurrentClass.class})>.
-The reason is that there might be subclasses with uninitialized fields.
-The following example illustrates this:
-
-\begin{Verbatim}
-class A {
-   @NonNull String a;
-   public A() {
-       a = "";
-       // Now, all fields of A are initialized.
-       // However, if this constructor is invoked as part of 'new B()', then
-       // the fields of B are not yet initialized.
-       // If we would type 'this' as @Initialized, then the following call is valid:
-       foo();
-   }
-   void foo() {}
-}
-
-class B extends A {
-   @NonNull String b;
-   @Override
-   void foo() {
-       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
-       // However, when executing 'new B()', this line throws a null-pointer exception.
-       b.toString();
-   }
-}
-\end{Verbatim}
-
-
-\subsection{Initialization qualifiers\label{initialization-qualifiers}}
+\subsectionAndLabel{Initialization qualifiers}{initialization-qualifiers}
 
 \begin{figure}
 \includeimage{initialization}{4cm}
@@ -1364,7 +1295,7 @@ class C {
 % #105.  Maybe document this?
 
 
-\subsection{How an object becomes initialized\label{becoming-initialized}}
+\subsectionAndLabel{How an object becomes initialized}{becoming-initialized}
 
 Within the constructor,
 \code{this} starts out with \refqualclass{checker/initialization/qual}{UnderInitialization} type.
@@ -1406,7 +1337,83 @@ for all the fields that the helper method assigns.
 % But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
 
 
-\subsection{Partial initialization\label{partial-initialization}}
+\subsectionAndLabel{\code{@UnderInitialization} examples}{underinitialization-examples}
+
+The most common use for the \<@UnderInitialization> annotation is for a
+helper routine that is called by constructor.  For example:
+
+\begin{Verbatim}
+  class MyClass {
+    Object field1;
+    Object field2;
+    Object field3;
+
+    public MyClass(String arg1) {
+      this.field1 = arg1;
+      init_other_fields();
+    }
+
+    // A helper routine that initializes all the fields other than field1.
+    @EnsuresNonNull({"field2", "field3"})
+    private void init_other_fields(@UnderInitialization(Object.class) MyClass this) {
+      field2 = new Object();
+      field3 = new Object();
+    }
+
+    public MyClass(String arg1, String arg2, String arg3) {
+      this.field1 = arg1;
+      this.field2 = arg2;
+      this.field3 = arg3;
+      checkRep();
+    }
+
+    // Verify that the representation invariants are satisfied.
+    // Works as long as the MyClass fields are initialized, even if the receiver's
+    // class is a subclass of MyClass and not all of the subclass fields are initialized.
+    private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
+      ...
+    }
+
+
+  }
+\end{Verbatim}
+
+% Most readers can
+% skip this section on first reading; you can return to it once you have
+% mastered the rest of the Nullness Checker.
+
+At the end of the constructor, \<this> is not fully initialized. Rather,
+it is \<@UnderInitialization(\emph{CurrentClass.class})>.
+The reason is that there might be subclasses with uninitialized fields.
+The following example illustrates this:
+
+\begin{Verbatim}
+class A {
+   @NonNull String a;
+   public A() {
+       a = "";
+       // Now, all fields of A are initialized.
+       // However, if this constructor is invoked as part of 'new B()', then
+       // the fields of B are not yet initialized.
+       // If we would type 'this' as @Initialized, then the following call is valid:
+       foo();
+   }
+   void foo() {}
+}
+
+class B extends A {
+   @NonNull String b;
+   @Override
+   void foo() {
+       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
+       // However, when executing 'new B()', this line throws a null-pointer exception.
+       b.toString();
+   }
+}
+\end{Verbatim}
+
+
+\subsectionAndLabel{Partial initialization}{partial-initialization}
 
 So far, we have discussed initialization as if it is an all-or-nothing property:
 an object is non-initialized until initialization completes, and then it is initialized.  The full truth is a bit more complex:  during the
@@ -1486,7 +1493,7 @@ the type of the object being constructed is:
 \end{enumerate}
 
 
-\subsection{Method calls from the constructor\label{initialization-constructor}}
+\subsectionAndLabel{Method calls from the constructor}{initialization-constructor}
 
 Consider the following incorrect program.
 
@@ -1573,7 +1580,7 @@ initialized, \<this> is fully initialized.
 
 
 
-\subsection{Initialization of circular data structures\label{circular-initialization}}
+\subsectionAndLabel{Initialization of circular data structures}{circular-initialization}
 
 There is one final aspect of the initialization type system to be
 considered:  the rules governing reading and writing to objects that are
@@ -1688,7 +1695,7 @@ consider a doubly linked list:
   }
 \end{Verbatim}
 
-% \paragraph{Example\label{initialization-example}}
+% \paragraphAndLabel{Example}{initialization-example}
 %
 % As another example, consider the following 12 declarations, where class A
 % extends Object and class B extends A:
@@ -1773,10 +1780,10 @@ consider a doubly linked list:
 
 
 
-\subsection{How to handle warnings\label{initialization-warnings}}
+\subsectionAndLabel{How to handle warnings}{initialization-warnings}
 
 
-\subsubsection{``error:  the constructor does not initialize fields: \ldots''\label{initialization-warnings-constructor}}
+\subsubsectionAndLabel{``error:  the constructor does not initialize fields: \ldots''}{initialization-warnings-constructor}
 
 Like any warning, ``error:  the constructor does not initialize fields:
 \ldots'' indicates that either your annotations are incorrect or your code
@@ -1806,7 +1813,7 @@ is buggy.  You can fix either the annotations or the code.
   NullPointerException into a more obscure error.
 \end{itemize}
 
-\subsubsection{``call to \ldots\ is not allowed on the given receiver''\label{initialization-warnings-receiver}}
+\subsubsectionAndLabel{``call to \ldots\ is not allowed on the given receiver''}{initialization-warnings-receiver}
 
 If your code calls an instance method from a constructor, you may see a
 message such as the following:
@@ -1881,10 +1888,10 @@ initialization was actually complete, then the receiver should have type
 \end{sloppypar}
 
 
-\subsection{More details about initialization checking\label{initialization-checking}}
+\subsectionAndLabel{More details about initialization checking}{initialization-checking}
 
 
-\paragraph{Suppressing warnings\label{initialization-checking-suppressing-warnings}}
+\paragraphAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
@@ -1902,7 +1909,7 @@ they are actually the same checker, rather than being two separate checkers
 that are aggregated together.)
 
 
-\paragraph{Use of method annotations\label{initialization-checking-method-annotations}}
+\paragraphAndLabel{Use of method annotations}{initialization-checking-method-annotations}
 
 A method with a non-initialized receiver may assume that a few fields (but not all
 of them) are non-null, and it sometimes sets some more fields to non-null
@@ -1913,7 +1920,7 @@ values.  To express these concepts, use the
 see Section~\ref{nullness-method-annotations}.
 
 
-\paragraph{Source of the type system\label{initialization-checking-type-system}}
+\paragraphAndLabel{Source of the type system}{initialization-checking-type-system}
 
 The type system enforced by the Initialization Checker is known as
 ``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
@@ -1922,11 +1929,11 @@ changes its initialization modifiers (``committed'', ``free'', and
 ``under initialization''.  Our implementation also has several
 enhancements.  For example, it supports partial initialization (the
 argument to the \<@UnknownInitialization> and \<@UnderInitialization>
-annotations.
+annotations).
 
 
 
-\subsection{Rawness Initialization Checker\label{initialization-rawness-checker}}
+\subsectionAndLabel{Rawness Initialization Checker}{initialization-rawness-checker}
 
 The Checker Framework supports two different initialization checkers that
 are integrated with the Nullness Checker.
@@ -2039,7 +2046,7 @@ is called by constructor.  For example:
 % skip this section on first reading; you can return to it once you have
 % mastered the rest of the Nullness Checker.
 
-\subsubsection{Rawness qualifiers\label{rawness-qualifiers}}
+\subsubsectionAndLabel{Rawness qualifiers}{rawness-qualifiers}
 
 \begin{figure}
 \includeimage{rawness}{3.5cm}
@@ -2138,7 +2145,7 @@ class C {
 % #105.  Maybe document this?
 
 
-\subsubsection{How an object becomes non-raw\label{becoming-non-raw}}
+\subsubsectionAndLabel{How an object becomes non-raw}{becoming-non-raw}
 
 Within the constructor,
 \code{this} starts out with \refqualclass{checker/nullness/qual}{Raw} type.
@@ -2184,7 +2191,7 @@ for all the fields that the helper method assigns.
 % But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
 
 
-\subsubsection{Partial initialization\label{rawness-partial-initialization}}
+\subsubsectionAndLabel{Partial initialization}{rawness-partial-initialization}
 
 So far, we have discussed rawness as if it is an all-or-nothing property:
 an object is fully raw until initialization completes, and then it is no
@@ -2280,7 +2287,7 @@ the type of the object being constructed is:
   \<@NonRaw(B.class) B>
 \end{enumerate}
 
-\paragraph{Example\label{rawness-partial-initialization-example}}
+\paragraphAndLabel{Example}{rawness-partial-initialization-example}
 
 As another example, consider the following 12 declarations:
 
@@ -2373,10 +2380,10 @@ types.)
 
 
 
-\subsubsection{More details about rawness checking\label{rawness-checking}}
+\subsubsectionAndLabel{More details about rawness checking}{rawness-checking}
 
 
-\paragraph{Suppressing warnings\label{rawness-checking-suppressing-warnings}}
+\paragraphAndLabel{Suppressing warnings}{rawness-checking-suppressing-warnings}
 
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
@@ -2385,7 +2392,7 @@ You can suppress warnings related to partially-initialized objects with
 \end{sloppypar}
 
 
-\paragraph{Use of method annotations\label{rawness-checking-method-annotations}}
+\paragraphAndLabel{Use of method annotations}{rawness-checking-method-annotations}
 
 A method with a raw receiver often assumes that a few fields (but not all
 of them) are non-null, and sometimes sets some more fields to non-null
@@ -2397,7 +2404,7 @@ see Section~\ref{nullness-method-annotations}.
 
 
 % Should we change the terminology?
-\paragraph{The terminology ``raw''\label{rawness-checking-terminology-raw}}
+\paragraphAndLabel{The terminology ``raw''}{rawness-checking-terminology-raw}
 
 The name ``raw'' comes from a research paper that proposed this
 approach~\cite{FahndrichL2003}.

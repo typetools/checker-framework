@@ -500,8 +500,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitWildcard_Declared(
             AnnotatedWildcardType type1, AnnotatedDeclaredType type2, Void p) {
-        if (type1.atypeFactory.ignoreUninferredTypeArguments
-                && (type1.isUninferredTypeArgument())) {
+        if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {
             return true;
         }
         // TODO: add proper checks
@@ -511,8 +510,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitDeclared_Wildcard(
             AnnotatedDeclaredType type1, AnnotatedWildcardType type2, Void p) {
-        if (type2.atypeFactory.ignoreUninferredTypeArguments
-                && (type2.isUninferredTypeArgument())) {
+        if (type2.atypeFactory.ignoreUninferredTypeArguments && type2.isUninferredTypeArgument()) {
             return true;
         }
         final QualifierHierarchy qualifierHierarchy = type1.atypeFactory.getQualifierHierarchy();

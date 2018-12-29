@@ -1,12 +1,12 @@
 \htmlhr
-\chapter{Signedness Checker\label{signedness-checker}}
+\chapterAndLabel{Signedness Checker}{signedness-checker}
 
 The Signedness Checker guarantees that signed and unsigned values are not mixed
 together in a computation. In addition, it prohibits meaningless operations, such
 as division on an unsigned value.
 
 
-\section{Annotations\label{signedness-checker-annotations}}
+\sectionAndLabel{Annotations}{signedness-checker-annotations}
 
 The Signedness Checker uses type annotations to indicate the signedness that the programmer intends an expression to have.
 
@@ -60,7 +60,7 @@ compared to a signed value, or used in arithmetic operations with a signed
 value, then $v$ should have signed type.
 
 
-\subsection{Default qualifiers\label{signedness-checker-annotations-default-qualifiers}}
+\subsectionAndLabel{Default qualifiers}{signedness-checker-annotations-default-qualifiers}
 
 The only type qualifier that the programmer should need to write is
 \refqualclass{checker/signedness/qual}{Unsigned}.
@@ -81,7 +81,7 @@ Signedness Checker treats it in one of the following ways:
 \end{itemize}
 
 
-\section{Prohibited operations\label{signedness-checker-prohibited-operations}}
+\sectionAndLabel{Prohibited operations}{signedness-checker-prohibited-operations}
 
 The Signedness Checker prohibits the following uses of operators:
 
@@ -110,7 +110,7 @@ For example, it is not permitted to assign a \code{@Signed} expression to an
 \code{@Unsigned} variable or vice versa.
 
 
-\section{Rationale\label{signedness-checker-rationale}}
+\sectionAndLabel{Rationale}{signedness-checker-rationale}
 
 The Signedness Checker prevents misuse of unsigned values in Java code.
 Most Java operations interpret operands as signed.  If applied to unsigned
@@ -144,7 +144,7 @@ These examples illustrate why division and modulus with an unsigned operand
 are illegal.  Other uses of operators are prohibited for similar reasons.
 
 
-\section{Utility routines for manipulating unsigned values\label{signedness-utilities}}
+\sectionAndLabel{Utility routines for manipulating unsigned values}{signedness-utilities}
 
 Class \refclass{checker/signedness}{SignednessUtil} provides static
 utility methods for working with unsigned values.  Some of these

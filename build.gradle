@@ -54,7 +54,7 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.7'
+    version '2.5.8'
 
     repositories {
         mavenCentral()
@@ -310,7 +310,7 @@ subprojects {
     }
 
     dependencies {
-        errorprone group: 'com.google.errorprone', name: 'error_prone_ant', version: '2.2.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.2'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -437,8 +437,7 @@ subprojects {
                                         "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
 
-                                "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +
-                                        "${configurations.javacJar.asPath}",
+                                "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
                             args += [
@@ -514,6 +513,8 @@ subprojects {
                     '-Xep:DefaultCharset:OFF',
                     // Not useful to suggest Splitter; maybe clean up.
                     '-Xep:StringSplitter:OFF',
+                    // Too broad, rejects seemingly-correct code.
+                    '-Xep:EqualsGetClass:OFF',
                     '-Werror',
             ]
         }
@@ -653,7 +654,7 @@ task releaseBuild(type: GradleBuild) {
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
-    description 'Build everything required for a release and runn allTests'
+    description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
     tasks = ['allTests']
