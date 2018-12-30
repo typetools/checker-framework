@@ -698,7 +698,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.warning(
                                 key,
-                                amToSimpleName(contract.contractAnnotation),
+                                contract.contractAnnotation
+                                        .getAnnotationType()
+                                        .asElement()
+                                        .getSimpleName(),
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
@@ -767,7 +770,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param methodTree declaration of the method
      * @param annotation expression's type must have this annotation
-     * @param expression the expression that the postcondition concerns
+     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
+     *     expression}. Used only for diagnostic messages.
+     * @param expression the expression that the postcondition {@code contractAnnotation} concerns
      */
     protected void checkPostcondition(
             MethodTree methodTree,
@@ -791,7 +796,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.postcondition.not.satisfied",
-                                amToSimpleName(contractAnnotation),
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
                                 expression.toString()),
                         methodTree);
             }
@@ -804,6 +809,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param node tree of method with the postcondition
      * @param annotation expression's type must have this annotation
+     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
+     *     expression}. Used only for diagnostic messages.
      * @param expression the expression that the postcondition concerns
      * @param result result for which the postcondition is valid
      */
@@ -860,7 +867,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.conditional.postcondition.not.satisfied",
-                                amToSimpleName(contractAnnotation),
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
                                 expression.toString()),
                         returnStmt.getTree());
             }

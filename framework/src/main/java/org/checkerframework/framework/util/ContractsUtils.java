@@ -77,7 +77,7 @@ public class ContractsUtils {
         /** The annotation that must be on the type of expression as part of this contract. */
         public final AnnotationMirror annotation;
 
-        /** The annotation that expressed this contact; used for diagnostic messages. */
+        /** The annotation that expressed this contract; used for diagnostic messages. */
         public final AnnotationMirror contractAnnotation;
 
         /** The kind of contract: precondition, postcondition, or conditional postcondition. */
@@ -388,12 +388,12 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(requiresAnnotation);
-        if (postcondAnno == null) {
+        AnnotationMirror precondAnno = getAnnotationMirrorOfContractAnnotation(requiresAnnotation);
+        if (precondAnno == null) {
             return result;
         }
         for (String expr : expressions) {
-            result.add(new Precondition(expr, postcondAnno, requiresAnnotation));
+            result.add(new Precondition(expr, precondAnno, requiresAnnotation));
         }
         return result;
     }
