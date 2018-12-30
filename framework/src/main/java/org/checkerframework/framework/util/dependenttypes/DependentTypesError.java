@@ -118,7 +118,6 @@ public class DependentTypesError {
         if (m.matches()) {
             return m.group(2);
         }
-
         return toString();
     }
 }
