@@ -713,16 +713,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Return the simple name of an annotation, as in "@Nullable". */
-    private static String amToSimpleName(AnnotationMirror am) {
-        String annoName = am.toString();
-        int periodPos = annoName.lastIndexOf(".");
-        if (periodPos != 0) {
-            annoName = annoName.substring(periodPos + 1);
-        }
-        return "@" + annoName;
-    }
-
     /** Standardize a type qualifier annotation obtained from a contract. */
     private AnnotationMirror standardizeAnnotationFromContract(
             AnnotationMirror annoFromContract,
