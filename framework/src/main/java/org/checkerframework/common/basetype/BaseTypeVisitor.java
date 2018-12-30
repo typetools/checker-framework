@@ -676,12 +676,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
                     case POSTCONDTION:
-                        checkPostcondition(node, annotation, expr);
+                        checkPostcondition(node, annotation, contract.contractAnnotation, expr);
                         break;
                     case CONDITIONALPOSTCONDTION:
                         checkConditionalPostcondition(
                                 node,
                                 annotation,
+                                contract.contractAnnotation,
                                 expr,
                                 ((ConditionalPostcondition) contract).annoResult);
                         break;
@@ -697,6 +698,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.warning(
                                 key,
+                                amToSimpleName(contract.contractAnnotation),
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
@@ -706,6 +708,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
         }
+    }
+
+    /** Return the simple name of an annotation, as in "@Nullable". */
+    private static String amToSimpleName(AnnotationMirror am) {
+        String annoName = am.toString();
+        int periodPos = annoName.lastIndexOf(".");
+        if (periodPos != 0) {
+            annoName = annoName.substring(periodPos + 1);
+        }
+        return "@" + annoName;
     }
 
     /** Standardize a type qualifier annotation obtained from a contract. */
@@ -758,7 +770,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param expression the expression that the postcondition concerns
      */
     protected void checkPostcondition(
-            MethodTree methodTree, AnnotationMirror annotation, Receiver expression) {
+            MethodTree methodTree,
+            AnnotationMirror annotation,
+            AnnotationMirror contractAnnotation,
+            Receiver expression) {
         CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
         if (exitStore == null) {
             // if there is no regular exitStore, then the method
@@ -775,7 +790,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
                         Result.failure(
-                                "contracts.postcondition.not.satisfied", expression.toString()),
+                                "contracts.postcondition.not.satisfied",
+                                amToSimpleName(contractAnnotation),
+                                expression.toString()),
                         methodTree);
             }
         }
@@ -791,7 +808,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree node, AnnotationMirror annotation, Receiver expression, boolean result) {
+            MethodTree node,
+            AnnotationMirror annotation,
+            AnnotationMirror contractAnnotation,
+            Receiver expression,
+            boolean result) {
         boolean booleanReturnType =
                 TypesUtils.isBooleanType(TreeUtils.typeOf(node.getReturnType()));
         if (!booleanReturnType) {
@@ -839,6 +860,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.conditional.postcondition.not.satisfied",
+                                amToSimpleName(contractAnnotation),
                                 expression.toString()),
                         returnStmt.getTree());
             }
@@ -1969,8 +1991,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     checker.report(
                             Result.failure(
                                     "monotonic.type.incompatible",
-                                    mono.getCanonicalName(),
-                                    mono.getCanonicalName(),
+                                    mono.getSimpleName(),
+                                    mono.getSimpleName(),
                                     valueType.toString()),
                             valueTree);
                     return;
@@ -3230,7 +3252,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Postcondition> result = new LinkedHashSet<>();
         for (ConditionalPostcondition p : conditionalPostconditions) {
             if (p.annoResult == b) {
-                result.add(new Postcondition(p.expression, p.annotation));
+                result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
             }
         }
         return result;
