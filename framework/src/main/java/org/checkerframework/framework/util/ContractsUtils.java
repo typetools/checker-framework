@@ -138,6 +138,7 @@ public class ContractsUtils {
 
     /** A precondition annotation. */
     public static class Precondition extends Contract {
+        /** Construct a Precondition object. */
         public Precondition(
                 String expression,
                 AnnotationMirror annotation,
@@ -148,6 +149,7 @@ public class ContractsUtils {
 
     /** A postcondition annotation. */
     public static class Postcondition extends Contract {
+        /** Construct a Postcondition object. */
         public Postcondition(
                 String expression,
                 AnnotationMirror annotation,
