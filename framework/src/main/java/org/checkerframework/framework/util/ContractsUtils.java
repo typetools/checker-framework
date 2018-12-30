@@ -77,7 +77,7 @@ public class ContractsUtils {
         /** The annotation that must be on the type of expression as part of this contract. */
         public final AnnotationMirror annotation;
 
-        /** The annotation that expressed this contact; used for diagnostic messages. */
+        /** The annotation that expressed this contract; used for diagnostic messages. */
         public final AnnotationMirror contractAnnotation;
 
         /** The kind of contract: precondition, postcondition, or conditional postcondition. */
