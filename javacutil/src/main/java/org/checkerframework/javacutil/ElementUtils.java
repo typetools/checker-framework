@@ -198,7 +198,7 @@ public class ElementUtils {
     }
 
     /**
-     * A helper method that standarize type by printing simple names instead of fully qualified
+     * A helper method that standarizes types by printing simple names instead of fully qualified
      * names.
      */
     private static String simpleTypeName(TypeMirror type) {
@@ -208,15 +208,13 @@ public class ElementUtils {
             case TYPEVAR:
                 return ((TypeVariable) type).asElement().getSimpleName().toString();
             case DECLARED:
-                {
-                    return ((DeclaredType) type).asElement().getSimpleName().toString();
-                }
+                return ((DeclaredType) type).asElement().getSimpleName().toString();
             default:
                 if (type.getKind().isPrimitive()) {
                     return type.toString();
                 }
         }
-        throw new BugInCF("StubUtil: unhandled type: " + type);
+        throw new BugInCF("ElementUtils: unhandled type: " + type);
     }
 
     /**
