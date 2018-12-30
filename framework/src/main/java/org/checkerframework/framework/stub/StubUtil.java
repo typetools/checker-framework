@@ -29,10 +29,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -146,29 +142,6 @@ public class StubUtil {
         return toString(field.getVariables().get(0));
     }
 
-    /**
-     * Returns the chosen canonical string of the method declaration.
-     *
-     * <p>The canonical representation contains simple names of the types only.
-     */
-    /*package-scope*/ static String toString(ExecutableElement element) {
-        StringBuilder sb = new StringBuilder();
-
-        // note: constructor simple name is <init>
-        sb.append(element.getSimpleName());
-        sb.append("(");
-        for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-                i.hasNext(); ) {
-            sb.append(standarizeType(i.next().asType()));
-            if (i.hasNext()) {
-                sb.append(",");
-            }
-        }
-        sb.append(")");
-
-        return sb.toString();
-    }
-
     /*package-scope*/ static String toString(VariableElement element) {
         assert element.getKind().isField();
         return element.getSimpleName().toString();
@@ -189,30 +162,6 @@ public class StubUtil {
         String name = imported.substring(imported.lastIndexOf(".") + 1);
         Pair<String, String> typeParts = Pair.of(typeName, name);
         return typeParts;
-    }
-
-    /**
-     * A helper method that standarize type by printing simple names instead of fully qualified
-     * names.
-     *
-     * <p>This eliminates the need for imports.
-     */
-    private static String standarizeType(TypeMirror type) {
-        switch (type.getKind()) {
-            case ARRAY:
-                return standarizeType(((ArrayType) type).getComponentType()) + "[]";
-            case TYPEVAR:
-                return ((TypeVariable) type).asElement().getSimpleName().toString();
-            case DECLARED:
-                {
-                    return ((DeclaredType) type).asElement().getSimpleName().toString();
-                }
-            default:
-                if (type.getKind().isPrimitive()) {
-                    return type.toString();
-                }
-        }
-        throw new BugInCF("StubUtil: unhandled type: " + type);
     }
 
     private static final class ElementPrinter extends SimpleVoidVisitor<Void> {

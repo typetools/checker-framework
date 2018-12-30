@@ -103,7 +103,7 @@ command-line option.)
 
 \begin{itemize}
 \item
-  \label{nullness-llint-nulltest}%
+  \label{nullness-lint-nulltest}%
   If you supply the \code{-Alint=redundantNullComparison} command-line option, then the
   checker warns when a null check is performed against a value that is
   guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
@@ -828,6 +828,7 @@ Section~\ref{declaration-annotations-moved}.
 \hline
  ~android.annotation.NonNull~ \\ \hline
  ~android.support.annotation.NonNull~ \\ \hline
+ ~androidx.annotation.NonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
@@ -852,6 +853,7 @@ $\Rightarrow$
 \hline
  ~android.annotation.Nullable~ \\ \hline
  ~android.support.annotation.Nullable~ \\ \hline
+ ~androidx.annotation.Nullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline

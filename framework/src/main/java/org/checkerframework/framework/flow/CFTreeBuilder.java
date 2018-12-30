@@ -100,7 +100,7 @@ public class CFTreeBuilder extends TreeBuilder {
                             (AnnotatedTypeMirror.AnnotatedTypeVariable) annotatedType;
                     TypeVariable underlyingTypeVar = variable.getUnderlyingType();
                     underlyingTypeTree =
-                            maker.Ident((Symbol.TypeSymbol) (underlyingTypeVar).asElement());
+                            maker.Ident((Symbol.TypeSymbol) underlyingTypeVar.asElement());
                     break;
                 }
             case WILDCARD:

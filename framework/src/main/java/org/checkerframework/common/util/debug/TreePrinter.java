@@ -48,7 +48,7 @@ public class TreePrinter extends AbstractTypeProcessor {
         try {
             pretty.printUnit((JCCompilationUnit) tree.getCompilationUnit(), null);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Error(e);
         }
         System.out.println(out.toString());
     }
