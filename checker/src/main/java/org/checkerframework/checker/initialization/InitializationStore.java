@@ -120,7 +120,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     }
 
     /**
-     * Mark the field identified by the element {@code field} as initialized (if it belongs to the
+     * Mark the field identified by the element {@code field} as initialized if it belongs to the
      * current class, or is static (in which case there is no aliasing issue and we can just add all
      * static fields).
      */
