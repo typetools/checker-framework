@@ -270,7 +270,7 @@ public class NullnessVisitor
         for (ExpressionTree dim : node.getDimensions()) {
             if (dim instanceof LiteralTree) {
                 Object val = ((LiteralTree) dim).getValue();
-                if (!(val instanceof Number) || !(Integer.valueOf(0).equals(val))) {
+                if (!(val instanceof Number) || !Integer.valueOf(0).equals(val)) {
                     isAllZeros = false;
                     break;
                 }

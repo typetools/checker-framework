@@ -125,7 +125,7 @@ public class FlowExpressionParseUtil {
             TreePath localScope,
             boolean useLocalScope)
             throws FlowExpressionParseException {
-        context.useLocalScope = useLocalScope;
+        context = context.copyAndSetUseLocalScope(useLocalScope);
         FlowExpressions.Receiver result = parseHelper(expression, context, localScope);
         if (result instanceof ClassName && !expression.endsWith("class")) {
             throw constructParserException(
@@ -1081,8 +1081,8 @@ public class FlowExpressionParseUtil {
          * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
          */
         public final boolean parsingMember;
-        /** Whether the TreePath should be used to find identifiers. */
-        public boolean useLocalScope;
+        /** Whether the TreePath should be used to find identifiers. Defaults to true. */
+        public final boolean useLocalScope;
 
         /**
          * Creates context for parsing a flow expression.
@@ -1324,15 +1324,29 @@ public class FlowExpressionParseUtil {
 
         /**
          * Returns a copy of the context that differs in that it uses the outer receiver as main
-         * receiver (and also uses it as the outer receiver).
+         * receiver (and also retains it as the outer receiver), and parsingMember is set to false.
          */
         public FlowExpressionContext copyAndUseOuterReceiver() {
             return new FlowExpressionContext(
-                    outerReceiver,
+                    outerReceiver, // NOTE different than in this object
                     outerReceiver,
                     arguments,
                     checkerContext,
                     /*parsingMember=*/ false,
+                    useLocalScope);
+        }
+
+        /**
+         * Returns a copy of the context that differs in that useLocalScope is set to the given
+         * value.
+         */
+        public FlowExpressionContext copyAndSetUseLocalScope(boolean useLocalScope) {
+            return new FlowExpressionContext(
+                    receiver,
+                    outerReceiver,
+                    arguments,
+                    checkerContext,
+                    parsingMember,
                     useLocalScope);
         }
     }

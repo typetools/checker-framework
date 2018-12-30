@@ -70,7 +70,7 @@ public class StubGenerator {
             return;
         }
 
-        String pkg = ElementUtils.getVerboseName((ElementUtils.enclosingPackage(elt)));
+        String pkg = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
         if (!"".equals(pkg)) {
             currentPackage = pkg;
             currentIndention = "    ";

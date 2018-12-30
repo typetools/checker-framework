@@ -1157,11 +1157,11 @@ public final class TreeUtils {
         // check if its in a variable initializer
         Tree t = enclosingVariable(path);
         if (t != null) {
-            return ((VariableTree) t).getModifiers().getFlags().contains((Modifier.STATIC));
+            return ((VariableTree) t).getModifiers().getFlags().contains(Modifier.STATIC);
         }
         ClassTree classTree = enclosingClass(path);
         if (classTree != null) {
-            return classTree.getModifiers().getFlags().contains((Modifier.STATIC));
+            return classTree.getModifiers().getFlags().contains(Modifier.STATIC);
         }
         return false;
     }

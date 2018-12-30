@@ -245,7 +245,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
             if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NINVALIDFORMAT)
                     && AnnotationUtils.areSameIgnoringValues(subAnno, I18NINVALIDFORMAT)) {
-                return (AnnotationUtils.getElementValue(subAnno, "value", String.class, true))
+                return AnnotationUtils.getElementValue(subAnno, "value", String.class, true)
                         .equals(
                                 AnnotationUtils.getElementValue(
                                         superAnno, "value", String.class, true));
