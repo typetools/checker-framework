@@ -204,11 +204,11 @@ public class PurityChecker {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
-            Element methodElement = TreeUtils.elementFromTree(node);
+            Element ctorElement = TreeUtils.elementFromTree(node);
             boolean deterministic = okThrowDeterministic;
             boolean sideEffectFree =
                     (assumeSideEffectFree
-                            || PurityUtils.isSideEffectFree(annoProvider, methodElement));
+                            || PurityUtils.isSideEffectFree(annoProvider, ctorElement));
             if (!deterministic) {
                 purityResult.addNotDetReason(node, "object.creation");
             }
