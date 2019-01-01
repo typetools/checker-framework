@@ -584,9 +584,9 @@ use the last one.
 
 Project Lombok (\url{https://projectlombok.org/}) is ``a java library that
 automatically plugs into your editor and build tools, spicing up your java.''
-Starting with version 1.18.3 it is generally easy to combine Lombok and the
-Checker Framework, because type annotations are e.g. copied from fields to
-generated setter/getter/builder methods.
+Starting with version 1.18.3 it is easy to combine Lombok and the Checker
+Framework. When Lombok generates code, selected type annotations are copied, for
+example, from fields to generated setter/getter/builder methods.
 
 Many standard Nullable/NonNull annotations are automatically copied, however the
 Checker Framework annotations in \<org.checkerframework> are currently not copied.
@@ -602,10 +602,17 @@ in \<lombok.copyableAnnotations>.
 This is necessary for all \<org.checkerframework> as well as for any custom type
 use annotations.
 
-% TODO: provide an example lombok.config file.
+Directory \<docs/examples/lombok> contains an example Gradle project that
+combines Lombok with the Checker Framework.
 
 % Link to discussion thread and pull request:
 % https://github.com/rzwitserloot/lombok/pull/1837
+
+% TODO: see whether all Checker Framework annotations could be added to
+% BASE_COPYABLE_ANNOTATIONS in lombok.
+
+% TODO: write a simple tool that generates a lombok.config file for a particular
+% project.
 
 
 \sectionAndLabel{Maven}{maven}
