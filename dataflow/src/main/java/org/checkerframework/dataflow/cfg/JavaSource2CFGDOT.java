@@ -136,7 +136,7 @@ public class JavaSource2CFGDOT {
                     @Nullable Analysis<A, S, T> analysis,
                     MethodTree m,
                     CompilationUnitTree r) {
-        String fileName = (new File(inputFile)).getName();
+        String fileName = new File(inputFile).getName();
         System.out.println("Working on " + fileName + "...");
 
         if (m == null) {

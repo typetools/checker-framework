@@ -181,4 +181,24 @@
 %HEVEA \renewcommand{\refwithpageparen}[1]{\ref{#1}}
 \newcommand{\chapterpageref}[1]{Chapter~\refwithpage{#1}}
 
+
+\ifhevea
+\newcommand{\selflink}[1]{\if@refs\ \ahrefloc{#1}{\small\@print@u{128279}}\fi}
+\newcommand{\mksectionAndLabel}[1]
+{\newcommand{\csname #1AndLabel\endcsname}[2]
+{\csname #1\endcsname{##1\label{##2}\selflink{##2}}}}
+\mksectionAndLabel{chapter}
+\mksectionAndLabel{section}
+\mksectionAndLabel{subsection}
+\mksectionAndLabel{subsubsection}
+\mksectionAndLabel{paragraph}
+\else
+\newcommand{\selflink}[1]{}
+\newcommand{\chapterAndLabel}[2]{\chapter{#1}\label{#2}}
+\newcommand{\sectionAndLabel}[2]{\section{#1}\label{#2}}
+\newcommand{\subsectionAndLabel}[2]{\subsection{#1}\label{#2}}
+\newcommand{\subsubsectionAndLabel}[2]{\subsubsection{#1}\label{#2}}
+\newcommand{\paragraphAndLabel}[2]{\paragraph{#1}\label{#2}}
+\fi
+
 %  LocalWords:  fontsize

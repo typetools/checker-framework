@@ -2,6 +2,7 @@
 #   make all
 # which creates the jdk.jar file.
 
+# A version of the JDK with just headers/signatures: method bodies contain no bodies.
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
 CHECKER_DIRS = index lock nullness optional
@@ -13,11 +14,17 @@ jdk.jar: $(JAVA_FILES)
 
 # Remakes the annotated JDK, regardless of whether it is out of date.
 jdk.jar-unconditionally: clean classes
-# Extracts unannotated .class files from $(CTSYM)
+# Extracts unannotated .class files from $(CTSYM), into files annotated/%.class.
 	$(MAKE) unmodified
 # Insert annotations in those files.
+# The "jaifs" target:
+#  * compiles the annotated JDK source code, then
+#  * extracts the annotations from each .class file into a .jaif text file
+#    (https://checkerframework.org/annotation-file-utilities/annotation-file-format.html)
+# The "annotated" target inserts from .jaif files into the .class files extracted from ct.sym,
+# in files annotated/%.class.
 	$(MAKE) jaifs annotated
-# Put those annotated .class files back in jdk.jar.
+# Put those annotated .class files (originally from ct.sym) in a new jdk.jar file.
 	$(MAKE) jdk.jar-insertion
 
 # Does the final step of making jdk.jar.
@@ -74,6 +81,7 @@ annotated/%.class:
 %.classes:
 	cd $*; JDKDIR=$* $(MAKE) classes
 
+# Uses the rules in file Makefile.jdk
 %.jaifs:
 	cd $*; $(MAKE) jaifs
 

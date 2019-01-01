@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Fake Enum Checker for fake enumerations\label{fenum-checker}}
+\chapterAndLabel{Fake Enum Checker for fake enumerations}{fenum-checker}
 
 The Fake Enum Checker, or Fenum Checker, enables you to define a type alias
 or typedef, in which two different sets of values have the same
@@ -59,7 +59,7 @@ for upper bounds which default to \<@FenumTop>.
 \label{fig-fenum-hierarchy}
 \end{figure}
 
-\section{Fake enum annotations\label{fenum-annotations}}
+\sectionAndLabel{Fake enum annotations}{fenum-annotations}
 
 The Fake Enum Checker supports two ways to introduce a new fake enum (fenum):
 
@@ -103,7 +103,7 @@ your project, whereas the second approach allows quick prototyping.
 
 
 
-\section{What the Fenum Checker checks\label{fenum-checks}}
+\sectionAndLabel{What the Fenum Checker checks}{fenum-checks}
 
 The Fenum Checker ensures that unrelated types are not mixed.
 All types with a particular fenum annotation, or \code{@Fenum(...)} with a
@@ -122,7 +122,7 @@ reference or zero value in the field of a fenum type.  (The Nullness Checker
 reference variable.)
 
 
-\section{Running the Fenum Checker\label{fenum-running}}
+\sectionAndLabel{Running the Fenum Checker}{fenum-running}
 
 The Fenum Checker can be invoked by running the following commands.
 
@@ -179,7 +179,7 @@ For an example of running the Fake Enum Checker on Android code, see
 \url{https://github.com/karlicoss/checker-fenum-android-demo}.
 
 
-\section{Suppressing warnings\label{fenum-suppressing}}
+\sectionAndLabel{Suppressing warnings}{fenum-suppressing}
 
 One example of when you need to suppress warnings is when you initialize the
 fenum constants to literal values.
@@ -196,7 +196,7 @@ class MyConsts {
 
 
 
-\section{Example\label{fenum-example}}
+\sectionAndLabel{Example}{fenum-example}
 
 The following example introduces two fenums in class \code{TestStatic}
 and then performs a few typical operations.
@@ -232,7 +232,7 @@ class FenumUser {
 Also, see the example project in the \<docs/examples/fenum-extension> directory.
 
 
-\section{The fake enumeration pattern\label{fenum-pattern}}
+\sectionAndLabel{The fake enumeration pattern}{fenum-pattern}
 
 Java's
 \href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-8.html#jls-8.9}{\code{enum}}
@@ -274,7 +274,7 @@ base type and from all other fake enums. Fenums can be introduced for
 primitive types as well as for reference types.
 
 
-\section{References\label{fenum-references}}
+\sectionAndLabel{References}{fenum-references}
 
 \begin{itemize}
 \item Case studies of the Fake Enum Checker:\\

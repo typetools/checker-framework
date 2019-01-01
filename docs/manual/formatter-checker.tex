@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Format String Checker\label{formatter-checker}}
+\chapterAndLabel{Format String Checker}{formatter-checker}
 
 % VERIFICATION
 \begin{sloppypar}
@@ -56,7 +56,7 @@ To run the Format String Checker, supply the
 \end{sloppypar}
 
 
-\section{Formatting terminology\label{formatter-terminology}}
+\sectionAndLabel{Formatting terminology}{formatter-terminology}
 
 Printf-style formatting takes as an argument a \emph{format string} and a
 list of arguments.  It produces a new string in which each \emph{format
@@ -75,7 +75,7 @@ the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
 \code{"answer"} and \code{42} are format arguments.
 
 
-\section{Format String Checker annotations\label{formatter-annotations}}
+\sectionAndLabel{Format String Checker annotations}{formatter-annotations}
 
 The \refqualclass{checker/formatter/qual}{Format} qualifier on a string type
 indicates a \emph{valid} format string.  The JDK documentation for the
@@ -137,7 +137,7 @@ example, the type of \code{"\%y"} is \<@InvalidFormat String>.
 applied to strings that are not literals and on which the user has not
 written a \<@Format> annotation.
 
-\subsection{Conversion Categories\label{formatter-categories}}
+\subsectionAndLabel{Conversion Categories}{formatter-categories}
 
 Given a format specifier, only certain format arguments are compatible with
 it, depending on its ``conversion'' --- its last, or last two,
@@ -252,7 +252,7 @@ relationship among all conversion categories.
 \end{figure}
 
 
-\subsection{Subtyping rules for \<@Format>\label{formatter-format-subtyping}}
+\subsectionAndLabel{Subtyping rules for \<@Format>}{formatter-format-subtyping}
 
 Here are the subtyping rules among different
 \refqualclass{checker/formatter/qual}{Format}
@@ -280,7 +280,7 @@ The following example shows the subtyping rules in action:
     String.format(f, 0.8, 42);
 \end{Verbatim}
 
-\section{What the Format String Checker checks\label{formatter-guarantees}}
+\sectionAndLabel{What the Format String Checker checks}{formatter-guarantees}
 
 % VERIFICATION
 If the Format String Checker issues no errors, it provides the following guarantees:
@@ -332,7 +332,7 @@ a warning is issued by the Format String Checker.
     String.format("%s", new Object[]{"hello"});   // warning (3)
 \end{Verbatim}
 
-\subsection{Possible false alarms\label{formatter-false-alarms}}
+\subsectionAndLabel{Possible false alarms}{formatter-false-alarms}
 
 There are three cases in which the Format String Checker may issue a
 warning or error, even though the code cannot fail at run time.
@@ -428,7 +428,7 @@ Case \ref{formatter-array-warning}:
 %     String.format("%1$d %1$f", new Object[]{1}); // warning (III 1)
 % \end{Verbatim}
 
-\subsection{Possible missed alarms\label{formatter-missed-alarms}}
+\subsectionAndLabel{Possible missed alarms}{formatter-missed-alarms}
 
 The Format String Checker helps prevent bugs by detecting, at compile time,
 which invocations of format methods will fail. While the Format String Checker
@@ -499,7 +499,7 @@ warnings. These cases are:
 % \end{Verbatim}
 
 
-\section{Implicit qualifiers\label{formatter-implicit}}
+\sectionAndLabel{Implicit qualifiers}{formatter-implicit}
 
 The Format String Checker adds implicit
 qualifiers, reducing the number of annotations that must appear in your code
@@ -508,7 +508,7 @@ The checker implicitly adds the \code{@Format} qualifier with the appropriate
 conversion categories to any String literal that is a valid format string.
 
 
-\section{@FormatMethod\label{formatter-FormatMethod}}
+\sectionAndLabel{@FormatMethod}{formatter-FormatMethod}
 
 Your project may contain methods that forward their arguments to a format method.
 Consider for example the following \code{log} method:
@@ -529,7 +529,7 @@ which indicates that the \<String> argument is a format string for the
 remaining arguments.
 
 
-\section{Testing whether a format string is valid\label{formatter-run-time-tests}}
+\sectionAndLabel{Testing whether a format string is valid}{formatter-run-time-tests}
 
 % Copied from the Regex Checker.
 % When one is improved, improve the other as well.

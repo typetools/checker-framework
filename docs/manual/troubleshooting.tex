@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Troubleshooting, getting help, and contributing\label{troubleshooting}}
+\chapterAndLabel{Troubleshooting, getting help, and contributing}{troubleshooting}
 
 \begin{sloppypar}
 The manual might already answer your question, so first please look for
@@ -17,7 +17,7 @@ project from the ideas list at
 \end{sloppypar}
 
 
-\section{Common problems and solutions\label{common-problems}}
+\sectionAndLabel{Common problems and solutions}{common-problems}
 
 \begin{itemize}
 \item
@@ -30,7 +30,7 @@ to doing its normal processing.
 \end{itemize}
 
 
-\subsection{Unable to compile the Checker Framework\label{common-problems-compiling}}
+\subsectionAndLabel{Unable to compile the Checker Framework}{common-problems-compiling}
 
 If you get the following error while compiling the Checker Framework itself:
 
@@ -55,7 +55,7 @@ June 2015.)
 Install the latest version of Eclipse and use it instead.
 
 
-\subsection{Unable to run the checker, or checker crashes\label{common-problems-running}}
+\subsectionAndLabel{Unable to run the checker, or checker crashes}{common-problems-running}
 
 If you are unable to run the checker, or if the checker or the compiler
 terminates with an error, then the problem may be a problem with your environment.
@@ -299,19 +299,6 @@ nested class.
 Similar arguments apply when annotating \<package.Outer.Nested>.
 
 \item
-A message of the form
-
-\begin{Verbatim}
-warning: StubParser: annotateTypeParameters: mismatched sizes
-\end{Verbatim}
-
-might be because you compiled your project with \<-source 1.4>.  Java 1.4
-doesn't support type parameters, but the Checker Framework expects that
-classes such as \<List> have a type parameter.  The discrepancy causes a
-problem.  To fix the problem, supply \<-source 1.5> or later, or no
-\<-source> command-line argument.
-
-\item
 An ``error: package ... does not exist'' or ``error: cannot find symbol''
 about classes in your own project or its dependencies means that you have
 left your own project or its dependencies off the classpath when you
@@ -320,7 +307,7 @@ invoked the compiler.
 \end{itemize}
 
 
-\subsection{Unexpected type-checking results\label{common-problems-typechecking}}
+\subsectionAndLabel{Unexpected type-checking results}{common-problems-typechecking}
 
 This section describes possible problems that can lead the type-checker to
 give unexpected results.
@@ -563,7 +550,7 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 \end{itemize}
 
 
-\subsection{Unexpected compilation output when running javac without a pluggable type-checker\label{common-problems-running-javac}}
+\subsectionAndLabel{Unexpected compilation output when running javac without a pluggable type-checker}{common-problems-running-javac}
 
 On rare occasions, javac may issue an error when compiling against the
 Checker Framework's annotated JDK that you do not get when using the
@@ -613,7 +600,7 @@ Checker Framework.  See
 \url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
 % Also see https://github.com/typetools/checker-framework/issues/1304
 
-\section{How to report problems (bug reporting)\label{reporting-bugs}}
+\sectionAndLabel{How to report problems (bug reporting)}{reporting-bugs}
 
 If you have a problem with any checker, or with the Checker Framework,
 please file a bug at
@@ -685,7 +672,7 @@ type-checker!  Those aren't a good use of your time to report nor the
 maintainers' time to evaluate and fix.
 
 
-\subsection{Problems with annotated libraries\label{reporting-bugs-annotated-libraries}}
+\subsectionAndLabel{Problems with annotated libraries}{reporting-bugs-annotated-libraries}
 
 Sometimes, a checker will report a warning because a library is not
 annotated or because the library contains incorrect annotations.
@@ -714,7 +701,7 @@ tips about writing library annotations.
 Thanks for your contribution to the annotated libraries!
 
 
-\section{Building from source\label{build-source}}
+\sectionAndLabel{Building from source}{build-source}
 
 The Checker Framework release (Section~\ref{installation}) contains
 everything that most users need, both to use the distributed checkers and
@@ -733,7 +720,7 @@ least for building, if not for running, the Checker Framework) or you can
 report the problems to the Checker Framework developers.
 
 
-\subsection{Install prerequisites\label{building-prerequisites}}
+\subsectionAndLabel{Install prerequisites}{building-prerequisites}
 
 You need to install several packages in order to build the Checker
 Framework.
@@ -800,7 +787,7 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Hom
 \end{description}
 
 
-\subsection{Obtain the source\label{building-obtain-source}}
+\subsectionAndLabel{Obtain the source}{building-obtain-source}
 
 Obtain the latest source code from the version control repository:
 
@@ -850,7 +837,7 @@ the Checker Framework anyway.)
 
 \end{description}
 
-\subsection{Build the Checker Framework\label{building}}
+\subsectionAndLabel{Build the Checker Framework}{building}
 
 % Building (compiling) the checkers and framework from source creates the
 % \code{checker.jar} file.  A pre-compiled \code{checker.jar} is included
@@ -934,7 +921,7 @@ an IDE such as Eclipse.
 \end{enumerate}
 
 
-\subsection{Build the Checker Framework Manual (this document)\label{building-manual}}
+\subsectionAndLabel{Build the Checker Framework Manual (this document)}{building-manual}
 
 \begin{enumerate}
 \item
@@ -946,7 +933,7 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 \end{enumerate}
 
 
-\subsection{Configure Eclipse to edit the Checker Framework\label{building-eclipse}}
+\subsectionAndLabel{Configure Eclipse to edit the Checker Framework}{building-eclipse}
 
 These instructions are relevant if you use Eclipse as your IDE\@.
 
@@ -971,7 +958,7 @@ If Eclipse reports any errors, ensure you followed the instructions
 in Section~\ref{build-source}.
 
 
-\subsection{Enable Travis continuous integration builds\label{building-travis}}
+\subsectionAndLabel{Enable Travis continuous integration builds}{building-travis}
 
 Travis-CI is a continuous integration system:  it runs tests every time you
 push a commit to GitHub.
@@ -1003,7 +990,7 @@ the JDK (some jobs might time out).
 \end{enumerate}
 
 
-\subsubsection{Debugging Travis continuous integration builds\label{building-travis-debug}}
+\subsubsectionAndLabel{Debugging Travis continuous integration builds}{building-travis-debug}
 
 If a Travis job is failing, you can reproduce the problem locally.
 The Travis jobs all run within Docker containers.
@@ -1026,7 +1013,7 @@ cd checker-framework
 \end{Verbatim}
 
 
-\subsection{Code style\label{code-style}}
+\subsectionAndLabel{Code style}{code-style}
 
 Code in this project follows the
 \ahref{https://google.github.io/styleguide/javaguide.html}{Google Java Style
@@ -1040,7 +1027,7 @@ because of improper formatting, run \<./gradlew reformat>, stage the
 changes, and try the commit operation again.
 
 
-\section{Contributing fixes (creating a pull request)\label{pull-request}}
+\sectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
 
 Please see the document
 \ahref{https://homes.cs.washington.edu/\%7emernst/advice/github-pull-request.html}{How
@@ -1052,7 +1039,7 @@ For writing new test cases, see file
 \ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 
-\section{Publications\label{publications}\label{learning-more}}
+\sectionAndLabel{Publications}{publications}
 
 Here are two technical papers about the Checker Framework itself:
 
@@ -1184,7 +1171,7 @@ Framework is never discussed publicly.
 the Checker Framework developers so we can add it.)
 
 
-\section{Comparison to other tools\label{other-tools}}
+\sectionAndLabel{Comparison to other tools}{other-tools}
 
 A pluggable type-checker, such as those created by the Checker Framework,
 is a verification tool that prevents or detects all errors of a given variety.  An
@@ -1243,7 +1230,7 @@ Also see the
 documentation for another discussion of related work.
 
 
-\section{Credits and changelog\label{credits}}
+\sectionAndLabel{Credits and changelog}{credits}
 
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog.txt} file.  This file is included in the
@@ -1333,7 +1320,7 @@ has improved the toolset's design and implementation.
 Thanks for your help!
 
 
-\section{License\label{license}}
+\sectionAndLabel{License}{license}
 
 Two different licenses apply to different parts of the Checker Framework.
 \begin{itemize}
