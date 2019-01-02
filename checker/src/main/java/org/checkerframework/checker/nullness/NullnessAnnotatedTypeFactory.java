@@ -86,6 +86,8 @@ public class NullnessAnnotatedTypeFactory
                     "android.support.annotation.NonNull",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/NonNull.java
                     "androidx.annotation.NonNull",
+                    // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNonNull.java
+                    "androidx.annotation.RecentlyNonNull",
                     "com.sun.istack.internal.NotNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
                     "edu.umd.cs.findbugs.annotations.NonNull",
@@ -120,6 +122,8 @@ public class NullnessAnnotatedTypeFactory
                     "android.support.annotation.Nullable",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/Nullable.java
                     "androidx.annotation.Nullable",
+                    // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNullable.java
+                    "androidx.annotation.RecentlyNullable",
                     "com.sun.istack.internal.Nullable",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
                     "edu.umd.cs.findbugs.annotations.CheckForNull",
