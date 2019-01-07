@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Integration with external tools\label{external-tools}}
+\chapterAndLabel{Integration with external tools}{external-tools}
 
 This chapter discusses how to run a checker from the command line, from a
 build system, or from an IDE\@.  You can skip to the appropriate section:
@@ -35,7 +35,7 @@ All examples in this chapter are in the public domain, with no copyright nor
 licensing restrictions.
 
 
-\section{Android\label{android}}
+\sectionAndLabel{Android}{android}
 
 When creating an Android app, you may wish to use \<checker-qual-android>
 whenever this document mentions \<checker-qual>.  This can lead to smaller
@@ -48,7 +48,7 @@ runtime annotations in the main dex, but strips out class-retention
 annotations.
 
 
-\section{Android Studio 3.0 and the Android Gradle Plugin 3.0\label{android-gradle}}
+\sectionAndLabel{Android Studio 3.0 and the Android Gradle Plugin 3.0}{android-gradle}
 
 Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
 annotations.  (See
@@ -108,7 +108,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.5.7'
+    ext.checkerFrameworkVersion = '2.5.8'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
@@ -139,7 +139,7 @@ gradlew checkTypes
 \end{enumerate}
 
 
-\section{Ant task\label{ant-task}}
+\sectionAndLabel{Ant task}{ant-task}
 
 If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
@@ -205,7 +205,7 @@ In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
 \end{enumerate}
 
-\subsection{Explanation\label{ant-task-explanation}}
+\subsectionAndLabel{Explanation}{ant-task-explanation}
 
 This section explains each part of the Ant task.
 
@@ -244,7 +244,7 @@ run.  You can supply additional arguments to the checker as well.
 \end{enumerate}
 
 
-\section{Buck\label{buck}}
+\sectionAndLabel{Buck}{buck}
 
 Buck is a build system maintained by Facebook.
 
@@ -261,13 +261,13 @@ Here is an example Buck \<BUILD> file:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-2.5.7.jar',
+    binary_jar = 'checker-2.5.8.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-2.5.7.jar',
+    binary_jar = 'checker-qual-2.5.8.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -285,7 +285,7 @@ java_library (
 
 
 
-\section{Eclipse\label{eclipse}}
+\sectionAndLabel{Eclipse}{eclipse}
 
 % Eclipse supports type annotations.
 % Eclipse does not directly support running the Checker Framework,
@@ -301,7 +301,7 @@ implemented JSR 198~\cite{JSR198}, then it would be possible to build
 a type-checking plug-in that works with both compilers.)
 
 
-\subsection{Using an Ant task\label{eclipse-ant}}
+\subsectionAndLabel{Using an Ant task}{eclipse-ant}
 
 Add an Ant target as described in Section~\ref{ant-task}.  You can
 run the Ant target by executing the following steps
@@ -329,7 +329,7 @@ run the Ant target by executing the following steps
 \end{enumerate}
 
 
-\subsection{Troubleshooting Eclipse\label{eclipse-troubleshooting}}
+\subsectionAndLabel{Troubleshooting Eclipse}{eclipse-troubleshooting}
 
 Eclipse issues an ``Unhandled Token in @SuppressWarnings'' warning if you
 write a \<@SuppressWarnings> annotation containing a string that does not
@@ -342,7 +342,7 @@ disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
 Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$ Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings', and set it to ignore.
 
 
-\section{Gradle\label{gradle}}
+\sectionAndLabel{Gradle}{gradle}
 
 This section describes how to run a checker
 on a project that uses the \href{https://gradle.org/}{Gradle} build system.
@@ -381,7 +381,7 @@ then always use \<./gradlew> where you would have used \<gradle>.
 
 
 
-\section{IntelliJ IDEA\label{intellij}}
+\sectionAndLabel{IntelliJ IDEA}{intellij}
 
 % The following method has been tested with IntelliJ IDEA 15.0.3.
 
@@ -446,7 +446,7 @@ For information about the extension points, see
 \url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
 
 
-\section{Javac compiler\label{javac-installation}}
+\sectionAndLabel{Javac compiler}{javac-installation}
 
 To perform pluggable type-checking, run the \<javac> compiler with the
 Checker Framework on the classpath.
@@ -460,14 +460,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.5.7/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.5.8/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.8
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -491,7 +491,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.8
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -510,11 +510,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.8
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.5.7\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.5.8\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -579,7 +579,7 @@ use the last one.
 % \end{itemize}
 
 
-\section{Maven\label{maven}}
+\sectionAndLabel{Maven}{maven}
 
 If you use the \href{http://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
@@ -762,7 +762,7 @@ profile, so that the checkers run only if the profile was enabled.
 \end{enumerate}
 
 
-\section{NetBeans\label{netbeans}}
+\sectionAndLabel{NetBeans}{netbeans}
 
 There are two approaches to running a checker in NetBeans:  via modifying the
 project properties, or via a custom ant target.
@@ -781,7 +781,7 @@ are currently unavailable on Netbeans 8.1 and 8.2.
 % could not solve the bootclasspath issue, so we decided to not integrate it.
 
 
-\subsection{Adding a checker via the Project Properties window\label{netbeans-project-properties}}
+\subsectionAndLabel{Adding a checker via the Project Properties window}{netbeans-project-properties}
 
 \begin{enumerate}
 \item
@@ -821,7 +821,7 @@ Compile on Save is enabled), or when the project is built, and
 annotation processor output will appear in the editor.
 
 
-\subsection {Adding a checker via an ant target\label{netbeans-ant-target}}
+\subsectionAndLabel{Adding a checker via an ant target}{netbeans-ant-target}
 
 \begin{enumerate}
 \item
@@ -926,7 +926,7 @@ will not appear in the editor.
 \end{enumerate}
 
 
-\section{tIDE\label{tide}}
+\sectionAndLabel{tIDE}{tide}
 
 \begin{sloppypar}
 tIDE, an open-source Java IDE, supports the Checker Framework.
@@ -934,7 +934,7 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 \end{sloppypar}
 
 
-\section{Type inference tools\label{type-inference-varieties}}
+\sectionAndLabel{Type inference tools}{type-inference-varieties}
 
 There are two different tasks that are commonly called ``type inference''.
 You are probably interested in type inference to annotate a program's

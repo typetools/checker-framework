@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Frequently Asked Questions (FAQs)\label{faq}}
+\chapterAndLabel{Frequently Asked Questions (FAQs)}{faq}
 
 These are some common questions about the Checker Framework and about
 pluggable type-checking in general.  Feel free to suggest improvements to
@@ -91,9 +91,9 @@ fully-qualified type name?
 \\ \ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
 
 
-\section{Motivation for pluggable type-checking\label{faq-motivation-section}}
+\sectionAndLabel{Motivation for pluggable type-checking}{faq-motivation-section}
 
-\subsection{I don't make type errors, so would pluggable type-checking help me?\label{faq-never-make-type-errors}}
+\subsectionAndLabel{I don't make type errors, so would pluggable type-checking help me?}{faq-never-make-type-errors}
 
 Occasionally, a developer says that he makes no errors that type-checking
 could catch, or that any such errors are unimportant because they have low
@@ -126,9 +126,9 @@ automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
-\subsection{Should I use pluggable types (type qualifiers) or Java subtypes?\label{faq-typequals-vs-subtypes}}
+\subsectionAndLabel{Should I use pluggable types (type qualifiers) or Java subtypes?}{faq-typequals-vs-subtypes}
 
-% Old labels, for backward compatibility.
+% Old labels, for backward compatibility.  Don't use them any longer.
 \label{when-to-use-type-qualifiers}
 \label{faq-qualifiers-vs-subclasses}
 
@@ -215,14 +215,14 @@ For more details, see Section~\ref{faq-typequals-vs-subtypes}.
 
 
 
-\section{Getting started\label{faq-getting-started-section}}
+\sectionAndLabel{Getting started}{faq-getting-started-section}
 
-\subsection{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
+\subsectionAndLabel{How do I get started annotating an existing program?}{faq-annotate-existing-program}
 
 See Section~\ref{get-started-with-legacy-code}.
 
 
-\subsection{Which checker should I start with?\label{faq-first-checker}}
+\subsectionAndLabel{Which checker should I start with?}{faq-first-checker}
 
 You should start with a property that matters to you.  Think about what
 aspects of your code cause the most errors, or cost the most time during
@@ -274,7 +274,7 @@ usability.  (Report the ones that affect you, so the developers
 will prioritize fixing them.)
 
 
-\subsection{How can I join the checker-framework-dev mailing list?\label{faq-checker-framework-dev}}
+\subsectionAndLabel{How can I join the checker-framework-dev mailing list?}{faq-checker-framework-dev}
 
 The \code{checker-framework-dev@googlegroups.com} mailing list is for
 Checker Framework developers.  Anyone is welcome to
@@ -293,9 +293,9 @@ Anyone is welcome to
   \code{checker-framework-discuss@googlegroups.com}} and send mail to it.
 
 
-\section{Usability of pluggable type-checking\label{faq-usability-section}}
+\sectionAndLabel{Usability of pluggable type-checking}{faq-usability-section}
 
-\subsection{Are type annotations easy to read and write?\label{faq-ease-of-use}}
+\subsectionAndLabel{Are type annotations easy to read and write?}{faq-ease-of-use}
 
 % This FAQ also appears in the JSR 308 FAQ.
 % When I update one, also update the other.
@@ -328,7 +328,7 @@ anticipate changing it or using it in new contexts), then the
 effort of writing type annotations for it may not be justified.
 
 
-\subsection{Will my code become cluttered with type annotations?\label{faq-code-clutter}}
+\subsectionAndLabel{Will my code become cluttered with type annotations?}{faq-code-clutter}
 
 % This FAQ also appears in the JSR 308 FAQ.
 % When I update one, also update the other.
@@ -367,7 +367,7 @@ documentation, at the same time as making it machine-processable
 and less ambiguous.
 
 
-\subsection{Will using the Checker Framework slow down my program?  Will it slow down the compiler?\label{faq-slowdown}}
+\subsectionAndLabel{Will using the Checker Framework slow down my program?  Will it slow down the compiler?}{faq-slowdown}
 
 Using the Checker Framework has no impact on the execution of your program:
 the compiler emits the identical bytecodes as the Java 8
@@ -386,7 +386,7 @@ Nonetheless, compilation with pluggable type-checking still feels like
 compilation, and you can do it as part of your normal development process.
 
 
-\subsection{How do I shorten the command line when invoking a checker?\label{faq-shorten-command-line}}
+\subsectionAndLabel{How do I shorten the command line when invoking a checker?}{faq-shorten-command-line}
 
 \begin{sloppypar}
 The compile options to javac can be long to type; for example,
@@ -396,7 +396,7 @@ the \code{-processor} command-line option.
 \end{sloppypar}
 
 
-\subsection{Method pre-condition contracts, including formal parameter annotations, make no sense for public methods\label{faq-pre-conditions}}
+\subsectionAndLabel{Method pre-condition contracts, including formal parameter annotations, make no sense for public methods}{faq-pre-conditions}
 
 Some people go further and say that pre-condition contracts make no sense
 for any method.  This objection is sometimes stated as, "A method parameter
@@ -445,14 +445,14 @@ behavior:  behavior that will avoid exceptions.
 
 
 
-\section{How to handle warnings and errors\label{faq-warnings-section}}
+\sectionAndLabel{How to handle warnings and errors}{faq-warnings-section}
 
-\subsection{What should I do if a checker issues a warning about my code?\label{faq-handling-warnings}}
+\subsectionAndLabel{What should I do if a checker issues a warning about my code?}{faq-handling-warnings}
 
 For a discussion of this issue, see Section~\ref{handling-warnings}.
 
 
-\subsection{What does a certain Checker Framework warning message mean?\label{faq-interpreting-warnings}}
+\subsectionAndLabel{What does a certain Checker Framework warning message mean?}{faq-interpreting-warnings}
 
 Read the error message first; sometimes that is enough to clarify it.
 
@@ -465,7 +465,7 @@ If nothing else explains it, then ask on the
 not make sense to you, and what you have already done to try to understand it.
 
 
-\subsection{Can a pluggable type-checker guarantee that my code is correct?\label{faq-no-absolute-guarantee}}
+\subsectionAndLabel{Can a pluggable type-checker guarantee that my code is correct?}{faq-no-absolute-guarantee}
 
 Each checker looks for certain errors.  You can use multiple checkers to
 detect more errors in your code, but you will never have a guarantee that
@@ -507,7 +507,7 @@ possible class of problems), improve documentation, and increase confidence
 in your software.
 
 
-\subsection{What guarantee does the Checker Framework give for concurrent code?\label{faq-concurrency}}
+\subsectionAndLabel{What guarantee does the Checker Framework give for concurrent code?}{faq-concurrency}
 
 The Lock Checker (see Chapter~\ref{lock-checker}) offers a way to detect
 and prevent certain concurrency errors.
@@ -575,14 +575,14 @@ limits the amount of flow-sensitive type qualifier refinement
 % designs.
 
 
-\subsection{How do I make compilation succeed even if a checker issues errors?\label{faq-awarns}}
+\subsectionAndLabel{How do I make compilation succeed even if a checker issues errors?}{faq-awarns}
 
 Section~\ref{running} describes the \<-Awarns> command-line
 option that turns checker errors into warnings, so type-checking errors
 will not cause \<javac> to exit with a failure status.
 
 
-\subsection{Why does the checker always say there are 100 errors or warnings?\label{faq-100-warnings}}
+\subsectionAndLabel{Why does the checker always say there are 100 errors or warnings?}{faq-100-warnings}
 
 By default, javac only reports the first 100 errors or warnings.
 Furthermore, once javac encounters an error, it doesn't try compiling any
@@ -595,7 +595,7 @@ that javac will process all your source files, use the option \<-Awarns>.
 See Section~\ref{running} for more details.
 
 
-\subsection{Why does the Checker Framework report an error regarding a type I have not written in my program?\label{faq-type-i-did-not-write}}
+\subsectionAndLabel{Why does the Checker Framework report an error regarding a type I have not written in my program?}{faq-type-i-did-not-write}
 
 Sometimes, a Checker Framework warning message will mention a type you have
 not written in your program.  This is typically because a default has been
@@ -608,7 +608,7 @@ information that was determined via flow-sensitive type refinement; see
 Section~\ref{type-refinement-purity}.
 
 
-\subsection{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
+\subsectionAndLabel{How can I do run-time monitoring of properties that were not statically checked?}{faq-run-time-checking}
 
 Some properties are not checked statically (see
 Chapter~\ref{suppressing-warnings} for reasons that code might not be
@@ -636,10 +636,10 @@ But, it would be better to have more general support that does not require
 the user to explicitly insert method calls.
 
 
-\section{False positive warnings\label{faq-false-positives-section}}
+\sectionAndLabel{False positive warnings}{faq-false-positives-section}
 
 
-\subsection{What is a ``false positive'' warning?\label{faq-false-positive}}
+\subsectionAndLabel{What is a ``false positive'' warning?}{faq-false-positive}
 
 A ``false positive'' is when the tool reports a potential problem, but the
 code is actually correct and will never violate the given property at run
@@ -671,7 +671,7 @@ precise, so that it does not suffer that false positive (see
 Section~\ref{faq-false-positive-extend-checker-framework}).
 
 
-\subsection{How can I improve the Checker Framework to eliminate a false positive warning?\label{faq-false-positive-extend-checker-framework}}
+\subsectionAndLabel{How can I improve the Checker Framework to eliminate a false positive warning?}{faq-false-positive-extend-checker-framework}
 
 As noted in Section~\ref{faq-false-positive}, \emph{every} sound analysis
 tool suffers false positives.
@@ -705,7 +705,7 @@ to give a tiny example that is easy to evaluate and fix, but please also
 indicate how it arises in real-world, well-written code.
 
 
-\subsection{Why doesn't the Checker Framework infer types for fields and method return types?\label{faq-infer-fields}}
+\subsectionAndLabel{Why doesn't the Checker Framework infer types for fields and method return types?}{faq-infer-fields}
 
 Consider the following code.  A programmer can tell that all three
 invocations of \<format> are safe --- they never suffer an
@@ -798,7 +798,7 @@ There are several reasons for this design choice.
 % programmers see inconsistent results, they should write types explicitly.
 
 
-\subsection{Why doesn't the Checker Framework track relationships between variables?\label{faq-relationships-between-variables}}
+\subsectionAndLabel{Why doesn't the Checker Framework track relationships between variables?}{faq-relationships-between-variables}
 
 The Checker Framework estimates the possible run-time value of each
 variable, as expressed in a type system.  In general, the Checker Framework
@@ -900,7 +900,7 @@ properties, consider the following code:
 \end{Verbatim}
 
 
-\subsection{Why isn't the Checker Framework path-sensitive?\label{faq-path-sensitive}}
+\subsectionAndLabel{Why isn't the Checker Framework path-sensitive?}{faq-path-sensitive}
 
 The Checker Framework is not path-sensitive.  That is, it maintains one
 estimate for each variable, and it assumes at every branch (such as \<if>
@@ -937,13 +937,13 @@ but also much more complex and much slower.  We have not yet found this
 necessary.
 
 
-\section{Syntax of type annotations\label{faq-syntax-section}}
+\sectionAndLabel{Syntax of type annotations}{faq-syntax-section}
 
 There is also a separate FAQ for the type annotations syntax
 (\url{https://checkerframework.org/jsr308/jsr308-faq.html}).
 
 
-\subsection{What is a ``receiver''?\label{faq-receiver}}
+\subsectionAndLabel{What is a ``receiver''?}{faq-receiver}
 
 The \emph{receiver} of a method is the \<this> formal parameter, sometimes
 also called the ``current object''.  Within the method declaration, \<this>
@@ -995,7 +995,7 @@ constructor of an inner class, the receiver is named \<Outer.this> and the
 result is named \<this>.
 
 
-\subsection{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?\label{faq-annotation-after-type}}
+\subsectionAndLabel{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?}{faq-annotation-after-type}
 
 In a type such as \<@NonNull Object @Nullable []>, it may appear that the
 \<@Nullable> annotation is written \emph{after} the type \<Object>.  In
@@ -1003,7 +1003,7 @@ fact, \<@Nullable> modifies \<[]>.  See the next FAQ, about array
 annotations (Section~\ref{faq-array-syntax-meaning}).
 
 
-\subsection{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
+\subsectionAndLabel{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?}{faq-array-syntax-meaning}
 
 You should parse this as:
 (\textbf{\<@NonNull Object>}) (\textbf{\<@Nullable []>}).
@@ -1027,7 +1027,7 @@ Section~\ref{declaration-annotations-moved} explains how the Checker
 Framework handles declaration annotations in the meanwhile.
 
 
-\subsection{What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?\label{faq-varargs-syntax-meaning}}
+\subsectionAndLabel{What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?}{faq-varargs-syntax-meaning}
 
 Varargs annotations are treated similarly to array annotations.
 (A way to remember this is that
@@ -1059,7 +1059,7 @@ Either of these annotations
 applies to the element type. The annotation documents that the method takes an array of English strings.
 
 
-\subsection{What is the meaning of a type qualifier at a class declaration?\label{faq-type-qualifier-on-class-declaration}}
+\subsectionAndLabel{What is the meaning of a type qualifier at a class declaration?}{faq-type-qualifier-on-class-declaration}
 
 % TODO: use a more realistic example.
 
@@ -1071,7 +1071,7 @@ the type by writing a more restrictive annotation on a use of MyClass, such
 as \<@MyMoreRestrictiveQual MyClass>.
 
 
-\subsection{Why shouldn't a qualifier apply to both types and declarations?\label{faq-no-annotation-on-types-and-declarations}}
+\subsectionAndLabel{Why shouldn't a qualifier apply to both types and declarations?}{faq-no-annotation-on-types-and-declarations}
 
 It is bad style for an annotation to apply to both types and declarations.
 In other words, every annotation should have a \<@Target> meta-annotation,
@@ -1130,7 +1130,7 @@ temporary measure, intended to be used until the tool supported Java 8, and
 should not be necessary any longer.
 
 
-\subsection{How do I annotate a fully-qualified type name?\label{faq-annotate-fully-qualified-name}}
+\subsectionAndLabel{How do I annotate a fully-qualified type name?}{faq-annotate-fully-qualified-name}
 
 If you write a fully-qualified type name in your program, then the Java
 language requires you to write a type annotation on the simple name part,
@@ -1152,7 +1152,7 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 
-\subsection{What is the difference between type annotations and declaration annotations?\label{faq-type-vs-declaration-annotations}}
+\subsectionAndLabel{What is the difference between type annotations and declaration annotations?}{faq-type-vs-declaration-annotations}
 
 Java has two distinct varieties of annotation:  type annotations and
 declaration annotations.
@@ -1193,10 +1193,10 @@ Note that the type annotation describes the value, and the declaration annotatio
 As a matter of style, declaration annotations are written on their own line, and type annotations are written directly before the type, on the same line.
 
 
-\section{Semantics of type annotations\label{faq-semantics-section}}
+\sectionAndLabel{Semantics of type annotations}{faq-semantics-section}
 
 
-\subsection{How can I handle typestate, or phases of my program with different data properties?\label{faq-typestate}}
+\subsectionAndLabel{How can I handle typestate, or phases of my program with different data properties?}{faq-typestate}
 
 Sometimes, your program works in phases that have different behavior.  For
 example, you might have a field that starts out null and becomes non-null
@@ -1223,7 +1223,7 @@ You can also use a typestate checker (see
 tested.
 
 
-\subsection{Why are explicit and implicit bounds defaulted differently?\label{faq-implicit-bounds}}
+\subsectionAndLabel{Why are explicit and implicit bounds defaulted differently?}{faq-implicit-bounds}
 
 The following two bits of code have the same semantics under Java, but are
 treated differently by the Checker Framework's CLIMB-to-top defaulting
@@ -1290,7 +1290,7 @@ Here are some style guidelines:
 \end{itemize}
 
 
-\subsection{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?\label{faq-runtime-retention}}
+\subsectionAndLabel{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?}{faq-runtime-retention}
 
 Annotations such as \refqualclass{checker/nullness/qual}{NonNull} are
 declared with
@@ -1315,9 +1315,9 @@ libraries that it uses, and separately-compiled libraries are available to
 the compiler only as class files.
 
 
-\section{Creating a new checker\label{faq-create-a-checker-section}}
+\sectionAndLabel{Creating a new checker}{faq-create-a-checker-section}
 
-\subsection{How do I create a new checker?\label{faq-create-a-checker}}
+\subsectionAndLabel{How do I create a new checker?}{faq-create-a-checker}
 
 In addition to using the checkers that are distributed with the Checker
 Framework, you can write your own checker to check specific properties that
@@ -1343,7 +1343,7 @@ Section~\ref{subtyping-example} explains this checker and tells
 you how to run it.
 
 
-\subsection{What properties can and cannot be handled by type-checking?\label{faq-type-properties}}
+\subsectionAndLabel{What properties can and cannot be handled by type-checking?}{faq-type-properties}
 
 In theory, any property about a program can be expressed and checked within
 a type system.  In practice, types are a good choice for some properties
@@ -1362,7 +1362,7 @@ Types are not a good solution for preventing infinite loops, except perhaps
 in special cases.
 
 
-\subsection{Why is there no declarative syntax for writing type rules?\label{faq-declarative-syntax-for-type-rules}}
+\subsectionAndLabel{Why is there no declarative syntax for writing type rules?}{faq-declarative-syntax-for-type-rules}
 
 A type system implementer can declaratively specify the type qualifier
 hierarchy (Section~\ref{creating-declarative-hierarchy}) and the type introduction rules
@@ -1382,10 +1382,10 @@ adequate syntax exists, then the Checker Framework can be extended to
 support it.
 
 
-\section{Tool questions\label{faq-tool-section}}
+\sectionAndLabel{Tool questions}{faq-tool-section}
 
 
-\subsection{How does pluggable type-checking work?\label{faq-pluggable-type-checking}}
+\subsectionAndLabel{How does pluggable type-checking work?}{faq-pluggable-type-checking}
 
 The Checker Framework enables you to define a new type system.  It finds
 errors, or guarantees their absence, by performing type-checking that is
@@ -1425,7 +1425,7 @@ the declared type of the left-hand side.
 \end{itemize}
 
 
-\subsection{What classpath is needed to use an annotated library?\label{faq-classpath-to-use-annotated-library}}
+\subsectionAndLabel{What classpath is needed to use an annotated library?}{faq-classpath-to-use-annotated-library}
 
 Suppose that you distribute a library, which contains Checker Framework
 annotations such as \<@Nullable>.  This enables clients of the library to
@@ -1447,7 +1447,7 @@ These are properties of Java, and are not specific to the Checker
 Framework's annotations.
 
 
-\subsection{Why do \<.class> files contain more annotations than the source code?\label{faq-classfile-annotations}}
+\subsectionAndLabel{Why do \<.class> files contain more annotations than the source code?}{faq-classfile-annotations}
 
 You may notice annotations such as \<@Pure> and \<@SideEffectFree> in
 compiled \<.class> files even though the source code containes no
@@ -1464,7 +1464,7 @@ In addition, defaulted and inferred type qualifiers are written into
 \<.class> files; see Section~\ref{effective-qualifier}.
 
 
-\subsection{Is there a type-checker for managing checked and unchecked exceptions?\label{faq-checked-exceptions}}
+\subsectionAndLabel{Is there a type-checker for managing checked and unchecked exceptions?}{faq-checked-exceptions}
 
 It is possible to annotate exception types, and any type-checker built on the
 Checker Framework enforces that type annotations are consistent between
@@ -1480,10 +1480,10 @@ effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
 type-and-effect system that is distributed with the Checker Framework.
 
 
-\section{Relationship to other tools\label{faq-other-tools-section}}
+\sectionAndLabel{Relationship to other tools}{faq-other-tools-section}
 
 
-\subsection{Why not just use a bug detector (like FindBugs)?\label{faq-type-checking-vs-bug-detectors}}
+\subsectionAndLabel{Why not just use a bug detector (like FindBugs)?}{faq-type-checking-vs-bug-detectors}
 
 Pluggable type-checking finds more bugs than a bug detector does, for any
 given variety of bug.
@@ -1510,7 +1510,7 @@ Checker Framework, see section 6 of the paper
 \href{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical pluggable types for Java''}~\cite{PapiACPE2008}.
 
 
-\subsection{How does the Checker Framework compare with Eclipse's null analysis?\label{faq-eclipse}}
+\subsectionAndLabel{How does the Checker Framework compare with Eclipse's null analysis?}{faq-eclipse}
 
 Eclipse comes with a
 \href{http://help.eclipse.org/luna/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Ftasks\%2Ftask-using_null_annotations.htm}{null analysis} that
@@ -1558,7 +1558,7 @@ Its IDE integration is tighter and slicker.
 checker-framework-dev@googlegroups.com so we can update the manual.)
 
 
-\subsection{How does the Checker Framework compare with NullAway?\label{faq-nullaway}}
+\subsectionAndLabel{How does the Checker Framework compare with NullAway?}{faq-nullaway}
 
 \href{https://github.com/uber/NullAway}{NullAway} is a lightweight, unsound
 type-checker whose aim is similar to that of the Nullness Checker
@@ -1571,7 +1571,7 @@ crash with a null pointer exception.  NullAway ignores generics, for example.
 However, NullAway is faster than the Nullness Checker and may require fewer annotations.
 
 
-\subsection{How does the Checker Framework compare with the JDK's \<Optional> type?\label{faq-optional}}
+\subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
 
 JDK 8 introduced the \sunjavadoc{java/util/Optional.html}{\code{Optional}}
 class, a container that is either empty or contains a non-null value.
@@ -1582,7 +1582,7 @@ Section~\ref{nullness-vs-optional} explains the relationship between
 nullness and \<Optional> and the benefits of each.
 
 
-\subsection{How does pluggable type-checking compare with JML?\label{faq-jml}}
+\subsectionAndLabel{How does pluggable type-checking compare with JML?}{faq-jml}
 
 \href{http://www.eecs.ucf.edu/~leavens/JML//index.shtml}{JML}, the Java Modeling
 Language~\cite{LeavensBR2006:JML}, is a language for writing formal
@@ -1604,7 +1604,7 @@ However, JML has a run-time checker, which the Checker Framework currently
 lacks.
 
 
-\subsection{Is the Checker Framework an official part of Java?\label{faq-checker-framework-part-of-java}}
+\subsectionAndLabel{Is the Checker Framework an official part of Java?}{faq-checker-framework-part-of-java}
 
 The Checker Framework is not an official part of Java.
 The Checker Framework relies on
@@ -1613,7 +1613,7 @@ type annotations, which are part of Java 8.  See the
   Annotations (JSR 308) FAQ} for more details.
 
 
-\subsection{What is the relationship between the Checker Framework and JSR 305?\label{faq-jsr-305}}
+\subsectionAndLabel{What is the relationship between the Checker Framework and JSR 305?}{faq-jsr-305}
 
 JSR 305 aimed to define official Java names for some annotations, such as
 \<@NonNull> and \<@Nullable>.  However, it did not aim to precisely define
@@ -1653,7 +1653,7 @@ are compatible with annotations defined by JSR 305, FindBugs, IntelliJ, and
 other tools; see Section~\ref{nullness-related-work}.
 
 
-\subsection{What is the relationship between the Checker Framework and JSR 308?\label{faq-jsr-308}}
+\subsectionAndLabel{What is the relationship between the Checker Framework and JSR 308?}{faq-jsr-308}
 
 JSR 308, also known as the Type Annotations specification, dictates the
 syntax of type annotations in Java SE 8:  how they are expressed in the

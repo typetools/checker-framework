@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Type inference\label{type-inference}}
+\chapterAndLabel{Type inference}{type-inference}
 
 There are two different tasks that are commonly called ``type inference'':
 \begin{enumerate}
@@ -26,7 +26,7 @@ Advantages of \emph{all} varieties of type inference include:
 \end{itemize}
 
 
-\section{Local type inference during type-checking\label{type-inference-refinement}}
+\sectionAndLabel{Local type inference during type-checking}{type-inference-refinement}
 
 During type-checking, if certain variables have no type qualifier, the
 type-checker determines whether there is some type qualifier that would
@@ -63,7 +63,7 @@ known as ``flow-sensitive local type refinement'', see
 Section~\ref{type-refinement}.
 
 
-\section{Type inference to annotate a program\label{type-inference-to-annotate}}
+\sectionAndLabel{Type inference to annotate a program}{type-inference-to-annotate}
 
 As a separate step before type-checking, a type inference tool takes the
 program as input, and outputs a set of type qualifiers that would
@@ -86,7 +86,7 @@ Advantages of this variety of type inference include:
 \end{itemize}
 
 
-\subsection{Type inference tools\label{type-inference-tools}}
+\subsectionAndLabel{Type inference tools}{type-inference-tools}
 
 This section lists tools that take a program and output a set of
 annotations for it.
@@ -95,7 +95,7 @@ more accurate job for that type system)
 then lists general tools that work for any type system.
 
 
-\subsubsection{Type inference for specific type systems\label{type-inference-tools-specialized}}
+\subsubsectionAndLabel{Type inference for specific type systems}{type-inference-tools-specialized}
 
 Section~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.
@@ -106,7 +106,7 @@ command-line option, it will suggest methods that can be marked as
 Section~\ref{type-refinement-purity}.
 
 
-\subsubsection{Type inference for any type system\label{type-inference-tools-general}}
+\subsubsectionAndLabel{Type inference for any type system}{type-inference-tools-general}
 
 By supplying the \<-Ainfer> command-line option,
 any type-checker can infer annotations. See Section~\ref{whole-program-inference}.
@@ -122,7 +122,7 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
-\section{Whole-program inference\label{whole-program-inference}}
+\sectionAndLabel{Whole-program inference}{whole-program-inference}
 
 Whole-program inference is an interprocedural inference that
 infers types for fields, method parameters, and method return types that do not
@@ -188,7 +188,7 @@ or a supertype of the default type, by contrast with type refinement which
 always refines the current type to a subtype.
 
 
-\subsection{Whole-program inference ignores some code\label{whole-program-inference-ignores-some-code}}
+\subsectionAndLabel{Whole-program inference ignores some code}{whole-program-inference-ignores-some-code}
 
 Whole-program inference ignores code within the scope of a
 \<@SuppressWarnings> annotation with an appropriate key
@@ -220,7 +220,7 @@ Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
 
 
-\subsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
+\subsectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
 
 As with any type inference tool, it is a good idea to manually examine the
 results.
@@ -240,7 +240,7 @@ to the corresponding upper bounds of the type variable \emph{declaration}.
 \end{itemize}
 
 
-\subsubsection{Poor whole-program inference results due to non-representative uses\label{whole-program-inference-non-representative-uses}}
+\subsubsectionAndLabel{Poor whole-program inference results due to non-representative uses}{whole-program-inference-non-representative-uses}
 
 Whole-program inference determines a method parameter's type
 annotation based on what arguments are passed to the method, but not on how the
@@ -292,7 +292,7 @@ add tests that pass additional values then re-run inference.
 \end{itemize}
 
 
-\subsection{How whole-program inference works\label{how-whole-program-inference-works}}
+\subsectionAndLabel{How whole-program inference works}{how-whole-program-inference-works}
 
 This section explains how the \<infer-and-annotate.sh> script works.  If you
 merely want to run the script and you are not encountering trouble, you can

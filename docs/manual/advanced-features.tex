@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Advanced type system features\label{advanced-type-system-features}}
+\chapterAndLabel{Advanced type system features}{advanced-type-system-features}
 
 This chapter describes features that are automatically supported by every
 checker written with the Checker Framework.
@@ -9,7 +9,7 @@ sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
 
 
-\section{Invariant array types\label{invariant-arrays}}
+\sectionAndLabel{Invariant array types}{invariant-arrays}
 
 Java's type system is unsound with respect to arrays.  That is, the Java
 type-checker approves code that is unsafe and will cause a run-time crash.
@@ -50,7 +50,7 @@ along with \<-AinvariantArrays>, you will need to suppress any warnings that
 are false positives because the array is treated in a read-only way.
 
 
-\section{Context-sensitive type inference for array constructors\label{array-context-sensitive}}
+\sectionAndLabel{Context-sensitive type inference for array constructors}{array-context-sensitive}
 
 When you write an expression, the Checker Framework gives it the most
 precise possible type, depending on the particular expression or value.
@@ -83,7 +83,7 @@ that either in the context (change the declaration of \<myStrings>) or in a
 \<new> construct (change the expression to \<new @Regex String[] >\verb|{"hello"}|).
 
 
-\section{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
+\sectionAndLabel{The effective qualifier on a type (defaults and inference)}{effective-qualifier}
 
 A checker sometimes treats a type as having a slightly different qualifier
 than what is written on the type --- especially if the programmer wrote no
@@ -180,7 +180,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 
 
-\subsection{Default qualifier for unannotated types\label{defaults}}
+\subsectionAndLabel{Default qualifier for unannotated types}{defaults}
 
 An unannotated
 Java type is treated as if it had a default annotation.
@@ -297,7 +297,7 @@ in the \<extends> clause, not to the lower bound in the inexpressible
 implicit \<super void> clause.)
 
 
-\subsection{Defaulting rules and CLIMB-to-top\label{climb-to-top}}
+\subsectionAndLabel{Defaulting rules and CLIMB-to-top}{climb-to-top}
 
 Each type system defines a default qualifier (see
 Section~\ref{creating-typesystem-defaults}).  For example, the default
@@ -403,7 +403,7 @@ public @interface Nullable { }
 the CLIMB-to-top rule.
 
 
-\subsection{Inherited defaults\label{inherited-defaults}}
+\subsectionAndLabel{Inherited defaults}{inherited-defaults}
 
 In certain situations, it would be convenient for an annotation on a
 superclass member to be automatically inherited by subclasses that override
@@ -430,7 +430,7 @@ In the future, this feature may be added optionally, and each type-checker
 implementation can enable it if desired.
 
 
-\subsection{Inherited wildcard annotations\label{inherited-wildcard-annotations}}
+\subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
 
 If a wildcard is unbounded and has no annotation (e.g. \code{List<?>}),
 the annotations on the wildcard's bounds are copied from the type parameter
@@ -480,7 +480,7 @@ Also note that the \code{MyList} class declaration could have been more succinct
 written as: \code{class MyList<T extends @Nullable Object>} where the lower bound
 is implicitly the bottom annotation: \code {@NonNull}.
 
-\subsection{Default qualifiers for \<.class> files (conservative library defaults)\label{defaults-classfile}}
+\subsectionAndLabel{Default qualifiers for \<.class> files (conservative library defaults)}{defaults-classfile}
 
 (\emph{Note:} Currently, the conservative library defaults presented in this section
 are off by default and can be turned on by supplying the \<-AuseDefaultsForUncheckedcode=bytecode>
@@ -577,7 +577,7 @@ misbehave at run time.
 % annotations for type system designers.
 
 
-\section{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
+\sectionAndLabel{Automatic type refinement (flow-sensitive type qualifier inference)}{type-refinement}
 
 The
 checkers soundly treat local variables and expressions within a method body as having a
@@ -611,7 +611,7 @@ report (see Section~\ref{reporting-bugs}) that includes a small piece of
 Java code that reproduces the problem.
 
 
-\subsection{Type refinement examples\label{type-refinement-examples}}
+\subsectionAndLabel{Type refinement examples}{type-refinement-examples}
 
 Suppose you write
 
@@ -714,7 +714,7 @@ type is never inferred to be treated as possibly-null).
 
 
 
-\subsection{Types that are not refined\label{type-refinement-types-that-are-not-refined}}
+\subsectionAndLabel{Types that are not refined}{type-refinement-types-that-are-not-refined}
 
 Array element types and generic arguments are never changed by type
 refinement.  Changing these components of a type never yields a subtype of
@@ -727,7 +727,7 @@ For details, see Section~\ref{covariant-type-parameters} and
 Section~\ref{invariant-arrays}.
 
 
-\subsection{Run-time tests and type refinement\label{type-refinement-runtime-tests}}
+\subsectionAndLabel{Run-time tests and type refinement}{type-refinement-runtime-tests}
 
 Some type systems support a run-time test that the Checker Framework can
 use to refine types within the scope of a conditional such as \<if>, after
@@ -839,7 +839,7 @@ Type systems that cannot support a run-time test are:
 
 
 
-\subsection{Fields and flow-sensitive analysis\label{type-refinement-fields}}
+\subsectionAndLabel{Fields and flow-sensitive analysis}{type-refinement-fields}
 
 Flow sensitivity analysis infers the type of fields in some restricted cases:
 
@@ -897,7 +897,7 @@ Section~\ref{type-refinement-purity}.
 \end{itemize}
 
 
-\subsection{Side effects, determinism, purity, and flow-sensitive analysis\label{type-refinement-purity}}
+\subsectionAndLabel{Side effects, determinism, purity, and flow-sensitive analysis}{type-refinement-purity}
 
 Side effect analysis is important for helping a checker reason about the
 values of expressions.
@@ -1091,7 +1091,7 @@ flow-sensitive type refinement to be more precise.
 
 % This is a slightly funny place for this section, but I cannot decide on a
 % better one.
-\subsection{Assertions\label{type-refinement-assertions}}
+\subsectionAndLabel{Assertions}{type-refinement-assertions}
 
 If your code contains an \<assert> statement, then your code could behave
 in two different ways at run time, depending on whether assertions are
@@ -1114,7 +1114,7 @@ Section~\ref{assumeassertion}.
 
 % If you add a Javadoc link to this location, also add the qualifier to the
 % list below.
-\section{Writing Java expressions as annotation arguments\label{java-expressions-as-arguments}}
+\sectionAndLabel{Writing Java expressions as annotation arguments}{java-expressions-as-arguments}
 
 Sometimes, it is necessary to write a Java expression as the argument to an
 annotation.  The annotations that take a Java
@@ -1251,7 +1251,7 @@ quantification over all array components (e.g. to express that all
   array elements are non-null).  There is no such Java expression, but it
   would be useful when writing specifications.
 
-\section{Field invariants\label{field-invariants}}
+\sectionAndLabel{Field invariants}{field-invariants}
 
 Sometimes a field declared in a superclass has a more precise type in a
 subclass.  To express this fact, write
@@ -1309,8 +1309,8 @@ loophole in the type system, which requires verification by other means
 such as manual examination.
 
 
-% \section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
-\section{Unused fields\label{unused-fields}}
+% \sectionAndLabel{Unused fields and dependent types}{unused-fields-and-dependent-types}
+\sectionAndLabel{Unused fields}{unused-fields}
 
 In an inheritance hierarchy, subclasses often introduce new methods and
 fields.  For example, a \<Marsupial> (and its subclasses such as
@@ -1345,8 +1345,8 @@ Also see the discussion of typestate checkers, in
 Chapter~\ref{typestate-checker}.
 
 
-% \subsection{Unused fields\label{unused-fields}}
-\subsection{\<@Unused> annotation\label{unused-annotation}}
+% \subsectionAndLabel{Unused fields}{unused-fields}
+\subsectionAndLabel{\<@Unused> annotation}{unused-annotation}
 
 A Java subtype can have more fields than its supertype.  For example:
 
@@ -1398,7 +1398,7 @@ class @Marsupial-Animal {
 \end{Verbatim}
 
 
-% \subsection{Dependent types\label{dependent-types}}
+% \subsectionAndLabel{Dependent types}{dependent-types}
 %
 % A variable has a \emph{dependent type} if its type depends on some other
 % value or type.
@@ -1456,7 +1456,7 @@ class @Marsupial-Animal {
 % \end{Verbatim}
 %
 %
-% \subsubsection{Limitations of \<@Dependent>\label{dependent-types-limitations}}
+% \subsubsectionAndLabel{Limitations of \<@Dependent>}{dependent-types-limitations}
 %
 % It is unsound to write \<@Dependent> on a non-\<final> field.  Consider the
 % following:

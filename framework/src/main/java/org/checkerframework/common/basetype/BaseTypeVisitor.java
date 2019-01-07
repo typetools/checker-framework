@@ -676,12 +676,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
                     case POSTCONDTION:
-                        checkPostcondition(node, annotation, expr);
+                        checkPostcondition(node, annotation, contract.contractAnnotation, expr);
                         break;
                     case CONDITIONALPOSTCONDTION:
                         checkConditionalPostcondition(
                                 node,
                                 annotation,
+                                contract.contractAnnotation,
                                 expr,
                                 ((ConditionalPostcondition) contract).annoResult);
                         break;
@@ -697,6 +698,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.warning(
                                 key,
+                                contract.contractAnnotation
+                                        .getAnnotationType()
+                                        .asElement()
+                                        .getSimpleName(),
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
@@ -755,10 +760,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param methodTree declaration of the method
      * @param annotation expression's type must have this annotation
-     * @param expression the expression that the postcondition concerns
+     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
+     *     expression}. Used only for diagnostic messages.
+     * @param expression the expression that the postcondition {@code contractAnnotation} concerns
      */
     protected void checkPostcondition(
-            MethodTree methodTree, AnnotationMirror annotation, Receiver expression) {
+            MethodTree methodTree,
+            AnnotationMirror annotation,
+            AnnotationMirror contractAnnotation,
+            Receiver expression) {
         CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
         if (exitStore == null) {
             // if there is no regular exitStore, then the method
@@ -775,7 +785,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
                         Result.failure(
-                                "contracts.postcondition.not.satisfied", expression.toString()),
+                                "contracts.postcondition.not.satisfied",
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+                                expression.toString()),
                         methodTree);
             }
         }
@@ -787,11 +799,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param node tree of method with the postcondition
      * @param annotation expression's type must have this annotation
+     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
+     *     expression}. Used only for diagnostic messages.
      * @param expression the expression that the postcondition concerns
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree node, AnnotationMirror annotation, Receiver expression, boolean result) {
+            MethodTree node,
+            AnnotationMirror annotation,
+            AnnotationMirror contractAnnotation,
+            Receiver expression,
+            boolean result) {
         boolean booleanReturnType =
                 TypesUtils.isBooleanType(TreeUtils.typeOf(node.getReturnType()));
         if (!booleanReturnType) {
@@ -839,6 +857,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.conditional.postcondition.not.satisfied",
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
                                 expression.toString()),
                         returnStmt.getTree());
             }
@@ -1969,8 +1988,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     checker.report(
                             Result.failure(
                                     "monotonic.type.incompatible",
-                                    mono.getCanonicalName(),
-                                    mono.getCanonicalName(),
+                                    mono.getSimpleName(),
+                                    mono.getSimpleName(),
                                     valueType.toString()),
                             valueTree);
                     return;
@@ -3106,6 +3125,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 msgKey,
+                                overrider.getElement().getParameters().get(index).toString(),
                                 overriderMeth,
                                 overriderTyp,
                                 overriddenMeth,
@@ -3229,7 +3249,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Postcondition> result = new LinkedHashSet<>();
         for (ConditionalPostcondition p : conditionalPostconditions) {
             if (p.annoResult == b) {
-                result.add(new Postcondition(p.expression, p.annotation));
+                result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
             }
         }
         return result;

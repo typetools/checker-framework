@@ -1224,7 +1224,7 @@ public class StubParser {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName().toString())
-                    && StubUtil.toString(method).equals(wantedMethodString)) {
+                    && ElementUtils.getSimpleName(method).equals(wantedMethodString)) {
                 return method;
             }
         }
@@ -1261,7 +1261,7 @@ public class StubParser {
                 ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
-                    && StubUtil.toString(method).equals(wantedMethodString)) {
+                    && ElementUtils.getSimpleName(method).equals(wantedMethodString)) {
                 return method;
             }
         }

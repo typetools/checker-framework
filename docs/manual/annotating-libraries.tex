@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Annotating libraries\label{annotating-libraries}}
+\chapterAndLabel{Annotating libraries}{annotating-libraries}
 
 When your code uses a library that is not currently being compiled,
 the Checker Framework looks up the library's annotations in its class files.
@@ -95,14 +95,14 @@ when getting started, but you should always examine their results.
 % Nullness (Section~\ref{nullness-inference}) type system.
 
 
-\section{Tips for annotating a library\label{library-tips}}
+\sectionAndLabel{Tips for annotating a library}{library-tips}
 
 Section~\ref{tips-about-writing-annotations} gives general tips for writing
 annotations.  This section gives tips that are specific to annotating a
 third-party library.
 
 
-\subsection{Don't change the code\label{library-tips-dont-change-the-code}}
+\subsectionAndLabel{Don't change the code}{library-tips-dont-change-the-code}
 
 When you annotate a library, you should only add annotations and, when
 necessary, documentation of those annotations in a Java comment (\<//>
@@ -130,7 +130,7 @@ understand what you have done, and they make it harder to pull changes from
 upstream into the annotated library.
 
 
-\subsection{Library annotations should reflect the specification, not the implementation\label{library-tips-specification}}
+\subsectionAndLabel{Library annotations should reflect the specification, not the implementation}{library-tips-specification}
 
 Publicly-visible annotations (including those on public method formal
 parameters and return types) should be based on the
@@ -164,7 +164,7 @@ they do, you can also express the fact as an annotation.
 % wait for the library documentation to be updated.
 
 
-\subsection{Report bugs upstream\label{library-tips-report-bugs}}
+\subsectionAndLabel{Report bugs upstream}{library-tips-report-bugs}
 
 While annotating the library, you may discover bugs or missing/wrong
 documentation.  If you have a documentation improvement or a bug fix, then
@@ -174,7 +174,7 @@ you will be able to add annotations that are consistent with the
 documentation.
 
 
-\subsection{Fully annotate the library, or indicate which parts you did not\label{library-tips-fully-annotate}}
+\subsectionAndLabel{Fully annotate the library, or indicate which parts you did not}{library-tips-fully-annotate}
 
 If you do not annotate all the files in the library, then use
 \refqualclass{framework/qual}{AnnotatedFor} to indicate what files you have
@@ -187,7 +187,7 @@ won't know whether a particular method is unannotated because you didn't
 get to it yet or because you decided that it didn't need any annotations.
 
 
-\subsection{Verify your annotations\label{library-tips-verify}}
+\subsectionAndLabel{Verify your annotations}{library-tips-verify}
 
 Ideally, after you annotate a file, you should type-check the file to verify
 the correctness and completeness of your annotations.
@@ -201,7 +201,7 @@ you supply \<-Awarns>, you don't have to suppress those warnings and the
 compiler will still produce \<.class> files.
 
 
-\section{Creating an annotated library\label{annotating-libraries-create}}
+\sectionAndLabel{Creating an annotated library}{annotating-libraries-create}
 
 This section describes how to create an annotated library.
 
@@ -301,7 +301,7 @@ This section describes how to create an annotated library.
 \end{enumerate}
 
 
-\section{Creating an annotated JDK\label{annotating-jdk}}
+\sectionAndLabel{Creating an annotated JDK}{annotating-jdk}
 
 This section tells how to create an annotated JDK for a new type system.
 Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
@@ -377,7 +377,7 @@ small changes to the JDK source code, such as commenting out a method body.
 \end{enumerate}
 
 
-\section{Compiling partially-annotated libraries\label{compiling-libraries}}
+\sectionAndLabel{Compiling partially-annotated libraries}{compiling-libraries}
 
 If you completely annotate a library, then you can compile it using a
 pluggable type-checker, and include the resulting \<.jar> file on your
@@ -409,7 +409,7 @@ There are two concerns:
 
 
 
-\subsection{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument\label{AuseDefaultsForUncheckedCodesource}}
+\subsectionAndLabel{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument}{AuseDefaultsForUncheckedCodesource}
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
@@ -447,7 +447,7 @@ is run.
 \end{sloppypar}
 
 
-\section{Using stub classes\label{stub}}
+\sectionAndLabel{Using stub classes}{stub}
 
 A stub file contains ``stub classes'' that contain annotated signatures,
 but no method bodies.  A
@@ -464,7 +464,7 @@ to handle \code{java.lang.String} for the Interning Checker,
 but you might do something similar for a different class and/or checker.
 
 
-\subsection{Using a stub file\label{stub-using}}
+\subsectionAndLabel{Using a stub file}{stub-using}
 
 The \code{-Astubs} argument causes the Checker Framework to read
 annotations from annotated stub classes in preference to the unannotated
@@ -514,7 +514,7 @@ When a stub file is provided by the author of a checker, the stub file is used
 automatically, with no need for the user to supply a command-line option.
 
 
-\subsection{Stub file format\label{stub-format}}
+\subsectionAndLabel{Stub file format}{stub-format}
 
 Every Java file is a valid stub file.  However, you can omit information
 that is not relevant to pluggable type-checking; this makes the stub file
@@ -572,13 +572,13 @@ following ways:
 
 
 
-\subsection{Creating a stub file\label{stub-creating}}
+\subsectionAndLabel{Creating a stub file}{stub-creating}
 
 Stub files are generally stored together with the checker implementation,
 in the same directory as the checker's \<.java> source code.
 
 
-\subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
+\subsubsectionAndLabel{If you have access to the Java source code}{stub-creating-with-source}
 
 Every Java file is a stub file.  If you have access to the Java file,
 rename file \<A.java> to \<A.astub>.  You can add
@@ -606,7 +606,7 @@ it runs.
 % for a given method rather than just skimming a few pages of method signatures.
 
 
-\subsubsection{If you do not have access to the Java source code\label{stub-creating-without-source}}
+\subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
 
 If you do not have access to the library source code, then you can create a
 stub file from the class file (Section~\ref{stub-creating}),
@@ -656,10 +656,10 @@ if an entry could not be found.
 \end{enumerate}
 
 
-\subsection{Troubleshooting stub libraries\label{stub-troubleshooting}}
+\subsectionAndLabel{Troubleshooting stub libraries}{stub-troubleshooting}
 
 
-\subsubsection{Type-checking does not yield the expected results\label{stub-troubleshooting-type-checking-results}}
+\subsubsectionAndLabel{Type-checking does not yield the expected results}{stub-troubleshooting-type-checking-results}
 
 By default, the stub parser silently ignores
 annotations on unknown classes and methods.
@@ -690,7 +690,7 @@ annotations.  This overrides the \<@NoStubParserWarning> annotation.
 
 
 
-\subsubsection{Problems parsing stub libraries\label{stub-troubleshooting-parsing}}
+\subsubsectionAndLabel{Problems parsing stub libraries}{stub-troubleshooting-parsing}
 
 When using command-line option \<-AstubWarnIfNotFound>,
 an error is issued if a stub file has a typo or the API method does not
@@ -710,7 +710,7 @@ StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 \end{Verbatim}
 
 
-\section{Troubleshooting/debugging annotated libraries\label{libraries-troubleshooting}}
+\sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
 
 Sometimes, it may seem that a checker is treating a library as unannotated
 even though the library has annotations.  The compiler has two flags that

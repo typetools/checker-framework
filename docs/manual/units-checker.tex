@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Units Checker\label{units-checker}}
+\chapterAndLabel{Units Checker}{units-checker}
 
 For many applications, it is important to use the correct units of
 measurement for primitive types.  For example, NASA's Mars Climate Orbiter
@@ -29,7 +29,7 @@ We provide an extensible framework to define the result of operations
 on units.
 
 
-\section{Units annotations\label{units-annotations}}
+\sectionAndLabel{Units annotations}{units-annotations}
 
 The checker currently supports three varieties of units annotations:
 kind annotations (\refqualclass{checker/units/qual}{Length},
@@ -155,7 +155,7 @@ the
 Javadoc}.
 
 
-\section{Extending the Units Checker\label{extending-units}}
+\sectionAndLabel{Extending the Units Checker}{extending-units}
 
 You can create new kind annotations and unit annotations that are specific
 to the particular needs of your project.  An easy way to do this is by
@@ -203,7 +203,7 @@ implementation of \code{UnitsRelations} to enforce it.
 
 
 
-\section{What the Units Checker checks\label{units-checks}}
+\sectionAndLabel{What the Units Checker checks}{units-checks}
 
 The Units Checker ensures that unrelated types are not mixed.
 
@@ -236,7 +236,7 @@ explicit in your code, and it's good style to minimize the number of
 conversions.)
 
 
-\section{Running the Units Checker\label{units-running}}
+\sectionAndLabel{Running the Units Checker}{units-running}
 
 The Units Checker can be invoked by running the following commands.
 
@@ -297,7 +297,7 @@ Also, see the example project in the \<docs/examples/units-extension> directory.
 
 
 
-\section{Suppressing warnings\label{units-suppressing}}
+\sectionAndLabel{Suppressing warnings}{units-suppressing}
 
 One example of when you need to suppress warnings is when you
 initialize a variable with a unit type by a literal value.
@@ -308,7 +308,7 @@ annotation to that constant.
 For examples, see class \code{UnitsTools}.
 
 
-\section{References\label{units-references}}
+\sectionAndLabel{References}{units-references}
 
 \begin{itemize}
 \item The GNU Units tool provides a comprehensive list of units:\\

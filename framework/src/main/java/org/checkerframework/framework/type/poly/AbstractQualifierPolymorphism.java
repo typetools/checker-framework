@@ -36,6 +36,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>{@link DefaultQualifierPolymorphism} implements the abstract methods in this class. Subclasses
  * can alter the way instantiations of polymorphic qualifiers are combined.
+ *
+ * <p>An "instantiation" is a mapping from declaration type to use-site type &mdash; that is, a
+ * mapping from {@code @Poly*} to concrete qualifiers. (The code replaces everything; but the
+ * instantiation only contains {@code @Poly*} as keys.)
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
@@ -44,7 +48,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /**
      * The polymorphic qualifiers: mapping from a polymorphic qualifier of a qualifier hierarchy to
-     * the top qualifier of that hierarchy. Field always non-null but might be an empty mapping.
+     * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
+     * mapping.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals;
 
@@ -52,7 +57,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotationMirrorSet topQuals;
 
     /** The qualifier hierarchy to use. */
-    protected final QualifierHierarchy qualhierarchy;
+    protected final QualifierHierarchy qualHierarchy;
 
     /** {@link PolyAll} annotation mirror. */
     protected final AnnotationMirror POLYALL;
@@ -79,8 +84,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     public AbstractQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
         this.atypeFactory = factory;
-        this.qualhierarchy = factory.getQualifierHierarchy();
-        this.topQuals = new AnnotationMirrorSet(qualhierarchy.getTopAnnotations());
+        this.qualHierarchy = factory.getQualifierHierarchy();
+        this.topQuals = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
 
         Elements elements = env.getElementUtils();
         this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
@@ -93,8 +98,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * Reset to allow reuse of the same instance. Subclasses should override this method to clear
-     * their additional state; they must call the super implementation.
+     * Reset to allow reuse of the same instance. Subclasses should override this method. The
+     * overriding implementation should clear its additional state and then call the super
+     * implementation.
      */
     protected void reset() {
         completer.reset();
@@ -276,8 +282,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * A Helper class that tries to resolve the polymorphic qualifiers with the most restricted
-     * qualifier. The mapping is from the polymorphic qualifier to the substitution for that
+     * A helper class that tries to resolve the polymorphic qualifiers with the most restrictive
+     * qualifier. It returns a mapping from the polymorphic qualifier to the substitution for that
      * qualifier, which is a set of qualifiers. For most polymorphic qualifiers this will be a
      * singleton set. For the @PolyAll qualifier, this might be a set of qualifiers.
      */
