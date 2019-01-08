@@ -589,35 +589,56 @@ use the last one.
 
 \sectionAndLabel{Lombok}{lombok}
 
-Project Lombok (\url{https://projectlombok.org/}) is a widely-used Java library.
-Starting with Lombok version 1.18.3 it is easy to use Lombok together with the
-Checker Framework. When Lombok generates code, selected type annotations are
-copied, for example, from fields to generated setter/getter/builder methods.
-These copied type annotations are necessary to successfully type check code that
-uses the Lombok-generated code.
+Project Lombok (\url{https://projectlombok.org/}) is a library that
+generates getter, setter, and builder methods.  For example, if you declare
+a field:
 
-Lombok automatically copies many standard Nullable/NonNull annotations, but the
-Checker Framework annotations in \<org.checkerframework> are currently not copied.
-See variable \<BASE\_COPYABLE\_ANNOTATIONS>
-in \url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}
-for the list of supported annotations.
-%
-The \<lombok.copyableAnnotations> configuration key can be added to
-the \<lombok.config> file to support additional annotations.
-Type use annotations that might interact with a Lombok feature (e.g. a type use
-annotation on a field for which a \<@Getter> is generated) must be listed
-in \<lombok.copyableAnnotations>.
-All \<org.checkerframework> annotations, as well as any custom type use
-annotations, must be added to \<lombok.copyableAnnotations>.
+\begin{Verbatim}
+  @Getter @Setter
+  private @Nullable String role;
+\end{Verbatim}
+
+\noindent
+then Lombok will generate getter and setter methods:
+
+\begin{Verbatim}
+  public String getRole() { return role; }
+  public void setRole(String role) { this.role = role; }
+\end{Verbatim}
+
+Unfortunately, the generated code is lacking \<@Nullable> annotations on
+the return type of \<getRole> and the argument type of \<setRole>.
+You need to tell Lombok to copy type arguments from the field, so that
+clients that use the generated methods will type-check properly.
+
+In your \<lombok.config> file, add to the \<lombok.copyableAnnotations>
+configuration key any type annotations that might interact with a
+Lombok feature (e.g., a type use annotation on a field annotated with
+\<@Getter> or \<@Setter>).  For example:
+
+\begin{Verbatim}
+  lombok.copyableAnnotations += org.checkerframework.checker.nullness.qual.Nullable
+\end{Verbatim}
 
 Directory \<docs/examples/lombok> contains an example Gradle project that
-combines Lombok with the Checker Framework.
+augments the configuration key.
 
+(Note:
+Lombok does support a limited set of annotations without the need for the
+\<lombok.copyableAnnotations> configuration key, but as of version 1.18.4
+(October 2018),
+Lombak does not yet support any of the Checker Framework annotations; see variable
+\<BASE\_COPYABLE\_ANNOTATIONS> in
+\url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}.)
+
+% TODO: Make Lombok automatically copy all type annotations.
 % Link to discussion thread and pull request:
 % https://github.com/rzwitserloot/lombok/pull/1837
 
 % TODO: see whether all Checker Framework annotations could be added to
 % BASE_COPYABLE_ANNOTATIONS in lombok.
+% Link to pull request that adds just a couple, to test the maintainers'
+% receptiveness:  https://github.com/rzwitserloot/lombok/pull/2003
 
 % TODO: write a simple tool that generates a lombok.config file for a particular
 % project.
