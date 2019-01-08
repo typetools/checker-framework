@@ -302,6 +302,13 @@ implemented JSR 198~\cite{JSR198}, then it would be possible to build
 a type-checking plug-in that works with both compilers.)
 
 
+There is no dedicated Eclipse plug-in for running the Checker Framework,
+but it's still easy to run the Checker Framework.  First, create a
+target/task in your build system to run the Checker Framework.  Then, run
+the target/task from Eclipse.  Section~\ref{eclipse-ant} gives details for
+Ant, but other build systems are similar.
+
+
 \subsectionAndLabel{Using an Ant task}{eclipse-ant}
 
 Add an Ant target as described in Section~\ref{ant-task}.  You can
