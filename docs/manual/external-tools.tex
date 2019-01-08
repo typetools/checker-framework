@@ -53,14 +53,14 @@ annotations.
 Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
 annotations.  (See
 \url{https://developer.android.com/studio/write/java8-support}
-for more details.)  This section explains how to configure your Andriod
+for more details.)  This section explains how to configure your Android
 project to use the Checker Framework.  All the changes should be made to
 the module's \<build.gradle> file --- not the app's \<build.gradle> file.
 
 \begin{enumerate}
 
 \item In your module's \<build.gradle> file, set the source and target
-  compatiblity to \<JavaVersion.VERSION\_1\_8>
+  compatibility to \<JavaVersion.VERSION\_1\_8>
 
 \begin{Verbatim}
 android {
@@ -777,7 +777,7 @@ project properties, or via a custom ant target.
 Note: The 'compile and save' action in NetBeans 8.1 automatically
 runs the Checker Framework whereas this functionality has not yet
 been incorporated into NetBeans 8.2. Additionally, JDK annotations
-are currently unavailable on Netbeans 8.1 and 8.2.
+are currently unavailable on NetBeans 8.1 and 8.2.
 
 % NetBeans 8.2 switched to a Java 9 javac, which breaks the Checker Framework as
 % annotation processor.
@@ -1037,7 +1037,7 @@ inside the body of a method (except sometimes on type arguments).
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
 % LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
 % LocalWords:  javacheck checkerframework MavenExample org arg typecheck
-% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled
+% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled dex
 % LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
-% LocalWords:  targetJavaVersion GradleExamples
-% LocalWords:  systemPath artifactID MacOS
+% LocalWords:  targetJavaVersion GradleExamples gradle JavaVersion
+% LocalWords:  systemPath artifactID MacOS eclipsec
