@@ -1860,8 +1860,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type of {@code this} in the current location, which can be used if {@code this}
-     * has a special semantics (e.g. {@code this} is non-null).
+     * Returns the type of {@code this} in the given location, which can be used if {@code this} has
+     * a special semantics (e.g. {@code this} is non-null).
      *
      * <p>The parameter is an arbitrary tree and does not have to mention "this", neither explicitly
      * nor implicitly. This method should be overridden for type-system specific behavior.
@@ -1886,6 +1886,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (enclosingClass.getSimpleName().length() != 0 && enclosingMethod != null) {
             AnnotatedDeclaredType methodReceiver;
             if (TreeUtils.isConstructor(enclosingMethod)) {
+                // The type of `this` in a constructor is usually the constructor return type.
+                // Certain type systems, in particular the Initialization Checker, need custom
+                // logic.
                 methodReceiver =
                         (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
             } else {
@@ -2231,6 +2234,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
             type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
+            // TODO: why is newClassTree.getTypeArguments not used?
         }
 
         if (TreeUtils.isDiamondTree(newClassTree)) {
@@ -2273,8 +2277,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
                     List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
                     for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-                        if (!types.isSameType(
-                                oldArgs.get(i).actualType, newArgs.get(i).actualType)) {
+                        if (!types.isSubtype(
+                                newArgs.get(i).actualType, oldArgs.get(i).actualType)) {
                             // One of the underlying types doesn't match. Give up.
                             return;
                         }

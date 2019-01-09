@@ -987,7 +987,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * @return the int range annotation is that equalient to {@code anm} or {@code anm} if one
+     * @return the int range annotation is that equalient to {@code anm}, or {@code anm} if one
      *     doesn't exist
      */
     private AnnotationMirror convertSpecialIntRangeToStandardIntRange(AnnotationMirror anm) {
