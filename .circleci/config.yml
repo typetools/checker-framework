@@ -42,3 +42,4 @@ jobs:
       # run tests!
       # - run: gradle test
       - run: ./.travis-build.sh all-tests downloadjdk
+
