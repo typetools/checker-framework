@@ -8,7 +8,7 @@ jobs:
     docker:
       # specify the version you desire here
       # - image: circleci/openjdk:8-jdk
-      - image: ubuntu-for-cf-jdk8
+      - image: mdernst/ubuntu-for-cf-jdk8
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
