@@ -8,7 +8,7 @@ public class TestRandom {
     }
 
     void testNextBytes(@NonDet Random r, @Det byte @Det [] dest) {
-        // :: error: (argument.type.incompatible)
+        // :: error: (method.invocation.invalid)
         r.nextBytes(dest);
     }
 }
