@@ -1,0 +1,12 @@
+import org.checkerframework.common.util.report.qual.ReportReadWrite;
+
+package java.util.concurrent;
+
+enum TimeUnit {
+
+    NANOSECONDS,
+    MICROSECONDS,
+    @ReportReadWrite MILLISECONDS,
+    @ReportReadWrite SECONDS
+
+}
