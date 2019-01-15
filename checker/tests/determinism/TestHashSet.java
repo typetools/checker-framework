@@ -4,15 +4,23 @@ import java.util.*;
 import org.checkerframework.checker.determinism.qual.*;
 
 class TestHashSet {
-    public static void testConstruct() {
+    static void testConstruct() {
         // :: error: (assignment.type.incompatible)
         @Det Set<String> s = new HashSet<String>();
     }
 
-    public static void testIteration() {
+    static void testConstructCollection(@Det List<String> collection) {
+        // :: error: (argument.type.incompatible)
+        System.out.println(new HashSet<String>(collection));
+    }
+
+    static void testDetInvalid() {
+        // :: error: (assignment.type.incompatible)
+        @Det Set<String> s = new @Det HashSet<String>();
+    }
+
+    static void testIteration() {
         Set<String> s = new HashSet<String>();
-        s.add("a");
-        s.add("b");
         for (String str : s) {
             // :: error: (argument.type.incompatible)
             System.out.println(str);

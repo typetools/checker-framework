@@ -269,6 +269,26 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return super.visitMemberSelect(node, annotatedTypeMirror);
         }
+
+        /**
+         * If node represents constructing a {@code @Det HashSet}, inserts {@code @OrderNonDet}
+         * instead.
+         *
+         * @param node a tree representing instantiating a class
+         * @param annotatedTypeMirror the type to modify if it represents a {@code @Det HashSet}
+         * @return visitNewClass() of the super class
+         */
+        @Override
+        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            IdentifierTree identifier = getNewClassClassName(node);
+            if (identifier != null
+                    && identifier.getName().contentEquals("HashSet")
+                    && AnnotationUtils.areSame(
+                            annotatedTypeMirror.getAnnotationInHierarchy(NONDET), DET)) {
+                annotatedTypeMirror.replaceAnnotation(ORDERNONDET);
+            }
+            return super.visitNewClass(node, annotatedTypeMirror);
+        }
     }
 
     /**
@@ -506,6 +526,35 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public QualifierHierarchy createQualifierHierarchy(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
         return new DeterminismQualifierHierarchy(factory, DET);
+    }
+
+    /**
+     * Returns the {@code IdentifierTree} representing the class name of the given tree. For
+     * example, if {@code tree} represents {@code new @NonDet HashSet<String>}, it will return an
+     * identifier representing {@code HashSet}.
+     *
+     * @param tree a tree representing a constructor call
+     * @return an {@code IdentifierTree} representing a class name if it could be found, or {@code
+     *     null} otherwise.
+     */
+    private IdentifierTree getNewClassClassName(NewClassTree tree) {
+        ExpressionTree className = tree.getIdentifier();
+        if (className.getKind() == Tree.Kind.IDENTIFIER) {
+            return (IdentifierTree) className;
+        }
+        if (className.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+            ParameterizedTypeTree paramType = (ParameterizedTypeTree) className;
+            if (paramType.getType().getKind() == Tree.Kind.IDENTIFIER) {
+                return (IdentifierTree) paramType.getType();
+            }
+            if (paramType.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
+                AnnotatedTypeTree annoType = (AnnotatedTypeTree) paramType.getType();
+                if (annoType.getUnderlyingType().getKind() == Tree.Kind.IDENTIFIER) {
+                    return (IdentifierTree) annoType.getUnderlyingType();
+                }
+            }
+        }
+        return null;
     }
 
     class DeterminismQualifierHierarchy extends GraphQualifierHierarchy {
