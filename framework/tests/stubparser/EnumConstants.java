@@ -1,8 +1,8 @@
 // Test case for https://github.com/typetools/checker-framework/issues/2147
 
-import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.*;
 
+import java.util.concurrent.TimeUnit;
 import org.checkerframework.common.util.report.qual.*;
 
 class ParseEnumConstants {
