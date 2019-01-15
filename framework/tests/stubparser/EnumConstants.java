@@ -1,4 +1,5 @@
-// Adapted test case for https://github.com/typetools/checker-framework/issues/2147 using framework package quals
+// Adapted test case for https://github.com/typetools/checker-framework/issues/2147 using framework
+// package quals
 
 import static java.util.concurrent.TimeUnit.*;
 
