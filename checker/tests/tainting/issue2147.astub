@@ -1,0 +1,10 @@
+import org.checkerframework.checker.tainting.qual.*;
+
+package java.lang;
+
+class Thread implements Runnable {
+    enum State {
+        @Untainted NEW,
+        @Tainted RUNNABLE;
+    }
+}
