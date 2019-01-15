@@ -1,12 +1,15 @@
-import org.checkerframework.common.util.report.qual.ReportReadWrite;
+import org.checkerframework.common.util.report.qual.*;
 
 package java.util.concurrent;
 
+// test annotations placed on plain enum constants
 enum TimeUnit {
-
     NANOSECONDS,
     MICROSECONDS,
-    @ReportReadWrite MILLISECONDS,
-    @ReportReadWrite SECONDS
 
+    @ReportReadWrite MILLISECONDS,
+    @ReportReadWrite SECONDS;
+
+    @ReportCall
+    long toMicros(long d);
 }

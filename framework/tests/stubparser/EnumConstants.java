@@ -1,8 +1,9 @@
 // Test case for https://github.com/typetools/checker-framework/issues/2147
 
-import org.checkerframework.common.util.report.qual.*;
-
 import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.*;
+
+import org.checkerframework.common.util.report.qual.*;
 
 class ParseEnumConstants {
 
@@ -10,8 +11,10 @@ class ParseEnumConstants {
     enum MyTimeUnit {
         NANOSECONDS,
         MICROSECONDS,
-        @ReportReadWrite MILLISECONDS,
-        @ReportReadWrite SECONDS
+        @ReportReadWrite
+        MILLISECONDS,
+        @ReportReadWrite
+        SECONDS
     }
 
     void readFromEnumInSource() {
@@ -25,14 +28,26 @@ class ParseEnumConstants {
         MyTimeUnit u4 = MyTimeUnit.NANOSECONDS;
     }
 
-    void ReadFromEnumStub(){
+    void readFromEnumInStub() {
         // :: error: (fieldreadwrite)
         TimeUnit u1 = TimeUnit.SECONDS;
         // :: error: (fieldreadwrite)
-        TimeUnit u2 = TimeUnit.MILLISECONDS;
+        TimeUnit u2 = MILLISECONDS;
 
         // these 2 uses should not have any reports
         TimeUnit u3 = TimeUnit.MICROSECONDS;
-        TimeUnit u4 = TimeUnit.NANOSECONDS;
+        TimeUnit u4 = NANOSECONDS;
+
+        // :: error: (fieldreadwrite) :: error: (methodcall)
+        long sUS = TimeUnit.SECONDS.toMicros(10);
+        // :: error: (fieldreadwrite)
+        long sNS = SECONDS.toNanos(10);
+
+        // :: error: (fieldreadwrite)
+        long msMS = TimeUnit.MILLISECONDS.toMillis(10);
+        // :: error: (fieldreadwrite) :: error: (methodcall)
+        long msUS = TimeUnit.MILLISECONDS.toMicros(10);
+        // :: error: (fieldreadwrite)
+        long msNS = MILLISECONDS.toNanos(10);
     }
 }
