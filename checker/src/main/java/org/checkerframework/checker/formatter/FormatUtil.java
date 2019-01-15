@@ -191,8 +191,6 @@ public class FormatUtil {
         /**
          * Constructs an instance of this class with the mismatched conversion and the expected one.
          */
-        // TODO: Warning started happening when annotated jdk is used.
-        @SuppressWarnings("compilermessages:conditional.type.incompatible")
         public IllegalFormatConversionCategoryException(
                 ConversionCategory expected, ConversionCategory found) {
             super(
