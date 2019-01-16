@@ -22,8 +22,8 @@ import org.checkerframework.javacutil.Pair;
  * of an input type, e.g. the result of a binary operation is a LUB of the type of expressions in
  * the binary operation.
  *
- * <p>{@link PropagationTreeAnnotator} is generally ran first by {@link ListTreeAnnotator} since the
- * trees it handles are not usually targets of @implicit for.
+ * <p>{@link PropagationTreeAnnotator} is generally run first by {@link ListTreeAnnotator} since the
+ * trees it handles are not usually targets of {@code @ImplicitFor}.
  *
  * <p>{@link PropagationTreeAnnotator} does not traverse trees deeply by default.
  *
