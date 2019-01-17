@@ -589,38 +589,60 @@ use the last one.
 
 \sectionAndLabel{Lombok}{lombok}
 
-Project Lombok (\url{https://projectlombok.org/}) is a widely-used Java library.
-Starting with Lombok version 1.18.3 it is easy to use Lombok together with the
-Checker Framework. When Lombok generates code, selected type annotations are
-copied, for example, from fields to generated setter/getter/builder methods.
-These copied type annotations are necessary to successfully type check code that
-uses the Lombok-generated code.
+Project Lombok (\url{https://projectlombok.org/}) is a library that
+generates getter, setter, and builder methods --- among other features.
+For example, if you declare
+a field:
 
-Lombok automatically copies many standard Nullable/NonNull annotations, but the
-Checker Framework annotations in \<org.checkerframework> are currently not copied.
-See variable \<BASE\_COPYABLE\_ANNOTATIONS>
-in \url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}
-for the list of supported annotations.
-%
-The \<lombok.copyableAnnotations> configuration key can be added to
-the \<lombok.config> file to support additional annotations.
-Type use annotations that might interact with a Lombok feature (e.g. a type use
-annotation on a field for which a \<@Getter> is generated) must be listed
-in \<lombok.copyableAnnotations>.
-All \<org.checkerframework> annotations, as well as any custom type use
-annotations, must be added to \<lombok.copyableAnnotations>.
+\begin{Verbatim}
+  @Getter @Setter
+  private @Regex String role;
+\end{Verbatim}
+
+\noindent
+then Lombok will generate getter and setter methods:
+
+\begin{Verbatim}
+  public String getRole() { return role; }
+  public void setRole(String role) { this.role = role; }
+\end{Verbatim}
+
+Unfortunately, the generated code is lacking \<@Regex> annotations on
+the return type of \<getRole> and the argument type of \<setRole>.
+You need to tell Lombok to copy type annotations from the field, so that
+clients that use the generated methods will type-check properly.
+
+In your \<lombok.config> file, add to the \<lombok.copyableAnnotations>
+configuration key any type annotations that might interact with a
+Lombok feature (e.g., a type use annotation on a field annotated with
+\<@Getter> or \<@Setter>).  For example:
+
+\begin{Verbatim}
+  lombok.copyableAnnotations += org.checkerframework.checker.regex.qual.Regex
+\end{Verbatim}
 
 Directory \<docs/examples/lombok> contains an example Gradle project that
-combines Lombok with the Checker Framework.
+augments the configuration key.
 
-% Link to discussion thread and pull request:
-% https://github.com/rzwitserloot/lombok/pull/1837
+(Note:
+Lombok does support a limited set of annotations without the need for the
+\<lombok.copyableAnnotations> configuration key, but as of version 1.18.4
+(October 2018),
+Lombok does not yet support any of the Checker Framework annotations; see variable
+\<BASE\_COPYABLE\_ANNOTATIONS> in
+\url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}.)
 
-% TODO: see whether all Checker Framework annotations could be added to
-% BASE_COPYABLE_ANNOTATIONS in lombok.
+% Alternatives:
+%  * It would be better if Lombok automatically copied all type annotations.
+%    Unfortunately, there is no way for Lombok to know whether an annotation
+%    is a type annotation, at the (early) point in the javac pipeline where
+%    Lombok runs.
+%  * Add all Checker Framework annotations to BASE_COPYABLE_ANNOTATIONS in
+%    the Lombok implementation.  But lombok.copyableAnnotations is still
+%    needed for user-defined type annotations.
 
 % TODO: write a simple tool that generates a lombok.config file for a particular
-% project.
+% project, with all type annotations used in the project.
 
 
 \sectionAndLabel{Maven}{maven}
@@ -1077,4 +1099,5 @@ inside the body of a method (except sometimes on type arguments).
 % LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled dex
 % LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
 % LocalWords:  targetJavaVersion GradleExamples gradle JavaVersion
-% LocalWords:  systemPath artifactID MacOS eclipsec
+% LocalWords:  systemPath artifactID MacOS eclipsec getter getRole setRole
+% LocalWords:  config copyableAnnotations
