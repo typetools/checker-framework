@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.lock.qual.*;
 
-@GuardedBy("lock") class DependentTypesNPE {
+@GuardedBy("lock") class ConstructorReturnNPE {
     // :: error: (expression.unparsable.type.invalid)
-    @GuardedBy("lock") DependentTypesNPE() {}
+    @GuardedBy("lock") ConstructorReturnNPE() {}
 }
