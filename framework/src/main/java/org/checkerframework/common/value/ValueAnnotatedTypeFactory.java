@@ -987,7 +987,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * @return the int range annotation is that equalient to {@code anm} or {@code anm} if one
+     * @return the int range annotation is that equalient to {@code anm}, or {@code anm} if one
      *     doesn't exist
      */
     private AnnotationMirror convertSpecialIntRangeToStandardIntRange(AnnotationMirror anm) {
@@ -1182,7 +1182,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             StringBuilder stringVal = new StringBuilder();
             for (ExpressionTree e : initializers) {
                 if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    char charVal = (char) (((Integer) ((LiteralTree) e).getValue()).intValue());
+                    char charVal = (char) ((Integer) ((LiteralTree) e).getValue()).intValue();
                     stringVal.append(charVal);
                 } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
                     char charVal = (((Character) ((LiteralTree) e).getValue()));
