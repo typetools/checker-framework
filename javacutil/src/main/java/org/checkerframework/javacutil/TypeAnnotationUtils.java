@@ -3,17 +3,13 @@ package org.checkerframework.javacutil;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TargetType;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Pair;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
@@ -87,28 +83,20 @@ public class TypeAnnotationUtils {
 
     public static boolean isSameTAPositionExceptTreePos(
             TypeAnnotationPosition p1, TypeAnnotationPosition p2) {
-        boolean eiequal = false;
-        try {
-            Field ei = TypeAnnotationPosition.class.getDeclaredField("exception_index");
-            // TODO: ugly way to get access to field in JDK 9.
-            // isSameTAPositionExceptTreePos also needs JDK 8/9 versions.
-            ei.setAccessible(true);
-            eiequal = ei.getInt(p1) == ei.getInt(p2);
-        } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
-            return false;
-        }
-        return eiequal
-                && p1.isValidOffset == p2.isValidOffset
+        return p1.type == p2.type
+                && p1.type_index == p2.type_index
                 && p1.bound_index == p2.bound_index
+                && p1.onLambda == p2.onLambda
+                && p1.parameter_index == p2.parameter_index
+                && p1.isValidOffset == p2.isValidOffset
+                && p1.offset == p2.offset
                 && p1.location.equals(p2.location)
                 && Arrays.equals(p1.lvarIndex, p2.lvarIndex)
                 && Arrays.equals(p1.lvarLength, p2.lvarLength)
                 && Arrays.equals(p1.lvarOffset, p2.lvarOffset)
-                && p1.offset == p2.offset
-                && p1.onLambda == p2.onLambda
-                && p1.parameter_index == p2.parameter_index
-                && p1.type == p2.type
-                && p1.type_index == p2.type_index;
+                && (!p1.hasExceptionIndex()
+                        || !p2.hasExceptionIndex()
+                        || (p1.getExceptionIndex() == p2.getExceptionIndex()));
     }
 
     /**
@@ -346,52 +334,125 @@ public class TypeAnnotationUtils {
     }
 
     public static TypeAnnotationPosition copyTAPosition(final TypeAnnotationPosition tapos) {
-        try {
-            Constructor<TypeAnnotationPosition> c =
-                    TypeAnnotationPosition.class.getDeclaredConstructor(
-                            TargetType.class,
-                            int.class,
-                            int.class,
-                            JCLambda.class,
-                            int.class,
-                            int.class,
-                            com.sun.tools.javac.util.List.class);
-            c.setAccessible(true);
-            TypeAnnotationPosition res =
-                    c.newInstance(
-                            tapos.type,
-                            tapos.pos,
-                            tapos.parameter_index,
-                            tapos.onLambda,
-                            tapos.type_index,
-                            tapos.bound_index,
-                            List.from(tapos.location));
-            res.isValidOffset = tapos.isValidOffset;
-            Field ei = TypeAnnotationPosition.class.getDeclaredField("exception_index");
-            ei.setAccessible(true);
-            ei.setInt(res, ei.getInt(tapos));
-            // TODO: would be cleaner to use getter/setter, but something is wrong with:
-            // TypeAnnotationPosition.class
-            //     .getDeclaredMethod("setExceptionIndex", int.class).invoke(
-            //         res, TypeAnnotationPosition.class
-            //             .getDeclaredMethod("getExceptionIndex").invoke(tapos));
-            res.location = List.from(tapos.location);
-            if (tapos.lvarIndex != null) {
-                res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
-            }
-            if (tapos.lvarLength != null) {
-                res.lvarLength = Arrays.copyOf(tapos.lvarLength, tapos.lvarLength.length);
-            }
-            if (tapos.lvarOffset != null) {
-                res.lvarOffset = Arrays.copyOf(tapos.lvarOffset, tapos.lvarOffset.length);
-            }
-            res.offset = tapos.offset;
-            return res;
-        } catch (Throwable t) {
-            assert false : "Checker Framework internal error: " + t;
-            t.printStackTrace();
-            return null;
+        TypeAnnotationPosition res;
+        switch (tapos.type) {
+            case CAST:
+                res =
+                        TypeAnnotationPosition.typeCast(
+                                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+                break;
+            case CLASS_EXTENDS:
+                res =
+                        TypeAnnotationPosition.classExtends(
+                                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+                break;
+            case CLASS_TYPE_PARAMETER:
+                res =
+                        TypeAnnotationPosition.typeParameter(
+                                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+                break;
+            case CLASS_TYPE_PARAMETER_BOUND:
+                res =
+                        TypeAnnotationPosition.typeParameterBound(
+                                tapos.location,
+                                tapos.onLambda,
+                                tapos.parameter_index,
+                                tapos.bound_index,
+                                tapos.pos);
+                break;
+            case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+                res =
+                        TypeAnnotationPosition.constructorInvocationTypeArg(
+                                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+                break;
+            case CONSTRUCTOR_REFERENCE:
+                res =
+                        TypeAnnotationPosition.constructorRef(
+                                tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
+                res =
+                        TypeAnnotationPosition.constructorRefTypeArg(
+                                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+                break;
+            case EXCEPTION_PARAMETER:
+                res =
+                        TypeAnnotationPosition.exceptionParameter(
+                                tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case FIELD:
+                res = TypeAnnotationPosition.field(tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case INSTANCEOF:
+                res = TypeAnnotationPosition.instanceOf(tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case LOCAL_VARIABLE:
+                res =
+                        TypeAnnotationPosition.localVariable(
+                                tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case METHOD_FORMAL_PARAMETER:
+                res =
+                        TypeAnnotationPosition.methodParameter(
+                                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+                break;
+            case METHOD_INVOCATION_TYPE_ARGUMENT:
+                res =
+                        TypeAnnotationPosition.methodInvocationTypeArg(
+                                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+                break;
+            case METHOD_RECEIVER:
+                res =
+                        TypeAnnotationPosition.methodReceiver(
+                                tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case METHOD_REFERENCE:
+                res = TypeAnnotationPosition.methodRef(tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case METHOD_REFERENCE_TYPE_ARGUMENT:
+                res =
+                        TypeAnnotationPosition.methodRefTypeArg(
+                                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+                break;
+            case METHOD_RETURN:
+                res =
+                        TypeAnnotationPosition.methodReturn(
+                                tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case METHOD_TYPE_PARAMETER:
+                res =
+                        TypeAnnotationPosition.methodTypeParameter(
+                                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+                break;
+            case METHOD_TYPE_PARAMETER_BOUND:
+                res =
+                        TypeAnnotationPosition.methodTypeParameterBound(
+                                tapos.location,
+                                tapos.onLambda,
+                                tapos.parameter_index,
+                                tapos.bound_index,
+                                tapos.pos);
+                break;
+            case NEW:
+                res = TypeAnnotationPosition.newObj(tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case RESOURCE_VARIABLE:
+                res =
+                        TypeAnnotationPosition.resourceVariable(
+                                tapos.location, tapos.onLambda, tapos.pos);
+                break;
+            case THROWS:
+                res =
+                        TypeAnnotationPosition.methodThrows(
+                                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+                break;
+            case UNKNOWN:
+            default:
+                assert false : "Unexpected target type: " + tapos + " at " + tapos.type;
+                res = null;
+                break;
         }
+        return res;
     }
 
     public static Type unannotatedType(final TypeMirror in) {
