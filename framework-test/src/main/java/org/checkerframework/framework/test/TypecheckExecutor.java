@@ -58,11 +58,9 @@ public class TypecheckExecutor {
         nonJvmOptions.add("100000");
         nonJvmOptions.add("-Xmaxwarns");
         nonJvmOptions.add("100000");
-        nonJvmOptions.add("-source");
-        nonJvmOptions.add("8");
-        nonJvmOptions.add("-target");
-        nonJvmOptions.add("8");
-        nonJvmOptions.add("-Xlint:-options"); // to avoid warning about source/target 8
+
+        nonJvmOptions.add("-Anocheckjdk");
+
         options.addAll(nonJvmOptions);
 
         if (configuration.shouldEmitDebugInfo()) {
