@@ -1108,7 +1108,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
         // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
         // Also, since annotations computed by the AnnotatedTypeFactory are stored in the element,
-        // the annotations have to be retrived from the tree so that only explicit annotations are
+        // the annotations have to be retrieved from the tree so that only explicit annotations are
         // returned.
         Tree decl = declarationFromElement(elt);
 
