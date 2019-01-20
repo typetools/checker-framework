@@ -9,6 +9,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
@@ -447,10 +448,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         setProcessingEnvironment(env);
 
         int jreVersion = PluginUtil.getJreVersion();
-        if (jreVersion != 8) {
+        if (jreVersion < 8) {
             throw new UserError(
                     String.format(
-                            "The Checker Framework must be run under JDK 8.  You are using version %d.",
+                            "The Checker Framework must be run under at least JDK 8.  You are using version %d.",
                             jreVersion));
         }
     }
@@ -710,7 +711,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                     + " At most one separator "
                                     + OPTION_SEPARATOR
                                     + " expected, but found "
-                                    + split.length);
+                                    + split.length
+                                    + ".");
             }
         }
         return Collections.unmodifiableMap(activeOpts);
@@ -731,8 +733,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /** Log a user error. */
     private void logUserError(UserError ce) {
-        StringBuilder msg = new StringBuilder(ce.getMessage());
-        printMessage(msg + ".");
+        String msg = ce.getMessage();
+        printMessage(msg);
     }
 
     /** Log an internal error in the framework or a checker. */
@@ -918,8 +920,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-        com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
-        if (!warnedAboutSourceLevel && !source.allowTypeAnnotations()) {
+        Source source = Source.instance(context);
+        // Don't use source.allowTypeAnnotations() because that API changed after 9.
+        // Also the enum constant Source.JDK1_8 was renamed at some point...
+        if (!warnedAboutSourceLevel && source.compareTo(Source.lookup("8")) < 0) {
             messager.printMessage(
                     javax.tools.Diagnostic.Kind.WARNING,
                     "-source " + source.name + " does not support type annotations");
