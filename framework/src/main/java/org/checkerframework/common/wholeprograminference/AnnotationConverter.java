@@ -34,7 +34,10 @@ public class AnnotationConverter {
      * scenelib.annotations.Annotation}.
      */
     protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
-        AnnotationDef def = new AnnotationDef(AnnotationUtils.annotationName(am));
+        AnnotationDef def =
+                new AnnotationDef(
+                        AnnotationUtils.annotationName(am),
+                        String.format("annotationMirrorToAnnotation(%s)", am));
         Map<String, AnnotationFieldType> fieldTypes = new HashMap<>();
         // Handling cases where there are fields in annotations.
         for (ExecutableElement ee : am.getElementValues().keySet()) {

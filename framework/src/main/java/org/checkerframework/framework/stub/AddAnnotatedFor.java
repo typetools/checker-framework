@@ -54,7 +54,8 @@ public class AddAnnotatedFor {
                         annotatedFor.getCanonicalName(),
                         annotatedForMetaAnnotations,
                         Collections.singletonMap(
-                                "value", new ArrayAFT(BasicAFT.forType(String.class))));
+                                "value", new ArrayAFT(BasicAFT.forType(String.class))),
+                        "AddAnnotatedFor");
     }
 
     /**
@@ -64,8 +65,16 @@ public class AddAnnotatedFor {
      */
     public static void main(String[] args) throws IOException, DefException, ParseException {
         AScene scene = new AScene();
-        Reader r = args.length > 0 ? new FileReader(args[0]) : new InputStreamReader(System.in);
-        IndexFileParser.parse(new LineNumberReader(r), scene);
+        String source;
+        Reader r;
+        if (args.length > 0) {
+            source = args[0];
+            r = new FileReader(source);
+        } else {
+            source = "System.in";
+            r = new InputStreamReader(System.in);
+        }
+        IndexFileParser.parse(new LineNumberReader(r), source, scene);
         scene.prune();
         addAnnotatedFor(scene);
         IndexFileWriter.write(scene, new PrintWriter(System.out, true));
