@@ -389,7 +389,10 @@ public class AnnotationClassLoader {
         Set<String> paths = new LinkedHashSet<>();
 
         // add all extension paths
-        paths.addAll(Arrays.asList(System.getProperty("java.ext.dirs").split(File.pathSeparator)));
+        String extdirs = System.getProperty("java.ext.dirs");
+        if (extdirs != null && !extdirs.isEmpty()) {
+            paths.addAll(Arrays.asList(extdirs.split(File.pathSeparator)));
+        }
 
         // add all paths in CLASSPATH, -cp, and -classpath
         paths.addAll(
@@ -414,7 +417,13 @@ public class AnnotationClassLoader {
      *     both are unavailable
      */
     private final @Nullable URLClassLoader getClassLoader() {
-        return (URLClassLoader) InternalUtils.getClassLoaderForClass(checker.getClass());
+        ClassLoader ret = InternalUtils.getClassLoaderForClass(checker.getClass());
+        if (ret instanceof URLClassLoader) {
+            return (@Nullable URLClassLoader) ret;
+        } else {
+            // Java 9+ use an internal classloader that doesn't support getting URLs. Ignore.
+            return null;
+        }
     }
 
     /** Debug Use: Displays all classpaths examined by the class loader. */
@@ -688,17 +697,13 @@ public class AnnotationClassLoader {
             final String fullyQualifiedClassName, boolean issueError) {
 
         // load the class
-        if (classLoader == null) {
-            throw new UserError(
-                    checker.getClass().getSimpleName()
-                            + ": no classloaders are available for use to load annotation class "
-                            + fullyQualifiedClassName
-                            + ".");
-        }
-
         Class<?> cls = null;
         try {
-            cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+            if (classLoader != null) {
+                cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+            } else {
+                cls = Class.forName(fullyQualifiedClassName);
+            }
         } catch (ClassNotFoundException e) {
             throw new UserError(
                     checker.getClass().getSimpleName()
