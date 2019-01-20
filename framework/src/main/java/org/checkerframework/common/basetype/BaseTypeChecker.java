@@ -272,7 +272,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                         "InvocationTargetException when invoking constructor for class "
                                 + name
                                 + "; Underlying cause: "
-                                + err.getMessage(),
+                                + err,
                         t);
             } else {
                 throw new BugInCF(
