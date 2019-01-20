@@ -2234,6 +2234,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
             type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
+            // TODO: why is newClassTree.getTypeArguments not used?
         }
 
         if (TreeUtils.isDiamondTree(newClassTree)) {
@@ -2276,8 +2277,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
                     List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
                     for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-                        if (!types.isSameType(
-                                oldArgs.get(i).actualType, newArgs.get(i).actualType)) {
+                        if (!types.isSubtype(
+                                newArgs.get(i).actualType, oldArgs.get(i).actualType)) {
                             // One of the underlying types doesn't match. Give up.
                             return;
                         }
