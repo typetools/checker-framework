@@ -279,8 +279,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitLambdaExpression(
             LambdaExpressionTree node, AnnotatedTypeFactory f) {
 
-        AnnotatedDeclaredType type =
-                (AnnotatedDeclaredType) f.toAnnotatedType(TreeUtils.typeOf(node), false);
+        AnnotatedTypeMirror type = f.toAnnotatedType(TreeUtils.typeOf(node), false);
         return type;
     }
 
