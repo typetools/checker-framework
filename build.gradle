@@ -1,10 +1,10 @@
 import de.undercouch.gradle.tasks.download.Download
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'com.github.johnrengelman.shadow' version '4.0.2'
     id "de.undercouch.download" version "3.3.0"
     id 'java'
-    id "net.ltgt.errorprone-base" version "0.0.13"
+    id "net.ltgt.errorprone" version "0.6.1"
     id 'org.ajoberstar.grgit' version '2.3.0' apply false
 }
 apply plugin: "de.undercouch.download"
@@ -18,7 +18,10 @@ repositories {
 
 ext {
     release = false
-    assert JavaVersion.current() == JavaVersion.VERSION_1_8: "Set JAVA_HOME to JDK 8. Current version is ${JavaVersion.current()}"
+
+    // On a Java 8 JVM, use error-prone javac and source/target 8.
+    // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
+    isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
     parentDir = file("${rootDir}/../").absolutePath
 
@@ -46,13 +49,13 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: "de.undercouch.download"
-    apply plugin: 'net.ltgt.errorprone-base'
+    apply plugin: 'net.ltgt.errorprone'
 
     group 'org.checkerframework'
     // Increment the minor version rather than just the patch level if:
-    //   * any new checkers have been added,\n")
-    //   * the patch level is 9 (keep the patch level as a single digit), or\n")
-    //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
+    //   * any new checkers have been added,
+    //   * the patch level is 9 (keep the patch level as a single digit), or
+    //   * backward-incompatible changes have been made to APIs or elsewhere.
     version '2.5.8'
 
     repositories {
@@ -64,7 +67,9 @@ allprojects {
     }
 
     dependencies {
-        javacJar group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
+        if (isJava8) {
+            javacJar group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
+        }
     }
 
     // After all the tasks have been created, modify some of them.
@@ -91,8 +96,10 @@ allprojects {
         // Add standard javac options
         tasks.withType(JavaCompile) {
             dependsOn(':installGitHooks')
-            sourceCompatibility = 8
-            targetCompatibility = 8
+            if (isJava8) {
+                sourceCompatibility = 8
+                targetCompatibility = 8
+            }
             options.failOnError = true
             options.deprecation = true
             options.compilerArgs += [
@@ -101,9 +108,26 @@ allprojects {
                     "-Xlint:-options",
                     "-Xlint",
             ]
+            if (!isJava8) {
+                options.compilerArgs += [
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+                ]
+            }
             options.encoding = 'UTF-8'
             options.fork = true
-            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+            if (isJava8) {
+                options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+            }
+            // Don't use error-prone by default
+            options.errorprone.enabled = false
         }
     }
 }
@@ -120,6 +144,7 @@ task version() {
         println version
     }
 }
+
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
  * "check${shortName}".
@@ -143,14 +168,19 @@ def createCheckTypeTask(projectName, checker, shortName) {
                 '-processor', "${checker}",
                 '-proc:only',
                 '-Xlint:-processing',
+                ]
+        if (isJava8) {
+            options.compilerArgs += [
                 "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar",
                 "-source",
                 "8",
                 "-target",
                 "8"
-        ]
+                ]
+        }
     }
 }
+
 /**
  * Returns a list of all the Java files that should be formatted for the given project. These are:
  *
@@ -227,9 +257,11 @@ javadoc.dependsOn(allJavadoc)
 configurations {
     requireJavadoc
 }
+
 dependencies {
     compile group: 'org.plumelib', name: 'require-javadoc', version: '0.1.0'
 }
+
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/api")
@@ -244,6 +276,7 @@ task requireJavadoc(type: Javadoc, group: "Documentation") {
     options.doclet = "org.plumelib.javadoc.RequireJavadoc"
     // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
 }
+
 task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
     description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/api")
@@ -432,17 +465,20 @@ subprojects {
                                 "-javacoptions:-g",
                                 "-keywords:!ignore",
                                 '-samevm',
+                        ]
+                        if (isJava8) {
+                            args += [
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
                                 // Must use langtools javap.jar rather than tools.jar because the
                                 // tools.jar in the docker vm doesn't have the required classes.
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
                                         "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
-
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                                 "-javacoptions:-source 8",
                                 "-javacoptions:-target 8"
-                        ]
+                                ]
+                        }
                         if (project.name.is('checker')) {
                             args += [
                                     "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
@@ -467,6 +503,20 @@ subprojects {
 
         // Configure JUnit tests
         tasks.withType(Test) {
+            if (!isJava8) {
+                jvmArgs += [
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+                    ]
+            }
+
             if (project.name.is('checker')) {
                 dependsOn('copyJarsToDist')
                 systemProperties += [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
@@ -476,7 +526,9 @@ subprojects {
                 systemProperties += ["emit.test.debug": 'true']
             }
 
-            jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+            if (isJava8) {
+                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+            }
 
             testLogging {
                 showStandardStreams = true
@@ -507,12 +559,17 @@ subprojects {
         // Create a runErrorProne task.
         tasks.create(name: 'runErrorProne', type: JavaCompile, group: 'Verification') {
             description 'Run the error-prone compiler on the main sources'
-            toolChain net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
+
             source = sourceSets.main.java.asFileTree
             classpath = sourceSets.main.compileClasspath.asFileTree
             destinationDir = new File("${buildDir}", 'errorprone')
 
-            options.compilerArgs = [
+            // Error Prone must be available in the annotation processor path
+            options.annotationProcessorPath = configurations.errorprone
+            // Enable Error Prone
+            options.errorprone.enabled = true
+            options.errorprone.disableWarningsInGeneratedCode = true
+            options.errorprone.errorproneArgs = [
                     // Many compiler classes are interned.
                     '-Xep:ReferenceEquality:OFF',
                     // These might be worth fixing.
