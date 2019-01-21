@@ -668,7 +668,9 @@ public class DependentTypesHelper {
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
             AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodTree);
-            checkType(returnType, methodTree.getReturnType());
+            Tree treeForError =
+                    TreeUtils.isConstructor(methodTree) ? methodTree : methodTree.getReturnType();
+            checkType(returnType, treeForError);
         }
     }
 
