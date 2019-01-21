@@ -67,10 +67,10 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew allTests --quiet --console=plain --warning-mode=all -s
+  ./gradlew allTests --console=plain --warning-mode=all -s
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
-  ./gradlew :checker:exampleTests --quiet --console=plain --warning-mode=all
+  ./gradlew :checker:exampleTests --console=plain --warning-mode=all
 fi
 
 if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
@@ -86,7 +86,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 
   export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test --quiet --console=plain --warning-mode=all -s)
+  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s)
 
 fi
 
@@ -101,7 +101,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew :checker:demosTests --quiet --console=plain --warning-mode=all -s
+    ./gradlew :checker:demosTests --console=plain --warning-mode=all -s
   fi
 
   # Guava
@@ -115,7 +115,7 @@ fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --quiet --console=plain --warning-mode=all
+  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=no
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
