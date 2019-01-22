@@ -994,8 +994,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree}.
      *
-     * <p>
-     *
      * @param tree the AST node
      * @return the annotated type of {@code tree}
      */
@@ -1085,8 +1083,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>Note that we cannot decide from a Tree whether it is a type use or an expression.
      * TreeUtils.isTypeTree is only an under-approximation. For example, an identifier can be either
      * a type or an expression.
-     *
-     * <p>
      *
      * @param tree the type tree
      * @return the annotated type of the type in the AST
@@ -3193,8 +3189,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns all of the actual annotation mirrors used to annotate this element (includes stub
      * files and declaration annotations from overridden methods).
-     *
-     * <p>
      *
      * @param elt the element for which to determine annotations
      */
