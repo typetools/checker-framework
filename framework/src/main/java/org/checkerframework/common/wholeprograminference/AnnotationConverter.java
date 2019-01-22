@@ -99,6 +99,9 @@ public class AnnotationConverter {
                     "  keySet (%d) = %s%n",
                     anno.fieldValues.keySet().size(), anno.fieldValues.keySet());
             System.out.printf("  source = %s, def = %s%n", anno.def.source, anno.def);
+            if (anno.toString().equals("@org.checkerframework.checker.lock.qual.GuardedBy")) {
+                new Error("Backtrace").printStackTrace();
+            }
         }
         final AnnotationBuilder builder = new AnnotationBuilder(processingEnv, anno.def().name);
         for (String fieldKey : anno.fieldValues.keySet()) {

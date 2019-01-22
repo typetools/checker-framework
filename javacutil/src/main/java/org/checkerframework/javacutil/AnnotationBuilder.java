@@ -119,7 +119,8 @@ public class AnnotationBuilder {
      * @return an {@link AnnotationMirror} of type given type
      */
     public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
-        return fromName(elements, clazz.getCanonicalName());
+        AnnotationMirror result = fromName(elements, clazz.getCanonicalName());
+        return result;
     }
 
     /**
