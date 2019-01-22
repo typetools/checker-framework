@@ -100,7 +100,10 @@ public class AnnotationConverter {
                     anno.fieldValues.keySet().size(), anno.fieldValues.keySet());
             System.out.printf("  source = %s, def = %s%n", anno.def.source, anno.def);
             if (anno.toString().equals("@org.checkerframework.checker.lock.qual.GuardedBy")) {
-                new Error("Backtrace").printStackTrace();
+                new Error(
+                                "Backtrace for creation of bad @GuardedBy AnnotationMirror, from bad annotation "
+                                        + anno)
+                        .printStackTrace();
             }
         }
         final AnnotationBuilder builder = new AnnotationBuilder(processingEnv, anno.def().name);
