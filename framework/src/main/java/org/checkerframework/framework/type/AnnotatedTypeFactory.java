@@ -999,14 +999,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
 
+        String treeString = tree.toString();
+        if (treeString.length() > 63) {
+            treeString = treeString.substring(0, 60) + "...";
+        }
+
         if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("getAnnotatedType(%s [%s]) %s%n", tree, tree.getKind(), this);
+            System.out.printf(
+                    "getAnnotatedType(%s [%s]) this=%s%n", treeString, tree.getKind(), this);
         }
 
         if (tree == null) {
             throw new BugInCF("AnnotatedTypeFactory.getAnnotatedType: null tree");
         }
         if (shouldCache && classAndMethodTreeCache.containsKey(tree)) {
+            if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+                System.out.printf(
+                        "getAnnotatedType(%s) cached => %s%n",
+                        treeString, classAndMethodTreeCache.get(tree));
+            }
             return classAndMethodTreeCache.get(tree).deepCopy();
         }
 
@@ -1024,6 +1035,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + tree.getKind());
         }
 
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf(
+                    "AnnotatedTypeFactory::getAnnotatedType(%s) type=%s%n", tree.getClass(), type);
+            System.out.printf(
+                    "About to call addComputedTypeAnnotations in class %s%n", this.getClass());
+        }
+
         addComputedTypeAnnotations(tree, type);
 
         if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
@@ -1035,13 +1053,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // No caching otherwise
         }
 
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
-        }
-        String treeString = tree.toString();
-        if (treeString.length() > 63) {
-            treeString = treeString.substring(0, 60) + "...";
-        }
         if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
             System.out.printf(
                     "AnnotatedTypeFactory::getAnnotatedType(%s) result: %s%n", treeString, type);
