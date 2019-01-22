@@ -137,7 +137,7 @@ into the field.
 \begin{sloppypar}
 To use whole-program inference, make sure that
 \<insert-annotations-to-source>, from the Annotation File Utilities project,
-is on your path (for example in the \<\$PATH> environment variable).
+is on your path (for example, its directory is in the \<\$PATH> environment variable).
 Then, run the script \<checker-framework/checker/bin/infer-and-annotate.sh>.
 Its command-line arguments are:
 \end{sloppypar}
@@ -163,7 +163,7 @@ git clone https://github.com/mernst/plume-lib.git
 cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
-    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar \
+    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar:$JAVA_HOME/lib/tools.jar \
     `find java/src/plume/ -name "*.java"`
 # View the results
 git diff
