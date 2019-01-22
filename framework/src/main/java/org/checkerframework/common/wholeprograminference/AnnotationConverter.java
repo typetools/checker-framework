@@ -29,15 +29,29 @@ import scenelib.annotations.field.ScalarAFT;
  */
 public class AnnotationConverter {
 
+    public static boolean debug = false;
+
     /**
      * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link
      * scenelib.annotations.Annotation}.
      */
     protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.println(
+                    "annotationMirrorToAnnotation "
+                            + am
+                            + " "
+                            + am.getClass()
+                            + " keyset="
+                            + am.getElementValues().keySet());
+            new Error().printStackTrace(System.out);
+        }
         AnnotationDef def =
                 new AnnotationDef(
                         AnnotationUtils.annotationName(am),
-                        String.format("annotationMirrorToAnnotation(%s)", am));
+                        String.format(
+                                "annotationMirrorToAnnotation %s [%s] keyset=%s",
+                                am, am.getClass(), am.getElementValues().keySet()));
         Map<String, AnnotationFieldType> fieldTypes = new HashMap<>();
         // Handling cases where there are fields in annotations.
         for (ExecutableElement ee : am.getElementValues().keySet()) {
@@ -79,11 +93,22 @@ public class AnnotationConverter {
      */
     protected static AnnotationMirror annotationToAnnotationMirror(
             Annotation anno, ProcessingEnvironment processingEnv) {
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf("annotationToAnnotationMirror(%s)%n", anno);
+            System.out.printf(
+                    "  keySet (%d) = %s%n",
+                    anno.fieldValues.keySet().size(), anno.fieldValues.keySet());
+            System.out.printf("  source = %s, def = %s%n", anno.def.source, anno.def);
+        }
         final AnnotationBuilder builder = new AnnotationBuilder(processingEnv, anno.def().name);
         for (String fieldKey : anno.fieldValues.keySet()) {
             addFieldToAnnotationBuilder(fieldKey, anno.fieldValues.get(fieldKey), builder);
         }
-        return builder.build();
+        AnnotationMirror result = builder.build();
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf("annotationToAnnotationMirror(%s) => %s%n", anno, result);
+        }
+        return result;
     }
 
     /** Returns an AnnotationFieldType given an ExecutableElement or value. */

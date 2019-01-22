@@ -1000,6 +1000,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of {@code tree}
      */
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
+
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf("getAnnotatedType(%s [%s]) %s%n", tree, tree.getKind(), this);
+        }
+
         if (tree == null) {
             throw new BugInCF("AnnotatedTypeFactory.getAnnotatedType: null tree");
         }
@@ -1032,7 +1037,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // No caching otherwise
         }
 
-        // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
+        }
+        String treeString = tree.toString();
+        if (treeString.length() > 63) {
+            treeString = treeString.substring(0, 60) + "...";
+        }
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf(
+                    "AnnotatedTypeFactory::getAnnotatedType(%s) result: %s%n", treeString, type);
+        }
+
         return type;
     }
 

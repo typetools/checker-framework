@@ -101,7 +101,7 @@ public class LockAnnotatedTypeFactory
         LOCKPOSSIBLYHELD = AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
         SIDEEFFECTFREE = AnnotationBuilder.fromClass(elements, SideEffectFree.class);
         GUARDEDBYUNKNOWN = AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = AnnotationBuilder.fromClass(elements, GuardedBy.class);
+        GUARDEDBY = createGuardedByAnnotationMirror(new ArrayList<String>());
         GUARDEDBYBOTTOM = AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
         GUARDSATISFIED = AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
@@ -756,10 +756,23 @@ public class LockAnnotatedTypeFactory
      * @return an AnnotationMirror corresponding to @GuardedBy(values)
      */
     private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf("createGuardedByAnnotationMirror(%s)%n", values);
+        }
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
         builder.setValue("value", values.toArray());
 
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf("createGuardedByAnnotationMirror called setValue%n");
+        }
+
         // Return the resulting AnnotationMirror
-        return builder.build();
+        AnnotationMirror result = builder.build();
+
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf("createGuardedByAnnotationMirror => %s%n", result);
+        }
+
+        return result;
     }
 }
