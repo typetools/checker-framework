@@ -176,8 +176,6 @@ public class WholeProgramInferenceScenesHelper {
      *       previous annotation and newATM.
      * </ul>
      *
-     * <p>
-     *
      * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
