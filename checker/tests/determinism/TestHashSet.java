@@ -15,8 +15,8 @@ class TestHashSet {
     }
 
     static void testDetInvalid() {
-        // :: error: (assignment.type.incompatible)
-        @Det Set<String> s = new @Det HashSet<String>();
+        // :: error: (invalid.hash.set.constructor.invocation)
+        @OrderNonDet Set<String> s = new @Det HashSet<String>();
     }
 
     static void testIteration() {

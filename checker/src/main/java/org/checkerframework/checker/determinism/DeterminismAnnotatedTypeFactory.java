@@ -281,11 +281,18 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
             IdentifierTree identifier = getNewClassClassName(node);
-            if (identifier != null
-                    && identifier.getName().contentEquals("HashSet")
-                    && AnnotationUtils.areSame(
-                            annotatedTypeMirror.getAnnotationInHierarchy(NONDET), DET)) {
-                annotatedTypeMirror.replaceAnnotation(ORDERNONDET);
+            if (identifier != null && identifier.getName().contentEquals("HashSet")) {
+                AnnotationMirror explicitAnno = getNewClassAnnotation(node);
+                if (AnnotationUtils.areSame(explicitAnno, DET)) {
+                    checker.report(
+                            Result.failure(
+                                    DeterminismVisitor.INVALID_HASH_SET_CONSTRUCTOR_INVOCATION),
+                            node);
+                }
+                if (AnnotationUtils.areSame(
+                        annotatedTypeMirror.getAnnotationInHierarchy(NONDET), DET)) {
+                    annotatedTypeMirror.replaceAnnotation(ORDERNONDET);
+                }
             }
             return super.visitNewClass(node, annotatedTypeMirror);
         }
@@ -537,24 +544,48 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return an {@code IdentifierTree} representing a class name if it could be found, or {@code
      *     null} otherwise.
      */
-    private IdentifierTree getNewClassClassName(NewClassTree tree) {
+    public IdentifierTree getNewClassClassName(NewClassTree tree) {
         ExpressionTree className = tree.getIdentifier();
         if (className.getKind() == Tree.Kind.IDENTIFIER) {
             return (IdentifierTree) className;
         }
-        if (className.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
-            ParameterizedTypeTree paramType = (ParameterizedTypeTree) className;
-            if (paramType.getType().getKind() == Tree.Kind.IDENTIFIER) {
-                return (IdentifierTree) paramType.getType();
-            }
-            if (paramType.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
-                AnnotatedTypeTree annoType = (AnnotatedTypeTree) paramType.getType();
-                if (annoType.getUnderlyingType().getKind() == Tree.Kind.IDENTIFIER) {
-                    return (IdentifierTree) annoType.getUnderlyingType();
-                }
+        if (className.getKind() != Tree.Kind.PARAMETERIZED_TYPE) {
+            return null;
+        }
+        ParameterizedTypeTree paramType = (ParameterizedTypeTree) className;
+        if (paramType.getType().getKind() == Tree.Kind.IDENTIFIER) {
+            return (IdentifierTree) paramType.getType();
+        }
+        if (paramType.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeTree annoType = (AnnotatedTypeTree) paramType.getType();
+            if (annoType.getUnderlyingType().getKind() == Tree.Kind.IDENTIFIER) {
+                return (IdentifierTree) annoType.getUnderlyingType();
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the annotation placed on the constructor in {@code tree} if it represents
+     * constructing a parameterized type such as {@code HashSet}.
+     *
+     * @param tree the {@code Tree} representing the construction of a new parameterized type such
+     *     as {@code HashSet}.
+     * @return the annotation in the determinism hierarchy on the given constructor if there was
+     *     one, {@code null} otherwise.
+     */
+    public AnnotationMirror getNewClassAnnotation(NewClassTree tree) {
+        ExpressionTree className = tree.getIdentifier();
+        if (className.getKind() != Tree.Kind.PARAMETERIZED_TYPE) {
+            return null;
+        }
+        ParameterizedTypeTree paramType = (ParameterizedTypeTree) className;
+        if (paramType.getType().getKind() != Tree.Kind.ANNOTATED_TYPE) {
+            return null;
+        }
+        List<? extends AnnotationMirror> annos =
+                TreeUtils.typeOf(paramType.getType()).getAnnotationMirrors();
+        return getQualifierHierarchy().findAnnotationInHierarchy(annos, NONDET);
     }
 
     class DeterminismQualifierHierarchy extends GraphQualifierHierarchy {
