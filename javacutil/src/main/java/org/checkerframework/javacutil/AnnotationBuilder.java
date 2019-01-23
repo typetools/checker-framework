@@ -1,6 +1,7 @@
 package org.checkerframework.javacutil;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -115,12 +116,69 @@ public class AnnotationBuilder {
      * which might contain elements (annotation fields).
      *
      * @param elements the element utilities to use
-     * @param clazz the annotation class
+     * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of type given type
      */
-    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
-        AnnotationMirror result = fromName(elements, clazz.getCanonicalName());
+    public static AnnotationMirror fromClass(
+            Elements elements, Class<? extends Annotation> aClass) {
+        return fromName(elements, aClass.getCanonicalName());
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular annotation class. Each element is
+     * set to its default value. Errs if any element does not have a default value.
+     *
+     * @param elements the element utilities to use
+     * @param aClass the annotation class
+     * @return an {@link AnnotationMirror} of type given type
+     */
+    public static AnnotationMirror fromClassWithDefaults(
+            Elements elements, Class<? extends Annotation> aClass) {
+        AnnotationMirror result = fromName(elements, aClass.getCanonicalName());
+        setElementsToDefaultValues(result, aClass);
         return result;
+    }
+
+    /**
+     * Changes the annotation value for the given key of the given annotation to newValue and
+     * returns the previous value.
+     */
+    @SuppressWarnings("unchecked")
+    public static Object changeAnnotationValue(Annotation annotation, String key, Object newValue) {
+        Object handler = Proxy.getInvocationHandler(annotation);
+        Field f;
+        try {
+            f = handler.getClass().getDeclaredField("memberValues");
+        } catch (NoSuchFieldException | SecurityException e) {
+            throw new IllegalStateException(e);
+        }
+        f.setAccessible(true);
+        Map<String, Object> memberValues;
+        try {
+            memberValues = (Map<String, Object>) f.get(handler);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
+        Object oldValue = memberValues.get(key);
+        if (oldValue == null || oldValue.getClass() != newValue.getClass()) {
+            throw new IllegalArgumentException();
+        }
+        memberValues.put(key, newValue);
+        return oldValue;
+    }
+
+    /**
+     * Sets the values of the elements (fields) of am to their defaults. Errs if any element does
+     * not have a default value.
+     */
+    public static void setElementsToDefaultValues(
+            AnnotationMirror am, Class<? extends Annotation> aClass) {
+        System.out.printf("AnnotationBuilder.setElementsToDefaultValues(%s, %s)%n", am, aClass);
+        for (Method m : aClass.getDeclaredMethods()) {
+            System.out.println("  " + m);
+            Object defaultValue = m.getDefaultValue();
+            System.out.println("    default value: " + defaultValue);
+        }
     }
 
     /**

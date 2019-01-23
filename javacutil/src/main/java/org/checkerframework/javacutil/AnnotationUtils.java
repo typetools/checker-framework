@@ -105,6 +105,8 @@ public class AnnotationUtils {
     }
 
     /**
+     * Return true iff a1 and a2 have the same annotation type.
+     *
      * @see #areSame(AnnotationMirror, AnnotationMirror)
      * @return true iff a1 and a2 have the same annotation type
      */
@@ -334,7 +336,7 @@ public class AnnotationUtils {
     }
 
     /**
-     * Constructs a {@link Set} suitable for storing {@link AnnotationMirror}s.
+     * Constructs a {@link Set} for storing {@link AnnotationMirror}s.
      *
      * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
      * the annotation element values.

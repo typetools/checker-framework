@@ -264,7 +264,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-            System.out.printf("argATM = %s for tree %s%n", argATM, treeNode);
+            if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+                System.out.printf("argATM = %s for tree %s%n", argATM, treeNode);
+            }
             AField param = method.parameters.vivify(i);
             helper.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);

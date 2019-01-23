@@ -69,7 +69,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
             }
 
             AnnotationMirror theQual =
-                    AnnotationBuilder.fromClass(typeFactory.getElementUtils(), qual);
+                    AnnotationBuilder.fromClassWithDefaults(typeFactory.getElementUtils(), qual);
             for (org.checkerframework.framework.qual.TypeKind typeKind : implicit.types()) {
                 TypeKind mappedTk = mapTypeKinds(typeKind);
                 addTypeKind(mappedTk, theQual);

@@ -1451,18 +1451,26 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
-        System.out.printf(
-                "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (1): type=%s%n", type);
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf(
+                    "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (1): type=%s%n", type);
+        }
         treeAnnotator.visit(tree, type);
-        System.out.printf(
-                "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (2): type=%s%n", type);
-        System.out.printf("typeAnnotator=%s%n", typeAnnotator);
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf(
+                    "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (2): type=%s%n", type);
+            System.out.printf("typeAnnotator=%s%n", typeAnnotator);
+        }
         typeAnnotator.visit(type, null);
-        System.out.printf(
-                "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (3): type=%s%n", type);
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf(
+                    "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (3): type=%s%n", type);
+        }
         defaults.annotate(tree, type);
-        System.out.printf(
-                "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (4): type=%s%n", type);
+        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
+            System.out.printf(
+                    "GenericAnnotatedTypeFactory.addComputedTypeAnnotations (4): type=%s%n", type);
+        }
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
