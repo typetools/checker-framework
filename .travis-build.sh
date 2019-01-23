@@ -115,7 +115,7 @@ fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain
+  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
