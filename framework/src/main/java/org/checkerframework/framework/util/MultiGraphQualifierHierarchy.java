@@ -392,13 +392,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-        if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1), getTopAnnotation(a2))) {
+        if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
             return null;
         } else if (isSubtype(a1, a2)) {
             return a2;
         } else if (isSubtype(a2, a1)) {
             return a1;
-        } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+        } else if (AnnotationUtils.areSameByName(a1, a2)) {
             return getTopAnnotation(a1);
         }
         if (lubs == null) {
@@ -422,7 +422,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-        if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+        if (AnnotationUtils.areSameByName(a1, a2)) {
             return AnnotationUtils.areSame(a1, a2) ? a1 : getBottomAnnotation(a1);
         }
         if (glbs == null) {
@@ -471,7 +471,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return true;
             }
         }*/
-        if (AnnotationUtils.areSameIgnoringValues(subAnno, superAnno)) {
+        if (AnnotationUtils.areSameByName(subAnno, superAnno)) {
             return AnnotationUtils.areSame(subAnno, superAnno);
         }
         Set<AnnotationMirror> supermap1 = this.supertypesMap.get(subAnno);
@@ -650,7 +650,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 outer:
                 for (AnnotationMirror btm : bottoms) {
                     for (AnnotationMirror btmsuper : fullMap.get(btm)) {
-                        if (AnnotationUtils.areSameIgnoringValues(btmsuper, polyTop)) {
+                        if (AnnotationUtils.areSameByName(btmsuper, polyTop)) {
                             found = true;
                             bottom = btm;
                             break outer;
@@ -676,7 +676,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         Map<AnnotationPair, AnnotationMirror> newlubs = new HashMap<>();
         for (AnnotationMirror a1 : typeQualifiers) {
             for (AnnotationMirror a2 : typeQualifiers) {
-                if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+                if (AnnotationUtils.areSameByName(a1, a2)) {
                     continue;
                 }
                 if (!AnnotationUtils.areSame(getTopAnnotation(a1), getTopAnnotation(a2))) {
@@ -799,7 +799,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         Map<AnnotationPair, AnnotationMirror> newglbs = new HashMap<>();
         for (AnnotationMirror a1 : typeQualifiers) {
             for (AnnotationMirror a2 : typeQualifiers) {
-                if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+                if (AnnotationUtils.areSameByName(a1, a2)) {
                     continue;
                 }
                 if (!AnnotationUtils.areSame(getTopAnnotation(a1), getTopAnnotation(a2))) {
@@ -968,12 +968,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return false;
             }
             AnnotationPair other = (AnnotationPair) o;
-            if (AnnotationUtils.areSameIgnoringValues(a1, other.a1)
-                    && AnnotationUtils.areSameIgnoringValues(a2, other.a2)) {
+            if (AnnotationUtils.areSameByName(a1, other.a1)
+                    && AnnotationUtils.areSameByName(a2, other.a2)) {
                 return true;
             }
-            if (AnnotationUtils.areSameIgnoringValues(a2, other.a1)
-                    && AnnotationUtils.areSameIgnoringValues(a1, other.a2)) {
+            if (AnnotationUtils.areSameByName(a2, other.a1)
+                    && AnnotationUtils.areSameByName(a1, other.a2)) {
                 return true;
             }
             return false;

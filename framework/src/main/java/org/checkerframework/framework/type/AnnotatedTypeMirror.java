@@ -366,7 +366,7 @@ public abstract class AnnotatedTypeMirror {
                 atypeFactory.getQualifierHierarchy().getTypeQualifiers();
         for (AnnotationMirror explicitAnno : typeAnnotations) {
             for (AnnotationMirror validAnno : validAnnotations) {
-                if (AnnotationUtils.areSameIgnoringValues(explicitAnno, validAnno)) {
+                if (AnnotationUtils.areSameByName(explicitAnno, validAnno)) {
                     explicitAnnotations.add(explicitAnno);
                 }
             }

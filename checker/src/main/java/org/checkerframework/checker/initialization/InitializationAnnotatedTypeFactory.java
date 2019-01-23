@@ -140,10 +140,10 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
         assert anno != null;
-        return AnnotationUtils.areSameIgnoringValues(anno, UNCLASSIFIED)
-                || AnnotationUtils.areSameIgnoringValues(anno, FREE)
-                || AnnotationUtils.areSameIgnoringValues(anno, COMMITTED)
-                || AnnotationUtils.areSameIgnoringValues(anno, FBCBOTTOM);
+        return AnnotationUtils.areSameByName(anno, UNCLASSIFIED)
+                || AnnotationUtils.areSameByName(anno, FREE)
+                || AnnotationUtils.areSameByName(anno, COMMITTED)
+                || AnnotationUtils.areSameByName(anno, FBCBOTTOM);
     }
 
     /*

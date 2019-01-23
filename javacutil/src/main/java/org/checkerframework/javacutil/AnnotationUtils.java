@@ -89,7 +89,7 @@ public class AnnotationUtils {
             return true;
         }
 
-        if (!areSameIgnoringValues(a1, a2)) {
+        if (!areSameByName(a1, a2)) {
             return false;
         }
 
@@ -108,7 +108,7 @@ public class AnnotationUtils {
      * @see #areSame(AnnotationMirror, AnnotationMirror)
      * @return true iff a1 and a2 have the same annotation type
      */
-    public static boolean areSameIgnoringValues(
+    public static boolean areSameByName(
             @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
@@ -262,9 +262,9 @@ public class AnnotationUtils {
 
     /**
      * Checks that the collection contains the annotation ignoring values. Using Collection.contains
-     * does not always work, because it does not use areSameIgnoringValues for comparison.
+     * does not always work, because it does not use areSameByName for comparison.
      *
-     * @return true iff c contains anno, according to areSameIgnoringValues
+     * @return true iff c contains anno, according to areSameByName
      */
     public static boolean containsSameIgnoringValues(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
@@ -276,12 +276,12 @@ public class AnnotationUtils {
      * ignoring values.
      *
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
-     *     to areSameIgnoringValues; otherwise, {@code null}
+     *     to areSameByName; otherwise, {@code null}
      */
     public static AnnotationMirror getSameIgnoringValues(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
-            if (AnnotationUtils.areSameIgnoringValues(an, anno)) {
+            if (AnnotationUtils.areSameByName(an, anno)) {
                 return an;
             }
         }

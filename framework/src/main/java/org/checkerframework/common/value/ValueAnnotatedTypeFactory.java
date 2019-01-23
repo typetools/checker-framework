@@ -676,7 +676,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(
+            if (!AnnotationUtils.areSameByName(
                     getTopAnnotation(a1), getTopAnnotation(a2))) {
                 // The annotations are in different hierarchies
                 return null;
@@ -691,7 +691,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a1;
             }
 
-            if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+            if (AnnotationUtils.areSameByName(a1, a2)) {
                 // If both are the same type, determine the type and merge
                 if (AnnotationUtils.areSameByClass(a1, IntRange.class)) {
                     // special handling for IntRange
@@ -858,7 +858,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return AnnotationUtils.areSameByClass(superAnno, PolyValue.class);
             } else if (AnnotationUtils.areSameByClass(superAnno, PolyValue.class)) {
                 return AnnotationUtils.areSameByClass(subAnno, PolyValue.class);
-            } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
+            } else if (AnnotationUtils.areSameByName(superAnno, subAnno)) {
                 // Same type, so might be subtype
                 if (AnnotationUtils.areSameByClass(subAnno, IntRange.class)
                         || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class)) {
@@ -1088,7 +1088,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror dimType =
                     getAnnotatedType(dimensions.get(0)).getAnnotationInHierarchy(UNKNOWNVAL);
 
-            if (AnnotationUtils.areSameIgnoringValues(dimType, BOTTOMVAL)) {
+            if (AnnotationUtils.areSameByName(dimType, BOTTOMVAL)) {
                 type.replaceAnnotation(BOTTOMVAL);
             } else {
                 RangeOrListOfValues rolv = null;
