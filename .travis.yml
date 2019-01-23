@@ -74,7 +74,7 @@ script:
      export TRAVIS_COMMIT_RANGE=$TRAVIS_COMMIT_RANGE &&
      export TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH} &&
      export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
-     travis_wait 30 ./.travis-build.sh $GROUP $BUILDJDK"
+     ./.travis-build.sh $GROUP $BUILDJDK"
 
 jobs:
   include:
