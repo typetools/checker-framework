@@ -98,14 +98,17 @@ public class AnnotationBuilder {
     }
 
     /**
-     * Creates an {@link AnnotationMirror} given by a particular annotation class.
+     * Creates an {@link AnnotationMirror} given by a particular annotation class. getElementValues
+     * on the result returns an empty map. This may be in conflict with the annotation's definition,
+     * which might contain elements (annotation fields).
      *
      * @param elements the element utilities to use
-     * @param clazz the annotation class
+     * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of type given type
      */
-    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
-        return fromName(elements, clazz.getCanonicalName());
+    public static AnnotationMirror fromClass(
+            Elements elements, Class<? extends Annotation> aClass) {
+        return fromName(elements, aClass.getCanonicalName());
     }
 
     /**
