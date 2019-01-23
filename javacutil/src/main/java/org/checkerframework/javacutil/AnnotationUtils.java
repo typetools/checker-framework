@@ -75,12 +75,11 @@ public class AnnotationUtils {
     }
 
     /**
-     * Checks if both annotations are the same.
+     * Returns true iff both annotations are of the same type and have the same annotation values.
      *
-     * <p>Returns true iff both annotations are of the same type and have the same annotation
-     * values. This behavior differs from {@code AnnotationMirror.equals(Object)}. The equals method
+     * <p>This behavior differs from {@code AnnotationMirror.equals(Object)}. The equals method
      * returns true iff both annotations are the same and annotate the same annotation target (e.g.
-     * field, variable, etc).
+     * field, variable, etc) -- that is, if its arguments are the same annotation instance.
      *
      * @return true iff a1 and a2 are the same annotation
      */
@@ -106,7 +105,7 @@ public class AnnotationUtils {
 
     /**
      * @see #areSame(AnnotationMirror, AnnotationMirror)
-     * @return true iff a1 and a2 have the same annotation type
+     * @return true iff a1 and a2 have the same annotation name
      */
     public static boolean areSameByName(
             @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
@@ -266,9 +265,9 @@ public class AnnotationUtils {
      *
      * @return true iff c contains anno, according to areSameByName
      */
-    public static boolean containsSameIgnoringValues(
+    public static boolean containsSameByName(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
-        return getSameIgnoringValues(c, anno) != null;
+        return getSameByName(c, anno) != null;
     }
 
     /**
@@ -278,7 +277,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSameByName; otherwise, {@code null}
      */
-    public static AnnotationMirror getSameIgnoringValues(
+    public static AnnotationMirror getSameByName(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByName(an, anno)) {

@@ -470,7 +470,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(annotations, a);
+        return AnnotationUtils.containsSameByName(annotations, a);
     }
 
     /**
@@ -480,7 +480,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getEffectiveAnnotations(), a);
+        return AnnotationUtils.containsSameByName(getEffectiveAnnotations(), a);
     }
 
     /**
@@ -494,7 +494,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), a);
+        return AnnotationUtils.containsSameByName(getExplicitAnnotations(), a);
     }
 
     /**
@@ -511,7 +511,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
-        return AnnotationUtils.containsSameIgnoringValues(
+        return AnnotationUtils.containsSameByName(
                 getExplicitAnnotations(), getAnnotation(a));
     }
 

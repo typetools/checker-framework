@@ -627,7 +627,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     polyTop = declTop;
                 } else {
                     for (AnnotationMirror ds : declSupers) {
-                        if (AnnotationUtils.containsSameIgnoringValues(tops, ds)) {
+                        if (AnnotationUtils.containsSameByName(tops, ds)) {
                             polyTop = ds;
                         }
                     }

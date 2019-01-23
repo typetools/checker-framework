@@ -638,7 +638,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         // not necessary if there is an explicit UnknownInitialization
         // annotation on the field
-        if (AnnotationUtils.containsSameIgnoringValues(
+        if (AnnotationUtils.containsSameByName(
                 fieldAnnotations.getAnnotations(), UNCLASSIFIED)) {
             return;
         }
