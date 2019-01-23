@@ -416,7 +416,10 @@ public class WholeProgramInferenceScenesHelper {
         return false;
     }
 
-    /** Returns a subset of annosSet, consisting of the annotations supported by atf. */
+    /**
+     * Returns a subset of annosSet, consisting of the annotations supported by atf. These are not
+     * necessarily legal annotations: they have the right name, but they may lack elements (fields).
+     */
     private Set<Annotation> getSupportedAnnosInSet(
             Set<Annotation> annosSet, AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<>();
