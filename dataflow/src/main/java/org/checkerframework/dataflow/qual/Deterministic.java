@@ -75,8 +75,6 @@ import java.lang.annotation.Target;
  * <p>In fact, the rules are so conservative that checking is currently disabled by default, but can
  * be enabled via the {@code -AcheckPurityAnnotations} command-line option.
  *
- * <p>
- *
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and
  *     flow-sensitive analysis
  */

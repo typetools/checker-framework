@@ -110,8 +110,7 @@ public class InitializationVisitor<
             // UnknownInitialization annotation
             Set<AnnotationMirror> fieldAnnotations =
                     atypeFactory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
-            if (!AnnotationUtils.containsSameIgnoringValues(
-                    fieldAnnotations, atypeFactory.UNCLASSIFIED)) {
+            if (!AnnotationUtils.containsSameByName(fieldAnnotations, atypeFactory.UNCLASSIFIED)) {
                 if (!ElementUtils.isStatic(el)
                         && !(atypeFactory.isCommitted(yType)
                                 || atypeFactory.isFree(xType)
