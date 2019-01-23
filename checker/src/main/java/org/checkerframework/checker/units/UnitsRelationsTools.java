@@ -311,7 +311,6 @@ public class UnitsRelationsTools {
             return false;
         }
 
-        return AnnotationUtils.containsSameByName(
-                annoType.getAnnotations(), unitsAnnotation);
+        return AnnotationUtils.containsSameByName(annoType.getAnnotations(), unitsAnnotation);
     }
 }

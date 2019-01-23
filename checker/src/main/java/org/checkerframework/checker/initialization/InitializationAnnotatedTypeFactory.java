@@ -638,8 +638,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         // not necessary if there is an explicit UnknownInitialization
         // annotation on the field
-        if (AnnotationUtils.containsSameByName(
-                fieldAnnotations.getAnnotations(), UNCLASSIFIED)) {
+        if (AnnotationUtils.containsSameByName(fieldAnnotations.getAnnotations(), UNCLASSIFIED)) {
             return;
         }
         if (isUnclassified(receiverType) || isFree(receiverType)) {

@@ -511,8 +511,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
-        return AnnotationUtils.containsSameByName(
-                getExplicitAnnotations(), getAnnotation(a));
+        return AnnotationUtils.containsSameByName(getExplicitAnnotations(), getAnnotation(a));
     }
 
     /**

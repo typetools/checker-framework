@@ -157,8 +157,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameByName(
-                    getTopAnnotation(a1), getTopAnnotation(a2))) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
                 return a2;
