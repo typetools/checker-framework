@@ -12,28 +12,39 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of
  * this as a set of (field, qualifier) pairs.
+ *
+ * <p>A FieldInvariants object may be malformed (inconsistent number of fields and qualifiers). In
+ * this case, the BaseTypeVisitor will issue an error.
  */
 public class FieldInvariants {
 
     /**
-     * A list of simple field names. A field may appear more than once in this list. Has the same
-     * length as {@code qualifiers}.
+     * A list of simple field names. A field may appear more than once in this list. In a
+     * well-formed FieldInvariants, has the same length as {@code qualifiers}.
      */
     private final List<String> fields;
 
     /**
-     * A list of qualifiers that apply to the field at the same index in {@code fields}. Has the
-     * same length as {@code fields}.
+     * A list of qualifiers that apply to the field at the same index in {@code fields}. In a
+     * well-formed FieldInvariants, has the same length as {@code fields}.
      */
     private final List<AnnotationMirror> qualifiers;
 
+    /**
+     * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
+     * either 1 or equal to length of {@code fields}.
+     *
+     * @param fields list of fields
+     * @param qualifiers list of qualifiers
+     */
     public FieldInvariants(List<String> fields, List<AnnotationMirror> qualifiers) {
         this(null, fields, qualifiers);
     }
 
     /**
      * Creates a new object with all the invariants in {@code other}, plus those specified by {@code
-     * fields} and {@code qualifiers}.
+     * fields} and {@code qualifiers}. The result is well-formed if length of qualifiers is either 1
+     * or equal to length of {@code fields}.
      *
      * @param other other invariant object, may be null
      * @param fields list of fields
@@ -41,17 +52,9 @@ public class FieldInvariants {
      */
     public FieldInvariants(
             FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
-        if (fields.size() != qualifiers.size()) {
-            if (fields.size() > qualifiers.size() && qualifiers.size() == 1) {
-                int difference = fields.size() - qualifiers.size();
-                for (int i = 0; i < difference; i++) {
-                    qualifiers.add(qualifiers.get(0));
-                }
-            } else {
-                throw new BugInCF(
-                        String.format(
-                                "%d fields = %s; %d qualifiers = %s",
-                                fields.size(), fields, qualifiers.size(), qualifiers));
+        if (qualifiers.size() == 1) {
+            while (fields.size() > qualifiers.size()) {
+                qualifiers.add(qualifiers.get(0));
             }
         }
         if (other != null) {
