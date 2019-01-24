@@ -35,11 +35,21 @@ ext {
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
-    worktreeList = "git worktree list".execute().text
-    localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+    // The local git repository, typically in the .git directory, but not for worktrees.
+    // This value is always overwritten, but Gradle needs the variable to be initialized.
+    localRepo = ".git"
 }
 
-task installGitHooks(type: Copy) {
+task setLocalRepo(type:Exec) {
+    commandLine 'git', 'worktree', 'list'
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+       String worktreeList = standardOutput.toString()
+       localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+    }
+}
+
+task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
     rename('git\\.(.*)', '$1')
