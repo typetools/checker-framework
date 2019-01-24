@@ -326,8 +326,15 @@ public class ElementUtils {
      */
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
+        int origCardinality = names.size();
         Set<VariableElement> elements = new HashSet<>();
         findFieldsInTypeOrSuperType(type, names, elements);
+        if (origCardinality != names.size() + elements.size()) {
+            throw new BugInCF(
+                    String.format(
+                            "Bad sizes: %d != %d + %d",
+                            origCardinality, names.size(), elements.size()));
+        }
         return elements;
     }
 
