@@ -245,7 +245,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Map from the fully-qualified names of the aliased annotations, to the annotations in the
-     * Checker Framework that will be used in its place.
+     * Checker Framework that will be used in its place (possibly with some of the alias's
+     * elements/fields copied over).
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<>();
 
@@ -2602,6 +2603,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * annotation}, where the annotation mirror {@code annoationToUse} will be used instead. If
      * multiple calls are made with the same {@code annotation}, then the {@code anontationToUse}
      * must be the same.
+     *
+     * <p>The point of {@code annotationToUse} is that it may include elements/fields.
      */
     protected void addAliasedDeclAnnotation(
             Class<? extends Annotation> alias,
