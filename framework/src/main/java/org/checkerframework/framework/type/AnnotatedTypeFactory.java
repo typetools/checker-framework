@@ -2615,7 +2615,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotationMirror annotationToUse) {
         Pair<AnnotationMirror, Set<Class<? extends Annotation>>> pair = declAliases.get(annotation);
         if (pair != null) {
-            if (AnnotationUtils.areSame(annotationToUse, pair.first)) {
+            if (!AnnotationUtils.areSame(annotationToUse, pair.first)) {
                 throw new BugInCF(
                         "annotationToUse should be the same: %s %s", pair.first, annotationToUse);
             }
