@@ -277,6 +277,7 @@ task downloadJtreg(type: Download) {
     }
 }
 
+// See alternate implementation getCodeFormatScriptsInGradle below.
 task getCodeFormatScripts() {
     description 'Obtain or update the run-google-java-format scripts'
     if (file(formatScriptsHome).exists()) {
