@@ -263,12 +263,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * A map from the class of an annotation to the set of classes for annotations with the same
-     * meaning, as well as the annotation mirror that should be used.
+     * meaning.
      */
-    private final Map<
-                    Class<? extends Annotation>,
-                    Pair<AnnotationMirror, Set<Class<? extends Annotation>>>>
-            declAliases = new HashMap<>();
+    private final Map<Class<? extends Annotation>, Set<Class<? extends Annotation>>> declAliases =
+            new HashMap<>();
 
     /** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -491,10 +489,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(
-                org.jmlspecs.annotation.Pure.class,
-                org.checkerframework.dataflow.qual.Pure.class,
-                AnnotationBuilder.fromClass(
-                        elements, org.checkerframework.dataflow.qual.Pure.class));
+                org.jmlspecs.annotation.Pure.class, org.checkerframework.dataflow.qual.Pure.class);
 
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
@@ -2569,6 +2564,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (copyElements) {
             aliasesCopyElements.add(aliasName);
             aliasesIgnorableElements.put(aliasName, ignorableElements);
+        } else if (ignorableElements.length > 0) {
+            throw new BugInCF("copyElements = false, ignorableElements = " + ignorableElements);
         }
     }
 
@@ -2599,20 +2596,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Add the annotation {@code alias} as an alias for the declaration annotation {@code
-     * annotation}, where the annotation mirror {@code annoationToUse} will be used instead. If
-     * multiple calls are made with the same {@code annotation}, then the {@code anontationToUse}
+     * annotation}, where the annotation mirror {@code annotationToUse} will be used instead. If
+     * multiple calls are made with the same {@code annotation}, then the {@code annotationToUse}
      * must be the same.
      */
     protected void addAliasedDeclAnnotation(
-            Class<? extends Annotation> alias,
-            Class<? extends Annotation> annotation,
-            AnnotationMirror annotationToUse) {
-        Set<Class<? extends Annotation>> set = new HashSet<>();
-        if (declAliases.containsKey(annotation)) {
-            set.addAll(declAliases.get(annotation).second);
+            Class<? extends Annotation> alias, Class<? extends Annotation> annotation) {
+        Set<Class<? extends Annotation>> aliases = declAliases.get(annotation);
+        if (aliases == null) {
+            aliases = new HashSet<>();
+            declAliases.put(annotation, aliases);
         }
-        set.add(alias);
-        declAliases.put(annotation, Pair.of(annotationToUse, set));
+        aliases.add(alias);
     }
 
     /**
@@ -3075,7 +3070,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the actual annotation mirror used to annotate this element, whose name equals the
-     * passed annotation class, if one exists, or null otherwise.
+     * passed annotation class (or is an alias for it). Returns null if none exists.
      *
      * @see #getDeclAnnotationNoAliases
      * @param elt the element to retrieve the declaration annotation from
@@ -3089,7 +3084,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the actual annotation mirror used to annotate this element, whose name equals the
-     * passed annotation class, if one exists, or null otherwise. Does not check for aliases of the
+     * passed annotation class. Returns null if none exists. Does not check for aliases of the
      * annotation class.
      *
      * <p>Call this method from a checker that needs to alias annotations for one purpose and not
@@ -3119,7 +3114,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns true if the element is from bytecode and the if the element did not appear in a stub
-     * file (Currently only works for methods, constructors, and fields).
+     * file. Currently only works for methods, constructors, and fields.
      */
     public boolean isFromByteCode(Element element) {
         if (isFromStubFile(element)) {
@@ -3129,9 +3124,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
-     * annotationName if one exists, null otherwise. This is the private implementation of the
-     * same-named, public method.
+     * Returns the actual annotation mirror used to annotate this element, whose name equals the
+     * passed annotation class (or is an alias for it). Returns null if none exists. May return the
+     * canonical annotation that annotationName is an alias for.
+     *
+     * <p>This is the private implementation of the same-named, public method.
      *
      * <p>An option is provided to not to check for aliases of annotations. For example, an
      * annotated type factory may use aliasing for a pair of annotations for convenience while
@@ -3143,7 +3140,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param annoClass the class the annotation to retrieve
      * @param checkAliases whether to return an annotation mirror for an alias of the requested
      *     annotation class name
-     * @return the annotation mirror for the requested annotation or null if not found
+     * @return the annotation mirror for the requested annotation, or null if not found
      */
     private AnnotationMirror getDeclAnnotation(
             Element elt, Class<? extends Annotation> annoClass, boolean checkAliases) {
@@ -3156,13 +3153,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         // Look through aliases.
         if (checkAliases) {
-            Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases =
-                    declAliases.get(annoClass);
+            Set<Class<? extends Annotation>> aliases = declAliases.get(annoClass);
             if (aliases != null) {
-                for (Class<? extends Annotation> alias : aliases.second) {
+                for (Class<? extends Annotation> alias : aliases) {
                     for (AnnotationMirror am : declAnnos) {
                         if (AnnotationUtils.areSameByClass(am, alias)) {
-                            return aliases.first;
+                            // TODO: need to copy over elements/fields
+                            return AnnotationBuilder.fromClass(elements, annoClass);
                         }
                     }
                 }
