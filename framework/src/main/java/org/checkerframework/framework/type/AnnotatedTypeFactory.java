@@ -2609,12 +2609,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The point of {@code annotationToUse} is that it may include elements/fields.
      */
     protected void addAliasedDeclAnnotation(
-            Class<? extends Annotation> alias, Class<? extends Annotation> annotation) {
-        Set<Class<? extends Annotation>> aliases = declAliases.get(annotation);
-        if (aliases == null) {
-            aliases = new HashSet<>();
-            declAliases.put(annotation, aliases);
+            Class<? extends Annotation> alias,
+            Class<? extends Annotation> annotation,
+            AnnotationMirror annotationToUse) {
+        Pair<AnnotationMirror, Set<Class<? extends Annotation>>> pair = declAliases.get(annotation);
+        if (pair != null) {
+            if (AnnotationUtils.areSame(annotationToUse, pair.first)) {
+                throw new BugInCF(
+                        "annotationToUse should be the same: %s %s", pair.first, annotationToUse);
+            }
+        } else {
+            pair = Pair.of(annotationToUse, new HashSet<>());
+            declAliases.put(annotation, pair);
         }
+        Set<Class<? extends Annotation>> aliases = pair.second;
         aliases.add(alias);
     }
 
