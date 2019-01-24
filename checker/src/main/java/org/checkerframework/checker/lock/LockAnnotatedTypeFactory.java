@@ -274,11 +274,11 @@ public class LockAnnotatedTypeFactory
         }
 
         boolean isGuardedBy(AnnotationMirror am) {
-            return AnnotationUtils.areSameIgnoringValues(am, GUARDEDBY);
+            return AnnotationUtils.areSameByName(am, GUARDEDBY);
         }
 
         boolean isGuardSatisfied(AnnotationMirror am) {
-            return AnnotationUtils.areSameIgnoringValues(am, GUARDSATISFIED);
+            return AnnotationUtils.areSameByName(am, GUARDSATISFIED);
         }
 
         @Override

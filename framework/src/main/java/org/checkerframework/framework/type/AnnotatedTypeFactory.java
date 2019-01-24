@@ -1191,7 +1191,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     annos = AnnotationUtils.createAnnotationSet();
                     declAnnosFromStubFiles.put(ElementUtils.getVerboseName(elt), annos);
                 }
-                if (!AnnotationUtils.containsSameIgnoringValues(annos, fromStubFile)) {
+                if (!AnnotationUtils.containsSameByName(annos, fromStubFile)) {
                     annos.add(fromByteCode);
                 }
             }
@@ -2498,7 +2498,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (a == null) {
             return false;
         }
-        return AnnotationUtils.containsSameIgnoringValues(
+        return AnnotationUtils.containsSameByName(
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
@@ -3285,7 +3285,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     }
                     if (AnnotationUtils.containsSameByClass(
                                     annotationsOnAnnotation, InheritedAnnotation.class)
-                            || AnnotationUtils.containsSameIgnoringValues(
+                            || AnnotationUtils.containsSameByName(
                                     inheritedAnnotations, annotation)) {
                         addOrMerge(results, annotation);
                     }
@@ -3295,7 +3295,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     private void addOrMerge(Set<AnnotationMirror> results, AnnotationMirror annotation) {
-        if (AnnotationUtils.containsSameIgnoringValues(results, annotation)) {
+        if (AnnotationUtils.containsSameByName(results, annotation)) {
             /*
              * TODO: feature request: figure out a way to merge multiple annotations
              * of the same kind. For some annotations this might mean merging some
@@ -3305,7 +3305,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
              * For now, do nothing and just take the first, most concrete, annotation.
             AnnotationMirror prev = null;
             for (AnnotationMirror an : results) {
-                if (AnnotationUtils.areSameIgnoringValues(an, annotation)) {
+                if (AnnotationUtils.areSameByName(an, annotation)) {
                     prev = an;
                     break;
                 }
