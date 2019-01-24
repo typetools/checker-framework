@@ -3165,7 +3165,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     for (AnnotationMirror am : declAnnos) {
                         if (AnnotationUtils.areSameByClass(am, alias)) {
                             // TODO: need to copy over elements/fields
-                            return AnnotationBuilder.fromClass(elements, annoClass);
+                            return aliases.first;
                         }
                     }
                 }
