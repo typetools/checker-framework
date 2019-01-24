@@ -107,13 +107,13 @@ public class LockAnnotatedTypeFactory
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @LockingFree annotation.
-        addAliasedDeclAnnotation(LockingFree.class, SideEffectFree.class);
+        addAliasedDeclAnnotation(LockingFree.class, SideEffectFree.class, SIDEEFFECTFREE);
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @ReleasesNoLocks annotation.  Note that ReleasesNoLocks is
         // not truly side-effect-free even as far as the Lock Checker is concerned,
         // so there is additional handling of this annotation in the Lock Checker.
-        addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class);
+        addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class, SIDEEFFECTFREE);
 
         Class<? extends Annotation> testLoad;
         try {

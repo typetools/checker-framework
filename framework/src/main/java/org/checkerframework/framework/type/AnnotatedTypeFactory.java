@@ -244,7 +244,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final BaseTypeChecker checker;
 
     /**
-     * Map from the fully-qualified names of the aliased annotations, to the annotations in the
+     * Map from the fully-qualified names of an aliased annotations, to the annotation in the
      * Checker Framework that will be used in its place.
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<>();
@@ -257,16 +257,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Map from the fully-qualified names of aliased class, to the ignorable elements that the
-     * framework can safely drop when copying over the elements.
+     * framework should drop when copying over the elements.
      */
     private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
 
     /**
      * A map from the class of an annotation to the set of classes for annotations with the same
-     * meaning.
+     * meaning, as well as the annotation mirror that should be used.
      */
-    private final Map<Class<? extends Annotation>, Set<Class<? extends Annotation>>> declAliases =
-            new HashMap<>();
+    private final Map<
+                    Class<? extends Annotation>,
+                    Pair<AnnotationMirror, Set<Class<? extends Annotation>>>>
+            declAliases = new HashMap<>();
 
     /** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -489,7 +491,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(
-                org.jmlspecs.annotation.Pure.class, org.checkerframework.dataflow.qual.Pure.class);
+                org.jmlspecs.annotation.Pure.class,
+                org.checkerframework.dataflow.qual.Pure.class,
+                AnnotationBuilder.fromClass(
+                        elements, org.checkerframework.dataflow.qual.Pure.class));
 
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
@@ -2570,14 +2575,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the canonical annotation for the passed annotation if it is an alias of a canonical
-     * one in the framework. If it is not an alias, the method returns null.
+     * Returns the canonical annotation for the passed annotation. Returns null if the passed
+     * annotation is not an alias of a canonical one in the framework.
      *
      * <p>A canonical annotation is the internal annotation that will be used by the Checker
      * Framework in the aliased annotation's place.
      *
      * @param a the qualifier to check for an alias
-     * @return the canonical annotation or null if none exists
+     * @return the canonical annotation, or null if none exists
      */
     public @Nullable AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
@@ -3153,9 +3158,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         // Look through aliases.
         if (checkAliases) {
-            Set<Class<? extends Annotation>> aliases = declAliases.get(annoClass);
+            Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases =
+                    declAliases.get(annoClass);
             if (aliases != null) {
-                for (Class<? extends Annotation> alias : aliases) {
+                for (Class<? extends Annotation> alias : aliases.second) {
                     for (AnnotationMirror am : declAnnos) {
                         if (AnnotationUtils.areSameByClass(am, alias)) {
                             // TODO: need to copy over elements/fields
