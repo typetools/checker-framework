@@ -1394,12 +1394,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the field invariants for the given class.
+     * Returns the field invariants for the given class, as expressed by the user in {@link
+     * FieldInvariant @FieldInvariant} method annotations.
      *
-     * <p>Subclass may implement their own field invariant annotations if {@link FieldInvariant} is
-     * not expressive enough. They must override this method to properly create AnnotationMirror and
-     * also override {@link #getFieldInvariantDeclarationAnnotations()} to return their field
-     * invariants.
+     * <p>Subclasses may implement their own field invariant annotations if {@link
+     * FieldInvariant @FieldInvariant} is not expressive enough. They must override this method to
+     * properly create AnnotationMirror and also override {@link
+     * #getFieldInvariantDeclarationAnnotations()} to return their field invariants.
      *
      * @param element class for which to get invariants
      * @return fields invariants for {@code element}
@@ -1418,17 +1419,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Name name : classes) {
+            // Calling AnnotationBuilder.fromName (which ignores elements/fields) is acceptable
+            // because @FieldInvariant does not handle classes with elements/fields.
             qualifiers.add(AnnotationBuilder.fromName(elements, name));
         }
-        if (fields.size() > qualifiers.size()) {
-            int difference = fields.size() - qualifiers.size();
-            for (int i = 0; i < difference; i++) {
+        if (qualifiers.size() == 1) {
+            while (fields.size() > qualifiers.size()) {
                 qualifiers.add(qualifiers.get(0));
             }
         }
         if (fields.size() != qualifiers.size()) {
-            // FieldInvariant wasn't written correctly, so just return the object, the
-            // BaseTypeVisitor will issue an error.
+            // The user wrote a malformed @FieldInvariant annotation, so just return a malformed
+            // FieldInvariants object.  The BaseTypeVisitor will issue an error.
             return new FieldInvariants(fields, qualifiers);
         }
 

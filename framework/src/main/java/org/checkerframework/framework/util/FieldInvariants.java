@@ -7,25 +7,44 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Represents field invariants. A list of fields that have a specific qualifier in a class where
- * these field invariants apply.
+ * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of
+ * this as a set of (field, qualifier) pairs.
+ *
+ * <p>A FieldInvariants object may be malformed (inconsistent number of fields and qualifiers). In
+ * this case, the BaseTypeVisitor will issue an error.
  */
 public class FieldInvariants {
-    /** a list of simple filed names. */
+
+    /**
+     * A list of simple field names. A field may appear more than once in this list. In a
+     * well-formed FieldInvariants, has the same length as {@code qualifiers}.
+     */
     private final List<String> fields;
 
-    /** A list of qualifiers that apply to the field at the same index in {@code fields}. */
+    /**
+     * A list of qualifiers that apply to the field at the same index in {@code fields}. In a
+     * well-formed FieldInvariants, has the same length as {@code fields}.
+     */
     private final List<AnnotationMirror> qualifiers;
 
+    /**
+     * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
+     * either 1 or equal to length of {@code fields}.
+     *
+     * @param fields list of fields
+     * @param qualifiers list of qualifiers
+     */
     public FieldInvariants(List<String> fields, List<AnnotationMirror> qualifiers) {
         this(null, fields, qualifiers);
     }
 
     /**
-     * Creates a new object with all the invariant in {@code other}, plus those specified by {@code
-     * fields} and {@code qualifiers}.
+     * Creates a new object with all the invariants in {@code other}, plus those specified by {@code
+     * fields} and {@code qualifiers}. The result is well-formed if length of qualifiers is either 1
+     * or equal to length of {@code fields}.
      *
      * @param other other invariant object, may be null
      * @param fields list of fields
@@ -33,9 +52,8 @@ public class FieldInvariants {
      */
     public FieldInvariants(
             FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
-        if (fields.size() > qualifiers.size() && qualifiers.size() == 1) {
-            int difference = fields.size() - qualifiers.size();
-            for (int i = 0; i < difference; i++) {
+        if (qualifiers.size() == 1) {
+            while (fields.size() > qualifiers.size()) {
                 qualifiers.add(qualifiers.get(0));
             }
         }
@@ -48,36 +66,37 @@ public class FieldInvariants {
         this.qualifiers = qualifiers;
     }
 
+    /** The simple names of the fields that have a qualifier. May contain duplicates. */
     public List<String> getFields() {
         return fields;
     }
 
     /**
-     * Returns a list of qualifiers for {@code field}. If field has no qualifiers, then the empty
-     * list is returned.
+     * Returns a list of qualifiers for {@code field}. If {@code field} has no qualifiers, returns
+     * an empty list.
      *
      * @param field simple field name
-     * @return a list of qualifiers for {@code field}
+     * @return a list of qualifiers for {@code field}, possibly empty
      */
     public List<AnnotationMirror> getQualifiersFor(CharSequence field) {
-        String fieldString = field.toString();
-        if (isWellFormed()) {
-            int index = fields.indexOf(fieldString);
-            if (index == -1) {
-                return Collections.emptyList();
-            }
-            List<AnnotationMirror> list = new ArrayList<>();
-            for (int i = 0; i < fields.size(); i++) {
-                if (fields.get(i).equals(fieldString)) {
-                    list.add(qualifiers.get(i));
-                }
-            }
-            return list;
+        if (!isWellFormed()) {
+            throw new BugInCF("malformed FieldInvariants");
         }
-        return Collections.emptyList();
+        String fieldString = field.toString();
+        int index = fields.indexOf(fieldString);
+        if (index == -1) {
+            return Collections.emptyList();
+        }
+        List<AnnotationMirror> list = new ArrayList<>();
+        for (int i = 0; i < fields.size(); i++) {
+            if (fields.get(i).equals(fieldString)) {
+                list.add(qualifiers.get(i));
+            }
+        }
+        return list;
     }
 
-    /** @return whether or not there is a qualifier for each field */
+    /** @return true if there is a qualifier for each field in {@code fields} */
     public boolean isWellFormed() {
         return qualifiers.size() == fields.size();
     }
