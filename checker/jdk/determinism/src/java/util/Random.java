@@ -167,7 +167,7 @@ class Random implements java.io.Serializable {
      *
      * @param seed the initial seed
      */
-    synchronized public void setSeed(@PolyDet Random this, @PolyDet long seed) {
+    synchronized public void setSeed(@PolyDet Random this, @PolyDet("use") long seed) {
         this.seed.set(initialScramble(seed));
         haveNextNextGaussian = false;
     }
@@ -226,7 +226,7 @@ class Random implements java.io.Serializable {
      * @throws NullPointerException if the byte array is null
      * @since  1.1
      */
-    public void nextBytes(@PolyDet Random this, @PolyDet byte[] bytes) {
+    public void nextBytes(@PolyDet("use") Random this, @PolyDet byte @PolyDet [] bytes) {
         for (int i = 0, len = bytes.length; i < len; )
             for (int rnd = nextInt(),
                      n = Math.min(len - i, Integer.SIZE/Byte.SIZE);
