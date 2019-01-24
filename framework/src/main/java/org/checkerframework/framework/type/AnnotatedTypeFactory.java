@@ -1423,14 +1423,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // @FieldInvariant does not handle classes with elements/fields
             qualifiers.add(AnnotationBuilder.fromName(elements, name));
         }
-        if (qualifiers.size() == 1) {
-            while (fields.size() > qualifiers.size()) {
-                qualifiers.add(qualifiers.get(0));
-            }
-        }
-        if (fields.size() != qualifiers.size()) {
+        if (!(fields.size() == qualifiers.size() || fields.size() > 0 && qualifiers.size() == 1)) {
             // The user wrote a malformed @FieldInvariant annotation, so just return a malformed
-            // object.  The BaseTypeVisitor will issue an error.
+            // FieldInvariants object.  The BaseTypeVisitor will issue an error.
             return new FieldInvariants(fields, qualifiers);
         }
 

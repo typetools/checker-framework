@@ -329,6 +329,8 @@ public class ElementUtils {
         int origCardinality = names.size();
         Set<VariableElement> elements = new HashSet<>();
         findFieldsInTypeOrSuperType(type, names, elements);
+        // Since names may contain duplicates, I don't trust the claim in the documentation about
+        // cardinality.  (Does any code depend on the invariant, though?)
         if (origCardinality != names.size() + elements.size()) {
             throw new BugInCF(
                     String.format(

@@ -48,7 +48,7 @@ public class FieldInvariants {
      *
      * @param other other invariant object, may be null
      * @param fields list of fields
-     * @param qualifiers list of qualifiers; length is either 1 or equal to length of {@code fields}
+     * @param qualifiers list of qualifiers
      */
     public FieldInvariants(
             FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
