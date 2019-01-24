@@ -34,13 +34,16 @@ ext {
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
+
+    worktreeList = "git worktree list".execute().text
+    localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
 }
 
 task installGitHooks(type: Copy) {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
     rename('git\\.(.*)', '$1')
-    into '.git/hooks'
+    into localRepo + "/hooks"
 }
 
 allprojects {
