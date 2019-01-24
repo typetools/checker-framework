@@ -10,8 +10,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Represents field invariants: that is, qualifiers on fields. Think of this as a set of (field,
- * qualifier) pairs.
+ * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of
+ * this as a set of (field, qualifier) pairs.
  */
 public class FieldInvariants {
 
@@ -37,15 +37,22 @@ public class FieldInvariants {
      *
      * @param other other invariant object, may be null
      * @param fields list of fields
-     * @param qualifiers list of qualifiers
+     * @param qualifiers list of qualifiers; length is either 1 or equal to length of {@code fields}
      */
     public FieldInvariants(
             FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
         if (fields.size() != qualifiers.size()) {
-            throw new BugInCF(
-                    String.format(
-                            "%d fields = %s; %d qualifiers = %s",
-                            fields.size(), fields, qualifiers.size(), qualifiers));
+            if (fields.size() > qualifiers.size() && qualifiers.size() == 1) {
+                int difference = fields.size() - qualifiers.size();
+                for (int i = 0; i < difference; i++) {
+                    qualifiers.add(qualifiers.get(0));
+                }
+            } else {
+                throw new BugInCF(
+                        String.format(
+                                "%d fields = %s; %d qualifiers = %s",
+                                fields.size(), fields, qualifiers.size(), qualifiers));
+            }
         }
         if (other != null) {
             fields.addAll(other.fields);
