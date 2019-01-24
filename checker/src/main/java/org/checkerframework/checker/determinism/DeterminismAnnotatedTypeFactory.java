@@ -271,8 +271,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * If node represents constructing a {@code @Det HashSet}, inserts {@code @OrderNonDet}
-         * instead.
+         * Reports an error if {@code node} represents explicitly constructing a {@code @Det
+         * HashSet}. If {@code @Det} annotation wasn't explicitly written, but the constructor would
+         * resolve to {@code @Det}, inserts {@code @OrderNonDet} instead.
          *
          * @param node a tree representing instantiating a class
          * @param annotatedTypeMirror the type to modify if it represents a {@code @Det HashSet}
@@ -288,6 +289,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             Result.failure(
                                     DeterminismVisitor.INVALID_HASH_SET_CONSTRUCTOR_INVOCATION),
                             node);
+                    return super.visitNewClass(node, annotatedTypeMirror);
                 }
                 if (AnnotationUtils.areSame(
                         annotatedTypeMirror.getAnnotationInHierarchy(NONDET), DET)) {
