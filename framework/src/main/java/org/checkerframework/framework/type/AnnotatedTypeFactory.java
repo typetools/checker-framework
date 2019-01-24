@@ -2572,7 +2572,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             aliasesCopyElements.add(aliasName);
             aliasesIgnorableElements.put(aliasName, ignorableElements);
         } else if (ignorableElements.length > 0) {
-            throw new BugInCF("copyElements = false, ignorableElements = " + ignorableElements);
+            throw new BugInCF(
+                    "copyElements = false, ignorableElements = "
+                            + Arrays.toString(ignorableElements));
         }
     }
 
