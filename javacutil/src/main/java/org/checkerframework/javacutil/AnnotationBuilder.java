@@ -268,6 +268,16 @@ public class AnnotationBuilder {
         return setValue(elementName, (Object) value);
     }
 
+    /**
+     * Remove the element/field with the given name. Does not err if no such element/field is
+     * present.
+     */
+    public AnnotationBuilder removeElement(CharSequence elementName) {
+        assertNotBuilt();
+        ExecutableElement var = findElement(elementName);
+        elementValues.remove(var);
+    }
+
     private TypeMirror getErasedOrBoxedType(TypeMirror type) {
         // See com.sun.tools.javac.code.Attribute.Class.makeClassType()
         return type.getKind().isPrimitive()
