@@ -678,7 +678,7 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the Class that is referenced by attribute {@code name}.
+     * Get the Class that is referenced by attribute {@code annoElement}.
      *
      * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
      * #getElementValueAnnotationClass} instead.
@@ -690,21 +690,21 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the annotation Class that is referenced by attribute {@code name}. This method uses
-     * Class.forName to load the class. It returns null if the class wasn't found. Like {@link
+     * Get the annotation Class that is referenced by attribute {@code annoElement}. This method
+     * uses Class.forName to load the class. It returns null if the class wasn't found. Like {@link
      * #getElementValueClass}, but for annotation classes.
      */
     public static Class<? extends Annotation> getElementValueAnnotationClass(
-            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         @SuppressWarnings("unchecked") // TODO: could do a run-time check
         Class<? extends Annotation> result =
-                (Class<? extends Annotation>) getElementValueClass(anno, name, useDefaults);
+                (Class<? extends Annotation>) getElementValueClass(anno, annoElement, useDefaults);
         return result;
     }
 
     /**
-     * Get the list of annotation Classes that are referenced by attribute {@code name}. Like {@link
-     * #getElementValueClassNames}, but returns classes rather than names.
+     * Get the list of annotation Classes that are referenced by attribute {@code annoElement}. Like
+     * {@link #getElementValueClassNames}, but returns classes rather than names.
      */
     public static List<Class<? extends Annotation>> getElementValueAnnotationClasses(
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
