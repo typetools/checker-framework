@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -196,11 +195,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V newOtherVal = null;
                 for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                     AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                    Name annotation =
-                            AnnotationUtils.getElementValueClassName(
+                    Class<? extends Annotation> annotation =
+                            AnnotationUtils.getElementValueClass(
                                     monotonicAnnotation, "value", false);
                     AnnotationMirror target =
-                            AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annotation);
+                            AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), annotation);
                     // Make sure the 'target' annotation is present.
                     if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
                         newOtherVal =
@@ -366,11 +365,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                             fieldAcc.getField(), MonotonicQualifier.class);
             for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                 AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                Name annotation =
-                        AnnotationUtils.getElementValueClassName(
-                                monotonicAnnotation, "value", false);
+                Class<? extends Annotation> annotation =
+                        AnnotationUtils.getElementValueClass(monotonicAnnotation, "value", false);
                 AnnotationMirror target =
-                        AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annotation);
+                        AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), annotation);
                 // Make sure the 'target' annotation is present.
                 if (AnnotationUtils.containsSame(value.getAnnotations(), target)) {
                     isMonotonic = true;
