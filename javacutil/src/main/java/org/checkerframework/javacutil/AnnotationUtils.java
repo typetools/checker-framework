@@ -637,7 +637,11 @@ public class AnnotationUtils {
         return ct.asElement().getQualifiedName();
     }
 
-    /** Get the list of Names of the classes that are referenced by attribute {@code name}. */
+    /**
+     * Get the list of Names of the classes that are referenced by attribute {@code name}.
+     *
+     * @see #getElementValueClasses
+     */
     public static List<Name> getElementValueClassNames(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
         List<Type.ClassType> la =
@@ -650,26 +654,39 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
-     * load the class. It returns null if the class wasn't found.
+     * Convert a name to a Class. This method uses Class.forName to load the class. It fails if the
+     * class wasn't found.
+     *
+     * @param annoElement the element/field of {@code anno} whose content is being looked up; for
+     *     diagnostic messages only
+     * @param anno the anno whose element is being looked up; for diagnostic messages only
+     */
+    private static Class<?> nameToClass(
+            Name name, CharSequence annoElement, AnnotationMirror anno) {
+        try {
+            ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+            Class<?> cls = Class.forName(name.toString(), true, classLoader);
+            return cls;
+        } catch (ClassNotFoundException e) {
+            // TODO: This is a user error and should be reported as such.
+            String msg =
+                    String.format(
+                            "Could not load class '%s' for field '%s' in annotation %s",
+                            name, annoElement, anno);
+            throw new BugInCF(msg, e);
+        }
+    }
+
+    /**
+     * Get the Class that is referenced by attribute {@code name}.
      *
      * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
      * #getElementValueAnnotationClass} instead.
      */
     public static Class<?> getElementValueClass(
-            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
-        Name cn = getElementValueClassName(anno, name, useDefaults);
-        try {
-            ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
-            Class<?> cls = Class.forName(cn.toString(), true, classLoader);
-            return cls;
-        } catch (ClassNotFoundException e) {
-            String msg =
-                    String.format(
-                            "Could not load class '%s' for field '%s' in annotation %s",
-                            cn, name, anno);
-            throw new BugInCF(msg, e);
-        }
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
+        return nameToClass(cn, annoElement, anno);
     }
 
     /**
@@ -679,20 +696,27 @@ public class AnnotationUtils {
      */
     public static Class<? extends Annotation> getElementValueAnnotationClass(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
-        Name cn = getElementValueClassName(anno, name, useDefaults);
-        try {
-            ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+        @SuppressWarnings("unchecked") // TODO: could do a run-time check
+        Class<? extends Annotation> result =
+                (Class<? extends Annotation>) getElementValueClass(anno, name, useDefaults);
+        return result;
+    }
+
+    /**
+     * Get the list of annotation Classes that are referenced by attribute {@code name}. Like {@link
+     * #getElementValueClassNames}, but returns classes rather than names.
+     */
+    public static List<Class<? extends Annotation>> getElementValueAnnotationClasses(
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        List<Name> aNames = getElementValueClassNames(anno, annoElement, useDefaults);
+        List<Class<? extends Annotation>> result = new ArrayList<>();
+        for (Name aName : aNames) {
             @SuppressWarnings("unchecked") // TODO: could do a run-time check
-            Class<? extends Annotation> cls =
-                    (Class<? extends Annotation>) Class.forName(cn.toString(), true, classLoader);
-            return cls;
-        } catch (ClassNotFoundException e) {
-            String msg =
-                    String.format(
-                            "Could not load class '%s' for field '%s' in annotation %s",
-                            cn, name, anno);
-            throw new BugInCF(msg, e);
+            Class<? extends Annotation> aClass =
+                    (Class<? extends Annotation>) nameToClass(aName, annoElement, anno);
+            result.add(aClass);
         }
+        return result;
     }
 
     /**
