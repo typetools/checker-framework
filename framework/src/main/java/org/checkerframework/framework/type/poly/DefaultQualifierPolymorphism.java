@@ -1,9 +1,9 @@
 package org.checkerframework.framework.type.poly;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -43,17 +43,19 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                 continue;
             }
 
-            Name plval = AnnotationUtils.getElementValueClassName(aa, "value", true);
+            Class<? extends Annotation> plval =
+                    AnnotationUtils.getElementValueAnnotationClass(aa, "value", true);
             AnnotationMirror ttreetop;
-            if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
+            if (PolymorphicQualifier.class.getCanonicalName().equals(plval.getCanonicalName())) {
                 if (topQuals.size() != 1) {
                     throw new BugInCF(
-                            "DefaultQualifierPolymorphism: PolymorphicQualifier has to specify type hierarchy, if more than one exist; top types: "
+                            "DefaultQualifierPolymorphism: PolymorphicQualifier has to specify "
+                                    + "type hierarchy, if more than one exist; top types: "
                                     + topQuals);
                 }
                 ttreetop = topQuals.iterator().next();
             } else {
-                AnnotationMirror ttree = AnnotationBuilder.fromName(elements, plval);
+                AnnotationMirror ttree = AnnotationBuilder.fromClass(elements, plval);
                 ttreetop = qualHierarchy.getTopAnnotation(ttree);
             }
             if (topsSeen.contains(ttreetop)) {
