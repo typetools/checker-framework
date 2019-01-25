@@ -703,6 +703,23 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the list of annotation Classes that are referenced by attribute {@code annoElement}. Like
+     * {@link #getElementValueClassNames}, but returns classes rather than names.
+     */
+    public static List<Class<? extends Annotation>> getElementValueAnnotationClasses(
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        List<Name> aNames = getElementValueClassNames(anno, annoElement, useDefaults);
+        List<Class<? extends Annotation>> result = new ArrayList<>();
+        for (Name aName : aNames) {
+            @SuppressWarnings("unchecked") // TODO: could do a run-time check
+            Class<? extends Annotation> aClass =
+                    (Class<? extends Annotation>) nameToClass(aName, annoElement, anno);
+            result.add(aClass);
+        }
+        return result;
+    }
+
+    /**
      * See checkers.types.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy, Map,
      * Object, AnnotationMirror) (Not linked because it is in an independent project.
      */
