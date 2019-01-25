@@ -1416,13 +1416,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         List<String> fields =
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
-        List<Name> classes =
-                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
+        List<Class<? extends Annotation>> classes =
+                AnnotationUtils.getElementValueAnnotationClasses(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
-        for (Name name : classes) {
-            // Calling AnnotationBuilder.fromName (which ignores elements/fields) is acceptable
-            // because @FieldInvariant does not handle classes with elements/fields.
-            qualifiers.add(AnnotationBuilder.fromName(elements, name));
+        for (Class<? extends Annotation> aClass : classes) {
+            // @FieldInvariant does not yet handle classes with elements/fields.
+            qualifiers.add(AnnotationBuilder.fromClass(elements, aClass));
         }
         if (qualifiers.size() == 1) {
             while (fields.size() > qualifiers.size()) {

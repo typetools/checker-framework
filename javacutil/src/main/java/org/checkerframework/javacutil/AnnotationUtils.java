@@ -637,7 +637,11 @@ public class AnnotationUtils {
         return ct.asElement().getQualifiedName();
     }
 
-    /** Get the list of Names of the classes that are referenced by attribute {@code name}. */
+    /**
+     * Get the list of Names of the classes that are referenced by attribute {@code name}.
+     *
+     * @see #getElementValueClasses
+     */
     public static List<Name> getElementValueClassNames(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
         List<Type.ClassType> la =
@@ -650,23 +654,52 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
-     * load the class. It returns null if the class wasn't found.
+     * Convert a name to a Class. This method uses Class.forName to load the class. It fails if the
+     * class wasn't found.
+     *
+     * @param annoElement the element/field of {@code anno} whose content is being looked up; for
+     *     diagnostic messages only
+     * @param anno the anno whose element is being looked up; for diagnostic messages only
      */
-    public static Class<?> getElementValueClass(
-            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
-        Name cn = getElementValueClassName(anno, name, useDefaults);
+    private static Class<?> nameToClass(
+            Name name, CharSequence annoElement, AnnotationMirror anno) {
         try {
             ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
-            Class<?> cls = Class.forName(cn.toString(), true, classLoader);
+            Class<?> cls = Class.forName(name.toString(), true, classLoader);
             return cls;
         } catch (ClassNotFoundException e) {
+            // TODO: This is a user error and should be reported as such.
             String msg =
                     String.format(
                             "Could not load class '%s' for field '%s' in annotation %s",
-                            cn, name, anno);
+                            name, annoElement, anno);
             throw new BugInCF(msg, e);
         }
+    }
+
+    /**
+     * Get the Class that is referenced by attribute {@code annoElement}.
+     *
+     * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
+     * #getElementValueAnnotationClass} instead.
+     */
+    public static Class<?> getElementValueClass(
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
+        return nameToClass(cn, annoElement, anno);
+    }
+
+    /**
+     * Get the annotation Class that is referenced by attribute {@code annoElement}. This method
+     * uses Class.forName to load the class. It returns null if the class wasn't found. Like {@link
+     * #getElementValueClass}, but for annotation classes.
+     */
+    public static Class<? extends Annotation> getElementValueAnnotationClass(
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        @SuppressWarnings("unchecked") // TODO: could do a run-time check
+        Class<? extends Annotation> result =
+                (Class<? extends Annotation>) getElementValueClass(anno, annoElement, useDefaults);
+        return result;
     }
 
     /**
