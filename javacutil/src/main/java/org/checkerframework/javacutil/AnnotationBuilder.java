@@ -276,6 +276,7 @@ public class AnnotationBuilder {
         assertNotBuilt();
         ExecutableElement var = findElement(elementName);
         elementValues.remove(var);
+        return this;
     }
 
     private TypeMirror getErasedOrBoxedType(TypeMirror type) {
