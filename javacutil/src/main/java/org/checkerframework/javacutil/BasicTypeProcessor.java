@@ -13,7 +13,12 @@ public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
     /** The source tree that's being scanned. */
     protected CompilationUnitTree currentRoot;
 
-    /** Create a TreePathScanner at the given root. */
+    /**
+     * Create a TreePathScanner at the given root.
+     *
+     * @param root where to start the tree traversal
+     * @return a TreePathScanner at the given root
+     */
     protected abstract TreePathScanner<?, ?> createTreePathScanner(CompilationUnitTree root);
 
     /** Visit the tree path for the type element. */
