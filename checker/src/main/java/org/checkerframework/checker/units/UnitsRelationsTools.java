@@ -219,7 +219,7 @@ public class UnitsRelationsTools {
             return unitsAnnotation;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(elements, unitsAnnotation);
-            builder.remove("value");
+            builder.removeElement("value");
             return builder.build();
         }
     }
