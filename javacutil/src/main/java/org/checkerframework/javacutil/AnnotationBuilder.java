@@ -68,12 +68,23 @@ public class AnnotationBuilder {
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
             Collections.synchronizedMap(new HashMap<>());
 
-    /** Create a new AnnotationBuilder for the given annotation and environment. */
+    /**
+     * Create a new AnnotationBuilder for the given annotation and environment (with no
+     * elements/fields).
+     *
+     * @param env the processing environment
+     * @param anno the class of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
 
-    /** Create a new AnnotationBuilder for the given annotation name (with no elements/fields). */
+    /**
+     * Create a new AnnotationBuilder for the given annotation name (with no elements/fields).
+     *
+     * @param env the processing environment
+     * @param name the name of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -89,6 +100,9 @@ public class AnnotationBuilder {
     /**
      * Create a new AnnotationBuilder that copies the given annotation, including its
      * elements/fields.
+     *
+     * @param env the processing environment
+     * @param annotation the annotation to copy
      */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
         this.elements = env.getElementUtils();

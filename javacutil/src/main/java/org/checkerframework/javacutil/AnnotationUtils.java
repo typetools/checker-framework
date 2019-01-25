@@ -63,7 +63,10 @@ public class AnnotationUtils {
     // (I think the undesired property is that it's reference equality.)
     // **********************************************************************
 
-    /** @return the fully-qualified name of an annotation as a String */
+    /**
+     * @param annotation the annotation whose name to return
+     * @return the fully-qualified name of an annotation as a String
+     */
     public static final String annotationName(AnnotationMirror annotation) {
         if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
             return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
@@ -81,6 +84,8 @@ public class AnnotationUtils {
      * returns true iff both annotations are the same and annotate the same annotation target (e.g.
      * field, variable, etc) -- that is, if its arguments are the same annotation instance.
      *
+     * @param a1 the first AnnotationMirror to compare
+     * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 are the same annotation
      */
     public static boolean areSame(@Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
@@ -106,8 +111,10 @@ public class AnnotationUtils {
     /**
      * Return true iff a1 and a2 have the same annotation type.
      *
-     * @see #areSame(AnnotationMirror, AnnotationMirror)
+     * @param a1 the first AnnotationMirror to compare
+     * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 have the same annotation name
+     * @see #areSame(AnnotationMirror, AnnotationMirror)
      */
     public static boolean areSameByName(
             @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
@@ -126,6 +133,10 @@ public class AnnotationUtils {
      * name). Values are ignored.
      *
      * <p>(Use {@link #areSameByClass} instead of this method when possible. It is faster.)
+     *
+     * @param am the AnnotationMirror whose name to compare
+     * @param aname the string to compare
+     * @return true if aname is the name of am
      */
     public static boolean areSameByName(AnnotationMirror am, String aname) {
         return aname.equals(annotationName(am));
@@ -135,6 +146,10 @@ public class AnnotationUtils {
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
      * <p>(Use this method rather than {@link #areSameByName} when possible. This method is faster.)
+     *
+     * @param am the AnnotationMirror whose class to compare
+     * @param annoClass the class to compare
+     * @return true if annoclass is the class of am
      */
     public static boolean areSameByClass(
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
@@ -150,7 +165,10 @@ public class AnnotationUtils {
     /**
      * Checks that two collections contain the same annotations.
      *
-     * @return true iff c1 and c2 contain the same annotations
+     * @param c1 the first collection to compare
+     * @param c2 the second collection to compare
+     * @return true iff c1 and c2 contain the same annotations, according to {@link
+     *     #areSame(AnnotationMirror, AnnotationMirror)}
      */
     public static boolean areSame(
             Collection<? extends AnnotationMirror> c1, Collection<? extends AnnotationMirror> c2) {
@@ -184,6 +202,8 @@ public class AnnotationUtils {
      * Checks that the collection contains the annotation. Using Collection.contains does not always
      * work, because it does not use areSame for comparison.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the AnnotationMirror to search for in c
      * @return true iff c contains anno, according to areSame
      */
     public static boolean containsSame(
@@ -194,6 +214,8 @@ public class AnnotationUtils {
     /**
      * Returns the AnnotationMirror in {@code c} that is the same annotation as {@code anno}.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the AnnotationMirror to search for in c
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSame; otherwise, {@code null}
      */
@@ -211,6 +233,8 @@ public class AnnotationUtils {
      * Checks that the collection contains the annotation. Using Collection.contains does not always
      * work, because it does not use areSame for comparison.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the annotation class to search for in c
      * @return true iff c contains anno, according to areSameByClass
      */
     public static boolean containsSameByClass(
@@ -221,6 +245,8 @@ public class AnnotationUtils {
     /**
      * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the class to search for in c
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSameByClass; otherwise, {@code null}
      */
@@ -235,9 +261,10 @@ public class AnnotationUtils {
     }
 
     /**
-     * Checks that the collection contains the annotation. Using Collection.contains does not always
-     * work, because it does not use areSame for comparison.
+     * Checks that the collection contains an annotation of the given name.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the name to search for in c
      * @return true iff c contains anno, according to areSameByName
      */
     public static boolean containsSameByName(
@@ -248,6 +275,8 @@ public class AnnotationUtils {
     /**
      * Returns the AnnotationMirror in {@code c} that has the same name as {@code anno}.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the name to search for in c
      * @return AnnotationMirror with the same name as {@code anno} iff c contains anno, according to
      *     areSameByName; otherwise, {@code null}
      */
@@ -262,9 +291,11 @@ public class AnnotationUtils {
     }
 
     /**
-     * Checks that the collection contains the annotation ignoring values. Using Collection.contains
-     * does not always work, because it does not use areSameByName for comparison.
+     * Checks that the collection contains an annotation of the given name. Differs from using
+     * Collection.contains, which it does not use areSameByName for comparison.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the annotation whose name to search for in c
      * @return true iff c contains anno, according to areSameByName
      */
     public static boolean containsSameByName(
@@ -276,6 +307,8 @@ public class AnnotationUtils {
      * Returns the AnnotationMirror in {@code c} that is the same annotation as {@code anno}
      * ignoring values.
      *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the annotation whose name to search for in c
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSameByName; otherwise, {@code null}
      */
@@ -311,11 +344,13 @@ public class AnnotationUtils {
             };
 
     /**
-     * provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
+     * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
      * ordering ignores annotation values when ordering.
      *
      * <p>The ordering is meant to be used as {@link TreeSet} or {@link TreeMap} ordering. A {@link
      * Set} should not contain two annotations that only differ in values.
+     *
+     * @return an ordering over AnnotationMirrors based on their name
      */
     public static Comparator<AnnotationMirror> annotationOrdering() {
         return ANNOTATION_ORDERING;
@@ -346,12 +381,17 @@ public class AnnotationUtils {
         return new TreeSet<>(annotationOrdering());
     }
 
-    /** Returns true if the given annotation has a @Inherited meta-annotation. */
+    /**
+     * Returns true if the given annotation has a @Inherited meta-annotation.
+     *
+     * @return true if the given annotation has a @Inherited meta-annotation
+     */
     public static boolean hasInheritedMeta(AnnotationMirror anno) {
         return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
     }
 
     /**
+     * @param target a location where an annotation can be written
      * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
      */
     public static EnumSet<ElementKind> getElementKindsForTarget(@Nullable Target target) {
@@ -371,6 +411,7 @@ public class AnnotationUtils {
      * type is TYPE_USE, then ElementKinds returned should be the same as those returned for TYPE
      * and TYPE_PARAMETER, but this method returns the empty set instead.
      *
+     * @param elementType the elementType to find ElementKinds for
      * @return the set of {@link ElementKind}s corresponding to {@code elementType}
      */
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
@@ -440,6 +481,10 @@ public class AnnotationUtils {
     /**
      * Returns true if the two annotations have the same elements (fields). The arguments {@code
      * am1} and {@code am2} must be the same type of annotation.
+     *
+     * @param am1 the first AnnotationMirror to compare
+     * @param am2 the second AnnotationMirror to compare
+     * @return true if if the two annotations have the same elements (fields)
      */
     public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
@@ -466,6 +511,10 @@ public class AnnotationUtils {
      * Return true iff the two AnnotationValue objects are the same. Use this instead of
      * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the receiver is some
      * AnnotationValue other than CheckerFrameworkAnnotationValue.
+     *
+     * @param av1 the first AnnotationValue to compare
+     * @param av2 the second AnnotationValue to compare
+     * @return true if if the two annotation values are the same
      */
     public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
         if (av1 == av2) {
@@ -526,7 +575,7 @@ public class AnnotationUtils {
      * @param name the name of the attribute
      * @return whether the attribute exists in anno
      */
-    public static <T> boolean hasElementValue(AnnotationMirror anno, CharSequence name) {
+    public static boolean hasElementValue(AnnotationMirror anno, CharSequence name) {
         Map<? extends ExecutableElement, ? extends AnnotationValue> valmap =
                 anno.getElementValues();
         for (ExecutableElement elem : valmap.keySet()) {
@@ -551,6 +600,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param name the name of the attribute to access
      * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
      * @param useDefaults whether to apply default values to the attribute
      * @return the value of the attribute with the given name
      */
@@ -591,6 +641,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param name the name of the attribute to access
      * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
      * @param useDefaults whether to apply default values to the attribute
      * @return the value of the attribute with the given name
      */
@@ -637,11 +688,7 @@ public class AnnotationUtils {
         return ct.asElement().getQualifiedName();
     }
 
-    /**
-     * Get the list of Names of the classes that are referenced by attribute {@code name}.
-     *
-     * @see #getElementValueClasses
-     */
+    /** Get the list of Names of the classes that are referenced by attribute {@code name}. */
     public static List<Name> getElementValueClassNames(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
         List<Type.ClassType> la =
