@@ -670,6 +670,28 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the annotation Class that is referenced by attribute {@code name}. This method uses
+     * Class.forName to load the class. It returns null if the class wasn't found.
+     */
+    public static Class<? extends Annotation> getElementValueAnnotationClass(
+            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, name, useDefaults);
+        try {
+            ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+            @SuppressWarnings("unchecked") // TODO: could do a run-time check
+            Class<? extends Annotation> cls =
+                    (Class<? extends Annotation>) Class.forName(cn.toString(), true, classLoader);
+            return cls;
+        } catch (ClassNotFoundException e) {
+            String msg =
+                    String.format(
+                            "Could not load class '%s' for field '%s' in annotation %s",
+                            cn, name, anno);
+            throw new BugInCF(msg, e);
+        }
+    }
+
+    /**
      * See checkers.types.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy, Map,
      * Object, AnnotationMirror) (Not linked because it is in an independent project.
      */

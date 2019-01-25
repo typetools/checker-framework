@@ -1,5 +1,6 @@
 package org.checkerframework.framework.flow;
 
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,7 +197,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                     AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
                     Class<? extends Annotation> annotation =
-                            AnnotationUtils.getElementValueClass(
+                            AnnotationUtils.getElementValueAnnotationClass(
                                     monotonicAnnotation, "value", false);
                     AnnotationMirror target =
                             AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), annotation);
@@ -366,7 +367,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                 AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
                 Class<? extends Annotation> annotation =
-                        AnnotationUtils.getElementValueClass(monotonicAnnotation, "value", false);
+                        AnnotationUtils.getElementValueAnnotationClass(
+                                monotonicAnnotation, "value", false);
                 AnnotationMirror target =
                         AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), annotation);
                 // Make sure the 'target' annotation is present.
