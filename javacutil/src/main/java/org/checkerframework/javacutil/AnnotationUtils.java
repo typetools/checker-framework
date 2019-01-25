@@ -652,6 +652,9 @@ public class AnnotationUtils {
     /**
      * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
      * load the class. It returns null if the class wasn't found.
+     *
+     * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
+     * #getElementValueAnnotationClass} instead.
      */
     public static Class<?> getElementValueClass(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
@@ -659,6 +662,29 @@ public class AnnotationUtils {
         try {
             ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
             Class<?> cls = Class.forName(cn.toString(), true, classLoader);
+            return cls;
+        } catch (ClassNotFoundException e) {
+            String msg =
+                    String.format(
+                            "Could not load class '%s' for field '%s' in annotation %s",
+                            cn, name, anno);
+            throw new BugInCF(msg, e);
+        }
+    }
+
+    /**
+     * Get the annotation Class that is referenced by attribute {@code name}. This method uses
+     * Class.forName to load the class. It returns null if the class wasn't found. Like {@link
+     * #getElementValueClass}, but for annotation classes.
+     */
+    public static Class<? extends Annotation> getElementValueAnnotationClass(
+            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, name, useDefaults);
+        try {
+            ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+            @SuppressWarnings("unchecked") // TODO: could do a run-time check
+            Class<? extends Annotation> cls =
+                    (Class<? extends Annotation>) Class.forName(cn.toString(), true, classLoader);
             return cls;
         } catch (ClassNotFoundException e) {
             String msg =
