@@ -652,6 +652,9 @@ public class AnnotationUtils {
     /**
      * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
      * load the class. It returns null if the class wasn't found.
+     *
+     * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
+     * #getElementValueAnnotationClass} instead.
      */
     public static Class<?> getElementValueClass(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
@@ -671,7 +674,8 @@ public class AnnotationUtils {
 
     /**
      * Get the annotation Class that is referenced by attribute {@code name}. This method uses
-     * Class.forName to load the class. It returns null if the class wasn't found.
+     * Class.forName to load the class. It returns null if the class wasn't found. Like {@link
+     * #getElementValueClass}, but for annotation classes.
      */
     public static Class<? extends Annotation> getElementValueAnnotationClass(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
