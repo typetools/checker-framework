@@ -34,13 +34,26 @@ ext {
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
+
+    // The local git repository, typically in the .git directory, but not for worktrees.
+    // This value is always overwritten, but Gradle needs the variable to be initialized.
+    localRepo = ".git"
 }
 
-task installGitHooks(type: Copy) {
+task setLocalRepo(type:Exec) {
+    commandLine 'git', 'worktree', 'list'
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+       String worktreeList = standardOutput.toString()
+       localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+    }
+}
+
+task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
     rename('git\\.(.*)', '$1')
-    into '.git/hooks'
+    into localRepo + "/hooks"
 }
 
 allprojects {
@@ -54,7 +67,7 @@ allprojects {
     //   * any new checkers have been added,\n")
     //   * the patch level is 9 (keep the patch level as a single digit), or\n")
     //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.7'
+    version '2.5.8'
 
     repositories {
         mavenCentral()
@@ -274,7 +287,28 @@ task downloadJtreg(type: Download) {
     }
 }
 
-task getCodeFormatScripts {
+// See alternate implementation getCodeFormatScriptsInGradle below.
+task getCodeFormatScripts() {
+    description 'Obtain or update the run-google-java-format scripts'
+    if (file(formatScriptsHome).exists()) {
+        exec {
+            workingDir formatScriptsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${formatScriptsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+        }
+    }
+}
+
+// This implementation is preferable to the above because it does work in Gradle rather than in bash.
+// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97
+task getCodeFormatScriptsInGradle {
   description "Obtain the run-google-java-format scripts"
   doLast {
     if (! new File(formatScriptsHome).exists()) {
@@ -310,7 +344,7 @@ subprojects {
     }
 
     dependencies {
-        errorprone group: 'com.google.errorprone', name: 'error_prone_ant', version: '2.2.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.2'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -437,8 +471,7 @@ subprojects {
                                         "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
 
-                                "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar:" +
-                                        "${configurations.javacJar.asPath}",
+                                "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
                             args += [
@@ -514,6 +547,8 @@ subprojects {
                     '-Xep:DefaultCharset:OFF',
                     // Not useful to suggest Splitter; maybe clean up.
                     '-Xep:StringSplitter:OFF',
+                    // Too broad, rejects seemingly-correct code.
+                    '-Xep:EqualsGetClass:OFF',
                     '-Werror',
             ]
         }
@@ -653,7 +688,7 @@ task releaseBuild(type: GradleBuild) {
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
-    description 'Build everything required for a release and runn allTests'
+    description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
     tasks = ['allTests']

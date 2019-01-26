@@ -4,7 +4,7 @@
 \def\reflectionAnno#1#2{\refqualclass{common/reflection/qual}{#1}\code{#2}}
 
 
-\chapter{Reflection resolution\label{reflection-resolution}}
+\chapterAndLabel{Reflection resolution}{reflection-resolution}
 
 A call to
 \sunjavadoc{java/lang/reflect/Method.html\#invoke-java.lang.Object-java.lang.Object...-}{Method.invoke}
@@ -58,7 +58,7 @@ and ClassVal Checkers, which reflection resolution uses internally.  Then,
 Section~\ref{reflection-examples} gives examples of reflection resolution.
 
 
-\section{MethodVal and ClassVal Checkers\label{methodval-and-classval-checkers}}
+\sectionAndLabel{MethodVal and ClassVal Checkers}{methodval-and-classval-checkers}
 
 The implementation of reflection resolution internally uses the ClassVal
 Checker (Section~\ref{classval-checker}) and the MethodVal Checker
@@ -72,7 +72,7 @@ Often, though, these annotations can be inferred
 (Section~\ref{methodval-and-classval-inference}).
 
 
-\subsection{ClassVal Checker\label{classval-checker}}
+\subsectionAndLabel{ClassVal Checker}{classval-checker}
 
 The ClassVal Checker defines the following annotations:
 
@@ -117,7 +117,7 @@ and \<@ClassValBottom>) should never be written in source code; they are used in
 \label{fig-classval-hierarchy}
 \end{figure}
 
-\subsubsection{Subtyping rules\label{classval-subtyping-rules}}
+\subsubsectionAndLabel{Subtyping rules}{classval-subtyping-rules}
 Figure~\ref{fig-classval-hierarchy} shows part of the type hierarchy of  the
 ClassVal type system.
 \<@ClassVal(A)> is a subtype of \<@ClassVal(B)> if A is a subset of B.
@@ -125,7 +125,7 @@ ClassVal type system.
 \<@ClassVal(A)> is a subtype of \<@ClassBound(B)> if A is a subset of B.
 
 
-\subsection{MethodVal Checker\label{methodval-checker}}
+\subsectionAndLabel{MethodVal Checker}{methodval-checker}
 
 The MethodVal Checker defines the following annotations:
 
@@ -172,7 +172,7 @@ and \<@MethodValBottom>) should never be written in source code; they are used i
 \label{fig-methodval-hierarchy}
 \end{figure}
 
-\subsubsection{Subtyping rules\label{methodval-subtyping-rules}}
+\subsubsectionAndLabel{Subtyping rules}{methodval-subtyping-rules}
 Figure~\ref{fig-methodval-hierarchy} shows part of the type hierarchy of  the
 MethodVal type system.  \<@MethodVal(classname=CA, methodname=MA, params=PA)> is a subtype of
 \<@MethodVal(classname=CB, methodname=MB, params=PB)> if
@@ -185,7 +185,7 @@ where CA, MA, and PA are lists of equal size and CB, MB, and PB are lists of equ
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{MethodVal and ClassVal inference\label{methodval-and-classval-inference}}
+\subsectionAndLabel{MethodVal and ClassVal inference}{methodval-and-classval-inference}
 
 The developer rarely has to write \<@ClassVal> or \<@MethodVal>
 annotations, because the Checker Framework infers them according to
@@ -218,7 +218,7 @@ rules for overridden methods.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Reflection resolution example\label{reflection-examples}}
+\sectionAndLabel{Reflection resolution example}{reflection-examples}
 
 Consider the following example, in which the Nullness Checker employs
 reflection resolution to avoid issuing a false positive warning.

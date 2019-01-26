@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Regex Checker for regular expression syntax\label{regex-checker}}
+\chapterAndLabel{Regex Checker for regular expression syntax}{regex-checker}
 
 The Regex Checker prevents, at compile-time, use of syntactically invalid
 regular expressions and access of invalid capturing groups.
@@ -26,7 +26,7 @@ To run the Regex Checker, supply the
 command-line option to javac.
 
 
-\section{Regex annotations\label{regex-annotations}}
+\sectionAndLabel{Regex annotations}{regex-annotations}
 
 These qualifiers make up the Regex type system:
 
@@ -60,10 +60,10 @@ Figure~\ref{fig-regex-hierarchy}.
 \label{fig-regex-hierarchy}
 \end{figure}
 
-\section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
+\sectionAndLabel{Annotating your code with \code{@Regex}}{annotating-with-regex}
 
 
-\subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
+\subsectionAndLabel{Implicit qualifiers}{regex-implicit-qualifiers}
 
 The Regex Checker adds
 implicit qualifiers, reducing the number of annotations that must appear
@@ -76,7 +76,7 @@ the \code{null} literal to be assigned to any type qualified with the
 \code{Regex} qualifier.
 
 
-\subsection{Capturing groups\label{regex-capturing-groups}}
+\subsectionAndLabel{Capturing groups}{regex-capturing-groups}
 
 The Regex Checker validates that a legal capturing group number is passed
 to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
@@ -91,7 +91,7 @@ with a capturing group count to \<Pattern> and \<Matcher> fields and
 parameters.
 
 
-\subsection{Concatenation of partial regular expressions\label{regex-partial-regex}}
+\subsectionAndLabel{Concatenation of partial regular expressions}{regex-partial-regex}
 
 \begin{figure}
 \begin{Verbatim}
@@ -112,7 +112,7 @@ will produce valid regular expression Strings. For an example see
 Figure~\ref{fig-regex-partial}.
 
 
-\subsection{Testing whether a string is a regular expression\label{regexutil-methods}}
+\subsectionAndLabel{Testing whether a string is a regular expression}{regexutil-methods}
 
 Sometimes, the Regex Checker cannot infer whether a particular expression
 is a regular expression --- and sometimes your code cannot either!  In
@@ -184,7 +184,7 @@ Pattern p = Pattern.compile(regex);
 \label{fig-regex-util-example}
 \end{figure}
 
-\subsection{Suppressing warnings\label{regex-suppressing-warnings}}
+\subsectionAndLabel{Suppressing warnings}{regex-suppressing-warnings}
 
 If you are positive that a particular string that is being used as a
 regular expression is syntactically valid, but the Regex Checker cannot

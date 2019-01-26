@@ -68,7 +68,7 @@
 
         <update file="${cf.docs}/manual/checkerframework.gradle"
                 start="${gradle.ver.0}" end="${gradle.ver.1}"
-                with="${release.ver}, ${release.date}"/>
+                with="${release.ver}"/>
 
         <update file="${checkerWebPage}"
                 start="${compiler.ver.0}" end="${compiler.ver.1}"

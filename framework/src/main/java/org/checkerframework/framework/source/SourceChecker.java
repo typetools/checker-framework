@@ -754,14 +754,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             if (this.visitor != null) {
                 DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-                DiagnosticSource source =
-                        new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-                int linenr = source.getLineNumber(pos.getStartPosition());
-                int col = source.getColumnNumber(pos.getStartPosition(), true);
-                String line = source.getLine(pos.getStartPosition());
+                if (pos != null) {
+                    DiagnosticSource source =
+                            new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+                    int linenr = source.getLineNumber(pos.getStartPosition());
+                    int col = source.getColumnNumber(pos.getStartPosition(), true);
+                    String line = source.getLine(pos.getStartPosition());
 
-                msg.append(
-                        "\nLast visited tree at line " + linenr + " column " + col + ":\n" + line);
+                    msg.append(
+                            "\nLast visited tree at line "
+                                    + linenr
+                                    + " column "
+                                    + col
+                                    + ":\n"
+                                    + line);
+                }
             }
 
             msg.append(
@@ -919,7 +926,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
-        if ((!warnedAboutSourceLevel) && (!source.allowTypeAnnotations())) {
+        if (!warnedAboutSourceLevel && !source.allowTypeAnnotations()) {
             messager.printMessage(
                     javax.tools.Diagnostic.Kind.WARNING,
                     "-source " + source.name + " does not support type annotations");
@@ -951,6 +958,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (p.getCompilationUnit() != currentRoot) {
             currentRoot = p.getCompilationUnit();
             if (hasOption("filenames")) {
+                // Add timestamp to indicate how long operations are taking
+                message(Kind.NOTE, new java.util.Date().toString());
                 message(
                         Kind.NOTE,
                         "Checker: %s is type-checking: %s",

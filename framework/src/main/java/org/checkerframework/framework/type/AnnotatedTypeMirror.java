@@ -366,7 +366,7 @@ public abstract class AnnotatedTypeMirror {
                 atypeFactory.getQualifierHierarchy().getTypeQualifiers();
         for (AnnotationMirror explicitAnno : typeAnnotations) {
             for (AnnotationMirror validAnno : validAnnotations) {
-                if (AnnotationUtils.areSameIgnoringValues(explicitAnno, validAnno)) {
+                if (AnnotationUtils.areSameByName(explicitAnno, validAnno)) {
                     explicitAnnotations.add(explicitAnno);
                 }
             }
@@ -470,7 +470,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(annotations, a);
+        return AnnotationUtils.containsSameByName(annotations, a);
     }
 
     /**
@@ -480,7 +480,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getEffectiveAnnotations(), a);
+        return AnnotationUtils.containsSameByName(getEffectiveAnnotations(), a);
     }
 
     /**
@@ -494,7 +494,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), a);
+        return AnnotationUtils.containsSameByName(getExplicitAnnotations(), a);
     }
 
     /**
@@ -511,8 +511,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
-        return AnnotationUtils.containsSameIgnoringValues(
-                getExplicitAnnotations(), getAnnotation(a));
+        return AnnotationUtils.containsSameByName(getExplicitAnnotations(), getAnnotation(a));
     }
 
     /**
@@ -1112,7 +1111,7 @@ public abstract class AnnotatedTypeMirror {
                     && !ElementUtils.isStatic(getElement())
                     // Array constructors should also not have a receiver. Array members have a
                     // getEnclosingElement().getEnclosingElement() of NONE
-                    && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
+                    && !(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
                                     .getSimpleName()
@@ -1123,7 +1122,7 @@ public abstract class AnnotatedTypeMirror {
                                             .getEnclosingElement()
                                             .asType()
                                             .getKind()
-                                    == TypeKind.NONE))
+                                    == TypeKind.NONE)
                     // Top-level constructors don't have a receiver
                     && (getElement().getKind() != ElementKind.CONSTRUCTOR
                             || getElement().getEnclosingElement().getEnclosingElement().getKind()

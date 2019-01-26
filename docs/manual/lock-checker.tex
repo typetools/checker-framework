@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Lock Checker\label{lock-checker}}
+\chapterAndLabel{Lock Checker}{lock-checker}
 
 The Lock Checker prevents certain concurrency errors by enforcing a
 locking discipline.  A locking discipline indicates which locks must be held
@@ -16,7 +16,7 @@ command-line option to javac.  The \<-AconcurrentSemantics>
 command-line option is always enabled for the Lock Checker (see Section~\ref{faq-concurrency}).
 
 
-\section{What the Lock Checker guarantees\label{lock-guarantees}}
+\sectionAndLabel{What the Lock Checker guarantees}{lock-guarantees}
 
 The Lock Checker gives the following guarantee.
 Suppose that expression $e$ has type
@@ -66,12 +66,12 @@ computation.
 And, there are other concurrency errors that cannot, or
 should not, be solved with locks.
 
-\section{Lock annotations\label{lock-annotations}}
+\sectionAndLabel{Lock annotations}{lock-annotations}
 
 This section describes the lock annotations you can write on types and methods.
 
 
-\subsection{Type qualifiers\label{lock-type-qualifiers}}
+\subsectionAndLabel{Type qualifiers}{lock-type-qualifiers}
 
 \begin{description}
 
@@ -154,7 +154,7 @@ Section~\ref{lock-guardedby-invariant-subtyping} for an example
 of a problem that would occur if this rule were relaxed.
 
 
-\paragraph{Polymorphic type qualifiers\label{lock-polymorphic-type-qualifiers}}
+\paragraphAndLabel{Polymorphic type qualifiers}{lock-polymorphic-type-qualifiers}
 
 %\refqualclass{checker/lock/qual}{GuardSatisfied}{\small(\emph{index})}
 %and
@@ -192,13 +192,13 @@ of a problem that would occur if this rule were relaxed.
 \end{description}
 
 
-\subsection{Declaration annotations\label{lock-declaration-annotations}}
+\subsectionAndLabel{Declaration annotations}{lock-declaration-annotations}
 
 The Lock Checker supports several annotations that specify method behavior.
 These are declaration annotations, not type annotations: they apply to the
 method itself rather than to some particular type.
 
-\paragraph{Method pre-conditions and post-conditions\label{lock-method-pre-post-conditions}}
+\paragraphAndLabel{Method pre-conditions and post-conditions}{lock-method-pre-post-conditions}
 
 \begin{sloppypar}
 \begin{description}
@@ -225,7 +225,7 @@ method itself rather than to some particular type.
 
 \end{description}
 
-\paragraph{Side effect specifications\label{lock-side-effect-specifications}}
+\paragraphAndLabel{Side effect specifications}{lock-side-effect-specifications}
 
 \begin{description}
 
@@ -262,14 +262,14 @@ method itself rather than to some particular type.
 \end{sloppypar}
 
 
-\section{Type-checking rules\label{lock-type-checking-rules}}
+\sectionAndLabel{Type-checking rules}{lock-type-checking-rules}
 
 In addition to the standard subtyping rules enforcing the subtyping relationship
 described in Figure~\ref{fig-lock-guardedby-hierarchy}, the Lock Checker enforces
 the following additional rules.
 
 
-\subsection{Polymorphic qualifiers\label{lock-type-checking-rules-polymorphic-qualifiers}}
+\subsectionAndLabel{Polymorphic qualifiers}{lock-type-checking-rules-polymorphic-qualifiers}
 
 \begin{description}
 
@@ -303,7 +303,7 @@ the following additional rules.
   return types of a method annotated with \<@MayReleaseLocks>.
 \end{description}
 
-\subsection{Dereferences\label{lock-type-checking-rules-dereferences}}
+\subsectionAndLabel{Dereferences}{lock-type-checking-rules-dereferences}
 
 \begin{description}
 
@@ -321,7 +321,7 @@ the following additional rules.
 
 \end{description}
 
-\subsection{Primitive types, boxed primitive types, and Strings\label{lock-type-checking-rules-primitives}}
+\subsectionAndLabel{Primitive types, boxed primitive types, and Strings}{lock-type-checking-rules-primitives}
 
 Primitive types, boxed primitive types (such as \<java.lang.Integer>), and type \<java.lang.String>
 are implicitly annotated with \<@GuardedBy(\{\})>.
@@ -350,7 +350,7 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 %  all type check, whereas none of them would type check if \code{a},
 %  \code{b} and \code{c} were not primitives.
 
-\subsection{Overriding\label{lock-type-checking-rules-overriding}}
+\subsectionAndLabel{Overriding}{lock-type-checking-rules-overriding}
 
 \begin{description}
 
@@ -376,7 +376,7 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 
 \end{description}
 
-\subsection{Side effects\label{lock-type-checking-rules-polymorphic-side-effects}}
+\subsectionAndLabel{Side effects}{lock-type-checking-rules-polymorphic-side-effects}
 
 \begin{description}
 
@@ -422,13 +422,13 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 \end{description}
 
 
-\section{Examples\label{lock-examples}}
+\sectionAndLabel{Examples}{lock-examples}
 
 The Lock Checker guarantees that a value that was computed from an expression of \code{@GuardedBy} type is
 dereferenced only when the current thread holds all the expressions in the
 \code{@GuardedBy} annotation.
 
-\subsection{Examples of @GuardedBy\label{lock-examples-guardedby}}
+\subsectionAndLabel{Examples of @GuardedBy}{lock-examples-guardedby}
 
 The following example demonstrates the basic
 type-checking rules.
@@ -497,7 +497,7 @@ class MyOtherClass {
 \end{Verbatim}
 
 
-\subsection{@GuardedBy(\{``a'', ``b''\}) is not a subtype of @GuardedBy(\{``a''\})\label{lock-guardedby-invariant-subtyping}}
+\subsectionAndLabel{@GuardedBy(\{``a'', ``b''\}) is not a subtype of @GuardedBy(\{``a''\})}{lock-guardedby-invariant-subtyping}
 
 
 \textbf{@GuardedBy(exprSet)}
@@ -527,7 +527,7 @@ If the Lock Checker permitted the assignment
 \code{y = x;}, then the undesired dereference would be possible.
 
 
-\subsection{Examples of @Holding\label{lock-examples-holding}}
+\subsectionAndLabel{Examples of @Holding}{lock-examples-holding}
 
 The following example shows the interaction between \<@GuardedBy> and
 \<@Holding>:
@@ -558,7 +558,7 @@ The following example shows the interaction between \<@GuardedBy> and
 \end{Verbatim}
 
 
-\subsection{Examples of @EnsuresLockHeld and @EnsuresLockHeldIf\label{ensureslockheld-examples}}
+\subsectionAndLabel{Examples of @EnsuresLockHeld and @EnsuresLockHeldIf}{ensureslockheld-examples}
 
 \code{@EnsuresLockHeld} and \code{@EnsuresLockHeldIf} are primarily intended
 for annotating JDK locking methods, as in:
@@ -597,7 +597,7 @@ public class Monitor {
 }
 \end{Verbatim}
 
-\subsection{Example of @LockingFree, @ReleasesNoLocks, and @MayReleaseLocks\label{lock-lockingfree-example}}
+\subsectionAndLabel{Example of @LockingFree, @ReleasesNoLocks, and @MayReleaseLocks}{lock-lockingfree-example}
 
 \code{@LockingFree} is useful when a method does not make any use of synchronization
 or locks but causes other side effects (hence \code{@SideEffectFree} is not appropriate).
@@ -657,7 +657,7 @@ void clientMethod() {
 \end{verbatim}
 
 
-\subsection{Polymorphism and method formal parameters with unknown guards\label{lock-checker-polymorphism-example}}
+\subsectionAndLabel{Polymorphism and method formal parameters with unknown guards}{lock-checker-polymorphism-example}
 
 The polymorphic \code{@GuardSatisfied} type annotation allows a method body
 to dereference the method's formal parameters even if the
@@ -704,12 +704,12 @@ filename = filename.append(extension);
 
 
 
-\section{More locking details\label{lock-details}}
+\sectionAndLabel{More locking details}{lock-details}
 
 This section gives some details that are helpful for understanding how Java
 locking and the Lock Checker works.
 
-\subsection{Two types of locking:  monitor locks and explicit locks\label{lock-two-types}}
+\subsectionAndLabel{Two types of locking:  monitor locks and explicit locks}{lock-two-types}
 
 Java provides two types of locking:  monitor locks and explicit locks.
 
@@ -746,7 +746,7 @@ implements \sunjavadoc{java/util/concurrent/locks/Lock.html}{Lock}.
 % function correctly, and it also alerts the programmer of a code smell.
 
 
-\subsection{Held locks and held expressions; aliasing\label{lock-aliasing}}
+\subsectionAndLabel{Held locks and held expressions; aliasing}{lock-aliasing}
 
 Whereas Java locking is defined in terms of values, Java programs are
 written in terms of expressions.
@@ -773,7 +773,7 @@ please contact the Checker Framework developers as it is likely to
 indicate a bug in the Checker Framework.
 
 
-\subsection{Run-time checks for locking\label{lock-runtime-checks}}
+\subsectionAndLabel{Run-time checks for locking}{lock-runtime-checks}
 
 When you perform a run-time check for locking, such as
 \<if (explicitLock.isHeldByCurrentThread())\{...\}> or
@@ -785,7 +785,7 @@ Section~\ref{type-refinement}.
 % a run-time test, but ReentrantLock does.
 
 
-\subsection{Discussion of default qualifier\label{lock-checker-default-qualifier}}
+\subsectionAndLabel{Discussion of default qualifier}{lock-checker-default-qualifier}
 
 The default qualifier for unannotated types is \<@GuardedBy(\{\})>.
 This default forces you to write explicit \<@GuardSatisfied> in method
@@ -799,14 +799,14 @@ default for parameters and return types, then getters, setters, and many
 other types of methods do not type-check without explicit lock qualifiers.
 
 
-\subsection{Discussion of \<@Holding>\label{lock-checker-holding}}
+\subsectionAndLabel{Discussion of \<@Holding>}{lock-checker-holding}
 
 A programmer might choose to use the \code{@Holding} method annotation in
 two different ways:  to specify correctness constraints for a
 synchronization protocol, or to summarize intended usage.  Both of these
 approaches are useful, and the Lock Checker supports both.
 
-\paragraph{Synchronization protocol\label{lock-checker-holding-synchronization-protocol}}
+\paragraphAndLabel{Synchronization protocol}{lock-checker-holding-synchronization-protocol}
 
   \code{@Holding} can specify a synchronization protocol that
   is not expressible as locks over the parameters to a method.  For example, a global lock
@@ -814,7 +814,7 @@ approaches are useful, and the Lock Checker supports both.
   held, you can create protocol primitives without giving up
   the benefits of the annotations and checking of them.
 
-\paragraph{Method summary that simplifies reasoning\label{lock-checker-holding-method-summary}}
+\paragraphAndLabel{Method summary that simplifies reasoning}{lock-checker-holding-method-summary}
 
   \code{@Holding} can be a method summary that simplifies reasoning.  In
   this case, the \code{@Holding} doesn't necessarily introduce a new
@@ -871,7 +871,7 @@ extra synchronized block.  Here are reasons:
 \end{itemize}
 
 
-\section{Other lock annotations\label{lock-other-annotations}}
+\sectionAndLabel{Other lock annotations}{lock-other-annotations}
 
 The Checker Framework's lock annotations are similar to annotations used
 elsewhere.
@@ -917,7 +917,7 @@ $\Rightarrow$
 \end{figure}
 
 
-\subsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{lock-jcip-annotations}}
+\subsectionAndLabel{Relationship to annotations in \emph{Java Concurrency in Practice}}{lock-jcip-annotations}
 
 The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
 \href{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
@@ -966,7 +966,7 @@ inappropriate for a tool that requires precise semantics.)
 % when the method was called.
 
 
-\section{Possible extensions\label{lock-extensions}}
+\sectionAndLabel{Possible extensions}{lock-extensions}
 
 The Lock Checker validates some uses of locks, but not all.  It would be
 possible to enrich it with additional annotations.  This would increase the

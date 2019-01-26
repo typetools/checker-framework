@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Introduction\label{introduction}}
+\chapterAndLabel{Introduction}{introduction}
 
 The Checker Framework enhances Java's type system to make it more powerful
 and useful.
@@ -109,7 +109,7 @@ The Checker Framework also enables you to write new checkers of your
 own; see Chapters~\ref{subtyping-checker} and~\ref{creating-a-checker}.
 
 
-\section{How to read this manual\label{how-to-read-this-manual}}
+\sectionAndLabel{How to read this manual}{how-to-read-this-manual}
 
 If you wish to get started using some particular type system from the list
 above, then the most effective way to read this manual is:
@@ -130,7 +130,7 @@ above, then the most effective way to read this manual is:
 \end{itemize}
 
 
-\section{How it works:  Pluggable types\label{pluggable-types}}
+\sectionAndLabel{How it works:  Pluggable types}{pluggable-types}
 
 The Checker Framework supports adding
 pluggable type systems to the Java language in a backward-compatible way.
@@ -179,7 +179,7 @@ This document uses the terms ``checker'', ``checker plugin'',
 ``type-checking compiler plugin'', and ``annotation processor'' as
 synonyms.
 
-\section{Installation\label{installation}}
+\sectionAndLabel{Installation}{installation}
 
 \begin{sloppypar}
 This section describes how to install the Checker Framework.
@@ -210,7 +210,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.7.zip}
+  \url{https://checkerframework.org/checker-framework-2.5.8.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -241,7 +241,7 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
 
 
-\section{Example use:  detecting a null pointer bug\label{example-use}}
+\sectionAndLabel{Example use:  detecting a null pointer bug}{example-use}
 
 This section gives a very simple example of running the Checker Framework.
 There is also a \ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
@@ -354,7 +354,7 @@ Section~\ref{writing-annotations}.  Here are some examples:
 
 
 \htmlhr
-\chapter{Using a checker\label{using-a-checker}}
+\chapterAndLabel{Using a checker}{using-a-checker}
 
 A pluggable type-checker enables you to detect certain bugs in your code,
 or to prove that they are not present.  The verification happens at compile
@@ -409,7 +409,7 @@ command line, and a separate
 % the annotations.
 
 
-\section{Writing annotations\label{writing-annotations}}
+\sectionAndLabel{Writing annotations}{writing-annotations}
 
 The syntax of type annotations in Java is specified by
 the Java Language Specification (Java SE 8 edition).
@@ -444,7 +444,7 @@ You only need to write annotations on method signatures, fields, and some type a
 Most annotations within method bodies are inferred for you; for more details,
 see  Section~\ref{type-refinement}.
 
-\section{Running a checker\label{running}}
+\sectionAndLabel{Running a checker}{running}
 
 To run a checker plugin, run the compiler \code{javac} as usual,
 but pass the \code{-processor \emph{plugin\_class}} command-line
@@ -487,7 +487,7 @@ Therefore, it is strongly recommended that whenever you are creating
 type-checkers for all the annotations that your have written.
 
 
-\subsection{Using annotated libraries\label{annotated-libraries-using}}
+\subsectionAndLabel{Using annotated libraries}{annotated-libraries-using}
 
 When your code uses a library that is not currently being compiled, the
 Checker Framework looks up the library's annotations in its class files.
@@ -551,7 +551,7 @@ be annotated, or you can volunteer to write the annotations (see
 Checker Framework users.
 
 
-\subsection{Distributing your annotated project\label{distributing}}
+\subsectionAndLabel{Distributing your annotated project}{distributing}
 
   The distributed
   \<.jar> files can be used for pluggable type-checking of client code.
@@ -564,7 +564,7 @@ Checker Framework users.
   Create the distributed \<.jar> files from those \<.class> files.
 
 
-\subsection{Summary of command-line options\label{checker-options}}
+\subsectionAndLabel{Summary of command-line options}{checker-options}
 
 You can pass command-line arguments to a checker via javac's standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
@@ -780,12 +780,12 @@ checker is an ``annotation processor''.
   the compiler or a checker.
 \end{itemize}
 
-The Checker Framework does not support \<-source 1.4> or earlier.  You must
-supply \<-source 1.5> or later, or no \<-source> command-line argument,
+The Checker Framework does not support \<-source 1.7> or earlier.  You must
+supply \<-source 1.8> or later, or no \<-source> command-line argument,
 when running \<javac>.
 
 
-\subsection{Checker auto-discovery\label{checker-auto-discovery}}
+\subsectionAndLabel{Checker auto-discovery}{checker-auto-discovery}
 
 ``Auto-discovery'' makes the \code{javac} compiler always run a checker
 plugin, even if you do not explicitly pass the \code{-processor}
@@ -820,7 +820,7 @@ annotation processing including all pluggable type-checking.
 %% errors for unannotated code, and that would be irritating.  So, leave it
 %% up to the user to enable auto-discovery.  1.
 
-\subsection{Shorthand for built-in checkers \label{shorthand-for-checkers}}
+\subsectionAndLabel{Shorthand for built-in checkers }{shorthand-for-checkers}
 
 % TODO: this feature only works for our javac script, not when using
 % the standard javac. Should this be explained?
@@ -847,7 +847,7 @@ For example:
 This feature does not apply to Javac \href{https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#BHCJEIBB}{@argfiles}.
 
 
-\section{What the checker guarantees\label{checker-guarantees}}
+\sectionAndLabel{What the checker guarantees}{checker-guarantees}
 
 A checker can guarantee that a particular property holds throughout the
 code.  For example, the Nullness Checker (Chapter~\ref{nullness-checker})
@@ -945,13 +945,13 @@ If you find that a checker fails to issue a warning that it
 should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 
-\section{Tips about writing annotations\label{tips-about-writing-annotations}}
+\sectionAndLabel{Tips about writing annotations}{tips-about-writing-annotations}
 
 Section~\ref{library-tips} gives additional tips that are
 specific to annotating a third-party library.
 
 
-\subsection{Write annotations before you run a checker\label{annotate-before-checking}}
+\subsectionAndLabel{Write annotations before you run a checker}{annotate-before-checking}
 
 Before you run a checker, annotate the code, based on its documentation.
 Then, run the checker to uncover bugs in the code or the documentation.
@@ -965,13 +965,13 @@ with the documentation or the code.  Also see ``Annotations
 are a specification'', below.
 
 
-\subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
+\subsectionAndLabel{How to get started annotating legacy code}{get-started-with-legacy-code}
 
 Annotating an entire existing program may seem like a daunting task.  But,
 if you approach it systematically and do a little bit at a time, you will
 find that it is manageable.
 
-\subsubsection{Start small\label{get-started-start-small}}
+\subsubsectionAndLabel{Start small}{get-started-start-small}
 
 Start small.  Focus on one specific property that matters to you; in
 other words, run just one checker rather than multiple ones.  You may
@@ -1006,7 +1006,7 @@ verify a property using Java subclasses, then that is a better choice than
 pluggable type-checking (see Section~\ref{faq-typequals-vs-subtypes}).
 
 
-\subsubsection{Annotations are a specification\label{get-started-annotations-are-a-specification}}
+\subsubsectionAndLabel{Annotations are a specification}{get-started-annotations-are-a-specification}
 
 When you write annotations, you are writing a specification, and you should
 think about them that way.  Start out by understanding the program so that
@@ -1054,7 +1054,7 @@ Chapter~\ref{suppressing-warnings} tell you what to do when you are unable
 to eliminate checker warnings by adding annotations.
 
 
-\subsubsection{Write good code\label{get-started-write-good-code}}
+\subsubsectionAndLabel{Write good code}{get-started-write-good-code}
 
 Avoid complex code, which is more error-prone.  If you write your code to
 be simple and clean enough for the type-checker to verify, then it will
@@ -1108,7 +1108,7 @@ i++;
 \end{itemize}
 
 
-\subsection{Annotations indicate non-exceptional behavior\label{annotate-normal-behavior}}
+\subsectionAndLabel{Annotations indicate non-exceptional behavior}{annotate-normal-behavior}
 
 You should use annotations to specify \emph{normal} behavior.  The
 annotations indicate all the values that you \emph{want} to flow to a
@@ -1191,7 +1191,7 @@ don't necessarily throw an exception.
 % useful.)
 
 
-\subsection{Subclasses must respect superclass annotations\label{annotations-are-a-contract}}
+\subsectionAndLabel{Subclasses must respect superclass annotations}{annotations-are-a-contract}
 
 An annotation indicates a guarantee that a client can depend upon.  A subclass
 is not permitted to \emph{weaken} the contract; for example,
@@ -1265,7 +1265,7 @@ It is a pleasant feature of the Checker Framework that in many cases, no
 annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
 
-\subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
+\subsectionAndLabel{Annotations on constructor invocations}{annotations-on-constructor-invocations}
 
 %% I want to get rid of this syntax.
 
@@ -1295,7 +1295,7 @@ when you know that the cast is
 guaranteed to succeed.
 
 
-\subsection{What to do if a checker issues a warning about your code\label{handling-warnings}}
+\subsectionAndLabel{What to do if a checker issues a warning about your code}{handling-warnings}
 
 When you run a type-checker on your code, it is likely to issue warnings or
 errors.  Don't panic!  There are three general causes for the warnings:

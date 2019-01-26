@@ -155,8 +155,6 @@ public class AnnotationConverter {
             builder.setValue(fieldKey, (Class<?>) obj);
         } else if (obj instanceof Double) {
             builder.setValue(fieldKey, (Double) obj);
-        } else if (obj instanceof Float) {
-            builder.setValue(fieldKey, (Float) obj);
         } else if (obj instanceof Enum<?>) {
             builder.setValue(fieldKey, (Enum<?>) obj);
         } else if (obj instanceof Enum<?>[]) {

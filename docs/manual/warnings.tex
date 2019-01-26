@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Suppressing warnings\label{suppressing-warnings}}
+\chapterAndLabel{Suppressing warnings}{suppressing-warnings}
 
 %% This feels redundant.
 % The Checker Framework is sound:  whenever your code contains an error, the
@@ -72,7 +72,7 @@ warning if a \code{@SuppressWarnings} did not suppress any warnings issued by th
 
 % See the @SuppressWarningsKey annotation and the getSuppressWarningsKey method.
 
-\section{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
+\sectionAndLabel{\code{@SuppressWarnings} annotation}{suppresswarnings-annotation}
 
 \begin{sloppypar}
 You can suppress specific errors and warnings by use of the
@@ -93,7 +93,7 @@ Section~\ref{suppresswarnings-best-practices} gives best practices for
 writing \<@SuppressWarnings> annotations.
 
 
-\subsection{\code{@SuppressWarnings} syntax\label{suppresswarnings-annotation-syntax}}
+\subsectionAndLabel{\code{@SuppressWarnings} syntax}{suppresswarnings-annotation-syntax}
 
 The \code{@SuppressWarnings} annotation takes a string argument.
 
@@ -150,7 +150,7 @@ not just the most specific one.
 % properties.
 
 
-\subsection{Where \code{@SuppressWarnings} can be written\label{suppresswarnings-annotation-locations}}
+\subsectionAndLabel{Where \code{@SuppressWarnings} can be written}{suppresswarnings-annotation-locations}
 
 \<@SuppressWarnings> is a declaration annotation, so it may be placed on
 program declarations such as a local variable declaration, a method, or a
@@ -206,9 +206,9 @@ Java does not permit annotations (such as \<@SuppressWarnings>) on
 assignments or other statements or expressions.
 
 
-\subsection{Good practices when suppressing warnings\label{suppresswarnings-best-practices}}
+\subsectionAndLabel{Good practices when suppressing warnings}{suppresswarnings-best-practices}
 
-\subsubsection{Suppress warnings in the smallest possible scope\label{suppresswarnings-best-practices-smallest-scope}}
+\subsubsectionAndLabel{Suppress warnings in the smallest possible scope}{suppresswarnings-best-practices-smallest-scope}
 
 You may be able to suppress a warning by writing
 \<@AssumeAssertion> for some subpart of it.  See Section~\ref{assumeassertion}.
@@ -226,7 +226,7 @@ declaration.  See Section~\ref{suppresswarnings-annotation-locations}.
 % \code{package-info.java} file.
 
 
-\subsubsection{Use a specific argument to \code{@SuppressWarnings}\label{suppresswarnings-best-practices-specific-argument}}
+\subsubsectionAndLabel{Use a specific argument to \code{@SuppressWarnings}}{suppresswarnings-best-practices-specific-argument}
 
 
 \label{compiler-message-keys}
@@ -239,7 +239,7 @@ needed to know about.
 
 The example of Section~\ref{suppresswarnings-annotation-locations} could
 have been written as any one of the following, with the last one being the
-best style:
+most specific (and therefore the best style):
 
 \begin{Verbatim}
   @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
@@ -248,7 +248,7 @@ best style:
 \end{Verbatim}
 
 
-\subsubsection{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
+\subsubsectionAndLabel{Justify why the warning is a false positive}{suppresswarnings-best-practices-justification}
 
 A \<@SuppressWarnings> annotation asserts that the programmer knows that
 the code is actually correct or safe (that is, no undesired behavior will
@@ -282,7 +282,7 @@ Here are some terse examples from libraries in \href{https://github.com/plume-li
 
 
 
-\section{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
+\sectionAndLabel{\code{@AssumeAssertion} string in an \<assert> message}{assumeassertion}
 
 \begin{sloppypar}
 You can suppress a warning by \<assert>ing that some property is true, and
@@ -350,7 +350,7 @@ information regardless of the \<-AassumeAssertionsAreEnabled> and
 % enabled, and it does not guarantee that all of your assertions succeed.)
 
 
-\subsection{Suppressing warnings and defensive programming\label{defensive-programming}}
+\subsectionAndLabel{Suppressing warnings and defensive programming}{defensive-programming}
 
 This section explains the distinction between two different uses for
 assertions (and for related methods like JUnit's \<Assert.assertNotNull>).
@@ -448,7 +448,7 @@ default).  This will prevent the checker from issuing a warning about the
 
 
 
-\section{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
+\sectionAndLabel{\code{-AsuppressWarnings} command-line option}{suppresswarnings-command-line}
 
 Supplying the \<-AsuppressWarnings> command-line option is equivalent to
 writing a \<@SuppressWarnings> annotation on every class that the compiler
@@ -460,7 +460,7 @@ When possible, it is better to write a \<@SuppressWarnings> annotation with a
 smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 
 
-\section{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
+\sectionAndLabel{\code{-AskipUses} and \code{-AonlyUses} command-line options}{askipuses}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings except those at uses of a given
@@ -508,7 +508,7 @@ refined in the future.  Oftentimes \code{-AskipUses} is more useful.
 % field access is the right-hand side.  I'm going to punt on this for now.
 
 
-\section{\code{-AskipDefs} and \code{-AonlyDefs} command-line options\label{askipdefs}}
+\sectionAndLabel{\code{-AskipDefs} and \code{-AonlyDefs} command-line options}{askipdefs}
 
 You can suppress all errors and warnings in the \emph{definition} of a given
 class, or suppress all errors and warnings except those in the definition
@@ -549,9 +549,7 @@ most important parts, you can incrementally check more classes until you
 are type-checking the whole thing.
 
 
-\section{\code{-Alint} command-line option\label{alint}}
-
-\label{lint-options}
+\sectionAndLabel{\code{-Alint} command-line option\label{lint-options}}{alint}
 
 The \code{-Alint} option enables or disables optional checks, analogously to
 javac's \code{-Xlint} option.
@@ -586,7 +584,7 @@ Each of the distributed checkers supports at least the following lint options:
 \begin{sloppypar}
   \code{all} Enable or disable all lint warnings, including
   checker-specific ones if any.  Examples include \code{redundantNullComparison} for the
-  Nullness Checker (see Section~\ref{lint-nulltest-section}) and \<dotequals> for
+  Nullness Checker (see Section~\ref{nullness-lint-nulltest}) and \<dotequals> for
   the Interning Checker (see Section~\ref{lint-dotequals}).  This option
   does not enable/disable the checker's standard checks, just its optional
   ones.
@@ -614,7 +612,7 @@ options are silently ignored.  In particular, this means that \<-Alint=all
 \code{-Alint=-all,cast:redundant}.
 
 
-\section{Don't run the processor\label{no-processor}}
+\sectionAndLabel{Don't run the processor}{no-processor}
 
 You can compile parts of your code without use of the
 \code{-processor} switch to \code{javac}.  No checking is done during
@@ -626,7 +624,7 @@ code.  For example, the \<-Dmaven.test.skip=true> command-line argument
 tells Maven not to compile (or run) the tests.
 
 
-\section{Checker-specific mechanisms\label{checker-specific-suppression}}
+\sectionAndLabel{Checker-specific mechanisms}{checker-specific-suppression}
 
 Finally, some checkers have special rules.  For example, the Nullness
 checker (Chapter~\ref{nullness-checker}) uses
@@ -640,7 +638,7 @@ suppressing warnings issued by the Fenum Checker
 
 
 \htmlhr
-\chapter{Handling legacy code\label{legacy-code}}
+\chapterAndLabel{Handling legacy code}{legacy-code}
 
 Section~\ref{get-started-with-legacy-code} describes a methodology for
 applying annotations to legacy code.  This chapter tells you what to do if,
@@ -651,7 +649,7 @@ Also recall that you can convert checker errors into warnings via the
 \code{-Awarns} command-line option; see Section~\ref{checker-options}.
 
 
-\section{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
+\sectionAndLabel{Checking partially-annotated programs:  handling unannotated code}{unannotated-code}
 
 Sometimes, you wish to type-check only part of your program.
 You might focus on the most mission-critical or error-prone part of your
@@ -700,7 +698,7 @@ Chapter~\ref{annotating-libraries} discusses adding annotations to
 signatures when you do not have source code available.
 Chapter~\ref{suppressing-warnings} discusses suppressing warnings.
 
-\subsection{Declaration annotations\label{declaration-annotations-moved}}
+\subsectionAndLabel{Declaration annotations}{declaration-annotations-moved}
 
 When a declaration annotation is an alias for a type annotation, then the
 Checker Framework may move the annotation before replacing it by the

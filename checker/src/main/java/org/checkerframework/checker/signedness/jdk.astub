@@ -15,7 +15,7 @@ class Integer {
 
     public static int compareUnsigned(@Unsigned int x, @Unsigned int y);
 
-    public static @Constant long toUnsignedLong(@Unsigned int x);
+    public static long toUnsignedLong(@Unsigned int x);
 
     public static @Unsigned int divideUnsigned(@Unsigned int dividend, @Unsigned int divisor);
 
