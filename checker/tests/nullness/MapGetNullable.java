@@ -73,11 +73,21 @@ public class MapGetNullable {
         void useget(@KeyFor("this") String k) {
             @NonNull Integer val = get(k);
         }
+
+        void useget2(@KeyFor("this") String k) {
+            @NonNull Integer val = this.get(k);
+        }
     }
 
     public static class MyMap7 extends HashMap<String, @Nullable Integer> {
         void useget(@KeyFor("this") String k) {
+            // :: error: (assignment.type.incompatible)
             @NonNull Integer val = get(k);
+        }
+
+        void useget2(@KeyFor("this") String k) {
+            // :: error: (assignment.type.incompatible)
+            @NonNull Integer val = this.get(k);
         }
     }
 }
