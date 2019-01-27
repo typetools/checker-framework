@@ -28,10 +28,12 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -54,7 +56,12 @@ public class NullnessTransfer
     protected final AnnotationMirror NONNULL, NULLABLE;
 
     /** The type factory for the nullness analysis that was passed to the constructor. */
-    protected final AnnotatedTypeFactory nullnessTypeFactory;
+    protected final GenericAnnotatedTypeFactory<
+                    NullnessValue,
+                    NullnessStore,
+                    NullnessTransfer,
+                    ? extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>>
+            nullnessTypeFactory;
 
     /** The type factory for the map key analysis. */
     protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
