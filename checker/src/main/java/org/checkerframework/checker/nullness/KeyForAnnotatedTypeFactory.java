@@ -221,6 +221,8 @@ public class KeyForAnnotatedTypeFactory
     protected boolean isInvocationOfMapMethod(MethodInvocationNode n, String methodName) {
         String invokedMethod = getMethodName(n);
         // First verify if the method name is correct. This is an inexpensive check.
+        // TODO: should also check number (and type?) of arguments, because a subclass could
+        // overload get().
         if (invokedMethod.equals(methodName)) {
             // Now verify that the receiver of the method invocation is of a type
             // that extends that java.util.Map interface. This is a more expensive check.
