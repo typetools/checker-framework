@@ -12,6 +12,7 @@ import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -69,9 +70,7 @@ public class NullnessTransfer
         super(analysis);
         this.nullnessTypeFactory = analysis.getTypeFactory();
         this.keyForTypeFactory =
-                nullnessTypeFactory
-                        .getContext()
-                        .getChecker()
+                ((BaseTypeChecker) nullnessTypeFactory.getContext().getChecker())
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
         NONNULL = AnnotationBuilder.fromClass(nullnessTypeFactory.getElementUtils(), NonNull.class);
         NULLABLE =
