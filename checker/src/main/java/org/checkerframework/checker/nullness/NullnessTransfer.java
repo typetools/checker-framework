@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -238,17 +240,14 @@ public class NullnessTransfer
         if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
-            System.out.printf("%s [%s]%n", n, n.getClass());
-            System.out.printf("%s [%s]%n", n.getTarget(), n.getTarget().getClass());
-            System.out.printf("%s [%s]%n", receiver, receiver.getClass());
-            System.out.printf("%s [%s]%n", n.getTree(), n.getTree().getClass());
-            ExpressionTree receiverTree = n.getTree().getMethodSelect();
-            System.out.printf("%s [%s]%n", receiverTree, receiverTree.getClass());
-            // AnnotatedTypeMirror receiverType = nullnessTypeFactory.
-
-            // AnnotatedTypeMirror mapType =
-            // analysis.getTypeFactory().getAnnotatedType(n.getTarget());
-            // System.out.printf("mapType: " + mapType);
+            // TODO: what about just "get(...)" where "this." is implicit?
+            ExpressionTree receiverTree =
+                    ((MemberSelectTree) n.getTree().getMethodSelect()).getExpression();
+            AnnotatedDeclaredType receiverType =
+                    (AnnotatedDeclaredType) nullnessTypeFactory.getAnnotatedType(receiverTree);
+            // TODO: What about subclasses of Map with different number or order of type arguments?
+            AnnotatedTypeMirror valueType = receiverType.getTypeArguments().get(1);
+            System.out.printf("%s [%s]%n", valueType, valueType.getClass());
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))) {
                 makeNonNull(result, n);
