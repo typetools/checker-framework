@@ -9,4 +9,8 @@ public class MapGetNullable {
         // :: error: (assignment.type.incompatible)
         @NonNull Integer val = m.get(key);
     }
+
+    <K, V> V get(Map<K, V> m, @KeyFor("#1") String key) {
+        return m.get(key);
+    }
 }

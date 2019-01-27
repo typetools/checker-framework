@@ -235,8 +235,8 @@ public class NullnessTransfer
             }
         }
 
-        // Refine result to @NonNull if n is an invocation of Map.get and the argument is a key for
-        // the map.
+        // Refine result to @NonNull if n is an invocation of Map.get, the argument is a key for
+        // the map, and the map's value type is not @Nullable.
         if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
@@ -248,11 +248,8 @@ public class NullnessTransfer
             // TODO: What about subclasses of Map with different number or order of type arguments?
             AnnotatedTypeMirror valueType = receiverType.getTypeArguments().get(1);
 
-            // TODO: The valueType.hasAnnotation(NONNULL) isn't enough for
-            // checker/tests/nullness/Issue961.java where the type is a generic.
-
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
-                    && valueType.hasAnnotation(NONNULL)) {
+                    && !valueType.hasAnnotation(NULLABLE)) {
                 makeNonNull(result, n);
 
                 NullnessValue oldResultValue = result.getResultValue();
