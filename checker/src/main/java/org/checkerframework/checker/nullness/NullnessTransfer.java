@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
 import java.util.Set;
@@ -239,17 +238,15 @@ public class NullnessTransfer
         // Refine result to @NonNull if n is an invocation of Map.get, the argument is a key for
         // the map, and the map's value type is not @Nullable.
         if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
+            System.out.printf("visitMethodInvocation(%s)%n", n);
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
-            // TODO: this is incorrect for just "get(...)" where "this." is implicit.
-            ExpressionTree receiverTree =
-                    ((MemberSelectTree) n.getTree().getMethodSelect()).getExpression();
-            // receiverType is Map or a subtype.
-            AnnotatedDeclaredType receiverType =
-                    (AnnotatedDeclaredType) nullnessTypeFactory.getAnnotatedType(receiverTree);
+            AnnotatedTypeMirror receiverType =
+                    keyForTypeFactory.getReceiverType(n.getTree().getMethodSelect());
+            // System.out.printf("receiverType %s [%s]%n", receiverType, receiverType.getClass());
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
-                    && !hasNullableValueType(receiverType)) {
+                    && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
                 makeNonNull(result, n);
 
                 NullnessValue oldResultValue = result.getResultValue();
