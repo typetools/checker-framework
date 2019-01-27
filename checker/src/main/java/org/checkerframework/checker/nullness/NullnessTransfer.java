@@ -243,13 +243,12 @@ public class NullnessTransfer
             // TODO: what about just "get(...)" where "this." is implicit?
             ExpressionTree receiverTree =
                     ((MemberSelectTree) n.getTree().getMethodSelect()).getExpression();
+            // receiverType is Map or a subtype.
             AnnotatedDeclaredType receiverType =
                     (AnnotatedDeclaredType) nullnessTypeFactory.getAnnotatedType(receiverTree);
-            // TODO: What about subclasses of Map with different number or order of type arguments?
-            AnnotatedTypeMirror valueType = receiverType.getTypeArguments().get(1);
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
-                    && !valueType.hasAnnotation(NULLABLE)) {
+                    && !hasNullableValueType(receiverType)) {
                 makeNonNull(result, n);
 
                 NullnessValue oldResultValue = result.getResultValue();
@@ -263,6 +262,23 @@ public class NullnessTransfer
         }
 
         return result;
+    }
+
+    /**
+     * Returns true if mapType's value type is @Nullable
+     *
+     * @param mapType the Map type, or a subtype
+     * @return true if mapType's value type is @Nullable
+     */
+    private boolean hasNullableValueType(AnnotatedDeclaredType mapType) {
+        int numTypeArguments = mapType.getTypeArguments().size();
+        if (numTypeArguments != 2) {
+            // TODO: Handle subclasses of Map with different number or order of type arguments.
+            // Conservatively return true for now.
+            return true;
+        }
+        AnnotatedTypeMirror valueType = mapType.getTypeArguments().get(1);
+        return valueType.hasAnnotation(NULLABLE);
     }
 
     @Override

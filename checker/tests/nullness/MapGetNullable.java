@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -5,12 +6,66 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class MapGetNullable {
 
-    void foo(Map<String, @Nullable Integer> m, @KeyFor("#1") String key) {
+    void foo0(Map<String, @Nullable Integer> m, @KeyFor("#1") String key) {
         // :: error: (assignment.type.incompatible)
         @NonNull Integer val = m.get(key);
     }
 
-    <K, V> V get(Map<K, V> m, @KeyFor("#1") String key) {
+    <K, V> V get0(Map<K, V> m, @KeyFor("#1") String key) {
+        return m.get(key);
+    }
+
+    public static class MyMap1<K, V> extends HashMap<K, V> {}
+
+    void foo1(MyMap1<String, @Nullable Integer> m, @KeyFor("#1") String key) {
+        // :: error: (assignment.type.incompatible)
+        @NonNull Integer val = m.get(key);
+    }
+
+    <K, V> V get1(MyMap1<K, V> m, @KeyFor("#1") String key) {
+        return m.get(key);
+    }
+
+    public static class MyMap2<V, K> extends HashMap<K, V> {}
+
+    void foo2(MyMap2<@Nullable Integer, String> m, @KeyFor("#1") String key) {
+        // :: error: (assignment.type.incompatible)
+        @NonNull Integer val = m.get(key);
+    }
+
+    <K, V> V get2(MyMap2<V, K> m, @KeyFor("#1") String key) {
+        return m.get(key);
+    }
+
+    public static class MyMap3<K> extends HashMap<K, @Nullable Integer> {}
+
+    void foo3(MyMap3<String> m, @KeyFor("#1") String key) {
+        @NonNull Integer val = m.get(key);
+    }
+
+    <K> @Nullable Integer get3(MyMap3<K> m, @KeyFor("#1") String key) {
+        return m.get(key);
+    }
+
+    public static class MyMap4<K> extends HashMap<K, Integer> {}
+
+    void foo4(MyMap4<String> m, @KeyFor("#1") String key) {
+        // :: error: (assignment.type.incompatible)
+        Integer val = m.get(key);
+    }
+
+    <K> Integer get4(MyMap4<K> m, @KeyFor("#1") String key) {
+        return m.get(key);
+    }
+
+    public static class MyMap5<V> extends HashMap<String, V> {}
+
+    void foo5(MyMap5<@Nullable Integer> m, @KeyFor("#1") String key) {
+        // :: error: (assignment.type.incompatible)
+        @NonNull Integer val = m.get(key);
+    }
+
+    <V> V get5(MyMap5<V> m, @KeyFor("#1") String key) {
         return m.get(key);
     }
 }
