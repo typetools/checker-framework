@@ -218,14 +218,16 @@ public class AnnotationBuilder {
         }
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
         setValue(elementName, (Object) value);
         return this;
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> value = new ArrayList<>(values.size());
+        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -235,45 +237,54 @@ public class AnnotationBuilder {
 
         for (Object v : values) {
             checkSubtype(expectedType, v);
-            value.add(createValue(v));
+            avalues.add(createValue(v));
         }
-        AnnotationValue val = createValue(value);
-        elementValues.put(var, val);
+        AnnotationValue aval = createValue(avalues);
+        elementValues.put(var, aval);
         return this;
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Object[] values) {
         return setValue(elementName, Arrays.asList(values));
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Boolean value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Character value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Double value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Float value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Integer value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Long value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Short value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, String value) {
         return setValue(elementName, (Object) value);
     }
