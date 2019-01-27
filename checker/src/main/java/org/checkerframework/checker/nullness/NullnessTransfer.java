@@ -248,6 +248,9 @@ public class NullnessTransfer
             // TODO: What about subclasses of Map with different number or order of type arguments?
             AnnotatedTypeMirror valueType = receiverType.getTypeArguments().get(1);
 
+            // TODO: The valueType.hasAnnotation(NONNULL) isn't enough for
+            // checker/tests/nullness/Issue961.java where the type is a generic.
+
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
                     && valueType.hasAnnotation(NONNULL)) {
                 makeNonNull(result, n);

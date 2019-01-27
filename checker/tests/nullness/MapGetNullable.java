@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class MapGetNullable {
 
     void foo(Map<String, @Nullable Integer> m, @KeyFor("#1") String key) {
-        // :: error: (warning.here)
+        // :: error: (assignment.type.incompatible)
         @NonNull Integer val = m.get(key);
     }
 }
