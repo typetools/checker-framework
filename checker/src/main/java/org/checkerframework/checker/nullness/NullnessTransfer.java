@@ -247,9 +247,9 @@ public class NullnessTransfer
                     (AnnotatedDeclaredType) nullnessTypeFactory.getAnnotatedType(receiverTree);
             // TODO: What about subclasses of Map with different number or order of type arguments?
             AnnotatedTypeMirror valueType = receiverType.getTypeArguments().get(1);
-            System.out.printf("%s [%s]%n", valueType, valueType.getClass());
 
-            if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))) {
+            if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
+                    && valueType.hasAnnotation(NONNULL)) {
                 makeNonNull(result, n);
 
                 NullnessValue oldResultValue = result.getResultValue();
