@@ -240,7 +240,7 @@ public class NullnessTransfer
         if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
-            // TODO: what about just "get(...)" where "this." is implicit?
+            // TODO: this is incorrect for just "get(...)" where "this." is implicit.
             ExpressionTree receiverTree =
                     ((MemberSelectTree) n.getTree().getMethodSelect()).getExpression();
             // receiverType is Map or a subtype.

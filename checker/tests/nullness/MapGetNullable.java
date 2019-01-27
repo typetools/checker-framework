@@ -68,4 +68,16 @@ public class MapGetNullable {
     <V> V get5(MyMap5<V> m, @KeyFor("#1") String key) {
         return m.get(key);
     }
+
+    public static class MyMap6 extends HashMap<String, Integer> {
+        void useget(@KeyFor("this") String k) {
+            @NonNull Integer val = get(k);
+        }
+    }
+
+    public static class MyMap7 extends HashMap<String, @Nullable Integer> {
+        void useget(@KeyFor("this") String k) {
+            @NonNull Integer val = get(k);
+        }
+    }
 }
