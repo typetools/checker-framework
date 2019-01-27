@@ -70,7 +70,7 @@ public class AnnotationBuilder {
 
     /**
      * Create a new AnnotationBuilder for the given annotation and environment (with no
-     * elements/fields).
+     * elements/fields, but they can be added later).
      *
      * @param env the processing environment
      * @param anno the class of the annotation to build
@@ -80,7 +80,8 @@ public class AnnotationBuilder {
     }
 
     /**
-     * Create a new AnnotationBuilder for the given annotation name (with no elements/fields).
+     * Create a new AnnotationBuilder for the given annotation name (with no elements/fields, but
+     * they can be added later).
      *
      * @param env the processing environment
      * @param name the name of the annotation to build
