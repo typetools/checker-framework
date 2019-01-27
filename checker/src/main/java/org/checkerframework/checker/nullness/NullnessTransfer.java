@@ -66,6 +66,7 @@ public class NullnessTransfer
     /** The type factory for the map key analysis. */
     protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
 
+    /** Create a new NullnessTransfer for the given analysis. */
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
         this.nullnessTypeFactory = analysis.getTypeFactory();
