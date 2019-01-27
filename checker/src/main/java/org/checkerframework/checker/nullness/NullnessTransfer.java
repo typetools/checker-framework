@@ -196,8 +196,8 @@ public class NullnessTransfer
     /*
      * Provided that m is of a type that implements interface java.util.Map:
      * <ul>
-     * <li>Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the
-     *     thenStore and elseStore of the transfer result.
+     * <li>Given a call m.get(k), if k is @KeyFor("m") and m's value type is @NonNull,
+     *     then the result is @NonNull in the thenStore and elseStore of the transfer result.
      * </ul>
      */
     @Override
@@ -206,10 +206,13 @@ public class NullnessTransfer
         TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
 
         // Make receiver non-null.
-        makeNonNull(result, n.getTarget().getReceiver());
+        Node receiver = n.getTarget().getReceiver();
+        makeNonNull(result, receiver);
 
-        // For all formal parameters with a non-null annotation, make the actual
-        // argument non-null.
+        // For all formal parameters with a non-null annotation, make the actual argument non-null.
+        // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
+        // warning for the method invocation, but not for subsequent uses of the argument.  See test
+        // case FlowNullness.java.
         MethodInvocationTree tree = n.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         AnnotatedExecutableType methodType = analysis.getTypeFactory().getAnnotatedType(method);
@@ -224,9 +227,18 @@ public class NullnessTransfer
         // Refine result to @NonNull if n is an invocation of Map.get and the argument is a key for
         // the map.
         if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
-            Node receiver = n.getTarget().getReceiver();
             String mapName =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver).toString();
+            System.out.printf("%s [%s]%n", n, n.getClass());
+            System.out.printf("%s [%s]%n", n.getTarget(), n.getTarget().getClass());
+            System.out.printf("%s [%s]%n", receiver, receiver.getClass());
+            System.out.printf("%s [%s]%n", n.getTree(), n.getTree().getClass());
+            ExpressionTree receiverTree = n.getTree().getMethodSelect();
+            System.out.printf("%s [%s]%n", receiverTree, receiverTree.getClass());
+
+            // AnnotatedTypeMirror mapType =
+            // analysis.getTypeFactory().getAnnotatedType(n.getTarget());
+            // System.out.printf("mapType: " + mapType);
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))) {
                 makeNonNull(result, n);
