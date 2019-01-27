@@ -216,10 +216,13 @@ public class NullnessTransfer
         TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
 
         // Make receiver non-null.
-        makeNonNull(result, n.getTarget().getReceiver());
+        Node receiver = n.getTarget().getReceiver();
+        makeNonNull(result, receiver);
 
-        // For all formal parameters with a non-null annotation, make the actual
-        // argument non-null.
+        // For all formal parameters with a non-null annotation, make the actual argument non-null.
+        // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
+        // warning for the method invocation, but not for subsequent uses of the argument.  See test
+        // case FlowNullness.java.
         MethodInvocationTree tree = n.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
@@ -234,7 +237,6 @@ public class NullnessTransfer
         // Refine result to @NonNull if n is an invocation of Map.get and the argument is a key for
         // the map.
         if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
-            Node receiver = n.getTarget().getReceiver();
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
 
