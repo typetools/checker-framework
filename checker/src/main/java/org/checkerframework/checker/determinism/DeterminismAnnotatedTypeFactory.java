@@ -271,12 +271,14 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Reports an error if {@code node} represents explicitly constructing a {@code @Det
-         * HashSet}. If {@code @Det} annotation wasn't explicitly written, but the constructor would
-         * resolve to {@code @Det}, inserts {@code @OrderNonDet} instead.
+         * Reports an error if {@code node} represents explicitly constructing a {@code @Det} or
+         * {@code @PolyDet} {@code HashSet}. If one these annotation wasn't explicitly written, but
+         * the constructor would resolve to {@code @Det}, inserts {@code @OrderNonDet} instead. If
+         * it would resolve to any variant of {@code @PolyDet}, replaces it with {@code @NonDet}
          *
          * @param node a tree representing instantiating a class
-         * @param annotatedTypeMirror the type to modify if it represents a {@code @Det HashSet}
+         * @param annotatedTypeMirror the type to modify if it represents an invalid constructor
+         *     call
          * @return visitNewClass() of the super class
          */
         @Override
@@ -284,16 +286,17 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             IdentifierTree identifier = getNewClassClassName(node);
             if (identifier != null && identifier.getName().contentEquals("HashSet")) {
                 AnnotationMirror explicitAnno = getNewClassAnnotation(node);
-                if (AnnotationUtils.areSame(explicitAnno, DET)) {
+                if (AnnotationUtils.areSame(explicitAnno, DET) || isPolyDetVariant(explicitAnno)) {
                     checker.report(
                             Result.failure(
                                     DeterminismVisitor.INVALID_HASH_SET_CONSTRUCTOR_INVOCATION),
                             node);
                     return super.visitNewClass(node, annotatedTypeMirror);
                 }
-                if (AnnotationUtils.areSame(
-                        annotatedTypeMirror.getAnnotationInHierarchy(NONDET), DET)) {
+                if (annotatedTypeMirror.hasAnnotation(DET)) {
                     annotatedTypeMirror.replaceAnnotation(ORDERNONDET);
+                } else if (isPolyDetVariant(annotatedTypeMirror.getAnnotationInHierarchy(NONDET))) {
+                    annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
             }
             return super.visitNewClass(node, annotatedTypeMirror);
@@ -588,6 +591,20 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<? extends AnnotationMirror> annos =
                 TreeUtils.typeOf(paramType.getType()).getAnnotationMirrors();
         return getQualifierHierarchy().findAnnotationInHierarchy(annos, NONDET);
+    }
+
+    /**
+     * Returns whether type is a variant a {@code @PolyDet}.
+     *
+     * @param the type to test
+     * @return whether type is one of {@code @PolyDet}, {@code @PolyDet("up")},
+     *     {@code @PolyDet("down")}, or {@code @PolyDet("use")}.
+     */
+    private boolean isPolyDetVariant(AnnotationMirror type) {
+        return AnnotationUtils.areSame(type, POLYDET)
+                || AnnotationUtils.areSame(type, POLYDET_UP)
+                || AnnotationUtils.areSame(type, POLYDET_DOWN)
+                || AnnotationUtils.areSame(type, POLYDET_USE);
     }
 
     class DeterminismQualifierHierarchy extends GraphQualifierHierarchy {
