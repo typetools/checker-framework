@@ -713,9 +713,7 @@ public class FlowExpressionParseUtil {
                 depth++;
             } else if (ch == close) {
                 depth--;
-                if (depth < 0) {
-                    break;
-                } else if (depth == 0) {
+                if (depth == 0) {
                     return i - 1;
                 }
             }

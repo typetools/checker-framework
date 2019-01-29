@@ -518,7 +518,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
+            if (AnnotationUtils.areSameByName(superAnno, subAnno)) {
                 return AnnotationUtils.areSame(superAnno, subAnno);
             }
             superAnno = removePrefix(superAnno);
@@ -549,7 +549,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // if the two units have the same base SI unit
             // TODO: it is possible to rewrite these two lines to use UnitsRelationsTools, will it
             // have worse performance?
-            if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+            if (AnnotationUtils.areSameByName(a1, a2)) {
                 // and if they have the same Prefix, it means it is the same unit
                 if (AnnotationUtils.areSame(a1, a2)) {
                     // return the unit
