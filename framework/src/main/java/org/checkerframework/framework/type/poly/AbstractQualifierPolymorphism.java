@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -29,6 +30,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -74,6 +76,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /** Replaces each polymorphic qualifier with its instantiation. */
     private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
 
+    /** Type scanner to determine whether a type contains a polymorphic qualifier. */
+    private final ContainsPolyQualScanner containsPolyQualScanner;
+
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
      * querying type qualifiers and the given factory for getting annotated types. Subclasses need
@@ -95,6 +100,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.collector = new PolyCollector();
         this.completer = new Completer();
         this.replacer = new Replacer();
+        this.containsPolyQualScanner = new ContainsPolyQualScanner();
     }
 
     /**
@@ -106,6 +112,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         completer.reset();
         replacer.reset();
         collector.reset();
+        containsPolyQualScanner.reset();
     }
 
     /**
@@ -129,6 +136,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         }
         List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
+        if (!containsPolyQual(type.getReturnType()) && !containsPolyQual(parameters)) {
+            // No polymorphic qualifiers in original signature -> no work.
+            // No need to run completer or reset.
+            return;
+        }
+
         List<AnnotatedTypeMirror> arguments =
                 AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
@@ -163,6 +176,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         }
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
+        if (!containsPolyQual(requiredArgs)) {
+            // No polymorphic qualifiers in original signature -> no work.
+            // No need to run completer or reset.
+            return;
+        }
         List<AnnotatedTypeMirror> arguments =
                 AnnotatedTypes.getAnnotatedTypes(atypeFactory, requiredArgs, tree.getArguments());
 
@@ -178,6 +196,50 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             completer.visit(type);
         }
         reset();
+    }
+
+    private boolean containsPolyQual(AnnotatedTypeMirror type) {
+        Boolean b = containsPolyQualScanner.visit(type);
+        containsPolyQualScanner.reset();
+        return b != null && b;
+    }
+
+    private boolean containsPolyQual(List<AnnotatedTypeMirror> types) {
+        for (AnnotatedTypeMirror atm : types) {
+            boolean b = containsPolyQual(atm);
+            if (b) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Checks whether or not an annotated type contains a polymorphic qualifier. */
+    private class ContainsPolyQualScanner extends AnnotatedTypeScanner<Boolean, Void> {
+        @Override
+        protected Boolean scan(AnnotatedTypeMirror type, Void aVoid) {
+            Set<AnnotationMirror> pq = polyQuals.keySet();
+            for (AnnotationMirror am : type.getAnnotations()) {
+                if (AnnotationUtils.containsSame(pq, am)) {
+                    return true;
+                }
+            }
+            return super.scan(type, aVoid);
+        }
+
+        @Override
+        protected Boolean reduce(Boolean r1, Boolean r2) {
+            if (r1 != null && r2 != null) {
+                // if either has a polymorphic anno, return true;
+                return r1 || r2;
+            } else if (r1 != null) {
+                return r1;
+            } else if (r2 != null) {
+                return r2;
+            } else {
+                return false;
+            }
+        }
     }
 
     @Override
