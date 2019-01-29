@@ -3009,14 +3009,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
         }
 
-        if (allStubFiles.isEmpty()) {
-            this.typesFromStubFiles = typesFromStubFiles;
-            this.declAnnosFromStubFiles = declAnnosFromStubFiles;
-            return;
-        }
-
-        // Parse stub files specified via stubs compiler option, stubs system property,
-        // stubs env. variable, or @Stubfiles
+        // Parse stub files. Note that allStubFiles might be empty and things continue
+        // after the loop.
         for (String stubPath : allStubFiles) {
             if (stubPath == null || stubPath.isEmpty()) {
                 continue;
