@@ -550,10 +550,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && AnnotationUtils.areSame(superAnno, POLYDET_DOWN)) {
                 return false;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, POLYDET)) {
+            if (AnnotationUtils.areSameByName(subAnno, POLYDET)) {
                 subAnno = POLYDET;
             }
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, POLYDET)) {
+            if (AnnotationUtils.areSameByName(superAnno, POLYDET)) {
                 superAnno = POLYDET;
             }
             return super.isSubtype(subAnno, superAnno);
