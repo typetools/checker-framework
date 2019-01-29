@@ -101,7 +101,7 @@ public class LockAnnotatedTypeFactory
         LOCKPOSSIBLYHELD = AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
         SIDEEFFECTFREE = AnnotationBuilder.fromClass(elements, SideEffectFree.class);
         GUARDEDBYUNKNOWN = AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = AnnotationBuilder.fromClass(elements, GuardedBy.class);
+        GUARDEDBY = createGuardedByAnnotationMirror(new ArrayList<String>());
         GUARDEDBYBOTTOM = AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
         GUARDSATISFIED = AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
@@ -274,11 +274,11 @@ public class LockAnnotatedTypeFactory
         }
 
         boolean isGuardedBy(AnnotationMirror am) {
-            return AnnotationUtils.areSameIgnoringValues(am, GUARDEDBY);
+            return AnnotationUtils.areSameByName(am, GUARDEDBY);
         }
 
         boolean isGuardSatisfied(AnnotationMirror am) {
-            return AnnotationUtils.areSameIgnoringValues(am, GUARDSATISFIED);
+            return AnnotationUtils.areSameByName(am, GUARDSATISFIED);
         }
 
         @Override

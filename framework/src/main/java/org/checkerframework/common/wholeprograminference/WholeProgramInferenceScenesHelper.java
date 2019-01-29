@@ -176,8 +176,6 @@ public class WholeProgramInferenceScenesHelper {
      *       previous annotation and newATM.
      * </ul>
      *
-     * <p>
-     *
      * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
@@ -418,7 +416,10 @@ public class WholeProgramInferenceScenesHelper {
         return false;
     }
 
-    /** Returns a subset of annosSet, consisting of the annotations supported by atf. */
+    /**
+     * Returns a subset of annosSet, consisting of the annotations supported by atf. These are not
+     * necessarily legal annotations: they have the right name, but they may lack elements (fields).
+     */
     private Set<Annotation> getSupportedAnnosInSet(
             Set<Annotation> annosSet, AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<>();

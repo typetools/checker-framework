@@ -34,13 +34,26 @@ ext {
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
+
+    // The local git repository, typically in the .git directory, but not for worktrees.
+    // This value is always overwritten, but Gradle needs the variable to be initialized.
+    localRepo = ".git"
 }
 
-task installGitHooks(type: Copy) {
+task setLocalRepo(type:Exec) {
+    commandLine 'git', 'worktree', 'list'
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+       String worktreeList = standardOutput.toString()
+       localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+    }
+}
+
+task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
     rename('git\\.(.*)', '$1')
-    into '.git/hooks'
+    into localRepo + "/hooks"
 }
 
 allprojects {
@@ -274,7 +287,28 @@ task downloadJtreg(type: Download) {
     }
 }
 
-task getCodeFormatScripts {
+// See alternate implementation getCodeFormatScriptsInGradle below.
+task getCodeFormatScripts() {
+    description 'Obtain or update the run-google-java-format scripts'
+    if (file(formatScriptsHome).exists()) {
+        exec {
+            workingDir formatScriptsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${formatScriptsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+        }
+    }
+}
+
+// This implementation is preferable to the above because it does work in Gradle rather than in bash.
+// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97
+task getCodeFormatScriptsInGradle {
   description "Obtain the run-google-java-format scripts"
   doLast {
     if (! new File(formatScriptsHome).exists()) {
