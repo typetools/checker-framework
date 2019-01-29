@@ -398,9 +398,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private void defaultArrayComponentTypeAsPolyDet(AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType annoArrType = (AnnotatedArrayType) type;
-            // The following code uses "annoannoArrType.getAnnotations().isEmpty()"
-            // to check if 'annoannoArrType' has explicit annotations.
-            // It doesn't check for "annoannoArrType.getExplicitAnnotations().isEmpty()"
+            // The following code uses "annoArrType.getAnnotations().isEmpty()"
+            // to check if 'annoArrType' has explicit annotations.
+            // It doesn't check for "annoArrType.getExplicitAnnotations().isEmpty()"
             // because "getExplicitAnnotations()" works only with type use locations?
             // For example: if 'annoannoArrType' is "@Det int @Det[]",
             // "arrParamType.getExplicitAnnotations().size()" returns 0,
