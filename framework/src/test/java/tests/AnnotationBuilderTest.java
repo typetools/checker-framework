@@ -21,8 +21,6 @@ import testlib.util.Encrypted;
 
 public class AnnotationBuilderTest {
 
-    private static BugInCF dummy = null;
-
     private final ProcessingEnvironment env;
 
     public AnnotationBuilderTest() {
