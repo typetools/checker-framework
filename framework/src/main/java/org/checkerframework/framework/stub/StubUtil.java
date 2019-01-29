@@ -301,7 +301,7 @@ public class StubUtil {
     }
 
     private static boolean isStub(String path) {
-        return path.endsWith(".astub");
+        return path.endsWith(".astub") || path.endsWith(".java");
     }
 
     private static boolean isJar(File f) {
