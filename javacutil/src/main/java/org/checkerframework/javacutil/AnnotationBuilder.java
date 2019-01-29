@@ -73,6 +73,7 @@ public class AnnotationBuilder {
         this(env, anno.getCanonicalName());
     }
 
+    /** Create a new AnnotationBuilder for the given annotation name (with no elements/fields). */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -85,6 +86,10 @@ public class AnnotationBuilder {
         this.elementValues = new LinkedHashMap<>();
     }
 
+    /**
+     * Create a new AnnotationBuilder that copies the given annotation, including its
+     * elements/fields.
+     */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();

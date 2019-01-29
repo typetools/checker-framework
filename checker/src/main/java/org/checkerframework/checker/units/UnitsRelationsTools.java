@@ -217,7 +217,8 @@ public class UnitsRelationsTools {
         if (hasNoPrefix(unitsAnnotation)) {
             return unitsAnnotation;
         } else {
-            // the only value is the prefix value in Units Checker
+            // In the Units Checker, the only annotation value is the prefix value.  Therefore,
+            // fromName (which creates an annotation with no values) is acceptable.
             // TODO: refine sensitivity of removal for extension units, in case extension
             // Annotations have more than just Prefix in its values.
             return AnnotationBuilder.fromName(
