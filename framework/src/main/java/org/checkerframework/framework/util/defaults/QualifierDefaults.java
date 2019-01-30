@@ -818,6 +818,16 @@ public class QualifierDefaults {
                 }
 
                 switch (location) {
+                    case TYPE_DECLARATION:
+                        {
+                            if (scope != null
+                                    && (scope.getKind() == ElementKind.CLASS
+                                            || scope.getKind() == ElementKind.INTERFACE)
+                                    && t == type) {
+                                addAnnotation(t, qual);
+                            }
+                            break;
+                        }
                     case FIELD:
                         {
                             if (scope != null
