@@ -1,0 +1,14 @@
+StubParserEnumTest.java:34:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.SECONDS
+StubParserEnumTest.java:36:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.MILLISECONDS
+StubParserEnumTest.java:43:47: compiler.err.proc.messager: [methodcall] Method call of StubParserEnumTest.MyTimeUnit.toMicros(long)
+StubParserEnumTest.java:43:30: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.SECONDS
+StubParserEnumTest.java:48:31: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
+StubParserEnumTest.java:50:23: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+StubParserEnumTest.java:57:45: compiler.err.proc.messager: [methodcall] Method call of java.util.concurrent.TimeUnit.toMicros(long)
+StubParserEnumTest.java:57:28: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
+StubParserEnumTest.java:59:20: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.SECONDS
+StubParserEnumTest.java:62:29: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+StubParserEnumTest.java:64:51: compiler.err.proc.messager: [methodcall] Method call of java.util.concurrent.TimeUnit.toMicros(long)
+StubParserEnumTest.java:64:29: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+StubParserEnumTest.java:66:21: compiler.err.proc.messager: [fieldreadwrite] Field read/write of java.util.concurrent.TimeUnit.MILLISECONDS
+13 errors

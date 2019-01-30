@@ -1,0 +1,6 @@
+import org.checkerframework.checker.tainting.qual.*;
+
+enum SampleEnum {
+    @Untainted FIRST,
+    @Tainted SECOND;
+}

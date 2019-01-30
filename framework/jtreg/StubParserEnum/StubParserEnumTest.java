@@ -1,12 +1,18 @@
-// Adapted test case for https://github.com/typetools/checker-framework/issues/2147 using framework
-// package quals
+/*
+ * @test
+ * @summary Adapted test case for Issue 2147
+ * https://github.com/typetools/checker-framework/issues/2147 using framework package quals
+ *
+ * @compile/fail/ref=WithoutStub.out -XDrawDiagnostics -processor org.checkerframework.common.util.report.ReportChecker -AstubWarnIfNotFound StubParserEnumTest.java
+ * @compile/fail/ref=WithStub.out -XDrawDiagnostics -processor org.checkerframework.common.util.report.ReportChecker -AstubWarnIfNotFound -Astubs=StubParserEnum.astub StubParserEnumTest.java
+ */
 
 import static java.util.concurrent.TimeUnit.*;
 
 import java.util.concurrent.TimeUnit;
 import org.checkerframework.common.util.report.qual.*;
 
-class ParseEnumConstants {
+class StubParserEnumTest {
 
     @SuppressWarnings("report")
     enum MyTimeUnit {
@@ -15,7 +21,12 @@ class ParseEnumConstants {
         @ReportReadWrite
         MILLISECONDS,
         @ReportReadWrite
-        SECONDS
+        SECONDS;
+        
+        @ReportCall
+        long toMicros(long d) {
+            return d;
+        }
     }
 
     void readFromEnumInSource() {
@@ -27,6 +38,9 @@ class ParseEnumConstants {
         // these 2 uses should not have any reports
         MyTimeUnit u3 = MyTimeUnit.MICROSECONDS;
         MyTimeUnit u4 = MyTimeUnit.NANOSECONDS;
+        
+        // :: error: (fieldreadwrite) :: error: (methodcall)
+        long sUS = MyTimeUnit.SECONDS.toMicros(10);
     }
 
     void readFromEnumInStub() {

@@ -1234,6 +1234,21 @@ public class StubParser {
     }
 
     /**
+     * Looks for an enum constant element in the typeElt and returns it if the element has the same
+     * name as provided. In case enum constant element is not found it returns null.
+     *
+     * @param typeElt type element where enum constant element should be looked for
+     * @param enumConstDecl the declaration of the enum constant
+     * @return enum constant element in typeElt with the provided name or null if enum constant
+     *     element is not found
+     */
+    private VariableElement findElement(
+            TypeElement typeElt, EnumConstantDeclaration enumConstDecl) {
+        final String enumConstName = enumConstDecl.getNameAsString();
+        return findFieldElement(typeElt, enumConstName);
+    }
+
+    /**
      * Looks for method element in the typeElt and returns it if the element has the same signature
      * as provided method declaration. In case method element is not found it returns null.
      *
@@ -1307,21 +1322,6 @@ public class StubParser {
     private VariableElement findElement(TypeElement typeElt, VariableDeclarator variable) {
         final String fieldName = variable.getNameAsString();
         return findFieldElement(typeElt, fieldName);
-    }
-
-    /**
-     * Looks for an enum constant element in the typeElt and returns it if the element has the same
-     * name as provided. In case enum constant element is not found it returns null.
-     *
-     * @param typeElt type element where enum constant element should be looked for
-     * @param enumConstDecl the declaration of the enum constant
-     * @return enum constant element in typeElt with the provided name or null if enum constant
-     *     element is not found
-     */
-    private VariableElement findElement(
-            TypeElement typeElt, EnumConstantDeclaration enumConstDecl) {
-        final String enumConstName = enumConstDecl.getNameAsString();
-        return findFieldElement(typeElt, enumConstName);
     }
 
     /**
