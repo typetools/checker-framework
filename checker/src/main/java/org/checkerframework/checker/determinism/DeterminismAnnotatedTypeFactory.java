@@ -289,7 +289,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isHashSet(annotatedTypeMirror)) {
                 AnnotationMirror explicitAnno = getNewClassAnnotation(node);
                 if (AnnotationUtils.areSame(explicitAnno, DET)
-                        || AnnotationUtils.areSameIgnoringValues(explicitAnno, POLYDET)) {
+                        || AnnotationUtils.areSameByName(explicitAnno, POLYDET)) {
                     checker.report(
                             Result.failure(
                                     DeterminismVisitor.INVALID_HASH_SET_CONSTRUCTOR_INVOCATION),
@@ -298,7 +298,7 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 if (annotatedTypeMirror.hasAnnotation(DET)) {
                     annotatedTypeMirror.replaceAnnotation(ORDERNONDET);
-                } else if (AnnotationUtils.areSameIgnoringValues(
+                } else if (AnnotationUtils.areSameByName(
                         annotatedTypeMirror.getAnnotationInHierarchy(NONDET), POLYDET)) {
                     annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
