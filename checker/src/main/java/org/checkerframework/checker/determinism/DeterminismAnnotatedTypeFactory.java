@@ -93,6 +93,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The java.util.TreeSet class. */
     private final TypeMirror treeSetTypeMirror =
             TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
+    /** The java.util.HashSet class. */
+    private final TypeMirror hashSetTypeMirror =
+            TypesUtils.typeFromClass(HashSet.class, types, processingEnv.getElementUtils());
     /** The java.util.Enumeration interface. */
     private final TypeMirror enumerationTypeMirror =
             TypesUtils.typeFromClass(Enumeration.class, types, processingEnv.getElementUtils());
@@ -283,10 +286,10 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-            IdentifierTree identifier = getNewClassClassName(node);
-            if (identifier != null && identifier.getName().contentEquals("HashSet")) {
+            if (isHashSet(annotatedTypeMirror)) {
                 AnnotationMirror explicitAnno = getNewClassAnnotation(node);
-                if (AnnotationUtils.areSame(explicitAnno, DET) || isPolyDetVariant(explicitAnno)) {
+                if (AnnotationUtils.areSame(explicitAnno, DET)
+                        || AnnotationUtils.areSameIgnoringValues(explicitAnno, POLYDET)) {
                     checker.report(
                             Result.failure(
                                     DeterminismVisitor.INVALID_HASH_SET_CONSTRUCTOR_INVOCATION),
@@ -295,7 +298,8 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 if (annotatedTypeMirror.hasAnnotation(DET)) {
                     annotatedTypeMirror.replaceAnnotation(ORDERNONDET);
-                } else if (isPolyDetVariant(annotatedTypeMirror.getAnnotationInHierarchy(NONDET))) {
+                } else if (AnnotationUtils.areSameIgnoringValues(
+                        annotatedTypeMirror.getAnnotationInHierarchy(NONDET), POLYDET)) {
                     annotatedTypeMirror.replaceAnnotation(NONDET);
                 }
             }
@@ -519,6 +523,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 types.erasure(tm.getUnderlyingType()), types.erasure(iteratorTypeMirror));
     }
 
+    /** @return true if {@code tm} is a HashSet or a subtype of HashSet */
+    public boolean isHashSet(AnnotatedTypeMirror tm) {
+        return types.isSubtype(
+                types.erasure(tm.getUnderlyingType()), types.erasure(hashSetTypeMirror));
+    }
+
     /** @return true if {@code tm} is a List or a subtype of List */
     public boolean isList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(listInterfaceTypeMirror));
@@ -538,36 +548,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public QualifierHierarchy createQualifierHierarchy(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
         return new DeterminismQualifierHierarchy(factory, DET);
-    }
-
-    /**
-     * Returns the {@code IdentifierTree} representing the class name of the given tree. For
-     * example, if {@code tree} represents {@code new @NonDet HashSet<String>}, it will return an
-     * identifier representing {@code HashSet}.
-     *
-     * @param tree a tree representing a constructor call
-     * @return an {@code IdentifierTree} representing a class name if it could be found, or {@code
-     *     null} otherwise.
-     */
-    public IdentifierTree getNewClassClassName(NewClassTree tree) {
-        ExpressionTree className = tree.getIdentifier();
-        if (className.getKind() == Tree.Kind.IDENTIFIER) {
-            return (IdentifierTree) className;
-        }
-        if (className.getKind() != Tree.Kind.PARAMETERIZED_TYPE) {
-            return null;
-        }
-        ParameterizedTypeTree paramType = (ParameterizedTypeTree) className;
-        if (paramType.getType().getKind() == Tree.Kind.IDENTIFIER) {
-            return (IdentifierTree) paramType.getType();
-        }
-        if (paramType.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
-            AnnotatedTypeTree annoType = (AnnotatedTypeTree) paramType.getType();
-            if (annoType.getUnderlyingType().getKind() == Tree.Kind.IDENTIFIER) {
-                return (IdentifierTree) annoType.getUnderlyingType();
-            }
-        }
-        return null;
     }
 
     /**
@@ -591,20 +571,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<? extends AnnotationMirror> annos =
                 TreeUtils.typeOf(paramType.getType()).getAnnotationMirrors();
         return getQualifierHierarchy().findAnnotationInHierarchy(annos, NONDET);
-    }
-
-    /**
-     * Returns whether type is a variant a {@code @PolyDet}.
-     *
-     * @param the type to test
-     * @return whether type is one of {@code @PolyDet}, {@code @PolyDet("up")},
-     *     {@code @PolyDet("down")}, or {@code @PolyDet("use")}.
-     */
-    private boolean isPolyDetVariant(AnnotationMirror type) {
-        return AnnotationUtils.areSame(type, POLYDET)
-                || AnnotationUtils.areSame(type, POLYDET_UP)
-                || AnnotationUtils.areSame(type, POLYDET_DOWN)
-                || AnnotationUtils.areSame(type, POLYDET_USE);
     }
 
     class DeterminismQualifierHierarchy extends GraphQualifierHierarchy {
