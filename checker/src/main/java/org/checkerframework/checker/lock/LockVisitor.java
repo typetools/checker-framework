@@ -150,7 +150,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     /**
      * Issues an error if a method (explicitly or implicitly) annotated with @MayReleaseLocks has a
      * formal parameter or receiver (explicitly or implicitly) annotated with @GuardSatisfied. Also
-     * issues an error if a synchronized method has a @LockingFree, @SideEffectFree or @Pure
+     * issues an error if a synchronized method has a @LockingFree, @SideEffectFree, or @Pure
      * annotation.
      *
      * @param node the MethodTree of the method definition to visit

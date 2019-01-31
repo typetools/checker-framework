@@ -244,8 +244,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final BaseTypeChecker checker;
 
     /**
-     * Map from the fully-qualified names of the aliased annotations, to the annotations in the
-     * Checker Framework that will be used in its place.
+     * Map from the fully-qualified name of an aliased annotation, to the annotation in the Checker
+     * Framework that will be used in its place (possibly with some of the alias's elements/fields
+     * copied over).
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<>();
 
@@ -257,7 +258,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Map from the fully-qualified names of aliased class, to the ignorable elements that the
-     * framework can safely drop when copying over the elements.
+     * framework should drop when copying over the elements.
      */
     private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
 
@@ -994,8 +995,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree}.
      *
-     * <p>
-     *
      * @param tree the AST node
      * @return the annotated type of {@code tree}
      */
@@ -1069,8 +1068,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>Note that we cannot decide from a Tree whether it is a type use or an expression.
      * TreeUtils.isTypeTree is only an under-approximation. For example, an identifier can be either
      * a type or an expression.
-     *
-     * <p>
      *
      * @param tree the type tree
      * @return the annotated type of the type in the AST
@@ -1168,7 +1165,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     annos = AnnotationUtils.createAnnotationSet();
                     declAnnosFromStubFiles.put(ElementUtils.getVerboseName(elt), annos);
                 }
-                if (!AnnotationUtils.containsSameIgnoringValues(annos, fromStubFile)) {
+                if (!AnnotationUtils.containsSameByName(annos, fromStubFile)) {
                     annos.add(fromByteCode);
                 }
             }
@@ -1398,12 +1395,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the field invariants for the given class.
+     * Returns the field invariants for the given class, as expressed by the user in {@link
+     * FieldInvariant @FieldInvariant} method annotations.
      *
-     * <p>Subclass may implement their own field invariant annotations if {@link FieldInvariant} is
-     * not expressive enough. They must override this method to properly create AnnotationMirror and
-     * also override {@link #getFieldInvariantDeclarationAnnotations()} to return their field
-     * invariants.
+     * <p>Subclasses may implement their own field invariant annotations if {@link
+     * FieldInvariant @FieldInvariant} is not expressive enough. They must override this method to
+     * properly create AnnotationMirror and also override {@link
+     * #getFieldInvariantDeclarationAnnotations()} to return their field invariants.
      *
      * @param element class for which to get invariants
      * @return fields invariants for {@code element}
@@ -1422,17 +1420,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Name name : classes) {
+            // Calling AnnotationBuilder.fromName (which ignores elements/fields) is acceptable
+            // because @FieldInvariant does not handle classes with elements/fields.
             qualifiers.add(AnnotationBuilder.fromName(elements, name));
         }
-        if (fields.size() > qualifiers.size()) {
-            int difference = fields.size() - qualifiers.size();
-            for (int i = 0; i < difference; i++) {
+        if (qualifiers.size() == 1) {
+            while (fields.size() > qualifiers.size()) {
                 qualifiers.add(qualifiers.get(0));
             }
         }
         if (fields.size() != qualifiers.size()) {
-            // FieldInvariant wasn't written correctly, so just return the object, the
-            // BaseTypeVisitor will issue an error.
+            // The user wrote a malformed @FieldInvariant annotation, so just return a malformed
+            // FieldInvariants object.  The BaseTypeVisitor will issue an error.
             return new FieldInvariants(fields, qualifiers);
         }
 
@@ -1686,6 +1685,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>The result is null for expressions that don't have a receiver, e.g. for a local variable
      * or method parameter access.
+     *
+     * <p>Clients should generally call {@link #getReceiverType}.
      *
      * @param tree the expression that might have an implicit receiver
      * @return the type of the receiver
@@ -2475,7 +2476,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (a == null) {
             return false;
         }
-        return AnnotationUtils.containsSameIgnoringValues(
+        return AnnotationUtils.containsSameByName(
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
@@ -2516,10 +2517,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * that will be used by the Checker Framework in the alias's place.
      *
      * <p>You may specify the copyElements flag to indicate whether you want the elements of the
-     * alias to be copied over when the canonical annotation is constructed. Be careful that the
-     * framework will try to copy the elements by name matching, so make sure that names and types
-     * of the elements to be copied over are exactly the same as the ones in the canonical
-     * annotation. Otherwise, an 'Couldn't find element in annotation' error is raised.
+     * alias to be copied over when the canonical annotation is constructed as a copy of {@code
+     * type}. Be careful that the framework will try to copy the elements by name matching, so make
+     * sure that names and types of the elements to be copied over are exactly the same as the ones
+     * in the canonical annotation. Otherwise, an 'Couldn't find element in annotation' error is
+     * raised.
      *
      * <p>To facilitate the cases where some of the elements is ignored on purpose when constructing
      * the canonical annotation, this method also provides a varargs {@code ignorableElements} for
@@ -2571,18 +2573,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (copyElements) {
             aliasesCopyElements.add(aliasName);
             aliasesIgnorableElements.put(aliasName, ignorableElements);
+        } else if (ignorableElements.length > 0) {
+            throw new BugInCF(
+                    "copyElements = false, ignorableElements = "
+                            + Arrays.toString(ignorableElements));
         }
     }
 
     /**
-     * Returns the canonical annotation for the passed annotation if it is an alias of a canonical
-     * one in the framework. If it is not an alias, the method returns null.
+     * Returns the canonical annotation for the passed annotation. Returns null if the passed
+     * annotation is not an alias of a canonical one in the framework.
      *
      * <p>A canonical annotation is the internal annotation that will be used by the Checker
      * Framework in the aliased annotation's place.
      *
      * @param a the qualifier to check for an alias
-     * @return the canonical annotation or null if none exists
+     * @return the canonical annotation, or null if none exists
      */
     public @Nullable AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
@@ -2601,20 +2607,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Add the annotation {@code alias} as an alias for the declaration annotation {@code
-     * annotation}, where the annotation mirror {@code annoationToUse} will be used instead. If
-     * multiple calls are made with the same {@code annotation}, then the {@code anontationToUse}
+     * annotation}, where the annotation mirror {@code annotationToUse} will be used instead. If
+     * multiple calls are made with the same {@code annotation}, then the {@code annotationToUse}
      * must be the same.
+     *
+     * <p>The point of {@code annotationToUse} is that it may include elements/fields.
      */
     protected void addAliasedDeclAnnotation(
             Class<? extends Annotation> alias,
             Class<? extends Annotation> annotation,
             AnnotationMirror annotationToUse) {
-        Set<Class<? extends Annotation>> set = new HashSet<>();
-        if (declAliases.containsKey(annotation)) {
-            set.addAll(declAliases.get(annotation).second);
+        Pair<AnnotationMirror, Set<Class<? extends Annotation>>> pair = declAliases.get(annotation);
+        if (pair != null) {
+            if (!AnnotationUtils.areSame(annotationToUse, pair.first)) {
+                throw new BugInCF(
+                        "annotationToUse should be the same: %s %s", pair.first, annotationToUse);
+            }
+        } else {
+            pair = Pair.of(annotationToUse, new HashSet<>());
+            declAliases.put(annotation, pair);
         }
-        set.add(alias);
-        declAliases.put(annotation, Pair.of(annotationToUse, set));
+        Set<Class<? extends Annotation>> aliases = pair.second;
+        aliases.add(alias);
     }
 
     /**
@@ -3077,7 +3091,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the actual annotation mirror used to annotate this element, whose name equals the
-     * passed annotation class, if one exists, or null otherwise.
+     * passed annotation class (or is an alias for it). Returns null if none exists.
      *
      * @see #getDeclAnnotationNoAliases
      * @param elt the element to retrieve the declaration annotation from
@@ -3091,7 +3105,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the actual annotation mirror used to annotate this element, whose name equals the
-     * passed annotation class, if one exists, or null otherwise. Does not check for aliases of the
+     * passed annotation class. Returns null if none exists. Does not check for aliases of the
      * annotation class.
      *
      * <p>Call this method from a checker that needs to alias annotations for one purpose and not
@@ -3121,7 +3135,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns true if the element is from bytecode and the if the element did not appear in a stub
-     * file (Currently only works for methods, constructors, and fields).
+     * file. Currently only works for methods, constructors, and fields.
      */
     public boolean isFromByteCode(Element element) {
         if (isFromStubFile(element)) {
@@ -3131,9 +3145,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
-     * annotationName if one exists, null otherwise. This is the private implementation of the
-     * same-named, public method.
+     * Returns the actual annotation mirror used to annotate this element, whose name equals the
+     * passed annotation class (or is an alias for it). Returns null if none exists. May return the
+     * canonical annotation that annotationName is an alias for.
+     *
+     * <p>This is the private implementation of the same-named, public method.
      *
      * <p>An option is provided to not to check for aliases of annotations. For example, an
      * annotated type factory may use aliasing for a pair of annotations for convenience while
@@ -3145,7 +3161,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param annoClass the class the annotation to retrieve
      * @param checkAliases whether to return an annotation mirror for an alias of the requested
      *     annotation class name
-     * @return the annotation mirror for the requested annotation or null if not found
+     * @return the annotation mirror for the requested annotation, or null if not found
      */
     private AnnotationMirror getDeclAnnotation(
             Element elt, Class<? extends Annotation> annoClass, boolean checkAliases) {
@@ -3164,6 +3180,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 for (Class<? extends Annotation> alias : aliases.second) {
                     for (AnnotationMirror am : declAnnos) {
                         if (AnnotationUtils.areSameByClass(am, alias)) {
+                            // TODO: need to copy over elements/fields
                             return aliases.first;
                         }
                     }
@@ -3177,8 +3194,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns all of the actual annotation mirrors used to annotate this element (includes stub
      * files and declaration annotations from overridden methods).
-     *
-     * <p>
      *
      * @param elt the element for which to determine annotations
      */
@@ -3264,7 +3279,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     }
                     if (AnnotationUtils.containsSameByClass(
                                     annotationsOnAnnotation, InheritedAnnotation.class)
-                            || AnnotationUtils.containsSameIgnoringValues(
+                            || AnnotationUtils.containsSameByName(
                                     inheritedAnnotations, annotation)) {
                         addOrMerge(results, annotation);
                     }
@@ -3274,7 +3289,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     private void addOrMerge(Set<AnnotationMirror> results, AnnotationMirror annotation) {
-        if (AnnotationUtils.containsSameIgnoringValues(results, annotation)) {
+        if (AnnotationUtils.containsSameByName(results, annotation)) {
             /*
              * TODO: feature request: figure out a way to merge multiple annotations
              * of the same kind. For some annotations this might mean merging some
@@ -3284,7 +3299,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
              * For now, do nothing and just take the first, most concrete, annotation.
             AnnotationMirror prev = null;
             for (AnnotationMirror an : results) {
-                if (AnnotationUtils.areSameIgnoringValues(an, annotation)) {
+                if (AnnotationUtils.areSameByName(an, annotation)) {
                     prev = an;
                     break;
                 }

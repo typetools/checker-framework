@@ -114,12 +114,12 @@ public class NullnessVisitor
         for (AnnotationMirror anno : useType.getAnnotations()) {
             if (QualifierPolymorphism.isPolyAll(anno)) {
                 // ok.
-            } else if (containsSameIgnoringValues(initQuals, anno)) {
+            } else if (containsSameByName(initQuals, anno)) {
                 if (foundInit) {
                     return false;
                 }
                 foundInit = true;
-            } else if (containsSameIgnoringValues(nonNullQuals, anno)) {
+            } else if (containsSameByName(nonNullQuals, anno)) {
                 if (foundNonNull) {
                     return false;
                 }
@@ -160,7 +160,7 @@ public class NullnessVisitor
         return super.isValidUse(type, tree);
     }
 
-    private boolean containsSameIgnoringValues(
+    private boolean containsSameByName(
             Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
         for (Class<? extends Annotation> q : quals) {
             if (AnnotationUtils.areSameByClass(anno, q)) {
@@ -543,7 +543,7 @@ public class NullnessVisitor
             for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getAnnotations()) {
                 // is this an annotation of the nullness checker?
                 boolean nullnessCheckerAnno =
-                        containsSameIgnoringValues(atypeFactory.getNullnessAnnotations(), a);
+                        containsSameByName(atypeFactory.getNullnessAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
                     checker.report(

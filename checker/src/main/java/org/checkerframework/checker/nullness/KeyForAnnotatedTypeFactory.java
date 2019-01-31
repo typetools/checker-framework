@@ -200,18 +200,18 @@ public class KeyForAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)
-                    && AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)
+                    && AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
                 List<String> lhsValues = extractValues(superAnno);
                 List<String> rhsValues = extractValues(subAnno);
 
                 return rhsValues.containsAll(lhsValues);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)) {
                 superAnno = KEYFOR;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
                 subAnno = KEYFOR;
             }
             return super.isSubtype(subAnno, superAnno);
