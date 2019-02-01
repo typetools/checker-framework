@@ -241,9 +241,10 @@ public class NullnessTransfer
             System.out.printf("visitMethodInvocation(%s)%n", n);
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
-            AnnotatedTypeMirror receiverType =
-                    keyForTypeFactory.getReceiverType(n.getTree().getMethodSelect());
-            // System.out.printf("receiverType %s [%s]%n", receiverType, receiverType.getClass());
+            AnnotatedTypeMirror receiverType = keyForTypeFactory.getReceiverType(n.getTree());
+            System.out.printf(
+                    "receiverType %s [%s] for %s in %s%n",
+                    receiverType, receiverType.getClass(), n.getTree(), this);
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
                     && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
