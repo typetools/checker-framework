@@ -822,7 +822,8 @@ public class QualifierDefaults {
                         {
                             if (scope != null
                                     && (scope.getKind() == ElementKind.CLASS
-                                            || scope.getKind() == ElementKind.INTERFACE)
+                                            || scope.getKind() == ElementKind.INTERFACE
+                                            || scope.getKind() == ElementKind.ENUM)
                                     && t == type) {
                                 addAnnotation(t, qual);
                             }
