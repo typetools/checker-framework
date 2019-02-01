@@ -4,7 +4,7 @@
 import java.util.HashSet;
 import java.util.List;
 
-@SuppressWarnings("determinism:invalid.type.on.conditional")
+@SuppressWarnings("determinism") // HashSet is @OrderNonDet
 public class Issue438 {
     boolean foo(List<String> list) {
         if (list.isEmpty()) {

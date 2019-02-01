@@ -93,6 +93,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The java.util.TreeSet class. */
     private final TypeMirror treeSetTypeMirror =
             TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
+    /** The java.util.HashSet class. */
+    private final TypeMirror hashSetTypeMirror =
+            TypesUtils.typeFromClass(HashSet.class, types, processingEnv.getElementUtils());
     /** The java.util.Enumeration interface. */
     private final TypeMirror enumerationTypeMirror =
             TypesUtils.typeFromClass(Enumeration.class, types, processingEnv.getElementUtils());
@@ -268,6 +271,39 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             return super.visitMemberSelect(node, annotatedTypeMirror);
+        }
+
+        /**
+         * Reports an error if {@code node} represents explicitly constructing a {@code @Det} or
+         * {@code @PolyDet} {@code HashSet}. If one these annotation wasn't explicitly written, but
+         * the constructor would resolve to {@code @Det}, inserts {@code @OrderNonDet} instead. If
+         * it would resolve to any variant of {@code @PolyDet}, replaces it with {@code @NonDet}
+         *
+         * @param node a tree representing instantiating a class
+         * @param annotatedTypeMirror the type to modify if it represents an invalid constructor
+         *     call
+         * @return visitNewClass() of the super class
+         */
+        @Override
+        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            if (isHashSet(annotatedTypeMirror)) {
+                AnnotationMirror explicitAnno = getNewClassAnnotation(node);
+                if (AnnotationUtils.areSame(explicitAnno, DET)
+                        || AnnotationUtils.areSameByName(explicitAnno, POLYDET)) {
+                    checker.report(
+                            Result.failure(
+                                    DeterminismVisitor.INVALID_HASH_SET_CONSTRUCTOR_INVOCATION),
+                            node);
+                    return super.visitNewClass(node, annotatedTypeMirror);
+                }
+                if (annotatedTypeMirror.hasAnnotation(DET)) {
+                    annotatedTypeMirror.replaceAnnotation(ORDERNONDET);
+                } else if (AnnotationUtils.areSameByName(
+                        annotatedTypeMirror.getAnnotationInHierarchy(NONDET), POLYDET)) {
+                    annotatedTypeMirror.replaceAnnotation(NONDET);
+                }
+            }
+            return super.visitNewClass(node, annotatedTypeMirror);
         }
     }
 
@@ -487,6 +523,12 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 types.erasure(tm.getUnderlyingType()), types.erasure(iteratorTypeMirror));
     }
 
+    /** @return true if {@code tm} is a HashSet or a subtype of HashSet */
+    public boolean isHashSet(AnnotatedTypeMirror tm) {
+        return types.isSubtype(
+                types.erasure(tm.getUnderlyingType()), types.erasure(hashSetTypeMirror));
+    }
+
     /** @return true if {@code tm} is a List or a subtype of List */
     public boolean isList(TypeMirror tm) {
         return types.isSubtype(types.erasure(tm), types.erasure(listInterfaceTypeMirror));
@@ -506,6 +548,29 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public QualifierHierarchy createQualifierHierarchy(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
         return new DeterminismQualifierHierarchy(factory, DET);
+    }
+
+    /**
+     * Returns the annotation placed on the constructor in {@code tree} if it represents
+     * constructing a parameterized type such as {@code HashSet}.
+     *
+     * @param tree the {@code Tree} representing the construction of a new parameterized type such
+     *     as {@code HashSet}.
+     * @return the annotation in the determinism hierarchy on the given constructor if there was
+     *     one, {@code null} otherwise.
+     */
+    public AnnotationMirror getNewClassAnnotation(NewClassTree tree) {
+        ExpressionTree className = tree.getIdentifier();
+        if (className.getKind() != Tree.Kind.PARAMETERIZED_TYPE) {
+            return null;
+        }
+        ParameterizedTypeTree paramType = (ParameterizedTypeTree) className;
+        if (paramType.getType().getKind() != Tree.Kind.ANNOTATED_TYPE) {
+            return null;
+        }
+        List<? extends AnnotationMirror> annos =
+                TreeUtils.typeOf(paramType.getType()).getAnnotationMirrors();
+        return getQualifierHierarchy().findAnnotationInHierarchy(annos, NONDET);
     }
 
     class DeterminismQualifierHierarchy extends GraphQualifierHierarchy {
