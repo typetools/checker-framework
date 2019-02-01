@@ -237,7 +237,8 @@ public class NullnessTransfer
 
         // Refine result to @NonNull if n is an invocation of Map.get, the argument is a key for
         // the map, and the map's value type is not @Nullable.
-        if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
+        if (keyForTypeFactory != null
+                && keyForTypeFactory.isInvocationOfMapMethodWithOneObjectParameter(n, "get")) {
             System.out.printf("visitMethodInvocation(%s)%n", n);
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
@@ -282,6 +283,9 @@ public class NullnessTransfer
         if (numTypeArguments != 2) {
             // TODO: Handle subclasses of Map with different number or order of type arguments.
             // Conservatively return true for now.
+            System.out.printf(
+                    "hasNullableValueType(%s) => true because %d type arguments%n",
+                    mapType, numTypeArguments);
             return true;
         }
         AnnotatedTypeMirror valueType = mapType.getTypeArguments().get(1);

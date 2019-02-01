@@ -36,8 +36,8 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
 
         TransferResult<KeyForValue, KeyForStore> result = super.visitMethodInvocation(node, in);
         KeyForAnnotatedTypeFactory factory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-        if (factory.isInvocationOfMapMethod(node, "containsKey")
-                || factory.isInvocationOfMapMethod(node, "put")) {
+        if (factory.isInvocationOfMapMethodWithOneObjectParameter(node, "containsKey")
+                || factory.isInvocationOfMapMethodWithOneObjectParameter(node, "put")) {
 
             Node receiver = node.getTarget().getReceiver();
             Receiver internalReceiver = FlowExpressions.internalReprOf(factory, receiver);

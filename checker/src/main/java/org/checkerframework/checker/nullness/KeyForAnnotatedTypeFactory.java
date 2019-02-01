@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
@@ -41,6 +43,9 @@ public class KeyForAnnotatedTypeFactory
 
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
 
+    /** A parameter list consisting of just Object. */
+    public final List<TypeMirror> PARAMS_OBJECT;
+
     private final KeyForPropagator keyForPropagator;
 
     private final TypeMirror erasedMapType;
@@ -52,6 +57,9 @@ public class KeyForAnnotatedTypeFactory
         UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
         KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
+
+        PARAMS_OBJECT =
+                Collections.singletonList(TypesUtils.typeFromClass(Object.class, types, elements));
 
         // Add compatibility annotations:
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
@@ -218,21 +226,45 @@ public class KeyForAnnotatedTypeFactory
         }
     }
 
-    protected boolean isInvocationOfMapMethod(MethodInvocationNode n, String methodName) {
-        String invokedMethod = getMethodName(n);
-        // First verify if the method name is correct. This is an inexpensive check.
-        // TODO: should also check number (and type?) of arguments, because a subclass could
-        // overload get().
-        if (invokedMethod.equals(methodName)) {
-            // Now verify that the receiver of the method invocation is of a type
-            // that extends that java.util.Map interface. This is a more expensive check.
-            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
+    protected boolean isInvocationOfMapMethodWithOneObjectParameter(
+            MethodInvocationNode n, String methodName) {
+        return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT);
+    }
 
-            if (types.isSubtype(receiverType, erasedMapType)) {
-                return true;
+    protected boolean isInvocationOfMapMethod(
+            MethodInvocationNode n, String methodName, List<TypeMirror> paramTypes) {
+        String invokedMethodName = getMethodName(n);
+
+        // First verify if the method name is correct. This is an inexpensive check.
+        if (!invokedMethodName.equals(methodName)) {
+            return false;
+        }
+
+        // Verify the argument types.  These are more expensive checks.
+
+        // The receiver's type must extend the java.util.Map interface.
+        TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
+        if (!types.isSubtype(receiverType, erasedMapType)) {
+            return false;
+        }
+
+        // Also verify the other argument types
+        List<Node> args = n.getArguments();
+        if (args.size() != paramTypes.size()) {
+            return false;
+        }
+        for (int i = 0; i < args.size(); i++) {
+            Node arg = args.get(i);
+            TypeMirror erasedArgType = types.erasure(n.getArguments().get(i).getType());
+            TypeMirror paramType = paramTypes.get(i);
+            // This test isn't right, because there could be a more specific overload that is
+            // applied.  Exact equality wouldn't be right either.
+            if (!types.isSubtype(erasedArgType, paramType)) {
+                return false;
             }
         }
-        return false;
+
+        return true;
     }
 
     protected String getMethodName(MethodInvocationNode n) {
