@@ -254,11 +254,7 @@ public class KeyForAnnotatedTypeFactory
      */
     protected boolean isInvocationOfMapMethodWithTwoObjectParameters(
             MethodInvocationNode n, String methodName) {
-        boolean result = isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT_OBJECT);
-        // System.out.printf(
-        //         "isInvocationOfMapMethodWithTwoObjectParameters(%s, %s) => %s%n",
-        //         n, methodName, result);
-        return result;
+        return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT_OBJECT);
     }
 
     /**

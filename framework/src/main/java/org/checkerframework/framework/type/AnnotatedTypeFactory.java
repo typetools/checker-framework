@@ -1959,34 +1959,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type of the receiver of this expression
      */
     public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
-        // System.out.printf("%s getReceiverType(%s [%s])%n", this, expression,
-        // expression.getClass());
-
         if (this.isAnyEnclosingThisDeref(expression)) {
-            AnnotatedTypeMirror result = getImplicitReceiverType(expression);
-            // System.out.printf(
-            //         "  %s getReceiverType(%s) [implicit] => %s [%s]%n",
-            //         this, expression, result, result.getClass());
-            // ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
-            // System.out.printf("    receiver = %s%n", receiver);
-            // if (receiver != null) {
-            //     System.out.printf(
-            //             "    receiver = %s [%s], result could be = %s [%s]%n",
-            //             receiver,
-            //             receiver.getClass(),
-            //             getAnnotatedType(receiver),
-            //             getAnnotatedType(receiver).getClass());
-            // }
-            return result;
+            return getImplicitReceiverType(expression);
         }
 
         ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
         if (receiver != null) {
-            AnnotatedTypeMirror result = getAnnotatedType(receiver);
-            // System.out.printf(
-            //         "  %s getReceiverType(%s, receiver=%s [%s]) => %s [%s]%n",
-            //         this, expression, receiver, receiver.getClass(), result, result.getClass());
-            return result;
+            return getAnnotatedType(receiver);
         } else {
             // E.g. local variables
             return null;

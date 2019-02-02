@@ -254,21 +254,9 @@ public class NullnessTransfer
         // the map, and the map's value type is not @Nullable.
         if (keyForTypeFactory != null
                 && keyForTypeFactory.isInvocationOfMapMethodWithOneObjectParameter(n, "get")) {
-            // System.out.printf("visitMethodInvocation(%s)%n", n);
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
             AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
-            // System.out.printf(
-            //         "receiverType %s [%s] for %s in %s%n",
-            //         receiverType, receiverType.getClass(), n.getTree(), this);
-
-            // System.out.printf(
-            //         "test = %s (%s && !%s), receiverType = %s%n",
-            //         (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
-            //                 && !hasNullableValueType((AnnotatedDeclaredType) receiverType)),
-            //         keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0)),
-            //         hasNullableValueType((AnnotatedDeclaredType) receiverType),
-            //         receiverType);
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
                     && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
@@ -288,7 +276,7 @@ public class NullnessTransfer
     }
 
     /**
-     * Returns true if mapType's value type is @Nullable
+     * Returns true if mapType's value type (the V type argument to Map) is @Nullable.
      *
      * @param mapOrSubtype the Map type, or a subtype
      * @return true if mapType's value type is @Nullable
