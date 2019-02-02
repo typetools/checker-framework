@@ -22,7 +22,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * <p>TODO: What relations are missing?
  */
 public class UnitsRelationsDefault implements UnitsRelations {
+    /** SI units. */
     protected AnnotationMirror m, km, mm, m2, km2, mm2, s, h, mPERs, kmPERh, mPERs2;
+    /** The Element Utilities from the Units Checker's processing environment. */
     protected Elements elements;
 
     /**
