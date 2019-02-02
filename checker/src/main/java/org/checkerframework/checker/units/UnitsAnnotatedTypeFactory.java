@@ -318,7 +318,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                         .newInstance()
                                         .init(processingEnv));
                     } catch (Throwable e) {
-                        throw new BugInCF("Exception NoSuchMethodException", e);
+                        throw new BugInCF("Throwable when instantiating UnitsRelations", e);
                     }
                 }
             }
