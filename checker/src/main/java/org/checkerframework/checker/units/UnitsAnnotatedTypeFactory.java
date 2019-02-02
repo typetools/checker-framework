@@ -313,7 +313,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 try {
                     unitsRelationsClass = valueElement.asSubclass(UnitsRelations.class);
                 } catch (ClassCastException ex) {
-                    Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
                     throw new UserError(
                             "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
                                     + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
