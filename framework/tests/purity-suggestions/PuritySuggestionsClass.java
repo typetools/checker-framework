@@ -6,7 +6,7 @@ import testlib.util.*;
 // various tests for the checker to automatically suggest pure methods (most methods have been
 // copied from Purity.java)
 
-class Test {
+class PuritySuggestionsClass {
 
     String f1, f2, f3;
     String[] a;
@@ -83,7 +83,7 @@ class Test {
         return "";
     }
 
-    String t11(Test l) {
+    String t11(PuritySuggestionsClass l) {
         l.a[0] = "";
         return "";
     }
@@ -94,16 +94,6 @@ class Test {
     }
 
     String t13() {
-        PureClass p = new PureClass();
-        return "";
-    }
-
-    String t13b() {
-        PureClass p = new PureClass();
-        return "";
-    }
-
-    String t13c() {
         PureClass p = new PureClass();
         return "";
     }
