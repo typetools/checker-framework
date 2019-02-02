@@ -1685,6 +1685,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The result is null for expressions that don't have a receiver, e.g. for a local variable
      * or method parameter access.
      *
+     * <p>Clients should generally call {@link #getReceiverType}.
+     *
      * @param tree the expression that might have an implicit receiver
      * @return the type of the receiver
      */
