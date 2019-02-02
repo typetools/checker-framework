@@ -701,6 +701,18 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the Class that is referenced by attribute {@code annoElement}.
+     *
+     * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
+     * #getElementValueAnnotationClass} instead.
+     */
+    public static Class<?> getElementValueClass(
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
+        return nameToClass(cn, annoElement, anno);
+    }
+
+    /**
      * Convert a name to a Class. This method uses Class.forName to load the class. It fails if the
      * class wasn't found.
      *
@@ -722,18 +734,6 @@ public class AnnotationUtils {
                             name, annoElement, anno);
             throw new BugInCF(msg, e);
         }
-    }
-
-    /**
-     * Get the Class that is referenced by attribute {@code annoElement}.
-     *
-     * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
-     * #getElementValueAnnotationClass} instead.
-     */
-    public static Class<?> getElementValueClass(
-            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
-        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
-        return nameToClass(cn, annoElement, anno);
     }
 
     /**
