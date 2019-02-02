@@ -28,6 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -111,7 +112,7 @@ public class WholeProgramInferenceScenesHelper {
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
             } catch (IOException e) {
-                throw new BugInCF(
+                throw new UserError(
                         "Problem while reading file in: "
                                 + jaifPath
                                 + ". Exception message: "
@@ -143,7 +144,7 @@ public class WholeProgramInferenceScenesHelper {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    throw new BugInCF(
+                    throw new UserError(
                             "Problem while reading file in: "
                                     + jaifPath
                                     + "."
