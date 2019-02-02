@@ -754,7 +754,7 @@ public class AnnotationUtils {
      * #getElementValueAnnotationClass} instead.
      *
      * @param anno the annotation whose element is being looked up
-     * @param annoElement the element/field of {@code anno} whose content is being looked up
+     * @param name the element/field of {@code anno} whose content is being looked up
      * @param useDefaults whether to apply default values to the element
      * @return the class contained in {@code anno.annoElement}
      */
