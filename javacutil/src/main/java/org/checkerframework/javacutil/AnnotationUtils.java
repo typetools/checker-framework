@@ -808,29 +808,6 @@ public class AnnotationUtils {
         return result;
     }
 
-    /**
-     * Get the list of annotation Classes that are referenced by element {@code annoElement}. It
-     * fails if the class wasn't found. Like {@link #getElementValueClassNames}, but returns classes
-     * rather than names.
-     *
-     * @param anno the annotation whose field to access
-     * @param annoElement the element/field of {@code anno} whose content is a list of classes
-     * @param useDefaults whether to apply default values to the element
-     * @return the classes in {@code anno.annoElement}
-     */
-    public static List<Class<? extends Annotation>> getElementValueAnnotationClasses(
-            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
-        List<Name> aNames = getElementValueClassNames(anno, annoElement, useDefaults);
-        List<Class<? extends Annotation>> result = new ArrayList<>();
-        for (Name aName : aNames) {
-            @SuppressWarnings("unchecked") // TODO: could do a run-time check
-            Class<? extends Annotation> aClass =
-                    (Class<? extends Annotation>) nameToClass(aName, annoElement, anno);
-            result.add(aClass);
-        }
-        return result;
-    }
-
     // The Javadoc doesn't use @link because framework is a different project than this one
     // (javacutil).
     /**
