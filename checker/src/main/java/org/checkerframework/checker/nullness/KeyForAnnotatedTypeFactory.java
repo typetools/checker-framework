@@ -233,11 +233,25 @@ public class KeyForAnnotatedTypeFactory
         }
     }
 
+    /**
+     * Returns true if the node is an invocation of the named method in the Map interface, which has
+     * one formal parameter of Object type.
+     *
+     * @param n the method invocation
+     * @param methodName the method to check for, which has one formal parameter
+     */
     protected boolean isInvocationOfMapMethodWithOneObjectParameter(
             MethodInvocationNode n, String methodName) {
         return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT);
     }
 
+    /**
+     * Returns true if the node is an invocation of the named method in the Map interface, which has
+     * two formal parameters of Object type.
+     *
+     * @param n the method invocation
+     * @param methodName the method to check for, which has two formal parameters
+     */
     protected boolean isInvocationOfMapMethodWithTwoObjectParameters(
             MethodInvocationNode n, String methodName) {
         boolean result = isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT_OBJECT);
@@ -247,6 +261,13 @@ public class KeyForAnnotatedTypeFactory
         return result;
     }
 
+    /**
+     * Returns true if the node is an invocation of the named method in the Map interface.
+     *
+     * @param n the method invocation
+     * @param methodName the method to check for
+     * @param paramTypes the parameter types in methodName's declaration, to resolve overloading
+     */
     protected boolean isInvocationOfMapMethod(
             MethodInvocationNode n, String methodName, List<TypeMirror> paramTypes) {
         String invokedMethodName = getMethodName(n);
