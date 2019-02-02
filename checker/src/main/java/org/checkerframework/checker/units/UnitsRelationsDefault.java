@@ -1,5 +1,6 @@
 package org.checkerframework.checker.units;
 
+import java.lang.annotation.Annotation;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -15,6 +16,7 @@ import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** Default relations between SI units. TODO: what relations are missing? */
 public class UnitsRelationsDefault implements UnitsRelations {
@@ -29,23 +31,70 @@ public class UnitsRelationsDefault implements UnitsRelations {
     public UnitsRelations init(ProcessingEnvironment env) {
         elements = env.getElementUtils();
 
-        m = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, m.class);
-        km = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.kilo);
-        mm = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.milli);
+        m = buildAnnoMirrorWithDefaultPrefix(env, m.class);
+        km = buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.kilo);
+        mm = buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.milli);
 
-        m2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, m2.class);
-        km2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, km2.class);
-        mm2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mm2.class);
+        m2 = buildAnnoMirrorWithNoPrefix(env, m2.class);
+        km2 = buildAnnoMirrorWithNoPrefix(env, km2.class);
+        mm2 = buildAnnoMirrorWithNoPrefix(env, mm2.class);
 
-        s = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, s.class);
-        h = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, h.class);
+        s = buildAnnoMirrorWithDefaultPrefix(env, s.class);
+        h = buildAnnoMirrorWithNoPrefix(env, h.class);
 
-        mPERs = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mPERs.class);
-        kmPERh = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, kmPERh.class);
+        mPERs = buildAnnoMirrorWithNoPrefix(env, mPERs.class);
+        kmPERh = buildAnnoMirrorWithNoPrefix(env, kmPERh.class);
 
-        mPERs2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mPERs2.class);
+        mPERs2 = buildAnnoMirrorWithNoPrefix(env, mPERs2.class);
 
         return this;
+    }
+
+    /**
+     * Creates an AnnotationMirror representing a unit defined by annoClass, with the specific
+     * Prefix p.
+     *
+     * @param env the Checker Processing Environment, provided as a parameter in init() of a
+     *     UnitsRelations implementation
+     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @param p a Prefix value
+     * @return an AnnotationMirror of the Unit with the Prefix p, or null if it cannot be
+     *     constructed
+     */
+    private static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
+            final ProcessingEnvironment env,
+            final Class<? extends Annotation> annoClass,
+            final Prefix p) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, annoClass.getCanonicalName());
+        builder.setValue("value", p);
+        return builder.build();
+    }
+
+    /**
+     * Creates an AnnotationMirror representing a unit defined by annoClass, with the default Prefix
+     * of {@code Prefix.one}.
+     *
+     * @param env the Checker Processing Environment, provided as a parameter in init() of a
+     *     UnitsRelations implementation
+     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @return an AnnotationMirror of the Unit with Prefix.one, or null if it cannot be constructed
+     */
+    private static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
+            final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
+        return buildAnnoMirrorWithSpecificPrefix(env, annoClass, Prefix.one);
+    }
+
+    /**
+     * Creates an AnnotationMirror representing a unit defined by annoClass, with no prefix.
+     *
+     * @param env checker Processing Environment, provided as a parameter in init() of a
+     *     UnitsRelations implementation
+     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @return an AnnotationMirror of the Unit with no prefix, or null if it cannot be constructed
+     */
+    private static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
+            final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
+        return AnnotationBuilder.fromClass(env.getElementUtils(), annoClass);
     }
 
     /**

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Name;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.units.qual.MixedUnits;
@@ -103,8 +104,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // see if the meta annotation is UnitsMultiple
             if (isUnitsMultiple(metaAnno)) {
                 // retrieve the Class of the base unit annotation
-                Class<? extends Annotation> baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueAnnotationClass(metaAnno, "quantity", true);
+                Name baseUnitAnnoClass =
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
 
                 // retrieve the SI Prefix of the aliased annotation
                 Prefix prefix =
@@ -210,7 +211,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Adds the annotation class to the external qualifier map if it is not an alias annotation. */
     private void addUnitToExternalQualMap(final Class<? extends Annotation> annoClass) {
         AnnotationMirror mirror =
-                UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(processingEnv, annoClass);
+                UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(
+                        processingEnv, annoClass.getCanonicalName());
 
         // if it is not an aliased annotation, add to external quals map if it isn't already in map
         if (!isAliasedAnnotation(mirror)) {
