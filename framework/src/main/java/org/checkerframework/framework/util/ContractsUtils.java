@@ -338,7 +338,7 @@ public class ContractsUtils {
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(contractAnnoElement.getEnclosedElements())) {
             AnnotationMirror argumentAnnotation =
-                    factory.getDeclAnnotationNoAliases(meth, QualifierArgument.class);
+                    factory.getDeclAnnotation(meth, QualifierArgument.class);
             if (argumentAnnotation != null) {
                 String sourceName = meth.getSimpleName().toString();
                 String targetName =
