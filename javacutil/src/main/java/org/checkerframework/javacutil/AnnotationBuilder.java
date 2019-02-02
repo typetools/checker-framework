@@ -106,18 +106,8 @@ public class AnnotationBuilder {
      * @param annotation the annotation to copy
      */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
-        this(env.getElementUtils(), env.getTypeUtils(), annotation);
-    }
-
-    // TODO: This is a bit gross, is used by UnitsRelationsTools.
-    /** Leaves type field null, should not be used if that field is needed. */
-    public AnnotationBuilder(Elements elements, AnnotationMirror annotation) {
-        this(elements, null, annotation);
-    }
-
-    private AnnotationBuilder(Elements elements, Types types, AnnotationMirror annotation) {
-        this.elements = elements;
-        this.types = types;
+        this.elements = env.getElementUtils();
+        this.types = env.getTypeUtils();
 
         this.annotationType = annotation.getAnnotationType();
         this.annotationElt = (TypeElement) annotationType.asElement();
