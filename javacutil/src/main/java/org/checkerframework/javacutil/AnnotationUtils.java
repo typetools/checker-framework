@@ -115,6 +115,7 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 have the same annotation name
      * @see #areSame(AnnotationMirror, AnnotationMirror)
+     * @return true iff a1 and a2 have the same annotation name
      */
     public static boolean areSameByName(
             @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
@@ -746,6 +747,24 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the Class that is referenced by element {@code annoElement}. It fails if the class wasn't
+     * found.
+     *
+     * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
+     * #getElementValueAnnotationClass} instead.
+     *
+     * @param anno the annotation whose element is being looked up
+     * @param annoElement the element/field of {@code anno} whose content is being looked up
+     * @param useDefaults whether to apply default values to the element
+     * @return the class contained in {@code anno.annoElement}
+     */
+    public static Class<?> getElementValueClass(
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
+        return nameToClass(cn, annoElement, anno);
+    }
+
+    /**
      * Convert a name to a Class. This method uses Class.forName to load the class. It fails if the
      * class wasn't found.
      *
@@ -772,26 +791,8 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the Class that is referenced by element {@code annoElement}. It fails if the class wasn't
-     * found.
-     *
-     * <p>If the class is an annotation (it extends {@code Annotation}), use {@link
-     * #getElementValueAnnotationClass} instead.
-     *
-     * @param anno the annotation whose element is being looked up
-     * @param annoElement the element/field of {@code anno} whose content is being looked up
-     * @param useDefaults whether to apply default values to the element
-     * @return the class contained in {@code anno.annoElement}
-     */
-    public static Class<?> getElementValueClass(
-            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
-        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
-        return nameToClass(cn, annoElement, anno);
-    }
-
-    /**
      * Get the annotation Class that is referenced by element {@code annoElement}. This method uses
-     * Class.forName to load the class. It fails if the class wasn't found. Like {@link
+     * Class.forName to load the class. It returns null if the class wasn't found. Like {@link
      * #getElementValueClass}, but for annotation classes.
      *
      * @param anno the annotation whose field to access
