@@ -20,12 +20,10 @@ public class FrequencyRelations implements UnitsRelations {
         elements = env.getElementUtils();
 
         // create Annotation Mirrors, each representing a particular Unit's Annotation
-        hertz = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, Hz.class);
-        kilohertz =
-                UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, Hz.class, Prefix.kilo);
-        second = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, s.class);
-        millisecond =
-                UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, s.class, Prefix.milli);
+        hertz = UnitsRelations.buildAnnoMirrorWithDefaultPrefix(env, Hz.class);
+        kilohertz = UnitsRelations.buildAnnoMirrorWithSpecificPrefix(env, Hz.class, Prefix.kilo);
+        second = UnitsRelations.buildAnnoMirrorWithDefaultPrefix(env, s.class);
+        millisecond = UnitsRelations.buildAnnoMirrorWithSpecificPrefix(env, s.class, Prefix.milli);
 
         return this;
     }
