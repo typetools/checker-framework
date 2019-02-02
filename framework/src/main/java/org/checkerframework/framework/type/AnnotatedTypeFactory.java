@@ -731,7 +731,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns a mutable set of annotation classes that are supported by a checker.
      *
-     * <p>Subclasses may override this method and to return a mutable set of their supported type
+     * <p>Subclasses may override this method to return a mutable set of their supported type
      * qualifiers through one of the 5 approaches shown below.
      *
      * <p>Subclasses should not call this method; they should call {@link
@@ -744,12 +744,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * ElementType.TYPE_PARAMETER}, but no other {@code ElementType} values) are automatically
      * considered as supported annotations.
      *
-     * <p>Annotations located outside the {@literal qual} subdirectory, or has other {@code
-     * ElementType} values must be explicitly listed in code by overriding the {@link
-     * #createSupportedTypeQualifiers()} method, as shown below.
+     * <p>To not support {@link PolyAll}, see examples below.
      *
-     * <p>Lastly, for checkers that do not want to support {@link PolyAll}, it must also be
-     * explicitly written in code, as shown below.
+     * <p>To support a different set of annotations than those in the {@literal qual} subdirectory,
+     * or that have other {@code ElementType} values, see examples below.
      *
      * <p>In total, there are 5 ways to indicate annotations that are supported by a checker:
      *
