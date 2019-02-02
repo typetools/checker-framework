@@ -107,6 +107,9 @@ public class AnnotationBuilder {
      * on the result returns an empty map. This may be in conflict with the annotation's definition,
      * which might contain elements (annotation fields).
      *
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This is
+     * provided as a convenience to create an AnnotationMirror from scratch in a checker's code.
+     *
      * @param elements the element utilities to use
      * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of type given type
