@@ -218,9 +218,12 @@ public class UnitsRelationsTools {
             // Optimization, though the else case would also work.
             return unitsAnnotation;
         } else {
-            AnnotationBuilder builder = new AnnotationBuilder(elements, unitsAnnotation);
-            builder.removeElement("value");
-            return builder.build();
+            // In the Units Checker, the only annotation value is the prefix value.  Therefore,
+            // fromName (which creates an annotation with no values) is acceptable.
+            // TODO: refine sensitivity of removal for extension units, in case extension
+            // Annotations have more than just Prefix in its values.
+            return AnnotationBuilder.fromName(
+                    elements, unitsAnnotation.getAnnotationType().toString());
         }
     }
 
