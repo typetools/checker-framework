@@ -41,6 +41,7 @@ public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
+    /** The types in the KeyFor hierarchy. */
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
 
     /** A parameter list consisting of just Object. */
