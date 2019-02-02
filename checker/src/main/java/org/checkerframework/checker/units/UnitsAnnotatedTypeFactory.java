@@ -5,7 +5,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -314,11 +313,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 try {
                     unitsRelationsClass = valueElement.asSubclass(UnitsRelations.class);
                 } catch (ClassCastException ex) {
-                    throw new BugInCF(
-                            "Invalid @UnitsRelations meta-annotation found in %s. "
-                                    + "@UnitsRelations value %s is not a subclass of "
-                                    + "org.checkerframework.checker.units.UnitsRelations.",
-                            ama, valueElement);
+                    Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
+                    throw new UserError(
+                            "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
+                                    + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
+                            qual, clazz);
                 }
                 String classname = unitsRelationsClass.getCanonicalName();
 
@@ -330,22 +329,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                         .getDeclaredConstructor()
                                         .newInstance()
                                         .init(processingEnv));
-                    } catch (NoSuchMethodException e) {
-                        // TODO
-                        e.printStackTrace();
-                        throw new BugInCF("Exception NoSuchMethodException");
-                    } catch (InvocationTargetException e) {
-                        // TODO
-                        e.printStackTrace();
-                        throw new BugInCF("Exception InvocationTargetException");
-                    } catch (InstantiationException e) {
-                        // TODO
-                        e.printStackTrace();
-                        throw new BugInCF("Exception InstantiationException");
-                    } catch (IllegalAccessException e) {
-                        // TODO
-                        e.printStackTrace();
-                        throw new BugInCF("Exception IllegalAccessException");
+                    } catch (Throwable e) {
+                        throw new BugInCF("Exception NoSuchMethodException", e);
                     }
                 }
             }

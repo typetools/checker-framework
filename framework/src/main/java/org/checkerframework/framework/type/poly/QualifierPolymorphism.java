@@ -52,8 +52,9 @@ public interface QualifierPolymorphism {
      * null is returned.
      *
      * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier belongs.
-     * By convention, it is the top qualifier of the hierarchy. The default value {@code
-     * PolymorphicQualifier.class} can be used if there is no ambiguity.
+     * By convention, it is the top qualifier of the hierarchy. Use of {@code
+     * PolymorphicQualifier.class} is discouraged, because it can lead to ambiguity if used for
+     * multiple type systems.
      *
      * @param qual an annotation
      * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
