@@ -88,11 +88,10 @@ public class MapGetNullable {
     }
 
     void foo6(MyMap6 m, @KeyFor("#1") String key) {
-        // :: error: (assignment.type.incompatible)
         @NonNull Integer val = m.get(key);
     }
 
-    <V> V get6(MyMap6 m, @KeyFor("#1") String key) {
+    Integer get6(MyMap6 m, @KeyFor("#1") String key) {
         return m.get(key);
     }
 
@@ -113,7 +112,7 @@ public class MapGetNullable {
         @NonNull Integer val = m.get(key);
     }
 
-    <V> V get7(MyMap7 m, @KeyFor("#1") String key) {
+    Integer get7(MyMap7 m, @KeyFor("#1") String key) {
         // :: error: (assignment.type.incompatible)
         return m.get(key);
     }

@@ -55,7 +55,7 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Creates the appropriate AnnotatedTypeMirror specific wrapper for the provided type.
      *
-     * @param isDeclaration true if the result should is a type declaration
+     * @param isDeclaration true if the result should be a type declaration
      */
     public static AnnotatedTypeMirror createType(
             TypeMirror type, AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
