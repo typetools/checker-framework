@@ -225,10 +225,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // if it is an aliased annotation
         else {
             // ensure it has a base unit
-            Class<? extends Annotation> baseUnitClass = getBaseUnitAnnoClass(mirror);
+            Name baseUnitClass = getBaseUnitAnnoClass(mirror);
             if (baseUnitClass != null) {
                 // if the base unit isn't already added, add that first
-                String baseUnitClassName = baseUnitClass.getCanonicalName();
+                String baseUnitClassName = baseUnitClass.toString();
                 if (!externalQualsMap.containsKey(baseUnitClassName)) {
                     loadExternalUnit(baseUnitClassName);
                 }
@@ -264,17 +264,16 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    private @Nullable Class<? extends Annotation> getBaseUnitAnnoClass(AnnotationMirror anno) {
+    private @Nullable Name getBaseUnitAnnoClass(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :
                 anno.getAnnotationType().asElement().getAnnotationMirrors()) {
             // see if the meta annotation is UnitsMultiple
             if (isUnitsMultiple(metaAnno)) {
                 // TODO: does every alias have to have Prefix?
-                // retrieve the Class of the base unit annotation
-                Class<? extends Annotation> baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueAnnotationClass(metaAnno, "quantity", true);
-
+                // Retrieve the Class of the base unit annotation.
+                Name baseUnitAnnoClass =
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
                 return baseUnitAnnoClass;
             }
         }
