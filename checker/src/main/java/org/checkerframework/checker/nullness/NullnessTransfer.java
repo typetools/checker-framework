@@ -28,10 +28,12 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -53,19 +55,27 @@ public class NullnessTransfer
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
 
+    /** The type factory for the nullness analysis that was passed to the constructor. */
+    protected final GenericAnnotatedTypeFactory<
+                    NullnessValue,
+                    NullnessStore,
+                    NullnessTransfer,
+                    ? extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>>
+            nullnessTypeFactory;
+
+    /** The type factory for the map key analysis. */
     protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
 
+    /** Create a new NullnessTransfer for the given analysis. */
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
+        this.nullnessTypeFactory = analysis.getTypeFactory();
         this.keyForTypeFactory =
-                ((BaseTypeChecker) analysis.getTypeFactory().getContext().getChecker())
+                ((BaseTypeChecker) nullnessTypeFactory.getContext().getChecker())
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
-        NONNULL =
-                AnnotationBuilder.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), NonNull.class);
+        NONNULL = AnnotationBuilder.fromClass(nullnessTypeFactory.getElementUtils(), NonNull.class);
         NULLABLE =
-                AnnotationBuilder.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), Nullable.class);
+                AnnotationBuilder.fromClass(nullnessTypeFactory.getElementUtils(), Nullable.class);
     }
 
     /**
@@ -73,7 +83,7 @@ public class NullnessTransfer
      * implement case 2.
      */
     protected void makeNonNull(NullnessStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
+        Receiver internalRepr = FlowExpressions.internalReprOf(nullnessTypeFactory, node);
         store.insertValue(internalRepr, NONNULL);
     }
 
@@ -121,7 +131,7 @@ public class NullnessTransfer
             List<Node> secondParts = splitAssignments(secondNode);
             for (Node secondPart : secondParts) {
                 Receiver secondInternal =
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), secondPart);
+                        FlowExpressions.internalReprOf(nullnessTypeFactory, secondPart);
                 if (CFAbstractStore.canInsertReceiver(secondInternal)) {
                     thenStore = thenStore == null ? res.getThenStore() : thenStore;
                     elseStore = elseStore == null ? res.getElseStore() : elseStore;
@@ -196,7 +206,8 @@ public class NullnessTransfer
     /*
      * Provided that m is of a type that implements interface java.util.Map:
      * <ul>
-     * <li>Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     * <li>Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the
+     *     thenStore and elseStore of the transfer result.
      * </ul>
      */
     @Override
@@ -205,13 +216,16 @@ public class NullnessTransfer
         TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
 
         // Make receiver non-null.
-        makeNonNull(result, n.getTarget().getReceiver());
+        Node receiver = n.getTarget().getReceiver();
+        makeNonNull(result, receiver);
 
-        // For all formal parameters with a non-null annotation, make the actual
-        // argument non-null.
+        // For all formal parameters with a non-null annotation, make the actual argument non-null.
+        // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
+        // warning for the method invocation, but not for subsequent uses of the argument.  See test
+        // case FlowNullness.java.
         MethodInvocationTree tree = n.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
-        AnnotatedExecutableType methodType = analysis.getTypeFactory().getAnnotatedType(method);
+        AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = tree.getArguments();
         for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
@@ -223,9 +237,8 @@ public class NullnessTransfer
         // Refine result to @NonNull if n is an invocation of Map.get and the argument is a key for
         // the map.
         if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
-            Node receiver = n.getTarget().getReceiver();
             String mapName =
-                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver).toString();
+                    FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))) {
                 makeNonNull(result, n);
@@ -265,7 +278,7 @@ public class NullnessTransfer
     private NullnessValue createDummyValue() {
         TypeMirror dummy = analysis.getEnv().getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
-        annos.addAll(analysis.getTypeFactory().getQualifierHierarchy().getBottomAnnotations());
+        annos.addAll(nullnessTypeFactory.getQualifierHierarchy().getBottomAnnotations());
         return new NullnessValue(analysis, annos, dummy);
     }
 }

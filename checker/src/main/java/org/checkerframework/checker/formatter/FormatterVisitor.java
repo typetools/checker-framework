@@ -181,8 +181,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         // than required, but a warning is issued."
         // The format.missing.arguments warning is issued here for assignments.
         // For method calls, it is issued in visitMethodInvocation.
-        if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT)
-                && AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.FORMAT)) {
+        if (AnnotationUtils.areSameByName(rhs, atypeFactory.FORMAT)
+                && AnnotationUtils.areSameByName(lhs, atypeFactory.FORMAT)) {
             ConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
             ConversionCategory[] lhsArgTypes =

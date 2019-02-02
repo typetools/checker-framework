@@ -573,9 +573,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expression in the given annotated type to see if the expression string is an error
-     * string as specified by {@link DependentTypesError#isExpressionError}. If the annotated type
-     * has any errors, a flowexpr.parse.error is issued at the errorTree.
+     * Checks all expressions in the given annotated type to see if the expression string is an
+     * error string as specified by {@link DependentTypesError#isExpressionError}. If the annotated
+     * type has any errors, a flowexpr.parse.error is issued at the errorTree.
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -668,7 +668,9 @@ public class DependentTypesHelper {
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
             AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodTree);
-            checkType(returnType, methodTree.getReturnType());
+            Tree treeForError =
+                    TreeUtils.isConstructor(methodTree) ? methodTree : methodTree.getReturnType();
+            checkType(returnType, treeForError);
         }
     }
 
