@@ -295,9 +295,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
-                Class<? extends UnitsRelations> theclass;
+                Class<? extends UnitsRelations> unitsRelationsClass;
                 try {
-                    theclass =
+                    unitsRelationsClass =
                             AnnotationUtils.getElementValueClass(ama, "value", true)
                                     .asSubclass(UnitsRelations.class);
                 } catch (ClassCastException ex) {
@@ -307,13 +307,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
                             qual, clazz);
                 }
-                String classname = theclass.getCanonicalName();
+                String classname = unitsRelationsClass.getCanonicalName();
 
                 if (!getUnitsRel().containsKey(classname)) {
                     try {
                         unitsRel.put(
                                 classname,
-                                theclass.getDeclaredConstructor()
+                                unitsRelationsClass
+                                        .getDeclaredConstructor()
                                         .newInstance()
                                         .init(processingEnv));
                     } catch (NoSuchMethodException e) {
