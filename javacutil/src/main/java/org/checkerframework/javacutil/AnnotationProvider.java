@@ -12,6 +12,7 @@ public interface AnnotationProvider {
      * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
      * annotationName if one exists, null otherwise.
      *
+     * @param elt the element
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
@@ -23,6 +24,7 @@ public interface AnnotationProvider {
      *
      * @param tree the tree of which the annotation is returned
      * @param target the class of the annotation
+     * @return the annotation on {@code tree} that has the class {@code target}, or null
      */
     AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target);
 }

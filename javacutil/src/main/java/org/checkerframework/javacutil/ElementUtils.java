@@ -326,8 +326,17 @@ public class ElementUtils {
      */
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
+        int origCardinality = names.size();
         Set<VariableElement> elements = new HashSet<>();
         findFieldsInTypeOrSuperType(type, names, elements);
+        // Since names may contain duplicates, I don't trust the claim in the documentation about
+        // cardinality.  (Does any code depend on the invariant, though?)
+        if (origCardinality != names.size() + elements.size()) {
+            throw new BugInCF(
+                    String.format(
+                            "Bad sizes: %d != %d + %d",
+                            origCardinality, names.size(), elements.size()));
+        }
         return elements;
     }
 
