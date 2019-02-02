@@ -46,6 +46,9 @@ public class KeyForAnnotatedTypeFactory
     /** A parameter list consisting of just Object. */
     public final List<TypeMirror> PARAMS_OBJECT;
 
+    /** A parameter list consisting of [Object, Object]. */
+    public final List<TypeMirror> PARAMS_OBJECT_OBJECT;
+
     private final KeyForPropagator keyForPropagator;
 
     private final TypeMirror erasedMapType;
@@ -58,8 +61,12 @@ public class KeyForAnnotatedTypeFactory
         KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
-        PARAMS_OBJECT =
-                Collections.singletonList(TypesUtils.typeFromClass(Object.class, types, elements));
+        TypeMirror OBJECT_TYPE = TypesUtils.typeFromClass(Object.class, types, elements);
+        PARAMS_OBJECT = Collections.singletonList(OBJECT_TYPE);
+        List<TypeMirror> paramsObjectObject = new ArrayList<>(2);
+        paramsObjectObject.add(OBJECT_TYPE);
+        paramsObjectObject.add(OBJECT_TYPE);
+        PARAMS_OBJECT_OBJECT = Collections.unmodifiableList(paramsObjectObject);
 
         // Add compatibility annotations:
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
@@ -229,6 +236,15 @@ public class KeyForAnnotatedTypeFactory
     protected boolean isInvocationOfMapMethodWithOneObjectParameter(
             MethodInvocationNode n, String methodName) {
         return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT);
+    }
+
+    protected boolean isInvocationOfMapMethodWithTwoObjectParameters(
+            MethodInvocationNode n, String methodName) {
+        boolean result = isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT_OBJECT);
+        // System.out.printf(
+        //         "isInvocationOfMapMethodWithTwoObjectParameters(%s, %s) => %s%n",
+        //         n, methodName, result);
+        return result;
     }
 
     protected boolean isInvocationOfMapMethod(
