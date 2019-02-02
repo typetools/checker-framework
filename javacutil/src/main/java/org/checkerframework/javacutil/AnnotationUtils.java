@@ -746,31 +746,6 @@ public class AnnotationUtils {
         return names;
     }
 
-    /**
-     * Get the Class that is referenced by element {@code annoElement}. It fails if the class wasn't
-     * found.
-     *
-     * @param anno the annotation whose element is being looked up
-     * @param annoElement the element/field of {@code anno} whose content is being looked up
-     * @param useDefaults whether to apply default values to the element
-     * @return the class contained in {@code anno.annoElement}
-     */
-    public static Class<?> getElementValueClass(
-            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
-        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
-        try {
-            ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
-            Class<?> cls = Class.forName(cn.toString(), true, classLoader);
-            return cls;
-        } catch (ClassNotFoundException e) {
-            String msg =
-                    String.format(
-                            "Could not load class '%s' for field '%s' in annotation %s",
-                            cn, annoElement, anno);
-            throw new BugInCF(msg, e);
-        }
-    }
-
     // The Javadoc doesn't use @link because framework is a different project than this one
     // (javacutil).
     /**

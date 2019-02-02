@@ -34,6 +34,8 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * Annotated type factory for the Units Checker.
@@ -295,25 +297,37 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
-                Class<? extends UnitsRelations> theclass;
+                Name theclassname = AnnotationUtils.getElementValueClassName(ama, "value", true);
+                Class<?> valueElement;
                 try {
-                    theclass =
-                            AnnotationUtils.getElementValueClass(ama, "value", true)
-                                    .asSubclass(UnitsRelations.class);
-                } catch (ClassCastException ex) {
-                    Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
-                    throw new BugInCF(
-                            "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
-                                    + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
-                            qual, clazz);
+                    ClassLoader classLoader =
+                            InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+                    valueElement = Class.forName(theclassname.toString(), true, classLoader);
+                } catch (ClassNotFoundException e) {
+                    String msg =
+                            String.format(
+                                    "Could not load class '%s' for field 'value' in annotation %s",
+                                    theclassname, ama);
+                    throw new UserError(msg, e);
                 }
-                String classname = theclass.getCanonicalName();
+                Class<? extends UnitsRelations> unitsRelationsClass;
+                try {
+                    unitsRelationsClass = valueElement.asSubclass(UnitsRelations.class);
+                } catch (ClassCastException ex) {
+                    throw new BugInCF(
+                            "Invalid @UnitsRelations meta-annotation found in %s. "
+                                    + "@UnitsRelations value %s is not a subclass of "
+                                    + "org.checkerframework.checker.units.UnitsRelations.",
+                            ama, valueElement);
+                }
+                String classname = unitsRelationsClass.getCanonicalName();
 
                 if (!getUnitsRel().containsKey(classname)) {
                     try {
                         unitsRel.put(
                                 classname,
-                                theclass.getDeclaredConstructor()
+                                unitsRelationsClass
+                                        .getDeclaredConstructor()
                                         .newInstance()
                                         .init(processingEnv));
                     } catch (NoSuchMethodException e) {
