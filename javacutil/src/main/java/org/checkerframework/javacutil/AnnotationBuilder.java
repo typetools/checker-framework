@@ -68,12 +68,24 @@ public class AnnotationBuilder {
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
             Collections.synchronizedMap(new HashMap<>());
 
-    /** Create a new AnnotationBuilder for the given annotation and environment. */
+    /**
+     * Create a new AnnotationBuilder for the given annotation and environment (with no
+     * elements/fields, but they can be added later).
+     *
+     * @param env the processing environment
+     * @param anno the class of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
 
-    /** Create a new AnnotationBuilder for the given annotation name (with no elements/fields). */
+    /**
+     * Create a new AnnotationBuilder for the given annotation name (with no elements/fields, but
+     * they can be added later).
+     *
+     * @param env the processing environment
+     * @param name the name of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -89,6 +101,9 @@ public class AnnotationBuilder {
     /**
      * Create a new AnnotationBuilder that copies the given annotation, including its
      * elements/fields.
+     *
+     * @param env the processing environment
+     * @param annotation the annotation to copy
      */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
         this.elements = env.getElementUtils();
@@ -106,6 +121,9 @@ public class AnnotationBuilder {
      * Creates an {@link AnnotationMirror} given by a particular annotation class. getElementValues
      * on the result returns an empty map. This may be in conflict with the annotation's definition,
      * which might contain elements (annotation fields).
+     *
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This is
+     * provided as a convenience to create an AnnotationMirror from scratch in a checker's code.
      *
      * @param elements the element utilities to use
      * @param aClass the annotation class
