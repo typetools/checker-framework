@@ -285,8 +285,7 @@ public class ContractsUtils {
 
         @SuppressWarnings("unchecked")
         Class<? extends Annotation> c =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(qualifierAnno, "qualifier", false);
+                AnnotationUtils.getElementValueAnnotationClass(qualifierAnno, "qualifier", false);
 
         AnnotationMirror anno;
         if (argumentAnno == null || argumentRenaming.isEmpty()) {

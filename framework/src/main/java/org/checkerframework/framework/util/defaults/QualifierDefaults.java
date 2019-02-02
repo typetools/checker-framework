@@ -488,8 +488,7 @@ public class QualifierDefaults {
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
         Class<? extends Annotation> cls =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(dq, "value", false);
+                AnnotationUtils.getElementValueAnnotationClass(dq, "value", false);
         AnnotationMirror anno = AnnotationBuilder.fromClass(elements, cls);
 
         if (anno == null) {

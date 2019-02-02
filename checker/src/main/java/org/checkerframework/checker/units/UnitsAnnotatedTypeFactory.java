@@ -104,8 +104,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isUnitsMultiple(metaAnno)) {
                 // retrieve the Class of the base unit annotation
                 Class<? extends Annotation> baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClass(metaAnno, "quantity", true)
-                                .asSubclass(Annotation.class);
+                        AnnotationUtils.getElementValueAnnotationClass(metaAnno, "quantity", true);
 
                 // retrieve the SI Prefix of the aliased annotation
                 Prefix prefix =
@@ -271,8 +270,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // TODO: does every alias have to have Prefix?
                 // retrieve the Class of the base unit annotation
                 Class<? extends Annotation> baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClass(metaAnno, "quantity", true)
-                                .asSubclass(Annotation.class);
+                        AnnotationUtils.getElementValueAnnotationClass(metaAnno, "quantity", true);
 
                 return baseUnitAnnoClass;
             }
