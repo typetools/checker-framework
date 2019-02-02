@@ -209,6 +209,9 @@ public class PurityChecker {
             boolean sideEffectFree =
                     (assumeSideEffectFree
                             || PurityUtils.isSideEffectFree(annoProvider, ctorElement));
+            // This does not use "addNotBothReason" because the reasons are different:  one is
+            // because the constructor is called at all, and the other is because the constuctor
+            // is not side-effect-free.
             if (!deterministic) {
                 purityResult.addNotDetReason(node, "object.creation");
             }
