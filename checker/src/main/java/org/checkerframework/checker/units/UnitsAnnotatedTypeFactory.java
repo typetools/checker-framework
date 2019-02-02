@@ -140,6 +140,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return super.aliasedAnnotation(anno);
     }
 
+    /** Return a map from canonical class name to the corresponding UnitsRelations instance. */
     protected Map<String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
             unitsRel = new HashMap<>();
