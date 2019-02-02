@@ -754,13 +754,13 @@ public class AnnotationUtils {
      * #getElementValueAnnotationClass} instead.
      *
      * @param anno the annotation whose element is being looked up
-     * @param name the element/field of {@code anno} whose content is being looked up
+     * @param annoElement the element/field of {@code anno} whose content is being looked up
      * @param useDefaults whether to apply default values to the element
      * @return the class contained in {@code anno.annoElement}
      */
     public static Class<?> getElementValueClass(
-            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
-        Name cn = getElementValueClassName(anno, name, useDefaults);
+            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
         try {
             ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
             Class<?> cls = Class.forName(cn.toString(), true, classLoader);
@@ -769,7 +769,7 @@ public class AnnotationUtils {
             String msg =
                     String.format(
                             "Could not load class '%s' for field '%s' in annotation %s",
-                            cn, name, anno);
+                            cn, annoElement, anno);
             throw new BugInCF(msg, e);
         }
     }
