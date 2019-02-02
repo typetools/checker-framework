@@ -73,7 +73,7 @@ public class AnnotatedTypes {
      * both declared types, asSuper is called recursively on the direct super types, see {@link
      * AnnotatedTypeMirror#directSuperTypes()}, of {@code type} until {@code type}'s erased Java
      * type is the same as {@code superType}'s erased super type. Then {@code type is returned}. For
-     * compound types, asSuper is call recursively on components.
+     * compound types, asSuper is called recursively on components.
      *
      * <p>Preconditions:<br>
      * {@code superType} may have annotations, but they are ignored. <br>
