@@ -761,31 +761,15 @@ public class AnnotationUtils {
     public static Class<?> getElementValueClass(
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         Name cn = getElementValueClassName(anno, annoElement, useDefaults);
-        return nameToClass(cn, annoElement, anno);
-    }
-
-    /**
-     * Convert a name to a Class. This method uses Class.forName to load the class. It fails if the
-     * class wasn't found.
-     *
-     * @param name the name to convert to a class
-     * @param annoElement the element/field of {@code anno} whose content is being looked up; for
-     *     diagnostic messages only
-     * @param anno the annotation whose element is being looked up; for diagnostic messages only
-     * @return the class whose name is {@code name}
-     */
-    private static Class<?> nameToClass(
-            Name name, CharSequence annoElement, AnnotationMirror anno) {
         try {
             ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
-            Class<?> cls = Class.forName(name.toString(), true, classLoader);
+            Class<?> cls = Class.forName(cn.toString(), true, classLoader);
             return cls;
         } catch (ClassNotFoundException e) {
-            // TODO: This is a user error and should be reported as such.
             String msg =
                     String.format(
                             "Could not load class '%s' for field '%s' in annotation %s",
-                            name, annoElement, anno);
+                            cn, annoElement, anno);
             throw new BugInCF(msg, e);
         }
     }
@@ -802,33 +786,20 @@ public class AnnotationUtils {
      */
     public static Class<? extends Annotation> getElementValueAnnotationClass(
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
-        @SuppressWarnings("unchecked") // TODO: could do a run-time check
-        Class<? extends Annotation> result =
-                (Class<? extends Annotation>) getElementValueClass(anno, annoElement, useDefaults);
-        return result;
-    }
-
-    /**
-     * Get the list of annotation Classes that are referenced by element {@code annoElement}. It
-     * fails if the class wasn't found. Like {@link #getElementValueClassNames}, but returns classes
-     * rather than names.
-     *
-     * @param anno the annotation whose field to access
-     * @param annoElement the element/field of {@code anno} whose content is a list of classes
-     * @param useDefaults whether to apply default values to the element
-     * @return the classes in {@code anno.annoElement}
-     */
-    public static List<Class<? extends Annotation>> getElementValueAnnotationClasses(
-            AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
-        List<Name> aNames = getElementValueClassNames(anno, annoElement, useDefaults);
-        List<Class<? extends Annotation>> result = new ArrayList<>();
-        for (Name aName : aNames) {
+        Name cn = getElementValueClassName(anno, annoElement, useDefaults);
+        try {
+            ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
             @SuppressWarnings("unchecked") // TODO: could do a run-time check
-            Class<? extends Annotation> aClass =
-                    (Class<? extends Annotation>) nameToClass(aName, annoElement, anno);
-            result.add(aClass);
+            Class<? extends Annotation> cls =
+                    (Class<? extends Annotation>) Class.forName(cn.toString(), true, classLoader);
+            return cls;
+        } catch (ClassNotFoundException e) {
+            String msg =
+                    String.format(
+                            "Could not load class '%s' for field '%s' in annotation %s",
+                            cn, annoElement, anno);
+            throw new BugInCF(msg, e);
         }
-        return result;
     }
 
     // The Javadoc doesn't use @link because framework is a different project than this one

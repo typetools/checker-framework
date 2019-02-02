@@ -33,6 +33,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
 public class DOTCFGVisualizer<
@@ -89,7 +90,7 @@ public class DOTCFGVisualizer<
             out.write(dotgraph);
             out.close();
         } catch (IOException e) {
-            throw new BugInCF(
+            throw new UserError(
                     "Error creating dot file: " + dotfilename + "; ensure the path is valid", e);
         }
 
@@ -495,7 +496,7 @@ public class DOTCFGVisualizer<
             }
             out.close();
         } catch (IOException e) {
-            throw new BugInCF(
+            throw new UserError(
                     "Error creating methods.txt file in: " + outdir + "; ensure the path is valid",
                     e);
         }
