@@ -70,6 +70,7 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(LIVE_CHECKLINK, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
+    clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
 
 def get_afu_date(building_afu):
     """If the AFU is being built, return the current date, otherwise return the
@@ -196,6 +197,9 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
 
     # build stubparser
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
+
+    # build annotation-tools
+    execute("ant -e jarfile", True, False, ANNO_TOOLS)
 
     # update versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
