@@ -139,7 +139,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
       There has been some work done in order to select only specific projects (AFU and Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
-      See also <a href="#fi_buffalo_integeration">Buffalo Integration</a> for more information
+      See also <a href="#future_continuous_integration">Release in Continuous Integration (nightly tests)</a> for more information
       on the option &quot;--auto&quot;, which you can omit in order to
       be asked more questions during the build.
   </li>
@@ -562,7 +562,7 @@ git config --global user.email you@example.com</pre>
     and More Sanity Checks) should have any appreciable priority.
   </p>
 
-    <h3 id="fi_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
+    <h3 id="future_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
     There are likely more sanity checks we might want to run during the release process.  One such example
     would be running the tutorial from the command line.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -575,7 +575,7 @@ git config --global user.email you@example.com</pre>
     <ul>
       <li>Run tutorial sanity check automatically via command line.</li>
     </ul>
-    <h3 id="fi_buffalo_integeration">Buffalo Integration</h3> <!-- omit from toc -->
+    <h3 id="future_continuous_integration">Release in Continuous Integration (nightly tests)</h3> <!-- omit from toc -->
     If we could have Buffalo run the release_build script nightly, we could head off broken links and other
     release related errors.  There is an &quot;--auto&quot; option for this specific reason but a number of
     errors start happening when we run the script from Buffalo.
@@ -589,7 +589,7 @@ git config --global user.email you@example.com</pre>
         link-checking results rather than waiting for the link checker to execute in the push script.
       </li>
     </ul>
-    <h3 id="fi_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
+    <h3 id="future_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
     The first step in running the release process, after the pre-release checklist, is to copy the
     release scripts into the <code>jsr308-release</code> directory.  We could automate this.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -598,7 +598,7 @@ git config --global user.email you@example.com</pre>
       <li>Edit the script so that it downloads all release scripts into the jsr308-release directory.</li>
       <li>Update this document to reflect this new process.</li>
     </ul>
-    <h3 id="fi_option_parsing">Option Parsing</h3> <!-- omit from toc -->
+    <h3 id="future_option_parsing">Option Parsing</h3> <!-- omit from toc -->
     There is currently some primitive option parsing written into the release scripts.  We should use
     Python's built-in option parsing library.  There are multiple built-in libraries.  Please use the latest one.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -606,11 +606,11 @@ git config --global user.email you@example.com</pre>
       <li>Look up the latest Python parsing library.</li>
       <li>Replace the option parsing in the release_build.py and release_push.py scripts with library calls.</li>
     </ul>
-    <h3 id="fi_option_projects">Optional Projects</h3> <!-- omit from toc -->
+    <h3 id="future_option_projects">Optional Projects</h3> <!-- omit from toc -->
     A user might want to test the release_build script only on a specific project.  Some work has gone into
     the ability to select a project to build.  However, this currently doesn't take into consideration of dependencies.
     It might be more hassle than it's worth to implement this feature.  We should either complete the implementation
-    or remove the partial implementation that already exists.  See <a href="#fi_repl_mode">REPL Mode</a>.
+    or remove the partial implementation that already exists.  See <a href="#future_repl_mode">REPL Mode</a>.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Improve option parsing to allow the user to select only certain projects to build.</li>
@@ -618,7 +618,7 @@ git config --global user.email you@example.com</pre>
         their dependencies.
       </li>
     </ul>
-    <h3 id="fi_repl_mode">REPL Mode</h3> <!-- omit from toc -->
+    <h3 id="future_repl_mode">REPL Mode</h3> <!-- omit from toc -->
     The current script is built in an imperative style with little use of object orientation.  This improvement
     would create methods or objects that further encapsulate the current set of steps.  We could then provide
     an easy way to execute these steps from the Python REPL.  This would allow the user to execute individual steps
