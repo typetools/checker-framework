@@ -199,7 +199,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
 
     # build annotation-tools
-    execute("ant -e jarfile", True, False, ANNO_TOOLS)
+    execute("ant -e compile", True, False, ANNO_TOOLS)
 
     # update versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
@@ -386,16 +386,14 @@ def main(argv):
     if review_documentation:
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
 
-        print "Verify that all changelog messages follow the guidelines found in README-release-process.html#changelog_guide\n"
-        print "You'll need to review the changelogs on GitHub.\n"
+        print "Verify that all changelog messages follow the guidelines found"
+        print "in file README-release-process.html at \"Changelog Guide\" or at"
+        print "https://rawgit.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html#changelog_guide"
+        print ""
 
-        print "Ensure that the changelogs end with the list of resolved issues in numerical order, like"
-        print "Closed issues:\n"
-        print "200, 300, 332, 336, 357, 359, 373, 374.\n"
-
-        print("To ensure AFU and the Checker Framework changelogs are correct and complete, " +
-              "please follow the Content Guidelines found in README-release-process.html#content_guidelines\n")
-        print "If the changelogs need to be updated, then exit this script, make changes, push the changes, and then restart this script.\n"
+        print "If the changelogs need to be updated, then exit this script,"
+        print "make changes, push the changes, and then restart this script."
+        print ""
 
         prompt_to_continue()
 
