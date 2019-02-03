@@ -14,15 +14,16 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
@@ -35,6 +36,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class KeyForAnnotatedTypeFactory
@@ -269,7 +271,7 @@ public class KeyForAnnotatedTypeFactory
             MethodInvocationNode n, String methodName, List<TypeMirror> paramTypes) {
         String invokedMethodName = getMethodName(n);
 
-        // First verify if the method name is correct. This is an inexpensive check.
+        // First check the method name. This is an inexpensive check.
         if (!invokedMethodName.equals(methodName)) {
             return false;
         }
@@ -282,26 +284,20 @@ public class KeyForAnnotatedTypeFactory
             return false;
         }
 
-        // Also verify the other argument types
-        List<Node> args = n.getArguments();
-        if (args.size() != paramTypes.size()) {
+        // Also check the other argument types.
+        // "n" is the method at this call site.
+        ExecutableElement nDecl = TreeUtils.elementFromUse(n.getTree());
+        List<? extends VariableElement> nParams = nDecl.getParameters();
+        if (nParams.size() != paramTypes.size()) {
             return false;
         }
-        for (int i = 0; i < args.size(); i++) {
-            Node arg = args.get(i);
-            TypeMirror erasedArgType = types.erasure(n.getArguments().get(i).getType());
+        for (int i = 0; i < paramTypes.size(); i++) {
+            TypeMirror nParamType = nParams.get(i).asType();
+            while (nParamType.getKind() == TypeKind.TYPEVAR) {
+                nParamType = ((TypeVariable) nParamType).getUpperBound();
+            }
             TypeMirror paramType = paramTypes.get(i);
-
-            // This test isn't quite right.  Suppose there are two overloads f(Number) and
-            // f(Integer).  This reports that f(Number) is applicable to an argument of type Integer
-            // but in fact the more specific overload would be chosen by the compiler.
-            // Testing equality of the parameter and argument types wouldn't be right either,
-            // because it would report false for a argument of type Number and two overloads
-            // g(Object) and g(Integer).
-            // It would be better to correctly resolve overloading, but this implementation is
-            // correct for methods with declared type Object (or upper bound Object), so as of
-            // this writing it is correct for all current uses.
-            if (!types.isSubtype(erasedArgType, paramType)) {
+            if (!types.isSameType(nParamType, paramType)) {
                 return false;
             }
         }
