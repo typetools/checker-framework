@@ -132,18 +132,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
   </li>
-  <li><strong>Review the changelogs and documentation</strong><br/>
-      This part of the release script is broken because all of the Checker Framework dependencies must be built to build the manual.
-      Ensure that the changelogs and documentation for the Checker Framework and
-      AFU are complete.  First follow the instructions at <a href="#content_guidelines">content guidelines</a>.  Then,
-      run release_build in a mode that reviews the documentation only:
-      <code>cd /scratch/$USER/jsr308-release/checker-framework/docs/developer/release<br/></code>
-      <code>python release_build.py all --review-manual</code><br/><br/>
-      <strong>Note:</strong> This step can be performed in advance of the release day. It is recommended
-      that this be done the work morning after Feature Freeze.
-  </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
-      <code>python release_build.py all --auto</code><br/><br/>
+      <code>python release_build.py all</code><br/><br/>
+      [TODO: Add <code>--auto</code> here, or not?]<br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
       There has been some work done in order to select only specific projects (AFU and Checker Framework)
@@ -453,26 +444,50 @@ git config --global user.email you@example.com</pre>
     <ul>
       <li>Only (and all) changes that affect users go into the changelog.
         If a change is breaking, no matter how small, mention it.</li>
-      <li>List all issues (in issue trackers) resolved since the previous release, for
-          the Checker Framework (<a href="https://checkerframework.org/changelog.txt">previous release</a>,
-          <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-          <a href="https://github.com/typetools/checker-framework/blob/master/changelog.txt">current changelog</a>),
-          Annotation File Utilities (<a href="https://checkerframework.org/annotation-file-utilities/changelog.html">previous release</a>,
-          <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-           and <a href="https://github.com/typetools/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>),
-      </li>
-          <li>
-            Examine the version control logs since the last release tag to ensure they are reflected in the changelogs when appropriate.
-        This can be done from the command-line with:<br/>
-            <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-        or by opening the following commit queries for
-        the <a href="https://github.com/typetools/annotation-tools/commits/master">Annotation File Utilities</a> and the
-            <a href="https://github.com/typetools/checker-framework/commits/master">Checker Framework</a>.
-      </li>
-          <li>
+      <li>
             Even if some code has been committed to the repository, don't
             announce the feature until it has been documented in the manual.
+      </li>
+      <li>Checker Framework:
+	<ul>
+	  <li>List all issues (in issue trackers) resolved since the previous release:
+            <a href="https://checkerframework.org/changelog.txt">previous release</a>,
+            <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+            <a href="https://github.com/typetools/checker-framework/blob/master/changelog.txt">current changelog</a>.
+	  </li>
+          <li>
+            Ensure the changelogs reflect version control commits since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+	    or via <a href="https://github.com/typetools/checker-framework/commits/master">GitHub Checker Framework commit logs</a>.
+	  </li>
+          <li>
+            Ensure the changelogs reflect changes to the manual since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK && git diff -w `git describe --abbrev=0 --tags` docs/manual</code>
+	  </li>
+	</ul>
+      </li>
+
+      <li>Annotation File Utilities:
+	<ul>
+	  <li>List all issues (in issue trackers) resolved since the previous release:
+	    <a href="https://checkerframework.org/annotation-file-utilities/changelog.html">previous release</a>,
+            <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+            <a href="https://github.com/typetools/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>
+	  </li>
+          <li>
+            Ensure the changelogs reflect version control commits since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+	    or via <a href="https://github.com/typetools/annotation-tools/commits/master">GitHub Annotation File Utilities commit logs</a>.
+	  </li>
+          <li>
+            Ensure the changelogs reflect changes to the manual since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git diff -w `git describe --abbrev=0 --tags` annotation-file-utilities/annotation-file-utilities.html</code>
+	  </li>
+	</ul>
       </li>
     </ul>
     <h3 id="style_guidelines">Style Guidelines</h3>
