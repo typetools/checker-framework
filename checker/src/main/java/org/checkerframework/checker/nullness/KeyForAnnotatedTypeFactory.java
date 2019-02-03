@@ -45,10 +45,10 @@ public class KeyForAnnotatedTypeFactory
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
 
     /** A parameter list consisting of just Object. */
-    public final List<TypeMirror> PARAMS_OBJECT;
+    protected final List<TypeMirror> PARAMS_OBJECT;
 
     /** A parameter list consisting of [Object, Object]. */
-    public final List<TypeMirror> PARAMS_OBJECT_OBJECT;
+    protected final List<TypeMirror> PARAMS_OBJECT_OBJECT;
 
     private final KeyForPropagator keyForPropagator;
 
@@ -291,8 +291,16 @@ public class KeyForAnnotatedTypeFactory
             Node arg = args.get(i);
             TypeMirror erasedArgType = types.erasure(n.getArguments().get(i).getType());
             TypeMirror paramType = paramTypes.get(i);
-            // This test isn't right, because there could be a more specific overload that is
-            // applied.  Exact equality wouldn't be right either.
+
+            // This test isn't quite right.  Suppose there are two overloads f(Number) and
+            // f(Integer).  This reports that f(Number) is applicable to an argument of type Integer
+            // but in fact the more specific overload would be chosen by the compiler.
+            // Testing equality of the parameter and argument types wouldn't be right either,
+            // because it would report false for a argument of type Number and two overloads
+            // g(Object) and g(Integer).
+            // It would be better to correctly resolve overloading, but this implementation is
+            // correct for methods with declared type Object (or upper bound Object), so as of
+            // this writing it is correct for all current uses.
             if (!types.isSubtype(erasedArgType, paramType)) {
                 return false;
             }

@@ -61,8 +61,13 @@ public class NullnessTransfer
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
 
-    /** Java's Map interface. */
-    AnnotatedDeclaredType MAP_TYPE;
+    /**
+     * Java's Map interface.
+     *
+     * <p>The qualifiers in this type don't matter -- it is not used as a fully-annotated
+     * AnnotatedDeclaredType, but just passed to asSuper().
+     */
+    protected final AnnotatedDeclaredType MAP_TYPE;
 
     /** The type factory for the nullness analysis that was passed to the constructor. */
     protected final GenericAnnotatedTypeFactory<
