@@ -1,4 +1,4 @@
-Version 2.6.0, January 1, 2019
+Version 2.6.0, February 3, 2019
 
 Some error messages have been changed to improve comprehensibility,
 such as by adjusting wording or adding additional information.
