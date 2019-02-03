@@ -380,6 +380,9 @@ def main(argv):
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
+    print_step("*****")
+    print_step("***** Temporarily skip this if /bin/java is Java 11 and CF doesn't support Java 11.")
+    print_step("*****")
     if not test_mode:
         if auto or prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
