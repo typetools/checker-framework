@@ -194,8 +194,8 @@ public class ContractsUtils {
          * @param expression the Java expression that should have a type qualifier
          * @param annoResult whether the condition is the method returning true or false
          * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the pre- or post-condition annotation that the programmer
-         *     wrote; used for diagnostic messages
+         * @param contractAnnotation the postcondition annotation that the programmer wrote; used
+         *     for diagnostic messages
          */
         public ConditionalPostcondition(
                 String expression,
