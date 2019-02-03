@@ -11,6 +11,7 @@ Copyright (c) 2013-2016 University of Washington. All rights reserved.
 # See README-release-process.html for more information
 
 import os
+from os.path import expanduser
 from release_vars  import *
 from release_utils import *
 from sanity_checks import *
@@ -241,6 +242,10 @@ def main(argv):
     auto = read_command_line_option(argv, "--auto")
     test_mode = not read_command_line_option(argv, "release")
 
+    m2_settings = expanduser("~") + "/.m2/settings.xml"
+    if not os.path.exists(m2_settings)
+        raise Exception("File does not exist: " + m2_settings)
+
     if test_mode:
         msg = ("You have chosen test_mode.\n" +
            "This means that this script will execute all build steps that " +
@@ -338,12 +343,13 @@ def main(argv):
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
             " * Browse to https://oss.sonatype.org/#stagingRepositories\n" +
             " * Log in using your Sonatype credentials\n" +
-            " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
+            " * In the search box at upper right, type \"checker\"\n" +
+            " * In the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
             " * Click the Refresh button near the top of the page until the bottom pane has:\n" +
             "   \"Activity   Last operation completed successfully\".\n" +
-            " * Copy the URL of the closed artifacts for use in the next step\n"
+            " * Copy the URL of the closed artifacts (in the bottom bane) for use in the next step\n"
             "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
         )
 
@@ -471,7 +477,6 @@ def main(argv):
 
         print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
-                         "Note that this text may have changed since the last time a release was performed.\n" +
                          get_announcement_email(new_checker_version))
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
