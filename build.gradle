@@ -5,6 +5,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '4.0.4'
     id "de.undercouch.download" version "3.4.3"
     id 'java'
+    // TODO: Migrate to newer version: https://github.com/tbroyer/gradle-errorprone-plugin#migration-from-versions-00x
     id "net.ltgt.errorprone-base" version "0.0.13"
     id 'org.ajoberstar.grgit' version '3.0.0' apply false
 }
