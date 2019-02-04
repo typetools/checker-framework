@@ -68,7 +68,7 @@
 
         <update file="${cf.docs}/manual/checkerframework.gradle"
                 start="${gradle.ver.0}" end="${gradle.ver.1}"
-                with="${release.ver}, ${release.date}"/>
+                with="${release.ver}"/>
 
         <update file="${checkerWebPage}"
                 start="${compiler.ver.0}" end="${compiler.ver.1}"
@@ -207,6 +207,11 @@
         <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava8Example/build.gradle" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
+
+        <replaceregexp file="${cf.docs.examples}/lombok/build.gradle" byline="true"
+                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
+                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
+
 
     </target>
 

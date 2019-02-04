@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +14,10 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -33,13 +36,21 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
+    /** The types in the KeyFor hierarchy. */
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
+
+    /** A parameter list consisting of just Object. */
+    protected final List<TypeMirror> PARAMS_OBJECT;
+
+    /** A parameter list consisting of [Object, Object]. */
+    protected final List<TypeMirror> PARAMS_OBJECT_OBJECT;
 
     private final KeyForPropagator keyForPropagator;
 
@@ -52,6 +63,13 @@ public class KeyForAnnotatedTypeFactory
         UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
         KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
+
+        TypeMirror OBJECT_TYPE = TypesUtils.typeFromClass(Object.class, types, elements);
+        PARAMS_OBJECT = Collections.singletonList(OBJECT_TYPE);
+        List<TypeMirror> paramsObjectObject = new ArrayList<>(2);
+        paramsObjectObject.add(OBJECT_TYPE);
+        paramsObjectObject.add(OBJECT_TYPE);
+        PARAMS_OBJECT_OBJECT = Collections.unmodifiableList(paramsObjectObject);
 
         // Add compatibility annotations:
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
@@ -200,37 +218,91 @@ public class KeyForAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)
-                    && AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)
+                    && AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
                 List<String> lhsValues = extractValues(superAnno);
                 List<String> rhsValues = extractValues(subAnno);
 
                 return rhsValues.containsAll(lhsValues);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)) {
                 superAnno = KEYFOR;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
                 subAnno = KEYFOR;
             }
             return super.isSubtype(subAnno, superAnno);
         }
     }
 
-    protected boolean isInvocationOfMapMethod(MethodInvocationNode n, String methodName) {
-        String invokedMethod = getMethodName(n);
-        // First verify if the method name is correct. This is an inexpensive check.
-        if (invokedMethod.equals(methodName)) {
-            // Now verify that the receiver of the method invocation is of a type
-            // that extends that java.util.Map interface. This is a more expensive check.
-            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
+    /**
+     * Returns true if the node is an invocation of the named method in the Map interface, which has
+     * one formal parameter of Object type.
+     *
+     * @param n the method invocation
+     * @param methodName the method to check for, which has one formal parameter
+     */
+    protected boolean isInvocationOfMapMethodWithOneObjectParameter(
+            MethodInvocationNode n, String methodName) {
+        return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT);
+    }
 
-            if (types.isSubtype(receiverType, erasedMapType)) {
-                return true;
+    /**
+     * Returns true if the node is an invocation of the named method in the Map interface, which has
+     * two formal parameters of Object type.
+     *
+     * @param n the method invocation
+     * @param methodName the method to check for, which has two formal parameters
+     */
+    protected boolean isInvocationOfMapMethodWithTwoObjectParameters(
+            MethodInvocationNode n, String methodName) {
+        return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT_OBJECT);
+    }
+
+    /**
+     * Returns true if the node is an invocation of the named method in the Map interface.
+     *
+     * @param n the method invocation
+     * @param methodName the method to check for
+     * @param paramTypes the parameter types in methodName's declaration, to resolve overloading
+     */
+    protected boolean isInvocationOfMapMethod(
+            MethodInvocationNode n, String methodName, List<TypeMirror> paramTypes) {
+        String invokedMethodName = getMethodName(n);
+
+        // First check the method name. This is an inexpensive check.
+        if (!invokedMethodName.equals(methodName)) {
+            return false;
+        }
+
+        // Verify the argument types.  These are more expensive checks.
+
+        // The receiver's type must extend the java.util.Map interface.
+        TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
+        if (!types.isSubtype(receiverType, erasedMapType)) {
+            return false;
+        }
+
+        // Also check the other argument types.
+        // "n" is the method at this call site.
+        ExecutableElement nDecl = TreeUtils.elementFromUse(n.getTree());
+        List<? extends VariableElement> nParams = nDecl.getParameters();
+        if (nParams.size() != paramTypes.size()) {
+            return false;
+        }
+        for (int i = 0; i < paramTypes.size(); i++) {
+            TypeMirror nParamType = nParams.get(i).asType();
+            while (nParamType.getKind() == TypeKind.TYPEVAR) {
+                nParamType = ((TypeVariable) nParamType).getUpperBound();
+            }
+            TypeMirror paramType = paramTypes.get(i);
+            if (!types.isSameType(nParamType, paramType)) {
+                return false;
             }
         }
-        return false;
+
+        return true;
     }
 
     protected String getMethodName(MethodInvocationNode n) {

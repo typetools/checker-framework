@@ -28,6 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -111,7 +112,7 @@ public class WholeProgramInferenceScenesHelper {
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
             } catch (IOException e) {
-                throw new BugInCF(
+                throw new UserError(
                         "Problem while reading file in: "
                                 + jaifPath
                                 + ". Exception message: "
@@ -143,7 +144,7 @@ public class WholeProgramInferenceScenesHelper {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    throw new BugInCF(
+                    throw new UserError(
                             "Problem while reading file in: "
                                     + jaifPath
                                     + "."
@@ -175,8 +176,6 @@ public class WholeProgramInferenceScenesHelper {
      *   <li>If there was a previous annotation, the updated set will be the LUB between the
      *       previous annotation and newATM.
      * </ul>
-     *
-     * <p>
      *
      * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
@@ -418,7 +417,10 @@ public class WholeProgramInferenceScenesHelper {
         return false;
     }
 
-    /** Returns a subset of annosSet, consisting of the annotations supported by atf. */
+    /**
+     * Returns a subset of annosSet, consisting of the annotations supported by atf. These are not
+     * necessarily legal annotations: they have the right name, but they may lack elements (fields).
+     */
     private Set<Annotation> getSupportedAnnosInSet(
             Set<Annotation> annosSet, AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<>();

@@ -156,7 +156,7 @@ public class UnitsRelationsTools {
     }
 
     /**
-     * Checks to see if an Annotation has no prefix.
+     * Checks to see if an Annotation has no prefix (ie, no value element).
      *
      * @param unitsAnnotation an AnnotationMirror representing a Units Annotation
      * @return true if it has no prefix, false otherwise
@@ -199,7 +199,7 @@ public class UnitsRelationsTools {
     }
 
     /**
-     * Removes the Prefix value from an Annotation, by constructing and returning a copy of its base
+     * Removes the prefix value from an Annotation, by constructing and returning a copy of its base
      * SI unit's Annotation.
      *
      * @param elements the Element Utilities from a checker's processing environment, typically
@@ -215,9 +215,11 @@ public class UnitsRelationsTools {
         }
 
         if (hasNoPrefix(unitsAnnotation)) {
+            // Optimization, though the else case would also work.
             return unitsAnnotation;
         } else {
-            // the only value is the prefix value in Units Checker
+            // In the Units Checker, the only annotation value is the prefix value.  Therefore,
+            // fromName (which creates an annotation with no values) is acceptable.
             // TODO: refine sensitivity of removal for extension units, in case extension
             // Annotations have more than just Prefix in its values.
             return AnnotationBuilder.fromName(
@@ -311,7 +313,6 @@ public class UnitsRelationsTools {
             return false;
         }
 
-        return AnnotationUtils.containsSameIgnoringValues(
-                annoType.getAnnotations(), unitsAnnotation);
+        return AnnotationUtils.containsSameByName(annoType.getAnnotations(), unitsAnnotation);
     }
 }
