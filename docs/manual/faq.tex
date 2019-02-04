@@ -1565,10 +1565,14 @@ type-checker whose aim is similar to that of the Nullness Checker
 (\chapterpageref{nullness-checker}).  For both tools, the user writes
 nullness annotations, and then the tool checks them.
 
-NullAway is unsound:  even if NullAway issues no warnings, your code might
-crash with a null pointer exception.  NullAway ignores generics, for example.
+NullAway is faster than the Nullness Checker and requires fewer annotations.
 
-However, NullAway is faster than the Nullness Checker and may require fewer annotations.
+NullAway is unsound:  even if NullAway issues no warnings, your code might
+crash with a null pointer exception.  Two differences are that NullAway
+makes unchecked assumptions about getter methods and NullAway assumes all
+objects are always fully initialized.  NullAway forces all generic
+arguments to be non-null, which is not an unsoundness but is less flexible
+than the Nullness Checker.
 
 
 \subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
