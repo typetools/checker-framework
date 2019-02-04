@@ -32,10 +32,6 @@ public class UnitsRelationsTools {
      */
     public static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
             final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
-        if (env == null || annoClass == null) {
-            return null;
-        }
-
         return buildAnnoMirrorWithSpecificPrefix(env, annoClass, Prefix.one);
     }
 
@@ -54,10 +50,6 @@ public class UnitsRelationsTools {
             final ProcessingEnvironment env,
             final Class<? extends Annotation> annoClass,
             final Prefix p) {
-        if (env == null || annoClass == null || p == null) {
-            return null;
-        }
-
         AnnotationBuilder builder = new AnnotationBuilder(env, annoClass);
         builder.setValue("value", p);
         return builder.build();
@@ -73,10 +65,6 @@ public class UnitsRelationsTools {
      */
     public static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
             final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
-        if (env == null || annoClass == null) {
-            return null;
-        }
-
         return AnnotationBuilder.fromClass(env.getElementUtils(), annoClass);
     }
 
@@ -87,10 +75,6 @@ public class UnitsRelationsTools {
      * @return a Prefix value (including Prefix.one), or null if it has none
      */
     public static @Nullable Prefix getPrefix(final AnnotatedTypeMirror annoType) {
-        if (annoType == null) {
-            return null;
-        }
-
         Prefix result = null;
 
         // go through each Annotation of an Annotated Type, find the prefix and return it
@@ -141,10 +125,6 @@ public class UnitsRelationsTools {
      * @return true if it has no prefix, false otherwise
      */
     public static boolean hasNoPrefix(@Nullable final AnnotatedTypeMirror annoType) {
-        if (annoType == null) {
-            return true;
-        }
-
         for (AnnotationMirror mirror : annoType.getAnnotations()) {
             // if any Annotation has a prefix, return false
             if (!hasNoPrefix(mirror)) {
@@ -181,10 +161,6 @@ public class UnitsRelationsTools {
      */
     private static @Nullable AnnotationValue getAnnotationMirrorPrefix(
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (unitsAnnotation == null) {
-            return null;
-        }
-
         Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
                 unitsAnnotation.getElementValues();
 
@@ -210,10 +186,6 @@ public class UnitsRelationsTools {
      */
     public static @Nullable AnnotationMirror removePrefix(
             @Nullable final Elements elements, @Nullable final AnnotationMirror unitsAnnotation) {
-        if (elements == null) {
-            return null;
-        }
-
         if (hasNoPrefix(unitsAnnotation)) {
             // Optimization, though the else case would also work.
             return unitsAnnotation;
@@ -273,10 +245,6 @@ public class UnitsRelationsTools {
      * @return true if the Type has no units, false otherwise
      */
     public static boolean hasNoUnits(@Nullable final AnnotatedTypeMirror annoType) {
-        if (annoType == null) {
-            return false;
-        }
-
         return (annoType.getAnnotation(UnknownUnits.class) != null);
     }
 
@@ -291,10 +259,6 @@ public class UnitsRelationsTools {
     public static boolean hasSpecificUnit(
             @Nullable final AnnotatedTypeMirror annoType,
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (annoType == null || unitsAnnotation == null) {
-            return false;
-        }
-
         return AnnotationUtils.containsSame(annoType.getAnnotations(), unitsAnnotation);
     }
 
@@ -309,10 +273,6 @@ public class UnitsRelationsTools {
     public static boolean hasSpecificUnitIgnoringPrefix(
             @Nullable final AnnotatedTypeMirror annoType,
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (annoType == null || unitsAnnotation == null) {
-            return false;
-        }
-
         return AnnotationUtils.containsSameByName(annoType.getAnnotations(), unitsAnnotation);
     }
 }
