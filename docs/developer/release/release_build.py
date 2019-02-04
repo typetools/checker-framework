@@ -187,7 +187,7 @@ def build_and_locally_deploy_maven(version):
 
     return
 
-def build_checker_framework_release(version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
+def build_checker_framework_release(version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
     """Build the release files for the Checker Framework project, including the
     manual and the zip file, and run tests on the build."""
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
@@ -205,6 +205,13 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+
+    # Check that updating versions didn't overlook anything.
+    print "Here are occurrences of the old version number, " + old_cf_version
+    old_cf_version_regex = old_cf_version.replace('.', '\.')
+    find_cmd = 'find . -type d \( -path \*/build -o -path \*/.git \) -prune  -o \! -type d \( -name \*\~ -o -name \*.bin \) -prune -o  -type f -exec grep -i -n -e \'\b%s\b\' {} +' % old_cf_version_regex
+    execute(find_cmd, False, True, dataflow_manual_dir)
+    continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
 
     if not manual_only:
         # build the checker framework binaries and documents, run checker framework tests
@@ -413,7 +420,7 @@ def main(argv):
 
     if projects_to_release[CF_OPT]:
         print_step("6c: Build Checker Framework.")
-        build_checker_framework_release(cf_version, afu_version, afu_date, checker_framework_interm_dir)
+        build_checker_framework_release(cf_version, old_cf_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .") # AUTO
