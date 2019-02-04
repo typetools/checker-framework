@@ -1,3 +1,4 @@
+// @skip-test
 // Test case for Issue 2199.
 @SuppressWarnings("unchecked")
 class Issue2199 {
