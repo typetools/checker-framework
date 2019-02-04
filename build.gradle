@@ -2,11 +2,11 @@ import de.undercouch.gradle.tasks.download.Download
 import org.gradle.internal.jvm.Jvm
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
-    id "de.undercouch.download" version "3.3.0"
+    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id "de.undercouch.download" version "3.4.3"
     id 'java'
-    id "net.ltgt.errorprone-base" version "0.0.13"
-    id 'org.ajoberstar.grgit' version '2.3.0' apply false
+    id "net.ltgt.errorprone-base" version "0.6.1"
+    id 'org.ajoberstar.grgit' version '3.0.0' apply false
 }
 apply plugin: "de.undercouch.download"
 
@@ -64,9 +64,9 @@ allprojects {
 
     group 'org.checkerframework'
     // Increment the minor version rather than just the patch level if:
-    //   * any new checkers have been added,\n")
-    //   * the patch level is 9 (keep the patch level as a single digit), or\n")
-    //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
+    //   * any new checkers have been added,
+    //   * the patch level is 9 (keep the patch level as a single digit), or
+    //   * backward-incompatible changes have been made to APIs or elsewhere.
     version '2.6.0'
 
     repositories {
