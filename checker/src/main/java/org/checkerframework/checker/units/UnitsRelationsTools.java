@@ -146,10 +146,6 @@ public class UnitsRelationsTools {
      */
     private static @Nullable AnnotationValue getAnnotationMirrorPrefix(
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (unitsAnnotation == null) {
-            return null;
-        }
-
         Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
                 unitsAnnotation.getElementValues();
 
@@ -175,10 +171,6 @@ public class UnitsRelationsTools {
      */
     public static @Nullable AnnotationMirror removePrefix(
             @Nullable final Elements elements, @Nullable final AnnotationMirror unitsAnnotation) {
-        if (elements == null) {
-            return null;
-        }
-
         if (hasNoPrefix(unitsAnnotation)) {
             // Optimization, though the else case would also work.
             return unitsAnnotation;
@@ -252,10 +244,6 @@ public class UnitsRelationsTools {
     public static boolean hasSpecificUnit(
             @Nullable final AnnotatedTypeMirror annoType,
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (annoType == null || unitsAnnotation == null) {
-            return false;
-        }
-
         return AnnotationUtils.containsSame(annoType.getAnnotations(), unitsAnnotation);
     }
 
@@ -270,10 +258,6 @@ public class UnitsRelationsTools {
     public static boolean hasSpecificUnitIgnoringPrefix(
             @Nullable final AnnotatedTypeMirror annoType,
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (annoType == null || unitsAnnotation == null) {
-            return false;
-        }
-
         return AnnotationUtils.containsSameByName(annoType.getAnnotations(), unitsAnnotation);
     }
 }

@@ -240,7 +240,7 @@ public class AnnotationBuilder {
     /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> value = new ArrayList<>(values.size());
+        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -250,10 +250,10 @@ public class AnnotationBuilder {
 
         for (Object v : values) {
             checkSubtype(expectedType, v);
-            value.add(createValue(v));
+            avalues.add(createValue(v));
         }
-        AnnotationValue val = createValue(value);
-        elementValues.put(var, val);
+        AnnotationValue aval = createValue(avalues);
+        elementValues.put(var, aval);
         return this;
     }
 
@@ -300,6 +300,17 @@ public class AnnotationBuilder {
     /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, String value) {
         return setValue(elementName, (Object) value);
+    }
+
+    /**
+     * Remove the element/field with the given name. Does not err if no such element/field is
+     * present.
+     */
+    public AnnotationBuilder removeElement(CharSequence elementName) {
+        assertNotBuilt();
+        ExecutableElement var = findElement(elementName);
+        elementValues.remove(var);
+        return this;
     }
 
     private TypeMirror getErasedOrBoxedType(TypeMirror type) {
