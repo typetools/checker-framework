@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 /**
  * Default relations between SI units.
  *
- * <p>TODO: What relations are missing?
+ * <p>TODO: what relations are missing?
  */
 public class UnitsRelationsDefault implements UnitsRelations {
     /** SI units. */
