@@ -60,6 +60,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?
 \\ \ref{faq-varargs-syntax-meaning}: What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?
 \\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
+\\ \ref{faq-type-qualifier-on-bounds}: How are type qualifiers written on upper and lower bounds?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
@@ -1071,6 +1072,11 @@ the type by writing a more restrictive annotation on a use of MyClass, such
 as \<@MyMoreRestrictiveQual MyClass>.
 
 
+\subsectionAndLabel{How are type qualifiers written on upper and lower bounds?}{faq-type-qualifier-on-bounds}
+
+See Section~\ref{generics-instantiation}.
+
+
 \subsectionAndLabel{Why shouldn't a qualifier apply to both types and declarations?}{faq-no-annotation-on-types-and-declarations}
 
 It is bad style for an annotation to apply to both types and declarations.
@@ -1678,6 +1684,7 @@ third-party tools.  The Checker Framework is one such tool.
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs regexes
 %%  LocalWords:  featureful RetentionPolicy instanceof contravariance qual
-%%  LocalWords:  NoSuchElementException binarySearch subclasses
-%%  LocalWords:  intExample1 intExample2 requiresPositive
-%%  LocalWords:  IllegalFormatException
+%%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
+%%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
+%%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
+%%  LocalWords:  covariance InheritedAnnotation
