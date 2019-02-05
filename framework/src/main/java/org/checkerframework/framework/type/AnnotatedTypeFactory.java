@@ -341,6 +341,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final boolean ignoreUninferredTypeArguments;
 
+    /** The Object.getClass method. */
+    private final ExecutableElement objectGetClass;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
@@ -401,6 +404,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     .equals(this.getClass().getSimpleName()));
         }
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
+
+        objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
     }
 
     /**
@@ -2074,7 +2079,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
-                && TreeUtils.isGetClassInvocation((MethodInvocationTree) tree)) {
+                && TreeUtils.isMethodInvocation(
+                        (MethodInvocationTree) tree, objectGetClass, processingEnv)) {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType);
         }
 

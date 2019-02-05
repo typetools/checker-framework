@@ -474,6 +474,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree), MethodVal.class);
     }
 
+    /** Returns true if the receiver's type is @UnknownMethod. */
     private boolean isUnknownMethod(MethodInvocationTree tree) {
         return provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree), UnknownMethod.class)
                 != null;

@@ -269,6 +269,10 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
+        /**
+         * Returns true if the method being invoked is annotated with @GetConstructor. An example of
+         * such a method is Class.getConstructor.
+         */
         private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
             if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null) {
                 return true;
@@ -276,6 +280,10 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return false;
         }
 
+        /**
+         * Returns true if the method being invoked is annotated with @GetMethod. An example of such
+         * a method is Class.getMethod.
+         */
         private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
             if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null) {
                 return true;

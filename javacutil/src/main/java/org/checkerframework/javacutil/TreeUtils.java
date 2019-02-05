@@ -113,9 +113,9 @@ public final class TreeUtils {
      *
      * @param name a method name
      * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to the given method
+     * @return true iff tree is a call to the given method
      */
-    protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
+    private static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
         return getMethodName(tree.getMethodSelect()).equals(name);
     }
 
@@ -1137,19 +1137,6 @@ public final class TreeUtils {
             default:
                 return false;
         }
-    }
-
-    /**
-     * @see Object#getClass()
-     * @return true iff invocationTree is an instance of getClass()
-     */
-    public static boolean isGetClassInvocation(MethodInvocationTree invocationTree) {
-        final Element declarationElement = elementFromUse(invocationTree);
-        String ownerName =
-                ElementUtils.getQualifiedClassName(declarationElement.getEnclosingElement())
-                        .toString();
-        return ownerName.equals("java.lang.Object")
-                && declarationElement.getSimpleName().contentEquals("getClass");
     }
 
     /**

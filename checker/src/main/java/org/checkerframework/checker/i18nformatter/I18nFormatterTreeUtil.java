@@ -120,18 +120,30 @@ public class I18nFormatterTreeUtil {
         return list.toArray(new I18nConversionCategory[] {});
     }
 
+    /**
+     * Returns true if the call is to a method with the @I18nChecksFormat annotation. An example of
+     * such a method is I18nFormatUtil.hasFormat.
+     */
     public boolean isHasFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, I18nChecksFormat.class);
         return anno != null;
     }
 
+    /**
+     * Returns true if the call is to a method with the @I18nValidFormat annotation. An example of
+     * such a method is I18nFormatUtil.isFormat..
+     */
     public boolean isIsFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, I18nValidFormat.class);
         return anno != null;
     }
 
+    /**
+     * Returns true if the call is to a method with the @I18nMakeFormat annotation. An example of
+     * such a method is ResourceBundle.getString..
+     */
     public boolean isMakeFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, I18nMakeFormat.class);
