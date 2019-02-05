@@ -56,6 +56,7 @@ public class OptionalVisitor
     /** The element for java.util.Optional.orElseThrow(). */
     private final ExecutableElement optionalOrElseThrow;
 
+    /** Create an OptionalVisitor. */
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
         collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
