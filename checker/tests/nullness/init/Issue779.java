@@ -12,7 +12,7 @@ class A {
     }
 
     void foo(@Raw(A.class) @UnderInitialization(A.class) A this) {
-        System.out.println("foo A " + g);
+        System.out.println("foo A " + g.toString());
     }
 }
 
@@ -21,7 +21,7 @@ class B extends A {
 
     void foo(@Raw(A.class) @UnderInitialization(A.class) B this) {
         // :: error: (dereference.of.nullable)
-        System.out.println("foo B " + this.f);
+        System.out.println("foo B " + this.f.toString());
     }
 }
 
