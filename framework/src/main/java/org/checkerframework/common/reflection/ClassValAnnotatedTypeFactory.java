@@ -231,7 +231,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
 
-            if (isForNameMethodInovaction(tree)) {
+            if (isForNameMethodInvocation(tree)) {
                 // Class.forName(name): @ClassVal("name")
                 ExpressionTree arg = tree.getArguments().get(0);
                 List<String> classNames = getStringValues(arg);
@@ -239,7 +239,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationMirror newQual = createClassVal(classNames);
                     type.replaceAnnotation(newQual);
                 }
-            } else if (isGetClassMethodInovaction(tree)) {
+            } else if (isGetClassMethodInvocation(tree)) {
                 // exp.getClass(): @ClassBound(fully qualified class name of exp)
                 Type clType;
                 if (TreeUtils.getReceiverTree(tree) != null) {
@@ -255,11 +255,11 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        private boolean isForNameMethodInovaction(MethodInvocationTree tree) {
+        private boolean isForNameMethodInvocation(MethodInvocationTree tree) {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), ForName.class) != null;
         }
 
-        private boolean isGetClassMethodInovaction(MethodInvocationTree tree) {
+        private boolean isGetClassMethodInvocation(MethodInvocationTree tree) {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetClass.class) != null;
         }
 
