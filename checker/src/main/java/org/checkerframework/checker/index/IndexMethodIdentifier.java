@@ -81,11 +81,15 @@ public class IndexMethodIdentifier {
     }
 
     /**
-     * @return whether or not {@code tree} is an invocation of a method that returns the length of
-     *     "this"
+     * Returns true if {@code tree} evaluates to the length of "this". This might be a call to
+     * String,length, or a method annotated with @LengthOf.
+     *
+     * @return true if {@code tree} evaluates to the length of "this"
      */
     public boolean isLengthOfMethodInvocation(ExecutableElement ele) {
         if (stringLength.equals(ele)) {
+            // TODO: Why not just annotate String.length with @LengthOf and thus eliminate the
+            // special case in this method's implementation?
             return true;
         }
 

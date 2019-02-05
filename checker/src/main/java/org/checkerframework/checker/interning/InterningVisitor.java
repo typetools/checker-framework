@@ -306,7 +306,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     private boolean isInvocationOfEquals(MethodInvocationTree node) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
-        // TODO: CODE REVIEW NEITHER OF THE TWO
         return (method.getParameters().size() == 1
                 && method.getReturnType().getKind() == TypeKind.BOOLEAN
                 // method symbols only have simple names
