@@ -1,6 +1,6 @@
 /*
  * @test
- * @summary Test annotations on type parameters in extends..
+ * @summary Test annotations on type parameters in extends.
  *
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker SupplierDefs.java
  * @compile/fail/ref=NPE2Test.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker NPE2Test.java -Anomsgtext

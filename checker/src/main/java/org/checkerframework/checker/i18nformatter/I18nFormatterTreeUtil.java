@@ -132,7 +132,7 @@ public class I18nFormatterTreeUtil {
 
     /**
      * Returns true if the call is to a method with the @I18nValidFormat annotation. An example of
-     * such a method is I18nFormatUtil.isFormat..
+     * such a method is I18nFormatUtil.isFormat.
      */
     public boolean isIsFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
@@ -142,7 +142,7 @@ public class I18nFormatterTreeUtil {
 
     /**
      * Returns true if the call is to a method with the @I18nMakeFormat annotation. An example of
-     * such a method is ResourceBundle.getString..
+     * such a method is ResourceBundle.getString.
      */
     public boolean isMakeFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
