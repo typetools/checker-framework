@@ -177,6 +177,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The Object.equals method. */
     private final ExecutableElement objectEquals;
 
+    /** The element for java.util.Vector#copyInto. */
+    private final ExecutableElement vectorCopyInto;
+
+    /** The tyoe of java.util.Vector. */
+    private AnnotatedDeclaredType vectorType;
+
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
      *     TypeHierarchy#isSubtype})
@@ -193,6 +199,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.objectEquals =
                 TreeUtils.getMethod(
                         "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
+        this.vectorCopyInto =
+                TreeUtils.getMethod(
+                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
+        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
         checkForAnnotatedJdk();
     }
@@ -209,7 +219,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.objectEquals =
                 TreeUtils.getMethod(
                         "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-
+        this.vectorCopyInto =
+                TreeUtils.getMethod(
+                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
+        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
         checkForAnnotatedJdk();
     }
 
@@ -1012,7 +1025,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkArguments(params, node.getArguments());
         checkVarargs(invokedMethod, node);
 
-        if (isVectorCopyInto(invokedMethod)) {
+        if (ElementUtils.isMethod(
+                invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
             typeCheckVectorCopyIntoArgument(node, params);
         }
 
@@ -1174,26 +1188,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         .isSubtype(inferredAnnotation, necessaryAnnotation);
     }
 
-    /** The element for java.util.Vector#copyInto. */
-    private ExecutableElement vectorCopyInto;
-
-    /** The tyoe of java.util.Vector. */
-    private AnnotatedDeclaredType vectorType;
-
-    /** Returns true if the method symbol represents {@code Vector.copyInto}. */
-    protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
-        ExecutableElement elt = method.getElement();
-        if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1) {
-            if (vectorCopyInto == null) {
-                vectorCopyInto =
-                        TreeUtils.getMethod(
-                                "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-            }
-            return ElementUtils.isMethod(elt, vectorCopyInto, atypeFactory.getProcessingEnv());
-        }
-        return false;
-    }
-
     /**
      * Type checks the method arguments of {@code Vector.copyInto()}.
      *
@@ -1221,9 +1215,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType) passed;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
-        if (vectorType == null) {
-            vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
-        }
         AnnotatedDeclaredType receiverAsVector =
                 AnnotatedTypes.asSuper(atypeFactory, receiver, vectorType);
         if (receiverAsVector.getTypeArguments().isEmpty()) {
