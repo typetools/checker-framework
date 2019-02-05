@@ -205,12 +205,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.vectorCopyInto =
                 TreeUtils.getMethod(
                         "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.vectorCopyInto =
+        this.functionApply =
                 TreeUtils.getMethod(
-                        "java.util.function.Funcition",
-                        "apply",
-                        1,
-                        atypeFactory.getProcessingEnv());
+                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
         checkForAnnotatedJdk();
@@ -231,12 +228,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.vectorCopyInto =
                 TreeUtils.getMethod(
                         "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.vectorCopyInto =
+        this.functionApply =
                 TreeUtils.getMethod(
-                        "java.util.function.Funcition",
-                        "apply",
-                        1,
-                        atypeFactory.getProcessingEnv());
+                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
         checkForAnnotatedJdk();
     }
@@ -3180,7 +3174,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         if (methodReference && isCaptureConverted) {
                             ExecutableElement overridenMethod = overridden.getElement();
                             boolean isFunctionApply =
-                                    ElementUtils.isMethod(overridenMethod, functionApply, env);
+                                    ElementUtils.isMethod(
+                                            overridenMethod,
+                                            functionApply,
+                                            atypeFactory.getProcessingEnv());
                             if (isFunctionApply) {
                                 AnnotatedTypeMirror overridingUpperBound =
                                         ((AnnotatedTypeVariable) overriddenReturnType)
