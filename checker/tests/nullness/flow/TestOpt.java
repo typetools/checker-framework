@@ -21,7 +21,7 @@ class TestOpt {
     }
 
     void foo2b(@Nullable Object p) {
-        Opt.ifPresent(p, x -> System.out.println("Got: " + x.toString()));
+        Opt.ifPresent(p, x -> System.out.println("Got: " + x));
     }
 
     void foo3(@Nullable Object p) {

@@ -88,10 +88,10 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 assert (args.size() == params.size())
                         : "Number of arguments in"
                                 + " the method call "
-                                + node.toString()
+                                + node
                                 + " is different from the "
                                 + "number of parameters for the method declaration: "
-                                + methodElement.getSimpleName().toString();
+                                + methodElement.getSimpleName();
                 for (int i = 0; i < args.size(); i++) {
                     // Here we are traversing the arguments of the method call.
                     // For every argument we check if it is a reference to "this".

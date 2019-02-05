@@ -773,16 +773,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             msg.append(
                     "\nException: "
-                            + ce.getCause().toString()
+                            + ce.getCause()
                             + "; "
                             + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
                 msg.append(
                         "\nUnderlying Exception: "
-                                + (cause.toString()
-                                        + "; "
-                                        + formatStackTrace(cause.getStackTrace())));
+                                + cause
+                                + "; "
+                                + formatStackTrace(cause.getStackTrace()));
                 cause = cause.getCause();
             }
         }
