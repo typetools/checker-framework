@@ -25,6 +25,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** The transfer function for the Regex Checker. */
 public class RegexTransfer extends CFTransfer {
 
     // isRegex and asRegex are tested as signatures (string name plus formal parameters), not
@@ -38,8 +39,7 @@ public class RegexTransfer extends CFTransfer {
     /** The MatchResult.groupCount() method. */
     private final ExecutableElement matchResultgroupCount;
 
-    private static final String GROUP_COUNT_METHOD_NAME = "groupCount";
-
+    /** Create the transfer function for the Regex Checker. */
     public RegexTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         this.matchResultgroupCount =
