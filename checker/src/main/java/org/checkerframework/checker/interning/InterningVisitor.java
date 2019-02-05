@@ -63,11 +63,17 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /** See method typeToCheck(). */
     private final DeclaredType typeToCheck;
 
+    /** The Comparabel.compareTo method. */
+    private final ExecutableElement comparableCompareTo;
+
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
         this.INTERNED_DISTINCT = AnnotationBuilder.fromClass(elements, InternedDistinct.class);
         typeToCheck = typeToCheck();
+        comparableCompareTo =
+                TreeUtils.getMethod(
+                        "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
     }
 
     /**
@@ -305,20 +311,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 && method.getReturnType().getKind() == TypeKind.BOOLEAN
                 // method symbols only have simple names
                 && method.getSimpleName().contentEquals("equals"));
-    }
-
-    /**
-     * Tests whether a method invocation is an invocation of {@link Comparable#compareTo}.
-     *
-     * @param node a method invocation node
-     * @return true iff {@code node} is a invocation of {@code compareTo()}
-     */
-    private boolean isInvocationOfCompareTo(MethodInvocationTree node) {
-        ExecutableElement method = TreeUtils.elementFromUse(node);
-        return (method.getParameters().size() == 1
-                && method.getReturnType().getKind() == TypeKind.INT
-                // method symbols only have simple names
-                && method.getSimpleName().contentEquals("compareTo"));
     }
 
     /**
@@ -690,7 +682,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
                     @Override
                     public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
-                        if (!isInvocationOfCompareTo(tree)) {
+                        if (!TreeUtils.isMethodInvocation(
+                                tree, comparableCompareTo, checker.getProcessingEnvironment())) {
                             return false;
                         }
 
