@@ -835,6 +835,20 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if the argument is an invocation of one of the given methods, or of any method
+     * that overrides them.
+     */
+    public static boolean isMethodInvocation(
+            Tree methodTree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
+        for (ExecutableElement Method : methods) {
+            if (isMethodInvocation(methodTree, Method, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the ExecutableElement for the method declaration of methodName, in class typeName,
      * with params formal parameters. Errs if there is not exactly one matching method. If more than
      * one method takes the same number of formal parameters, then use {@link #getMethod(String,
@@ -842,18 +856,20 @@ public final class TreeUtils {
      */
     public static ExecutableElement getMethod(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
-        List<ExecutableElement> methods = getMethodList(typeName, methodName, params, env);
+        List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
         if (methods.size() == 1) {
             return methods.get(0);
         }
-        throw new BugInCF("TreeUtils.getMethod: expected 1 match, found " + methods.size());
+        throw new BugInCF(
+                "TreeUtils.getMethod(%s, %s, %d): expected 1 match, found %d",
+                typeName, methodName, params, methods.size());
     }
 
     /**
      * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
      * params formal parameters.
      */
-    public static List<ExecutableElement> getMethodList(
+    public static List<ExecutableElement> getMethods(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
