@@ -1621,6 +1621,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Also skip constructor return types (which somewhat act like
             // the receiver).
             MethodSymbol methodElt = (MethodSymbol) type.getElement();
+
+            // If a constructor declaration is not explicitly annotated,
+            // annotate it with the type on class declaration.
+            Element elem = type.getElement();
+            if (elem.getKind() == ElementKind.CONSTRUCTOR) {
+                AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) type.getReturnType();
+                if (returnType.getAnnotations().isEmpty()) {
+                    DeclaredType underlyingType = returnType.getUnderlyingType();
+                    AnnotatedTypeMirror underlyingTypeMirror =
+                            p.getAnnotatedType(underlyingType.asElement());
+                    Set<? extends AnnotationMirror> topAnnotations =
+                            p.getQualifierHierarchy().getTopAnnotations();
+                    for (AnnotationMirror topAnno : topAnnotations) {
+                        AnnotationMirror annotationOnClass =
+                                underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
+                        returnType.replaceAnnotation(annotationOnClass);
+                    }
+                }
+            }
+
             if (methodElt == null || !methodElt.isConstructor()) {
                 scan(type.getReturnType(), p);
             }
