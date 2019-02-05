@@ -1043,7 +1043,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 for (String errorKey : errorKeys) {
                     // The keyFromAnno may only be a part of an error key.
                     // For example, @SuppressWarnings("purity") suppresses errors with keys:
-                    // purity.deterministic.void.method, purity.deterministic.constructor, etc..
+                    // purity.deterministic.void.method, purity.deterministic.constructor, etc.
                     if (errorKey.contains(keyFromAnno)) {
                         reportUnneededSuppression(tree, keyFromAnno);
                     }
