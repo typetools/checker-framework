@@ -174,6 +174,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
+    /** The Object.equals method. */
+    private final ExecutableElement objectEquals;
+
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
      *     TypeHierarchy#isSubtype})
@@ -187,6 +190,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
+        this.objectEquals =
+                TreeUtils.getMethod(
+                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
 
         checkForAnnotatedJdk();
     }
@@ -200,6 +206,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
+        this.objectEquals =
+                TreeUtils.getMethod(
+                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
 
         checkForAnnotatedJdk();
     }
@@ -3615,7 +3624,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 ElementFilter.methodsIn(elements.getAllMembers(objectTE));
 
         for (ExecutableElement m : memberMethods) {
-            if (isObjectEquals(m)) {
+            if (ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
                 // The Nullness JDK serves as a proxy for all annotated JDKs.
 
                 // Note that we cannot use the AnnotatedTypeMirrors from the
@@ -3658,22 +3667,5 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
-    }
-
-    /** Return true iff the executable member is equals(Object). */
-    private boolean isObjectEquals(ExecutableElement method) {
-        // Less efficient implementation:
-        // return method.toString().equals("equals(java.lang.Object)");
-
-        if (!method.getSimpleName().contentEquals("equals")) {
-            return false;
-        }
-        List<? extends VariableElement> params = method.getParameters();
-        if (params.size() != 1) {
-            return false;
-        }
-        VariableElement param = params.get(0);
-        TypeMirror paramType = param.asType();
-        return TypesUtils.isObject(paramType);
     }
 }
