@@ -955,7 +955,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (visitor == null) {
             // typeProcessingStart invokes initChecker, which should
             // have set the visitor. If the field is still null, an
-            // exception occured during initialization, which was already
+            // exception occurred during initialization, which was already
             // logged there. Don't also cause a NPE here.
             return;
         }
