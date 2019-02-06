@@ -138,8 +138,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             debugReflection("Resolved method invocation: " + resolvedTree);
             if (!checkMethodAgruments(resolvedTree)) {
                 debugReflection(
-                        "Spoofed tree's arguments did not match declaration"
-                                + resolvedTree.toString());
+                        "Spoofed tree's arguments did not match declaration" + resolvedTree);
                 // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
                 // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
@@ -270,8 +269,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             debugReflection("Resolved constructor invocation: " + resolvedTree);
             if (!checkNewClassArguments(resolvedTree)) {
                 debugReflection(
-                        "Spoofed tree's arguments did not match declaration"
-                                + resolvedTree.toString());
+                        "Spoofed tree's arguments did not match declaration" + resolvedTree);
                 // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
                 // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;

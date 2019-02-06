@@ -68,18 +68,30 @@ public class AnnotationBuilder {
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
             Collections.synchronizedMap(new HashMap<>());
 
-    /** Create a new AnnotationBuilder for the given annotation and environment. */
+    /**
+     * Create a new AnnotationBuilder for the given annotation and environment (with no
+     * elements/fields, but they can be added later).
+     *
+     * @param env the processing environment
+     * @param anno the class of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
 
-    /** Create a new AnnotationBuilder for the given annotation name (with no elements/fields). */
+    /**
+     * Create a new AnnotationBuilder for the given annotation name (with no elements/fields, but
+     * they can be added later).
+     *
+     * @param env the processing environment
+     * @param name the name of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
         if (annotationElt == null) {
-            throw new BugInCF("Could not find annotation: " + name + ". Is it on the classpath?");
+            throw new UserError("Could not find annotation: " + name + ". Is it on the classpath?");
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
@@ -89,6 +101,9 @@ public class AnnotationBuilder {
     /**
      * Create a new AnnotationBuilder that copies the given annotation, including its
      * elements/fields.
+     *
+     * @param env the processing environment
+     * @param annotation the annotation to copy
      */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
         this.elements = env.getElementUtils();
@@ -106,6 +121,9 @@ public class AnnotationBuilder {
      * Creates an {@link AnnotationMirror} given by a particular annotation class. getElementValues
      * on the result returns an empty map. This may be in conflict with the annotation's definition,
      * which might contain elements (annotation fields).
+     *
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This is
+     * provided as a convenience to create an AnnotationMirror from scratch in a checker's code.
      *
      * @param elements the element utilities to use
      * @param aClass the annotation class
@@ -213,14 +231,16 @@ public class AnnotationBuilder {
         }
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
         setValue(elementName, (Object) value);
         return this;
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> value = new ArrayList<>(values.size());
+        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -230,47 +250,67 @@ public class AnnotationBuilder {
 
         for (Object v : values) {
             checkSubtype(expectedType, v);
-            value.add(createValue(v));
+            avalues.add(createValue(v));
         }
-        AnnotationValue val = createValue(value);
-        elementValues.put(var, val);
+        AnnotationValue aval = createValue(avalues);
+        elementValues.put(var, aval);
         return this;
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Object[] values) {
         return setValue(elementName, Arrays.asList(values));
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Boolean value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Character value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Double value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Float value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Integer value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Long value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Short value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, String value) {
         return setValue(elementName, (Object) value);
+    }
+
+    /**
+     * Remove the element/field with the given name. Does not err if no such element/field is
+     * present.
+     */
+    public AnnotationBuilder removeElement(CharSequence elementName) {
+        assertNotBuilt();
+        ExecutableElement var = findElement(elementName);
+        elementValues.remove(var);
+        return this;
     }
 
     private TypeMirror getErasedOrBoxedType(TypeMirror type) {
@@ -596,9 +636,9 @@ public class AnnotationBuilder {
                 return toStringVal;
             }
             if (value instanceof String) {
-                toStringVal = "\"" + value.toString() + "\"";
+                toStringVal = "\"" + value + "\"";
             } else if (value instanceof Character) {
-                toStringVal = "\'" + value.toString() + "\'";
+                toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
                 StringBuilder sb = new StringBuilder();
                 List<?> list = (List<?>) value;
@@ -620,7 +660,7 @@ public class AnnotationBuilder {
                 if (!encl.isEmpty()) {
                     encl = encl + '.';
                 }
-                toStringVal = encl + var.toString();
+                toStringVal = encl + var;
             } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
                 toStringVal = value.toString() + ".class";
             } else {

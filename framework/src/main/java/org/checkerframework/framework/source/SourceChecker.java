@@ -775,16 +775,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             msg.append(
                     "\nException: "
-                            + ce.getCause().toString()
+                            + ce.getCause()
                             + "; "
                             + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
                 msg.append(
                         "\nUnderlying Exception: "
-                                + (cause.toString()
-                                        + "; "
-                                        + formatStackTrace(cause.getStackTrace())));
+                                + cause
+                                + "; "
+                                + formatStackTrace(cause.getStackTrace()));
                 cause = cause.getCause();
             }
         }
@@ -1047,7 +1047,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 for (String errorKey : errorKeys) {
                     // The keyFromAnno may only be a part of an error key.
                     // For example, @SuppressWarnings("purity") suppresses errors with keys:
-                    // purity.deterministic.void.method, purity.deterministic.constructor, etc..
+                    // purity.deterministic.void.method, purity.deterministic.constructor, etc.
                     if (errorKey.contains(keyFromAnno)) {
                         reportUnneededSuppression(tree, keyFromAnno);
                     }

@@ -815,7 +815,7 @@ public class FlowExpressionParseUtil {
                             + " while looking up class "
                             + classNameString
                             + " in package "
-                            + packageSymbol.toString());
+                            + packageSymbol);
         }
         if (classSymbol == null) {
             throw constructParserException(
@@ -823,7 +823,7 @@ public class FlowExpressionParseUtil {
                     "classSymbol==null when looking up class "
                             + classNameString
                             + " in package "
-                            + packageSymbol.toString());
+                            + packageSymbol);
         }
         TypeMirror classType = ElementUtils.getType(classSymbol);
         if (classType == null) {
