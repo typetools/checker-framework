@@ -23,7 +23,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-motivation-section}: Motivation for pluggable type-checking}
 \\ \ref{faq-never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me?
-\\ \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses?
+\\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types (type qualifiers), or should I used Java subtypes?
 
 \faqtocpara{\ref{faq-getting-started-section}: Getting started}
 \\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
@@ -60,6 +60,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?
 \\ \ref{faq-varargs-syntax-meaning}: What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?
 \\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
+\\ \ref{faq-type-qualifier-on-bounds}: How are type qualifiers written on upper and lower bounds?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
@@ -126,7 +127,7 @@ automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
-\subsectionAndLabel{Should I use pluggable types (type qualifiers) or Java subtypes?}{faq-typequals-vs-subtypes}
+\subsectionAndLabel{Should I use pluggable types (type qualifiers), or should I used Java subtypes?}{faq-typequals-vs-subtypes}
 
 % Old labels, for backward compatibility.  Don't use them any longer.
 \label{when-to-use-type-qualifiers}
@@ -135,8 +136,9 @@ time to focus on those.
 In brief, use subtypes when you can, and use type qualifiers when you cannot
 use subtypes.
 
-For some programming tasks, you can use either a Java subclass or a type
-qualifier.  As an example that your code currently uses \code{String} to
+For some programming tasks, you can use either a Java subtype (interfaces
+or subclasses) or a type
+qualifier.  As an example, suppose that your code currently uses \code{String} to
 represent an address.  You could use Java subclasses by creating a new
 \code{Address} class and refactor your code to use it, or you could use
 type qualifiers by creating an \code{@Address} annotation and applying it
@@ -1071,6 +1073,11 @@ the type by writing a more restrictive annotation on a use of MyClass, such
 as \<@MyMoreRestrictiveQual MyClass>.
 
 
+\subsectionAndLabel{How are type qualifiers written on upper and lower bounds?}{faq-type-qualifier-on-bounds}
+
+See Section~\ref{generics-instantiation}.
+
+
 \subsectionAndLabel{Why shouldn't a qualifier apply to both types and declarations?}{faq-no-annotation-on-types-and-declarations}
 
 It is bad style for an annotation to apply to both types and declarations.
@@ -1162,7 +1169,7 @@ It conceptually creates a new, more specific type.
 That is, it describes what values the type represents.
 
 As an example, the \<int> type contains these values: ..., -2, -1, 0, 1, 2, ...  \\
-The \<@Positive int> type contains thes values:  1, 2, ...   \\
+The \<@Positive int> type contains these values:  1, 2, ...   \\
 Therefore, \<@Positive int> is a subtype of \<int>.
 
 A \textbf{declaration annotation} can be written on any \textbf{declaration} (a class, method, or variable).  It describes the thing being declared, but does not describe run-time values.  Here are examples of declaration annotations:
@@ -1450,7 +1457,7 @@ Framework's annotations.
 \subsectionAndLabel{Why do \<.class> files contain more annotations than the source code?}{faq-classfile-annotations}
 
 You may notice annotations such as \<@Pure> and \<@SideEffectFree> in
-compiled \<.class> files even though the source code containes no
+compiled \<.class> files even though the source code contains no
 annotations.  These annotations are propagated from annotated libraries,
 such as the JDK, to your code.
 
@@ -1565,10 +1572,14 @@ type-checker whose aim is similar to that of the Nullness Checker
 (\chapterpageref{nullness-checker}).  For both tools, the user writes
 nullness annotations, and then the tool checks them.
 
-NullAway is unsound:  even if NullAway issues no warnings, your code might
-crash with a null pointer exception.  NullAway ignores generics, for example.
+NullAway is faster than the Nullness Checker and requires fewer annotations.
 
-However, NullAway is faster than the Nullness Checker and may require fewer annotations.
+NullAway is unsound:  even if NullAway issues no warnings, your code might
+crash with a null pointer exception.  Two differences are that NullAway
+makes unchecked assumptions about getter methods and NullAway assumes all
+objects are always fully initialized.  NullAway forces all generic
+arguments to be non-null, which is not an unsoundness but is less flexible
+than the Nullness Checker.
 
 
 \subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
@@ -1674,6 +1685,7 @@ third-party tools.  The Checker Framework is one such tool.
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs regexes
 %%  LocalWords:  featureful RetentionPolicy instanceof contravariance qual
-%%  LocalWords:  NoSuchElementException binarySearch subclasses
-%%  LocalWords:  intExample1 intExample2 requiresPositive
-%%  LocalWords:  IllegalFormatException
+%%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
+%%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
+%%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
+%%  LocalWords:  covariance InheritedAnnotation

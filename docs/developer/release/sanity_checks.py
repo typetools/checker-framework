@@ -107,8 +107,6 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
     add_repo_information(maven_example_pom, repo_url)
 
-    print "TODO: The Maven example is only tested with Java 8."
-
     os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
     execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
 
