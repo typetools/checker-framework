@@ -751,9 +751,7 @@ public class FlowExpressions {
         public int hashCode() {
             VarSymbol vs = (VarSymbol) element;
             return HashCodeUtils.hash(
-                    vs.name.toString(),
-                    TypeAnnotationUtils.unannotatedType(vs.type).toString(),
-                    vs.owner.toString());
+                    vs.name, TypeAnnotationUtils.unannotatedType(vs.type), vs.owner);
         }
 
         @Override
@@ -834,6 +832,8 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
+            // TODO: why is the type necessary here?
+            // Why is the toString necessary?
             return HashCodeUtils.hash(value, type.toString());
         }
 
@@ -1138,12 +1138,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
-            result = prime * result + ((initializers == null) ? 0 : initializers.hashCode());
-            result = prime * result + HashCodeUtils.hash(getType().toString());
-            return result;
+            return HashCodeUtils.hash(getType(), dimensions, initializers);
         }
 
         @Override
