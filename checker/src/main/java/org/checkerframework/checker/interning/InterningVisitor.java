@@ -66,6 +66,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /** The Comparabel.compareTo method. */
     private final ExecutableElement comparableCompareTo;
 
+    /** Create an InterningVisitor. */
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
