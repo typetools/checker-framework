@@ -23,7 +23,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-motivation-section}: Motivation for pluggable type-checking}
 \\ \ref{faq-never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me?
-\\ \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses?
+\\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types (type qualifiers), or should I used Java subtypes?
 
 \faqtocpara{\ref{faq-getting-started-section}: Getting started}
 \\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
@@ -127,7 +127,7 @@ automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
-\subsectionAndLabel{Should I use pluggable types (type qualifiers) or Java subtypes?}{faq-typequals-vs-subtypes}
+\subsectionAndLabel{Should I use pluggable types (type qualifiers), or should I used Java subtypes?}{faq-typequals-vs-subtypes}
 
 % Old labels, for backward compatibility.  Don't use them any longer.
 \label{when-to-use-type-qualifiers}
@@ -136,8 +136,9 @@ time to focus on those.
 In brief, use subtypes when you can, and use type qualifiers when you cannot
 use subtypes.
 
-For some programming tasks, you can use either a Java subclass or a type
-qualifier.  As an example that your code currently uses \code{String} to
+For some programming tasks, you can use either a Java subtype (interfaces
+or subclasses) or a type
+qualifier.  As an example, suppose that your code currently uses \code{String} to
 represent an address.  You could use Java subclasses by creating a new
 \code{Address} class and refactor your code to use it, or you could use
 type qualifiers by creating an \code{@Address} annotation and applying it
