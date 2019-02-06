@@ -170,7 +170,7 @@ class Purity {
             int i = 1 / 0;
             // :: error: (purity.not.deterministic.catch)
         } catch (Throwable t) {
-            // ..
+            // ...
         }
         return "";
     }
@@ -180,7 +180,7 @@ class Purity {
         try {
             int i = 1 / 0;
         } catch (Throwable t) {
-            // ..
+            // ...
         }
         return "";
     }
@@ -191,7 +191,7 @@ class Purity {
             int i = 1 / 0;
             // :: error: (purity.not.deterministic.catch)
         } catch (Throwable t) {
-            // ..
+            // ...
         }
         return "";
     }

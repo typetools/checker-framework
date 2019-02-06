@@ -116,7 +116,7 @@ class PuritySuggestionsClass {
         try {
             int i = 1 / 0;
         } catch (Throwable t) {
-            // ..
+            // ...
         }
         return "";
     }
@@ -126,7 +126,7 @@ class PuritySuggestionsClass {
         try {
             int i = 1 / 0;
         } catch (Throwable t) {
-            // ..
+            // ...
         }
         return "";
     }
@@ -136,7 +136,7 @@ class PuritySuggestionsClass {
         try {
             int i = 1 / 0;
         } catch (Throwable t) {
-            // ..
+            // ...
         }
         return "";
     }
