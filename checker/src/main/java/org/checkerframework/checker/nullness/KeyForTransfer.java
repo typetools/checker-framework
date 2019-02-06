@@ -36,8 +36,8 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
 
         TransferResult<KeyForValue, KeyForStore> result = super.visitMethodInvocation(node, in);
         KeyForAnnotatedTypeFactory factory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-        if (factory.isInvocationOfMapMethod(node, "containsKey")
-                || factory.isInvocationOfMapMethod(node, "put")) {
+        if (factory.isInvocationOfMapMethodWithOneObjectParameter(node, "containsKey")
+                || factory.isInvocationOfMapMethodWithTwoObjectParameters(node, "put")) {
 
             Node receiver = node.getTarget().getReceiver();
             Receiver internalReceiver = FlowExpressions.internalReprOf(factory, receiver);
@@ -58,6 +58,8 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
 
             AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
+            // Already checked for correct arguments (not an overload), so just checking name is
+            // enough here.
             if (factory.getMethodName(node).equals("containsKey")) {
                 result.getThenStore().insertValue(keyReceiver, am);
             } else { // method name is "put"
