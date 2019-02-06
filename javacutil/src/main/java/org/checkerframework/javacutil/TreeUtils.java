@@ -840,6 +840,9 @@ public final class TreeUtils {
      */
     public static boolean isMethodInvocation(
             Tree methodTree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
+        if (!(tree instanceof MethodInvocationTree)) {
+            return false;
+        }
         for (ExecutableElement Method : methods) {
             if (isMethodInvocation(methodTree, Method, processingEnv)) {
                 return true;
