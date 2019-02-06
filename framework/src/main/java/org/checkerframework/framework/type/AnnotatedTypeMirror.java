@@ -318,7 +318,7 @@ public abstract class AnnotatedTypeMirror {
         //                .size() : "Invalid number of effective annotations ("
         //                + effectiveAnnotations + "). Should be "
         //                + atypeFactory.qualHierarchy.getWidth() + " but is "
-        //                + effectiveAnnotations.size() + ". Type: " + this.toString();
+        //                + effectiveAnnotations.size() + ". Type: " + this;
         return effectiveAnnotations;
     }
 

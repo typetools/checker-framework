@@ -636,9 +636,9 @@ public class AnnotationBuilder {
                 return toStringVal;
             }
             if (value instanceof String) {
-                toStringVal = "\"" + value.toString() + "\"";
+                toStringVal = "\"" + value + "\"";
             } else if (value instanceof Character) {
-                toStringVal = "\'" + value.toString() + "\'";
+                toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
                 StringBuilder sb = new StringBuilder();
                 List<?> list = (List<?>) value;
@@ -660,7 +660,7 @@ public class AnnotationBuilder {
                 if (!encl.isEmpty()) {
                     encl = encl + '.';
                 }
-                toStringVal = encl + var.toString();
+                toStringVal = encl + var;
             } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
                 toStringVal = value.toString() + ".class";
             } else {

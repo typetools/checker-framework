@@ -93,10 +93,10 @@ public class AliasingTransfer extends CFTransfer {
         assert (args.size() == params.size())
                 : "Number of arguments in "
                         + "the method call "
-                        + n.toString()
+                        + n
                         + " is different from the"
                         + " number of parameters for the method declaration: "
-                        + methodElement.getSimpleName().toString();
+                        + methodElement.getSimpleName();
 
         AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
         List<AnnotatedTypeMirror> paramTypes = annotatedType.getParameterTypes();
@@ -138,10 +138,10 @@ public class AliasingTransfer extends CFTransfer {
             assert (args.size() == params.size())
                     : "Number of arguments in "
                             + "the method call "
-                            + n.toString()
+                            + n
                             + " is different from the"
                             + " number of parameters for the method declaration: "
-                            + methodElement.getSimpleName().toString();
+                            + methodElement.getSimpleName();
             CFStore store = in.getRegularStore();
 
             for (int i = 0; i < args.size(); i++) {
