@@ -71,7 +71,7 @@ public class IndexRefinementInfo {
             throw new BugInCF(
                     IndexRefinementInfo.class
                             + ": Found multiple tops, but expected one. \nFound: "
-                            + tops.toString());
+                            + tops);
         }
         return hierarchy.findAnnotationInHierarchy(set, tops.iterator().next());
     }

@@ -50,7 +50,7 @@ public class ArrayAccessNode extends Node {
 
     @Override
     public String toString() {
-        String base = getArray().toString() + "[" + getIndex().toString() + "]";
+        String base = getArray().toString() + "[" + getIndex() + "]";
         return base;
     }
 

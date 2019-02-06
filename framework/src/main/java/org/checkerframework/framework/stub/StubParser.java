@@ -900,16 +900,16 @@ public class StubParser {
                     // on the very next line.
                     throw new Error(
                             "StubParser: Wildcard type <"
-                                    + atype.toString()
+                                    + atype
                                     + "> doesn't match type in stubs file: <"
-                                    + typeDef.toString()
+                                    + typeDef
                                     + ">"
                                     + LINE_SEPARATOR
                                     + "In file "
                                     + filename
                                     + LINE_SEPARATOR
                                     + "While parsing "
-                                    + parseState.toString());
+                                    + parseState);
                 }
                 WildcardType wildcardDef = (WildcardType) typeDef;
                 if (wildcardDef.getExtendedType().isPresent()) {
@@ -1071,8 +1071,7 @@ public class StubParser {
     private Map<Element, BodyDeclaration<?>> getMembers(
             TypeElement typeElt, TypeDeclaration<?> typeDecl) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
-                        || typeDecl.getNameAsString()
-                                .endsWith("$" + typeElt.getSimpleName().toString()))
+                        || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
@@ -1706,7 +1705,7 @@ public class StubParser {
             }
 
             if (rcvElt == null) {
-                stubWarnNotFound("Type " + faexpr.getScope().toString() + " not found");
+                stubWarnNotFound("Type " + faexpr.getScope() + " not found");
                 return null;
             }
         }
