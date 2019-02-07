@@ -49,7 +49,7 @@ public interface UnitsRelations {
      * @return an AnnotationMirror of the Unit with the Prefix p, or null if it cannot be
      *     constructed
      */
-    public static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
+    static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
             final ProcessingEnvironment env,
             final Class<? extends Annotation> annoClass,
             final Prefix p) {
@@ -67,7 +67,7 @@ public interface UnitsRelations {
      * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
      * @return an AnnotationMirror of the Unit with Prefix.one, or null if it cannot be constructed
      */
-    public static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
+    static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
             final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
         return buildAnnoMirrorWithSpecificPrefix(env, annoClass, Prefix.one);
     }
@@ -80,7 +80,7 @@ public interface UnitsRelations {
      * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
      * @return an AnnotationMirror of the Unit with no prefix, or null if it cannot be constructed
      */
-    public static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
+    static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
             final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
         return AnnotationBuilder.fromClass(env.getElementUtils(), annoClass);
     }
