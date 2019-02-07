@@ -297,7 +297,7 @@ public class UnitsRelationsTools {
      * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
      * @return an AnnotationMirror of the Unit with Prefix.one, or null if it cannot be constructed
      */
-    static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
+    public static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
             final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
         return buildAnnoMirrorWithSpecificPrefix(env, annoClass, Prefix.one);
     }
