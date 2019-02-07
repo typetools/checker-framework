@@ -342,7 +342,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public final boolean ignoreUninferredTypeArguments;
 
     /** The Object.getClass method. */
-    protected final ExecutableElement objectGetClass;
+    public final ExecutableElement objectGetClass;
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
