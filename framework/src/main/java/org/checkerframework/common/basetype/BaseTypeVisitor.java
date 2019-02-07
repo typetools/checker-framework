@@ -3637,7 +3637,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
                 // should.
 
-                boolean foundNN = false;
+                boolean foundJDK = false;
                 for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
                         ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
                     if (tc.position.type
@@ -3645,17 +3645,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             && tc.position.parameter_index == 0
                             &&
                             // TODO: using .class would be nicer, but adds a circular dependency on
-                            // the "checker" project
+                            // the "checker" project.
                             // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
                             tc.type
                                     .toString()
                                     .equals(
                                             "org.checkerframework.checker.nullness.qual.Nullable")) {
-                        foundNN = true;
+                        foundJDK = true;
                     }
                 }
 
-                if (!foundNN) {
+                if (!foundJDK) {
                     String jdkJarName = PluginUtil.getJdkJarName();
 
                     checker.message(
