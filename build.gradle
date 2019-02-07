@@ -1,9 +1,20 @@
 import de.undercouch.gradle.tasks.download.Download
 import org.gradle.internal.jvm.Jvm
 
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0"
+    }
+}
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '4.0.4'
-    id "de.undercouch.download" version "3.4.3"
+    id 'de.undercouch.download' version '3.4.3'
     id 'java'
     // TODO: Migrate to newer version: https://github.com/tbroyer/gradle-errorprone-plugin#migration-from-versions-00x
     id "net.ltgt.errorprone-base" version "0.0.13"
@@ -60,8 +71,9 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'com.github.johnrengelman.shadow'
-    apply plugin: "de.undercouch.download"
+    apply plugin: 'de.undercouch.download'
     apply plugin: 'net.ltgt.errorprone-base'
+    apply plugin: 'biz.aQute.bnd.builder'
 
     group 'org.checkerframework'
     // Increment the minor version rather than just the patch level if:
@@ -435,6 +447,7 @@ subprojects {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
                 attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+                attributes('Export-Package': '*')
             }
         }
 
