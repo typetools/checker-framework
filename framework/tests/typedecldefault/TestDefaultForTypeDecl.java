@@ -1,4 +1,4 @@
-import org.checkerframework.checker.typedecldefault.qual.*;
+import typedecldefault.quals.*;
 
 public class TestDefaultForTypeDecl {
     void test(@TypeDeclDefaultTop TestDefaultForTypeDecl arg) {}

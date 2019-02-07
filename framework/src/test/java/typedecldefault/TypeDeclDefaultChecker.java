@@ -1,4 +1,4 @@
-package org.checkerframework.checker.typedecldefault;
+package typedecldefault;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 

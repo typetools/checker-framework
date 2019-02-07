@@ -1,4 +1,4 @@
-package org.checkerframework.checker.typedecldefault.qual;
+package typedecldefault.quals;
 
 import java.lang.annotation.*;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
