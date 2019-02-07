@@ -2,11 +2,11 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,16 +14,15 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
@@ -46,11 +45,12 @@ public class KeyForAnnotatedTypeFactory
     /** The types in the KeyFor hierarchy. */
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
 
-    /** A parameter list consisting of just Object. */
-    protected final List<TypeMirror> PARAMS_OBJECT;
-
-    /** A parameter list consisting of [Object, Object]. */
-    protected final List<TypeMirror> PARAMS_OBJECT_OBJECT;
+    /** The Map.containsKey method. */
+    private final ExecutableElement mapContainsKey;
+    /** The Map.get method. */
+    private final ExecutableElement mapGet;
+    /** The Map.put method. */
+    private final ExecutableElement mapPut;
 
     private final KeyForPropagator keyForPropagator;
 
@@ -64,12 +64,9 @@ public class KeyForAnnotatedTypeFactory
         KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
-        TypeMirror OBJECT_TYPE = TypesUtils.typeFromClass(Object.class, types, elements);
-        PARAMS_OBJECT = Collections.singletonList(OBJECT_TYPE);
-        List<TypeMirror> paramsObjectObject = new ArrayList<>(2);
-        paramsObjectObject.add(OBJECT_TYPE);
-        paramsObjectObject.add(OBJECT_TYPE);
-        PARAMS_OBJECT_OBJECT = Collections.unmodifiableList(paramsObjectObject);
+        mapContainsKey = TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
+        mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
+        mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
 
         // Add compatibility annotations:
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
@@ -236,80 +233,33 @@ public class KeyForAnnotatedTypeFactory
         }
     }
 
-    /**
-     * Returns true if the node is an invocation of the named method in the Map interface, which has
-     * one formal parameter of Object type.
-     *
-     * @param n the method invocation
-     * @param methodName the method to check for, which has one formal parameter
-     */
-    protected boolean isInvocationOfMapMethodWithOneObjectParameter(
-            MethodInvocationNode n, String methodName) {
-        return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT);
+    /** Returns true if the node is an invocation of Map.containsKey. */
+    boolean isMapContainsKey(Tree tree) {
+        return TreeUtils.isMethodInvocation(tree, mapContainsKey, getProcessingEnv());
     }
 
-    /**
-     * Returns true if the node is an invocation of the named method in the Map interface, which has
-     * two formal parameters of Object type.
-     *
-     * @param n the method invocation
-     * @param methodName the method to check for, which has two formal parameters
-     */
-    protected boolean isInvocationOfMapMethodWithTwoObjectParameters(
-            MethodInvocationNode n, String methodName) {
-        return isInvocationOfMapMethod(n, methodName, PARAMS_OBJECT_OBJECT);
+    /** Returns true if the node is an invocation of Map.get. */
+    boolean isMapGet(Tree tree) {
+        return TreeUtils.isMethodInvocation(tree, mapGet, getProcessingEnv());
     }
 
-    /**
-     * Returns true if the node is an invocation of the named method in the Map interface.
-     *
-     * @param n the method invocation
-     * @param methodName the method to check for
-     * @param paramTypes the parameter types in methodName's declaration, to resolve overloading
-     */
-    protected boolean isInvocationOfMapMethod(
-            MethodInvocationNode n, String methodName, List<TypeMirror> paramTypes) {
-        String invokedMethodName = getMethodName(n);
-
-        // First check the method name. This is an inexpensive check.
-        if (!invokedMethodName.equals(methodName)) {
-            return false;
-        }
-
-        // Verify the argument types.  These are more expensive checks.
-
-        // The receiver's type must extend the java.util.Map interface.
-        TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
-        if (!types.isSubtype(receiverType, erasedMapType)) {
-            return false;
-        }
-
-        // Also check the other argument types.
-        // "n" is the method at this call site.
-        ExecutableElement nDecl = TreeUtils.elementFromUse(n.getTree());
-        List<? extends VariableElement> nParams = nDecl.getParameters();
-        if (nParams.size() != paramTypes.size()) {
-            return false;
-        }
-        for (int i = 0; i < paramTypes.size(); i++) {
-            TypeMirror nParamType = nParams.get(i).asType();
-            while (nParamType.getKind() == TypeKind.TYPEVAR) {
-                nParamType = ((TypeVariable) nParamType).getUpperBound();
-            }
-            TypeMirror paramType = paramTypes.get(i);
-            if (!types.isSameType(nParamType, paramType)) {
-                return false;
-            }
-        }
-
-        return true;
+    /** Returns true if the node is an invocation of Map.put. */
+    boolean isMapPut(Tree tree) {
+        return TreeUtils.isMethodInvocation(tree, mapPut, getProcessingEnv());
     }
 
-    protected String getMethodName(MethodInvocationNode n) {
-        String invokedMethod = n.getTarget().getMethod().toString();
-        int index = invokedMethod.indexOf("(");
-        assert index != -1 : this.getClass() + ": expected method name to contain (";
-        invokedMethod = invokedMethod.substring(0, index);
-        return invokedMethod;
+    /** Returns true if the node is an invocation of Map.containsKey. */
+    boolean isMapContainsKey(Node node) {
+        return NodeUtils.isMethodInvocation(node, mapContainsKey, getProcessingEnv());
+    }
+
+    /** Returns true if the node is an invocation of Map.get. */
+    boolean isMapGet(Node node) {
+        return NodeUtils.isMethodInvocation(node, mapGet, getProcessingEnv());
+    }
+
+    /** Returns true if the node is an invocation of Map.put. */
+    boolean isMapPut(Node node) {
+        return NodeUtils.isMethodInvocation(node, mapPut, getProcessingEnv());
     }
 }

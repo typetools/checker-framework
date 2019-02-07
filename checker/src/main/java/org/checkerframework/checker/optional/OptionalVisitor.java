@@ -279,7 +279,7 @@ public class OptionalVisitor
 
     /**
      * Handles part of Rule #6, and also Rule #7: Don't permit {@code Collection<Optional<...>>} or
-     * {@code Optional<Collection<...>>}..
+     * {@code Optional<Collection<...>>}.
      */
     private final class OptionalTypeValidator extends BaseTypeValidator {
 

@@ -394,9 +394,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Determines whether the multiplication includes a call to Math.random that requires
-     * special-casing by the LBC. In particular, the LBC must special cases calls to Math.random *
-     * array.length and Random.nextDouble() * array.length.
+     * Given a multiplication, return its type if the LBC special-cases it, or null otherwise.
+     *
+     * <p>The LBC special-cases {@code Math.random() * array.length} and {@code Random.nextDouble()
+     * * array.length}.
      *
      * @param node a multiplication node that may need special casing
      * @return an AnnotationMirror representing the result if the special case is valid, or null if
@@ -418,6 +419,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return null;
     }
 
+    /**
+     * Return true if randTree is a call to Math.random() or Random.nextDouble(), and arrLenTree is
+     * someArray.length.
+     */
     private AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
         if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION
                 && TreeUtils.isArrayLengthAccess(arrLenTree)) {
