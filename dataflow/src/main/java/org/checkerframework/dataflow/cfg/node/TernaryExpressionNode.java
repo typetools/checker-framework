@@ -66,7 +66,7 @@ public class TernaryExpressionNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof TernaryExpressionNode)) {
+        if (!(obj instanceof TernaryExpressionNode)) {
             return false;
         }
         TernaryExpressionNode other = (TernaryExpressionNode) obj;

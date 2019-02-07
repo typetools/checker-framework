@@ -159,7 +159,7 @@ public abstract class AnnotatedTypeMirror {
             return true;
         }
 
-        if (o == null || !(o instanceof AnnotatedTypeMirror)) {
+        if (!(o instanceof AnnotatedTypeMirror)) {
             return false;
         }
 
