@@ -20,4 +20,4 @@ extraction:
     - (cd ${LGTM_WORKSPACE}/annotation-tools; ant compile)
     index:
       build_command:
-      - JSR308=${LGTM_WORKSPACE} ./gradlew assemble --console=plain --warning-mode=all
+      - JSR308=${LGTM_WORKSPACE} ./gradlew assemble --console=plain --warning-mode=all --no-daemon
