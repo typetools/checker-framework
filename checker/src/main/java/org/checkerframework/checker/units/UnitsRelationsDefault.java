@@ -35,21 +35,21 @@ public class UnitsRelationsDefault implements UnitsRelations {
     public UnitsRelations init(ProcessingEnvironment env) {
         elements = env.getElementUtils();
 
-        m = UnitsRelations.buildAnnoMirrorWithDefaultPrefix(env, m.class);
-        km = UnitsRelations.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.kilo);
-        mm = UnitsRelations.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.milli);
+        m = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, m.class);
+        km = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.kilo);
+        mm = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.milli);
 
-        m2 = UnitsRelations.buildAnnoMirrorWithNoPrefix(env, m2.class);
-        km2 = UnitsRelations.buildAnnoMirrorWithNoPrefix(env, km2.class);
-        mm2 = UnitsRelations.buildAnnoMirrorWithNoPrefix(env, mm2.class);
+        m2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, m2.class);
+        km2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, km2.class);
+        mm2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mm2.class);
 
-        s = UnitsRelations.buildAnnoMirrorWithDefaultPrefix(env, s.class);
-        h = UnitsRelations.buildAnnoMirrorWithNoPrefix(env, h.class);
+        s = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, s.class);
+        h = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, h.class);
 
-        mPERs = UnitsRelations.buildAnnoMirrorWithNoPrefix(env, mPERs.class);
-        kmPERh = UnitsRelations.buildAnnoMirrorWithNoPrefix(env, kmPERh.class);
+        mPERs = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mPERs.class);
+        kmPERh = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, kmPERh.class);
 
-        mPERs2 = UnitsRelations.buildAnnoMirrorWithNoPrefix(env, mPERs2.class);
+        mPERs2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mPERs2.class);
 
         return this;
     }
