@@ -42,6 +42,9 @@ public interface UnitsRelations {
      * Creates an AnnotationMirror representing a unit defined by annoClass, with the specific
      * Prefix p.
      *
+     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
+     * methods in UnitsRelationsTools.
+     *
      * @param env the Checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation
      * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
@@ -62,6 +65,9 @@ public interface UnitsRelations {
      * Creates an AnnotationMirror representing a unit defined by annoClass, with the default Prefix
      * of {@code Prefix.one}.
      *
+     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
+     * methods in UnitsRelationsTools.
+     *
      * @param env the Checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation
      * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
@@ -74,6 +80,9 @@ public interface UnitsRelations {
 
     /**
      * Creates an AnnotationMirror representing a unit defined by annoClass, with no prefix.
+     *
+     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
+     * methods in UnitsRelationsTools.
      *
      * @param env checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation
