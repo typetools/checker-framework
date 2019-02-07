@@ -226,14 +226,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> methodNames;
             List<Integer> params;
             List<String> classNames;
-            if (isGetConstructorMethodInovaction(tree)) {
+            if (isGetConstructorMethodInvocation(tree)) {
                 // method name for constructors is always <init>
                 methodNames = Arrays.asList(ReflectionResolver.INIT);
                 params = getConstructorParamsLen(tree.getArguments());
                 classNames =
                         getClassNamesFromClassValChecker(TreeUtils.getReceiverTree(tree), true);
 
-            } else if (isGetMethodMethodInovaction(tree)) {
+            } else if (isGetMethodMethodInvocation(tree)) {
                 ExpressionTree methodNameArg = tree.getArguments().get(0);
                 methodNames = getMethodNamesFromStringArg(methodNameArg);
                 params = getMethodParamsLen(tree.getArguments());
@@ -269,18 +269,20 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null) {
-                return true;
-            }
-            return false;
+        /**
+         * Returns true if the method being invoked is annotated with @GetConstructor. An example of
+         * such a method is Class.getConstructor.
+         */
+        private boolean isGetConstructorMethodInvocation(MethodInvocationTree tree) {
+            return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null;
         }
 
-        private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null) {
-                return true;
-            }
-            return false;
+        /**
+         * Returns true if the method being invoked is annotated with @GetMethod. An example of such
+         * a method is Class.getMethod.
+         */
+        private boolean isGetMethodMethodInvocation(MethodInvocationTree tree) {
+            return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
         }
 
         private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {

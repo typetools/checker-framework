@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for methods like {@code Constructor.newInstance}, whose signature is: <br>
- * {@code T method({@link MethodVal}(classname=c, methodname="<init>", params=p) Constructor this,
- * Object... args)}
+ * {@code T method(}{@link MethodVal}{@code (classname=c, methodname="<init>", params=p) Constructor
+ * this, Object... args)}
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
