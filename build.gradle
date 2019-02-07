@@ -23,6 +23,8 @@ ext {
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
+    errorproneJavacVersion = '9+181-r4173-1'
+
     parentDir = file("${rootDir}/../").absolutePath
 
     annotationTools = "${parentDir}/annotation-tools"
@@ -81,8 +83,10 @@ allprojects {
 
     dependencies {
         if (isJava8) {
-            javacJar group: 'com.google.errorprone', name: 'javac', version: '9+181-r4173-1'
+            javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
         }
+
+        errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
     }
 
     // After all the tasks have been created, modify some of them.
