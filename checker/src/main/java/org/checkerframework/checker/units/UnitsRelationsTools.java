@@ -276,7 +276,7 @@ public class UnitsRelationsTools {
      * @return an AnnotationMirror of the Unit with the Prefix p, or null if it cannot be
      *     constructed
      */
-    static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
+    public static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
             final ProcessingEnvironment env,
             final Class<? extends Annotation> annoClass,
             final Prefix p) {
