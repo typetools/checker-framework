@@ -30,7 +30,7 @@ public class UnsignedRightShiftNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof UnsignedRightShiftNode)) {
+        if (!(obj instanceof UnsignedRightShiftNode)) {
             return false;
         }
         UnsignedRightShiftNode other = (UnsignedRightShiftNode) obj;

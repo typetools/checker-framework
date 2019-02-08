@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for methods like {@code Object.getClassName}. Their signature is:<br>
- * {@code {@link ClassBound}("ReceiverType") Class method(ReceiverType this) {...}}
+ * {@code @}{@link ClassBound}{@code ("ReceiverType") Class method(ReceiverType this) {...}}
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */

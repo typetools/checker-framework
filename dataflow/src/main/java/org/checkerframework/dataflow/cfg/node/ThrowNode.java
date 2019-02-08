@@ -47,7 +47,7 @@ public class ThrowNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ThrowNode)) {
+        if (!(obj instanceof ThrowNode)) {
             return false;
         }
         ThrowNode other = (ThrowNode) obj;

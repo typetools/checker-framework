@@ -140,7 +140,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof CFAbstractValue)) {
+        if (!(obj instanceof CFAbstractValue)) {
             return false;
         }
 

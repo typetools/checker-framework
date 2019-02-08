@@ -240,8 +240,7 @@ public class DOTCFGVisualizer<
             srcloc.append(((JCTree) cfgm.getMethod()).pos);
             srcloc.append('>');
         } else {
-            throw new BugInCF(
-                    "Unexpected AST kind: " + ast.getKind() + " value: " + ast.toString());
+            throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
         }
         outfile.append('-');
         outfile.append(checkerName);

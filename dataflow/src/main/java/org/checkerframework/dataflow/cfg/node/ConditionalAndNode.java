@@ -30,7 +30,7 @@ public class ConditionalAndNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ConditionalAndNode)) {
+        if (!(obj instanceof ConditionalAndNode)) {
             return false;
         }
         ConditionalAndNode other = (ConditionalAndNode) obj;

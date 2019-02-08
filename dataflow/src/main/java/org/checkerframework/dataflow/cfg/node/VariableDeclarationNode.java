@@ -50,7 +50,7 @@ public class VariableDeclarationNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof VariableDeclarationNode)) {
+        if (!(obj instanceof VariableDeclarationNode)) {
             return false;
         }
         VariableDeclarationNode other = (VariableDeclarationNode) obj;
