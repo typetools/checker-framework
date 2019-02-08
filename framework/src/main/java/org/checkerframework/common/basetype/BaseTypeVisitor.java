@@ -2049,11 +2049,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
+        /** Create a FoundRequired for a type and bounds. */
+        private FoundRequired(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
+            if (shouldPrintVerbose(found, required)) {
+                this.found = found.toString(true);
+                this.required = required.toString(true);
+            } else {
+                this.found = found.toString();
+                this.required = required.toString();
+            }
+        }
+
         /**
          * Creates string representations of {@link AnnotatedTypeMirror}s which are only verbose if
          * required to differentiate the two types.
          */
         static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
+            return new FoundRequired(found, required);
+        }
+
+        /**
+         * Creates string representations of {@link AnnotatedTypeMirror} and {@link
+         * AnnotatedTypeParameterBounds}s which are only verbose if required to differentiate the
+         * two types.
+         */
+        static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
             return new FoundRequired(found, required);
         }
     }
@@ -2072,6 +2092,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return true;
         }
         return containsSameToString(atm1, atm2);
+    }
+
+    /**
+     * Return whether or not the verbose toString should be used when printing the annotated type
+     * and the bounds it is not within.
+     *
+     * @param atm the type
+     * @param bounds the bounds
+     * @return true iff bounds does not contain "@", or there are two annotated types (in either
+     *     argument) such that their toStrings are the same but their verbose toStrings differ
+     */
+    private static boolean shouldPrintVerbose(
+            AnnotatedTypeMirror atm, AnnotatedTypeParameterBounds bounds) {
+        if (!atm.toString().contains("@") && !bounds.toString().contains("@")) {
+            return true;
+        }
+        return containsSameToString(atm, bounds.getUpperBound(), bounds.getLowerBound());
     }
 
     /**
@@ -2108,7 +2145,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
-     * are the same but their verbose toStrings differ
+     * are the same but their verbose toStrings differ.
      */
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
         for (AnnotatedTypeMirror atm : atms) {
@@ -2203,14 +2240,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
+                FoundRequired fr = FoundRequired.of(typeArg, bounds);
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
                     checker.report(
-                            Result.failure("type.argument.type.incompatible", typeArg, bounds),
+                            Result.failure(
+                                    "type.argument.type.incompatible", fr.found, fr.required),
                             toptree);
                 } else {
                     checker.report(
-                            Result.failure("type.argument.type.incompatible", typeArg, bounds),
+                            Result.failure(
+                                    "type.argument.type.incompatible", fr.found, fr.required),
                             typeargTrees.get(typeargs.indexOf(typeArg)));
                 }
             }
