@@ -55,7 +55,7 @@ public class CaseNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof CaseNode)) {
+        if (!(obj instanceof CaseNode)) {
             return false;
         }
         CaseNode other = (CaseNode) obj;

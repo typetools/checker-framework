@@ -46,7 +46,7 @@ public abstract class ValueLiteralNode extends Node {
     /** Compare the value of this nodes. */
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ValueLiteralNode)) {
+        if (!(obj instanceof ValueLiteralNode)) {
             return false;
         }
         ValueLiteralNode other = (ValueLiteralNode) obj;

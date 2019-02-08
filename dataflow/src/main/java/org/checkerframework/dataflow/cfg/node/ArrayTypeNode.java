@@ -38,7 +38,7 @@ public class ArrayTypeNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ArrayTypeNode)) {
+        if (!(obj instanceof ArrayTypeNode)) {
             return false;
         }
         ArrayTypeNode other = (ArrayTypeNode) obj;
