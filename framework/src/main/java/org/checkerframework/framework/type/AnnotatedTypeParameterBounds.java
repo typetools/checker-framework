@@ -22,6 +22,16 @@ public class AnnotatedTypeParameterBounds {
         return "[extends " + upper + " super " + lower + "]";
     }
 
+    /**
+     * Return a possibly-verbose string representation of this.
+     *
+     * @param verbose if true, returned representation is verbose
+     * @return a possibly-verbose string representation of this
+     */
+    public String toString(boolean verbose) {
+        return "[extends " + upper.toString(verbose) + " super " + lower.toString(verbose) + "]";
+    }
+
     @Override
     public int hashCode() {
         return 17 * upper.hashCode() + 37 * lower.hashCode();

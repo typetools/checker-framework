@@ -529,7 +529,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof FieldAccess)) {
+            if (!(obj instanceof FieldAccess)) {
                 return false;
             }
             FieldAccess fa = (FieldAccess) obj;
@@ -590,7 +590,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            return obj != null && obj instanceof ThisReference;
+            return obj instanceof ThisReference;
         }
 
         @Override
@@ -638,7 +638,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ClassName)) {
+            if (!(obj instanceof ClassName)) {
                 return false;
             }
             ClassName other = (ClassName) obj;
@@ -727,7 +727,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof LocalVariable)) {
+            if (!(obj instanceof LocalVariable)) {
                 return false;
             }
 
@@ -812,7 +812,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ValueLiteral)) {
+            if (!(obj instanceof ValueLiteral)) {
                 return false;
             }
             ValueLiteral other = (ValueLiteral) obj;
@@ -960,7 +960,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof MethodCall)) {
+            if (!(obj instanceof MethodCall)) {
                 return false;
             }
             MethodCall other = (MethodCall) obj;
@@ -1073,7 +1073,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ArrayAccess)) {
+            if (!(obj instanceof ArrayAccess)) {
                 return false;
             }
             ArrayAccess other = (ArrayAccess) obj;
@@ -1148,7 +1148,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ArrayCreation)) {
+            if (!(obj instanceof ArrayCreation)) {
                 return false;
             }
             ArrayCreation other = (ArrayCreation) obj;

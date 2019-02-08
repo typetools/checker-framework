@@ -196,7 +196,7 @@ public class I18nFormatterTreeUtil {
         Result<I18nConversionCategory[]> ret = new Result<>(null, node.getTree());
 
         // Now only work with a literal string
-        if (firstParam != null && (firstParam instanceof StringLiteralNode)) {
+        if (firstParam instanceof StringLiteralNode) {
             String s = ((StringLiteralNode) firstParam).getValue();
             if (translations.containsKey(s)) {
                 String value = translations.get(s);

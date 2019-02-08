@@ -30,7 +30,7 @@ public class GreaterThanNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof GreaterThanNode)) {
+        if (!(obj instanceof GreaterThanNode)) {
             return false;
         }
         GreaterThanNode other = (GreaterThanNode) obj;

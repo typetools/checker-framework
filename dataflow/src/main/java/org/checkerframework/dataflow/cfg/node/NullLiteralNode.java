@@ -32,7 +32,7 @@ public class NullLiteralNode extends ValueLiteralNode {
     @Override
     public boolean equals(Object obj) {
         // test that obj is a NullLiteralNode
-        if (obj == null || !(obj instanceof NullLiteralNode)) {
+        if (!(obj instanceof NullLiteralNode)) {
             return false;
         }
         // super method compares values

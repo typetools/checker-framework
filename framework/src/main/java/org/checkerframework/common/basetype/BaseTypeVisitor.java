@@ -2049,6 +2049,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
+        /** Create a FoundRequired for a type and bounds. */
+        private FoundRequired(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
+            if (shouldPrintVerbose(found, required)) {
+                this.found = found.toString(true);
+                this.required = required.toString(true);
+            } else {
+                this.found = found.toString();
+                this.required = required.toString();
+            }
+        }
+
         /**
          * Creates string representations of {@link AnnotatedTypeMirror}s which are only verbose if
          * required to differentiate the two types.
@@ -2056,64 +2067,97 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
             return new FoundRequired(found, required);
         }
+
+        /**
+         * Creates string representations of {@link AnnotatedTypeMirror} and {@link
+         * AnnotatedTypeParameterBounds}s which are only verbose if required to differentiate the
+         * two types.
+         */
+        static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
+            return new FoundRequired(found, required);
+        }
     }
+
     /**
      * Return whether or not the verbose toString should be used when printing the two annotated
      * types.
      *
      * @param atm1 the first AnnotatedTypeMirror
      * @param atm2 the second AnnotatedTypeMirror
-     * @return true iff there are two annotated types (in either ATM) such that their toStrings are
-     *     the same but their verbose toStrings differ
+     * @return true iff neither argumentc contains "@", or there are two annotated types (in either
+     *     ATM) such that their toStrings are the same but their verbose toStrings differ
      */
     private static boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
-        String atm1ToString = atm1.toString();
-        String atm2ToString = atm2.toString();
-        // If both types as strings are the same, use verbose toString.
-        if (atm2ToString.equals(atm1ToString)
-                // or if neither string contains an annotation
-                || (!atm2ToString.contains("@") && !atm1ToString.contains("@"))) {
+        if ((!atm1.toString().contains("@") && !atm2.toString().contains("@"))) {
             return true;
         }
+        return containsSameToString(atm1, atm2);
+    }
 
-        SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
-                new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                    /** Maps from a type's toString to its verbose toString. */
-                    Map<String, String> map = new HashMap<>();
-
-                    @Override
-                    protected Boolean reduce(Boolean r1, Boolean r2) {
-                        r1 = r1 == null ? false : r1;
-                        r2 = r2 == null ? false : r2;
-                        return r1 || r2;
-                    }
-
-                    @Override
-                    protected Boolean defaultAction(AnnotatedTypeMirror type, Void avoid) {
-                        if (type == null) {
-                            return false;
-                        }
-                        String simple = type.toString();
-                        String verbose = map.get(simple);
-                        if (verbose == null) {
-                            map.put(simple, type.toString(true));
-                            return false;
-                        } else {
-                            return !verbose.equals(type.toString(true));
-                        }
-                    }
-                };
-        Boolean r1 = checkForMismatchedToStrings.visit(atm1);
-        if (r1 != null && r1) {
+    /**
+     * Return whether or not the verbose toString should be used when printing the annotated type
+     * and the bounds it is not within.
+     *
+     * @param atm the type
+     * @param bounds the bounds
+     * @return true iff bounds does not contain "@", or there are two annotated types (in either
+     *     argument) such that their toStrings are the same but their verbose toStrings differ
+     */
+    private static boolean shouldPrintVerbose(
+            AnnotatedTypeMirror atm, AnnotatedTypeParameterBounds bounds) {
+        if (!atm.toString().contains("@") && !bounds.toString().contains("@")) {
             return true;
         }
-        // Call reset to clear the visitor history, but not the map from Strings to types.
-        checkForMismatchedToStrings.reset();
-        Boolean r2 = checkForMismatchedToStrings.visit(atm2);
+        return containsSameToString(atm, bounds.getUpperBound(), bounds.getLowerBound());
+    }
 
-        // SimpleAnnotatedTypeScanner#scan returns null if it encounters a null AnnotatedTypeMirror.
-        // This shouldn't happen if the atm1 and atm2 are well-formed.
-        return r2 == null ? false : r2;
+    /**
+     * A scanner that indicates whether any (sub-)types have the same toString but different verbose
+     * toString.
+     */
+    private static SimpleAnnotatedTypeScanner<Boolean, Void> checkContainsSameToString =
+            new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+                /** Maps from a type's toString to its verbose toString. */
+                Map<String, String> map = new HashMap<>();
+
+                @Override
+                protected Boolean reduce(Boolean r1, Boolean r2) {
+                    r1 = r1 == null ? false : r1;
+                    r2 = r2 == null ? false : r2;
+                    return r1 || r2;
+                }
+
+                @Override
+                protected Boolean defaultAction(AnnotatedTypeMirror type, Void avoid) {
+                    if (type == null) {
+                        return false;
+                    }
+                    String simple = type.toString();
+                    String verbose = map.get(simple);
+                    if (verbose == null) {
+                        map.put(simple, type.toString(true));
+                        return false;
+                    } else {
+                        return !verbose.equals(type.toString(true));
+                    }
+                }
+            };
+
+    /**
+     * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
+     * are the same but their verbose toStrings differ.
+     */
+    private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
+        for (AnnotatedTypeMirror atm : atms) {
+            Boolean result = checkContainsSameToString.visit(atm);
+            if (result != null && result) {
+                return true;
+            }
+            // Call reset to clear the visitor history, but not the map from Strings to types.
+            checkContainsSameToString.reset();
+        }
+
+        return false;
     }
 
     protected void checkArrayInitialization(
@@ -2196,14 +2240,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
+                FoundRequired fr = FoundRequired.of(typeArg, bounds);
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
                     checker.report(
-                            Result.failure("type.argument.type.incompatible", typeArg, bounds),
+                            Result.failure(
+                                    "type.argument.type.incompatible", fr.found, fr.required),
                             toptree);
                 } else {
                     checker.report(
-                            Result.failure("type.argument.type.incompatible", typeArg, bounds),
+                            Result.failure(
+                                    "type.argument.type.incompatible", fr.found, fr.required),
                             typeargTrees.get(typeargs.indexOf(typeArg)));
                 }
             }
@@ -3637,7 +3684,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
                 // should.
 
-                boolean foundNN = false;
+                boolean foundJDK = false;
                 for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
                         ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
                     if (tc.position.type
@@ -3645,17 +3692,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             && tc.position.parameter_index == 0
                             &&
                             // TODO: using .class would be nicer, but adds a circular dependency on
-                            // the "checker" project
+                            // the "checker" project.
                             // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
                             tc.type
                                     .toString()
                                     .equals(
                                             "org.checkerframework.checker.nullness.qual.Nullable")) {
-                        foundNN = true;
+                        foundJDK = true;
                     }
                 }
 
-                if (!foundNN) {
+                if (!foundJDK) {
                     String jdkJarName = PluginUtil.getJdkJarName();
 
                     checker.message(
