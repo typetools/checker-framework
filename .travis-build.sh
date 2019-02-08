@@ -67,10 +67,10 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew allTests --console=plain --warning-mode=all -s
+  ./gradlew allTests --console=plain --warning-mode=all -s --no-daemon
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
-  ./gradlew :checker:exampleTests --console=plain --warning-mode=all
+  ./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
 fi
 
 if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
@@ -86,7 +86,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 
   export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s)
+  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s --no-daemon)
 
 fi
 
@@ -101,7 +101,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
     ## If buildjdk, use "demos" below:
     ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew :checker:demosTests --console=plain --warning-mode=all -s
+    ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
   fi
 
   # Guava
@@ -115,7 +115,7 @@ fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all
+  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all --no-daemon
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -126,26 +126,26 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all
+  ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
 
   # Run error-prone
-  ./gradlew runErrorProne --console=plain --warning-mode=all
+  ./gradlew runErrorProne --console=plain --warning-mode=all --no-daemon
 
   # Documentation
-  ./gradlew javadocPrivate --console=plain --warning-mode=all
+  ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
   make -C docs/manual all
 
   echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
   # (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
   # The change to TRAVIS_COMMIT_RANGE is due to https://github.com/travis-ci/travis-ci/issues/4596 .
   (git diff "${TRAVIS_COMMIT_RANGE/.../..}" > /tmp/diff.txt 2>&1) || true
-  (./gradlew requireJavadocPrivate --console=plain --warning-mode=all > /tmp/rjp-output.txt 2>&1) || true
+  (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
   [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty" && false))
   wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
   python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
 
   # HTML legality
-  ./gradlew htmlValidate --console=plain --warning-mode=all
+  ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
 fi
 

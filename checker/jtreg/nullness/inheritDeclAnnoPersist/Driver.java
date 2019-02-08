@@ -52,7 +52,7 @@ public class Driver {
                 ++passed;
             } catch (Throwable e) {
                 out.println("FAILED:  " + method.getName());
-                out.println("    " + e.toString());
+                out.println("    " + e);
                 ++failed;
             }
         }

@@ -171,7 +171,7 @@ public class ElementUtils {
                 || elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
-            return getQualifiedClassName(elt) + "." + elt.toString();
+            return getQualifiedClassName(elt) + "." + elt;
         }
     }
 

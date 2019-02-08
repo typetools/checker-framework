@@ -10,7 +10,7 @@ public class FlowInterning1 {
         }
         String arg_val = tokens[i + 1];
         if (arg_type_name == "boolean") { // interned
-            // ..
+            // ...
         }
     }
 }
