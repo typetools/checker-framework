@@ -2112,8 +2112,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
         for (AnnotatedTypeMirror atm : atms) {
-            Boolean r1 = checkContainsSameToString.visit(atm);
-            if (r1 != null && r1) {
+            Boolean result = checkContainsSameToString.visit(atm);
+            if (result != null && result) {
                 return true;
             }
             // Call reset to clear the visitor history, but not the map from Strings to types.
