@@ -30,7 +30,7 @@ public class NumericalPlusNode extends UnaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof NumericalPlusNode)) {
+        if (!(obj instanceof NumericalPlusNode)) {
             return false;
         }
         NumericalPlusNode other = (NumericalPlusNode) obj;

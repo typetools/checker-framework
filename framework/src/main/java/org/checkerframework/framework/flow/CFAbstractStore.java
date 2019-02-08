@@ -923,7 +923,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     @Override
     public boolean equals(Object o) {
-        if (o != null && o instanceof CFAbstractStore) {
+        if (o instanceof CFAbstractStore) {
             @SuppressWarnings("unchecked")
             CFAbstractStore<V, S> other = (CFAbstractStore<V, S>) o;
             return this.supersetOf(other) && other.supersetOf(this);

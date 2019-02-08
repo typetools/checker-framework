@@ -83,7 +83,7 @@ public class FieldAccessNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof FieldAccessNode)) {
+        if (!(obj instanceof FieldAccessNode)) {
             return false;
         }
         FieldAccessNode other = (FieldAccessNode) obj;

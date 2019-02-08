@@ -53,7 +53,7 @@ public class WideningConversionNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof WideningConversionNode)) {
+        if (!(obj instanceof WideningConversionNode)) {
             return false;
         }
         WideningConversionNode other = (WideningConversionNode) obj;
