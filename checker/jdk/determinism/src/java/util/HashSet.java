@@ -102,7 +102,7 @@ public class HashSet<E>
      * Constructs a new, empty set; the backing <tt>HashMap</tt> instance has
      * default initial capacity (16) and load factor (0.75).
      */
-    public HashSet() {
+    public @OrderNonDet HashSet() {
         map = new HashMap<>();
     }
 
@@ -158,7 +158,7 @@ public class HashSet<E>
      * @throws     IllegalArgumentException if the initial capacity is less
      *             than zero, or if the load factor is nonpositive
      */
-    HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+    @PolyDet HashSet(@PolyDet int initialCapacity, @PolyDet float loadFactor, @PolyDet boolean dummy) {
         map = new LinkedHashMap<>(initialCapacity, loadFactor);
     }
 
