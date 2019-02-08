@@ -289,8 +289,8 @@ public class UnitsRelationsTools {
      * Creates an AnnotationMirror representing a unit defined by annoClass, with the default Prefix
      * of {@code Prefix.one}.
      *
-     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
-     * {@link #buildAnnoMirrorWithDefaultPrefix(ProcessingEnvironment, CharSequence, Prefix)}
+     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should not
+     * use it.
      *
      * @param env the Checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation
