@@ -140,8 +140,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         }
 
         /**
-         * Print, to sb, keyWord followed by field. NULL types are substituted with their
-         * annotations followed by " Void"
+         * Print, to sb, {@code keyWord} followed by {@code field}. NULL types are substituted with
+         * their annotations followed by " Void"
          */
         @SideEffectFree
         protected void printBound(

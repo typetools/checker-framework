@@ -2079,25 +2079,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Return whether or not the verbose toString should be used when printing the annotated type
-     * and the bounds it is not within.
-     *
-     * @param atm the type
-     * @param bounds the bounds
-     * @return true iff bounds does not contain "@", or there are two annotated types (in either
-     *     argument) such that their toStrings are the same but their verbose toStrings differ
-     */
-    private static boolean shouldPrintVerbose(
-            AnnotatedTypeMirror atm, AnnotatedTypeParameterBounds bounds) {
-        // Very weak implementation, could be improved later.
-        // It's not quite right to just call
-        if (!bounds.toString().contains("@")) {
-            return true;
-        }
-        return hasSameToString(atm, bounds.getUpperBound(), bounds.getLowerBound());
-    }
-
-    /**
      * Return whether or not the verbose toString should be used when printing the two annotated
      * types.
      *
@@ -2110,10 +2091,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if ((!atm1.toString().contains("@") && !atm2.toString().contains("@"))) {
             return true;
         }
-        return hasSameToString(atm1, atm2);
+        return containsSameToString(atm1, atm2);
     }
 
-    private static SimpleAnnotatedTypeScanner<Boolean, Void> checkForSameToString =
+    /**
+     * Return whether or not the verbose toString should be used when printing the annotated type
+     * and the bounds it is not within.
+     *
+     * @param atm the type
+     * @param bounds the bounds
+     * @return true iff bounds does not contain "@", or there are two annotated types (in either
+     *     argument) such that their toStrings are the same but their verbose toStrings differ
+     */
+    private static boolean shouldPrintVerbose(
+            AnnotatedTypeMirror atm, AnnotatedTypeParameterBounds bounds) {
+        if (!atm.toString().contains("@") && !bounds.toString().contains("@")) {
+            return true;
+        }
+        return containsSameToString(atm, bounds.getUpperBound(), bounds.getLowerBound());
+    }
+
+    /**
+     * A scanner that indicates whether any (sub-)types have the same toString but different verbose
+     * toString.
+     */
+    private static SimpleAnnotatedTypeScanner<Boolean, Void> checkContainsSameToString =
             new SimpleAnnotatedTypeScanner<Boolean, Void>() {
                 /** Maps from a type's toString to its verbose toString. */
                 Map<String, String> map = new HashMap<>();
@@ -2142,46 +2144,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             };
 
     /**
-     * Return true iff there are two annotated types (anywhere in either ATM) such that their
-     * toStrings are the same but their verbose toStrings differ
-     */
-    private static boolean hasSameToString(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
-        Boolean r1 = checkForSameToString.visit(atm1);
-        if (r1 != null && r1) {
-            return true;
-        }
-        // Call reset to clear the visitor history, but not the map from Strings to types.
-        checkForSameToString.reset();
-        Boolean r2 = checkForSameToString.visit(atm2);
-
-        // SimpleAnnotatedTypeScanner#scan returns null if it encounters a null AnnotatedTypeMirror.
-        // This shouldn't happen if the atm1 and atm2 are well-formed.
-        return r2 == null ? false : r2;
-    }
-
-    /**
      * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
      * are the same but their verbose toStrings differ
      */
-    private static boolean hasSameToString(
-            AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2, AnnotatedTypeMirror atm3) {
-        Boolean r1 = checkForSameToString.visit(atm1);
-        if (r1 != null && r1) {
-            return true;
-        }
-
-        // Call reset to clear the visitor history, but not the map from Strings to types.
-        checkForSameToString.reset();
-        Boolean r2 = checkForSameToString.visit(atm2);
-        if (r2 != null && r2) {
-            return true;
-        }
-
-        // Call reset to clear the visitor history, but not the map from Strings to types.
-        checkForSameToString.reset();
-        Boolean r3 = checkForSameToString.visit(atm3);
-        if (r3 != null && r3) {
-            return true;
+    private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
+        for (AnnotatedTypeMirror atm : atms) {
+            Boolean r1 = checkContainsSameToString.visit(atm);
+            if (r1 != null && r1) {
+                return true;
+            }
+            // Call reset to clear the visitor history, but not the map from Strings to types.
+            checkContainsSameToString.reset();
         }
 
         return false;
