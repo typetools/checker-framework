@@ -11,7 +11,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.lang.annotation.Annotation;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
@@ -487,10 +487,8 @@ public class QualifierDefaults {
     // dq must be an AnnotationMirror that represent a @DefaultQualifier
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
-        Class<? extends Annotation> cls =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(dq, "value", false);
-        AnnotationMirror anno = AnnotationBuilder.fromClass(elements, cls);
+        Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
+        AnnotationMirror anno = AnnotationBuilder.fromName(elements, cls);
 
         if (anno == null) {
             return null;
