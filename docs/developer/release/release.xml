@@ -208,6 +208,11 @@
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
+        <replaceregexp file="${cf.docs.examples}/lombok/build.gradle" byline="true"
+                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
+                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
+
+
     </target>
 
     <target name="zip-checker-framework" description="Creates a zip archive for the Checker Framework.">

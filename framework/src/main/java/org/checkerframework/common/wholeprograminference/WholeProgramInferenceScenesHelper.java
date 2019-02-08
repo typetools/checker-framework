@@ -28,6 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -111,7 +112,7 @@ public class WholeProgramInferenceScenesHelper {
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
             } catch (IOException e) {
-                throw new BugInCF(
+                throw new UserError(
                         "Problem while reading file in: "
                                 + jaifPath
                                 + ". Exception message: "
@@ -143,7 +144,7 @@ public class WholeProgramInferenceScenesHelper {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    throw new BugInCF(
+                    throw new UserError(
                             "Problem while reading file in: "
                                     + jaifPath
                                     + "."
@@ -238,7 +239,7 @@ public class WholeProgramInferenceScenesHelper {
      * #shouldIgnore}).
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
-        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere.toString();
+        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere;
         Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
         if (annosToIgnoreForLocation != null) {
             Set<Annotation> annosToRemove = new HashSet<>();
@@ -562,8 +563,7 @@ public class WholeProgramInferenceScenesHelper {
                 // firstKey works as a unique identifier for each annotation
                 // that should not be inserted in source code
                 String firstKey =
-                        typeToUpdate.description.toString()
-                                + typeToUpdate.tlAnnotationsHere.toString();
+                        typeToUpdate.description.toString() + typeToUpdate.tlAnnotationsHere;
                 Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {

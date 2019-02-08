@@ -30,7 +30,7 @@ public class ConditionalOrNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ConditionalOrNode)) {
+        if (!(obj instanceof ConditionalOrNode)) {
             return false;
         }
         ConditionalOrNode other = (ConditionalOrNode) obj;

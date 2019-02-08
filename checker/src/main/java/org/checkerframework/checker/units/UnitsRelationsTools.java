@@ -22,42 +22,19 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UnitsRelationsTools {
 
     /**
-     * Creates an AnnotationMirror representing a unit defined by annoClass, with the default Prefix
-     * of {@code Prefix.one}.
-     *
-     * @param env the Checker Processing Environment, provided as a parameter in init() of a
-     *     UnitsRelations implementation
-     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
-     * @return an AnnotationMirror of the Unit with Prefix.one, or null if it cannot be constructed
-     */
-    public static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
-            final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
-        if (env == null || annoClass == null) {
-            return null;
-        }
-
-        return buildAnnoMirrorWithSpecificPrefix(env, annoClass, Prefix.one);
-    }
-
-    /**
      * Creates an AnnotationMirror representing a unit defined by annoClass, with the specific
      * Prefix p.
      *
      * @param env the Checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation
-     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @param annoClass the fully-qualified name of an Annotation representing a Unit (eg m.class
+     *     for meters)
      * @param p a Prefix value
      * @return an AnnotationMirror of the Unit with the Prefix p, or null if it cannot be
      *     constructed
      */
     public static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
-            final ProcessingEnvironment env,
-            final Class<? extends Annotation> annoClass,
-            final Prefix p) {
-        if (env == null || annoClass == null || p == null) {
-            return null;
-        }
-
+            final ProcessingEnvironment env, final CharSequence annoClass, final Prefix p) {
         AnnotationBuilder builder = new AnnotationBuilder(env, annoClass);
         builder.setValue("value", p);
         return builder.build();
@@ -68,16 +45,13 @@ public class UnitsRelationsTools {
      *
      * @param env checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation
-     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @param annoClass the getElementValueClassname of an Annotation representing a Unit (eg
+     *     m.class for meters)
      * @return an AnnotationMirror of the Unit with no prefix, or null if it cannot be constructed
      */
     public static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
-            final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
-        if (env == null || annoClass == null) {
-            return null;
-        }
-
-        return AnnotationBuilder.fromClass(env.getElementUtils(), annoClass);
+            final ProcessingEnvironment env, final CharSequence annoClass) {
+        return AnnotationBuilder.fromName(env.getElementUtils(), annoClass);
     }
 
     /**
@@ -87,10 +61,6 @@ public class UnitsRelationsTools {
      * @return a Prefix value (including Prefix.one), or null if it has none
      */
     public static @Nullable Prefix getPrefix(final AnnotatedTypeMirror annoType) {
-        if (annoType == null) {
-            return null;
-        }
-
         Prefix result = null;
 
         // go through each Annotation of an Annotated Type, find the prefix and return it
@@ -141,10 +111,6 @@ public class UnitsRelationsTools {
      * @return true if it has no prefix, false otherwise
      */
     public static boolean hasNoPrefix(@Nullable final AnnotatedTypeMirror annoType) {
-        if (annoType == null) {
-            return true;
-        }
-
         for (AnnotationMirror mirror : annoType.getAnnotations()) {
             // if any Annotation has a prefix, return false
             if (!hasNoPrefix(mirror)) {
@@ -156,7 +122,7 @@ public class UnitsRelationsTools {
     }
 
     /**
-     * Checks to see if an Annotation has no prefix.
+     * Checks to see if an Annotation has no prefix (ie, no value element).
      *
      * @param unitsAnnotation an AnnotationMirror representing a Units Annotation
      * @return true if it has no prefix, false otherwise
@@ -181,10 +147,6 @@ public class UnitsRelationsTools {
      */
     private static @Nullable AnnotationValue getAnnotationMirrorPrefix(
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (unitsAnnotation == null) {
-            return null;
-        }
-
         Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
                 unitsAnnotation.getElementValues();
 
@@ -199,7 +161,7 @@ public class UnitsRelationsTools {
     }
 
     /**
-     * Removes the Prefix value from an Annotation, by constructing and returning a copy of its base
+     * Removes the prefix value from an Annotation, by constructing and returning a copy of its base
      * SI unit's Annotation.
      *
      * @param elements the Element Utilities from a checker's processing environment, typically
@@ -210,11 +172,8 @@ public class UnitsRelationsTools {
      */
     public static @Nullable AnnotationMirror removePrefix(
             @Nullable final Elements elements, @Nullable final AnnotationMirror unitsAnnotation) {
-        if (elements == null) {
-            return null;
-        }
-
         if (hasNoPrefix(unitsAnnotation)) {
+            // Optimization, though the else case would also work.
             return unitsAnnotation;
         } else {
             // In the Units Checker, the only annotation value is the prefix value.  Therefore,
@@ -272,10 +231,6 @@ public class UnitsRelationsTools {
      * @return true if the Type has no units, false otherwise
      */
     public static boolean hasNoUnits(@Nullable final AnnotatedTypeMirror annoType) {
-        if (annoType == null) {
-            return false;
-        }
-
         return (annoType.getAnnotation(UnknownUnits.class) != null);
     }
 
@@ -290,10 +245,6 @@ public class UnitsRelationsTools {
     public static boolean hasSpecificUnit(
             @Nullable final AnnotatedTypeMirror annoType,
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (annoType == null || unitsAnnotation == null) {
-            return false;
-        }
-
         return AnnotationUtils.containsSame(annoType.getAnnotations(), unitsAnnotation);
     }
 
@@ -308,10 +259,62 @@ public class UnitsRelationsTools {
     public static boolean hasSpecificUnitIgnoringPrefix(
             @Nullable final AnnotatedTypeMirror annoType,
             @Nullable final AnnotationMirror unitsAnnotation) {
-        if (annoType == null || unitsAnnotation == null) {
-            return false;
-        }
-
         return AnnotationUtils.containsSameByName(annoType.getAnnotations(), unitsAnnotation);
+    }
+
+    /**
+     * Creates an AnnotationMirror representing a unit defined by annoClass, with the specific
+     * Prefix p.
+     *
+     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
+     * {@link #buildAnnoMirrorWithSpecificPrefix(ProcessingEnvironment, CharSequence, Prefix)}
+     *
+     * @param env the Checker Processing Environment, provided as a parameter in init() of a
+     *     UnitsRelations implementation
+     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @param p a Prefix value
+     * @return an AnnotationMirror of the Unit with the Prefix p, or null if it cannot be
+     *     constructed
+     */
+    public static @Nullable AnnotationMirror buildAnnoMirrorWithSpecificPrefix(
+            final ProcessingEnvironment env,
+            final Class<? extends Annotation> annoClass,
+            final Prefix p) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, annoClass.getCanonicalName());
+        builder.setValue("value", p);
+        return builder.build();
+    }
+
+    /**
+     * Creates an AnnotationMirror representing a unit defined by annoClass, with the default Prefix
+     * of {@code Prefix.one}.
+     *
+     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should not
+     * use it.
+     *
+     * @param env the Checker Processing Environment, provided as a parameter in init() of a
+     *     UnitsRelations implementation
+     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @return an AnnotationMirror of the Unit with Prefix.one, or null if it cannot be constructed
+     */
+    public static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
+            final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
+        return buildAnnoMirrorWithSpecificPrefix(env, annoClass, Prefix.one);
+    }
+
+    /**
+     * Creates an AnnotationMirror representing a unit defined by annoClass, with no prefix.
+     *
+     * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
+     * {@link #buildAnnoMirrorWithNoPrefix(ProcessingEnvironment, CharSequence, Prefix)}
+     *
+     * @param env checker Processing Environment, provided as a parameter in init() of a
+     *     UnitsRelations implementation
+     * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+     * @return an AnnotationMirror of the Unit with no prefix, or null if it cannot be constructed
+     */
+    static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
+            final ProcessingEnvironment env, final Class<? extends Annotation> annoClass) {
+        return AnnotationBuilder.fromClass(env.getElementUtils(), annoClass);
     }
 }

@@ -78,7 +78,7 @@ public class LocalVariableNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof LocalVariableNode)) {
+        if (!(obj instanceof LocalVariableNode)) {
             return false;
         }
         LocalVariableNode other = (LocalVariableNode) obj;

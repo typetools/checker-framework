@@ -34,7 +34,7 @@ public class CharacterLiteralNode extends ValueLiteralNode {
     @Override
     public boolean equals(Object obj) {
         // test that obj is a CharacterLiteralNode
-        if (obj == null || !(obj instanceof CharacterLiteralNode)) {
+        if (!(obj instanceof CharacterLiteralNode)) {
             return false;
         }
         // super method compares values

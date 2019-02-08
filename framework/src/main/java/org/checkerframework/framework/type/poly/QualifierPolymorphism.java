@@ -2,9 +2,9 @@ package org.checkerframework.framework.type.poly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import java.lang.annotation.Annotation;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -52,15 +52,16 @@ public interface QualifierPolymorphism {
      * null is returned.
      *
      * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier belongs.
-     * By convention, it is the top qualifier of the hierarchy. The default value {@code
-     * PolymorphicQualifier.class} can be used if there is no ambiguity.
+     * By convention, it is the top qualifier of the hierarchy. Use of {@code
+     * PolymorphicQualifier.class} is discouraged, because it can lead to ambiguity if used for
+     * multiple type systems.
      *
      * @param qual an annotation
      * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
      *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
      * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
      */
-    static Class<? extends Annotation> getPolymorphicQualifierTop(AnnotationMirror qual) {
+    static Name getPolymorphicQualifierTop(AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 
         // System.out.println("poly: " + poly + " pq: " +
@@ -68,10 +69,7 @@ public interface QualifierPolymorphism {
         if (poly == null) {
             return null;
         }
-        @SuppressWarnings("unchecked")
-        Class<? extends Annotation> ret =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(poly, "value", true);
+        Name ret = AnnotationUtils.getElementValueClassName(poly, "value", true);
         return ret;
     }
 

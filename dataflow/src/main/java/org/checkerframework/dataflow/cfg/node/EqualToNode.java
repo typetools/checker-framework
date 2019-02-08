@@ -30,7 +30,7 @@ public class EqualToNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof EqualToNode)) {
+        if (!(obj instanceof EqualToNode)) {
             return false;
         }
         EqualToNode other = (EqualToNode) obj;

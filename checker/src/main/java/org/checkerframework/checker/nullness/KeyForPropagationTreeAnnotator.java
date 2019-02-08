@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.ExecutableElement;
@@ -63,11 +62,8 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
 
     /** @return true iff expression is a call to java.util.Map.KeySet */
     public boolean isCallToKeyset(ExpressionTree expression) {
-        if (expression instanceof MethodInvocationTree) {
-            return TreeUtils.isMethodInvocation(
-                    expression, keySetMethod, atypeFactory.getProcessingEnv());
-        }
-        return false;
+        return TreeUtils.isMethodInvocation(
+                expression, keySetMethod, atypeFactory.getProcessingEnv());
     }
 
     /**

@@ -55,7 +55,7 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Creates the appropriate AnnotatedTypeMirror specific wrapper for the provided type.
      *
-     * @param isDeclaration true if the result should is a type declaration
+     * @param isDeclaration true if the result should be a type declaration
      */
     public static AnnotatedTypeMirror createType(
             TypeMirror type, AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
@@ -159,7 +159,7 @@ public abstract class AnnotatedTypeMirror {
             return true;
         }
 
-        if (o == null || !(o instanceof AnnotatedTypeMirror)) {
+        if (!(o instanceof AnnotatedTypeMirror)) {
             return false;
         }
 
@@ -327,7 +327,7 @@ public abstract class AnnotatedTypeMirror {
         //                .size() : "Invalid number of effective annotations ("
         //                + effectiveAnnotations + "). Should be "
         //                + atypeFactory.qualHierarchy.getWidth() + " but is "
-        //                + effectiveAnnotations.size() + ". Type: " + this.toString();
+        //                + effectiveAnnotations.size() + ". Type: " + this;
         return effectiveAnnotations;
     }
 
