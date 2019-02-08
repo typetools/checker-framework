@@ -22,6 +22,10 @@ public class AnnotatedTypeParameterBounds {
         return "[extends " + upper + " super " + lower + "]";
     }
 
+    public String toString(boolean verbose) {
+        return "[extends " + upper.toString(verbose) + " super " + lower.toString(verbose) + "]";
+    }
+
     @Override
     public int hashCode() {
         return 17 * upper.hashCode() + 37 * lower.hashCode();
