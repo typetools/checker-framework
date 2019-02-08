@@ -45,7 +45,7 @@ public class SuperNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        return obj != null && obj instanceof SuperNode;
+        return obj instanceof SuperNode;
     }
 
     @Override

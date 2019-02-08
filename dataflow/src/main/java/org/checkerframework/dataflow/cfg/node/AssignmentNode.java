@@ -68,7 +68,7 @@ public class AssignmentNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof AssignmentNode)) {
+        if (!(obj instanceof AssignmentNode)) {
             return false;
         }
         AssignmentNode other = (AssignmentNode) obj;

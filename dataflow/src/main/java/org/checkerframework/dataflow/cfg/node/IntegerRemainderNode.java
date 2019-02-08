@@ -30,7 +30,7 @@ public class IntegerRemainderNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof IntegerRemainderNode)) {
+        if (!(obj instanceof IntegerRemainderNode)) {
             return false;
         }
         IntegerRemainderNode other = (IntegerRemainderNode) obj;

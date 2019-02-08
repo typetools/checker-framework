@@ -1199,7 +1199,7 @@ public final class TreeUtils {
      */
     public static boolean isAnonymousConstructor(final MethodTree method) {
         @Nullable Element e = elementFromTree(method);
-        if (e == null || !(e instanceof Symbol)) {
+        if (!(e instanceof Symbol)) {
             return false;
         }
 

@@ -30,7 +30,7 @@ public class NumericalMultiplicationNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof NumericalMultiplicationNode)) {
+        if (!(obj instanceof NumericalMultiplicationNode)) {
             return false;
         }
         NumericalMultiplicationNode other = (NumericalMultiplicationNode) obj;
