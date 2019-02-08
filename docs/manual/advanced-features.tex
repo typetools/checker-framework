@@ -284,6 +284,20 @@ When a programmer omits an \<extends> clause at a declaration of a type
 parameter, the implicit upper bound is defaulted to the top qualifier; see
 Section~\ref{climb-to-top}.
 
+\subsectionAndLabel{Default qualifier on constructor declarations}{constructor-defaults}
+If a constructor declaration is unannotated, it defaults to the same type as that of
+its enclosing class and not the default qualifier in hierarchy.
+For example: the Tainting type checker (Chapter~\ref{tainting-checker}) has \code{@Tainted}
+as its default qualifier. Consider the following class:
+
+\begin{Verbatim}
+  @Untainted class ConstructorIssue {
+      ConstructorIssue() {}
+  }
+\end{Verbatim}
+
+The return type on \code{ConstructorIssue()} defaults to \code{@Untainted}.
+This means that any unannotated invocation of this constructor gets the type \code{@Untainted}.
 
 \subsectionAndLabel{Defaulting rules and CLIMB-to-top}{climb-to-top}
 
