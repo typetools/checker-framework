@@ -2057,63 +2057,70 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return new FoundRequired(found, required);
         }
     }
+
     /**
      * Return whether or not the verbose toString should be used when printing the two annotated
      * types.
      *
      * @param atm1 the first AnnotatedTypeMirror
      * @param atm2 the second AnnotatedTypeMirror
-     * @return true iff there are two annotated types (in either ATM) such that their toStrings are
-     *     the same but their verbose toStrings differ
+     * @return true iff neither argumentc contains "@", or there are two annotated types (in either
+     *     ATM) such that their toStrings are the same but their verbose toStrings differ
      */
     private static boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
-        String atm1ToString = atm1.toString();
-        String atm2ToString = atm2.toString();
-        // If both types as strings are the same, use verbose toString.
-        if (atm2ToString.equals(atm1ToString)
-                // or if neither string contains an annotation
-                || (!atm2ToString.contains("@") && !atm1ToString.contains("@"))) {
+        if ((!atm1.toString().contains("@") && !atm2.toString().contains("@"))) {
             return true;
         }
+        return containsSameToString(atm1, atm2);
+    }
 
-        SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
-                new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                    /** Maps from a type's toString to its verbose toString. */
-                    Map<String, String> map = new HashMap<>();
+    /**
+     * A scanner that indicates whether any (sub-)types have the same toString but different verbose
+     * toString.
+     */
+    private static SimpleAnnotatedTypeScanner<Boolean, Void> checkContainsSameToString =
+            new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+                /** Maps from a type's toString to its verbose toString. */
+                Map<String, String> map = new HashMap<>();
 
-                    @Override
-                    protected Boolean reduce(Boolean r1, Boolean r2) {
-                        r1 = r1 == null ? false : r1;
-                        r2 = r2 == null ? false : r2;
-                        return r1 || r2;
+                @Override
+                protected Boolean reduce(Boolean r1, Boolean r2) {
+                    r1 = r1 == null ? false : r1;
+                    r2 = r2 == null ? false : r2;
+                    return r1 || r2;
+                }
+
+                @Override
+                protected Boolean defaultAction(AnnotatedTypeMirror type, Void avoid) {
+                    if (type == null) {
+                        return false;
                     }
-
-                    @Override
-                    protected Boolean defaultAction(AnnotatedTypeMirror type, Void avoid) {
-                        if (type == null) {
-                            return false;
-                        }
-                        String simple = type.toString();
-                        String verbose = map.get(simple);
-                        if (verbose == null) {
-                            map.put(simple, type.toString(true));
-                            return false;
-                        } else {
-                            return !verbose.equals(type.toString(true));
-                        }
+                    String simple = type.toString();
+                    String verbose = map.get(simple);
+                    if (verbose == null) {
+                        map.put(simple, type.toString(true));
+                        return false;
+                    } else {
+                        return !verbose.equals(type.toString(true));
                     }
-                };
-        Boolean r1 = checkForMismatchedToStrings.visit(atm1);
-        if (r1 != null && r1) {
-            return true;
+                }
+            };
+
+    /**
+     * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
+     * are the same but their verbose toStrings differ
+     */
+    private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
+        for (AnnotatedTypeMirror atm : atms) {
+            Boolean result = checkContainsSameToString.visit(atm);
+            if (result != null && result) {
+                return true;
+            }
+            // Call reset to clear the visitor history, but not the map from Strings to types.
+            checkContainsSameToString.reset();
         }
-        // Call reset to clear the visitor history, but not the map from Strings to types.
-        checkForMismatchedToStrings.reset();
-        Boolean r2 = checkForMismatchedToStrings.visit(atm2);
 
-        // SimpleAnnotatedTypeScanner#scan returns null if it encounters a null AnnotatedTypeMirror.
-        // This shouldn't happen if the atm1 and atm2 are well-formed.
-        return r2 == null ? false : r2;
+        return false;
     }
 
     protected void checkArrayInitialization(
