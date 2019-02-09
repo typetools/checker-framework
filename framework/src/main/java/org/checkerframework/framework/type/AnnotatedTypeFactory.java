@@ -57,6 +57,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -1075,8 +1076,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotationMirror extendsType =
                     getAnnotatedType(tree.getExtendsClause()).getAnnotationInHierarchy(topAnno);
             if (!qualHierarchy.isSubtype(classType, extendsType)) {
-                checker.report(
-                        Result.failure("extends.clause.invalid", classType, extendsType), tree);
+                @CompilerMessageKey String errorKey = "extends.clause.invalid";
+                checker.report(Result.failure(errorKey, classType, extendsType), tree);
             }
         }
     }
