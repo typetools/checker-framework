@@ -1,5 +1,6 @@
 @org.checkerframework.framework.qual.DefaultQualifier(
         org.checkerframework.checker.nullness.qual.Nullable.class)
+// :: error: (extends.clause.invalid)
 public class MyException extends Exception {
 
     public MyException() {}

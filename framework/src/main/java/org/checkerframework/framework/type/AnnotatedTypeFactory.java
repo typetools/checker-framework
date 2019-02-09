@@ -1063,6 +1063,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // do so is here.
             wholeProgramInference.saveResults();
         }
+
+        if (tree.getExtendsClause() == null) {
+            return;
+        }
+
+        // if "@B class X extends @A Y {}", @B must be a subtype of @A
+        Set<? extends AnnotationMirror> topAnnotations = qualHierarchy.getTopAnnotations();
+        for (AnnotationMirror topAnno : topAnnotations) {
+            AnnotationMirror classType = getAnnotatedType(tree).getAnnotationInHierarchy(topAnno);
+            AnnotationMirror extendsType =
+                    getAnnotatedType(tree.getExtendsClause()).getAnnotationInHierarchy(topAnno);
+            if (!qualHierarchy.isSubtype(classType, extendsType)) {
+                checker.report(
+                        Result.failure("extends.clause.invalid", classType, extendsType), tree);
+            }
+        }
     }
 
     /**
