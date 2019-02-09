@@ -65,7 +65,7 @@ public class PackageNameNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof PackageNameNode)) {
+        if (!(obj instanceof PackageNameNode)) {
             return false;
         }
         PackageNameNode other = (PackageNameNode) obj;

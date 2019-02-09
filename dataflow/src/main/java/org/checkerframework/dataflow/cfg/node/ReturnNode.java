@@ -69,7 +69,7 @@ public class ReturnNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ReturnNode)) {
+        if (!(obj instanceof ReturnNode)) {
             return false;
         }
         ReturnNode other = (ReturnNode) obj;

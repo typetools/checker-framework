@@ -30,7 +30,7 @@ public class BitwiseComplementNode extends UnaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof BitwiseComplementNode)) {
+        if (!(obj instanceof BitwiseComplementNode)) {
             return false;
         }
         BitwiseComplementNode other = (BitwiseComplementNode) obj;

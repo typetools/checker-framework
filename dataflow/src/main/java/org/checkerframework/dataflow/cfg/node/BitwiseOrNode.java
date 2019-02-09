@@ -30,7 +30,7 @@ public class BitwiseOrNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof BitwiseOrNode)) {
+        if (!(obj instanceof BitwiseOrNode)) {
             return false;
         }
         BitwiseOrNode other = (BitwiseOrNode) obj;

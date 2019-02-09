@@ -99,7 +99,7 @@ public class ArrayCreationNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ArrayCreationNode)) {
+        if (!(obj instanceof ArrayCreationNode)) {
             return false;
         }
         ArrayCreationNode other = (ArrayCreationNode) obj;

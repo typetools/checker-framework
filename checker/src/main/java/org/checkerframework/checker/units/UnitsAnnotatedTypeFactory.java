@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Name;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.units.qual.MixedUnits;
@@ -32,6 +33,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -103,9 +105,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // see if the meta annotation is UnitsMultiple
             if (isUnitsMultiple(metaAnno)) {
                 // retrieve the Class of the base unit annotation
-                Class<? extends Annotation> baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClass(metaAnno, "quantity", true)
-                                .asSubclass(Annotation.class);
+                Name baseUnitAnnoClass =
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
 
                 // retrieve the SI Prefix of the aliased annotation
                 Prefix prefix =
@@ -140,6 +141,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return super.aliasedAnnotation(anno);
     }
 
+    /** Return a map from canonical class name to the corresponding UnitsRelations instance. */
     protected Map<String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
             unitsRel = new HashMap<>();
@@ -211,7 +213,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Adds the annotation class to the external qualifier map if it is not an alias annotation. */
     private void addUnitToExternalQualMap(final Class<? extends Annotation> annoClass) {
         AnnotationMirror mirror =
-                UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(processingEnv, annoClass);
+                UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(
+                        processingEnv, annoClass.getCanonicalName());
 
         // if it is not an aliased annotation, add to external quals map if it isn't already in map
         if (!isAliasedAnnotation(mirror)) {
@@ -223,10 +226,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // if it is an aliased annotation
         else {
             // ensure it has a base unit
-            Class<? extends Annotation> baseUnitClass = getBaseUnitAnnoClass(mirror);
+            Name baseUnitClass = getBaseUnitAnno(mirror);
             if (baseUnitClass != null) {
                 // if the base unit isn't already added, add that first
-                String baseUnitClassName = baseUnitClass.getCanonicalName();
+                String baseUnitClassName = baseUnitClass.toString();
                 if (!externalQualsMap.containsKey(baseUnitClassName)) {
                     loadExternalUnit(baseUnitClassName);
                 }
@@ -262,18 +265,16 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    private @Nullable Class<? extends Annotation> getBaseUnitAnnoClass(AnnotationMirror anno) {
+    private @Nullable Name getBaseUnitAnno(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :
                 anno.getAnnotationType().asElement().getAnnotationMirrors()) {
             // see if the meta annotation is UnitsMultiple
             if (isUnitsMultiple(metaAnno)) {
                 // TODO: does every alias have to have Prefix?
-                // retrieve the Class of the base unit annotation
-                Class<? extends Annotation> baseUnitAnnoClass =
-                        AnnotationUtils.getElementValueClass(metaAnno, "quantity", true)
-                                .asSubclass(Annotation.class);
-
+                // Retrieve the base unit annotation.
+                Name baseUnitAnnoClass =
+                        AnnotationUtils.getElementValueClassName(metaAnno, "quantity", true);
                 return baseUnitAnnoClass;
             }
         }
@@ -295,17 +296,28 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
+                Name theclassname = AnnotationUtils.getElementValueClassName(ama, "value", true);
+                Class<?> valueElement;
+                try {
+                    ClassLoader classLoader =
+                            InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+                    valueElement = Class.forName(theclassname.toString(), true, classLoader);
+                } catch (ClassNotFoundException e) {
+                    String msg =
+                            String.format(
+                                    "Could not load class '%s' for field 'value' in annotation %s",
+                                    theclassname, ama);
+                    throw new UserError(msg, e);
+                }
                 Class<? extends UnitsRelations> unitsRelationsClass;
                 try {
-                    unitsRelationsClass =
-                            AnnotationUtils.getElementValueClass(ama, "value", true)
-                                    .asSubclass(UnitsRelations.class);
+                    unitsRelationsClass = valueElement.asSubclass(UnitsRelations.class);
                 } catch (ClassCastException ex) {
-                    Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
                     throw new UserError(
-                            "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
-                                    + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
-                            qual, clazz);
+                            "Invalid @UnitsRelations meta-annotation found in %s. "
+                                    + "@UnitsRelations value %s is not a subclass of "
+                                    + "org.checkerframework.checker.units.UnitsRelations.",
+                            qual, ama);
                 }
                 String classname = unitsRelationsClass.getCanonicalName();
 

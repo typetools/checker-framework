@@ -48,7 +48,7 @@ public class TypeCastNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof TypeCastNode)) {
+        if (!(obj instanceof TypeCastNode)) {
             return false;
         }
         TypeCastNode other = (TypeCastNode) obj;

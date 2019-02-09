@@ -53,7 +53,7 @@ public class NarrowingConversionNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof NarrowingConversionNode)) {
+        if (!(obj instanceof NarrowingConversionNode)) {
             return false;
         }
         NarrowingConversionNode other = (NarrowingConversionNode) obj;

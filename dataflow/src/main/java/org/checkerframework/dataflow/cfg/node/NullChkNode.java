@@ -47,7 +47,7 @@ public class NullChkNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof NumericalPlusNode)) {
+        if (!(obj instanceof NumericalPlusNode)) {
             return false;
         }
         NumericalPlusNode other = (NumericalPlusNode) obj;

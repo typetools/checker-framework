@@ -84,7 +84,7 @@ public class ClassNameNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ClassNameNode)) {
+        if (!(obj instanceof ClassNameNode)) {
             return false;
         }
         ClassNameNode other = (ClassNameNode) obj;

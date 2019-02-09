@@ -12,6 +12,7 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -486,8 +487,10 @@ public class StubParser {
             final BodyDeclaration<?> decl = entry.getValue();
             switch (elt.getKind()) {
                 case FIELD:
-                case ENUM_CONSTANT:
                     processField((FieldDeclaration) decl, (VariableElement) elt);
+                    break;
+                case ENUM_CONSTANT:
+                    processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
@@ -972,6 +975,18 @@ public class StubParser {
     }
 
     /**
+     * Adds the annotations present on the declaration of an enum constant to the ATM of that
+     * constant.
+     */
+    private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
+        addDeclAnnotations(declAnnos, elt);
+        annotateDecl(declAnnos, elt, decl.getAnnotations());
+        AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
+        annotate(enumConstType, decl.getAnnotations());
+        putNew(atypes, elt, enumConstType);
+    }
+
+    /**
      * Returns the innermost component type of {@code type}.
      *
      * @param type array type
@@ -1085,6 +1100,14 @@ public class StubParser {
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
+        // For an enum type declaration, also add the enum constants
+        if (typeDecl instanceof EnumDeclaration) {
+            EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
+            // getEntries() gives the list of enum constant declarations
+            for (BodyDeclaration<?> member : enumDecl.getEntries()) {
+                putNewElement(typeElt, result, member, typeDecl.getNameAsString());
+            }
+        }
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
             putNewElement(typeElt, result, member, typeDecl.getNameAsString());
         }
@@ -1113,6 +1136,11 @@ public class StubParser {
                 if (varelt != null) {
                     putNoOverride(result, varelt, fieldDecl);
                 }
+            }
+        } else if (member instanceof EnumConstantDeclaration) {
+            Element elt = findElement(typeElt, (EnumConstantDeclaration) member);
+            if (elt != null) {
+                putNoOverride(result, elt, member);
             }
         } else if (member instanceof ClassOrInterfaceDeclaration) {
             Element elt = findElement(typeElt, (ClassOrInterfaceDeclaration) member);
@@ -1210,6 +1238,21 @@ public class StubParser {
             }
         }
         return null;
+    }
+
+    /**
+     * Looks for an enum constant element in the typeElt and returns it if the element has the same
+     * name as provided. In case enum constant element is not found it returns null.
+     *
+     * @param typeElt type element where enum constant element should be looked for
+     * @param enumConstDecl the declaration of the enum constant
+     * @return enum constant element in typeElt with the provided name or null if enum constant
+     *     element is not found
+     */
+    private VariableElement findElement(
+            TypeElement typeElt, EnumConstantDeclaration enumConstDecl) {
+        final String enumConstName = enumConstDecl.getNameAsString();
+        return findFieldElement(typeElt, enumConstName);
     }
 
     /**

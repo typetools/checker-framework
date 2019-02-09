@@ -50,7 +50,7 @@ public class MarkerNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof MarkerNode)) {
+        if (!(obj instanceof MarkerNode)) {
             return false;
         }
         MarkerNode other = (MarkerNode) obj;
