@@ -37,7 +37,7 @@ public class HashCodeUtils {
     /** Add a double value to a given hash. */
     public static int hash(int hash, double item) {
         long l = Double.doubleToLongBits(item);
-        return seed * prime + (int) (l ^ (l >>> 32));
+        return hash * prime + (int) (l ^ (l >>> 32));
     }
 
     /** Add an object to a given hash. */
