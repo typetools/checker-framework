@@ -97,9 +97,6 @@ public class ClassNameNode extends Node {
 
     @Override
     public int hashCode() {
-        if (parent == null) {
-            return HashCodeUtils.hash(getElement());
-        }
         return HashCodeUtils.hash(getElement(), getParent());
     }
 

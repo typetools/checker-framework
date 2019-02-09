@@ -71,12 +71,7 @@ public class SynchronizedNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        if (tree != null) {
-            hash = HashCodeUtils.hash(tree);
-        }
-        hash = HashCodeUtils.hash(startOfBlock);
-        return HashCodeUtils.hash(hash, getExpression());
+        return HashCodeUtils.hash(tree, startOfBlock, getExpression());
     }
 
     @Override

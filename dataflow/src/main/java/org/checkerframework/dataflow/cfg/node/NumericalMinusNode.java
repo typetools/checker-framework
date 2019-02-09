@@ -39,6 +39,6 @@ public class NumericalMinusNode extends UnaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return HashCodeUtils.hash(NumericalMinusNode.class, getOperand());
     }
 }

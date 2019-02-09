@@ -63,7 +63,7 @@ public class StringConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return HashCodeUtils.hash(StringConversionNode.class, getOperand());
     }
 
     @Override

@@ -39,6 +39,6 @@ public class BitwiseComplementNode extends UnaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return HashCodeUtils.hash(BitwiseComplementNode.class, getOperand());
     }
 }

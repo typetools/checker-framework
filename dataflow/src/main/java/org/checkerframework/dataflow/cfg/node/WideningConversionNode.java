@@ -63,7 +63,7 @@ public class WideningConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return HashCodeUtils.hash(WideningConversionNode.class, getOperand());
     }
 
     @Override

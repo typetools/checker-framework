@@ -63,11 +63,7 @@ public class MarkerNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        if (tree != null) {
-            hash = HashCodeUtils.hash(tree);
-        }
-        return HashCodeUtils.hash(hash, getMessage());
+        return HashCodeUtils.hash(tree, getMessage());
     }
 
     @Override
