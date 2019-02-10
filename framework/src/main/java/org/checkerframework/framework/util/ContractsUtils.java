@@ -12,6 +12,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -129,10 +130,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = expression != null ? expression.hashCode() : 0;
-            result = 31 * result + (annotation != null ? annotation.hashCode() : 0);
-            result = 31 * result + (kind != null ? kind.hashCode() : 0);
-            return result;
+            return HashCodeUtils.hash(expression, annotation, kind);
         }
     }
 
@@ -224,9 +222,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = super.hashCode();
-            result = 31 * result + (annoResult ? 1 : 0);
-            return result;
+            return HashCodeUtils.hash(super.hashCode(), annoResult);
         }
     }
 

@@ -4,7 +4,6 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -14,6 +13,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -85,11 +85,7 @@ public class OffsetEquation {
 
     @Override
     public int hashCode() {
-        int result = addedTerms.hashCode();
-        result = 31 * result + subtractedTerms.hashCode();
-        result = 31 * result + intValue;
-        result = 31 * result + Objects.hashCode(error);
-        return result;
+        return HashCodeUtils.hash(addedTerms, subtractedTerms, intValue, error);
     }
 
     @Override

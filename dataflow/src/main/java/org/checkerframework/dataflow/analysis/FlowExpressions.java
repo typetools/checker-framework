@@ -964,23 +964,14 @@ public class FlowExpressions {
                 return false;
             }
             MethodCall other = (MethodCall) obj;
-            int i = 0;
-            for (Receiver p : parameters) {
-                if (!p.equals(other.parameters.get(i))) {
-                    return false;
-                }
-                i++;
-            }
-            return receiver.equals(other.receiver) && method.equals(other.method);
+            return parameters.equals(other.parameters)
+                    && receiver.equals(other.receiver)
+                    && method.equals(other.method);
         }
 
         @Override
         public int hashCode() {
-            int hash = HashCodeUtils.hash(method, receiver);
-            for (Receiver p : parameters) {
-                hash = HashCodeUtils.hash(hash, p);
-            }
-            return hash;
+            return HashCodeUtils.hash(method, receiver, parameters);
         }
 
         @Override
@@ -1138,12 +1129,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
-            result = prime * result + ((initializers == null) ? 0 : initializers.hashCode());
-            result = prime * result + HashCodeUtils.hash(getType().toString());
-            return result;
+            return HashCodeUtils.hash(dimensions, initializers, getType().toString());
         }
 
         @Override

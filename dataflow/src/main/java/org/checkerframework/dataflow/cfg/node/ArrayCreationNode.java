@@ -110,14 +110,7 @@ public class ArrayCreationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        for (Node dim : dimensions) {
-            hash = HashCodeUtils.hash(hash, dim.hashCode());
-        }
-        for (Node init : initializers) {
-            hash = HashCodeUtils.hash(hash, init.hashCode());
-        }
-        return hash;
+        return HashCodeUtils.hash(dimensions, initializers);
     }
 
     @Override

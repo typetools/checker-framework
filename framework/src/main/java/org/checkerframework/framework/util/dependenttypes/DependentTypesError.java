@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.dependenttypes;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
@@ -99,9 +100,7 @@ public class DependentTypesError {
 
     @Override
     public int hashCode() {
-        int result = expression.hashCode();
-        result = 31 * result + error.hashCode();
-        return result;
+        return HashCodeUtils.hash(expression, error);
     }
 
     @Override

@@ -99,11 +99,7 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = HashCodeUtils.hash(constructor);
-        for (Node arg : arguments) {
-            hash = HashCodeUtils.hash(hash, arg.hashCode());
-        }
-        return hash;
+        return HashCodeUtils.hash(constructor, arguments);
     }
 
     @Override

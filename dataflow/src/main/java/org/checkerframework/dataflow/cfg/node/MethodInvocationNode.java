@@ -105,12 +105,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash = HashCodeUtils.hash(target);
-        for (Node arg : arguments) {
-            hash = HashCodeUtils.hash(hash, arg.hashCode());
-        }
-        return hash;
+        return HashCodeUtils.hash(target, arguments);
     }
 
     @Override

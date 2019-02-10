@@ -1,5 +1,7 @@
 package org.checkerframework.framework.type;
 
+import org.checkerframework.dataflow.util.HashCodeUtils;
+
 public class AnnotatedTypeParameterBounds {
     private final AnnotatedTypeMirror upper;
     private final AnnotatedTypeMirror lower;
@@ -34,7 +36,7 @@ public class AnnotatedTypeParameterBounds {
 
     @Override
     public int hashCode() {
-        return 17 * upper.hashCode() + 37 * lower.hashCode();
+        return HashCodeUtils.hash(upper, lower);
     }
 
     @Override

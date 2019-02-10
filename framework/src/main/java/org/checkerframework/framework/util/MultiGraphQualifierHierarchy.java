@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -950,13 +951,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         @Override
         public int hashCode() {
             if (hashCode == -1) {
-                hashCode = 31;
-                if (a1 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a1).hashCode();
-                }
-                if (a2 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a2).hashCode();
-                }
+                hashCode =
+                        HashCodeUtils.hash(
+                                AnnotationUtils.annotationName(a1),
+                                AnnotationUtils.annotationName(a2));
             }
             return hashCode;
         }

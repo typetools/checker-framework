@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.constantpropagation;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 
 public class Constant implements AbstractValue<Constant> {
 
@@ -80,7 +81,7 @@ public class Constant implements AbstractValue<Constant> {
 
     @Override
     public int hashCode() {
-        return type.hashCode() + (value != null ? value.hashCode() : 0);
+        return HashCodeUtils.hash(type, value);
     }
 
     @Override

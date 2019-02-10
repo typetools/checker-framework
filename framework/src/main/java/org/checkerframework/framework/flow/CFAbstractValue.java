@@ -1,7 +1,5 @@
 package org.checkerframework.framework.flow;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -156,10 +154,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @Pure
     @Override
     public int hashCode() {
-        Collection<Object> objects = new ArrayList<>();
-        objects.addAll(getAnnotations());
-        objects.add(underlyingType);
-        return HashCodeUtils.hash(objects);
+        return HashCodeUtils.hash(underlyingType, getAnnotations());
     }
 
     /** @return the string representation as a comma-separated list */

@@ -27,6 +27,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -608,11 +609,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         @Override
         public int hashCode() {
-            int result = kind.hashCode();
-            result = 31 * result + message.hashCode();
-            result = 31 * result + source.hashCode();
-            result = 31 * result + checker.hashCode();
-            return result;
+            return HashCodeUtils.hash(kind, message, source, checker);
         }
 
         @Override
