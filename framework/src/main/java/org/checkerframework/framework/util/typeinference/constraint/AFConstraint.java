@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference.constraint;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 
@@ -32,18 +33,10 @@ public abstract class AFConstraint {
     public final AnnotatedTypeMirror argument;
     public final AnnotatedTypeMirror formalParameter;
 
-    /**
-     * Used to compute hashcodes. This value should be unique for every subclass of AFConstraints.
-     */
-    protected final int hashcodeBase;
-
     public AFConstraint(
-            final AnnotatedTypeMirror argument,
-            final AnnotatedTypeMirror formalParameter,
-            int hashcodeBase) {
+            final AnnotatedTypeMirror argument, final AnnotatedTypeMirror formalParameter) {
         this.argument = argument;
         this.formalParameter = formalParameter;
-        this.hashcodeBase = hashcodeBase;
         TypeArgInferenceUtil.checkForUninferredTypes(argument);
     }
 
@@ -76,9 +69,7 @@ public abstract class AFConstraint {
 
     @Override
     public int hashCode() {
-        int result = formalParameter.hashCode();
-        result = hashcodeBase * result + argument.hashCode();
-        return result;
+        return HashCodeUtils.hash(this.getClass(), formalParameter, argument);
     }
 
     /**
