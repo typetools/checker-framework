@@ -56,7 +56,7 @@ public class ArrayAccessNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ArrayAccessNode)) {
+        if (!(obj instanceof ArrayAccessNode)) {
             return false;
         }
         ArrayAccessNode other = (ArrayAccessNode) obj;

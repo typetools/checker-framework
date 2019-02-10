@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Name;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
@@ -84,11 +84,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return;
             }
 
-            Class<? extends Annotation> pqtopclass =
-                    QualifierPolymorphism.getPolymorphicQualifierTop(qual);
+            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierTop(qual);
             if (pqtopclass != null) {
                 AnnotationMirror pqtop =
-                        AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), pqtopclass);
+                        AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
                 if (QualifierPolymorphism.isPolyAll(qual)) {
                     // Use key null as marker for polyall
                     this.polyQualifiers.put(null, qual);

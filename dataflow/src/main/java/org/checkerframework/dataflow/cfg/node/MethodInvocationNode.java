@@ -95,7 +95,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof MethodInvocationNode)) {
+        if (!(obj instanceof MethodInvocationNode)) {
             return false;
         }
         MethodInvocationNode other = (MethodInvocationNode) obj;

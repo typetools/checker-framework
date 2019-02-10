@@ -56,7 +56,7 @@ public class AssertionErrorNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof AssertionErrorNode)) {
+        if (!(obj instanceof AssertionErrorNode)) {
             return false;
         }
         AssertionErrorNode other = (AssertionErrorNode) obj;

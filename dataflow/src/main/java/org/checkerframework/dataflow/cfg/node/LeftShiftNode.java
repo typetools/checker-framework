@@ -30,7 +30,7 @@ public class LeftShiftNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof LeftShiftNode)) {
+        if (!(obj instanceof LeftShiftNode)) {
             return false;
         }
         LeftShiftNode other = (LeftShiftNode) obj;

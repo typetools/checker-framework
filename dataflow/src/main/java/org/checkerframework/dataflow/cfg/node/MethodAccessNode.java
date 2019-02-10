@@ -56,7 +56,7 @@ public class MethodAccessNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof MethodAccessNode)) {
+        if (!(obj instanceof MethodAccessNode)) {
             return false;
         }
         MethodAccessNode other = (MethodAccessNode) obj;
