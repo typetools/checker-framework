@@ -3,15 +3,15 @@
 echo Entering `pwd`/.travis-build.sh, GROUP=$1
 
 # Optional argument $1 is one of:
-#   all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
+#   all, framework-tests, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib
 # It defaults to "all".
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "framework-tests" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, framework-tests, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
   exit 1
 fi
 
@@ -64,6 +64,10 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
 
   (cd ../plume-lib-typecheck && ./.travis-build.sh)
+fi
+
+if [[ "${GROUP}" == "framework-tests" || "${GROUP}" == "all" ]]; then
+  ./gradlew framework:test framework:jtreg --console=plain --warning-mode=all -s --no-daemon
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
