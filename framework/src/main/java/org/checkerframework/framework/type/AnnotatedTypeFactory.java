@@ -1069,7 +1069,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return;
         }
 
-        // if "@B class X extends @A Y {}", @B must be a subtype of @A
+        // if "@B class Y extends @A X {}", @B must be a subtype of @A
         Set<? extends AnnotationMirror> topAnnotations = qualHierarchy.getTopAnnotations();
         for (AnnotationMirror topAnno : topAnnotations) {
             AnnotationMirror classType = getAnnotatedType(tree).getAnnotationInHierarchy(topAnno);
