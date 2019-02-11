@@ -57,6 +57,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -1062,6 +1063,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // operation only once for each .jaif file, the best location to
             // do so is here.
             wholeProgramInference.saveResults();
+        }
+
+        if (tree.getExtendsClause() == null) {
+            return;
+        }
+
+        // if "@B class Y extends @A X {}", @B must be a subtype of @A
+        Set<? extends AnnotationMirror> topAnnotations = qualHierarchy.getTopAnnotations();
+        for (AnnotationMirror topAnno : topAnnotations) {
+            AnnotationMirror classType = getAnnotatedType(tree).getAnnotationInHierarchy(topAnno);
+            AnnotationMirror extendsType =
+                    getAnnotatedType(tree.getExtendsClause()).getAnnotationInHierarchy(topAnno);
+            if (!qualHierarchy.isSubtype(classType, extendsType)) {
+                @CompilerMessageKey String errorKey = "extends.clause.invalid";
+                checker.report(Result.failure(errorKey, classType, extendsType), tree);
+            }
         }
     }
 
