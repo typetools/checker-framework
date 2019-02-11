@@ -106,13 +106,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -341,24 +335,64 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             processClassTree(classTree);
             atypeFactory.postProcessClassTree(classTree);
 
-            if (classTree.getExtendsClause() == null) {
-                return null;
-            }
-
             // if "@B class X extends @A Y {}", @B must be a subtype of @A
             Set<? extends AnnotationMirror> topAnnotations =
                     atypeFactory.getQualifierHierarchy().getTopAnnotations();
             for (AnnotationMirror topAnno : topAnnotations) {
                 AnnotationMirror classType =
                         atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
-                AnnotationMirror extendsType =
-                        atypeFactory
-                                .getAnnotatedType(classTree.getExtendsClause())
-                                .getAnnotationInHierarchy(topAnno);
-                if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
-                    checker.report(
-                            Result.failure("extends.clause.invalid", classType, extendsType),
-                            classTree);
+                if (classTree.getExtendsClause() == null) {
+                    // Implicit extends case:
+                    // If a class is declared as "class X", then it
+                    // implicitly extends "Object" which has the
+                    // type of default qualifier.
+                    // The following code reports an error if the type on
+                    // a class is not a subtype of the default qualifier in hierarchy.
+                    Class<? extends Annotation> defaultAnno = null;
+                    for (Class<? extends Annotation> qual :
+                            atypeFactory.getSupportedTypeQualifiers()) {
+                        Annotation[] allAnnos = qual.getAnnotations();
+                        for (int i = 0; i < allAnnos.length; i++) {
+                            if (allAnnos[i].toString().contains("DefaultQualifierInHierarchy")
+                                    && atypeFactory
+                                                    .getQualifierHierarchy()
+                                                    .leastUpperBound(
+                                                            classType,
+                                                            AnnotationBuilder.fromClass(
+                                                                    elements, qual))
+                                            != null) {
+                                defaultAnno = qual;
+                                break;
+                            }
+                        }
+                        if (defaultAnno != null) {
+                            break;
+                        }
+                    }
+                    AnnotationMirror defaultAnnoMirror =
+                            AnnotationBuilder.fromClass(elements, defaultAnno);
+                    if (!atypeFactory
+                                    .getQualifierHierarchy()
+                                    .isSubtype(classType, defaultAnnoMirror)
+                            && atypeFactory
+                                            .getQualifierHierarchy()
+                                            .leastUpperBound(classType, defaultAnnoMirror)
+                                    != null) {
+                        checker.report(
+                                Result.failure(
+                                        "extends.clause.invalid", classType, defaultAnnoMirror),
+                                classTree);
+                    }
+                } else {
+                    AnnotationMirror extendsType =
+                            atypeFactory
+                                    .getAnnotatedType(classTree.getExtendsClause())
+                                    .getAnnotationInHierarchy(topAnno);
+                    if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
+                        checker.report(
+                                Result.failure("extends.clause.invalid", classType, extendsType),
+                                classTree);
+                    }
                 }
             }
         } finally {
