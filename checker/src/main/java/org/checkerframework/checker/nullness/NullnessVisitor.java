@@ -27,11 +27,13 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -220,8 +222,11 @@ public class NullnessVisitor
     /** Case 1: Check for null dereferencing. */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        boolean isType = node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE;
-        if (!TreeUtils.isSelfAccess(node) && !isType) {
+        Element e = TreeUtils.elementFromTree(node);
+        // System.out.printf("element.isStatic() = %s%n", e, e.isStatic());
+        if (!(TreeUtils.isSelfAccess(node)
+                || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
+                || (e.getKind() == ElementKind.FIELD && ((VarSymbol) e).isStatic()))) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
         }
         return super.visitMemberSelect(node, p);

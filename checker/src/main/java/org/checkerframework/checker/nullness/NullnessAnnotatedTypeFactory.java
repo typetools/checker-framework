@@ -371,11 +371,10 @@ public class NullnessAnnotatedTypeFactory
             return;
         }
 
-        if (elt.getKind().isClass()
-                || elt.getKind().isInterface()
-                // Workaround for System.{out,in,err} issue: assume all static
-                // fields in java.lang.System are nonnull.
-                || isSystemField(elt)) {
+        if (
+        // Workaround for System.{out,in,err} issue: assume all static
+        // fields in java.lang.System are nonnull.
+        isSystemField(elt)) {
             type.replaceAnnotation(NONNULL);
         }
     }
