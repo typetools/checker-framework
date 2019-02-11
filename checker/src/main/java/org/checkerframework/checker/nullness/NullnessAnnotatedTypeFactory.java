@@ -359,26 +359,6 @@ public class NullnessAnnotatedTypeFactory
                 new CommitmentTreeAnnotator(this));
     }
 
-    /**
-     * If the element is {@link NonNull} when used in a static member access, modifies the element's
-     * type (by adding {@link NonNull}).
-     *
-     * @param elt the element being accessed
-     * @param type the type of the element {@code elt}
-     */
-    private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-        if (elt == null) {
-            return;
-        }
-
-        if (
-        // Workaround for System.{out,in,err} issue: assume all static
-        // fields in java.lang.System are nonnull.
-        isSystemField(elt)) {
-            type.replaceAnnotation(NONNULL);
-        }
-    }
-
     private static boolean isSystemField(Element elt) {
         if (!elt.getKind().isField()) {
             return false;
@@ -436,8 +416,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-            // case 8: class in static member access
-            annotateIfStatic(elt, type);
             return null;
         }
 
@@ -458,9 +436,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-
-            // case 8. static method access
-            annotateIfStatic(elt, type);
 
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 // TODO: It's surprising that we have to do this in
