@@ -340,6 +340,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
             processClassTree(classTree);
             atypeFactory.postProcessClassTree(classTree);
+
+            if (classTree.getExtendsClause() == null) {
+                return null;
+            }
+
+            // if "@B class X extends @A Y {}", @B must be a subtype of @A
+            Set<? extends AnnotationMirror> topAnnotations =
+                    atypeFactory.getQualifierHierarchy().getTopAnnotations();
+            for (AnnotationMirror topAnno : topAnnotations) {
+                AnnotationMirror classType =
+                        atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
+                AnnotationMirror extendsType =
+                        atypeFactory
+                                .getAnnotatedType(classTree.getExtendsClause())
+                                .getAnnotationInHierarchy(topAnno);
+                if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
+                    checker.report(
+                            Result.failure("extends.clause.invalid", classType, extendsType),
+                            classTree);
+                }
+            }
         } finally {
             visitorState.setPath(preTreePath);
             visitorState.setClassType(preACT);
@@ -348,6 +369,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             visitorState.setMethodTree(preMT);
             visitorState.setAssignmentContext(preAssCtxt);
         }
+
         return null;
     }
 
