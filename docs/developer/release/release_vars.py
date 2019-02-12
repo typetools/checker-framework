@@ -161,6 +161,11 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
+FRAMEWORK_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework", "build", "libs")
+FRAMEWORK_BINARY = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+".jar")
+FRAMEWORK_SOURCE_JAR = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+"-source.jar")
+FRAMEWORK_JAVADOC_JAR = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+"-javadoc.jar")
+
 FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
 FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
 FRAMEWORKTEST_SOURCE_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-source.jar")
