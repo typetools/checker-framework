@@ -59,7 +59,6 @@ class RawTypesBounded {
         }
     }
 
-    // :: error: (extends.clause.invalid)
     class B extends A {
         @NonNull String otherField;
 
@@ -103,7 +102,6 @@ class RawTypesBounded {
         }
     }
 
-    // :: error: (extends.clause.invalid)
     class C extends B {
 
         @NonNull String[] strings;
@@ -119,7 +117,6 @@ class RawTypesBounded {
     // To test whether the argument is @NonNull and @NonRaw
     static void output(@NonNull Object o) {}
 
-    // :: error: (extends.clause.invalid)
     class D extends C {
         @Override
         public void init(@Raw @UnknownInitialization D this) {
