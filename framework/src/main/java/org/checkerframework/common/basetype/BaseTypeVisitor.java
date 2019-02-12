@@ -1047,6 +1047,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // check precondition annotations
         checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
+        if (TreeUtils.isSuperCall(node)) {
+            TreePath path = atypeFactory.getPath(node);
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+            if (TreeUtils.isConstructor(enclosingMethod)) {
+                AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(node);
+                AnnotatedExecutableType constructorType =
+                        atypeFactory.getAnnotatedType(enclosingMethod);
+                Set<? extends AnnotationMirror> topAnnoations =
+                        atypeFactory.getQualifierHierarchy().getTopAnnotations();
+                for (AnnotationMirror topAnno : topAnnoations) {
+                    AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
+                    AnnotationMirror constructorTypeMirror =
+                            constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
+                    if (!atypeFactory
+                            .getQualifierHierarchy()
+                            .isSubtype(superTypeMirror, constructorTypeMirror)) {
+                        System.out.println(" !!!  ERROR: " + constructorType);
+                    }
+                }
+            }
+        }
+
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
         scan(node.getMethodSelect(), p);
