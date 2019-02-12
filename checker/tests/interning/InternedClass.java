@@ -17,6 +17,7 @@ public @Interned class InternedClass {
     }
 
     // Private constructor
+    // :: error: (super.invocation.invalid)
     private InternedClass(int i) {
         value = i;
     }
@@ -28,6 +29,7 @@ public @Interned class InternedClass {
     }
 
     // Factory method
+    // :: error: (super.invocation.invalid)
     private InternedClass(InternedClass ic) {
         value = ic.value;
     }

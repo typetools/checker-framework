@@ -1060,10 +1060,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
                     AnnotationMirror constructorTypeMirror =
                             constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
-                    if (!atypeFactory
-                            .getQualifierHierarchy()
-                            .isSubtype(superTypeMirror, constructorTypeMirror)) {
-                        System.out.println(" !!!  ERROR: " + constructorType);
+                    if (!AnnotationUtils.areSameByName(constructorTypeMirror, superTypeMirror)
+                            && !atypeFactory
+                                    .getQualifierHierarchy()
+                                    .isSubtype(superTypeMirror, constructorTypeMirror)) {
+                        checker.report(
+                                Result.failure(
+                                        "super.invocation.invalid",
+                                        constructorTypeMirror,
+                                        superTypeMirror),
+                                enclosingMethod);
                     }
                 }
             }
