@@ -1641,6 +1641,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     for (AnnotationMirror topAnno : topAnnotations) {
                         AnnotationMirror annotationOnClass =
                                 underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
+                        if (annotationOnClass == null) {
+                            throw new Error(
+                                    String.format(
+                                            "annotationOnClass is null in %s.%n  type=%s%n  underlyingTypeMirror=%s%n  topAnno=%s",
+                                            this, type, underlyingTypeMirror, topAnno));
+                        }
                         returnType.replaceAnnotation(annotationOnClass);
                     }
                 }
