@@ -222,7 +222,6 @@ public class NullnessVisitor
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         Element e = TreeUtils.elementFromTree(node);
-        // System.out.printf("element.isStatic() = %s%n", e, e.isStatic());
         if (!(TreeUtils.isSelfAccess(node)
                 || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
                 // case 8. static member access
