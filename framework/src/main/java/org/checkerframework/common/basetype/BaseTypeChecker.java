@@ -131,6 +131,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     private TreePathCacher treePathCacher;
 
+    @Override
     protected void setRoot(CompilationUnitTree newRoot) {
         super.setRoot(newRoot);
         if (parentChecker == null) {
