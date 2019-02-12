@@ -33,7 +33,6 @@ public class FlowField {
         protected String field = null;
     }
 
-    // :: error: (extends.clause.invalid)
     class B extends A {
         void test() {
             assert field != null : "@AssumeAssertion(nullness)";
