@@ -375,8 +375,16 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // t.getReceiverType() is null for both "Object <init>()"
                 // and for static methods.
                 if (executableType.getReturnType().getAnnotations().isEmpty()) {
-                    if (executableType.getReceiverType() == null) {
-                        boolean unannotatedOrPolyDet = false;
+                    boolean unannotatedOrPolyDet = false;
+                    // First check receiver type. If it is unannotated or @PolyDet, don't check the
+                    // rest of the parameters.
+                    AnnotatedTypeMirror receiverType = executableType.getReceiverType();
+                    if (receiverType != null) {
+                        unannotatedOrPolyDet =
+                                receiverType.getAnnotations().isEmpty()
+                                        || receiverType.hasAnnotation(POLYDET);
+                    }
+                    if (!unannotatedOrPolyDet) {
                         for (AnnotatedTypeMirror paramType : executableType.getParameterTypes()) {
                             // The default is @PolyDet, so treat unannotated the same as @PolyDet.
                             // Note: "paramType.getAnnotations().isEmpty()" is true when there are
