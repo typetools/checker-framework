@@ -57,7 +57,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -357,28 +356,6 @@ public class NullnessAnnotatedTypeFactory
                 implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
-    }
-
-    private static boolean isSystemField(Element elt) {
-        if (!elt.getKind().isField()) {
-            return false;
-        }
-
-        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt)) {
-            return false;
-        }
-
-        VariableElement var = (VariableElement) elt;
-
-        // Heuristic: if we have a static final field in a system package,
-        // treat it as NonNull (many like Boolean.TYPE and System.out
-        // have constant value null but are set by the VM).
-        boolean inJavaPackage =
-                ElementUtils.getQualifiedClassName(var).toString().startsWith("java.");
-
-        return (var.getConstantValue() != null
-                || var.getSimpleName().contentEquals("class")
-                || inJavaPackage);
     }
 
     /**

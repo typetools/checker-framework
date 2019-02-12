@@ -27,7 +27,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
-import com.sun.tools.javac.code.Symbol;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -48,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -225,7 +225,7 @@ public class NullnessVisitor
         if (!(TreeUtils.isSelfAccess(node)
                 || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
                 // case 8. static member access
-                || (e instanceof Symbol && ((Symbol) e).isStatic()))) {
+                || ElementUtils.isStatic(e))) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
         }
         return super.visitMemberSelect(node, p);
