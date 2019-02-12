@@ -2,10 +2,6 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class VoidUse {
 
-    // Void is treated as Nullable, therefore also Class<Void>
-    // is Nullable. Should this fail? The upper bound of the
-    // wildcard is implicitly Nullable (because of the bound in
-    // Class), therefore it passes.
     private Class<?> main_class1 = Void.TYPE;
 
     private Class<? extends @Nullable Object> main_class2 = Void.TYPE;

@@ -27,6 +27,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.tools.javac.code.Symbol;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -220,8 +221,11 @@ public class NullnessVisitor
     /** Case 1: Check for null dereferencing. */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        boolean isType = node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE;
-        if (!TreeUtils.isSelfAccess(node) && !isType) {
+        Element e = TreeUtils.elementFromTree(node);
+        if (!(TreeUtils.isSelfAccess(node)
+                || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
+                // case 8. static member access
+                || (e instanceof Symbol && ((Symbol) e).isStatic()))) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
         }
         return super.visitMemberSelect(node, p);
