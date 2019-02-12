@@ -1628,7 +1628,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             MethodSymbol methodElt = (MethodSymbol) type.getElement();
 
             // If a constructor declaration is not explicitly annotated,
-            // annotate it with the type on class declaration.
+            // annotate it with the type on the class declaration.
             Element elem = type.getElement();
             if (elem.getKind() == ElementKind.CONSTRUCTOR) {
                 AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) type.getReturnType();
