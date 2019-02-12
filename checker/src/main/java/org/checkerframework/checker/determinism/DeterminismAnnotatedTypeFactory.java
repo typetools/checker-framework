@@ -372,8 +372,6 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     defaultArrayComponentTypeAsPolyDet(paramType);
                 }
 
-                // t.getReceiverType() is null for both "Object <init>()"
-                // and for static methods.
                 if (executableType.getReturnType().getAnnotations().isEmpty()) {
                     boolean unannotatedOrPolyDet = false;
                     // First check receiver type. If it is unannotated or @PolyDet, don't check the
