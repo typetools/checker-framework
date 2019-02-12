@@ -32,7 +32,7 @@ class Defaulting {
     })
     // Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
     // and should not be in the same bound
-    // :: error: (bound.type.incompatible)
+    // :: error: (bound.type.incompatible) :: error: (super.invocation.invalid)
     class TestUpperBound<X extends Object> {
         void m(X p) {
             @H1S1 Object l1 = p;
@@ -53,6 +53,7 @@ class Defaulting {
                 value = H1S2.class,
                 locations = {TypeUseLocation.OTHERWISE})
     })
+    // :: error: (super.invocation.invalid)
     class TestParameter {
         void m(Object p) {
             @H1S1 Object l1 = p;
@@ -83,6 +84,7 @@ class Defaulting {
     })
     class TestConstructorParameter {
 
+        // :: error: (super.invocation.invalid)
         TestConstructorParameter(Object p) {
             @H1S1 Object l1 = p;
             // :: error: (assignment.type.incompatible)
@@ -110,6 +112,7 @@ class Defaulting {
                 value = H1S2.class,
                 locations = {TypeUseLocation.OTHERWISE})
     })
+    // :: error: (super.invocation.invalid)
     class TestReturns {
         Object res() {
             return new @H1S1 Object();

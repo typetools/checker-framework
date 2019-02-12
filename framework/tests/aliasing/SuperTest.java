@@ -11,6 +11,7 @@ class A {
 }
 
 class B extends A {
+    // :: error: (super.invocation.invalid)
     public @Unique B() {
         // :: error: (unique.leaked)
         super(); // "this" is aliased to A.lastA.

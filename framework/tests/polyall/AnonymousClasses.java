@@ -12,6 +12,7 @@ class AnonymousClasses {
 }
 
 class Gen<@H1S2 F extends @H1S2 Object> {
+    // :: error: (super.invocation.invalid)
     public @H1S2 Gen() {}
 }
 
