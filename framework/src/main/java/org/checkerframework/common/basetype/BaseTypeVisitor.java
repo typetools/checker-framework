@@ -368,7 +368,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             visitorState.setMethodTree(preMT);
             visitorState.setAssignmentContext(preAssCtxt);
         }
-
         return null;
     }
 
