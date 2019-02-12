@@ -335,6 +335,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from an Element to the source Tree of the declaration. */
     private final Map<Element, Tree> elementToTreeCache;
 
+    /** Mapping from a Tree to its TreePath. Shared between all instances. */
+    private final TreePathCacher treePathCache;
+
+    /** Mapping from CFG generated trees to their enclosing elements. */
+    private final Map<Tree, Element> pathHack;
+
     /**
      * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
      * 979.
@@ -373,6 +379,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
         this.cacheDeclAnnos = new HashMap<>();
+
+        this.pathHack = new HashMap<>();
+        // get the shared instance from the checker
+        this.treePathCache = checker.getTreePathCacher();
 
         this.shouldCache = !checker.hasOption("atfDoNotCache");
         if (shouldCache) {
@@ -546,7 +556,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "start"?
     public void setRoot(@Nullable CompilationUnitTree root) {
         this.root = root;
-        treePathCache.clear();
+        // Do not clear here. Only the primary checker should clear this cache.
+        // treePathCache.clear();
         pathHack.clear();
 
         if (shouldCache) {
@@ -944,9 +955,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // **********************************************************************
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
-
-    /** Mapping from a Tree to its TreePath. */
-    private final TreePathCacher treePathCache = new TreePathCacher();
 
     /**
      * Returns the int supplied to the checker via the atfCacheSize option or the default cache
@@ -2832,8 +2840,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         throw new BugInCF("AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here");
     }
 
-    private final Map<Tree, Element> pathHack = new HashMap<>();
-
+    /**
+     * @see
+     *     org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.handleArtificialTree(Tree)
+     * @see
+     *     org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)
+     */
     public final void setPathHack(Tree node, Element enclosing) {
         pathHack.put(node, enclosing);
     }
@@ -2918,6 +2930,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * internally by the checker.
      *
      * <p>TODO: Find a better way to store information about enclosing Trees.
+     *
+     * <p>TODO: Is this actually guaranteed to be a method? What about CFG generated trees in field
+     * initializers?
      *
      * @param node the {@link Tree} to get the enclosing method for
      * @return the method {@link Element} enclosing the argument, or null if none has been recorded
