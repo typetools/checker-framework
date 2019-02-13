@@ -165,26 +165,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The factory to use for obtaining "parsed" version of annotations. */
     protected final Factory atypeFactory;
 
+    // All these variables ought to be final.  However, then they would need to be set in both
+    // constructors, since final variables can only be set in the constructor.
+
     /** For obtaining line numbers in -Ashowchecks debugging output. */
-    protected final SourcePositions positions;
+    protected SourcePositions positions;
 
     /** For storing visitor state. */
-    protected final VisitorState visitorState;
+    protected VisitorState visitorState;
 
     /** An instance of the {@link ContractsUtils} helper class. */
-    protected final ContractsUtils contractsUtils;
+    protected ContractsUtils contractsUtils;
 
     /** The Object.equals method. */
-    private final ExecutableElement objectEquals;
+    private ExecutableElement objectEquals;
 
     /** The element for java.util.Vector#copyInto. */
-    private final ExecutableElement vectorCopyInto;
+    private ExecutableElement vectorCopyInto;
 
     /** The element for java.util.function.Function#apply. */
-    private final ExecutableElement functionApply;
+    private ExecutableElement functionApply;
 
     /** The type of java.util.Vector. */
-    private final AnnotatedDeclaredType vectorType;
+    private AnnotatedDeclaredType vectorType;
 
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
@@ -195,22 +198,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         this.checker = checker;
         this.atypeFactory = createTypeFactory();
-        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
-        this.positions = trees.getSourcePositions();
-        this.visitorState = atypeFactory.getVisitorState();
-        this.typeValidator = createTypeValidator();
-        this.objectEquals =
-                TreeUtils.getMethod(
-                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.functionApply =
-                TreeUtils.getMethod(
-                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
-
-        checkForAnnotatedJdk();
+        initializeFields();
     }
 
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
@@ -218,6 +206,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         this.checker = checker;
         this.atypeFactory = typeFactory;
+        initializeFields();
+    }
+
+    /** Common code for both constructors. */
+    private void initializeFields() {
         this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
@@ -232,6 +225,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 TreeUtils.getMethod(
                         "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+
         checkForAnnotatedJdk();
     }
 
@@ -3606,8 +3600,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return typeValidator.isValid(type, tree);
     }
 
-    // This is a test to ensure that all types are valid
-    protected final TypeValidator typeValidator;
+    protected TypeValidator typeValidator;
 
     protected TypeValidator createTypeValidator() {
         return new BaseTypeValidator(checker, this, atypeFactory);
