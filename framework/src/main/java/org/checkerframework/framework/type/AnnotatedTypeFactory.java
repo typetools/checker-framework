@@ -1649,6 +1649,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             //                                            this, type,
                             // underlyingTypeMirror, topAnno));
                             returnType.replaceAnnotation(annotationOnClass);
+                        } else {
+                            System.out.println("SERIOUSLY???");
                         }
                     }
                 }
