@@ -106,7 +106,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
-import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -342,16 +341,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             processClassTree(classTree);
             atypeFactory.postProcessClassTree(classTree);
 
-            // if "@B class X extends @A Y {}", @B must be a subtype of @A
-
-            // classTree.getExtendsClause() is null when there is no explicitly written extends
-            // clause
-            // Example: class X {}. In this case, we assume that this is equivalent to writing
-            // class X extends @Top Object {} and there is no need to do any subtype checking.
+            // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
+            // classTree.getExtendsClause() is null when there is no explicitly-written extends
+            // clause, as in "class X {}". We assume that this is equivalent to writing
+            // "class X extends @Top Object {}", and there is no need to do any subtype checking.
             if (classTree.getExtendsClause() != null) {
-                Set<? extends AnnotationMirror> topAnnotations =
-                        atypeFactory.getQualifierHierarchy().getTopAnnotations();
-                for (AnnotationMirror topAnno : topAnnotations) {
+                for (AnnotationMirror topAnno :
+                        atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
                     AnnotationMirror classType =
                             atypeFactory
                                     .getAnnotatedType(classTree)
