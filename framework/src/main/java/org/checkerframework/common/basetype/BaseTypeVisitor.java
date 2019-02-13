@@ -196,6 +196,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The @java.lang.annotation.Target annotation. */
     protected final AnnotationMirror TARGET;
 
+    /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
     protected final ExecutableElement targetValueElement;
 
     /**
