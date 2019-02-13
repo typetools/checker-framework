@@ -5,9 +5,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * A sequence whose declaration is annotated with this annotation contains a subsequence that is
- * equal to the value of some other expression. This annotation permits the Upper Bound Checker to
- * translate indices for one sequence into indices for the other sequence.
+ * The annotated sequence contains a subsequence that is equal to the value of some other
+ * expression. This annotation permits the Upper Bound Checker to translate indices for one sequence
+ * into indices for the other sequence.
  *
  * <p>Consider the following example:
  *
