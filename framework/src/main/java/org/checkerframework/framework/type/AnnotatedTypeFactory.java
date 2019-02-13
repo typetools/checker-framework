@@ -2841,10 +2841,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * @see
-     *     org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.handleArtificialTree(Tree)
-     * @see
-     *     org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)
+     * Handle an artificial tree by mapping it to the enclosing element.
+     *
+     * <p>See {@code
+     * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
      */
     public final void setPathHack(Tree node, Element enclosing) {
         pathHack.put(node, enclosing);
