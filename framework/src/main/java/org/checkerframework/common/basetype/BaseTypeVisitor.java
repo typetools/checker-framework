@@ -18,6 +18,7 @@ import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -31,7 +32,10 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -47,7 +51,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -106,6 +112,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -186,6 +193,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The type of java.util.Vector. */
     private final AnnotatedDeclaredType vectorType;
 
+    /** The @java.lang.annotation.Target annotation. */
+    protected final AnnotationMirror TARGET;
+
+    protected final ExecutableElement targetValueElement;
+
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
      *     TypeHierarchy#isSubtype})
@@ -199,16 +211,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.objectEquals =
-                TreeUtils.getMethod(
-                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.functionApply =
-                TreeUtils.getMethod(
-                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
+        this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.TARGET = AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
+        targetValueElement =
+                TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
 
         checkForAnnotatedJdk();
     }
@@ -222,16 +232,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.objectEquals =
-                TreeUtils.getMethod(
-                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.functionApply =
-                TreeUtils.getMethod(
-                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
+        this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.TARGET = AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
+        targetValueElement =
+                TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
+
+        checkForAnnotatedJdk();
+    }
+
+    /**
+     * @param checker the type-checker associated with this visitor (for callbacks to {@link
+     *     TypeHierarchy#isSubtype})
+     */
+    private BaseTypeVisitor(BaseTypeChecker checker, boolean privateConstructor) {
+        super(checker);
+
+        this.checker = checker;
+        this.atypeFactory = createTypeFactory();
+        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
+        this.positions = trees.getSourcePositions();
+        this.visitorState = atypeFactory.getVisitorState();
+        this.typeValidator = createTypeValidator();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
+        this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
+        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.TARGET = AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
+        targetValueElement =
+                TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
+
         checkForAnnotatedJdk();
     }
 
@@ -913,6 +947,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
+
+        // Warn about type annotations written before modifiers such as "public".  javac retains no
+        // information about modifier locations.  So, this is a very partial check:  Issue a warning
+        // if a type annotation is at the very beginning of the VariableTree, and a modifer follows
+        // it.
+        ModifiersTree modifiersTree = node.getModifiers();
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+        if (!modifierSet.isEmpty() && !annotations.isEmpty()) {
+            AnnotationTree anno = annotations.get(0);
+            if (((JCTree) anno).getStartPosition() == ((JCTree) node).getStartPosition()
+                    && isTypeAnnotation(anno)) {
+                checker.report(
+                        Result.warning("type.anno.before.modifiers", anno, modifierSet), node);
+            }
+        }
+
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         visitorState.setAssignmentContext(
                 Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
@@ -935,6 +986,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         } finally {
             visitorState.setAssignmentContext(preAssCtxt);
         }
+    }
+
+    /**
+     * Return true if the given annotation is a type annotation: that is, its definition is
+     * meta-annotated with {@code @Target({TYPE_USE,....})}.
+     */
+    private boolean isTypeAnnotation(AnnotationTree anno) {
+        ClassSymbol annoSymbol = (ClassSymbol) ((JCIdent) anno.getAnnotationType()).sym;
+        for (AnnotationMirror metaAnno : annoSymbol.getAnnotationMirrors()) {
+            if (AnnotationUtils.areSameByName(metaAnno, TARGET)) {
+                AnnotationValue valueValue = metaAnno.getElementValues().get(targetValueElement);
+                @SuppressWarnings("unchecked")
+                List<? extends AnnotationValue> targets =
+                        (List<? extends AnnotationValue>) valueValue.getValue();
+                for (AnnotationValue target : targets) {
+                    VarSymbol targetSymbol = ((Attribute.Enum) target).value;
+                    if (targetSymbol.toString().equals("TYPE_USE")) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        return false;
     }
 
     /**
