@@ -165,7 +165,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The factory to use for obtaining "parsed" version of annotations. */
     protected final Factory atypeFactory;
 
-    // All these variables ought to be final.  However, then they would need to be set in both
+    // All the following fields ought to be final.  However, then they would need to be set in both
     // constructors, since final variables can only be set in the constructor.
 
     /** For obtaining line numbers in -Ashowchecks debugging output. */
