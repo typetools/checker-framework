@@ -1641,16 +1641,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     for (AnnotationMirror topAnno : topAnnotations) {
                         AnnotationMirror annotationOnClass =
                                 underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
+                        // annotationOnClass will not be null since the defaults are applied
+                        // before control reaches here.
+                        // However, this check is added because it appears that
+                        // checker-framework-inference
+                        // runs this code at an earlier stage than regular checker-framework does
+                        // which causes
+                        // annotationOnClass to be null.
+                        // Without this check, the test AnonymousProblem.java in testdata/ostrusted
+                        // of cf-inference crashes.
+                        // The same test case is replicated in this repo (checker-framework)
+                        // tests/tainting/AnonymousProblem.java
+                        // which does not crash i.e removing this check has no effect on that test.
                         if (annotationOnClass != null) {
-                            //                            throw new Error(
-                            //                                    String.format(
-                            //                                            "annotationOnClass is null
-                            // in %s.%n  type=%s%n  underlyingTypeMirror=%s%n  topAnno=%s",
-                            //                                            this, type,
-                            // underlyingTypeMirror, topAnno));
                             returnType.replaceAnnotation(annotationOnClass);
-                        } else {
-                            System.out.println("SERIOUSLY???");
                         }
                     }
                 }
