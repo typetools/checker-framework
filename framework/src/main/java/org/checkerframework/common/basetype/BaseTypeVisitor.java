@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -199,15 +200,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.objectEquals =
-                TreeUtils.getMethod(
-                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.functionApply =
-                TreeUtils.getMethod(
-                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
+        this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
         checkForAnnotatedJdk();
@@ -222,15 +218,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.objectEquals =
-                TreeUtils.getMethod(
-                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.functionApply =
-                TreeUtils.getMethod(
-                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
+        this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
         checkForAnnotatedJdk();
     }
