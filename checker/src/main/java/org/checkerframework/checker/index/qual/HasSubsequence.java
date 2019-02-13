@@ -7,13 +7,14 @@ import org.checkerframework.framework.qual.JavaExpression;
 /**
  * A sequence whose declaration is annotated with this annotation contains a subsequence that is
  * equal to the value of some other expression. This annotation permits the Upper Bound Checker to
- * translate between the two types of indices.
+ * translate indices for one sequence into indices for the other sequence.
  *
  * <p>Consider the following example:
  *
  * <pre><code>
  *  class IntSubArray {
- *  {@literal @}HasSubsequence(value = "this", from = "this.start", to = "this.end") int [] array;
+ *  {@literal @}HasSubsequence(value = "this", from = "this.start", to = "this.end")
+ *    int [] array;
  *    int @IndexFor("array") int start;
  *    int @IndexOrHigh("array") int end;
  *  }

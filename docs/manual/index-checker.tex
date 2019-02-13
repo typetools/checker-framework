@@ -358,19 +358,19 @@ For example, to indicate that \<shorter> is a subsequence of \<longer>:
 \end{Verbatim}
 
 Thus, a valid index into \<shorter> is also a valid index (between
-\code{start} and \code{end-1} inclusive) into \<longer>.
-More generally, if \code{x} is \code{@IndexFor("shorter")}
-in the example above, then \code{start + x} is \code{@IndexFor("longer")}. If \code{y} is \code{@IndexFor("longer")} and
-\code{@LessThan("end")}, then \code{y - start} is \code{@IndexFor("shorter")}.
-Finally, \code{end - start} is \code{@IndexOrHigh("shorter")}.
+\code{start} and \code{end-1} inclusive) into \<longer>.  More generally,
+if \code{x} is \code{@IndexFor("shorter")} in the example above, then
+\code{start + x} is \code{@IndexFor("longer")}. If \code{y} is
+\code{@IndexFor("longer")} and \code{@LessThan("end")}, then \code{y -
+  start} is \code{@IndexFor("shorter")}. Finally, \code{end - start} is
+\code{@IndexOrHigh("shorter")}.
 
 This annotation is in part checked and in part trusted.  When an array is
 assigned to \code{longer}, three facts are checked: that \code{start} is
 non-negative, that \code{start} is less than or equal to \code{end}, and
-that \code{end} is less than or equal to the length of \code{longer}. Note
-that this doesn't guarantee that \code{shorter} is in fact a subsequence,
-just that there is a such a subsequence. The programmer must manually
-verify that \code{shorter} actually refers to that subsequence.
+that \code{end} is less than or equal to the length of \code{longer}.  This
+ensures that the indices are valid. The programmer must manually verify
+that the value of \code{shorter} equals the subsequence that they describe.
 \end{description}
 
 
