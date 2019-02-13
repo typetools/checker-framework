@@ -209,7 +209,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         initializeFields();
     }
 
-    /** Common code for both constructors. */
+    /** Common code for both constructors, to avoid code duplication. */
     private void initializeFields() {
         this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
         this.positions = trees.getSourcePositions();
@@ -3600,6 +3600,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return typeValidator.isValid(type, tree);
     }
 
+    /** This tests that all types are valid. */
     protected TypeValidator typeValidator;
 
     protected TypeValidator createTypeValidator() {
