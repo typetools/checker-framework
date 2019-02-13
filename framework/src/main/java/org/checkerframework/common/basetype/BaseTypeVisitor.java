@@ -343,54 +343,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             atypeFactory.postProcessClassTree(classTree);
 
             // if "@B class X extends @A Y {}", @B must be a subtype of @A
-            Set<? extends AnnotationMirror> topAnnotations =
-                    atypeFactory.getQualifierHierarchy().getTopAnnotations();
-            for (AnnotationMirror topAnno : topAnnotations) {
-                AnnotationMirror classType =
-                        atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
-                if (classTree.getExtendsClause() == null) {
-                    // Implicit extends case:
-                    // If a class is declared as "class X", then it
-                    // implicitly extends "Object" which has the
-                    // type of default qualifier.
-                    // The following code reports an error if the type on
-                    // a class is not a subtype of the default qualifier in hierarchy.
-                    Class<? extends Annotation> defaultAnno = null;
-                    for (Class<? extends Annotation> qual :
-                            atypeFactory.getSupportedTypeQualifiers()) {
-                        Annotation[] allAnnos = qual.getAnnotations();
-                        for (int i = 0; i < allAnnos.length; i++) {
-                            if (allAnnos[i].toString().contains("DefaultQualifierInHierarchy")
-                                    && atypeFactory
-                                                    .getQualifierHierarchy()
-                                                    .leastUpperBound(
-                                                            classType,
-                                                            AnnotationBuilder.fromClass(
-                                                                    elements, qual))
-                                            != null) {
-                                defaultAnno = qual;
-                                break;
-                            }
-                        }
-                        if (defaultAnno != null) {
-                            break;
-                        }
-                    }
-                    AnnotationMirror defaultAnnoMirror =
-                            AnnotationBuilder.fromClass(elements, defaultAnno);
-                    if (!atypeFactory
-                                    .getQualifierHierarchy()
-                                    .isSubtype(classType, defaultAnnoMirror)
-                            && atypeFactory
-                                            .getQualifierHierarchy()
-                                            .leastUpperBound(classType, defaultAnnoMirror)
-                                    != null) {
-                        checker.report(
-                                Result.failure(
-                                        "extends.clause.invalid", classType, defaultAnnoMirror),
-                                classTree);
-                    }
-                } else {
+
+            // classTree.getExtendsClause() is null when there is no explicitly written extends
+            // clause
+            // Example: class X {}. In this case, we assume that this is equivalent to writing
+            // class X extends @Top Object {} and there is no need to do any subtype checking.
+            if (classTree.getExtendsClause() != null) {
+                Set<? extends AnnotationMirror> topAnnotations =
+                        atypeFactory.getQualifierHierarchy().getTopAnnotations();
+                for (AnnotationMirror topAnno : topAnnotations) {
+                    AnnotationMirror classType =
+                            atypeFactory
+                                    .getAnnotatedType(classTree)
+                                    .getAnnotationInHierarchy(topAnno);
                     AnnotationMirror extendsType =
                             atypeFactory
                                     .getAnnotatedType(classTree.getExtendsClause())
@@ -410,7 +375,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             visitorState.setMethodTree(preMT);
             visitorState.setAssignmentContext(preAssCtxt);
         }
-
         return null;
     }
 
