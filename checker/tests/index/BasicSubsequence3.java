@@ -5,10 +5,10 @@ import org.checkerframework.checker.index.qual.LessThan;
 
 @SuppressWarnings("lowerbound")
 class BasicSubsequence3 {
-    @HasSubsequence(value = "this", from = "this.start", to = "this.end")
+    @HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
     int[] array;
 
-    @HasSubsequence(value = "this", from = "start", to = "end")
+    @HasSubsequence(subsequence = "this", from = "start", to = "end")
     int[] array2;
 
     final @IndexFor("array") int start;
