@@ -16,7 +16,7 @@ import org.checkerframework.common.value.qual.MinLen;
  * all expected warnings suppressed.
  */
 public class GuavaPrimitives extends AbstractList<Short> {
-    @HasSubsequence(value = "this", from = "this.start", to = "this.end")
+    @HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
     final short @MinLen(1) [] array;
 
     final @IndexFor("array") @LessThan("end") int start;

@@ -3,7 +3,7 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 
 class OnlyCheckSubsequenceWhenAssigningToArray {
-    @HasSubsequence(value = "this", from = "this.start", to = "this.end")
+    @HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
     int[] array;
 
     final @IndexFor("array") int start;
