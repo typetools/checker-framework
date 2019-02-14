@@ -433,10 +433,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * in the case of a compound checker, the compound checker is the parent, not the checker that
      * was run prior to this one by the compound checker.
      */
-    protected SourceChecker parentChecker = null;
+    protected SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
-    protected List<String> upstreamCheckerNames = null;
+    protected List<String> upstreamCheckerNames;
 
     @Override
     public final synchronized void init(ProcessingEnvironment env) {
@@ -467,6 +467,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     protected void setParentChecker(SourceChecker parentChecker) {
         this.parentChecker = parentChecker;
+    }
+
+    /** Invoked when the current compilation unit root changes. */
+    protected void setRoot(CompilationUnitTree newRoot) {
+        this.currentRoot = newRoot;
+        visitor.setRoot(currentRoot);
     }
 
     /**
@@ -955,7 +961,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return;
         }
         if (p.getCompilationUnit() != currentRoot) {
-            currentRoot = p.getCompilationUnit();
+            setRoot(p.getCompilationUnit());
             if (hasOption("filenames")) {
                 // Add timestamp to indicate how long operations are taking
                 message(Kind.NOTE, new java.util.Date().toString());
@@ -965,7 +971,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                         (Object) this.getClass().getSimpleName(),
                         currentRoot.getSourceFile().getName());
             }
-            visitor.setRoot(currentRoot);
         }
 
         // Visit the attributed tree.
