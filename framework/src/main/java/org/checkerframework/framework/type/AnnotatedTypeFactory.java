@@ -2876,7 +2876,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null) {
-            return TreePath.getPath(root, node);
+            TreePath path = TreePath.getPath(root, node);
+            treePathCache.addPath(node, path);
+            return path;
         }
 
         // This method uses multiple heuristics to avoid calling
@@ -2884,6 +2886,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // If the current path you are visiting is for this node we are done
         if (currentPath.getLeaf() == node) {
+            treePathCache.addPath(node, currentPath);
             return currentPath;
         }
 
@@ -2893,19 +2896,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // When testing on Daikon, two steps resulted in the best performance
         if (currentPath.getParentPath() != null) {
             currentPath = currentPath.getParentPath();
-        }
-        if (currentPath.getLeaf() == node) {
-            return currentPath;
-        }
-        if (currentPath.getParentPath() != null) {
-            currentPath = currentPath.getParentPath();
-        }
-        if (currentPath.getLeaf() == node) {
-            return currentPath;
+            treePathCache.addPath(currentPath.getLeaf(), currentPath);
+            if (currentPath.getLeaf() == node) {
+                return currentPath;
+            }
+            if (currentPath.getParentPath() != null) {
+                currentPath = currentPath.getParentPath();
+                treePathCache.addPath(currentPath.getLeaf(), currentPath);
+                if (currentPath.getLeaf() == node) {
+                    return currentPath;
+                }
+            }
         }
 
         final TreePath pathWithinSubtree = TreePath.getPath(currentPath, node);
         if (pathWithinSubtree != null) {
+            treePathCache.addPath(node, pathWithinSubtree);
             return pathWithinSubtree;
         }
 
@@ -2914,6 +2920,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // class
         TreePath current = currentPath;
         while (current != null) {
+            treePathCache.addPath(current.getLeaf(), current);
             if (current.getLeaf() == node) {
                 return current;
             }
