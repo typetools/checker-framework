@@ -846,7 +846,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected enum ScanState {
         IN_PROGRESS,
         FINISHED
-    };
+    }
 
     protected final Map<ClassTree, ScanState> scannedClasses;
 
