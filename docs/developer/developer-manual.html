@@ -141,6 +141,16 @@ is more efficient than leaving comments in a pull request.
 </p>
 
 <p>
+When there are related changes in the <code>checker-framework</code>
+and <code>checker-framework-inference</code> repositories, use the same
+branch name for each.  The continuous integration framework uses a branch
+of the same name when possible.  If you use different branch names
+in <code>checker-framework</code>
+and <code>checker-framework-inference</code>, then the continuous
+integration tests for both will fail and may mask problems.
+</p>
+
+<p>
 Try to address pull requests promptly, to avoid stalling others while
 waiting for your feedback.  If you have been waiting for more than a week
 after the pull request was assigned with no feedback, then ping the

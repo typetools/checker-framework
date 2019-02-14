@@ -5,23 +5,26 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * A sequence whose declaration is annotated with this annotation contains a named subsequence. This
- * annotation permits indices for the subsequence to be translated into indices for this sequence
- * and vice-versa.
+ * The annotated sequence contains a subsequence that is equal to the value of some other
+ * expression. This annotation permits the Upper Bound Checker to translate indices for one sequence
+ * into indices for the other sequence.
  *
- * <p>Consider the following example (note that because this annotation is a declaration annotation,
- * it appears immediately before the declaration of the field - not as the primary type on the
- * array!):
+ * <p>Consider the following example:
  *
  * <pre><code>
- *   class IntSubArray {
- *   {@literal @}HasSubsequence(value = "this", from = "this.start", to = "this.end") int [] array;
- *    int {@literal @}IndexFor("array") int start;
- *    int {@literal @}IndexOrHigh("array") int end;
- *   }
+ *  class IntSubArray {
+ *  {@literal @}HasSubsequence(value = "this", from = "this.start", to = "this.end")
+ *    int [] array;
+ *    int @IndexFor("array") int start;
+ *    int @IndexOrHigh("array") int end;
+ *  }
  * </code></pre>
  *
- * These annotations allow two kinds of indexing operations that would otherwise be forbidden:
+ * This means that the value of an {@code IntSubArray} object is equal to a subsequence of its
+ * {@code array} field.
+ *
+ * <p>These annotations imply the following relationships among {@code @}{@link IndexFor}
+ * annotations:
  *
  * <ul>
  *   <li>If {@code i} is {@code @IndexFor("this")}, then {@code start + i} is
@@ -30,18 +33,18 @@ import org.checkerframework.framework.qual.JavaExpression;
  *       {@code @IndexFor("this")}.
  * </ul>
  *
- * When assigning an array {@code a} to {@code array}, 3 facts need to be proven:
+ * When assigning an array {@code a} to {@code array}, 4 facts need to be true:
  *
  * <ul>
  *   <li>{@code start} is {@code @NonNegative}.
  *   <li>{@code end} is {@code @LTEqLengthOf("a")}.
  *   <li>{@code start} is {@code @LessThan("end + 1")}.
+ *   <li>the value of {@code this} equals {@code array[start..end-1]}
  * </ul>
  *
- * A warning will still be issued at this assignment, because the Index Checker cannot prove that
- * {@code "this"} is the name of the subsequence, only that such a subsequence exists. You should
- * manually verify that the named sequence is, in fact, the subsequence described in the annotation
- * and then suppress the warning.
+ * The Index Checker verifies the first 3 facts, but always issues a warning because it cannot prove
+ * the 4th fact. The programmer should should manually verify that the {@code value} field is equal
+ * to the given subsequence and then suppress the warning.
  *
  * <p>For an example of how this annotation is used in practice, see the test GuavaPrimitives.java
  * in /checker/tests/index/.
@@ -52,15 +55,15 @@ import org.checkerframework.framework.qual.JavaExpression;
  */
 @Target({ElementType.FIELD})
 public @interface HasSubsequence {
-    /* The name of the subsequence. */
+    /** The name of the subsequence. */
     @JavaExpression
     String value();
 
-    /* The first valid index into the subsequence. */
+    /** The first valid index into the subsequence. */
     @JavaExpression
     String from();
 
-    /* The end of the subsequence. This value is *not* an index into the subsequence. */
+    /** The end of the subsequence. This value is <em>not</em> an index into the subsequence. */
     @JavaExpression
     String to();
 }
