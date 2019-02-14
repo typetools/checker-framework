@@ -551,9 +551,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
-    // TODO: document
-    // Set the CompilationUnitTree that should be used.
-    // What's a better name? Maybe "reset" or "start"?
+    /**
+     * Set the CompilationUnitTree that should be used.
+     *
+     * @param root the new compilation unit to use
+     */
+    // What's a better name? Maybe "reset" or "restart"?
     public void setRoot(@Nullable CompilationUnitTree root) {
         this.root = root;
         // Do not clear here. Only the primary checker should clear this cache.
