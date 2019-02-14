@@ -340,32 +340,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
             processClassTree(classTree);
             atypeFactory.postProcessClassTree(classTree);
-
-            // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
-            // classTree.getExtendsClause() is null when there is no explicitly-written extends
-            // clause, as in "class X {}". We assume that this is equivalent to writing
-            // "class X extends @Top Object {}", and there is no need to do any subtype checking.
-            if (classTree.getExtendsClause() != null) {
-                for (AnnotationMirror topAnno :
-                        atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
-                    AnnotationMirror classType =
-                            atypeFactory
-                                    .getAnnotatedType(classTree)
-                                    .getAnnotationInHierarchy(topAnno);
-                    AnnotationMirror extendsType =
-                            atypeFactory
-                                    .getAnnotatedType(classTree.getExtendsClause())
-                                    .getAnnotationInHierarchy(topAnno);
-                    if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
-                        checker.report(
-                                Result.failure(
-                                        "declaration.inconsistent.with.extends.clause",
-                                        classType,
-                                        extendsType),
-                                classTree);
-                    }
-                }
-            }
         } finally {
             visitorState.setPath(preTreePath);
             visitorState.setClassType(preACT);
@@ -404,6 +378,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(im);
             }
         }
+        // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
+        // classTree.getExtendsClause() is null when there is no explicitly-written extends
+        // clause, as in "class X {}". We assume that this is equivalent to writing
+        // "class X extends @Top Object {}", and there is no need to do any subtype checking.
+        if (classTree.getExtendsClause() != null) {
+            for (AnnotationMirror topAnno :
+                    atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+                AnnotationMirror classType =
+                        atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
+                AnnotationMirror extendsType =
+                        atypeFactory
+                                .getAnnotatedType(classTree.getExtendsClause())
+                                .getAnnotationInHierarchy(topAnno);
+                if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
+                    checker.report(
+                            Result.failure(
+                                    "declaration.inconsistent.with.extends.clause",
+                                    classType,
+                                    extendsType),
+                            classTree);
+                }
+            }
+        }
+
         super.visitClass(classTree, null);
     }
 
