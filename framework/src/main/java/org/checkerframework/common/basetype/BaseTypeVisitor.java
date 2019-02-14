@@ -358,7 +358,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                     .getAnnotationInHierarchy(topAnno);
                     if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
                         checker.report(
-                                Result.failure("extends.clause.invalid", classType, extendsType),
+                                Result.failure(
+                                        "declaration.inconsistent.with.extends.clause",
+                                        classType,
+                                        extendsType),
                                 classTree);
                     }
                 }

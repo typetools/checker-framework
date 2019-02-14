@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.tainting.qual.*;
 
-// :: error: (extends.clause.invalid)
+// :: error: (declaration.inconsistent.with.extends.clause)
 public @Tainted class ExtendsSubtypingIssue extends Y {}
 
 // :: error: (type.invalid.annotations.on.use)
