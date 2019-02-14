@@ -257,8 +257,7 @@ public class NullnessTransfer
 
         // Refine result to @NonNull if n is an invocation of Map.get, the argument is a key for
         // the map, and the map's value type is not @Nullable.
-        if (keyForTypeFactory != null
-                && keyForTypeFactory.isInvocationOfMapMethodWithOneObjectParameter(n, "get")) {
+        if (keyForTypeFactory != null && keyForTypeFactory.isMapGet(n)) {
             String mapName =
                     FlowExpressions.internalReprOf(nullnessTypeFactory, receiver).toString();
             AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());

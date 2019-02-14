@@ -33,7 +33,7 @@ public class DoubleLiteralNode extends ValueLiteralNode {
     @Override
     public boolean equals(Object obj) {
         // test that obj is a DoubleLiteralNode
-        if (obj == null || !(obj instanceof DoubleLiteralNode)) {
+        if (!(obj instanceof DoubleLiteralNode)) {
             return false;
         }
         // super method compares values

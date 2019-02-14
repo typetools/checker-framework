@@ -85,13 +85,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
     @Override
     public boolean isReflectiveMethodInvocation(MethodInvocationTree tree) {
-        if ((provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), Invoke.class) != null
+        return ((provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), Invoke.class) != null
                 || provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), NewInstance.class)
-                        != null)) {
-            return true;
-        }
-        // Called method is neither Method.invoke nor Constructor.newInstance
-        return false;
+                        != null));
     }
 
     @Override
@@ -137,8 +133,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             debugReflection("Resolved method invocation: " + resolvedTree);
             if (!checkMethodAgruments(resolvedTree)) {
                 debugReflection(
-                        "Spoofed tree's arguments did not match declaration"
-                                + resolvedTree.toString());
+                        "Spoofed tree's arguments did not match declaration" + resolvedTree);
                 // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
                 // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
@@ -269,8 +264,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             debugReflection("Resolved constructor invocation: " + resolvedTree);
             if (!checkNewClassArguments(resolvedTree)) {
                 debugReflection(
-                        "Spoofed tree's arguments did not match declaration"
-                                + resolvedTree.toString());
+                        "Spoofed tree's arguments did not match declaration" + resolvedTree);
                 // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
                 // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
@@ -474,6 +468,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree), MethodVal.class);
     }
 
+    /** Returns true if the receiver's type is @UnknownMethod. */
     private boolean isUnknownMethod(MethodInvocationTree tree) {
         return provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree), UnknownMethod.class)
                 != null;

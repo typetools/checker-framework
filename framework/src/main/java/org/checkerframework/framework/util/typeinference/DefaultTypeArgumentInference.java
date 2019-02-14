@@ -439,7 +439,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         for (AnnotatedTypeVariable targetDecl : targetDeclarations) {
             InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
-            if (inferred != null && inferred instanceof InferredType) {
+            if (inferred instanceof InferredType) {
                 final AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
                 for (AnnotationMirror top : tops) {
                     final AnnotationMirror lowerBoundAnno =
@@ -686,9 +686,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final InferredValue supertypeInferred = supertypeResult.get(target);
 
             final InferredValue outputValue;
-            if (equalityInferred != null && equalityInferred instanceof InferredType) {
+            if (equalityInferred instanceof InferredType) {
 
-                if (supertypeInferred != null && supertypeInferred instanceof InferredType) {
+                if (supertypeInferred instanceof InferredType) {
                     AnnotatedTypeMirror superATM = ((InferredType) supertypeInferred).type;
                     AnnotatedTypeMirror equalityATM = ((InferredType) equalityInferred).type;
                     if (TypesUtils.isErasedSubtype(
@@ -782,7 +782,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     }
 
                     if (!handled) {
-                        throw new BugInCF("Unhandled constraint type: " + constraint.toString());
+                        throw new BugInCF("Unhandled constraint type: " + constraint);
                     }
 
                     toProcess.addAll(newConstraints);

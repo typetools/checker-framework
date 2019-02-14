@@ -30,7 +30,7 @@ public class IntegerDivisionNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof IntegerDivisionNode)) {
+        if (!(obj instanceof IntegerDivisionNode)) {
             return false;
         }
         IntegerDivisionNode other = (IntegerDivisionNode) obj;

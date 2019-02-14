@@ -56,7 +56,7 @@ public class SynchronizedNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof SynchronizedNode)) {
+        if (!(obj instanceof SynchronizedNode)) {
             return false;
         }
         SynchronizedNode other = (SynchronizedNode) obj;

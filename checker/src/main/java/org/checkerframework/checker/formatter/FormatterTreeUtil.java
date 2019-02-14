@@ -118,6 +118,10 @@ public class FormatterTreeUtil {
         }
     }
 
+    /**
+     * Returns true if the call is to a method with the @ReturnsFormat annotation. An example of
+     * such a method is FormatUtil.asFormat.
+     */
     public boolean isAsFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, ReturnsFormat.class);

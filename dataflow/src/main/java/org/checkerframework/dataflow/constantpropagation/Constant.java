@@ -71,7 +71,7 @@ public class Constant implements AbstractValue<Constant> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Constant)) {
+        if (!(obj instanceof Constant)) {
             return false;
         }
         Constant other = (Constant) obj;

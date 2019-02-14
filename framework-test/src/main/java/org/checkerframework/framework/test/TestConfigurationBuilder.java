@@ -356,7 +356,7 @@ public class TestConfigurationBuilder {
                         + "Errors:\n"
                         + String.join("\n", errors)
                         + "\n"
-                        + this.toString()
+                        + this
                         + "\n");
     }
 

@@ -54,7 +54,7 @@ public class StringConversionNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof StringConversionNode)) {
+        if (!(obj instanceof StringConversionNode)) {
             return false;
         }
         StringConversionNode other = (StringConversionNode) obj;

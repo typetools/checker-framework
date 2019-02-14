@@ -38,7 +38,7 @@ public class PrimitiveTypeNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof PrimitiveTypeNode)) {
+        if (!(obj instanceof PrimitiveTypeNode)) {
             return false;
         }
         PrimitiveTypeNode other = (PrimitiveTypeNode) obj;

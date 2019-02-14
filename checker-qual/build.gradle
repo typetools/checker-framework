@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0"
+    }
+}
+
 task copySources(type: Copy) {
     description 'Copy checker-qual source from other projects.'
     includeEmptyDirs = false
@@ -22,6 +33,15 @@ task copySources(type: Copy) {
     fileMode(0444)
 
     into file('src/main/java')
+}
+
+apply plugin: 'biz.aQute.bnd.builder'
+
+jar {
+    dependsOn copySources
+    manifest {
+        attributes('Export-Package': '*')
+    }
 }
 
 compileJava {
