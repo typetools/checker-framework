@@ -229,31 +229,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * @param checker the type-checker associated with this visitor (for callbacks to {@link
-     *     TypeHierarchy#isSubtype})
-     */
-    private BaseTypeVisitor(BaseTypeChecker checker, boolean privateConstructor) {
-        super(checker);
-
-        this.checker = checker;
-        this.atypeFactory = createTypeFactory();
-        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
-        this.positions = trees.getSourcePositions();
-        this.visitorState = atypeFactory.getVisitorState();
-        this.typeValidator = createTypeValidator();
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
-        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
-        this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
-        this.TARGET = AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
-        targetValueElement =
-                TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
-
-        checkForAnnotatedJdk();
-    }
-
-    /**
      * Constructs an instance of the appropriate type factory for the implemented type system.
      *
      * <p>The default implementation uses the checker naming convention to create the appropriate
