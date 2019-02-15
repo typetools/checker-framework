@@ -2608,15 +2608,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         AnnotationMirror canonicalAnno = aliases.get(qualName);
-        if (canonicalAnno != null && a.getElementValues().size() > 0) {
-            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, canonicalAnno);
-            if (aliasesCopyElements.contains(qualName)) {
-                builder.copyElementValuesFromAnnotation(a, aliasesIgnorableElements.get(qualName));
-            }
-            return builder.build();
-        } else {
+        if (canonicalAnno == null || a.getElementValues().isEmpty()) {
             return canonicalAnno;
         }
+
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, canonicalAnno);
+        if (aliasesCopyElements.contains(qualName)) {
+            builder.copyElementValuesFromAnnotation(a, aliasesIgnorableElements.get(qualName));
+        }
+        return builder.build();
     }
 
     /**
