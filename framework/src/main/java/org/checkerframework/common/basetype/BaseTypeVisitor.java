@@ -2429,6 +2429,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     newClassTree);
             return false;
         }
+
+        // Issue a warning if the type at constructor invocation is a subtype of the constructor
+        // declaration type.
+        // This is equivalent to down-casting.
+        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
+            checker.report(
+                    Result.warning(
+                            "cast.unsafe", returnType.toString(true), invocation.toString(true)),
+                    newClassTree);
+        }
+
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
