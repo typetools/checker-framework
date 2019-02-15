@@ -1,4 +1,4 @@
-import com.sun.tools.javac.util.List;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)

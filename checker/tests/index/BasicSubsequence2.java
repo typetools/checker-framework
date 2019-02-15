@@ -3,10 +3,10 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 
 class BasicSubsequence2 {
-    @HasSubsequence(value = "this", from = "this.start", to = "this.end")
+    @HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
     int[] array;
 
-    @HasSubsequence(value = "this", from = "start", to = "end")
+    @HasSubsequence(subsequence = "this", from = "start", to = "end")
     int[] array2;
 
     final @IndexFor("array") int start;
