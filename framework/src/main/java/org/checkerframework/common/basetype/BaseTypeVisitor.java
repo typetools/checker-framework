@@ -914,12 +914,42 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ModifiersTree modifiersTree = node.getModifiers();
         Set<Modifier> modifierSet = modifiersTree.getFlags();
         List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
-        if (!modifierSet.isEmpty() && !annotations.isEmpty()) {
-            AnnotationTree anno = annotations.get(0);
-            if (((JCTree) anno).getStartPosition() == ((JCTree) node).getStartPosition()
-                    && isTypeAnnotation(anno)) {
+        if (!annotations.isEmpty()) {
+            // Check if a type annotation is at the very beginning of the VariableTree, and a
+            // modifier follows it.
+            AnnotationTree firstAnno = annotations.get(0);
+            if (isTypeAnnotation(firstAnno)
+                    && ((JCTree) firstAnno).getStartPosition() == ((JCTree) node).getStartPosition()
+                    && !modifierSet.isEmpty()) {
                 checker.report(
-                        Result.warning("type.anno.before.modifiers", anno, modifierSet), node);
+                        Result.warning("type.anno.before.modifiers", firstAnno, modifierSet), node);
+            }
+
+            // Check if a type annotation precedes a declaration annotation.
+            // Index of the last declaration annotation in the list
+            int lastDeclAnnoIndex = -1;
+            for (int i = annotations.size(); i > 1; i--) { // no need to check index 0
+                if (!isTypeAnnotation(annotations.get(i))) {
+                    lastDeclAnnoIndex = i;
+                    break;
+                }
+            }
+            if (lastDeclAnnoIndex != -1) {
+                List<AnnotationTree> badTypeAnnos = new ArrayList<>();
+                for (int i = 0; i < lastDeclAnnoIndex; i++) {
+                    AnnotationTree anno = annotations.get(i);
+                    if (isTypeAnnotation(anno)) {
+                        badTypeAnnos.add(anno);
+                    }
+                }
+                if (!badTypeAnnos.isEmpty()) {
+                    checker.report(
+                            Result.warning(
+                                    "type.anno.before.decl.anno",
+                                    badTypeAnnos,
+                                    annotations.get(lastDeclAnnoIndex)),
+                            node);
+                }
             }
         }
 
