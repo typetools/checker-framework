@@ -920,20 +920,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Modifier> modifierSet = modifiersTree.getFlags();
         List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
         if (!annotations.isEmpty()) {
-            // Check if a type annotation is at the very beginning of the VariableTree, and a
-            // modifier follows it.
-            AnnotationTree firstAnno = annotations.get(0);
-            if (isTypeAnnotation(firstAnno)
-                    && ((JCTree) firstAnno).getStartPosition() == ((JCTree) node).getStartPosition()
-                    && !modifierSet.isEmpty()) {
-                checker.report(
-                        Result.warning("type.anno.before.modifiers", firstAnno, modifierSet), node);
-            }
-
             // Check if a type annotation precedes a declaration annotation.
-            // Index of the last declaration annotation in the list
             int lastDeclAnnoIndex = -1;
-            for (int i = annotations.size(); i > 1; i--) { // no need to check index 0
+            for (int i = annotations.size() - 1; i > 0; i--) { // no need to check index 0
                 if (!isTypeAnnotation(annotations.get(i))) {
                     lastDeclAnnoIndex = i;
                     break;
@@ -955,6 +944,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                     annotations.get(lastDeclAnnoIndex)),
                             node);
                 }
+            }
+
+            // Check if a type annotation is at the very beginning of the VariableTree, and a
+            // modifier follows it.
+            AnnotationTree firstAnno = annotations.get(0);
+            if (isTypeAnnotation(firstAnno)
+                    && ((JCTree) firstAnno).getStartPosition() == ((JCTree) node).getStartPosition()
+                    && !modifierSet.isEmpty()) {
+                checker.report(
+                        Result.warning("type.anno.before.modifier", firstAnno, modifierSet), node);
             }
         }
 
@@ -981,6 +980,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             visitorState.setAssignmentContext(preAssCtxt);
         }
     }
+
+    /**
+     * Return true if the given annotation is a type annotation: that is, its definition is
+     * meta-annotated with {@code @Target({TYPE_USE,....})}.
+     *
+     * <p>This currently crashes the Checker Framework if an annotation is both a type and a
+     * declaration annotation. Users shouldn't do that, but the Checker Framework shouldn't crash
+     * when that happens.
+     */
+    // private boolean isTypeAnnotation1(AnnotationTree anno) {
+    //     // I would need to construct a Class, and I don't see how to do it.
+    //     return AnnotatedTypes.isTypeAnnotation(TreeUtils.annotationFromAnnotationTree(anno,
+    // annoAsClass));
+    // }
 
     /**
      * Return true if the given annotation is a type annotation: that is, its definition is
