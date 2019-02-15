@@ -84,7 +84,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                         AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
                 List<String> offsets =
                         AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
-                if (sequences.size() != offsets.size() && offsets.size() > 0) {
+                if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
                     checker.report(
                             Result.failure(
                                     "different.length.sequences.offsets",

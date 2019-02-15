@@ -201,10 +201,10 @@ public class TreeBuilder {
         Symbol.TypeSymbol methodClass = methodType.asElement();
         Type elementType;
 
-        if (exprType.getTypeArguments().size() > 0) {
-            elementType = (Type) exprType.getTypeArguments().get(0);
-        } else {
+        if (exprType.getTypeArguments().isEmpty()) {
             elementType = symtab.objectType;
+        } else {
+            elementType = (Type) exprType.getTypeArguments().get(0);
         }
 
         // Replace the next method's generic return type with

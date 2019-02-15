@@ -1132,7 +1132,7 @@ public class CFGBuilder {
             ArrayList<ExtendedNode> nodeList = in.nodeList;
             Set<Integer> leaders = in.leaders;
 
-            assert in.nodeList.size() > 0;
+            assert !in.nodeList.isEmpty();
 
             // exit blocks
             SpecialBlockImpl regularExitBlock = new SpecialBlockImpl(SpecialBlockType.EXIT);
