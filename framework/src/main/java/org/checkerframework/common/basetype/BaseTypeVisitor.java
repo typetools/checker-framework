@@ -512,6 +512,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
+        ModifiersTree modifiersTree = node.getModifiers();
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+
         try {
             if (TreeUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
@@ -912,13 +917,50 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitVariable(VariableTree node, Void p) {
 
+        ModifiersTree modifiersTree = node.getModifiers();
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        visitorState.setAssignmentContext(
+                Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
+
+        try {
+            if (atypeFactory.getDependentTypesHelper() != null) {
+                atypeFactory
+                        .getDependentTypesHelper()
+                        .checkType(visitorState.getAssignmentContext().second, node);
+            }
+            // If there's no assignment in this variable declaration, skip it.
+            if (node.getInitializer() != null) {
+                commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
+            } else {
+                // commonAssignmentCheck validates the type of node,
+                // so only validate if commonAssignmentCheck wasn't called
+                validateTypeOf(node);
+            }
+            return super.visitVariable(node, p);
+        } finally {
+            visitorState.setAssignmentContext(preAssCtxt);
+        }
+    }
+
+    /**
+     * Warn if a type annotation is written before a modifier such as "public" or before a
+     * declaration annotation.
+     *
+     * @param node a VariableTree or a MethodTree
+     * @param modifierSet the modifiers in node
+     * @param annotations the annotations in node
+     */
+    private void warnAboutTypeAnnotationsTooEarly(
+            Tree node, Set<Modifier> modifierSet, List<? extends AnnotationTree> annotations) {
+
         // Warn about type annotations written before modifiers such as "public".  javac retains no
         // information about modifier locations.  So, this is a very partial check:  Issue a warning
         // if a type annotation is at the very beginning of the VariableTree, and a modifer follows
         // it.
-        ModifiersTree modifiersTree = node.getModifiers();
-        Set<Modifier> modifierSet = modifiersTree.getFlags();
-        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
         if (!annotations.isEmpty()) {
             // Check if a type annotation precedes a declaration annotation.
             int lastDeclAnnoIndex = -1;
@@ -946,38 +988,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
 
-            // Check if a type annotation is at the very beginning of the VariableTree, and a
-            // modifier follows it.
+            // Determine the length of the text that ought to precede the first type annotation.
+            // If the type annotation appears before that text could appear, then warn that a
+            // modifier appears after the type annotation.
+            // TODO: in the future, account for the lengths of declaration annotations.  Length of
+            // toString of the annotation isn't useful, as it might be different length than
+            // original input.  Can use JCTree.getEndPosition(EndPosTable) and
+            // com.sun.tools.javac.tree.EndPosTable, but it requires -Xjcov.
             AnnotationTree firstAnno = annotations.get(0);
-            if (isTypeAnnotation(firstAnno)
-                    && ((JCTree) firstAnno).getStartPosition() == ((JCTree) node).getStartPosition()
-                    && !modifierSet.isEmpty()) {
-                checker.report(
-                        Result.warning("type.anno.before.modifier", firstAnno, modifierSet), node);
+            if (!modifierSet.isEmpty() && isTypeAnnotation(firstAnno)) {
+                int precedingTextLength = 0;
+                for (Modifier m : modifierSet) {
+                    precedingTextLength += m.toString().length() + 1; // +1 for the space
+                }
+                int annoStartPos = ((JCTree) firstAnno).getStartPosition();
+                int varStartPos = ((JCTree) node).getStartPosition();
+                if (annoStartPos < varStartPos + precedingTextLength) {
+                    checker.report(
+                            Result.warning("type.anno.before.modifier", firstAnno, modifierSet),
+                            node);
+                }
             }
-        }
-
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setAssignmentContext(
-                Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
-
-        try {
-            if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory
-                        .getDependentTypesHelper()
-                        .checkType(visitorState.getAssignmentContext().second, node);
-            }
-            // If there's no assignment in this variable declaration, skip it.
-            if (node.getInitializer() != null) {
-                commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
-            } else {
-                // commonAssignmentCheck validates the type of node,
-                // so only validate if commonAssignmentCheck wasn't called
-                validateTypeOf(node);
-            }
-            return super.visitVariable(node, p);
-        } finally {
-            visitorState.setAssignmentContext(preAssCtxt);
         }
     }
 
