@@ -1015,20 +1015,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Return true if the given annotation is a type annotation: that is, its definition is
      * meta-annotated with {@code @Target({TYPE_USE,....})}.
-     *
-     * <p>This currently crashes the Checker Framework if an annotation is both a type and a
-     * declaration annotation. Users shouldn't do that, but the Checker Framework shouldn't crash
-     * when that happens.
-     */
-    // private boolean isTypeAnnotation1(AnnotationTree anno) {
-    //     // I would need to construct a Class, and I don't see how to do it.
-    //     return AnnotatedTypes.isTypeAnnotation(TreeUtils.annotationFromAnnotationTree(anno,
-    // annoAsClass));
-    // }
-
-    /**
-     * Return true if the given annotation is a type annotation: that is, its definition is
-     * meta-annotated with {@code @Target({TYPE_USE,....})}.
      */
     private boolean isTypeAnnotation(AnnotationTree anno) {
         ClassSymbol annoSymbol = (ClassSymbol) ((JCIdent) anno.getAnnotationType()).sym;
