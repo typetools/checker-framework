@@ -198,8 +198,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
      *     TypeHierarchy#isSubtype})
-     * @param typeFactory the type factory to use; if null, the implementation calls {@link
-     *     #createTypeFactory}
+     * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
      */
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
         super(checker);

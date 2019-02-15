@@ -62,7 +62,6 @@ public class TestConfigurationBuilder {
         }
 
         // Use the annotated jdk for the compile bootclasspath
-        // This is set by build.xml
         String jdkJarPath = getJdkJarPathFromProperty();
         if (notNullOrEmpty(jdkJarPath)) {
             configBuilder.addOption("-Xbootclasspath/p:" + jdkJarPath);
