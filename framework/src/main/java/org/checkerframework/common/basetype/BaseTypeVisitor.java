@@ -3369,6 +3369,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return result;
     }
 
+    /**
+     * Call this only when the current path is an identifier.
+     *
+     * @returns the enclosing member select, or null if the identifier is not the field in a member
+     *     selection
+     */
     protected MemberSelectTree enclosingMemberSelect() {
         TreePath path = this.getCurrentPath();
         assert path.getLeaf().getKind() == Tree.Kind.IDENTIFIER
