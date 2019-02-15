@@ -138,7 +138,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
             if (newType == null) {
                 final InferredValue subValue = subordinate.get(target);
-                if (subValue != null && subValue instanceof InferredType) {
+                if (subValue instanceof InferredType) {
                     this.put(target, subValue);
                     return null;
                 }
@@ -147,7 +147,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
                     // If the newType is null, then use the subordinate type, but with the
                     // primary annotations on null.
                     final InferredValue subValue = subordinate.get(target);
-                    if (subValue != null && subValue instanceof InferredType) {
+                    if (subValue instanceof InferredType) {
                         AnnotatedTypeMirror copy = ((InferredType) subValue).type.deepCopy();
                         copy.replaceAnnotations(newType.type.getAnnotations());
                         newType = new InferredType(copy);

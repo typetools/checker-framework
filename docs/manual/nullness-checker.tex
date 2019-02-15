@@ -156,7 +156,9 @@ The nullness hierarchy contains these qualifiers:
 \item[\refqualclass{checker/nullness/qual}{MonotonicNonNull}]
   indicates a reference that may be \code{null}, but if it ever becomes
   non-\code{null}, then it never becomes \code{null} again.  This is
-  appropriate for lazily-initialized fields, among other uses.  When the
+  appropriate for lazily-initialized fields, for field initialization that
+  occurs in a lifecycle method other than the constructor (e.g., an
+  override of \<android.app.Activity.onCreate>), and other uses.  When the
   variable is read, its type is treated as
   \refqualclass{checker/nullness/qual}{Nullable}, but when the variable is
   assigned, its type is treated as

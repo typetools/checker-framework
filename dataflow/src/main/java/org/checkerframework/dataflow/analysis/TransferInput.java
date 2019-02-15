@@ -213,7 +213,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     @Override
     public boolean equals(Object o) {
-        if (o != null && o instanceof TransferInput) {
+        if (o instanceof TransferInput) {
             @SuppressWarnings("unchecked")
             TransferInput<A, S> other = (TransferInput<A, S>) o;
             if (containsTwoStores()) {

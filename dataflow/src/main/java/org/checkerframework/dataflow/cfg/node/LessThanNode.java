@@ -33,7 +33,7 @@ public class LessThanNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof LessThanNode)) {
+        if (!(obj instanceof LessThanNode)) {
             return false;
         }
         LessThanNode other = (LessThanNode) obj;

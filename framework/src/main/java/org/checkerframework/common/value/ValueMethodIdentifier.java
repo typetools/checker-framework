@@ -28,15 +28,18 @@ class ValueMethodIdentifier {
 
     /** Determines whether a method is the {@code String.length()} method. */
     public boolean isStringLengthMethod(ExecutableElement method) {
+        // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
         return method.equals(lengthMethod);
     }
 
     /** Determines whether a method is the {@code String.startsWith(String)} method. */
     public boolean isStartsWithMethod(ExecutableElement method) {
+        // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
         return method.equals(startsWithMethod);
     }
     /** Determines whether a method is the {@code String.endsWith(String)} method. */
     public boolean isEndsWithMethod(ExecutableElement method) {
+        // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
         return method.equals(endsWithMethod);
     }
 }

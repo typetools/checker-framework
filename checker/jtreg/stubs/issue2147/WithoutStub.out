@@ -1,0 +1,7 @@
+EnumStubTest.java:15:31: compiler.err.proc.messager: [argument.type.incompatible] incompatible types in argument.
+found   : @Tainted SampleEnum
+required: @Untainted SampleEnum
+EnumStubTest.java:16:31: compiler.err.proc.messager: [argument.type.incompatible] incompatible types in argument.
+found   : @Tainted SampleEnum
+required: @Untainted SampleEnum
+2 errors

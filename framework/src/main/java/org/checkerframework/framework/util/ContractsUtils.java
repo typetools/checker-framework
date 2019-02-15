@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +10,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -297,15 +297,12 @@ public class ContractsUtils {
             AnnotationMirror argumentAnno,
             Map<String, String> argumentRenaming) {
 
-        @SuppressWarnings("unchecked")
-        Class<? extends Annotation> c =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(qualifierAnno, "qualifier", false);
+        Name c = AnnotationUtils.getElementValueClassName(qualifierAnno, "qualifier", false);
 
         AnnotationMirror anno;
         if (argumentAnno == null || argumentRenaming.isEmpty()) {
             // If there are no arguments, use factory method that allows caching
-            anno = AnnotationBuilder.fromClass(factory.getElementUtils(), c);
+            anno = AnnotationBuilder.fromName(factory.getElementUtils(), c);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
             builder.copyRenameElementValuesFromAnnotation(argumentAnno, argumentRenaming);
@@ -506,7 +503,7 @@ public class ContractsUtils {
 
     /**
      * Returns a set of triples {@code (expr, result, annotation)} of conditional postconditions
-     * according to the given {@link EnsuresQualifierIf}.
+     * that are expressed in the source code using the given postcondition annotation.
      */
     private Set<ConditionalPostcondition> getConditionalPostcondition(
             AnnotationMirror ensuresQualifierIf) {
