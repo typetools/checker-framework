@@ -35,6 +35,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
@@ -1017,7 +1018,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * meta-annotated with {@code @Target({TYPE_USE,....})}.
      */
     private boolean isTypeAnnotation(AnnotationTree anno) {
-        ClassSymbol annoSymbol = (ClassSymbol) ((JCIdent) anno.getAnnotationType()).sym;
+        Tree annoType = anno.getAnnotationType();
+        ClassSymbol annoSymbol;
+        switch (annoType.getKind()) {
+            case IDENTIFIER:
+                annoSymbol = (ClassSymbol) ((JCIdent) annoType).sym;
+                break;
+            case MEMBER_SELECT:
+                annoSymbol = (ClassSymbol) ((JCFieldAccess) annoType).sym;
+                break;
+            default:
+                throw new Error("Unhandled kind: " + annoType.getKind() + " for " + anno);
+        }
         for (AnnotationMirror metaAnno : annoSymbol.getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByName(metaAnno, TARGET)) {
                 AnnotationValue valueValue = metaAnno.getElementValues().get(targetValueElement);
