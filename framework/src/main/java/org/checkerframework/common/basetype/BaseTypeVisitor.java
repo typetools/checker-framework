@@ -3371,7 +3371,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Call this only when the current path is an identifier.
      *
-     * @returns the enclosing member select, or null if the identifier is not the field in a member
+     * @return the enclosing member select, or null if the identifier is not the field in a member
      *     selection
      */
     protected MemberSelectTree enclosingMemberSelect() {
