@@ -625,7 +625,7 @@ public class QualifierDefaults {
         }
     }
 
-    /*
+    /**
      * Given an element, returns whether the unchecked code default (i.e. conservative defaults)
      * should be applied for it. Handles elements from bytecode or source code.
      */
