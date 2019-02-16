@@ -9,7 +9,7 @@ class ReceiverSuperInvocation {
 
 class ReceiverSuperInvocationSubclass extends ReceiverSuperInvocation {
     @Override
-    void foo(@UnderInitialization(Object.class) Sub this) {
+    void foo(@UnderInitialization(Object.class) ReceiverSuperInvocationSubclass this) {
         // :: error: (method.invocation.invalid)
         super.foo();
     }
