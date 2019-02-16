@@ -187,9 +187,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The type of java.util.Vector. */
     private final AnnotatedDeclaredType vectorType;
 
-    /**
-     * @param checker the type-checker associated with this visitor
-     */
+    /** @param checker the type-checker associated with this visitor */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         this(checker, null);
     }
