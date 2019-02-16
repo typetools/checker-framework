@@ -1317,7 +1317,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Get argument values
             List<? extends ExpressionTree> arguments = tree.getArguments();
             ArrayList<List<?>> argValues;
-            if (arguments.size() > 0) {
+            if (arguments.isEmpty()) {
+                argValues = null;
+            } else {
                 argValues = new ArrayList<>();
                 for (ExpressionTree argument : arguments) {
                     AnnotatedTypeMirror argType = getAnnotatedType(argument);
@@ -1328,8 +1330,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                     argValues.add(values);
                 }
-            } else {
-                argValues = null;
             }
 
             // Get receiver values
@@ -1368,7 +1368,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // get argument values
             List<? extends ExpressionTree> arguments = tree.getArguments();
             ArrayList<List<?>> argValues;
-            if (arguments.size() > 0) {
+            if (arguments.isEmpty()) {
+                argValues = null;
+            } else {
                 argValues = new ArrayList<>();
                 for (ExpressionTree argument : arguments) {
                     AnnotatedTypeMirror argType = getAnnotatedType(argument);
@@ -1379,9 +1381,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                     argValues.add(values);
                 }
-            } else {
-                argValues = null;
             }
+
             // Evaluate method
             List<?> returnValues =
                     evaluator.evaluteConstructorCall(argValues, tree, type.getUnderlyingType());
