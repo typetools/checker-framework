@@ -188,16 +188,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private final AnnotatedDeclaredType vectorType;
 
     /**
-     * @param checker the type-checker associated with this visitor (for callbacks to {@link
-     *     TypeHierarchy#isSubtype})
+     * @param checker the type-checker associated with this visitor
      */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         this(checker, null);
     }
 
     /**
-     * @param checker the type-checker associated with this visitor (for callbacks to {@link
-     *     TypeHierarchy#isSubtype})
+     * @param checker the type-checker associated with this visitor
      * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
      */
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
