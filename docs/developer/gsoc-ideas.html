@@ -189,9 +189,20 @@ You can find more potential projects in the
   <li>
     Annotate the program, based on its documentation.
   <li>
-    Run the type-checker.  This might require adding more annotations,
+    Run the type-checker.  If it issues
+    warnings, <a href="https://checkerframework.org/manual/#handling-warnings">correct them</a>.
+    This might require adding more annotations,
     fixing bugs in the program, or suppressing warnings.  Repeat until
     the type-checker passes on the program.
+    <ul>
+      <li>Don't add an <code>if</code> statement that always succeeds, just
+	to suppress a warning.  Convince yourself that both branches can
+	execute, or else don't add the <code>if</code> statement.
+      <li>If you add a <code>@SuppressWarnings</code> annotation,
+	<a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
+	why</a> the checker warning is a false positive and you are certain
+	the code is safe.
+    </ul>
   <li>
     Share it with us so that
     we can evaluate it and give you feedback.  (If the code compiles
