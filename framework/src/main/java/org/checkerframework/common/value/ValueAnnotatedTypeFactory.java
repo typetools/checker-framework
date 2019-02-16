@@ -439,7 +439,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
-            if (anno == null || anno.getElementValues().size() == 0) {
+            if (anno == null || anno.getElementValues().isEmpty()) {
                 return;
             }
 
