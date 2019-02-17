@@ -13,15 +13,15 @@ import org.checkerframework.framework.qual.JavaExpression;
  *
  * <pre><code>
  *  class IntSubArray {
- *  {@literal @}HasSubsequence(value = "this", from = "this.start", to = "this.end")
+ *  {@literal @}HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
  *    int [] array;
  *    int @IndexFor("array") int start;
  *    int @IndexOrHigh("array") int end;
  *  }
  * </code></pre>
  *
- * This means that the value of an {@code IntSubArray} object is equal to a subsequence of its
- * {@code array} field.
+ * The above annotations mean that the value of an {@code IntSubArray} object is equal to a
+ * subsequence of its {@code array} field.
  *
  * <p>These annotations imply the following relationships among {@code @}{@link IndexFor}
  * annotations:
@@ -43,8 +43,8 @@ import org.checkerframework.framework.qual.JavaExpression;
  * </ul>
  *
  * The Index Checker verifies the first 3 facts, but always issues a warning because it cannot prove
- * the 4th fact. The programmer should should manually verify that the {@code value} field is equal
- * to the given subsequence and then suppress the warning.
+ * the 4th fact. The programmer should should manually verify that the {@code subsequence} field is
+ * equal to the given subsequence and then suppress the warning.
  *
  * <p>For an example of how this annotation is used in practice, see the test GuavaPrimitives.java
  * in /checker/tests/index/.
@@ -55,15 +55,15 @@ import org.checkerframework.framework.qual.JavaExpression;
  */
 @Target({ElementType.FIELD})
 public @interface HasSubsequence {
-    /** The name of the subsequence. */
+    /** An expression that evaluates to the subsequence. */
     @JavaExpression
-    String value();
+    String subsequence();
 
-    /** The first valid index into the subsequence. */
+    /** The index into this where the subsequence starts. */
     @JavaExpression
     String from();
 
-    /** The end of the subsequence. This value is <em>not</em> an index into the subsequence. */
+    /** The index into this, immediately past where the subsequence ends. */
     @JavaExpression
     String to();
 }

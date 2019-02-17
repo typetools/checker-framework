@@ -187,14 +187,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The type of java.util.Vector. */
     private final AnnotatedDeclaredType vectorType;
 
-    /**
-     * @param checker the type-checker associated with this visitor (for callbacks to {@link
-     *     TypeHierarchy#isSubtype})
-     */
+    /** @param checker the type-checker associated with this visitor */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         this(checker, null);
     }
 
+    /**
+     * @param checker the type-checker associated with this visitor
+     * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
+     */
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
         super(checker);
 
@@ -2718,7 +2719,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // If the function to which the member reference refers is generic, but the member
         // reference does not provide method type arguments, then Java 8 inference is required.
         // Issue 979.
-        if (invocationType.getTypeVariables().size() > 0
+        if (!invocationType.getTypeVariables().isEmpty()
                 && (memberReferenceTree.getTypeArguments() == null
                         || memberReferenceTree.getTypeArguments().isEmpty())) {
             // Method type args
