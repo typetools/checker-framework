@@ -255,6 +255,13 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(context, factory.getPath(m), atm);
     }
 
+    /**
+     * Standardize the annotations in a class declaration.
+     *
+     * @param node the class declaration
+     * @param type the type of the class declaration
+     * @param ele the element of the class declaration
+     */
     public void standardizeClass(ClassTree node, AnnotatedTypeMirror type, Element ele) {
         if (!hasDependentType(type)) {
             return;
@@ -269,6 +276,13 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(classContext, path, type);
     }
 
+    /**
+     * Standardize the annotations in a variable declaration.
+     *
+     * @param node the variable declaration
+     * @param type the type of the variable declaration
+     * @param ele the element of the variable declaration
+     */
     public void standardizeVariable(Tree node, AnnotatedTypeMirror type, Element ele) {
         if (!hasDependentType(type)) {
             return;
