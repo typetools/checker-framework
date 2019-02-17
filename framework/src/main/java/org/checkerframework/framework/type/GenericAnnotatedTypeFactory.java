@@ -844,10 +844,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * compilation unit.
      */
     protected enum ScanState {
+        /** Dataflow analysis in progress. */
         IN_PROGRESS,
+        /** Dataflow analysis finished. */
         FINISHED
-    };
+    }
 
+    /** Map from ClassTree to their dataflow analysis state. */
     protected final Map<ClassTree, ScanState> scannedClasses;
 
     /**

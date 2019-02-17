@@ -172,7 +172,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             AnnotatedTypeMirror lubTypeArg = castedLub.getTypeArguments().get(i);
             lubTypeArgument(type1TypeArg, type2TypeArg, lubTypeArg);
         }
-        if (lubTypArgs.size() > 0) {
+        if (!lubTypArgs.isEmpty()) {
             castedLub.setTypeArguments(lubTypArgs);
         }
         return null;
