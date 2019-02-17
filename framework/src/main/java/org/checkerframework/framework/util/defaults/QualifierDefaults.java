@@ -588,9 +588,7 @@ public class QualifierDefaults {
         {
             AnnotationMirror ds = atypeFactory.getDeclAnnotation(elt, DefaultQualifiers.class);
             if (ds != null) {
-                if (qualifiers == null) {
-                    qualifiers = new DefaultSet();
-                }
+                qualifiers = new DefaultSet();
                 @SuppressWarnings("unchecked") // unchecked conversion to generic type
                 List<AnnotationMirror> values =
                         AnnotationUtils.getElementValue(ds, "value", List.class, false);
