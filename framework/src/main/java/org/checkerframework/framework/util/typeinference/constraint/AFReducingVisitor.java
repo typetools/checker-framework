@@ -243,7 +243,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         // extends Serializable & Iterable<T>>
         for (final AnnotatedTypeMirror intersectionBound : supertype.directSuperTypes()) {
             if (intersectionBound instanceof AnnotatedDeclaredType
-                    && ((AnnotatedDeclaredType) intersectionBound).getTypeArguments().size() > 0) {
+                    && !((AnnotatedDeclaredType) intersectionBound).getTypeArguments().isEmpty()) {
                 addConstraint(subtype, supertype, constraints);
             }
         }

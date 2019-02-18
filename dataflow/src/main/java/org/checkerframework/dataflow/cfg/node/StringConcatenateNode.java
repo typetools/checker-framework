@@ -30,7 +30,7 @@ public class StringConcatenateNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof StringConcatenateNode)) {
+        if (!(obj instanceof StringConcatenateNode)) {
             return false;
         }
         StringConcatenateNode other = (StringConcatenateNode) obj;

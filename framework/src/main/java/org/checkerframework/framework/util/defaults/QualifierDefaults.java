@@ -11,7 +11,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.lang.annotation.Annotation;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
@@ -487,10 +487,8 @@ public class QualifierDefaults {
     // dq must be an AnnotationMirror that represent a @DefaultQualifier
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
-        Class<? extends Annotation> cls =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(dq, "value", false);
-        AnnotationMirror anno = AnnotationBuilder.fromClass(elements, cls);
+        Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
+        AnnotationMirror anno = AnnotationBuilder.fromName(elements, cls);
 
         if (anno == null) {
             return null;
@@ -627,41 +625,42 @@ public class QualifierDefaults {
         }
     }
 
-    /*
+    /**
      * Given an element, returns whether the unchecked code default (i.e. conservative defaults)
      * should be applied for it. Handles elements from bytecode or source code.
      */
     public boolean applyUncheckedCodeDefaults(final Element annotationScope) {
-
         if (annotationScope == null) {
             return false;
         }
 
-        if (uncheckedCodeDefaults.size() > 0) {
-            // TODO: I would expect this:
-            //   atypeFactory.isFromByteCode(annotationScope)) {
-            // to work instead of the
-            // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
-            // but it doesn't work correctly and tests fail.
+        if (uncheckedCodeDefaults.isEmpty()) {
+            return false;
+        }
 
-            boolean isFromStubFile = atypeFactory.isFromStubFile(annotationScope);
-            boolean isBytecode =
-                    ElementUtils.isElementFromByteCode(annotationScope)
-                            && atypeFactory.declarationFromElement(annotationScope) == null
-                            && !isFromStubFile;
-            if (isBytecode) {
-                return useUncheckedCodeDefaultsBytecode;
-            } else if (isFromStubFile) {
-                // TODO: Types in stub files not annotated for a particular checker should be
-                // treated as unchecked bytecode.   For now, all types in stub files are treated as
-                // checked code. Eventually, @AnnotateFor(checker) will be programmatically added
-                // to methods in stub files supplied via the @Stubfile annotation.  Stub files will
-                // be treated like unchecked code except for methods in the scope for an
-                // @AnnotatedFor.
-                return false;
-            } else if (useUncheckedCodeDefaultsSource) {
-                return !isElementAnnotatedForThisChecker(annotationScope);
-            }
+        // TODO: I would expect this:
+        //   atypeFactory.isFromByteCode(annotationScope)) {
+        // to work instead of the
+        // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
+        // but it doesn't work correctly and tests fail.
+
+        boolean isFromStubFile = atypeFactory.isFromStubFile(annotationScope);
+        boolean isBytecode =
+                ElementUtils.isElementFromByteCode(annotationScope)
+                        && atypeFactory.declarationFromElement(annotationScope) == null
+                        && !isFromStubFile;
+        if (isBytecode) {
+            return useUncheckedCodeDefaultsBytecode;
+        } else if (isFromStubFile) {
+            // TODO: Types in stub files not annotated for a particular checker should be
+            // treated as unchecked bytecode.   For now, all types in stub files are treated as
+            // checked code. Eventually, @AnnotateFor(checker) will be programmatically added
+            // to methods in stub files supplied via the @Stubfile annotation.  Stub files will
+            // be treated like unchecked code except for methods in the scope for an
+            // @AnnotatedFor.
+            return false;
+        } else if (useUncheckedCodeDefaultsSource) {
+            return !isElementAnnotatedForThisChecker(annotationScope);
         }
         return false;
     }
@@ -818,6 +817,17 @@ public class QualifierDefaults {
                 }
 
                 switch (location) {
+                    case TYPE_DECLARATION:
+                        {
+                            if (scope != null
+                                    && (scope.getKind() == ElementKind.CLASS
+                                            || scope.getKind() == ElementKind.INTERFACE
+                                            || scope.getKind() == ElementKind.ENUM)
+                                    && t == type) {
+                                addAnnotation(t, qual);
+                            }
+                            break;
+                        }
                     case FIELD:
                         {
                             if (scope != null

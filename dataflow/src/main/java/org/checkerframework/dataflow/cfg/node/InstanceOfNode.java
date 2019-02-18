@@ -63,7 +63,7 @@ public class InstanceOfNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof InstanceOfNode)) {
+        if (!(obj instanceof InstanceOfNode)) {
             return false;
         }
         InstanceOfNode other = (InstanceOfNode) obj;

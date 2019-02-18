@@ -30,7 +30,7 @@ public class FloatingDivisionNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof FloatingDivisionNode)) {
+        if (!(obj instanceof FloatingDivisionNode)) {
             return false;
         }
         FloatingDivisionNode other = (FloatingDivisionNode) obj;

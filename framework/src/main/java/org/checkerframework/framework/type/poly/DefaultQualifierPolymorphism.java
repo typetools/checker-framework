@@ -32,7 +32,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
         super(env, factory);
         Elements elements = env.getElementUtils();
         AnnotationMirrorMap<AnnotationMirror> polys = new AnnotationMirrorMap<>();
-        for (AnnotationMirror aam : qualhierarchy.getTypeQualifiers()) {
+        for (AnnotationMirror aam : qualHierarchy.getTypeQualifiers()) {
             if (QualifierPolymorphism.isPolyAll(aam)) {
                 polys.put(aam, null);
                 continue;
@@ -54,7 +54,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                 ttreetop = topQuals.iterator().next();
             } else {
                 AnnotationMirror ttree = AnnotationBuilder.fromName(elements, plval);
-                ttreetop = qualhierarchy.getTopAnnotation(ttree);
+                ttreetop = qualHierarchy.getTopAnnotation(ttree);
             }
             if (topsSeen.contains(ttreetop)) {
                 throw new BugInCF(
@@ -106,9 +106,9 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
 
         AnnotationMirrorSet lubSet = new AnnotationMirrorSet();
         for (AnnotationMirror top : topQuals) {
-            AnnotationMirror a1 = qualhierarchy.findAnnotationInHierarchy(a1Annos, top);
-            AnnotationMirror a2 = qualhierarchy.findAnnotationInHierarchy(a2Annos, top);
-            AnnotationMirror lub = qualhierarchy.leastUpperBoundTypeVariable(a1, a2);
+            AnnotationMirror a1 = qualHierarchy.findAnnotationInHierarchy(a1Annos, top);
+            AnnotationMirror a2 = qualHierarchy.findAnnotationInHierarchy(a2Annos, top);
+            AnnotationMirror lub = qualHierarchy.leastUpperBoundTypeVariable(a1, a2);
             if (lub != null) {
                 lubSet.add(lub);
             }

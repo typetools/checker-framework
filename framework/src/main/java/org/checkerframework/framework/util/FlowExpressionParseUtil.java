@@ -151,7 +151,7 @@ public class FlowExpressionParseUtil {
         } else if (isFloatLiteral(expression, context)) {
             throw constructParserException(
                     expression,
-                    String.format("Cannot parse floating-point values '%s'", expression));
+                    String.format("floating-point values '%s' cannot be parsed", expression));
         } else if (isStringLiteral(expression, context)) {
             return parseStringLiteral(expression, types, env.getElementUtils());
         } else if (isThisLiteral(expression, context)) {
@@ -171,10 +171,17 @@ public class FlowExpressionParseUtil {
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
         } else {
-            throw constructParserException(
-                    expression,
-                    String.format("unrecognized expression '%s'", expression)
-                            + (context.parsingMember ? " in context with parsingMember=true" : ""));
+            String message;
+            if (expression.equals("#0")) {
+                message =
+                        "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
+            } else {
+                message = String.format("is an unrecognized expression");
+            }
+            if (context.parsingMember) {
+                message += " in a context with parsingMember=true";
+            }
+            throw constructParserException(expression, message);
         }
     }
 
@@ -634,7 +641,7 @@ public class FlowExpressionParseUtil {
         } else {
             if (context.receiver instanceof ClassName) {
                 throw constructParserException(
-                        s, "a non-static method call cannot have a class name as a receiver.");
+                        s, "a non-static method call cannot have a class name as a receiver");
             }
             TypeMirror methodType =
                     TypesUtils.substituteMethodReturnType(
@@ -706,9 +713,7 @@ public class FlowExpressionParseUtil {
                 depth++;
             } else if (ch == close) {
                 depth--;
-                if (depth < 0) {
-                    break;
-                } else if (depth == 0) {
+                if (depth == 0) {
                     return i - 1;
                 }
             }
@@ -810,7 +815,7 @@ public class FlowExpressionParseUtil {
                             + " while looking up class "
                             + classNameString
                             + " in package "
-                            + packageSymbol.toString());
+                            + packageSymbol);
         }
         if (classSymbol == null) {
             throw constructParserException(
@@ -818,7 +823,7 @@ public class FlowExpressionParseUtil {
                     "classSymbol==null when looking up class "
                             + classNameString
                             + " in package "
-                            + packageSymbol.toString());
+                            + packageSymbol);
         }
         TypeMirror classType = ElementUtils.getType(classSymbol);
         if (classType == null) {
@@ -1448,6 +1453,8 @@ public class FlowExpressionParseUtil {
             throw new Error("Must have an explanation.");
         }
         return new FlowExpressionParseException(
-                (Throwable) null, "flowexpr.parse.error", "'" + expr + "' because " + explanation);
+                (Throwable) null,
+                "flowexpr.parse.error",
+                "Invalid '" + expr + "' because " + explanation);
     }
 }

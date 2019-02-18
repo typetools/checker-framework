@@ -24,10 +24,7 @@ public abstract class ThisLiteralNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ThisLiteralNode)) {
-            return false;
-        }
-        return true;
+        return obj instanceof ThisLiteralNode;
     }
 
     @Override

@@ -157,14 +157,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(
-                    getTopAnnotation(a1), getTopAnnotation(a2))) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
-            } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+            } else if (AnnotationUtils.areSameByName(a1, a2)) {
                 List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
                 List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
 
@@ -227,14 +226,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> methodNames;
             List<Integer> params;
             List<String> classNames;
-            if (isGetConstructorMethodInovaction(tree)) {
+            if (isGetConstructorMethodInvocation(tree)) {
                 // method name for constructors is always <init>
                 methodNames = Arrays.asList(ReflectionResolver.INIT);
                 params = getConstructorParamsLen(tree.getArguments());
                 classNames =
                         getClassNamesFromClassValChecker(TreeUtils.getReceiverTree(tree), true);
 
-            } else if (isGetMethodMethodInovaction(tree)) {
+            } else if (isGetMethodMethodInvocation(tree)) {
                 ExpressionTree methodNameArg = tree.getArguments().get(0);
                 methodNames = getMethodNamesFromStringArg(methodNameArg);
                 params = getMethodParamsLen(tree.getArguments());
@@ -270,22 +269,24 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null) {
-                return true;
-            }
-            return false;
+        /**
+         * Returns true if the method being invoked is annotated with @GetConstructor. An example of
+         * such a method is Class.getConstructor.
+         */
+        private boolean isGetConstructorMethodInvocation(MethodInvocationTree tree) {
+            return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null;
         }
 
-        private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null) {
-                return true;
-            }
-            return false;
+        /**
+         * Returns true if the method being invoked is annotated with @GetMethod. An example of such
+         * a method is Class.getMethod.
+         */
+        private boolean isGetMethodMethodInvocation(MethodInvocationTree tree) {
+            return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
         }
 
         private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {
-            assert args.size() > 0 : "getMethod must have at least one parameter";
+            assert !args.isEmpty() : "getMethod must have at least one parameter";
 
             // Number of parameters in the created method object
             int numParams = args.size() - 1;

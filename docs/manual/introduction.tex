@@ -210,7 +210,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.8.zip}
+  \url{https://checkerframework.org/checker-framework-2.6.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -1324,6 +1324,11 @@ errors.  Don't panic!  There are three general causes for the warnings:
   Chapter~\ref{suppressing-warnings}); be sure to include a code
   comment explaining how you know the code is correct even though the
   type-checker cannot deduce that fact.
+
+  (Do not add an \<if> test that can never fail, just to suppress a
+  warning.  Adding a gratuitous \<if> clutters the code and confuses
+  readers, who will assume that every \<if> condition can evaluate to true
+  or false.)
 \end{itemize}
 
 For each warning issued by the checker, you need to determine which of the

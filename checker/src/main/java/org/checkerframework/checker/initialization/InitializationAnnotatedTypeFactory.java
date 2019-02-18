@@ -140,10 +140,10 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
         assert anno != null;
-        return AnnotationUtils.areSameIgnoringValues(anno, UNCLASSIFIED)
-                || AnnotationUtils.areSameIgnoringValues(anno, FREE)
-                || AnnotationUtils.areSameIgnoringValues(anno, COMMITTED)
-                || AnnotationUtils.areSameIgnoringValues(anno, FBCBOTTOM);
+        return AnnotationUtils.areSameByName(anno, UNCLASSIFIED)
+                || AnnotationUtils.areSameByName(anno, FREE)
+                || AnnotationUtils.areSameByName(anno, COMMITTED)
+                || AnnotationUtils.areSameByName(anno, FBCBOTTOM);
     }
 
     /*
@@ -462,6 +462,10 @@ public abstract class InitializationAnnotatedTypeFactory<
         return null;
     }
 
+    /**
+     * Side-effects argument {@code selfType} to make it @Initialized or @UnderInitialization,
+     * depending on whether all fields have been set.
+     */
     protected void setSelfTypeInInitializationCode(
             Tree tree, AnnotatedDeclaredType selfType, TreePath path) {
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
@@ -496,7 +500,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /**
      * Returns a {@link UnderInitialization} annotation (or {@link UnknownInitialization} if rawness
-     * is used) that has the supertype of {@code type} as type frame.
+     * is used) that has the superclass of {@code type} as type frame.
      */
     protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {
         // Find supertype if possible.
@@ -518,7 +522,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 annotation = createUnclassifiedAnnotation(superClass);
             }
         } else {
-            // Use Object as a valid super-class
+            // Use Object as a valid super-class.
             if (useFbc) {
                 annotation = createFreeAnnotation(Object.class);
             } else {
@@ -634,8 +638,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         // not necessary if there is an explicit UnknownInitialization
         // annotation on the field
-        if (AnnotationUtils.containsSameIgnoringValues(
-                fieldAnnotations.getAnnotations(), UNCLASSIFIED)) {
+        if (AnnotationUtils.containsSameByName(fieldAnnotations.getAnnotations(), UNCLASSIFIED)) {
             return;
         }
         if (isUnclassified(receiverType) || isFree(receiverType)) {

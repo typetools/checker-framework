@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -19,9 +20,11 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -168,8 +171,50 @@ public class ElementUtils {
                 || elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
-            return getQualifiedClassName(elt) + "." + elt.toString();
+            return getQualifiedClassName(elt) + "." + elt;
         }
+    }
+
+    /**
+     * Returns the canonical representation of the method declaration, which contains simple names
+     * of the types only.
+     */
+    public static String getSimpleName(ExecutableElement element) {
+        StringBuilder sb = new StringBuilder();
+
+        // note: constructor simple name is <init>
+        sb.append(element.getSimpleName());
+        sb.append("(");
+        for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
+                i.hasNext(); ) {
+            sb.append(simpleTypeName(i.next().asType()));
+            if (i.hasNext()) {
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+
+        return sb.toString();
+    }
+
+    /**
+     * A helper method that standarizes types by printing simple names instead of fully qualified
+     * names.
+     */
+    private static String simpleTypeName(TypeMirror type) {
+        switch (type.getKind()) {
+            case ARRAY:
+                return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
+            case TYPEVAR:
+                return ((TypeVariable) type).asElement().getSimpleName().toString();
+            case DECLARED:
+                return ((DeclaredType) type).asElement().getSimpleName().toString();
+            default:
+                if (type.getKind().isPrimitive()) {
+                    return type.toString();
+                }
+        }
+        throw new BugInCF("ElementUtils: unhandled type: " + type);
     }
 
     /**
@@ -281,8 +326,17 @@ public class ElementUtils {
      */
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
+        int origCardinality = names.size();
         Set<VariableElement> elements = new HashSet<>();
         findFieldsInTypeOrSuperType(type, names, elements);
+        // Since names may contain duplicates, I don't trust the claim in the documentation about
+        // cardinality.  (Does any code depend on the invariant, though?)
+        if (origCardinality != names.size() + elements.size()) {
+            throw new BugInCF(
+                    String.format(
+                            "Bad sizes: %d != %d + %d",
+                            origCardinality, names.size(), elements.size()));
+        }
         return elements;
     }
 

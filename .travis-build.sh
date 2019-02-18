@@ -40,10 +40,14 @@ set -o xtrace
 
 export SHELLOPTS
 
-SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+SLUGOWNER=${TRAVIS_PULL_REQUEST_SLUG%/*}
+if [[ "$SLUGOWNER" == "" ]]; then
+  SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+fi
 if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
+echo SLUGOWNER=$SLUGOWNER
 
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
@@ -67,10 +71,10 @@ if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew allTests --console=plain --warning-mode=all -s
+  ./gradlew allTests --console=plain --warning-mode=all -s --no-daemon
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
-  ./gradlew :checker:exampleTests --console=plain --warning-mode=all
+  ./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
 fi
 
 if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
@@ -86,7 +90,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 
   export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s)
+  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s --no-daemon)
 
 fi
 
@@ -98,11 +102,11 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ##  * daikon-typecheck: (takes 2 hours)
 
   # Checker Framework demos
-  if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
-    ## If buildjdk, use "demos" below:
-    ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew :checker:demosTests --console=plain --warning-mode=all -s
-  fi
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework.demos`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} checker-framework-demos) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} checker-framework-demos)
+  ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
 
   # Guava
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
@@ -115,7 +119,7 @@ fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
   ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all
+  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all --no-daemon
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -126,26 +130,26 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   set -e
 
   # Code style and formatting
-  ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all
+  ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
 
   # Run error-prone
-  ./gradlew runErrorProne --console=plain --warning-mode=all
+  ./gradlew runErrorProne --console=plain --warning-mode=all --no-daemon
 
   # Documentation
-  ./gradlew javadocPrivate --console=plain --warning-mode=all
+  ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
   make -C docs/manual all
 
   echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
   # (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
-  # The change to TRAVIS_COMMIT_RANGE is due to travis-ci/travis-ci#4596 .
+  # The change to TRAVIS_COMMIT_RANGE is due to https://github.com/travis-ci/travis-ci/issues/4596 .
   (git diff "${TRAVIS_COMMIT_RANGE/.../..}" > /tmp/diff.txt 2>&1) || true
-  (./gradlew requireJavadocPrivate --console=plain --warning-mode=all > /tmp/rjp-output.txt 2>&1) || true
+  (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
   [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty" && false))
   wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
   python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
 
   # HTML legality
-  ./gradlew htmlValidate --console=plain --warning-mode=all
+  ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
 fi
 
