@@ -1025,46 +1025,54 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // check precondition annotations
         checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
-        // Checks that the following rule is satisfied:
-        // The type on a constructor declaration must be a supertype of
-        // the return type of "super()" invocation within that constructor.
-        if (TreeUtils.isSuperCall(node)) {
-            TreePath path = atypeFactory.getPath(node);
-            MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
-            if (TreeUtils.isConstructor(enclosingMethod)) {
-                AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(node);
-                AnnotatedExecutableType constructorType =
-                        atypeFactory.getAnnotatedType(enclosingMethod);
-                Set<? extends AnnotationMirror> topAnnoations =
-                        atypeFactory.getQualifierHierarchy().getTopAnnotations();
-                for (AnnotationMirror topAnno : topAnnoations) {
-                    AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
-                    AnnotationMirror constructorTypeMirror =
-                            constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
-                    // Checking AnnotaionUtils.AreSameByName for the following case:
-                    // Example from tests/nullness/DaikonTests.java: "class Bug2 extends Bug2Super"
-                    // Here, constructorTypeMirror is
-                    // @UnderInitialization(DaikonTests.Bug2Super.class)
-                    // and superTypeMirror is @UnderInitialization(java.lang.Object.class).
-                    if (!AnnotationUtils.areSameByName(constructorTypeMirror, superTypeMirror)
-                            && !atypeFactory
-                                    .getQualifierHierarchy()
-                                    .isSubtype(superTypeMirror, constructorTypeMirror)) {
-                        checker.report(
-                                Result.failure(
-                                        "super.invocation.invalid",
-                                        constructorTypeMirror,
-                                        superTypeMirror),
-                                enclosingMethod);
-                    }
-                }
-            }
-        }
+        checkSuperConstructorCall(node);
 
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
         scan(node.getMethodSelect(), p);
         return null; // super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * Checks that the following rule is satisfied: The type on a constructor declaration must be a
+     * supertype of the return type of "super()" invocation within that constructor.
+     */
+    void checkSuperConstructorCall(MethodInvocationTree node) {
+        if (!TreeUtils.isSuperCall(node)) {
+            return;
+        }
+        TreePath path = atypeFactory.getPath(node);
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        if (TreeUtils.isConstructor(enclosingMethod)) {
+            AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(node);
+            AnnotatedExecutableType constructorType =
+                    atypeFactory.getAnnotatedType(enclosingMethod);
+            Set<? extends AnnotationMirror> topAnnoations =
+                    atypeFactory.getQualifierHierarchy().getTopAnnotations();
+            for (AnnotationMirror topAnno : topAnnoations) {
+                AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
+                AnnotationMirror constructorTypeMirror =
+                        constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
+                // Checking AnnotationUtils.AreSameByName for the following case:
+                // Example from tests/nullness/DaikonTests.java: "class Bug2 extends Bug2Super"
+                // Here, constructorTypeMirror is
+                // @UnderInitialization(DaikonTests.Bug2Super.class)
+                // and superTypeMirror is @UnderInitialization(java.lang.Object.class).
+                if (
+                /*!(AnnotationUtils.areSameByName(constructorTypeMirror, superTypeMirror)
+                && AnnotationUtils.hasElementValue(superTypeMirror, "java.lang.Object.class"))
+                &&*/ !atypeFactory
+                        .getQualifierHierarchy()
+                        .isSubtype(superTypeMirror, constructorTypeMirror)) {
+                    checker.report(
+                            Result.failure(
+                                    "super.invocation.invalid",
+                                    constructorTypeMirror,
+                                    superTypeMirror),
+                            enclosingMethod);
+                }
+            }
+        }
     }
 
     /**
