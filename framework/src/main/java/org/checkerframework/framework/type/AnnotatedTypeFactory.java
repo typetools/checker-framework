@@ -1622,14 +1622,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
-
-            // Also skip constructor return types (which somewhat act like
-            // the receiver).
             MethodSymbol methodElt = (MethodSymbol) type.getElement();
 
-            // If a constructor declaration is not explicitly annotated,
-            // annotate it with the type on the class declaration.
-            if (methodElt.getKind() == ElementKind.CONSTRUCTOR) {
+            if (methodElt == null || !methodElt.isConstructor()) {
+                scan(type.getReturnType(), p);
+            } else if (methodElt.isConstructor()) {
+                // If a constructor declaration is not explicitly annotated,
+                // annotate it with the type on the class declaration.
                 AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) type.getReturnType();
                 // At this point defaults have been applied to class declarations but not
                 // to constructor return types. The check "returnType.getAnnotations().isEmpty()"
@@ -1639,9 +1638,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // Currently, getExplicitAnnotations() returns empty set even for explicitly
                 // annotated types.
                 if (returnType.getExplicitAnnotations().isEmpty()) {
-                    DeclaredType underlyingType = returnType.getUnderlyingType();
+                    DeclaredType classDeclarationType = returnType.getUnderlyingType();
                     AnnotatedTypeMirror underlyingTypeMirror =
-                            p.getAnnotatedType(underlyingType.asElement());
+                            p.getAnnotatedType(classDeclarationType.asElement());
                     Set<? extends AnnotationMirror> topAnnotations =
                             p.getQualifierHierarchy().getTopAnnotations();
                     for (AnnotationMirror topAnno : topAnnotations) {
@@ -1656,14 +1655,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         // (checker-framework) tests/tainting/AnonymousProblem.java which does not
                         // crash i.e removing this check has no effect on that test.
                         if (annotationOnClass != null) {
-                            returnType.replaceAnnotation(annotationOnClass);
+                            returnType.addAnnotation(annotationOnClass);
                         }
                     }
                 }
-            }
-
-            if (methodElt == null || !methodElt.isConstructor()) {
-                scan(type.getReturnType(), p);
             }
 
             scanAndReduce(type.getParameterTypes(), p, null);
