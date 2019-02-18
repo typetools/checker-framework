@@ -256,7 +256,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the annotations in a class declaration.
+     * Standardize the Java expressions in annotations in a class declaration.
      *
      * @param node the class declaration
      * @param type the type of the class declaration
@@ -277,7 +277,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Standardize the annotations in a variable declaration.
+     * Standardize the Java expressions in annotations in a variable declaration.
      *
      * @param node the variable declaration
      * @param type the type of the variable declaration
@@ -358,6 +358,7 @@ public class DependentTypesHelper {
         }
     }
 
+    /** Standardize the Java expressions in annotations in a field access. */
     public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
         if (!hasDependentType(type)) {
             return;
@@ -607,7 +608,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expressions in the given annotated type to see if the expression string is an
+     * Checks all Java expressions in the given annotated type to see if the expression string is an
      * error string as specified by {@link DependentTypesError#isExpressionError}. If the annotated
      * type has any errors, a flowexpr.parse.error is issued at the errorTree.
      *
@@ -687,10 +688,10 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expressions in the class declaration AnnotatedTypeMirror to see if the expression
-     * string is an error string as specified by DependentTypesError#isExpressionError. If the
-     * annotated type has any errors, a flowexpr.parse.error is issued. Note that this checks the
-     * class declaration itself, not the body or extends/implements clauses.
+     * Checks all Java expressions in the class declaration AnnotatedTypeMirror to see if the
+     * expression string is an error string as specified by DependentTypesError#isExpressionError.
+     * If the annotated type has any errors, a flowexpr.parse.error is issued. Note that this checks
+     * the class declaration itself, not the body or extends/implements clauses.
      *
      * @param classTree class to check
      * @param type annotated type of the class
@@ -702,9 +703,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expressions in the method declaration AnnotatedTypeMirror to see if the expression
-     * string is an error string as specified by DependentTypesError#isExpressionError. If the
-     * annotated type has any errors, a flowexpr.parse.error is issued.
+     * Checks all Java expressions in the method declaration AnnotatedTypeMirror to see if the
+     * expression string is an error string as specified by DependentTypesError#isExpressionError.
+     * If the annotated type has any errors, a flowexpr.parse.error is issued.
      *
      * @param methodTree method to check
      * @param type annotated type of the method
