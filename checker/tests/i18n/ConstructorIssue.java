@@ -10,9 +10,7 @@ import org.checkerframework.checker.propkey.qual.PropertyKeyBottom;
     @PropertyKeyBottom ConstructorIssue(int x) {}
 
     void test() {
-        //        @PropertyKey ConstructorIssue obj = new ConstructorIssue();
+        @PropertyKey ConstructorIssue obj = new ConstructorIssue();
         @PropertyKeyBottom ConstructorIssue obj1 = new ConstructorIssue(9);
-        //        @PropertyKeyBottom ConstructorIssue obj2 = new @UnknownPropertyKey
-        // ConstructorIssue(9);
     }
 }
