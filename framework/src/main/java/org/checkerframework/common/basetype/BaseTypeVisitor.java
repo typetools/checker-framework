@@ -36,17 +36,7 @@ import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -1262,8 +1252,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         boolean valid = validateTypeOf(node);
 
+        AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
+        // If the user hasn't explicitly annotated a constructor invocation,
+        // annotate it with the type on constructor declaration.
+        // NOTE: "TreeUtils.typeOf(...)" is a workaround since getExplicitAnnotations()
+        // currently returns an empty set.
+        List<? extends AnnotationMirror> explicitAnnotations =
+                TreeUtils.typeOf(node.getIdentifier()).getAnnotationMirrors();
+        Set<? extends AnnotationMirror> topAnnotations =
+                atypeFactory.getQualifierHierarchy().getTopAnnotations();
+        Set<AnnotationMirror> localToRemove = new HashSet<>();
+        for (AnnotationMirror explicitAnno : explicitAnnotations) {
+            AnnotationMirror annoToRemove =
+                    atypeFactory.getQualifierHierarchy().getTopAnnotation(explicitAnno);
+            localToRemove.add(annoToRemove);
+        }
+        for (AnnotationMirror topAnno : topAnnotations) {
+            if (!localToRemove.contains(topAnno)) {
+                AnnotationMirror annoToAdd =
+                        constructor.getReturnType().getAnnotationInHierarchy(topAnno);
+                final AnnotatedDeclaredType replacedNewClass = dt.deepCopy();
+                replacedNewClass.replaceAnnotation(annoToAdd);
+                dt = replacedNewClass;
+                atypeFactory.getAnnotatedType(node.getIdentifier()).replaceAnnotation(annoToAdd);
+                System.out.println("?????? " + dt);
+                System.out.println(
+                        "/////// " + atypeFactory.getAnnotatedType(node.getIdentifier()));
+            }
+        }
+
         if (valid) {
-            AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
             if (atypeFactory.getDependentTypesHelper() != null) {
                 atypeFactory.getDependentTypesHelper().checkType(dt, node);
             }
