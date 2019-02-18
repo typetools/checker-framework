@@ -305,10 +305,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * number of possible values of the enum.
      */
     @Override
-    public ParameterizedMethodType methodFromUse(
+    public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
-        ParameterizedMethodType superPair = super.methodFromUse(tree, methodElt, receiverType);
+        ParameterizedExecutableType superPair = super.methodFromUse(tree, methodElt, receiverType);
         if (ElementUtils.matchesElement(methodElt, "values")
                 && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
                 && ElementUtils.isStatic(methodElt)) {
@@ -320,7 +320,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             AnnotationMirror am = createArrayLenAnnotation(Collections.singletonList(count));
-            superPair.methodType.getReturnType().replaceAnnotation(am);
+            superPair.executableType.getReturnType().replaceAnnotation(am);
         }
         return superPair;
     }

@@ -30,7 +30,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -473,8 +473,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             case METHOD_INVOCATION:
                 MethodInvocationTree invocationTree = (MethodInvocationTree) tree;
                 List<? extends ExpressionTree> args = invocationTree.getArguments();
-                ParameterizedMethodType mType = atypeFactory.methodFromUse(invocationTree);
-                AnnotatedExecutableType invokedMethod = mType.methodType;
+                ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
+                AnnotatedExecutableType invokedMethod = mType.executableType;
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(
                                 atypeFactory, invokedMethod, invocationTree.getArguments());
