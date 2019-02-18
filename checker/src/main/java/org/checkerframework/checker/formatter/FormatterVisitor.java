@@ -146,10 +146,10 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
 
         // Strip off leading Locale arguments.
-        if (args.size() > 0 && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
+        if (!args.isEmpty() && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
             args = args.subList(1, args.size());
         }
-        if (params.size() > 0
+        if (!params.isEmpty()
                 && TypesUtils.isDeclaredOfName(paramElements.get(0).asType(), "java.util.Locale")) {
             params = params.subList(1, params.size());
         }

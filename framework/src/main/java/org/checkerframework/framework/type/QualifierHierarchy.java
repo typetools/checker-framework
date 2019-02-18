@@ -26,7 +26,7 @@ public abstract class QualifierHierarchy {
      */
     public boolean isValid() {
         // For most QH the simplest check is that there are qualifiers.
-        return getTypeQualifiers().size() > 0;
+        return !getTypeQualifiers().isEmpty();
     }
 
     // **********************************************************************

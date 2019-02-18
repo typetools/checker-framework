@@ -1328,7 +1328,8 @@ errors.  Don't panic!  There are three general causes for the warnings:
   (Do not add an \<if> test that can never fail, just to suppress a
   warning.  Adding a gratuitous \<if> clutters the code and confuses
   readers, who will assume that every \<if> condition can evaluate to true
-  or false.)
+  or false.  It can be acceptable to add an \<if> test that throws a
+  descriptive error message.)
 \end{itemize}
 
 For each warning issued by the checker, you need to determine which of the
