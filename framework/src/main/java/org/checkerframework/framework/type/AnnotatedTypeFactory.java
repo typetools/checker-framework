@@ -1018,28 +1018,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
             if (tree.getKind() == Tree.Kind.NEW_CLASS) {
-                List<? extends AnnotationMirror> explicitNewClassAnnotations =
-                        TreeUtils.typeOf(((NewClassTree) tree).getIdentifier())
-                                .getAnnotationMirrors();
-                Set<AnnotationMirror> newClassAnnotations = type.getAnnotations();
-                Set<AnnotationMirror> annotationsToRemove = new HashSet<>();
-                Set<AnnotationMirror> annotationsToAdd = new HashSet<>();
-                for (AnnotationMirror explicitAnno : explicitNewClassAnnotations) {
-                    for (AnnotationMirror newClassAnno : newClassAnnotations) {
-                        if (qualHierarchy.isSubtype(explicitAnno, newClassAnno)
-                                || qualHierarchy.isSubtype(newClassAnno, explicitAnno)) {
-                            annotationsToRemove.add(newClassAnno);
-                            annotationsToAdd.add(explicitAnno);
-                        }
-                    }
-                }
-
-                for (AnnotationMirror rem : annotationsToRemove) {
-                    type.removeAnnotation(rem);
-                }
-                for (AnnotationMirror ad : annotationsToAdd) {
-                    type.addAnnotation(ad);
-                }
+                //                List<? extends AnnotationMirror> explicitNewClassAnnotations =
+                //                        TreeUtils.typeOf(((NewClassTree) tree).getIdentifier())
+                //                                .getAnnotationMirrors();
+                //                Set<AnnotationMirror> newClassAnnotations = type.getAnnotations();
+                //                Set<AnnotationMirror> annotationsToRemove = new HashSet<>();
+                //                Set<AnnotationMirror> annotationsToAdd = new HashSet<>();
+                //                for (AnnotationMirror explicitAnno : explicitNewClassAnnotations)
+                // {
+                //                    for (AnnotationMirror newClassAnno : newClassAnnotations) {
+                //                        if (qualHierarchy.isSubtype(explicitAnno, newClassAnno)
+                //                                || qualHierarchy.isSubtype(newClassAnno,
+                // explicitAnno)) {
+                //                            annotationsToRemove.add(newClassAnno);
+                //                            annotationsToAdd.add(explicitAnno);
+                //                        }
+                //                    }
+                //                }
+                //
+                //                for (AnnotationMirror rem : annotationsToRemove) {
+                //                    type.removeAnnotation(rem);
+                //                }
+                //                for (AnnotationMirror ad : annotationsToAdd) {
+                //                    type.addAnnotation(ad);
+                //                }
+                type = fromNewClass((NewClassTree) tree);
             }
         } else {
             throw new BugInCF(
