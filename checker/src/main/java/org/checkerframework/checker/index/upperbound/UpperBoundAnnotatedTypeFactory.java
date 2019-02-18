@@ -250,7 +250,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (sequences != null
                         && offsets != null
                         && sequences.size() != offsets.size()
-                        && offsets.size() > 0) {
+                        && !offsets.isEmpty()) {
                     // Cannot use type.replaceAnnotation because it will call isSubtype, which will
                     // try to process the annotation and throw an error.
                     type.clearAnnotations();
