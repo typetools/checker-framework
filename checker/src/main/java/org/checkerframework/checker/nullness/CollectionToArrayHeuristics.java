@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -51,7 +52,12 @@ public class CollectionToArrayHeuristics {
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
+                // TODO: see why special-casing is necessary
+                PluginUtil.getJreVersion() == 8
+                        ? TreeUtils.getMethod(
+                                java.util.Collection.class.getName(), "toArray", 1, env)
+                        : TreeUtils.getMethod(
+                                java.util.Collection.class.getName(), "toArray", env, "T[]");
         this.size = TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionType =
                 factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));
