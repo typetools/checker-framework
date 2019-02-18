@@ -2049,6 +2049,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return mType;
     }
 
+    /**
+     * Determines the type of the invoked method based on the passed expression tree, executable
+     * element, and receiver type.
+     *
+     * @param tree either a MethodInvocationTree or a MemberReferenceTree
+     * @param methodElt the element of the referenced method
+     * @param receiverType the type of the receiver
+     * @return the method type being invoked with tree and the (inferred) type arguments
+     * @see #methodFromUse(MethodInvocationTree)
+     */
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
