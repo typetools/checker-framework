@@ -316,7 +316,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             AnnotatedTypeMirror component;
             while (true) {
                 component = array.getComponentType();
-                if (array.getAnnotations().size() > 0) {
+                if (!array.getAnnotations().isEmpty()) {
                     sb.append(' ');
                     sb.append(
                             annoFormatter.formatAnnotationString(
