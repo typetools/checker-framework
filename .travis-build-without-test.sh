@@ -20,10 +20,14 @@ fi
 
 export SHELLOPTS
 
-SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+SLUGOWNER=${TRAVIS_PULL_REQUEST_SLUG%/*}
+if [[ "$SLUGOWNER" == "" ]]; then
+  SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+fi
 if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=eisop
 fi
+echo SLUGOWNER=$SLUGOWNER
 
 
 ## Build annotation-tools (Annotation File Utilities)

@@ -196,7 +196,7 @@ public class InitializationTransfer<
         assert result instanceof ConditionalTransferResult;
         List<VariableElement> newlyInitializedFields =
                 initializedFieldsAfterCall(n, (ConditionalTransferResult<V, S>) result);
-        if (newlyInitializedFields.size() > 0) {
+        if (!newlyInitializedFields.isEmpty()) {
             for (VariableElement f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);
                 result.getElseStore().addInitializedField(f);

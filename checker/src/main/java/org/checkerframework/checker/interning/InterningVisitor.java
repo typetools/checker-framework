@@ -404,10 +404,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
                     @Override
                     public Boolean visitBlock(BlockTree tree, Void p) {
-                        if (tree.getStatements().size() > 0) {
-                            return visit(tree.getStatements().get(0), p);
+                        if (tree.getStatements().isEmpty()) {
+                            return false;
                         }
-                        return false;
+                        return visit(tree.getStatements().get(0), p);
                     }
 
                     @Override

@@ -79,9 +79,8 @@ import org.checkerframework.javacutil.UserError;
  *
  * Most type-checker plug-ins will want to extend {@link BaseTypeChecker}, instead of this class.
  * Only checkers that require annotated types but not subtype checking (e.g. for testing purposes)
- * should extend this. Non-type checkers (e.g. for enforcing coding styles) should extend {@link
- * AbstractProcessor} (or even this class) as the Checker Framework is not designed for such
- * checkers.
+ * should extend this. Non-type checkers (e.g. for enforcing coding styles) may extend {@link
+ * AbstractProcessor} (or even this class).
  */
 @SupportedOptions({
     // When adding a new standard option:

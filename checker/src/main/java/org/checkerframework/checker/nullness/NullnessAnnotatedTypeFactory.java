@@ -57,7 +57,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -360,49 +359,6 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * If the element is {@link NonNull} when used in a static member access, modifies the element's
-     * type (by adding {@link NonNull}).
-     *
-     * @param elt the element being accessed
-     * @param type the type of the element {@code elt}
-     */
-    private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-        if (elt == null) {
-            return;
-        }
-
-        if (elt.getKind().isClass()
-                || elt.getKind().isInterface()
-                // Workaround for System.{out,in,err} issue: assume all static
-                // fields in java.lang.System are nonnull.
-                || isSystemField(elt)) {
-            type.replaceAnnotation(NONNULL);
-        }
-    }
-
-    private static boolean isSystemField(Element elt) {
-        if (!elt.getKind().isField()) {
-            return false;
-        }
-
-        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt)) {
-            return false;
-        }
-
-        VariableElement var = (VariableElement) elt;
-
-        // Heuristic: if we have a static final field in a system package,
-        // treat it as NonNull (many like Boolean.TYPE and System.out
-        // have constant value null but are set by the VM).
-        boolean inJavaPackage =
-                ElementUtils.getQualifiedClassName(var).toString().startsWith("java.");
-
-        return (var.getConstantValue() != null
-                || var.getSimpleName().contentEquals("class")
-                || inJavaPackage);
-    }
-
-    /**
      * Nullness doesn't call propagation on binary and unary because the result is
      * always @Initialized (the default qualifier).
      *
@@ -437,8 +393,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-            // case 8: class in static member access
-            annotateIfStatic(elt, type);
             return null;
         }
 
@@ -459,9 +413,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-
-            // case 8. static method access
-            annotateIfStatic(elt, type);
 
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 // TODO: It's surprising that we have to do this in

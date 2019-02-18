@@ -40,10 +40,14 @@ set -o xtrace
 
 export SHELLOPTS
 
-SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+SLUGOWNER=${TRAVIS_PULL_REQUEST_SLUG%/*}
+if [[ "$SLUGOWNER" == "" ]]; then
+  SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+fi
 if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=eisop
 fi
+echo SLUGOWNER=$SLUGOWNER
 
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
@@ -102,11 +106,11 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ##  * daikon-typecheck: (takes 2 hours)
 
   # Checker Framework demos
-  if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
-    ## If buildjdk, use "demos" below:
-    ##  * checker-framework.demos (takes 15 minutes)
-    ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
-  fi
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework.demos`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} checker-framework-demos) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} checker-framework-demos)
+  ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
 
   # Guava
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"

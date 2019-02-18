@@ -1081,7 +1081,7 @@ public class StubParser {
             if (param.getTypeBound() == null || param.getTypeBound().isEmpty()) {
                 // No bound so annotations are both lower and upper bounds
                 annotate(paramType, param.getAnnotations());
-            } else if (param.getTypeBound() != null && param.getTypeBound().size() > 0) {
+            } else if (param.getTypeBound() != null && !param.getTypeBound().isEmpty()) {
                 annotate(paramType.getLowerBound(), param.getAnnotations());
                 annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null);
                 if (param.getTypeBound().size() > 1) {
