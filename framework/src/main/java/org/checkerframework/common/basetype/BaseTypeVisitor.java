@@ -1027,7 +1027,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks that the following rule is satisfied:
         // The type on a constructor declaration must be a supertype of
-        // the return type of "super()" invocation within that constructor.
+        // the return type of "super()" invocation within that constructor
+        // (except for the Initialization Checker).
         if (TreeUtils.isSuperCall(node)) {
             TreePath path = atypeFactory.getPath(node);
             MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
@@ -1041,7 +1042,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
                     AnnotationMirror constructorTypeMirror =
                             constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
-                    // Checking AnnotaionUtils.AreSameByName for the following case:
+                    // Checking AnnotationUtils.AreSameByName for the following case:
                     // Example from tests/nullness/DaikonTests.java: "class Bug2 extends Bug2Super"
                     // Here, constructorTypeMirror is
                     // @UnderInitialization(DaikonTests.Bug2Super.class)
