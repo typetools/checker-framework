@@ -1637,7 +1637,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // NOTE: change to getExplicitAnnotations() when it is fixed.
                 // Currently, getExplicitAnnotations() returns empty set even for explicitly
                 // annotated types.
-                if (returnType.getExplicitAnnotations().isEmpty()) {
+                if (returnType.getAnnotations().isEmpty()) {
                     DeclaredType classDeclarationType = returnType.getUnderlyingType();
                     AnnotatedTypeMirror underlyingTypeMirror =
                             p.getAnnotatedType(classDeclarationType.asElement());
