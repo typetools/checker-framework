@@ -813,7 +813,6 @@ public class AnnotatedTypes {
 
     private static Map<TypeElement, Boolean> isTypeAnnotationCache = new IdentityHashMap<>();
 
-    /** @param cls the annotation class being tested; used for diagnostic messages only */
     public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
         TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
         if (isTypeAnnotationCache.containsKey(elem)) {
@@ -834,6 +833,8 @@ public class AnnotatedTypes {
      *
      * @param elements an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
+     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
+     *     something besides {@link ElementType#TYPE_PARAMETER}
      */
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
         boolean hasTypeUse = false;

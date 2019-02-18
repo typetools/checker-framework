@@ -35,6 +35,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
@@ -511,6 +512,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
+        ModifiersTree modifiersTree = node.getModifiers();
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+
         try {
             if (TreeUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
@@ -911,13 +917,50 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitVariable(VariableTree node, Void p) {
 
+        ModifiersTree modifiersTree = node.getModifiers();
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        visitorState.setAssignmentContext(
+                Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
+
+        try {
+            if (atypeFactory.getDependentTypesHelper() != null) {
+                atypeFactory
+                        .getDependentTypesHelper()
+                        .checkType(visitorState.getAssignmentContext().second, node);
+            }
+            // If there's no assignment in this variable declaration, skip it.
+            if (node.getInitializer() != null) {
+                commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
+            } else {
+                // commonAssignmentCheck validates the type of node,
+                // so only validate if commonAssignmentCheck wasn't called
+                validateTypeOf(node);
+            }
+            return super.visitVariable(node, p);
+        } finally {
+            visitorState.setAssignmentContext(preAssCtxt);
+        }
+    }
+
+    /**
+     * Warn if a type annotation is written before a modifier such as "public" or before a
+     * declaration annotation.
+     *
+     * @param node a VariableTree or a MethodTree
+     * @param modifierSet the modifiers in node
+     * @param annotations the annotations in node
+     */
+    private void warnAboutTypeAnnotationsTooEarly(
+            Tree node, Set<Modifier> modifierSet, List<? extends AnnotationTree> annotations) {
+
         // Warn about type annotations written before modifiers such as "public".  javac retains no
         // information about modifier locations.  So, this is a very partial check:  Issue a warning
         // if a type annotation is at the very beginning of the VariableTree, and a modifer follows
         // it.
-        ModifiersTree modifiersTree = node.getModifiers();
-        Set<Modifier> modifierSet = modifiersTree.getFlags();
-        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
         if (!annotations.isEmpty()) {
             // Check if a type annotation precedes a declaration annotation.
             int lastDeclAnnoIndex = -1;
@@ -945,61 +988,47 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
 
-            // Check if a type annotation is at the very beginning of the VariableTree, and a
-            // modifier follows it.
+            // Determine the length of the text that ought to precede the first type annotation.
+            // If the type annotation appears before that text could appear, then warn that a
+            // modifier appears after the type annotation.
+            // TODO: in the future, account for the lengths of declaration annotations.  Length of
+            // toString of the annotation isn't useful, as it might be different length than
+            // original input.  Can use JCTree.getEndPosition(EndPosTable) and
+            // com.sun.tools.javac.tree.EndPosTable, but it requires -Xjcov.
             AnnotationTree firstAnno = annotations.get(0);
-            if (isTypeAnnotation(firstAnno)
-                    && ((JCTree) firstAnno).getStartPosition() == ((JCTree) node).getStartPosition()
-                    && !modifierSet.isEmpty()) {
-                checker.report(
-                        Result.warning("type.anno.before.modifier", firstAnno, modifierSet), node);
+            if (!modifierSet.isEmpty() && isTypeAnnotation(firstAnno)) {
+                int precedingTextLength = 0;
+                for (Modifier m : modifierSet) {
+                    precedingTextLength += m.toString().length() + 1; // +1 for the space
+                }
+                int annoStartPos = ((JCTree) firstAnno).getStartPosition();
+                int varStartPos = ((JCTree) node).getStartPosition();
+                if (annoStartPos < varStartPos + precedingTextLength) {
+                    checker.report(
+                            Result.warning("type.anno.before.modifier", firstAnno, modifierSet),
+                            node);
+                }
             }
-        }
-
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setAssignmentContext(
-                Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
-
-        try {
-            if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory
-                        .getDependentTypesHelper()
-                        .checkType(visitorState.getAssignmentContext().second, node);
-            }
-            // If there's no assignment in this variable declaration, skip it.
-            if (node.getInitializer() != null) {
-                commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
-            } else {
-                // commonAssignmentCheck validates the type of node,
-                // so only validate if commonAssignmentCheck wasn't called
-                validateTypeOf(node);
-            }
-            return super.visitVariable(node, p);
-        } finally {
-            visitorState.setAssignmentContext(preAssCtxt);
         }
     }
 
     /**
      * Return true if the given annotation is a type annotation: that is, its definition is
      * meta-annotated with {@code @Target({TYPE_USE,....})}.
-     *
-     * <p>This currently crashes the Checker Framework if an annotation is both a type and a
-     * declaration annotation. Users shouldn't do that, but the Checker Framework shouldn't crash
-     * when that happens.
-     */
-    // private boolean isTypeAnnotation1(AnnotationTree anno) {
-    //     // I would need to construct a Class, and I don't see how to do it.
-    //     return AnnotatedTypes.isTypeAnnotation(TreeUtils.annotationFromAnnotationTree(anno,
-    // annoAsClass));
-    // }
-
-    /**
-     * Return true if the given annotation is a type annotation: that is, its definition is
-     * meta-annotated with {@code @Target({TYPE_USE,....})}.
      */
     private boolean isTypeAnnotation(AnnotationTree anno) {
-        ClassSymbol annoSymbol = (ClassSymbol) ((JCIdent) anno.getAnnotationType()).sym;
+        Tree annoType = anno.getAnnotationType();
+        ClassSymbol annoSymbol;
+        switch (annoType.getKind()) {
+            case IDENTIFIER:
+                annoSymbol = (ClassSymbol) ((JCIdent) annoType).sym;
+                break;
+            case MEMBER_SELECT:
+                annoSymbol = (ClassSymbol) ((JCFieldAccess) annoType).sym;
+                break;
+            default:
+                throw new Error("Unhandled kind: " + annoType.getKind() + " for " + anno);
+        }
         for (AnnotationMirror metaAnno : annoSymbol.getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByName(metaAnno, TARGET)) {
                 AnnotationValue valueValue = metaAnno.getElementValues().get(targetValueElement);
