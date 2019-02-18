@@ -7,6 +7,9 @@ that no weak cipher algorithms are used with the Java crypto API.
 
 In the @HasSubsequence annotation, the "value" element has been renamed to "subsequence".
 
+Renamed AnnotatedTypeFactory.ParameterizedMethodType to the more
+appropriate ParameterizedExecutableType.
+
 ---------------------------------------------------------------------------
 
 Version 2.6.0, February 3, 2019
