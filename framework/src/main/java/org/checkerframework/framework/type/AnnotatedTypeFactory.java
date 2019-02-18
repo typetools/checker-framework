@@ -2299,26 +2299,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // annotate it with the type on constructor declaration.
         // NOTE: "TreeUtils.typeOf(...)" is a workaround since getExplicitAnnotations()
         // currently returns an empty set.
-        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
-        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-        List<? extends AnnotationMirror> explicitAnnotations =
-                TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
-        Set<? extends AnnotationMirror> topAnnotations =
-                getQualifierHierarchy().getTopAnnotations();
-        Set<AnnotationMirror> localToRemove = new HashSet<>();
-        for (AnnotationMirror explicitAnno : explicitAnnotations) {
-            if (getQualifierHierarchy().getTypeQualifiers().contains(explicitAnno)) {
-                AnnotationMirror annoToRemove =
-                        getQualifierHierarchy().getTopAnnotation(explicitAnno);
-                localToRemove.add(annoToRemove);
-            }
-        }
-        for (AnnotationMirror topAnno : topAnnotations) {
-            if (!localToRemove.contains(topAnno)) {
-                AnnotationMirror annoToAdd = con.getReturnType().getAnnotationInHierarchy(topAnno);
-                type.replaceAnnotation(annoToAdd);
-            }
-        }
+        //        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
+        //        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        //        List<? extends AnnotationMirror> explicitAnnotations =
+        //                TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
+        //        Set<? extends AnnotationMirror> topAnnotations =
+        //                getQualifierHierarchy().getTopAnnotations();
+        //        Set<AnnotationMirror> localToRemove = new HashSet<>();
+        //        for (AnnotationMirror explicitAnno : explicitAnnotations) {
+        //            if (getQualifierHierarchy().getTypeQualifiers().contains(explicitAnno)) {
+        //                AnnotationMirror annoToRemove =
+        //                        getQualifierHierarchy().getTopAnnotation(explicitAnno);
+        //                localToRemove.add(annoToRemove);
+        //            }
+        //        }
+        //        for (AnnotationMirror topAnno : topAnnotations) {
+        //            if (!localToRemove.contains(topAnno)) {
+        //                AnnotationMirror annoToAdd =
+        // con.getReturnType().getAnnotationInHierarchy(topAnno);
+        //                type.replaceAnnotation(annoToAdd);
+        //            }
+        //        }
         return type;
     }
 
