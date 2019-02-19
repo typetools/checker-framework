@@ -418,47 +418,15 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return subcheckers;
     }
 
-    /**
-     * Sort by position at which the error will be printed, then by the order in which the checkers
-     * run, then by kind of message, and finally by the message string.
-     */
-    private final Comparator<CheckerMessage> checkerMessageComparator =
-            new Comparator<CheckerMessage>() {
-                @Override
-                public int compare(CheckerMessage o1, CheckerMessage o2) {
-                    int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
-                    if (byPos != 0) {
-                        return byPos;
-                    }
-
-                    // Sort by order in which the checkers are run. (All the subcheckers in
-                    // followed by the checker.)
-                    int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
-                    int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
-                    if (o1Index != o2Index) {
-                        if (o1Index == -1) {
-                            o1Index = BaseTypeChecker.this.getSubcheckers().size();
-                        }
-                        if (o2Index == -1) {
-                            o2Index = BaseTypeChecker.this.getSubcheckers().size();
-                        }
-                        return Integer.compare(o1Index, o2Index);
-                    }
-
-                    int kind = o1.kind.compareTo(o2.kind);
-                    if (kind != 0) {
-                        return kind;
-                    }
-
-                    return o1.message.compareTo(o2.message);
-                }
-            };
-
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
         if (getSubcheckers().size() > 0) {
-            messageStore = new TreeSet<>(checkerMessageComparator);
+            if (messageStore == null) {
+                messageStore = new TreeSet<>(checkerMessageComparator);
+            } else {
+                messageStore.clear();
+            }
         }
 
         // Errors (or other messages) issued via
@@ -529,7 +497,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
      * messageStore is null and messages will be printed as they are issued by this checker.
      */
-    private TreeSet<CheckerMessage> messageStore = null;
+    private TreeSet<CheckerMessage> messageStore;
 
     /**
      * If this is a compound checker or a subchecker of a compound checker, then the message is
@@ -569,6 +537,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         final Diagnostic.Kind kind;
         final String message;
         final Tree source;
+
         /**
          * This checker that issued this message. The compound checker that depends on this checker
          * uses this to sort the messages.
@@ -593,17 +562,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
 
             CheckerMessage that = (CheckerMessage) o;
-
-            if (kind != that.kind) {
-                return false;
-            }
-            if (!message.equals(that.message)) {
-                return false;
-            }
-            if (source == that.source) {
-                return false;
-            }
-            return checker == that.checker;
+            // Do not consider checker.
+            return this.kind == that.kind
+                    && this.source == that.source
+                    && this.message.equals(that.message);
         }
 
         @Override
@@ -611,7 +573,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             int result = kind.hashCode();
             result = 31 * result + message.hashCode();
             result = 31 * result + source.hashCode();
-            result = 31 * result + checker.hashCode();
+            // Do not consider checker.
             return result;
         }
 
@@ -630,6 +592,48 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     + '}';
         }
     }
+
+    /**
+     * Sort by position at which the error will be printed, then by kind of message, and finally by
+     * the message string. If different checkers have different messages, sort them by the order in
+     * which the checkers run.
+     */
+    private final Comparator<CheckerMessage> checkerMessageComparator =
+            new Comparator<CheckerMessage>() {
+                @Override
+                public int compare(CheckerMessage o1, CheckerMessage o2) {
+                    int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
+                    if (byPos != 0) {
+                        return byPos;
+                    }
+
+                    int kind = o1.kind.compareTo(o2.kind);
+                    if (kind != 0) {
+                        return kind;
+                    }
+
+                    if (o1.message.equals(o2.message)) {
+                        // If the two messages are identical so far, it doesn't matter
+                        // from which checker they came.
+                        return 0;
+                    }
+
+                    // Sort by order in which the checkers are run. (All the subcheckers,
+                    // followed by the checker.)
+                    int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
+                    int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
+                    if (o1Index == o2Index) {
+                        return 0;
+                    }
+                    if (o1Index == -1) {
+                        o1Index = BaseTypeChecker.this.getSubcheckers().size();
+                    }
+                    if (o2Index == -1) {
+                        o2Index = BaseTypeChecker.this.getSubcheckers().size();
+                    }
+                    return Integer.compare(o1Index, o2Index);
+                }
+            };
 
     @Override
     public void typeProcessingOver() {
