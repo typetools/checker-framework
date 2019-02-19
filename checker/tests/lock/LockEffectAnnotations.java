@@ -141,6 +141,7 @@ public class LockEffectAnnotations {
 
     @GuardedByUnknown class MyClass2 {}
 
+    // :: error: (expression.unparsable.type.invalid)
     @GuardedBy("lock") class MyClass3 {}
 
     @GuardedBy({}) class MyClass4 {}
