@@ -1035,7 +1035,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
-     * supertype of the return type of "super()" invocation within that constructor.
+     * supertype of the return type of "super()" invocation within that constructor (except for the
+     * Initialization Checker).
      */
     void checkSuperConstructorCall(MethodInvocationTree node) {
         if (!TreeUtils.isSuperCall(node)) {
@@ -1053,17 +1054,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
                 AnnotationMirror constructorTypeMirror =
                         constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
-                // Checking AnnotationUtils.AreSameByName for the following case:
-                // Example from tests/nullness/DaikonTests.java: "class Bug2 extends Bug2Super"
-                // Here, constructorTypeMirror is
-                // @UnderInitialization(DaikonTests.Bug2Super.class)
-                // and superTypeMirror is @UnderInitialization(java.lang.Object.class).
-                if (
-                /*!(AnnotationUtils.areSameByName(constructorTypeMirror, superTypeMirror)
-                && AnnotationUtils.hasElementValue(superTypeMirror, "java.lang.Object.class"))
-                &&*/ !atypeFactory
-                        .getQualifierHierarchy()
-                        .isSubtype(superTypeMirror, constructorTypeMirror)) {
+
+                if (!AnnotationUtils.areSameByName(
+                                constructorTypeMirror,
+                                "org.checkerframework.checker.initialization.qual.UnderInitialization")
+                        && !atypeFactory
+                                .getQualifierHierarchy()
+                                .isSubtype(superTypeMirror, constructorTypeMirror)) {
                     checker.report(
                             Result.failure(
                                     "super.invocation.invalid",
