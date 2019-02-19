@@ -341,6 +341,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checkDefaultConstructor(classTree);
         }
 
+        if (atypeFactory.getDependentTypesHelper() != null) {
+            AnnotatedDeclaredType classType = atypeFactory.getAnnotatedType(classTree);
+            atypeFactory.getDependentTypesHelper().checkClass(classTree, classType);
+        }
+
         /* Visit the extends and implements clauses.
          * The superclass also visits them, but only calls visitParameterizedType, which
          * loses a main modifier.
