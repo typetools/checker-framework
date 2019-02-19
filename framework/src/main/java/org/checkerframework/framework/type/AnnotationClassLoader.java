@@ -786,9 +786,7 @@ public class AnnotationClassLoader {
      */
     protected boolean hasWellDefinedTargetMetaAnnotation(
             final Class<? extends Annotation> annoClass) {
-        return annoClass.getAnnotation(Target.class) != null
-                && AnnotatedTypes.hasTypeQualifierElementTypes(
-                        annoClass.getAnnotation(Target.class).value(), annoClass);
+        return AnnotatedTypes.isOnlyTypeAnnotation(annoClass);
     }
 
     /**

@@ -9,6 +9,7 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayDeque;
@@ -811,19 +812,53 @@ public class AnnotatedTypes {
         return found;
     }
 
-    private static Map<TypeElement, Boolean> isTypeAnnotationCache = new IdentityHashMap<>();
+    // TODO: is this cache limited in size?
+    private static Map<Object, Boolean> isTypeAnnotationCache = new IdentityHashMap<>();
 
-    public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
-        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
-        if (isTypeAnnotationCache.containsKey(elem)) {
-            return isTypeAnnotationCache.get(elem);
+    /**
+     * Determine whether the given annotation is only annotated with a target type of TYPE_USE and
+     * optionally TYPE_PARAMETER, but nothing else.
+     *
+     * @param anno the annotation to check
+     * @return true iff the annotation is only targeted to type use annotations
+     */
+    public static boolean isOnlyTypeAnnotation(Class<? extends Annotation> anno) {
+        Boolean cached = isTypeAnnotationCache.get(anno);
+        if (cached != null) {
+            return cached;
         }
 
         // the annotation is a type annotation if it has the proper ElementTypes in the @Target
         // meta-annotation
+        Target target = anno.getAnnotation(Target.class);
         boolean result =
-                hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
-        isTypeAnnotationCache.put(elem, result);
+                target != null && hasOnlyTypeQualifierElementTypes(target.value(), anno.getName());
+        isTypeAnnotationCache.put(anno, result);
+        return result;
+    }
+
+    /**
+     * Determine whether the given annotation is annotated with a target type of TYPE_USE, and
+     * optionally also something else.
+     *
+     * @param anno the annotation to check
+     * @return true iff the annotation is also targeted to type use annotations
+     */
+    public static boolean isAlsoTypeAnnotation(AnnotationMirror anno) {
+        Boolean cached = isTypeAnnotationCache.get(anno);
+        if (cached != null) {
+            return cached;
+        }
+        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
+
+        // the annotation is a type annotation if it has the proper ElementTypes in the @Target
+        // meta-annotation
+        Target target = elem.getAnnotation(Target.class);
+        boolean result =
+                target != null
+                        && hasAlsoTypeQualifierElementTypes(
+                                target.value(), elem.getSimpleName().toString());
+        isTypeAnnotationCache.put(anno, result);
         return result;
     }
 
@@ -832,11 +867,29 @@ public class AnnotatedTypes {
      * which defines a type qualifier.
      *
      * @param elements an array of {@link ElementType} values
-     * @param cls the annotation class being tested; used for diagnostic messages only
+     * @param name the annotation being tested; used for diagnostic messages only
+     * @return true iff the annotation is only targeted to type use annotations
      * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
      *     something besides {@link ElementType#TYPE_PARAMETER}
      */
-    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
+    private static boolean hasOnlyTypeQualifierElementTypes(ElementType[] elements, String name) {
+        return hasTypeQualifierElementTypes(elements, name, true);
+    }
+
+    /**
+     * Sees if the passed in array of {@link ElementType} values have the correct set of values
+     * which defines a type qualifier, and optionally other targets.
+     *
+     * @param elements an array of {@link ElementType} values
+     * @param name the annotation being tested; used for diagnostic messages only
+     * @return true iff the annotation is also targeted to type use annotations
+     */
+    private static boolean hasAlsoTypeQualifierElementTypes(ElementType[] elements, String name) {
+        return hasTypeQualifierElementTypes(elements, name, false);
+    }
+
+    private static boolean hasTypeQualifierElementTypes(
+            ElementType[] elements, String name, boolean only) {
         boolean hasTypeUse = false;
         ElementType otherElementType = null;
 
@@ -849,12 +902,12 @@ public class AnnotatedTypes {
                 // TYPE_USE or TYPE_PARAMETER then it isn't a valid annotation
                 otherElementType = element;
             }
-            if (hasTypeUse && otherElementType != null) {
+            if (hasTypeUse && only && otherElementType != null) {
                 throw new BugInCF(
                         "@Target meta-annotation should not contain both TYPE_USE and "
                                 + otherElementType
                                 + ", for annotation "
-                                + cls.getName());
+                                + name);
             }
         }
 
