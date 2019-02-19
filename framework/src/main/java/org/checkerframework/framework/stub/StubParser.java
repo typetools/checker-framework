@@ -166,7 +166,7 @@ public class StubParser {
     Map<String, Set<AnnotationMirror>> declAnnos;
 
     /** The line separator. */
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
+    private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
     /**
      * Create a new StubParser object, which will parse and extract annotations from the given stub
