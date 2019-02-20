@@ -2317,13 +2317,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     getQualifierHierarchy().getTopAnnotations();
             Set<AnnotationMirror> localToRemove = new HashSet<>();
             for (AnnotationMirror explicitAnno : explicitAnnotations) {
-                //                System.out.println("Explicit anno? " + explicitAnno);
                 if (AnnotationUtils.containsSameByName(
                         getQualifierHierarchy().getTypeQualifiers(), explicitAnno)) {
                     AnnotationMirror annoToRemove =
                             getQualifierHierarchy().getTopAnnotation(explicitAnno);
                     localToRemove.add(annoToRemove);
-                    //                    System.out.println("remove this: " + annoToRemove);
                 }
             }
             for (AnnotationMirror topAnno : topAnnotations) {
@@ -2331,9 +2329,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     AnnotationMirror annoToAdd =
                             con.getReturnType().getAnnotationInHierarchy(topAnno);
                     type.replaceAnnotation(annoToAdd);
-                    //                    System.out.println("Replacing " +
-                    // type.getAnnotationInHierarchy(topAnno)
-                    //                            + " with " + annoToAdd);
                 }
             }
         }
