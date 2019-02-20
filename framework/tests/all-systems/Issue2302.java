@@ -12,7 +12,8 @@ class Issue2302 {
 
     static StrangeConstructorTypeArgs getStrangeConstructorTypeArgs() {
         // Crash with the diamond operator.
-        // Type inference chooses an arbitrary type (Object) as the type argument.
+        // Type inference chooses `Object` as the type argument.
+        // That is a bug, since it should choose exactly `byte[]`.
         return new StrangeConstructorTypeArgs(new MyClass<>());
 
         // No crash with an explicit type argument (no diamond operator), no matter what it is.

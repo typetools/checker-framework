@@ -2437,7 +2437,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue a warning if the type at constructor invocation is a subtype of the constructor
         // declaration type.
         // This is equivalent to down-casting.
-        System.out.printf("calling isSubtype(%s, %s)%n", returnType, invocation);
+        System.out.printf(
+                "calling isSubtype(%n  returntype=%s%n  invocation=%s%n)%n",
+                returnType, invocation);
         if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
             checker.report(
                     Result.warning(
