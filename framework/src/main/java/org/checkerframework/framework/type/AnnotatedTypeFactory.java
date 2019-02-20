@@ -32,6 +32,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2311,7 +2312,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // currently returns an empty set.
             ExecutableElement ctor = TreeUtils.constructor(newClassTree);
             AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-            Set<? extends AnnotationMirror> explicitAnnotations = type.getAnnotations();
+            Collection<? extends AnnotationMirror> explicitAnnotations;
+            if (newClassTree.getIdentifier().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                explicitAnnotations = type.getAnnotations();
+            } else {
+                explicitAnnotations =
+                        TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
+            }
             Set<? extends AnnotationMirror> topAnnotations =
                     getQualifierHierarchy().getTopAnnotations();
             Set<AnnotationMirror> localToRemove = new HashSet<>();
