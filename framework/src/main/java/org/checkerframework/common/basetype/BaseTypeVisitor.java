@@ -2399,6 +2399,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedDeclaredType invocation,
             AnnotatedExecutableType constructor,
             NewClassTree newClassTree) {
+        System.out.printf(
+                "checkConstructorInvocation(%n  invocation=%s%n  constructor=%s%n  newClassTree=%s%n)%n",
+                invocation, constructor, newClassTree);
         AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) constructor.getReturnType();
         // When an interface is used as the identifier in an anonymous class (e.g. new Comparable()
         // {}) the constructor method will be Object.init() {} which has an Object return type When
@@ -2434,6 +2437,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue a warning if the type at constructor invocation is a subtype of the constructor
         // declaration type.
         // This is equivalent to down-casting.
+        System.out.printf("calling isSubtype(%s, %s)%n", returnType, invocation);
         if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
             checker.report(
                     Result.warning(
