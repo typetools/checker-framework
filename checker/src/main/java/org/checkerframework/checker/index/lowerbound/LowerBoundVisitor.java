@@ -49,7 +49,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
 
     @Override
     public Void visitNewArray(NewArrayTree tree, Void type) {
-        if (tree.getDimensions().size() > 0) {
+        if (!tree.getDimensions().isEmpty()) {
             for (ExpressionTree dim : tree.getDimensions()) {
                 AnnotatedTypeMirror dimType = atypeFactory.getAnnotatedType(dim);
                 if (!(dimType.hasAnnotation(NonNegative.class)

@@ -900,7 +900,7 @@ public abstract class CFAbstractTransfer<
             ExecutableElement constructorElt =
                     analysis.getTypeFactory()
                             .constructorFromUse(n.getTree())
-                            .methodType
+                            .executableType
                             .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()

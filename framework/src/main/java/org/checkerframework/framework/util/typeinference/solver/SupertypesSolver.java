@@ -256,7 +256,7 @@ public class SupertypesSolver {
             lubPrimaries(lubOfPrimaries, subtypeAnnos, tops, qualifierHierarchy);
             solution.addPrimaries(target, lubOfPrimaries);
 
-            if (subtypesOfTarget.keySet().size() > 0) {
+            if (!subtypesOfTarget.isEmpty()) {
                 final AnnotatedTypeMirror lub =
                         leastUpperBound(target, typeFactory, subtypesOfTarget);
                 final AnnotationMirrorSet effectiveLubAnnos =
