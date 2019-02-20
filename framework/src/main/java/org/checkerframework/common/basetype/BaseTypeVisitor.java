@@ -2399,6 +2399,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedDeclaredType invocation,
             AnnotatedExecutableType constructor,
             NewClassTree newClassTree) {
+        System.out.printf(
+                "checkConstructorInvocation(%n  invocation=%s%n  constructor=%s%n  newClassTree=%s%n)%n",
+                invocation, constructor, newClassTree);
         AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) constructor.getReturnType();
         // When an interface is used as the identifier in an anonymous class (e.g. new Comparable()
         // {}) the constructor method will be Object.init() {} which has an Object return type When
@@ -2430,6 +2433,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     newClassTree);
             return false;
         }
+
+        // Issue a warning if the type at constructor invocation is a subtype of the constructor
+        // declaration type.
+        // This is equivalent to down-casting.
+        System.out.printf(
+                "calling isSubtype(%n  returntype=%s%n  invocation=%s%n)%n",
+                returnType, invocation);
+        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
+            checker.report(
+                    Result.warning(
+                            "cast.unsafe", returnType.toString(true), invocation.toString(true)),
+                    newClassTree);
+        }
+
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
