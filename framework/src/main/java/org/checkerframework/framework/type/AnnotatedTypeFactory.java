@@ -2311,17 +2311,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // currently returns an empty set.
             ExecutableElement ctor = TreeUtils.constructor(newClassTree);
             AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-            List<? extends AnnotationMirror> explicitAnnotations;
-            if (newClassTree.getIdentifier().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
-                AnnotatedDeclaredType typeWithInferences =
-                        (AnnotatedDeclaredType)
-                                toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-                typeWithInferences.addAnnotations(type.getAnnotations());
-                explicitAnnotations = new ArrayList<>(typeWithInferences.getAnnotations());
-            } else {
-                explicitAnnotations =
-                        TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
-            }
+            Set<? extends AnnotationMirror> explicitAnnotations = type.getAnnotations();
             Set<? extends AnnotationMirror> topAnnotations =
                     getQualifierHierarchy().getTopAnnotations();
             Set<AnnotationMirror> localToRemove = new HashSet<>();
