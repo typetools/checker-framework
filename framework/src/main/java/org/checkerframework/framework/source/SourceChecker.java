@@ -425,7 +425,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     private static final String OPTION_SEPARATOR = "_";
 
     /** The line separator. */
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
+    private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound

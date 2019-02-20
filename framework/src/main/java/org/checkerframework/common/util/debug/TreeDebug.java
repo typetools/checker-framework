@@ -43,7 +43,7 @@ public class TreeDebug extends AbstractProcessor {
         return new Visitor();
     }
 
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.lineSeparator();
 
     public static class Visitor extends TreePathScanner<Void, Void> {
 

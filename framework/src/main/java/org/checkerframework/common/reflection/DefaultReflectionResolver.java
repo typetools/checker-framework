@@ -44,7 +44,7 @@ import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -91,10 +91,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     @Override
-    public ParameterizedMethodType resolveReflectiveCall(
+    public ParameterizedExecutableType resolveReflectiveCall(
             AnnotatedTypeFactory factory,
             MethodInvocationTree tree,
-            ParameterizedMethodType origResult) {
+            ParameterizedExecutableType origResult) {
         assert isReflectiveMethodInvocation(tree);
         if (provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), NewInstance.class)
                 != null) {
@@ -111,10 +111,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * @param tree the method invocation tree that has to be resolved
      * @param origResult the original result from {@code factory.methodFromUse}.
      */
-    private ParameterizedMethodType resolveMethodCall(
+    private ParameterizedExecutableType resolveMethodCall(
             AnnotatedTypeFactory factory,
             MethodInvocationTree tree,
-            ParameterizedMethodType origResult) {
+            ParameterizedExecutableType origResult) {
         debugReflection("Try to resolve reflective method call: " + tree);
         List<MethodInvocationTree> possibleMethods = resolveReflectiveMethod(tree, factory);
 
@@ -138,19 +138,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
-            ParameterizedMethodType resolvedResult = factory.methodFromUse(resolvedTree);
+            ParameterizedExecutableType resolvedResult = factory.methodFromUse(resolvedTree);
 
             // Lub return types
             returnLub =
                     lub(
                             returnLub,
-                            resolvedResult.methodType.getReturnType().getAnnotations(),
+                            resolvedResult.executableType.getReturnType().getAnnotations(),
                             factory);
 
             // Glb receiver types (actual method receiver is passed as first
             // argument to invoke(Object, Object[]))
             // Check for static methods whose receiver is null
-            if (resolvedResult.methodType.getReceiverType() == null) {
+            if (resolvedResult.executableType.getReceiverType() == null) {
                 // If the method is static the first argument to Method.invoke isn't used,
                 // so assume top.
                 receiverGlb =
@@ -162,7 +162,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 receiverGlb =
                         glb(
                                 receiverGlb,
-                                resolvedResult.methodType.getReceiverType().getAnnotations(),
+                                resolvedResult.executableType.getReceiverType().getAnnotations(),
                                 factory);
             }
 
@@ -170,7 +170,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             // combined together because Method#invoke takes as argument an
             // array of parameter types, so there is no way to distinguish
             // the types of different formal parameters.
-            for (AnnotatedTypeMirror mirror : resolvedResult.methodType.getParameterTypes()) {
+            for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
                 paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
             }
         }
@@ -186,22 +186,22 @@ public class DefaultReflectionResolver implements ReflectionResolver {
          */
 
         // return value
-        origResult.methodType.getReturnType().clearAnnotations();
-        origResult.methodType.getReturnType().addAnnotations(returnLub);
+        origResult.executableType.getReturnType().clearAnnotations();
+        origResult.executableType.getReturnType().addAnnotations(returnLub);
 
         // receiver type
-        origResult.methodType.getParameterTypes().get(0).clearAnnotations();
-        origResult.methodType.getParameterTypes().get(0).addAnnotations(receiverGlb);
+        origResult.executableType.getParameterTypes().get(0).clearAnnotations();
+        origResult.executableType.getParameterTypes().get(0).addAnnotations(receiverGlb);
 
         // parameter types
         if (paramsGlb != null) {
             AnnotatedArrayType origArrayType =
-                    (AnnotatedArrayType) origResult.methodType.getParameterTypes().get(1);
+                    (AnnotatedArrayType) origResult.executableType.getParameterTypes().get(1);
             origArrayType.getComponentType().clearAnnotations();
             origArrayType.getComponentType().addAnnotations(paramsGlb);
         }
 
-        debugReflection("Resolved annotations: " + origResult.methodType);
+        debugReflection("Resolved annotations: " + origResult.executableType);
         return origResult;
     }
 
@@ -243,10 +243,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *     resolved
      * @param origResult the original result from {@code factory.methodFromUse}.
      */
-    private ParameterizedMethodType resolveConstructorCall(
+    private ParameterizedExecutableType resolveConstructorCall(
             AnnotatedTypeFactory factory,
             MethodInvocationTree tree,
-            ParameterizedMethodType origResult) {
+            ParameterizedExecutableType origResult) {
         debugReflection("Try to resolve reflective constructor call: " + tree);
         List<JCNewClass> possibleConstructors = resolveReflectiveConstructor(tree, factory);
 
@@ -269,17 +269,17 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 // QualifierPolymorphism.PolyCollector.visitArray(...)
                 continue;
             }
-            ParameterizedMethodType resolvedResult = factory.constructorFromUse(resolvedTree);
+            ParameterizedExecutableType resolvedResult = factory.constructorFromUse(resolvedTree);
 
             // Lub return types
             returnLub =
                     lub(
                             returnLub,
-                            resolvedResult.methodType.getReturnType().getAnnotations(),
+                            resolvedResult.executableType.getReturnType().getAnnotations(),
                             factory);
 
             // Glb parameter types
-            for (AnnotatedTypeMirror mirror : resolvedResult.methodType.getParameterTypes()) {
+            for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
                 paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
             }
         }
@@ -293,18 +293,18 @@ public class DefaultReflectionResolver implements ReflectionResolver {
          */
 
         // return value
-        origResult.methodType.getReturnType().clearAnnotations();
-        origResult.methodType.getReturnType().addAnnotations(returnLub);
+        origResult.executableType.getReturnType().clearAnnotations();
+        origResult.executableType.getReturnType().addAnnotations(returnLub);
 
         // parameter types
         if (paramsGlb != null) {
             AnnotatedArrayType origArrayType =
-                    (AnnotatedArrayType) origResult.methodType.getParameterTypes().get(0);
+                    (AnnotatedArrayType) origResult.executableType.getParameterTypes().get(0);
             origArrayType.getComponentType().clearAnnotations();
             origArrayType.getComponentType().addAnnotations(paramsGlb);
         }
 
-        debugReflection("Resolved annotations: " + origResult.methodType);
+        debugReflection("Resolved annotations: " + origResult.executableType);
         return origResult;
     }
 
