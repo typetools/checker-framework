@@ -1,5 +1,14 @@
 ---------------------------------------------------------------------------
 
+Version 2.7.0, March 1, 2019
+
+The manual links to the AWS crpyto policy compliance checker, which enforces
+that no weak cipher algorithms are used with the Java crypto API.
+
+In the @HasSubsequence annotation, the "value" element has been renamed to "subsequence".
+
+---------------------------------------------------------------------------
+
 Version 2.6.0, February 3, 2019
 
 The manual includes a section about how to use Lombok and the Checker
