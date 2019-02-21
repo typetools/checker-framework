@@ -2440,12 +2440,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         System.out.printf(
                 "calling isSubtype(%n  returntype=%s%n  invocation=%s%n)%n",
                 returnType, invocation);
-        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
-            checker.report(
-                    Result.warning(
-                            "cast.unsafe", returnType.toString(true), invocation.toString(true)),
-                    newClassTree);
-        }
+        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {}
 
         return true;
         // TODO: what properties should hold for constructor receivers for
