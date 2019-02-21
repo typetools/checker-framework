@@ -82,14 +82,12 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
      */
     public void visit(TreePath path) {
         lastVisited = path.getLeaf();
-        System.out.printf("SourceVisitor.visit: lastVisited = %s%n", lastVisited);
         this.scan(path, null);
     }
 
     @Override
     public R scan(Tree tree, P p) {
         lastVisited = tree;
-        System.out.printf("SourceVisitor.scan: lastVisited = %s%n", lastVisited);
         return super.scan(tree, p);
     }
 
