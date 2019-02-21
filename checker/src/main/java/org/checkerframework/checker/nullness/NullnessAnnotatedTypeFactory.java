@@ -109,7 +109,9 @@ public class NullnessAnnotatedTypeFactory
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
                     "org.netbeans.api.annotations.common.NonNull",
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
-                    "org.springframework.lang.NonNull");
+                    "org.springframework.lang.NonNull",
+                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
+                    "io.reactivex.annotations.NonNull");
 
     // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
     /** Aliases for {@code @Nullable}. */
