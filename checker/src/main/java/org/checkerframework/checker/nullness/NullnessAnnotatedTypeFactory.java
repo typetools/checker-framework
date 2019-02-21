@@ -298,9 +298,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
-        ParameterizedMethodType mType = super.methodFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedExecutableType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
 
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
