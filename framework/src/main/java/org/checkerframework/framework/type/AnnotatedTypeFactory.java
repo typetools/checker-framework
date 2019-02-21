@@ -1016,7 +1016,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
-            type = fromExpression((ExpressionTree) tree);
+            if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+                type = fromNewClass((NewClassTree) tree);
+            } else {
+                type = fromExpression((ExpressionTree) tree);
+            }
         } else {
             throw new BugInCF(
                     "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
