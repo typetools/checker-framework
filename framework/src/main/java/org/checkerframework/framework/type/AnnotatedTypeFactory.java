@@ -1016,10 +1016,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
-            if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+            type = fromExpression((ExpressionTree) tree);
+            if (tree.getKind() == Tree.Kind.NEW_CLASS && TreeUtils.isDiamondTree(tree)) {
+                //                System.out.println("fromexpr: " + type);
+                //                System.out.println("fromnewclass: " + fromNewClass((NewClassTree)
+                // tree));
+                // 1. print diff of fromexpression and fromnewclass
+                // if there is a poly, replace that with anno in fromexpression
                 type = fromNewClass((NewClassTree) tree);
-            } else {
-                type = fromExpression((ExpressionTree) tree);
             }
         } else {
             throw new BugInCF(
