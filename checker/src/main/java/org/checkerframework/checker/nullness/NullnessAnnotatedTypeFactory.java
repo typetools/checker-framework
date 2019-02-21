@@ -75,7 +75,8 @@ public class NullnessAnnotatedTypeFactory
     /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
-    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
+    // List is in alphabetical order.  If you update it, also update
+    // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nonnull}. */
     private static final List<String> NONNULL_ALIASES =
             Arrays.asList(
@@ -90,6 +91,9 @@ public class NullnessAnnotatedTypeFactory
                     "com.sun.istack.internal.NotNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
                     "edu.umd.cs.findbugs.annotations.NonNull",
+                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
+                    "io.reactivex.annotations.NonNull",
+                    // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.Nonnull",
                     // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
                     "javax.validation.constraints.NotNull",
@@ -109,11 +113,10 @@ public class NullnessAnnotatedTypeFactory
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
                     "org.netbeans.api.annotations.common.NonNull",
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
-                    "org.springframework.lang.NonNull",
-                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
-                    "io.reactivex.annotations.NonNull");
+                    "org.springframework.lang.NonNull");
 
-    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
+    // List is in alphabetical order.  If you update it, also update
+    // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nullable}. */
     private static final List<String> NULLABLE_ALIASES =
             Arrays.asList(
@@ -134,6 +137,9 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.PossiblyNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
+                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
+                    "io.reactivex.annotations.Nullable",
+                    // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.CheckForNull",
                     "javax.annotation.Nullable",
                     // https://search.maven.org/search?q=a:checker-compat-qual
@@ -154,9 +160,7 @@ public class NullnessAnnotatedTypeFactory
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
                     "org.netbeans.api.annotations.common.NullUnknown",
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
-                    "org.springframework.lang.Nullable",
-                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
-                    "io.reactivex.annotations.Nullable");
+                    "org.springframework.lang.Nullable");
 
     /** Creates NullnessAnnotatedTypeFactory. */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
