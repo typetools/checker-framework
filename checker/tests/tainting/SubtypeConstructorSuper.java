@@ -7,7 +7,7 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 public class SubtypeConstructorSuper extends SuperClass {
     // :: error: (super.invocation.invalid)
     @Untainted SubtypeConstructorSuper() {
-        super();
+        super(9);
     }
 }
 
@@ -17,5 +17,5 @@ class ImplicitSuperCall {
 }
 
 class SuperClass {
-    @Tainted SuperClass() {}
+    @Tainted SuperClass(int x) {}
 }

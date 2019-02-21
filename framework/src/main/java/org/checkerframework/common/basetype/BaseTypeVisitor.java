@@ -1065,6 +1065,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             Result.failure(
                                     "super.invocation.invalid",
                                     constructorTypeMirror,
+                                    node,
                                     superTypeMirror),
                             enclosingMethod);
                 }
