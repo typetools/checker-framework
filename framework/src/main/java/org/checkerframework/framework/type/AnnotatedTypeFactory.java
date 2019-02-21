@@ -996,6 +996,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Populated the type arguments of the diamond tree ({@code tree}) and annotates their types
+     * with annotations from {@code type}
+     */
+    private AnnotatedDeclaredType annotateTypeArgs(
+            ExpressionTree tree, AnnotatedDeclaredType type) {
+        AnnotatedDeclaredType typeWithInferences =
+                (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
+        typeWithInferences.addAnnotations(type.getAnnotations());
+
+        if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
+                .tsym
+                .getTypeParameters()
+                .nonEmpty()) {
+            Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+            if (ctx != null) {
+                AnnotatedTypeMirror ctxtype = ctx.second;
+                fromNewClassContextHelper(typeWithInferences, ctxtype);
+            }
+        }
+        return typeWithInferences;
+    }
+
+    /**
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree}.
      *
      * @param tree the AST node
@@ -1017,6 +1040,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
+            if (TreeUtils.isDiamondTree(tree)) {
+                AnnotatedDeclaredType typeWithInferences =
+                        annotateTypeArgs((ExpressionTree) tree, (AnnotatedDeclaredType) type);
+                type = typeWithInferences;
+            }
         } else {
             throw new BugInCF(
                     "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
@@ -2256,21 +2284,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // populate the type arguments on the type. To do this, we need to create the type
             // mirror again, using toAnnotatedType(). However, this does not populate any
             // annotations -- so we need to take these from the fromTypeTree() mirror.
-            AnnotatedDeclaredType typeWithInferences =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-            typeWithInferences.addAnnotations(type.getAnnotations());
-
-            if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
-                    .tsym
-                    .getTypeParameters()
-                    .nonEmpty()) {
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    AnnotatedTypeMirror ctxtype = ctx.second;
-                    fromNewClassContextHelper(typeWithInferences, ctxtype);
-                }
-            }
-
+            AnnotatedDeclaredType typeWithInferences = annotateTypeArgs(newClassTree, type);
             return typeWithInferences;
         }
         return type;
