@@ -1041,9 +1041,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
             if (TreeUtils.isDiamondTree(tree)) {
-                AnnotatedDeclaredType typeWithInferences =
-                        annotateTypeArgs((ExpressionTree) tree, (AnnotatedDeclaredType) type);
-                type = typeWithInferences;
+                type = annotateTypeArgs((ExpressionTree) tree, (AnnotatedDeclaredType) type);
             }
         } else {
             throw new BugInCF(
@@ -2284,8 +2282,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // populate the type arguments on the type. To do this, we need to create the type
             // mirror again, using toAnnotatedType(). However, this does not populate any
             // annotations -- so we need to take these from the fromTypeTree() mirror.
-            AnnotatedDeclaredType typeWithInferences = annotateTypeArgs(newClassTree, type);
-            return typeWithInferences;
+            return annotateTypeArgs(newClassTree, type);
         }
         return type;
     }
