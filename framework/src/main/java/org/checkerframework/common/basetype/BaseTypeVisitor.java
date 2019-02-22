@@ -1041,7 +1041,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "super()" invocation within that constructor (except for the
-     * Initialization Checker).
+     * Initialization and Rawness Checkers).
      */
     void checkSuperConstructorCall(MethodInvocationTree node) {
         if (!TreeUtils.isSuperCall(node)) {
@@ -1063,6 +1063,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (!AnnotationUtils.areSameByName(
                                 constructorTypeMirror,
                                 "org.checkerframework.checker.initialization.qual.UnderInitialization")
+                        && !AnnotationUtils.areSameByName(
+                                constructorTypeMirror,
+                                "org.checkerframework.checker.nullness.qual.Raw")
                         && !atypeFactory
                                 .getQualifierHierarchy()
                                 .isSubtype(superTypeMirror, constructorTypeMirror)) {
