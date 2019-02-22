@@ -136,10 +136,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
-        addAliasedAnnotation(
-                "android.support.annotation.IntRange",
-                AnnotationBuilder.fromClass(elements, IntRange.class),
-                true);
+        addAliasedAnnotation("android.support.annotation.IntRange", IntRange.class, true);
 
         // The actual ArrayLenRange is created by
         // {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)};

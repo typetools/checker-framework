@@ -246,14 +246,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Map keys are canonical names of aliased annotations. */
     private final Map<String, Alias> aliases = new HashMap<>();
 
-    /** Information about one annotation alias. */
-    private class Alias {
-        /** The canonical annotation. */
+    /**
+     * Information about one annotation alias.
+     *
+     * <p>The information is either an AnotationMirror, or information for a builder (name and
+     * fields not to copy); see checkRep.
+     */
+    private static class Alias {
+        /** The canonical annotation (or null if copyElements == true). */
         AnnotationMirror canonical;
         /** Whether elements should be copied over when translating to the canonical annotation. */
         boolean copyElements;
-        /** Which elements should not be copied over. */
+        /** The canonical annotation name (or null if copyElements == false). */
+        String canonicalName;
+        /** Which elements should not be copied over (or null if copyElements == false). */
         String[] ignorableElements;
+
         /**
          * Create an Alias with the given components.
          *
@@ -262,14 +270,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
          *     canonical annotation
          * @param ignorableElements elements that should not be copied over
          */
-        Alias(AnnotationMirror canonical, boolean copyElements, String[] ignorableElements) {
+        Alias(
+                AnnotationMirror canonical,
+                boolean copyElements,
+                String canonicalName,
+                String[] ignorableElements) {
             this.canonical = canonical;
             this.copyElements = copyElements;
+            this.canonicalName = canonicalName;
             this.ignorableElements = ignorableElements;
+            checkRep();
+        }
+
+        /** Throw an exception if this object is malformed. */
+        void checkRep() {
+            if (!(copyElements
+                    ? (canonical == null && canonicalName != null && ignorableElements != null)
+                    : (canonical != null && canonicalName == null && ignorableElements == null))) {
+                throw new BugInCF(
+                        "Bad Alias: %s %s %s %s",
+                        canonical, copyElements, canonicalName, ignorableElements);
+            }
         }
     }
-
-    private String[] emptyStringArray = new String[0];
 
     /**
      * A map from the class of an annotation to the set of classes for annotations with the same
@@ -2523,15 +2546,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * for the canonical annotation {@code type} that will be used by the Checker Framework in the
      * alias's place.
      *
-     * <p>Use this method if the alias class is not necessary on the classpath at Checker Framework
-     * compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class, AnnotationMirror)}
-     * which prevents the possibility of a typo in the class name.
+     * <p>Use this method if the alias class is not necessarily on the classpath at Checker
+     * Framework compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class,
+     * AnnotationMirror)} which prevents the possibility of a typo in the class name.
      *
      * @param aliasName the fully-qualified name of the aliased annotation
      * @param type the canonical annotation
      */
     protected void addAliasedAnnotation(String aliasName, AnnotationMirror type) {
-        aliases.put(aliasName, new Alias(type, false, emptyStringArray));
+        aliases.put(aliasName, new Alias(type, false, null, null));
     }
 
     /**
@@ -2563,10 +2586,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addAliasedAnnotation(
             Class<?> aliasClass,
-            AnnotationMirror type,
+            Class<?> canonical,
             boolean copyElements,
             String... ignorableElements) {
-        addAliasedAnnotation(aliasClass.getCanonicalName(), type, copyElements, ignorableElements);
+        addAliasedAnnotation(
+                aliasClass.getCanonicalName(), canonical, copyElements, ignorableElements);
     }
 
     /**
@@ -2588,15 +2612,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addAliasedAnnotation(
             String aliasName,
-            AnnotationMirror type,
+            Class<?> canonicalName,
             boolean copyElements,
             String... ignorableElements) {
-        if (!copyElements && ignorableElements.length > 0) {
-            throw new BugInCF(
-                    "copyElements = false, ignorableElements = "
-                            + Arrays.toString(ignorableElements));
+        // The copyElements argument disambiguates overloading.
+        if (!copyElements) {
+            throw new BugInCF("Do not call with false");
         }
-        aliases.put(aliasName, new Alias(type, copyElements, ignorableElements));
+        aliases.put(
+                aliasName,
+                new Alias(null, copyElements, canonicalName.getCanonicalName(), ignorableElements));
     }
 
     /**
