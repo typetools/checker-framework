@@ -2641,8 +2641,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (alias == null) {
             return null;
         }
-        if (alias.copyElements && a.getElementValues().size() > 0) {
-            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, alias.canonical);
+        if (alias.copyElements) {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, alias.canonicalName);
             builder.copyElementValuesFromAnnotation(a, alias.ignorableElements);
             return builder.build();
         } else {
