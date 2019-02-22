@@ -996,7 +996,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Populated the type arguments of the diamond tree ({@code tree}) and annotates their types
+     * Populates the type arguments of the diamond tree ({@code tree}) and annotates their types
      * with annotations from {@code type}
      */
     private AnnotatedDeclaredType annotateTypeArgs(
