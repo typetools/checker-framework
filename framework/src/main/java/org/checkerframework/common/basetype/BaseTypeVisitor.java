@@ -2435,7 +2435,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // declaration type.
         // This is equivalent to down-casting.
         if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {}
-
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
