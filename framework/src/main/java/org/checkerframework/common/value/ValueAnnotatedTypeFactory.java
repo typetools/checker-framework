@@ -142,7 +142,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 true);
 
         // The actual ArrayLenRange is created by
-        // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
+        // {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
@@ -192,13 +192,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
+    public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
             int from = getMinLenValue(anno);
             return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
         }
 
-        return super.aliasedAnnotation(anno);
+        return super.canonicalAnnotation(anno);
     }
 
     @Override
@@ -2119,7 +2119,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
-     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
      * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     private Integer getSpecifiedMinLenValue(AnnotationMirror annotation) {
@@ -2145,7 +2145,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns 0 if there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
-     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
      * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public int getMinLenValue(AnnotationMirror annotation) {
