@@ -249,8 +249,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Information about one annotation alias.
      *
-     * <p>The information is either an AnotationMirror, or information for a builder (name and
-     * fields not to copy); see checkRep.
+     * <p>The information is either an AnotationMirror that can be used directly, or information for
+     * a builder (name and fields not to copy); see checkRep.
      */
     private static class Alias {
         /** The canonical annotation (or null if copyElements == true). */
