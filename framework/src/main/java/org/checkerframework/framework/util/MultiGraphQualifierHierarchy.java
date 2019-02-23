@@ -66,8 +66,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
+        /** The annotated type factory associated with this hierarchy. */
         protected final AnnotatedTypeFactory atypeFactory;
 
+        /** Create a factory. */
         public MultiGraphFactory(AnnotatedTypeFactory atypeFactory) {
             this.supertypesDirect = AnnotationUtils.createAnnotationMap();
             this.polyQualifiers = new HashMap<>();
