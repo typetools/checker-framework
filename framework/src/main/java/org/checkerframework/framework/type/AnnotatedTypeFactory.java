@@ -1678,38 +1678,53 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (methodElt == null || !methodElt.isConstructor()) {
                 scan(type.getReturnType(), p);
             } else if (methodElt.isConstructor()) {
-                // If a constructor declaration is not explicitly annotated,
-                // annotate it with the type on the class declaration.
-                AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) type.getReturnType();
-                // At this point defaults have been applied to class declarations but not
-                // to constructor return types. The check "returnType.getAnnotations().isEmpty()"
-                // returns true for constructors whose return types haven't been explicitly
-                // annotated.
-                // NOTE: change to getExplicitAnnotations() when it is fixed.
-                // Currently, getExplicitAnnotations() returns empty set even for explicitly
-                // annotated types.
-                if (returnType.getAnnotations().isEmpty()) {
-                    DeclaredType classDeclarationType = returnType.getUnderlyingType();
-                    AnnotatedTypeMirror underlyingTypeMirror =
-                            p.getAnnotatedType(classDeclarationType.asElement());
-                    Set<? extends AnnotationMirror> topAnnotations =
-                            p.getQualifierHierarchy().getTopAnnotations();
-                    for (AnnotationMirror topAnno : topAnnotations) {
-                        AnnotationMirror annotationOnClass =
-                                underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
-                        // annotationOnClass will not be null since the defaults are applied before
-                        // control reaches here.  However, this check is added because it appears
-                        // that checker-framework-inference runs this code at an earlier stage than
-                        // regular checker-framework does which causes annotationOnClass to be null.
-                        // Without this check, the test AnonymousProblem.java in testdata/ostrusted
-                        // of cf-inference crashes.  The same test case is replicated in this repo
-                        // (checker-framework) tests/tainting/AnonymousProblem.java which does not
-                        // crash i.e removing this check has no effect on that test.
-                        if (annotationOnClass != null) {
-                            returnType.addAnnotation(annotationOnClass);
-                        }
-                    }
-                }
+                //                // If a constructor declaration is not explicitly annotated,
+                //                // annotate it with the type on the class declaration.
+                //                AnnotatedDeclaredType returnType = (AnnotatedDeclaredType)
+                // type.getReturnType();
+                //                // At this point defaults have been applied to class declarations
+                // but not
+                //                // to constructor return types. The check
+                // "returnType.getAnnotations().isEmpty()"
+                //                // returns true for constructors whose return types haven't been
+                // explicitly
+                //                // annotated.
+                //                // NOTE: change to getExplicitAnnotations() when it is fixed.
+                //                // Currently, getExplicitAnnotations() returns empty set even for
+                // explicitly
+                //                // annotated types.
+                //                if (returnType.getAnnotations().isEmpty()) {
+                //                    DeclaredType classDeclarationType =
+                // returnType.getUnderlyingType();
+                //                    AnnotatedTypeMirror underlyingTypeMirror =
+                //                            p.getAnnotatedType(classDeclarationType.asElement());
+                //                    Set<? extends AnnotationMirror> topAnnotations =
+                //                            p.getQualifierHierarchy().getTopAnnotations();
+                //                    for (AnnotationMirror topAnno : topAnnotations) {
+                //                        AnnotationMirror annotationOnClass =
+                //
+                // underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
+                //                        // annotationOnClass will not be null since the defaults
+                // are applied before
+                //                        // control reaches here.  However, this check is added
+                // because it appears
+                //                        // that checker-framework-inference runs this code at an
+                // earlier stage than
+                //                        // regular checker-framework does which causes
+                // annotationOnClass to be null.
+                //                        // Without this check, the test AnonymousProblem.java in
+                // testdata/ostrusted
+                //                        // of cf-inference crashes.  The same test case is
+                // replicated in this repo
+                //                        // (checker-framework)
+                // tests/tainting/AnonymousProblem.java which does not
+                //                        // crash i.e removing this check has no effect on that
+                // test.
+                //                        if (annotationOnClass != null) {
+                //                            returnType.addAnnotation(annotationOnClass);
+                //                        }
+                //                    }
+                //                }
             }
 
             scanAndReduce(type.getParameterTypes(), p, null);
@@ -2340,67 +2355,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // annotations -- so we need to take these from the fromTypeTree() mirror.
             type = annotateTypeArgs(newClassTree, type);
         }
-        // If the user hasn't explicitly annotated a constructor invocation,
-        // annotate it with the type on constructor declaration.
-        //        if (newClassTree.getClassBody() == null) {
-        // type.getAnnotations() returns both default and explicit annotations.
-        Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
-        Set<AnnotationMirror> defaultAnnotations = new HashSet<>();
-        String newClassTreeString = newClassTree.toString();
-        for (AnnotationMirror anno : allAnnotations) {
-            String annoString = anno.toString();
-            String annoStringName =
-                    annoString.substring(annoString.lastIndexOf('.') + 1, annoString.length() - 1);
-            if (annoString.contains("(")) {
-                annoStringName = annoStringName.substring(0, annoString.indexOf('(') - 1);
-            }
-            if (!newClassTreeString.contains(annoStringName)) {
-                defaultAnnotations.add(anno);
-            }
-        }
-
-        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
-        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-        for (AnnotationMirror defAnno : defaultAnnotations) {
-            AnnotationMirror annoToAdd = con.getReturnType().getAnnotationInHierarchy(defAnno);
-            type.replaceAnnotation(annoToAdd);
-        }
+        //        // If the user hasn't explicitly annotated a constructor invocation,
+        //        // annotate it with the type on constructor declaration.
+        //        // type.getAnnotations() returns both default and explicit annotations.
+        //        Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
+        //        Set<AnnotationMirror> defaultAnnotations = new HashSet<>();
+        //        String newClassTreeString = newClassTree.toString();
+        //        for (AnnotationMirror anno : allAnnotations) {
+        //            String annoString = anno.toString();
+        //            String annoStringName =
+        //                    annoString.substring(annoString.lastIndexOf('.') + 1,
+        // annoString.length() - 1);
+        //            if (annoString.contains("(")) {
+        //                annoStringName = annoStringName.substring(0, annoString.indexOf('(') - 1);
+        //            }
+        //            if (!newClassTreeString.contains(annoStringName)) {
+        //                defaultAnnotations.add(anno);
+        //            }
         //        }
-        //        if (newClassTree.getClassBody() == null) {
-        //            // If the user hasn't explicitly annotated a constructor invocation,
-        //            // annotate it with the type on constructor declaration.
-        //            // NOTE: "TreeUtils.typeOf(...)" is a workaround since
-        // getExplicitAnnotations()
-        //            // currently returns an empty set.
-        //            ExecutableElement ctor = TreeUtils.constructor(newClassTree);
-        //            AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type,
-        // ctor);
-        //            Collection<? extends AnnotationMirror> explicitAnnotations;
-        //            if (newClassTree.getIdentifier().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
-        //                explicitAnnotations = type.getAnnotations();
-        //            } else {
-        //                explicitAnnotations =
         //
-        // TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
-        //            }
-        //            Set<? extends AnnotationMirror> topAnnotations =
-        //                    getQualifierHierarchy().getTopAnnotations();
-        //            Set<AnnotationMirror> localToRemove = new HashSet<>();
-        //            for (AnnotationMirror explicitAnno : explicitAnnotations) {
-        //                if (AnnotationUtils.containsSameByName(
-        //                        getQualifierHierarchy().getTypeQualifiers(), explicitAnno)) {
-        //                    AnnotationMirror annoToRemove =
-        //                            getQualifierHierarchy().getTopAnnotation(explicitAnno);
-        //                    localToRemove.add(annoToRemove);
-        //                }
-        //            }
-        //            for (AnnotationMirror topAnno : topAnnotations) {
-        //                if (!AnnotationUtils.containsSameByName(localToRemove, topAnno)) {
-        //                    AnnotationMirror annoToAdd =
-        //                            con.getReturnType().getAnnotationInHierarchy(topAnno);
-        //                    type.replaceAnnotation(annoToAdd);
-        //                }
-        //            }
+        //        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
+        //        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        //        for (AnnotationMirror defAnno : defaultAnnotations) {
+        //            AnnotationMirror annoToAdd =
+        // con.getReturnType().getAnnotationInHierarchy(defAnno);
+        //            type.replaceAnnotation(annoToAdd);
         //        }
         return type;
     }
