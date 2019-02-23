@@ -141,8 +141,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         /** Throw an exception if the factory was already built. */
         protected void assertNotBuilt() {
             if (wasBuilt) {
-                throw new BugInCF(
-                        "MultiGraphQualifierHierarchy.Factory was already built. Method build can only be called once.");
+                throw new BugInCF("MultiGraphQualifierHierarchy.Factory was already built.");
             }
         }
     }
