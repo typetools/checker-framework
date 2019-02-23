@@ -4,7 +4,6 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for the string conversion operation. See JLS 5.1.11 for the definition of string
@@ -63,7 +62,7 @@ public class StringConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return getOperand().hashCode();
     }
 
     @Override

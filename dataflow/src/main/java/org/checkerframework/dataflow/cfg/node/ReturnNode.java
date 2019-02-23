@@ -11,7 +11,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.LambdaReturnContext;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnContext;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for a return statement:
@@ -81,7 +80,7 @@ public class ReturnNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(result);
+        return result.hashCode();
     }
 
     @Override

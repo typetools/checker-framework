@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for a reference to 'this', either implicit or explicit.
@@ -29,7 +28,7 @@ public abstract class ThisLiteralNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getName());
+        return getName().hashCode();
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -54,7 +53,7 @@ public class ParameterizedTypeNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getTree());
+        return getTree().hashCode();
     }
 
     @Override

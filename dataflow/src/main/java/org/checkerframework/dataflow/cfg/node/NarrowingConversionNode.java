@@ -4,7 +4,6 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -63,7 +62,7 @@ public class NarrowingConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return getOperand().hashCode();
     }
 
     @Override

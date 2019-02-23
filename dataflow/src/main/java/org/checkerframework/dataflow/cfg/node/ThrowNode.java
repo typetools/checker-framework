@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for exception throws:
@@ -56,7 +55,7 @@ public class ThrowNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(expression);
+        return expression.hashCode();
     }
 
     @Override

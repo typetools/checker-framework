@@ -4,7 +4,6 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for the cast operator:
@@ -59,7 +58,7 @@ public class TypeCastNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return getOperand().hashCode();
     }
 
     @Override

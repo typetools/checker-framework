@@ -7,7 +7,6 @@ import java.util.Collections;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for the instanceof operator:
@@ -74,7 +73,7 @@ public class InstanceOfNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return getOperand().hashCode();
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -77,7 +77,7 @@ public class TernaryExpressionNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getConditionOperand(), getThenOperand(), getElseOperand());
+        return Objects.hash(getConditionOperand(), getThenOperand(), getElseOperand());
     }
 
     @Override
