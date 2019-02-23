@@ -312,7 +312,7 @@ public class ContractsUtils {
         if (factory.isSupportedQualifier(anno)) {
             return anno;
         } else {
-            AnnotationMirror aliasedAnno = factory.aliasedAnnotation(anno);
+            AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
             if (factory.isSupportedQualifier(aliasedAnno)) {
                 return aliasedAnno;
             } else {
