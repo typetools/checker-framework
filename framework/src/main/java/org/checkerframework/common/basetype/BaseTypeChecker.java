@@ -608,11 +608,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         @Override
         public int hashCode() {
-            int result = kind.hashCode();
-            result = 31 * result + message.hashCode();
-            result = 31 * result + source.hashCode();
-            result = 31 * result + checker.hashCode();
-            return result;
+            return Objects.hash(kind, message, source, checker);
         }
 
         @Override

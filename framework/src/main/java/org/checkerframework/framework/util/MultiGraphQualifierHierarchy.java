@@ -956,16 +956,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         @Pure
         @Override
         public int hashCode() {
-            if (hashCode == -1) {
-                hashCode = 31;
-                if (a1 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a1).hashCode();
-                }
-                if (a2 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a2).hashCode();
-                }
-            }
-            return hashCode;
+            return Objects.hash(a1, a2);
         }
 
         @Override

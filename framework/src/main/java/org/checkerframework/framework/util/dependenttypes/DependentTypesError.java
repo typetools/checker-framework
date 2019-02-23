@@ -99,9 +99,7 @@ public class DependentTypesError {
 
     @Override
     public int hashCode() {
-        int result = expression.hashCode();
-        result = 31 * result + error.hashCode();
-        return result;
+        return Objects.hash(expression, error);
     }
 
     @Override

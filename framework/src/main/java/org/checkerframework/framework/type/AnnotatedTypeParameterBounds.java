@@ -34,7 +34,7 @@ public class AnnotatedTypeParameterBounds {
 
     @Override
     public int hashCode() {
-        return 17 * upper.hashCode() + 37 * lower.hashCode();
+        return Objects.hash(upper, lower);
     }
 
     @Override

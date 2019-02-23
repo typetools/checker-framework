@@ -129,10 +129,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = expression != null ? expression.hashCode() : 0;
-            result = 31 * result + (annotation != null ? annotation.hashCode() : 0);
-            result = 31 * result + (kind != null ? kind.hashCode() : 0);
-            return result;
+            return Objects.hash(expression, annotation, kind);
         }
     }
 
@@ -224,9 +221,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = super.hashCode();
-            result = 31 * result + (annoResult ? 1 : 0);
-            return result;
+            return Objects.hash(super.hashCode(), annoResult);
         }
     }
 

@@ -46,9 +46,7 @@ public class Default implements Comparable<Default> {
 
     @Override
     public int hashCode() {
-        return 13
-                + (anno == null ? 0 : 37 * anno.hashCode())
-                + (location == null ? 0 : 41 * location.hashCode());
+        return Objects.hash(anno, location);
     }
 
     @Override
