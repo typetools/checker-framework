@@ -1257,9 +1257,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         boolean valid = validateTypeOf(node);
 
-        AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
-
         if (valid) {
+            AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
             if (atypeFactory.getDependentTypesHelper() != null) {
                 atypeFactory.getDependentTypesHelper().checkType(dt, node);
             }
