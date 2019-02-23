@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.dependenttypes;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.framework.source.Result;

@@ -1,5 +1,7 @@
 package org.checkerframework.framework.type;
 
+import java.util.Objects;
+
 public class AnnotatedTypeParameterBounds {
     private final AnnotatedTypeMirror upper;
     private final AnnotatedTypeMirror lower;

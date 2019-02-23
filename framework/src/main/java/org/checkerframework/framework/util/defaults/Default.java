@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.defaults;
 
+import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
