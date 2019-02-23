@@ -59,10 +59,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesDirect;
 
         /**
-         * Map from qualifier hierarchy to the corresponding polymorphic qualifier. The key is: *
-         * the argument to @PolymorphicQualifier (typically the top qualifier in the hierarchy), or
-         * * "PolymorphicQualifier" if @PolymorphicQualifier is used without an argument, or * null,
-         * for the PolyAll qualifier.
+         * Map from qualifier hierarchy to the corresponding polymorphic qualifier. The key is:
+         *
+         * <ul>
+         *   <li>the argument to @PolymorphicQualifier (typically the top qualifier in the
+         *       hierarchy), or
+         *   <li>"PolymorphicQualifier" if @PolymorphicQualifier is used without an argument, or
+         *   <li>null, for the PolyAll qualifier.
+         * </ul>
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
