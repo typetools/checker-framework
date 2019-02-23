@@ -1021,6 +1021,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Populates the type arguments of the diamond tree ({@code tree}) and annotates their types
+     * with annotations from {@code type}.
+     */
+    private AnnotatedDeclaredType annotateTypeArgs(
+            ExpressionTree tree, AnnotatedDeclaredType type) {
+        AnnotatedDeclaredType typeWithInferences =
+                (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
+        typeWithInferences.addAnnotations(type.getAnnotations());
+
+        if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
+                .tsym
+                .getTypeParameters()
+                .nonEmpty()) {
+            Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+            if (ctx != null) {
+                AnnotatedTypeMirror ctxtype = ctx.second;
+                fromNewClassContextHelper(typeWithInferences, ctxtype);
+            }
+        }
+        return typeWithInferences;
+    }
+
+    /**
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree}.
      *
      * @param tree the AST node
@@ -1042,6 +1065,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
+            if (TreeUtils.isDiamondTree(tree)) {
+                type = annotateTypeArgs((ExpressionTree) tree, (AnnotatedDeclaredType) type);
+            }
         } else {
             throw new BugInCF(
                     "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
@@ -2312,57 +2338,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // populate the type arguments on the type. To do this, we need to create the type
             // mirror again, using toAnnotatedType(). However, this does not populate any
             // annotations -- so we need to take these from the fromTypeTree() mirror.
-            AnnotatedDeclaredType typeWithInferences =
-                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-            typeWithInferences.addAnnotations(type.getAnnotations());
-
-            if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
-                    .tsym
-                    .getTypeParameters()
-                    .nonEmpty()) {
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    AnnotatedTypeMirror ctxtype = ctx.second;
-                    fromNewClassContextHelper(typeWithInferences, ctxtype);
-                }
-            }
-
-            type = typeWithInferences;
+            type = annotateTypeArgs(newClassTree, type);
         }
         if (newClassTree.getClassBody() == null) {
-            if (newClassTree.getClassBody() == null) {
-                // If the user hasn't explicitly annotated a constructor invocation,
-                // annotate it with the type on constructor declaration.
-                // NOTE: "TreeUtils.typeOf(...)" is a workaround since getExplicitAnnotations()
-                // currently returns an empty set.
-                ExecutableElement ctor = TreeUtils.constructor(newClassTree);
-                AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-                Collection<? extends AnnotationMirror> explicitAnnotations;
-                if (newClassTree.getIdentifier().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
-                    explicitAnnotations = type.getAnnotations();
-                } else {
-                    explicitAnnotations =
-                            TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
-                }
-                Set<? extends AnnotationMirror> topAnnotations =
-                        getQualifierHierarchy().getTopAnnotations();
-                Set<AnnotationMirror> localToRemove = new HashSet<>();
-                for (AnnotationMirror explicitAnno : explicitAnnotations) {
-                    if (AnnotationUtils.containsSameByName(
-                            getQualifierHierarchy().getTypeQualifiers(), explicitAnno)) {
-                        AnnotationMirror annoToRemove =
-                                getQualifierHierarchy().getTopAnnotation(explicitAnno);
-                        localToRemove.add(annoToRemove);
-                    }
-                }
-                for (AnnotationMirror topAnno : topAnnotations) {
-                    if (!AnnotationUtils.containsSameByName(localToRemove, topAnno)) {
-                        AnnotationMirror annoToAdd =
-                                con.getReturnType().getAnnotationInHierarchy(topAnno);
-                        type.replaceAnnotation(annoToAdd);
-                    }
+            //            if (newClassTree.getClassBody() == null) {
+            // If the user hasn't explicitly annotated a constructor invocation,
+            // annotate it with the type on constructor declaration.
+            // NOTE: "TreeUtils.typeOf(...)" is a workaround since getExplicitAnnotations()
+            // currently returns an empty set.
+            ExecutableElement ctor = TreeUtils.constructor(newClassTree);
+            AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+            Collection<? extends AnnotationMirror> explicitAnnotations;
+            if (newClassTree.getIdentifier().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                explicitAnnotations = type.getAnnotations();
+            } else {
+                explicitAnnotations =
+                        TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
+            }
+            Set<? extends AnnotationMirror> topAnnotations =
+                    getQualifierHierarchy().getTopAnnotations();
+            Set<AnnotationMirror> localToRemove = new HashSet<>();
+            for (AnnotationMirror explicitAnno : explicitAnnotations) {
+                if (AnnotationUtils.containsSameByName(
+                        getQualifierHierarchy().getTypeQualifiers(), explicitAnno)) {
+                    AnnotationMirror annoToRemove =
+                            getQualifierHierarchy().getTopAnnotation(explicitAnno);
+                    localToRemove.add(annoToRemove);
                 }
             }
+            for (AnnotationMirror topAnno : topAnnotations) {
+                if (!AnnotationUtils.containsSameByName(localToRemove, topAnno)) {
+                    AnnotationMirror annoToAdd =
+                            con.getReturnType().getAnnotationInHierarchy(topAnno);
+                    type.replaceAnnotation(annoToAdd);
+                }
+            }
+            //            }
         }
         return type;
     }

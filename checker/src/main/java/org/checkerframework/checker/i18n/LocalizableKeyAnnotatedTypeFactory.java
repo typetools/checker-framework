@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.i18n.qual.LocalizableKeyBottom;
+import org.checkerframework.checker.i18n.qual.PolyLocalizableKey;
 import org.checkerframework.checker.i18n.qual.UnknownLocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -25,7 +26,8 @@ public class LocalizableKeyAnnotatedTypeFactory extends PropertyKeyAnnotatedType
                 Arrays.asList(
                         LocalizableKey.class,
                         LocalizableKeyBottom.class,
-                        UnknownLocalizableKey.class));
+                        UnknownLocalizableKey.class,
+                        PolyLocalizableKey.class));
     }
 
     @Override
