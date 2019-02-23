@@ -57,6 +57,6 @@ class Constructors {
 
     void test4(@H1S1 @H2S2 String p) {
         @H1S1 @H2S2 Constructors c1 = new Constructors(p, 4);
-        //        @H1S1 @H2S2 Constructors c2 = new @testlib.util.Encrypted Constructors(p);
+        @H1S1 @H2S2 Constructors c2 = new @testlib.util.Encrypted Constructors(p);
     }
 }
