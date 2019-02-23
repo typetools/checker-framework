@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -58,7 +59,7 @@ public class VariableDeclarationNode extends Node {
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        return Objects.hash(getName());
     }
 
     @Override

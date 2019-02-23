@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -55,7 +56,7 @@ public class NullChkNode extends Node {
 
     @Override
     public int hashCode() {
-        return getOperand().hashCode();
+        return Objects.hash(getOperand());
     }
 
     @Override

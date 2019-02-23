@@ -4,6 +4,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -49,7 +50,7 @@ public class SuperNode extends Node {
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        return Objects.hash(getName());
     }
 
     @Override

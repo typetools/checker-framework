@@ -6,6 +6,7 @@ import com.sun.source.tree.ReturnTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -80,7 +81,7 @@ public class ReturnNode extends Node {
 
     @Override
     public int hashCode() {
-        return result.hashCode();
+        return Objects.hash(result);
     }
 
     @Override

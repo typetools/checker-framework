@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
+import java.util.Objects;
 
 /**
  * A node for the unary plus operation:
@@ -38,6 +39,6 @@ public class NumericalPlusNode extends UnaryOperationNode {
 
     @Override
     public int hashCode() {
-        return getOperand().hashCode();
+        return Objects.hash(getOperand());
     }
 }

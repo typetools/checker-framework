@@ -715,7 +715,7 @@ public class AnnotationBuilder {
 
         @Override
         public int hashCode() {
-            return this.value.hashCode();
+            return Objects.hash(this.value);
         }
     }
 }

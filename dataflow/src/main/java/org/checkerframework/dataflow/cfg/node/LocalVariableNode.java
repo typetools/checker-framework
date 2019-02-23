@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -86,7 +87,7 @@ public class LocalVariableNode extends Node {
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        return Objects.hash(getName());
     }
 
     @Override

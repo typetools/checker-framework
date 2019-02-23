@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -28,7 +29,7 @@ public abstract class ThisLiteralNode extends Node {
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        return Objects.hash(getName());
     }
 
     @Override

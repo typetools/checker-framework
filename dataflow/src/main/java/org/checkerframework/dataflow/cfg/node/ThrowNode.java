@@ -4,6 +4,7 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 
@@ -55,7 +56,7 @@ public class ThrowNode extends Node {
 
     @Override
     public int hashCode() {
-        return expression.hashCode();
+        return Objects.hash(expression);
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -62,7 +63,7 @@ public class StringConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return getOperand().hashCode();
+        return Objects.hash(getOperand());
     }
 
     @Override
