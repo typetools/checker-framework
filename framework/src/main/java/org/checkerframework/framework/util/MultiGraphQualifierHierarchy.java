@@ -56,7 +56,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          * once GraphQualifierHierarchy is built. No polymorphic qualifiers are contained in this
          * map.
          */
-        protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypes;
+        protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesDirect;
 
         /**
          * Map from qualifier hierarchy to the corresponding polymorphic qualifier. The key is: *
@@ -69,7 +69,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         protected final AnnotatedTypeFactory atypeFactory;
 
         public MultiGraphFactory(AnnotatedTypeFactory atypeFactory) {
-            this.supertypes = AnnotationUtils.createAnnotationMap();
+            this.supertypesDirect = AnnotationUtils.createAnnotationMap();
             this.polyQualifiers = new HashMap<>();
             this.atypeFactory = atypeFactory;
         }
@@ -80,7 +80,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          */
         public void addQualifier(AnnotationMirror qual) {
             assertNotBuilt();
-            if (AnnotationUtils.containsSame(supertypes.keySet(), qual)) {
+            if (AnnotationUtils.containsSame(supertypesDirect.keySet(), qual)) {
                 return;
             }
 
@@ -96,7 +96,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     this.polyQualifiers.put(pqtop, qual);
                 }
             } else {
-                supertypes.put(qual, AnnotationUtils.createAnnotationSet());
+                supertypesDirect.put(qual, AnnotationUtils.createAnnotationSet());
             }
         }
 
@@ -111,7 +111,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             assertNotBuilt();
             addQualifier(sub);
             addQualifier(sup);
-            supertypes.get(sub).add(sup);
+            supertypesDirect.get(sub).add(sup);
         }
 
         /**
@@ -145,7 +145,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * The declared, direct supertypes for each qualifier, without added transitive relations.
      * Immutable after construction finishes. No polymorphic qualifiers are contained in this map.
      *
-     * @see MultiGraphQualifierHierarchy.MultiGraphFactory#supertypes
+     * @see MultiGraphQualifierHierarchy.MultiGraphFactory#supertypesDirect
      */
     protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesDirect;
 
@@ -181,10 +181,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         super();
         // no need for copying as f.supertypes has no mutable references to it
         // TODO: also make the Set of supertypes immutable?
-        this.supertypesDirect = Collections.unmodifiableMap(f.supertypes);
+        this.supertypesDirect = Collections.unmodifiableMap(f.supertypesDirect);
 
         // Calculate the transitive closure
-        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = buildFullMap(f.supertypes);
+        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = buildFullMap(f.supertypesDirect);
 
         Set<AnnotationMirror> newtops = findTops(fullMap);
         Set<AnnotationMirror> newbottoms = findBottoms(fullMap);
@@ -512,7 +512,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     /**
-     * Infer the tops of the subtype hierarchy. Simple finds the qualifiers that have no supertypes.
+     * Infer the tops of the subtype hierarchy. Simply finds the qualifiers that have no supertypes.
      */
     // Not static to allow adaptation in subclasses. Only parameters should be modified.
     protected Set<AnnotationMirror> findTops(
