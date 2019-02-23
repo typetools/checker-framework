@@ -2340,41 +2340,68 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // annotations -- so we need to take these from the fromTypeTree() mirror.
             type = annotateTypeArgs(newClassTree, type);
         }
-        if (newClassTree.getClassBody() == null) {
-            //            if (newClassTree.getClassBody() == null) {
-            // If the user hasn't explicitly annotated a constructor invocation,
-            // annotate it with the type on constructor declaration.
-            // NOTE: "TreeUtils.typeOf(...)" is a workaround since getExplicitAnnotations()
-            // currently returns an empty set.
-            ExecutableElement ctor = TreeUtils.constructor(newClassTree);
-            AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-            Collection<? extends AnnotationMirror> explicitAnnotations;
-            if (newClassTree.getIdentifier().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
-                explicitAnnotations = type.getAnnotations();
-            } else {
-                explicitAnnotations =
-                        TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
+        // If the user hasn't explicitly annotated a constructor invocation,
+        // annotate it with the type on constructor declaration.
+        //        if (newClassTree.getClassBody() == null) {
+        // type.getAnnotations() returns both default and explicit annotations.
+        Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
+        Set<AnnotationMirror> defaultAnnotations = new HashSet<>();
+        String newClassTreeString = newClassTree.toString();
+        for (AnnotationMirror anno : allAnnotations) {
+            String annoString = anno.toString();
+            String annoStringName =
+                    annoString.substring(annoString.lastIndexOf('.') + 1, annoString.length() - 1);
+            if (annoString.contains("(")) {
+                annoStringName = annoStringName.substring(0, annoString.indexOf('(') - 1);
             }
-            Set<? extends AnnotationMirror> topAnnotations =
-                    getQualifierHierarchy().getTopAnnotations();
-            Set<AnnotationMirror> localToRemove = new HashSet<>();
-            for (AnnotationMirror explicitAnno : explicitAnnotations) {
-                if (AnnotationUtils.containsSameByName(
-                        getQualifierHierarchy().getTypeQualifiers(), explicitAnno)) {
-                    AnnotationMirror annoToRemove =
-                            getQualifierHierarchy().getTopAnnotation(explicitAnno);
-                    localToRemove.add(annoToRemove);
-                }
+            if (!newClassTreeString.contains(annoStringName)) {
+                defaultAnnotations.add(anno);
             }
-            for (AnnotationMirror topAnno : topAnnotations) {
-                if (!AnnotationUtils.containsSameByName(localToRemove, topAnno)) {
-                    AnnotationMirror annoToAdd =
-                            con.getReturnType().getAnnotationInHierarchy(topAnno);
-                    type.replaceAnnotation(annoToAdd);
-                }
-            }
-            //            }
         }
+
+        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
+        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        for (AnnotationMirror defAnno : defaultAnnotations) {
+            AnnotationMirror annoToAdd = con.getReturnType().getAnnotationInHierarchy(defAnno);
+            type.replaceAnnotation(annoToAdd);
+        }
+        //        }
+        //        if (newClassTree.getClassBody() == null) {
+        //            // If the user hasn't explicitly annotated a constructor invocation,
+        //            // annotate it with the type on constructor declaration.
+        //            // NOTE: "TreeUtils.typeOf(...)" is a workaround since
+        // getExplicitAnnotations()
+        //            // currently returns an empty set.
+        //            ExecutableElement ctor = TreeUtils.constructor(newClassTree);
+        //            AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type,
+        // ctor);
+        //            Collection<? extends AnnotationMirror> explicitAnnotations;
+        //            if (newClassTree.getIdentifier().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+        //                explicitAnnotations = type.getAnnotations();
+        //            } else {
+        //                explicitAnnotations =
+        //
+        // TreeUtils.typeOf(newClassTree.getIdentifier()).getAnnotationMirrors();
+        //            }
+        //            Set<? extends AnnotationMirror> topAnnotations =
+        //                    getQualifierHierarchy().getTopAnnotations();
+        //            Set<AnnotationMirror> localToRemove = new HashSet<>();
+        //            for (AnnotationMirror explicitAnno : explicitAnnotations) {
+        //                if (AnnotationUtils.containsSameByName(
+        //                        getQualifierHierarchy().getTypeQualifiers(), explicitAnno)) {
+        //                    AnnotationMirror annoToRemove =
+        //                            getQualifierHierarchy().getTopAnnotation(explicitAnno);
+        //                    localToRemove.add(annoToRemove);
+        //                }
+        //            }
+        //            for (AnnotationMirror topAnno : topAnnotations) {
+        //                if (!AnnotationUtils.containsSameByName(localToRemove, topAnno)) {
+        //                    AnnotationMirror annoToAdd =
+        //                            con.getReturnType().getAnnotationInHierarchy(topAnno);
+        //                    type.replaceAnnotation(annoToAdd);
+        //                }
+        //            }
+        //        }
         return type;
     }
 
