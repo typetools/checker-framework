@@ -189,25 +189,26 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         this.supertypesDirect = Collections.unmodifiableMap(f.supertypesDirect);
 
         // Calculate the transitive closure
-        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = buildFullMap(f.supertypesDirect);
+        Map<AnnotationMirror, Set<AnnotationMirror>> supertypesTransitive =
+                transitiveClosure(f.supertypesDirect);
 
-        Set<AnnotationMirror> newtops = findTops(fullMap);
-        Set<AnnotationMirror> newbottoms = findBottoms(fullMap);
+        Set<AnnotationMirror> newtops = findTops(supertypesTransitive);
+        Set<AnnotationMirror> newbottoms = findBottoms(supertypesTransitive);
 
         this.polymorphicQualifier =
                 AnnotationBuilder.fromClass(
                         f.atypeFactory.getElementUtils(), PolymorphicQualifier.class);
         this.polyQualifiers = f.polyQualifiers;
 
-        addPolyRelations(this, fullMap, this.polyQualifiers, newtops, newbottoms);
+        addPolyRelations(this, supertypesTransitive, this.polyQualifiers, newtops, newbottoms);
 
-        finish(this, fullMap, this.polyQualifiers, newtops, newbottoms, args);
+        finish(this, supertypesTransitive, this.polyQualifiers, newtops, newbottoms, args);
 
         this.tops = Collections.unmodifiableSet(newtops);
         this.bottoms = Collections.unmodifiableSet(newbottoms);
         // TODO: make polyQualifiers immutable also?
 
-        this.supertypesTransitive = Collections.unmodifiableMap(fullMap);
+        this.supertypesTransitive = Collections.unmodifiableMap(supertypesTransitive);
         Set<AnnotationMirror> typeQualifiers = AnnotationUtils.createAnnotationSet();
         typeQualifiers.addAll(supertypesTransitive.keySet());
         this.typeQualifiers = Collections.unmodifiableSet(typeQualifiers);
@@ -220,7 +221,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      */
     protected void finish(
             QualifierHierarchy qualHierarchy,
-            Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
+            Map<AnnotationMirror, Set<AnnotationMirror>> supertypesTransitive,
             Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
             Set<AnnotationMirror> tops,
             Set<AnnotationMirror> bottoms,
@@ -550,16 +551,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /* The method gets all required parameters passed in and could be static. However,
      * we want to allow subclasses to adapt the behavior and therefore make it an instance method.
      */
-    protected Map<AnnotationMirror, Set<AnnotationMirror>> buildFullMap(
+    protected Map<AnnotationMirror, Set<AnnotationMirror>> transitiveClosure(
             Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
-        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap =
-                AnnotationUtils.createAnnotationMap();
+        Map<AnnotationMirror, Set<AnnotationMirror>> result = AnnotationUtils.createAnnotationMap();
         for (AnnotationMirror anno : supertypes.keySet()) {
-            // this method directly modifies fullMap and is
+            // this method directly modifies result and is
             // ignoring the returned value
-            findAllSupers(anno, supertypes, fullMap);
+            findAllSupers(anno, supertypes, result);
         }
-        return fullMap;
+        return result;
     }
 
     /**
@@ -572,7 +572,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      *   <li>a supertype of all the bottom qualifiers (e.g. {@code NonNull})
      * </ol>
      *
-     * Field supertypesTransitive is not set yet when this method is called -- use fullMap instead.
+     * Field supertypesTransitive is not set yet when this method is called -- use parameter fullMap
+     * instead.
      */
     // The method gets all required parameters passed in and could be static. However,
     // we want to allow subclasses to adapt the behavior and therefore make it an instance method.
