@@ -388,6 +388,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         super.visitClass(classTree, null);
     }
 
+    void checkExtendsOrImplementsClause(ClassTree classTree, Tree type) {
+        for (AnnotationMirror topAnno : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+            AnnotationMirror classType =
+                    atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
+            AnnotationMirror extendsType =
+                    atypeFactory.getAnnotatedType(type).getAnnotationInHierarchy(topAnno);
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
+                checker.report(
+                        Result.failure(
+                                "declaration.inconsistent.with.extends.clause",
+                                classType,
+                                extendsType),
+                        classTree);
+            }
+        }
+    }
+
     /**
      * Check that the field invariant declaration annotations meet the following requirements:
      *
