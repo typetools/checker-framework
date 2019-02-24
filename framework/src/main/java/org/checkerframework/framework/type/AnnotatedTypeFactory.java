@@ -3099,26 +3099,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.isEmpty()) {
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                if (in != null) {
-                    StubParser.parse(
-                            stubPath,
-                            in,
-                            this,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
-                    // We could handle the stubPath -> continue.
-                    continue;
+                if (in == null) {
+                    checker.message(
+                            Kind.WARNING,
+                            "Did not find stub file or files within directory: "
+                                    + stubPath
+                                    + " "
+                                    + new File(stubPath).getAbsolutePath()
+                                    + (stubPathFull.equals(stubPath) ? "" : (" " + stubPathFull)));
+                    break;
                 }
-                // We couldn't handle the stubPath -> error message.
-                checker.message(
-                        Kind.NOTE,
-                        "Did not find stub file or files within directory: "
-                                + stubPath
-                                + " "
-                                + new File(stubPath).getAbsolutePath()
-                                + " "
-                                + stubPathFull);
+                StubParser.parse(
+                        stubPath,
+                        in,
+                        this,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;
