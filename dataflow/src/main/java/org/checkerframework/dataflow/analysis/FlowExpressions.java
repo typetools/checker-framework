@@ -975,11 +975,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            int hash = Objects.hash(method, receiver);
-            for (Receiver p : parameters) {
-                hash = Objects.hash(hash, p);
-            }
-            return hash;
+            return Objects.hash(method, receiver, parameters);
         }
 
         @Override
