@@ -957,7 +957,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         @Pure
         @Override
         public int hashCode() {
-            return Objects.hash(a1, a2);
+            return Objects.hash(
+                    AnnotationUtils.annotationName(a1), AnnotationUtils.annotationName(a2));
         }
 
         @Override
