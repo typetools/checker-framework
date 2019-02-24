@@ -2357,7 +2357,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             String annoStringName =
                     annoString.substring(annoString.lastIndexOf('.') + 1, annoString.length() - 1);
             if (annoString.contains("(")) {
-                annoStringName = annoStringName.substring(0, annoString.indexOf('(') - 1);
+                annoStringName = annoStringName.substring(0, annoStringName.indexOf('(') - 1);
             }
             if (!newClassTreeString.contains(annoStringName)) {
                 defaultAnnotations.add(anno);
