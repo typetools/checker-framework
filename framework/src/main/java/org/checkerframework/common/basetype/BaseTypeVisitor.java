@@ -366,41 +366,39 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // clause, as in "class X {}". We assume that this is equivalent to writing
         // "class X extends @Top Object {}", and there is no need to do any subtype checking.
         if (classTree.getExtendsClause() != null) {
-            for (AnnotationMirror topAnno :
-                    atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
-                AnnotationMirror classType =
-                        atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
-                AnnotationMirror extendsType =
-                        atypeFactory
-                                .getAnnotatedType(classTree.getExtendsClause())
-                                .getAnnotationInHierarchy(topAnno);
-                if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
-                    checker.report(
-                            Result.failure(
-                                    "declaration.inconsistent.with.extends.clause",
-                                    classType,
-                                    extendsType),
-                            classTree);
-                }
+            AnnotatedTypeMirror extendsClauseType =
+                    atypeFactory.getAnnotatedType(classTree.getExtendsClause());
+            checkExtendsOrImplementsClause(
+                    classTree, extendsClauseType, "declaration.inconsistent.with.extends.clause");
+        }
+
+        // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
+        // classTree.getExtendsClause() is null when there is no explicitly-written extends
+        // clause, as in "class X {}". We assume that this is equivalent to writing
+        // "class X extends @Top Object {}", and there is no need to do any subtype checking.
+        if (classTree.getImplementsClause() != null) {
+            List<? extends Tree> implementsClauses = classTree.getImplementsClause();
+            for (Tree implementsClause : implementsClauses) {
+                AnnotatedTypeMirror implementsClauseType =
+                        atypeFactory.getAnnotatedType(implementsClause);
+                checkExtendsOrImplementsClause(
+                        classTree,
+                        implementsClauseType,
+                        "declaration.inconsistent.with.implements.clause");
             }
         }
 
         super.visitClass(classTree, null);
     }
 
-    void checkExtendsOrImplementsClause(ClassTree classTree, Tree type) {
+    void checkExtendsOrImplementsClause(
+            ClassTree classTree, AnnotatedTypeMirror type, @CompilerMessageKey String msgKey) {
         for (AnnotationMirror topAnno : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
             AnnotationMirror classType =
                     atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
-            AnnotationMirror extendsType =
-                    atypeFactory.getAnnotatedType(type).getAnnotationInHierarchy(topAnno);
+            AnnotationMirror extendsType = type.getAnnotationInHierarchy(topAnno);
             if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
-                checker.report(
-                        Result.failure(
-                                "declaration.inconsistent.with.extends.clause",
-                                classType,
-                                extendsType),
-                        classTree);
+                checker.report(Result.failure(msgKey, classType, extendsType), classTree);
             }
         }
     }
