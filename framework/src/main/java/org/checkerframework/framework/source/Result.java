@@ -196,7 +196,7 @@ public final class Result {
         @Pure
         @Override
         public int hashCode() {
-            return Objects.hash(this.message, this.args);
+            return Objects.hash(this.message, Arrays.hashCode(this.args));
         }
 
         @SideEffectFree
