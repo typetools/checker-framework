@@ -30,7 +30,14 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -1674,7 +1681,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
             MethodSymbol methodElt = (MethodSymbol) type.getElement();
-
             if (methodElt == null || !methodElt.isConstructor()) {
                 scan(type.getReturnType(), p);
             } else if (methodElt.isConstructor()) {
