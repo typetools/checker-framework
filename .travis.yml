@@ -20,10 +20,10 @@ env:
   matrix:
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
     - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.

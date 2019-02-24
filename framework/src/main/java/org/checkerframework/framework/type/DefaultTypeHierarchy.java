@@ -28,7 +28,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -177,15 +176,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             final AnnotationMirror top) {
         assert top != null;
         currentTop = top;
-        try {
-            return AtmCombo.accept(subtype, supertype, null, this);
-        } catch (BugInCF e) {
-            // Temporary workaround until http://tinyurl.com/cfissue/2302 is fixed
-            if (e.getMessage().contains("AnnotatedTypeMirrors aren't structurally equal")) {
-                return AtmCombo.accept(subtype.getErased(), supertype.getErased(), null, this);
-            }
-            throw e;
-        }
+        return AtmCombo.accept(subtype, supertype, null, this);
     }
 
     /** @return error message for the case when two types shouldn't be compared */
