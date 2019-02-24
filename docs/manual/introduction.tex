@@ -1264,6 +1264,20 @@ able to do more precise checking, than if line 141 has an annotation.
 It is a pleasant feature of the Checker Framework that in many cases, no
 annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
+\subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
+
+If a constructor declaration is unannotated, it defaults to the same type as that of
+its enclosing class (rather than the default qualifier in hierarchy).
+For example: the Tainting Checker (Chapter~\ref{tainting-checker}) has \code{@Tainted}
+as its default qualifier. Consider the following class:
+
+\begin{Verbatim}
+  @Untainted class MyClass {
+    MyClass() {}
+  }
+\end{Verbatim}
+
+The constructor declaration is equivalent to \<@Untainted MyClass() \ttlcb\ttrcb>.
 
 \subsectionAndLabel{Annotations on constructor invocations}{annotations-on-constructor-invocations}
 

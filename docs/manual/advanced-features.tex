@@ -285,23 +285,6 @@ parameter, the implicit upper bound is defaulted to the top qualifier; see
 Section~\ref{climb-to-top}.
 
 
-\subsectionAndLabel{Default qualifier on constructor declarations}{constructor-defaults}
-
-If a constructor declaration is unannotated, it defaults to the same type as that of
-its enclosing class (rather than the default qualifier in hierarchy).
-For example: the Tainting Checker (Chapter~\ref{tainting-checker}) has \code{@Tainted}
-as its default qualifier. Consider the following class:
-
-\begin{Verbatim}
-  @Untainted class MyClass {
-    MyClass() {}
-  }
-\end{Verbatim}
-
-The constructor declaration is equivalent to \<@Untainted MyClass() \ttlcb\ttrcb>.
-The type of an invocation \<new MyClass()> is \code{@Untainted MyClass}.
-
-
 \subsectionAndLabel{Defaulting rules and CLIMB-to-top}{climb-to-top}
 
 Each type system defines a default qualifier (see
