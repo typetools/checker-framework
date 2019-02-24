@@ -13,7 +13,7 @@ public class Class2 {
 
     @EnsuresOdd("Class1.field")
     public void ensuresOdd() {
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         Class1.field = new @Odd Object();
     }
 
@@ -23,7 +23,7 @@ public class Class2 {
     }
 
     void legalUse() {
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         Class1.field = new @Odd Object();
         requiresOdd();
     }

@@ -5,7 +5,7 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 
 class ExtendsAndAnnotation extends @Tainted Object {
     void test(@Untainted ExtendsAndAnnotation c) {
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         Object o = new @Untainted ExtendsAndAnnotation();
         o = new @Tainted ExtendsAndAnnotation();
     }

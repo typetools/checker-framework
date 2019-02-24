@@ -1384,25 +1384,6 @@ class @Marsupial-Animal {
 }
 \end{Verbatim}
 
-\sectionAndLabel{Types on constructors}{constructor-types}
-
-The type on a constructor declaration must be a subtype of its enclosing class type.
-Consider the type hierarchy \<@D <: @C <: @B <: @A>. Suppose a class and its constructors are annotated as follows:
-
-\begin{Verbatim}
-@B class MyClass{
-  @C MyClass(){}
-  @A MyClass(int arg){}
-}
-\end{Verbatim}
-
-In the above example, the constructor declaration \<@A MyClass(int arg){}> is invalid because
-\<@A> is not a subtype of its enclosing class type (\<@B>).
-
-Writing an explicit annotation at constructor invocation is equivalent to typecasting.
-For example, \<new @D MyClass()> is equivalent to writing \<(@D MyClass) new MyClass()>.
-Since this is a downcast from the declared type of \<@C>, the checker framework will issue an
-\emph{unsafe cast} warning.
 
 % \subsectionAndLabel{Dependent types}{dependent-types}
 %

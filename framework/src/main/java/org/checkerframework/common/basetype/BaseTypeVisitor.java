@@ -2437,7 +2437,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
             checker.report(
                     Result.warning(
-                            "cast.unsafe", returnType.toString(true), invocation.toString(true)),
+                            "cast.unsafe.constructor.invocation",
+                            returnType.toString(true),
+                            invocation.toString(true)),
                     newClassTree);
         }
         return true;

@@ -20,9 +20,9 @@ class AnnotatedGenerics {
     // Tests the type of the constructed class is correctly inferred for generics.
     public void testConstructors() {
         // Variant without annotated type parameters
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<@Odd String> innerClass1 = new @Odd MyClass<@Odd String>();
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<@Odd String>();
 
         // Should error because the RHS isn't annotated as '@Odd'
@@ -32,9 +32,9 @@ class AnnotatedGenerics {
         @Odd NormalClass<@Odd String> normal2 = new NormalClass<@Odd String>();
 
         // Variant with annotated type parameters
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<String> innerClass3 = new @Odd MyClass<String>();
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<String> normal3 = new @Odd NormalClass<String>();
 
         // Should error because the RHS isn't annotated as '@Odd'
@@ -47,9 +47,9 @@ class AnnotatedGenerics {
     // Tests the type of the constructed class is correctly inferred when the
     // diamond operator is used.
     public void testConstructorsWithTypeParameterInferrence() {
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<@Odd String> innerClass1 = new @Odd MyClass<>();
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<>();
 
         // Should error because the RHS isn't annotated as '@Odd'
@@ -58,9 +58,9 @@ class AnnotatedGenerics {
         // :: error: (assignment.type.incompatible)
         @Odd NormalClass<@Odd String> normal2 = new NormalClass<>();
 
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<String> innerClass3 = new @Odd MyClass<>();
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<String> normal3 = new @Odd NormalClass<>();
 
         // Should error because the RHS isn't annotated as '@Odd'
@@ -73,9 +73,9 @@ class AnnotatedGenerics {
     // Tests the type of the constructor is appropriately inferred for anonymous classes
     // N.B. This does not / cannot assert that the RHS is infact a subtype of the LHS.
     public void testAnonymousConstructors() {
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<@Odd String> innerClass1 = new @Odd MyClass<@Odd String>() {};
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<@Odd String>() {};
 
         // Should error because the RHS isn't annotated as '@Odd'
@@ -84,9 +84,9 @@ class AnnotatedGenerics {
         // :: error: (assignment.type.incompatible)
         @Odd NormalClass<@Odd String> normal2 = new NormalClass<@Odd String>() {};
 
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<String> innerClass3 = new @Odd MyClass<String>() {};
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<String> normal3 = new @Odd NormalClass<String>() {};
 
         // Should error because the RHS isn't annotated as '@Odd'

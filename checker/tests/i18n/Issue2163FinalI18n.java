@@ -46,9 +46,9 @@ import org.checkerframework.checker.i18n.qual.*;
 class Issue2163FinalAAClient {
     void test() {
         new @UnknownLocalizableKey Issue2163FinalAA();
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         new @LocalizableKey Issue2163FinalAA();
-        // :: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe.constructor.invocation)
         new @LocalizableKeyBottom Issue2163FinalAA();
     }
 }

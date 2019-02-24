@@ -83,7 +83,7 @@ public class AnonymousClassTest {
     }
 
     public @ReflectBottom MyClass anonymous =
-            // :: warning: (cast.unsafe)
+            // :: warning: (cast.unsafe.constructor.invocation)
             new @ReflectBottom MyClass() {
 
                 public @Sibling1 int getSib1() {
