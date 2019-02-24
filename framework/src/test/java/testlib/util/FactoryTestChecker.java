@@ -228,7 +228,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
 
         @Override
         public int hashCode() {
-            return (int) (31 + 3 * treeString.hashCode() + 7 * lineNumber);
+            return Objects.hash(treeString, lineNumber);
         }
 
         @Override

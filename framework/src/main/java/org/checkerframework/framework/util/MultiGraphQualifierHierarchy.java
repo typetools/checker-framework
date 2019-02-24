@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
@@ -956,16 +957,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         @Pure
         @Override
         public int hashCode() {
-            if (hashCode == -1) {
-                hashCode = 31;
-                if (a1 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a1).hashCode();
-                }
-                if (a2 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a2).hashCode();
-                }
-            }
-            return hashCode;
+            return Objects.hash(
+                    AnnotationUtils.annotationName(a1), AnnotationUtils.annotationName(a2));
         }
 
         @Override
