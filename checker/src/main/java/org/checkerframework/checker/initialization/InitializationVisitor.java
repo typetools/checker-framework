@@ -1,6 +1,12 @@
 package org.checkerframework.checker.initialization;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
