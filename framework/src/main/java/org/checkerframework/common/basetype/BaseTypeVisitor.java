@@ -372,10 +372,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     classTree, extendsClauseType, "declaration.inconsistent.with.extends.clause");
         }
 
-        // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
-        // classTree.getExtendsClause() is null when there is no explicitly-written extends
-        // clause, as in "class X {}". We assume that this is equivalent to writing
-        // "class X extends @Top Object {}", and there is no need to do any subtype checking.
+        // Do the same check as above for implements clauses.
         if (classTree.getImplementsClause() != null) {
             List<? extends Tree> implementsClauses = classTree.getImplementsClause();
             for (Tree implementsClause : implementsClauses) {
@@ -391,14 +388,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         super.visitClass(classTree, null);
     }
 
+    /**
+     * Reports an error ({@code msgKey}) if any annotation on {@code classTree} is not a subtype of
+     * the corresponding annotation in the same qualifier hierarchy on {@code type}.
+     */
     void checkExtendsOrImplementsClause(
             ClassTree classTree, AnnotatedTypeMirror type, @CompilerMessageKey String msgKey) {
         for (AnnotationMirror topAnno : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
             AnnotationMirror classType =
                     atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
-            AnnotationMirror extendsType = type.getAnnotationInHierarchy(topAnno);
-            if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, extendsType)) {
-                checker.report(Result.failure(msgKey, classType, extendsType), classTree);
+            AnnotationMirror superType = type.getAnnotationInHierarchy(topAnno);
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, superType)) {
+                checker.report(Result.failure(msgKey, classType, superType), classTree);
             }
         }
     }
