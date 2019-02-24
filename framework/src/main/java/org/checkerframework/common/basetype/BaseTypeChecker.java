@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -608,11 +609,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         @Override
         public int hashCode() {
-            int result = kind.hashCode();
-            result = 31 * result + message.hashCode();
-            result = 31 * result + source.hashCode();
-            result = 31 * result + checker.hashCode();
-            return result;
+            return Objects.hash(kind, message, source, checker);
         }
 
         @Override
