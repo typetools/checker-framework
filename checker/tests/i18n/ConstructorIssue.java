@@ -19,12 +19,3 @@ import org.checkerframework.checker.i18n.qual.*;
                 new @LocalizableKeyBottom ArrayList<@LocalizableKeyBottom String>();
     }
 }
-
-class PolyConstructor {
-    @PolyLocalizableKey
-    PolyConstructor(@PolyLocalizableKey String s) {}
-
-    void test(@LocalizableKeyBottom String str) {
-        @LocalizableKeyBottom PolyConstructor obj2 = new PolyConstructor(str);
-    }
-}
