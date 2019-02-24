@@ -1691,9 +1691,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // to constructor return types. The check "returnType.getAnnotations().isEmpty()"
                 // returns true for constructors whose return types haven't been explicitly
                 // annotated.
-                // NOTE: change to getExplicitAnnotations() when it is fixed.
-                // Currently, getExplicitAnnotations() returns empty set even for explicitly
-                // annotated types.
+                // NOTE: change to getExplicitAnnotations() when http://tinyurl.com/cfissue/2324 is
+                // fixed.  Currently, getExplicitAnnotations() returns the empty set even for
+                // explicitly-annotated types.
                 if (returnType.getAnnotations().isEmpty()) {
                     DeclaredType classDeclarationType = returnType.getUnderlyingType();
                     AnnotatedTypeMirror underlyingTypeMirror =
@@ -2353,9 +2353,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
         Set<AnnotationMirror> defaultAnnotations = new HashSet<>();
 
-        // This is a hack. Ideally we would want to get all explicit annotations
+        // TODO: This is a hack. Ideally we would want to get all explicit annotations
         // by calling type.getExplicitAnnotations(). But this isn't currently working.
-        // See https://github.com/typetools/checker-framework/issues/2324
+        // See https://github.com/typetools/checker-framework/issues/2324 .
         // The following code extracts non-explicit annotations from "newClassTree" using
         // string manipulations.
         String newClassTreeString = newClassTree.toString();
