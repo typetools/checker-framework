@@ -49,9 +49,8 @@ import org.checkerframework.javacutil.UserError;
  *
  * <p>Checker writers may wish to subclass this class if they wish to implement some custom rules to
  * filter or process loaded annotation classes, by providing an override implementation of {@link
- * #isSupportedAnnotationClass(Class)}. See {@link
- * org.checkerframework.checker.units.UnitsAnnotationClassLoader UnitsAnnotationClassLoader} for an
- * example.
+ * #isSupportedAnnotationClass(Class)}. See {@code
+ * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
     // For issuing errors to the user

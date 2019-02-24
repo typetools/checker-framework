@@ -2581,9 +2581,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>To facilitate the cases where some of the elements is ignored on purpose when constructing
      * the canonical annotation, this method also provides a varargs {@code ignorableElements} for
-     * you to explicitly specify the ignoring rules. For example, {@link
-     * org.checkerframework.checker.index.qual.IndexFor @IndexFor} is an alias of {@link
-     * org.checkerframework.checker.index.qual.NonNegative @NonNegative}, but the element "value" of
+     * you to explicitly specify the ignoring rules. For example, {@code
+     * org.checkerframework.checker.index.qual.IndexFor} is an alias of {@code
+     * org.checkerframework.checker.index.qual.NonNegative}, but the element "value" of
      * {@code @IndexFor} should be ignored when constructing {@code @NonNegative}. In the cases
      * where all elements are ignored, we can simply use {@link #addAliasedAnnotation(Class,
      * AnnotationMirror)} instead.
