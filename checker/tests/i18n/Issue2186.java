@@ -4,14 +4,14 @@
 import java.util.ArrayList;
 import org.checkerframework.checker.i18n.qual.*;
 
-@LocalizableKey class ConstructorIssue {
-    ConstructorIssue() {}
+@LocalizableKey class Issue2186 {
+    Issue2186() {}
 
-    @LocalizableKeyBottom ConstructorIssue(int x) {}
+    @LocalizableKeyBottom Issue2186(int x) {}
 
     void test() {
-        @LocalizableKey ConstructorIssue obj = new ConstructorIssue();
-        @LocalizableKeyBottom ConstructorIssue obj1 = new ConstructorIssue(9);
+        @LocalizableKey Issue2186 obj = new Issue2186();
+        @LocalizableKeyBottom Issue2186 obj1 = new Issue2186(9);
     }
 
     void testDiamond() {
