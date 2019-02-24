@@ -503,6 +503,34 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return null;
             }
 
+            if (TreeUtils.isConstructor(node)) {
+                Set<AnnotationMirror> constructorAnnotations =
+                        methodType.getReturnType().getAnnotations();
+                Set<AnnotationMirror> classAnnotations =
+                        atypeFactory
+                                .getAnnotatedType(methodElement.getEnclosingElement())
+                                .getAnnotations();
+                QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+                for (AnnotationMirror classAnno : classAnnotations) {
+                    for (AnnotationMirror constructorAnno : constructorAnnotations) {
+                        if (qualifierHierarchy.leastUpperBound(classAnno, constructorAnno)
+                                != null) {
+                            if (qualifierHierarchy.isSubtype(constructorAnno, classAnno)) {
+                                if (!AnnotationUtils.areSameByName(constructorAnno, classAnno)) {
+                                    checker.report(
+                                            Result.warning(
+                                                    "inconsistent.constructor.type",
+                                                    constructorAnno,
+                                                    classAnno),
+                                            methodElement);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
             // check method purity if needed
             {
                 boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
