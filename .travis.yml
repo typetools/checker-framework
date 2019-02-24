@@ -20,10 +20,10 @@ env:
   matrix:
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
     - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
@@ -49,6 +49,7 @@ script:
 - echo "TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}"
 - echo "TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}"
 - echo "TRAVIS_PULL_REQUEST_SHA=${TRAVIS_PULL_REQUEST_SHA}"
+- echo "TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG}"
 - echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
 - >-
   docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/$OS-for-cf-$JDKVER /bin/bash -c "true &&
@@ -73,6 +74,7 @@ script:
      export TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR &&
      export TRAVIS_COMMIT_RANGE=$TRAVIS_COMMIT_RANGE &&
      export TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH} &&
+     export TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG} &&
      export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
      ./.travis-build.sh $GROUP $BUILDJDK"
 

@@ -8,8 +8,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * An expression with this type is exactly the same as an {@link IntRange} annotation whose {@code
  * from} field is {@code 0} and whose {@code to} field is {@code Integer.MAX_VALUE}. However, this
- * annotation is derived from an {@link org.checkerframework.checker.index.qual.NonNegative}
- * annotation from the {@link org.checkerframework.checker.index.IndexChecker}.
+ * annotation is derived from an {@code org.checkerframework.checker.index.qual.NonNegative}
+ * annotation.
  *
  * <p>IntRangeFromNonNegative annotations derived from NonNegative annotations are used to create
  * IntRange annotations, but IntRangeFromNonNegative annotations are not checked when they appear on

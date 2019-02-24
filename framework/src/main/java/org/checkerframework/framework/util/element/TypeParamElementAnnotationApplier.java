@@ -78,7 +78,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         final List<TypeCompound> lowerBoundAnnos = new ArrayList<>();
 
         for (final TypeCompound anno : targeted) {
-            final AnnotationMirror aliasedAnno = typeFactory.aliasedAnnotation(anno);
+            final AnnotationMirror aliasedAnno = typeFactory.canonicalAnnotation(anno);
             final AnnotationMirror canonicalAnno = (aliasedAnno != null) ? aliasedAnno : anno;
 
             if (anno.position.parameter_index != paramIndex

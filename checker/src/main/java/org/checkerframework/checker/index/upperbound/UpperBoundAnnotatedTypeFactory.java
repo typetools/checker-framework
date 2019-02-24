@@ -70,6 +70,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -109,12 +110,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM = AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
         POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
-        addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(), true);
-        addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation(), true);
-        addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(), true);
-        addAliasedAnnotation(SearchIndexFor.class, createLTLengthOfAnnotation(), true);
-        addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation(), true);
-        addAliasedAnnotation(LengthOf.class, createLTEqLengthOfAnnotation(), true);
+        addAliasedAnnotation(IndexFor.class, LTLengthOf.class, true);
+        addAliasedAnnotation(IndexOrLow.class, LTLengthOf.class, true);
+        addAliasedAnnotation(IndexOrHigh.class, LTEqLengthOf.class, true);
+        addAliasedAnnotation(SearchIndexFor.class, LTLengthOf.class, true);
+        addAliasedAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
+        addAliasedAnnotation(LengthOf.class, LTEqLengthOf.class, true);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
@@ -250,7 +251,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (sequences != null
                         && offsets != null
                         && sequences.size() != offsets.size()
-                        && offsets.size() > 0) {
+                        && !offsets.isEmpty()) {
                     // Cannot use type.replaceAnnotation because it will call isSubtype, which will
                     // try to process the annotation and throw an error.
                     type.clearAnnotations();
@@ -286,19 +287,21 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     AnnotationMirror createLTLengthOfAnnotation(String... names) {
-        AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTLengthOf.class);
-        if (names == null) {
-            names = new String[0];
+        if (names == null || names.length == 0) {
+            throw new BugInCF(
+                    "createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
         }
+        AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTLengthOf.class);
         builder.setValue("value", names);
         return builder.build();
     }
 
     AnnotationMirror createLTEqLengthOfAnnotation(String... names) {
-        AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTEqLengthOf.class);
-        if (names == null) {
-            names = new String[0];
+        if (names == null || names.length == 0) {
+            throw new BugInCF(
+                    "createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
         }
+        AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTEqLengthOf.class);
         builder.setValue("value", names);
         return builder.build();
     }
