@@ -2348,9 +2348,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         // If the user hasn't explicitly annotated a constructor invocation,
         // annotate it with the type on constructor declaration.
+
         // type.getAnnotations() returns both default and explicit annotations.
         Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
         Set<AnnotationMirror> defaultAnnotations = new HashSet<>();
+
+        // This is a hack. Ideally we would want to get all explicit annotations
+        // by calling type.getExplicitAnnotations(). But this isn't currently working.
+        // See https://github.com/typetools/checker-framework/issues/2324
+        // The following code extracts non-explicit annotations from "newClassTree" using
+        // string manipulations.
         String newClassTreeString = newClassTree.toString();
         for (AnnotationMirror anno : allAnnotations) {
             String annoString = anno.toString();
@@ -2364,6 +2371,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
+        // Replace default annotations with annotations from constructor declaration.
         ExecutableElement ctor = TreeUtils.constructor(newClassTree);
         AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
         for (AnnotationMirror defAnno : defaultAnnotations) {
