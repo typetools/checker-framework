@@ -1687,41 +1687,50 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // If a constructor declaration is not explicitly annotated,
                 // annotate it with the type on the class declaration.
                 AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) type.getReturnType();
-                // At this point defaults have been applied to class declarations but not
-                // to constructor return types. The check "returnType.getAnnotations().isEmpty()"
-                // returns true for constructors whose return types haven't been explicitly
-                // annotated.
-                // NOTE: change to getExplicitAnnotations() when http://tinyurl.com/cfissue/2324 is
-                // fixed.  Currently, getExplicitAnnotations() returns the empty set even for
-                // explicitly-annotated types.
-                if (returnType.getAnnotations().isEmpty()) {
-                    DeclaredType classDeclarationType = returnType.getUnderlyingType();
-                    AnnotatedTypeMirror underlyingTypeMirror =
-                            p.getAnnotatedType(classDeclarationType.asElement());
-                    Set<? extends AnnotationMirror> topAnnotations =
-                            p.getQualifierHierarchy().getTopAnnotations();
-                    for (AnnotationMirror topAnno : topAnnotations) {
-                        AnnotationMirror annotationOnClass =
-                                underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
-                        // annotationOnClass will not be null since the defaults are applied before
-                        // control reaches here.  However, this check is added because it appears
-                        // that checker-framework-inference runs this code at an earlier stage than
-                        // regular checker-framework does which causes annotationOnClass to be null.
-                        // Without this check, the test AnonymousProblem.java in testdata/ostrusted
-                        // of cf-inference crashes.  The same test case is replicated in this repo
-                        // (checker-framework) tests/tainting/AnonymousProblem.java which does not
-                        // crash i.e removing this check has no effect on that test.
-                        if (annotationOnClass != null) {
-                            returnType.addAnnotation(annotationOnClass);
-                        }
-                    }
-                }
+                addDefaultsToConstructorDeclaration(returnType, p);
             }
 
             scanAndReduce(type.getParameterTypes(), p, null);
             scanAndReduce(type.getThrownTypes(), p, null);
             scanAndReduce(type.getTypeVariables(), p, null);
             return null;
+        }
+
+        /**
+         * Adds default annotations to the constructor return type {@code returnType}. These
+         * defaults are the same as the annotations on the enclosing class of the constructor.
+         */
+        private void addDefaultsToConstructorDeclaration(
+                AnnotatedDeclaredType returnType, AnnotatedTypeFactory p) {
+            // At this point defaults have been applied to class declarations but not
+            // to constructor return types. The check "returnType.getAnnotations().isEmpty()"
+            // returns true for constructors whose return types haven't been explicitly
+            // annotated.
+            // TODO: change to getExplicitAnnotations() when http://tinyurl.com/cfissue/2324 is
+            // fixed.  Currently, getExplicitAnnotations() returns the empty set even for
+            // explicitly-annotated types.
+            if (returnType.getAnnotations().isEmpty()) {
+                DeclaredType classDeclarationType = returnType.getUnderlyingType();
+                AnnotatedTypeMirror underlyingTypeMirror =
+                        p.getAnnotatedType(classDeclarationType.asElement());
+                Set<? extends AnnotationMirror> topAnnotations =
+                        p.getQualifierHierarchy().getTopAnnotations();
+                for (AnnotationMirror topAnno : topAnnotations) {
+                    AnnotationMirror annotationOnClass =
+                            underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
+                    // annotationOnClass will not be null since the defaults are applied before
+                    // control reaches here.  However, this check is added because it appears
+                    // that checker-framework-inference runs this code at an earlier stage than
+                    // regular checker-framework does which causes annotationOnClass to be null.
+                    // Without this check, the test AnonymousProblem.java in testdata/ostrusted
+                    // of cf-inference crashes.  The same test case is replicated in this repo
+                    // (checker-framework) tests/tainting/AnonymousProblem.java which does not
+                    // crash i.e removing this check has no effect on that test.
+                    if (annotationOnClass != null) {
+                        returnType.addAnnotation(annotationOnClass);
+                    }
+                }
+            }
         }
 
         @Override
