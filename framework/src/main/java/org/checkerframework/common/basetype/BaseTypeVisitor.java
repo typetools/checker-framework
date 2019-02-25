@@ -80,7 +80,7 @@ import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -187,14 +187,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The type of java.util.Vector. */
     private final AnnotatedDeclaredType vectorType;
 
-    /**
-     * @param checker the type-checker associated with this visitor (for callbacks to {@link
-     *     TypeHierarchy#isSubtype})
-     */
+    /** @param checker the type-checker associated with this visitor */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         this(checker, null);
     }
 
+    /**
+     * @param checker the type-checker associated with this visitor
+     * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
+     */
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
         super(checker);
 
@@ -338,6 +339,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkFieldInvariantDeclarations(classTree);
         if (!TreeUtils.hasExplicitConstructor(classTree)) {
             checkDefaultConstructor(classTree);
+        }
+
+        if (atypeFactory.getDependentTypesHelper() != null) {
+            AnnotatedDeclaredType classType = atypeFactory.getAnnotatedType(classTree);
+            atypeFactory.getDependentTypesHelper().checkClass(classTree, classType);
         }
 
         /* Visit the extends and implements clauses.
@@ -981,8 +987,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitMethodInvocation(node, p);
         }
 
-        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mType.methodType;
+        ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.executableType;
         List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
 
         if (!atypeFactory.ignoreUninferredTypeArguments) {
@@ -1241,8 +1247,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitNewClass(node, p);
         }
 
-        ParameterizedMethodType fromUse = atypeFactory.constructorFromUse(node);
-        AnnotatedExecutableType constructor = fromUse.methodType;
+        ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(node);
+        AnnotatedExecutableType constructor = fromUse.executableType;
         List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
@@ -2651,7 +2657,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invocationType =
                 atypeFactory.methodFromUse(
                                 memberReferenceTree, compileTimeDeclaration, enclosingType)
-                        .methodType;
+                        .executableType;
 
         if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
             // Type argument inference is required, skip check.
@@ -2718,7 +2724,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // If the function to which the member reference refers is generic, but the member
         // reference does not provide method type arguments, then Java 8 inference is required.
         // Issue 979.
-        if (invocationType.getTypeVariables().size() > 0
+        if (!invocationType.getTypeVariables().isEmpty()
                 && (memberReferenceTree.getTypeArguments() == null
                         || memberReferenceTree.getTypeArguments().isEmpty())) {
             // Method type args

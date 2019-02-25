@@ -22,9 +22,9 @@ import java.lang.annotation.Target;
  *   }
  * </code></pre>
  *
- * Some type systems have specialized versions of this annotation, such as {@link
- * org.checkerframework.checker.nullness.qual.EnsuresNonNull @EnsuresNonNull} and {@link
- * org.checkerframework.checker.lock.qual.EnsuresLockHeld @EnsuresLockHeld}.
+ * Some type systems have specialized versions of this annotation, such as {@code
+ * org.checkerframework.checker.nullness.qual.EnsuresNonNull} and {@code
+ * org.checkerframework.checker.lock.qual.EnsuresLockHeld}.
  *
  * @see EnsuresQualifiers
  * @see EnsuresQualifierIf
