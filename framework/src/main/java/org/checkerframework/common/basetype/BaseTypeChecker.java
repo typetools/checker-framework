@@ -78,7 +78,6 @@ import org.checkerframework.javacutil.UserError;
  * behavior must be overridden, the subclass may override the {@link
  * BaseAnnotatedTypeFactory#createQualifierHierarchy()} method.
  *
- * @see org.checkerframework.framework.qual
  * @checker_framework.manual #creating-compiler-interface The checker class
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {

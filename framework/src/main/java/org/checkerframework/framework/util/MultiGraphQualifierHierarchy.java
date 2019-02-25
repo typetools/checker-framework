@@ -457,7 +457,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * {@inheritDoc}
      *
      * <p>Most qualifiers have no value fields. However, two annotations with values are subtype of
-     * each other only if they have the same values. i.e. I(m) is a subtype of I(n) iff m = n
+     * each other only if they have the same values. i.e. I(m) is a subtype of I(n) iff m = n.
      *
      * <p>When client specifies an annotation, a1, to be a subtype of annotation with values, a2,
      * then a1 is a subtype of all instances of a2 regardless of a2 values.

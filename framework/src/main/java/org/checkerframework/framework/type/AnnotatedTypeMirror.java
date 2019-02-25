@@ -521,7 +521,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null argument.");
         }
         if (atypeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
