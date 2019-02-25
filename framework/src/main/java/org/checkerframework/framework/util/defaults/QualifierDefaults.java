@@ -465,9 +465,16 @@ public class QualifierDefaults {
             case CLASS:
                 if (((ClassTree) tree).getExtendsClause() != null) {
                     elt = TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
-                } else {
-                    elt = nearestEnclosingExceptLocal(tree);
+                    applyDefuaultsToExtendsAndImplicits(elt, type);
                 }
+                if (!((ClassTree) tree).getImplementsClause().isEmpty()) {
+                    List<? extends Tree> implicitClauses = ((ClassTree) tree).getImplementsClause();
+                    for (Tree implicitClause : implicitClauses) {
+                        elt = TreeUtils.elementFromTree(implicitClause);
+                        applyDefuaultsToExtendsAndImplicits(elt, type);
+                    }
+                }
+                elt = nearestEnclosingExceptLocal(tree);
                 break;
             default:
                 // If no associated symbol was found, use the tree's (lexical)
@@ -478,6 +485,20 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
+        boolean defaultTypeVarLocals =
+                (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
+                        && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                                .getShouldDefaultTypeVarLocals();
+        applyToTypeVar =
+                defaultTypeVarLocals
+                        && elt != null
+                        && elt.getKind() == ElementKind.LOCAL_VARIABLE
+                        && type.getKind() == TypeKind.TYPEVAR;
+        applyDefaultsElement(elt, type);
+        applyToTypeVar = false;
+    }
+
+    void applyDefuaultsToExtendsAndImplicits(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
                         && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)

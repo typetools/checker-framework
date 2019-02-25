@@ -3,7 +3,6 @@ import org.checkerframework.checker.nullness.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 class Explosion {
-    // :: error: (declaration.inconsistent.with.extends.clause)
     public static class ExplosiveException extends Exception {}
 
     @NonNull Integer m_nni = 1;
