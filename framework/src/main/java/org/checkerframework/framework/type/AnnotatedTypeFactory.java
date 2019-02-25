@@ -3107,15 +3107,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " "
                                     + new File(stubPath).getAbsolutePath()
                                     + (stubPathFull.equals(stubPath) ? "" : (" " + stubPathFull)));
-                    break;
+                } else {
+                    StubParser.parse(
+                            stubPath,
+                            in,
+                            this,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
                 }
-                StubParser.parse(
-                        stubPath,
-                        in,
-                        this,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;
