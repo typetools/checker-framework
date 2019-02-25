@@ -2713,8 +2713,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TypeMirror} for the tree and converts that into an {@link AnnotatedTypeMirror}, but does not
      * add any annotations to the result.
      *
-     * <p>Most users will want to use getAnnotatedType instead; this method is mostly for internal
-     * use.
+     * <p>Most users will want to use {@link #getAnnotatedType(Tree)} instead; this method is mostly
+     * for internal use.
      *
      * @param node the tree to analyze
      * @return the type of {@code node}, without any annotations
