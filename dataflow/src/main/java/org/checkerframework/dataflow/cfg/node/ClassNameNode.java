@@ -6,10 +6,10 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -97,10 +97,7 @@ public class ClassNameNode extends Node {
 
     @Override
     public int hashCode() {
-        if (parent == null) {
-            return HashCodeUtils.hash(getElement());
-        }
-        return HashCodeUtils.hash(getElement(), getParent());
+        return Objects.hash(getElement(), getParent());
     }
 
     @Override
