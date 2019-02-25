@@ -462,6 +462,13 @@ public class QualifierDefaults {
                 // (The above probably means that we should use defaults in the
                 // scope of the declaration of the array.  Is that right?  -MDE)
 
+            case CLASS:
+                if (((ClassTree) tree).getExtendsClause() != null) {
+                    elt = TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
+                } else {
+                    elt = nearestEnclosingExceptLocal(tree);
+                }
+                break;
             default:
                 // If no associated symbol was found, use the tree's (lexical)
                 // scope.
