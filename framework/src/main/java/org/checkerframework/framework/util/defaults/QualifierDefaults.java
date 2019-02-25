@@ -498,6 +498,12 @@ public class QualifierDefaults {
         applyToTypeVar = false;
     }
 
+    /**
+     * Applies default annotations to {@code type}.
+     *
+     * @param elt the element associated with the type
+     * @param type the type to which defaults will be applied
+     */
     void applyDefuaultsToExtendsAndImplicits(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
