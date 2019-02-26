@@ -4,9 +4,8 @@
  * to access abstract syntax trees and compiler utility classes.
  *
  * <p>Most classes won't want to extend the classes in this package directly; the classes in the
- * {@link org.checkerframework.common.basetype} package provide subtype checking functionality.
+ * {@code org.checkerframework.common.basetype} package provide subtype checking functionality.
  *
- * @see org.checkerframework.common.basetype
  * @checker_framework.manual #creating-a-checker Writing a Checker
  */
 package org.checkerframework.framework.source;

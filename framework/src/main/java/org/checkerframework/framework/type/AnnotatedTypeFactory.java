@@ -2581,9 +2581,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>To facilitate the cases where some of the elements is ignored on purpose when constructing
      * the canonical annotation, this method also provides a varargs {@code ignorableElements} for
-     * you to explicitly specify the ignoring rules. For example, {@link
-     * org.checkerframework.checker.index.qual.IndexFor @IndexFor} is an alias of {@link
-     * org.checkerframework.checker.index.qual.NonNegative @NonNegative}, but the element "value" of
+     * you to explicitly specify the ignoring rules. For example, {@code
+     * org.checkerframework.checker.index.qual.IndexFor} is an alias of {@code
+     * org.checkerframework.checker.index.qual.NonNegative}, but the element "value" of
      * {@code @IndexFor} should be ignored when constructing {@code @NonNegative}. In the cases
      * where all elements are ignored, we can simply use {@link #addAliasedAnnotation(Class,
      * AnnotationMirror)} instead.
@@ -2713,8 +2713,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TypeMirror} for the tree and converts that into an {@link AnnotatedTypeMirror}, but does not
      * add any annotations to the result.
      *
-     * <p>Most users will want to use getAnnotatedType instead; this method is mostly for internal
-     * use.
+     * <p>Most users will want to use {@link #getAnnotatedType(Tree)} instead; this method is mostly
+     * for internal use.
      *
      * @param node the tree to analyze
      * @return the type of {@code node}, without any annotations
@@ -3099,7 +3099,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.isEmpty()) {
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                if (in != null) {
+                if (in == null) {
+                    checker.message(
+                            Kind.WARNING,
+                            "Did not find stub file or files within directory: "
+                                    + stubPath
+                                    + " "
+                                    + new File(stubPath).getAbsolutePath()
+                                    + (stubPathFull.equals(stubPath) ? "" : (" " + stubPathFull)));
+                } else {
                     StubParser.parse(
                             stubPath,
                             in,
@@ -3107,18 +3115,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             processingEnv,
                             typesFromStubFiles,
                             declAnnosFromStubFiles);
-                    // We could handle the stubPath -> continue.
-                    continue;
                 }
-                // We couldn't handle the stubPath -> error message.
-                checker.message(
-                        Kind.NOTE,
-                        "Did not find stub file or files within directory: "
-                                + stubPath
-                                + " "
-                                + new File(stubPath).getAbsolutePath()
-                                + " "
-                                + stubPathFull);
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;
