@@ -2360,13 +2360,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // type.getAnnotations() returns both default and explicit annotations.
         Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
-        Set<AnnotationMirror> defaultAnnotations = new HashSet<>();
 
-        // TODO: This is a hack. Ideally we would want to get all explicit annotations
+        // TODO: getExplicitAnnotationsOnNewClassTree() is a hack. Ideally we would want to get all
+        // explicit annotations
         // by calling type.getExplicitAnnotations(). But this isn't currently working.
         // See https://github.com/typetools/checker-framework/issues/2324 .
-        // The following code extracts non-explicit annotations from "newClassTree" using
-        // string manipulations.
+        Set<AnnotationMirror> explicitAnnotations =
+                getExplicitAnnotationsOnNewClassTree(newClassTree, allAnnotations);
+
+        // Replace default annotations with annotations from constructor declaration.
+        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
+        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        for (AnnotationMirror anno : allAnnotations) {
+            if (!explicitAnnotations.contains(anno)) {
+                AnnotationMirror annoToAdd = con.getReturnType().getAnnotationInHierarchy(anno);
+                type.replaceAnnotation(annoToAdd);
+            }
+        }
+        return type;
+    }
+
+    /**
+     * Extracts the set of explicit annotations on a {@code newClassTree} from the set that contains
+     * both the default and explicit ({@code allAnnotations}) annotations of this tree.
+     */
+    Set<AnnotationMirror> getExplicitAnnotationsOnNewClassTree(
+            NewClassTree newClassTree, Set<? extends AnnotationMirror> allAnnotations) {
+        //        The following code extracts explicit annotations from "newClassTree" using
+        //        string manipulations. This is a hack and this method should be removed
+        // once issue 2324 is fixed.
+        Set<AnnotationMirror> explicitAnnotations = new HashSet<>();
         String newClassTreeString = newClassTree.toString();
         for (AnnotationMirror anno : allAnnotations) {
             String annoString = anno.toString();
@@ -2375,19 +2398,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (annoString.contains("(")) {
                 annoStringName = annoStringName.substring(0, annoStringName.indexOf('(') - 1);
             }
-            if (!newClassTreeString.contains(annoStringName)) {
-                defaultAnnotations.add(anno);
+            if (newClassTreeString.contains(annoStringName)) {
+                explicitAnnotations.add(anno);
             }
         }
-
-        // Replace default annotations with annotations from constructor declaration.
-        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
-        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
-        for (AnnotationMirror defAnno : defaultAnnotations) {
-            AnnotationMirror annoToAdd = con.getReturnType().getAnnotationInHierarchy(defAnno);
-            type.replaceAnnotation(annoToAdd);
-        }
-        return type;
+        return explicitAnnotations;
     }
 
     // This method extracts the ugly hacky parts.
