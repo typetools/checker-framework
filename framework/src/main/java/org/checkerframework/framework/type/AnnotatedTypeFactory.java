@@ -1,8 +1,8 @@
 package org.checkerframework.framework.type;
 
-// The imports from com.sun, but they are all
-// @jdk.Exported and therefore somewhat safe to use.
+// The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
@@ -3037,6 +3037,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles = new HashMap<>();
 
         // 1. jdk.astub
+        // Only look in .jar files, and parse it right away.
         if (!checker.hasOption("ignorejdkastub")) {
             InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
@@ -3087,10 +3088,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Parse stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @Stubfiles
         for (String stubPath : allStubFiles) {
-            if (stubPath == null || stubPath.isEmpty()) {
-                continue;
-            }
-            // Handle case when running in jtreg
+            // Special case when running in jtreg.
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
             if (base != null) {
@@ -3107,6 +3105,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + " "
                                     + new File(stubPath).getAbsolutePath()
                                     + (stubPathFull.equals(stubPath) ? "" : (" " + stubPathFull)));
+                    if (checker.getClass().getResourceAsStream("/" + stubPath) != null) {
+                        checker.message(
+                                Kind.WARNING,
+                                "Found "
+                                        + stubPath
+                                        + " at the top level in a .jar file, but it should be in the same directory as the checker class.");
+                    }
                 } else {
                     StubParser.parse(
                             stubPath,
