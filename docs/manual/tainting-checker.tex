@@ -33,7 +33,8 @@ tainted value ever flows to a sensitive sink.  However, your program is not
 necessarily free from all trust errors.  As a simple example, you might
 have forgotten to annotate a sensitive sink as requiring an untainted type,
 or you might have forgotten to annotate untrusted data as having a tainted
-type.
+type. Also see the discussion in Section \ref{string-buffer} about a known
+unsoundness in this checker and others like it.
 
 To run the Tainting Checker, supply the
 \code{-processor TaintingChecker}
@@ -150,6 +151,51 @@ annotations, and you will annotate libraries and/or your code to identify
 sources, sinks, and validation/sanitization routines.
 See Chapter~\ref{creating-a-checker} for more
 details.
+
+\sectionAndLabel{Known unsoundness: the StringBuffer problem}{string-buffer}
+
+There is a known unsoundness with the Tainting Checker (and other similar
+information flow checkers that do not explicitly handle the problem). To
+understand the problem, consider the \code{append} function in
+\code{java.lang.StringBuffer}:
+
+\begin{Verbatim}
+  public StringBuffer append(StringBuffer this, String toAppend);
+\end{Verbatim}
+
+Which combinations of \code{@Tainted} and \code{@Untainted} should be
+permitted for the two arguments (the receiver, \code{this}, and the explicit
+\code{String} argument) to this function? Clearly, appending a tainted
+String to a tainted buffer should be permitted. The same is true
+for an untainted buffer and an untainted String.
+
+That both should be permitted suggests that perhaps the function is
+polymorphic---that is, the correct signature is:
+
+\begin{Verbatim}
+  public @PolyTainted StringBuffer append(@PolyTainted StringBuffer this, @PolyTainted String toAppend);
+\end{Verbatim}
+
+But this signature permits a program that is unsafe: one that adds a tainted
+String to an untainted buffer! Because \code{@Untainted} is a subtype of
+\code{@Tainted}, such a method call returns an \code{@Tainted StringBuffer}.
+If this code were purely functional this would be fine---assigning the
+now-tainted buffer to itself---an untainted buffer---would be a type
+error. However, the \code{append} method works via side-effect, and only
+returns a reference to the buffer as a convenience. Calling the method
+and throwing away the result can therefore allow tainted values
+to be added to an untainted buffer---destroying the typechecker's
+guarantee.
+
+By default, the typechecker will not permit this behavior. However, many
+programs---including many safe programs, because string concatenation is
+converted to a call to \code{StringBuilder.append()} by the compiler---will
+not typecheck. It is therefore very tempting to make the method (and others
+with similar behavior) polymorphic, but doing so \textbf{will} eliminate
+the Tainting Checker's guarantee.
+
+%% For possible solutions, see the implementation of \code{@PolyDet(``use'')}
+%% in the Determinism Checker.
 
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
