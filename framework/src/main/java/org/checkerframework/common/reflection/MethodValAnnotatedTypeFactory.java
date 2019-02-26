@@ -286,7 +286,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {
-            assert args.size() > 0 : "getMethod must have at least one parameter";
+            assert !args.isEmpty() : "getMethod must have at least one parameter";
 
             // Number of parameters in the created method object
             int numParams = args.size() - 1;

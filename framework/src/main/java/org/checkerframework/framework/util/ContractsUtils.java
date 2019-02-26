@@ -312,7 +312,7 @@ public class ContractsUtils {
         if (factory.isSupportedQualifier(anno)) {
             return anno;
         } else {
-            AnnotationMirror aliasedAnno = factory.aliasedAnnotation(anno);
+            AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
             if (factory.isSupportedQualifier(aliasedAnno)) {
                 return aliasedAnno;
             } else {
@@ -503,7 +503,7 @@ public class ContractsUtils {
 
     /**
      * Returns a set of triples {@code (expr, result, annotation)} of conditional postconditions
-     * according to the given {@link EnsuresQualifierIf}.
+     * that are expressed in the source code using the given postcondition annotation.
      */
     private Set<ConditionalPostcondition> getConditionalPostcondition(
             AnnotationMirror ensuresQualifierIf) {

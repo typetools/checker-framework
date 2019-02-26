@@ -799,16 +799,15 @@ assert var != null : "@AssumeAssertion(nullness)";
 \newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
 
 The Checker Framework's nullness annotations are similar to annotations used
-in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other
-tools.  In particular, IDE tools such as Eclipse and IntelliJ should be
-viewed as bug-finding tools rather than verification tools, since they
-give up precision, soundness, or both in favor of being fast and
-easy to use.  Also
-see Section~\ref{other-tools} for a comparison to other tools.
-
+in other
+tools.
 You might prefer to use the Checker Framework because it has a more
 powerful analysis that can warn you about more null pointer errors in your
 code.
+Most of the other tools are bug-finding tools rather than verification tools, since they
+give up precision, soundness, or both in favor of being fast and
+easy to use.  Also
+see Section~\ref{faq-type-checking-vs-bug-detectors} for a comparison to other tools.
 
 If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
@@ -833,6 +832,7 @@ Section~\ref{declaration-annotations-moved}.
  ~androidx.annotation.NonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
+ ~io.reactivex.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
@@ -861,6 +861,7 @@ $\Rightarrow$
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
+ ~io.reactivex.annotations.Nullable~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline

@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -101,15 +102,12 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        result.append("RegularTransferResult(");
-        result.append(System.getProperty("line.separator"));
-        result.append("resultValue = " + resultValue);
-        result.append(System.getProperty("line.separator"));
-        result.append("thenStore = " + thenStore);
-        result.append("elseStore = " + elseStore);
-        result.append(System.getProperty("line.separator"));
-        result.append(")");
+        StringJoiner result = new StringJoiner(System.lineSeparator());
+        result.add("RegularTransferResult(");
+        result.add("  resultValue = " + resultValue);
+        result.add("  thenStore = " + thenStore);
+        result.add("  elseStore = " + elseStore);
+        result.add(")");
         return result.toString();
     }
 

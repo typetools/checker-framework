@@ -90,9 +90,9 @@ public class KeyForAnnotatedTypeFactory
     }
 
     @Override
-    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        ParameterizedMethodType result = super.constructorFromUse(tree);
-        keyForPropagator.propagateNewClassTree(tree, result.methodType.getReturnType(), this);
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType result = super.constructorFromUse(tree);
+        keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
         return result;
     }
 

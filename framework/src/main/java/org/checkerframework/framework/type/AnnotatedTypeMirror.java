@@ -241,7 +241,7 @@ public abstract class AnnotatedTypeMirror {
     public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
         if (!atypeFactory.isSupportedQualifier(aliased)) {
-            aliased = atypeFactory.aliasedAnnotation(p);
+            aliased = atypeFactory.canonicalAnnotation(p);
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
@@ -265,7 +265,7 @@ public abstract class AnnotatedTypeMirror {
     public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
         if (!atypeFactory.isSupportedQualifier(aliased)) {
-            aliased = atypeFactory.aliasedAnnotation(p);
+            aliased = atypeFactory.canonicalAnnotation(p);
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
@@ -535,7 +535,7 @@ public abstract class AnnotatedTypeMirror {
         if (atypeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
         } else {
-            AnnotationMirror aliased = atypeFactory.aliasedAnnotation(a);
+            AnnotationMirror aliased = atypeFactory.canonicalAnnotation(a);
             if (atypeFactory.isSupportedQualifier(aliased)) {
                 addAnnotation(aliased);
             }

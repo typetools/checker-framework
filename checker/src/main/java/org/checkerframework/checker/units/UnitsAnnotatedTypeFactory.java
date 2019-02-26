@@ -86,7 +86,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // Converts all metric-prefixed units' alias annotations (eg @kg) into base unit annotations
     // with prefix values (eg @g(Prefix.kilo))
     @Override
-    public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
+    public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
         // Get the name of the aliased annotation
         String aname = anno.getAnnotationType().toString();
 
@@ -138,7 +138,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return result;
         }
 
-        return super.aliasedAnnotation(anno);
+        return super.canonicalAnnotation(anno);
     }
 
     /** Return a map from canonical class name to the corresponding UnitsRelations instance. */
@@ -236,8 +236,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // then add the aliased annotation to the alias map
                 // TODO: refactor so we can directly add to alias map, skipping the assert check in
-                // aliasedAnnotation.
-                aliasedAnnotation(mirror);
+                // canonicalAnnotation.
+                canonicalAnnotation(mirror);
             } else {
                 // error: somehow the aliased annotation has @UnitsMultiple meta annotation, but no
                 // base class defined in that meta annotation

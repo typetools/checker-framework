@@ -52,7 +52,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -634,8 +634,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // matches
         // those in corresponding locations on the method call site.
 
-        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mType.methodType;
+        ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.executableType;
 
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());

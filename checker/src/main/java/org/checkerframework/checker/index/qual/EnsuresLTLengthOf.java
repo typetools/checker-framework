@@ -59,6 +59,7 @@ public @interface EnsuresLTLengthOf {
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
+    @JavaExpression
     String[] value();
 
     /**

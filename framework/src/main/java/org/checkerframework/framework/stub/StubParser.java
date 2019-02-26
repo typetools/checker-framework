@@ -166,7 +166,7 @@ public class StubParser {
     Map<String, Set<AnnotationMirror>> declAnnos;
 
     /** The line separator. */
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
+    private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
     /**
      * Create a new StubParser object, which will parse and extract annotations from the given stub
@@ -1071,7 +1071,7 @@ public class StubParser {
             if (param.getTypeBound() == null || param.getTypeBound().isEmpty()) {
                 // No bound so annotations are both lower and upper bounds
                 annotate(paramType, param.getAnnotations());
-            } else if (param.getTypeBound() != null && param.getTypeBound().size() > 0) {
+            } else if (param.getTypeBound() != null && !param.getTypeBound().isEmpty()) {
                 annotate(paramType.getLowerBound(), param.getAnnotations());
                 annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null);
                 if (param.getTypeBound().size() > 1) {

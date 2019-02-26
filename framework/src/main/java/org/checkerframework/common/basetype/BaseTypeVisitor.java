@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -79,7 +80,7 @@ import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -186,51 +187,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The type of java.util.Vector. */
     private final AnnotatedDeclaredType vectorType;
 
-    /**
-     * @param checker the type-checker associated with this visitor (for callbacks to {@link
-     *     TypeHierarchy#isSubtype})
-     */
+    /** @param checker the type-checker associated with this visitor */
     public BaseTypeVisitor(BaseTypeChecker checker) {
-        super(checker);
-
-        this.checker = checker;
-        this.atypeFactory = createTypeFactory();
-        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
-        this.positions = trees.getSourcePositions();
-        this.visitorState = atypeFactory.getVisitorState();
-        this.typeValidator = createTypeValidator();
-        this.objectEquals =
-                TreeUtils.getMethod(
-                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.functionApply =
-                TreeUtils.getMethod(
-                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
-
-        checkForAnnotatedJdk();
+        this(checker, null);
     }
 
+    /**
+     * @param checker the type-checker associated with this visitor
+     * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
+     */
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
         super(checker);
 
         this.checker = checker;
-        this.atypeFactory = typeFactory;
+        this.atypeFactory = typeFactory == null ? createTypeFactory() : typeFactory;
         this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.objectEquals =
-                TreeUtils.getMethod(
-                        "java.lang.Object", "equals", 1, checker.getProcessingEnvironment());
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
-        this.functionApply =
-                TreeUtils.getMethod(
-                        "java.util.function.Function", "apply", 1, atypeFactory.getProcessingEnv());
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
+        this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
         checkForAnnotatedJdk();
     }
@@ -361,6 +339,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkFieldInvariantDeclarations(classTree);
         if (!TreeUtils.hasExplicitConstructor(classTree)) {
             checkDefaultConstructor(classTree);
+        }
+
+        if (atypeFactory.getDependentTypesHelper() != null) {
+            AnnotatedDeclaredType classType = atypeFactory.getAnnotatedType(classTree);
+            atypeFactory.getDependentTypesHelper().checkClass(classTree, classType);
         }
 
         /* Visit the extends and implements clauses.
@@ -1004,8 +987,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitMethodInvocation(node, p);
         }
 
-        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mType.methodType;
+        ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.executableType;
         List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
 
         if (!atypeFactory.ignoreUninferredTypeArguments) {
@@ -1264,8 +1247,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitNewClass(node, p);
         }
 
-        ParameterizedMethodType fromUse = atypeFactory.constructorFromUse(node);
-        AnnotatedExecutableType constructor = fromUse.methodType;
+        ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(node);
+        AnnotatedExecutableType constructor = fromUse.executableType;
         List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
@@ -2674,7 +2657,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invocationType =
                 atypeFactory.methodFromUse(
                                 memberReferenceTree, compileTimeDeclaration, enclosingType)
-                        .methodType;
+                        .executableType;
 
         if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
             // Type argument inference is required, skip check.
@@ -2741,7 +2724,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // If the function to which the member reference refers is generic, but the member
         // reference does not provide method type arguments, then Java 8 inference is required.
         // Issue 979.
-        if (invocationType.getTypeVariables().size() > 0
+        if (!invocationType.getTypeVariables().isEmpty()
                 && (memberReferenceTree.getTypeArguments() == null
                         || memberReferenceTree.getTypeArguments().isEmpty())) {
             // Method type args
