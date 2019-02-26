@@ -4,8 +4,8 @@ import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -99,11 +99,7 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = HashCodeUtils.hash(constructor);
-        for (Node arg : arguments) {
-            hash = HashCodeUtils.hash(hash, arg.hashCode());
-        }
-        return hash;
+        return Objects.hash(constructor, arguments);
     }
 
     @Override

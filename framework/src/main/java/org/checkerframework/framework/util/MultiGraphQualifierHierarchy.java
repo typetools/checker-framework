@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
@@ -456,7 +457,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * {@inheritDoc}
      *
      * <p>Most qualifiers have no value fields. However, two annotations with values are subtype of
-     * each other only if they have the same values. i.e. I(m) is a subtype of I(n) iff m = n
+     * each other only if they have the same values. i.e. I(m) is a subtype of I(n) iff m = n.
      *
      * <p>When client specifies an annotation, a1, to be a subtype of annotation with values, a2,
      * then a1 is a subtype of all instances of a2 regardless of a2 values.
@@ -956,16 +957,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         @Pure
         @Override
         public int hashCode() {
-            if (hashCode == -1) {
-                hashCode = 31;
-                if (a1 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a1).hashCode();
-                }
-                if (a2 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a2).hashCode();
-                }
-            }
-            return hashCode;
+            return Objects.hash(
+                    AnnotationUtils.annotationName(a1), AnnotationUtils.annotationName(a2));
         }
 
         @Override
