@@ -278,11 +278,17 @@ public class StubUtil {
         }
     }
 
+    /**
+     * Return stub files found in the file system (does not look on classpath).
+     *
+     * @param stub a stub file, a jarfile, or a directory. Look for it as an absolute file and
+     *     relative to the current directory.
+     */
     public static List<StubResource> allStubFiles(String stub) {
         List<StubResource> resources = new ArrayList<>();
         File stubFile = new File(stub);
         if (stubFile.exists()) {
-            allStubFiles(stubFile, resources);
+            addStubFilesToList(stubFile, resources);
         } else {
             // If the stubFile doesn't exist, maybe it is relative to the
             // current working directory, so try that.
@@ -290,7 +296,7 @@ public class StubUtil {
                     System.getProperty("user.dir") + System.getProperty("file.separator");
             stubFile = new File(workingDir + stub);
             if (stubFile.exists()) {
-                allStubFiles(stubFile, resources);
+                addStubFilesToList(stubFile, resources);
             }
         }
         return resources;
@@ -309,10 +315,14 @@ public class StubUtil {
     }
 
     /**
-     * Side-effects {@code resources} by adding to it either {@code stub} if it is a stub file, or
-     * all the contained stub files if {@code stub} is a jar file or a directory.
+     * Side-effects {@code resources} by adding stub files (those ending with ".astub") to it.
+     *
+     * @param stub a stub file, a jarfile, or a directory. If a stubfile, add it to the {@code
+     *     resources} list. If a jarfile, use all stub files contained in it. If a directory,
+     *     recurse on all files contained in it.
+     * @param resources the list to add the found stub files to
      */
-    private static void allStubFiles(File stub, List<StubResource> resources) {
+    private static void addStubFilesToList(File stub, List<StubResource> resources) {
         if (isStub(stub)) {
             resources.add(new FileStubResource(stub));
         } else if (isJar(stub)) {
@@ -341,7 +351,7 @@ public class StubUtil {
                         }
                     });
             for (File enclosed : directoryContents) {
-                allStubFiles(enclosed, resources);
+                addStubFilesToList(enclosed, resources);
             }
         }
     }
