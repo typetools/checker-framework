@@ -3098,19 +3098,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (stubs.isEmpty()) {
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in == null) {
-                    checker.message(
-                            Kind.WARNING,
-                            "Did not find stub file or files within directory: "
-                                    + stubPath
-                                    + " "
-                                    + new File(stubPath).getAbsolutePath()
-                                    + (stubPathFull.equals(stubPath) ? "" : (" " + stubPathFull)));
+                    // Didn't find the stubfile.
                     if (checker.getClass().getResourceAsStream("/" + stubPath) != null) {
                         checker.message(
                                 Kind.WARNING,
                                 "Found "
                                         + stubPath
                                         + " at the top level in a .jar file, but it should be in the same directory as the checker class.");
+                    } else {
+                        checker.message(
+                                Kind.WARNING,
+                                "Did not find stub file "
+                                        + stubPath
+                                        + " on classpath or within directory "
+                                        + new File(stubPath).getAbsolutePath()
+                                        + (stubPathFull.equals(stubPath)
+                                                ? ""
+                                                : (" or at " + stubPathFull)));
                     }
                 } else {
                     StubParser.parse(
