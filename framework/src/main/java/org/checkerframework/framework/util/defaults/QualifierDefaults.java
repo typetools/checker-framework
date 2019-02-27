@@ -495,7 +495,7 @@ public class QualifierDefaults {
         }
 
         if (!atypeFactory.isSupportedQualifier(anno)) {
-            anno = atypeFactory.aliasedAnnotation(anno);
+            anno = atypeFactory.canonicalAnnotation(anno);
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {

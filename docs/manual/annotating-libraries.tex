@@ -479,7 +479,8 @@ original library classes.  For example:
 \end{Verbatim}
 \end{myxsmall}
 
-Each stub path entry is a file or a directory; specifying a directory is
+Each stub path entry is a stub file (ending with \<.astub>), directory, or
+\<.jar> file; specifying a directory or \<.jar> file is
 equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
@@ -668,26 +669,28 @@ By default, the stub parser silently ignores
 annotations on unknown classes and methods.
 The stub parser also silently ignores unknown annotations, so don't forget to
 \<import> any annotations.
+Some command-line options make the stub parser issue more warnings:
 
-Use command-line option
-\<-AstubWarnIfNotFound> to warn whenever some element of a stub file cannot
-be found.
+\begin{description}
+\item[\<-AstubWarnIfNotFound>]
+  Warn whenever some element of a stub file cannot be found.
+  The \<@NoStubParserWarning> annotation on a package or type in a stub file
+  overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
+  will be issued.
 
-The \<@NoStubParserWarning> annotation on a package or type in a stub file
-overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
-will be issued.
+\item[\<-AstubWarnIfNotFoundIgnoresClasses>]
+  Modifies the behavior of \<-AstubWarnIfNotFound>
+  to report only missing methods/fields, but ignore missing classes, even if
+  other classes from the same package are present.
+  Useful if a package spans more than one jar.
 
-Use command-line option
-\<-AstubWarnIfNotFoundIgnoresClasses> in conjuntion with the previous option
-to report only missing methods/fields, but ignore missing classes, even if
-other classes from the same package are present.
-Useful if a package spans more than one jar.
+\item[\<-AstubWarnIfOverwritesBytecode>]
+  Warn whenever some element of a
+  stub file overwrites annotations contained in bytecode.
+\end{description}
 
-Use command-line option
-\<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a
-stub file overwrites annotations contained in bytecode.
-
-Use command-line option \<-AstubDebug> to output debugging messages while
+Finally,
+use command-line option {\bf\<-AstubDebug>} to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
 annotations.  This overrides the \<@NoStubParserWarning> annotation.
 

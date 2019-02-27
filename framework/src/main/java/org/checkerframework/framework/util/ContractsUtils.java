@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -129,10 +130,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = expression != null ? expression.hashCode() : 0;
-            result = 31 * result + (annotation != null ? annotation.hashCode() : 0);
-            result = 31 * result + (kind != null ? kind.hashCode() : 0);
-            return result;
+            return Objects.hash(expression, annotation, kind);
         }
     }
 
@@ -224,9 +222,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = super.hashCode();
-            result = 31 * result + (annoResult ? 1 : 0);
-            return result;
+            return Objects.hash(super.hashCode(), annoResult);
         }
     }
 
@@ -312,7 +308,7 @@ public class ContractsUtils {
         if (factory.isSupportedQualifier(anno)) {
             return anno;
         } else {
-            AnnotationMirror aliasedAnno = factory.aliasedAnnotation(anno);
+            AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
             if (factory.isSupportedQualifier(aliasedAnno)) {
                 return aliasedAnno;
             } else {

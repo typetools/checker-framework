@@ -4,10 +4,10 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for the instanceof operator:
@@ -74,7 +74,7 @@ public class InstanceOfNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return Objects.hash(getOperand());
     }
 
     @Override

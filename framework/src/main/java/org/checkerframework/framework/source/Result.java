@@ -5,11 +5,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * Represents the outcome of a type-checking operation (success, warning, or failure, plus a list of
@@ -196,7 +196,7 @@ public final class Result {
         @Pure
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(this.message, this.args);
+            return Objects.hash(this.message, Arrays.hashCode(this.args));
         }
 
         @SideEffectFree
