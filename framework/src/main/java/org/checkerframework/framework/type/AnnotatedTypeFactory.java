@@ -3105,7 +3105,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         checker.message(
                                 Kind.WARNING,
                                 stubPath
-                                        + " should be in the same directory as the checker class, but it at the top level of a jar file: "
+                                        + " should be in the same directory as "
+                                        + checker.getClass().getSimpleName()
+                                        + ".class, but is at the top level of a jar file: "
                                         + topLevelResource);
                     } else {
                         checker.message(
