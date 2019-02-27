@@ -1703,13 +1703,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         private void addDefaultsToConstructorDeclaration(
                 AnnotatedDeclaredType returnType, AnnotatedTypeFactory p) {
             // At this point defaults have been applied to class declarations but not
-            // to constructor return types. The check "returnType.getAnnotations().isEmpty()"
-            // returns true for constructors whose return types haven't been explicitly
-            // annotated.
+            // to constructor return types.
             // TODO: change test to use getExplicitAnnotations() when
             // http://tinyurl.com/cfissue/2324 is fixed.  Currently, getExplicitAnnotations()
             // returns the empty set even for explicitly-annotated types.
             if (returnType.getAnnotations().isEmpty()) {
+                // This constructor's return type is not explicitly annotated.
                 DeclaredType classDeclarationType = returnType.getUnderlyingType();
                 AnnotatedTypeMirror underlyingTypeMirror =
                         p.getAnnotatedType(classDeclarationType.asElement());
@@ -1725,7 +1724,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     // Without this check, the test AnonymousProblem.java in testdata/ostrusted
                     // of cf-inference crashes.  The same test case is replicated in this repo
                     // (checker-framework) tests/tainting/AnonymousProblem.java which does not
-                    // crash i.e removing this check has no effect on that test.
+                    // crash, i.e removing this check has no effect on that test.
                     if (annotationOnClass != null) {
                         returnType.addAnnotation(annotationOnClass);
                     }
@@ -2356,7 +2355,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = annotateTypeArgs(newClassTree, type);
         }
         // If the user hasn't explicitly annotated a constructor invocation,
-        // annotate it with the type on constructor declaration.
+        // annotate it with the type on the constructor declaration.
 
         // type.getAnnotations() returns both default and explicit annotations.
         Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
@@ -2368,10 +2367,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Replace default annotations with annotations from constructor declaration.
         ExecutableElement ctor = TreeUtils.constructor(newClassTree);
-        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        AnnotatedExecutableType ctorAnnotated = AnnotatedTypes.asMemberOf(types, this, type, ctor);
         for (AnnotationMirror anno : allAnnotations) {
             if (!explicitAnnotations.contains(anno)) {
-                AnnotationMirror annoToAdd = con.getReturnType().getAnnotationInHierarchy(anno);
+                AnnotationMirror annoToAdd =
+                        ctorAnnotated.getReturnType().getAnnotationInHierarchy(anno);
                 type.replaceAnnotation(annoToAdd);
             }
         }
