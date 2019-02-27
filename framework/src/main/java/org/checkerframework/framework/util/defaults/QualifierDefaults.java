@@ -465,13 +465,13 @@ public class QualifierDefaults {
             case CLASS:
                 if (((ClassTree) tree).getExtendsClause() != null) {
                     elt = TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
-                    applyDefuaultsToExtendsAndImplicits(elt, type);
+                    applyDefaultsToExtendsAndImplicits(elt, type);
                 }
                 if (!((ClassTree) tree).getImplementsClause().isEmpty()) {
                     List<? extends Tree> implicitClauses = ((ClassTree) tree).getImplementsClause();
                     for (Tree implicitClause : implicitClauses) {
                         elt = TreeUtils.elementFromTree(implicitClause);
-                        applyDefuaultsToExtendsAndImplicits(elt, type);
+                        applyDefaultsToExtendsAndImplicits(elt, type);
                     }
                 }
                 elt = nearestEnclosingExceptLocal(tree);
@@ -504,7 +504,7 @@ public class QualifierDefaults {
      * @param elt the element associated with the type
      * @param type the type to which defaults will be applied
      */
-    void applyDefuaultsToExtendsAndImplicits(Element elt, AnnotatedTypeMirror type) {
+    void applyDefaultsToExtendsAndImplicits(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
                         && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
