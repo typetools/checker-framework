@@ -92,9 +92,9 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   make -C docs/manual all
 
   echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
-  # (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
-  # The change to TRAVIS_COMMIT_RANGE is due to https://github.com/travis-ci/travis-ci/issues/4596 .
-  (git diff "${TRAVIS_COMMIT_RANGE/.../..}" > /tmp/diff.txt 2>&1) || true
+  # Until https://github.com/travis-ci/travis-ci/issues/4596 is fixed, $TRAVIS_COMMIT_RANGE is a
+  # good argument to `git diff` but a bad argument to `git log` (they interpret ... differently!).
+  (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
   (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
   [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch into compare branch" && false))
   wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
