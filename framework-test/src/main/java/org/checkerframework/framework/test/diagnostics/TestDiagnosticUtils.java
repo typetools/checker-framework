@@ -11,7 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
@@ -303,8 +302,9 @@ public class TestDiagnosticUtils {
             return new TestDiagnosticLine(
                     filename, lineNumber, originalLine, Collections.singletonList(diagnostic));
         } else {
-            throw new BugInCF(
-                    "Empty diagnostic \"%s\" on line#%d of %s", originalLine, lineNumber, filename);
+            // It's a bit gross to create empty diagnostics (returning null might be more
+            // efficient), but they will be filtered out later.
+            return new TestDiagnosticLine(filename, errorLine, originalLine, EMPTY);
         }
     }
 
