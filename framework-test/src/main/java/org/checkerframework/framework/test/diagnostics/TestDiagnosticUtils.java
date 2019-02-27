@@ -226,8 +226,8 @@ public class TestDiagnosticUtils {
      *
      * <p>Most diagnostics in Java files start at the beginning of a line. Occasionally, javac
      * issues a warning about implicit code, such as an implicit constructor, on the line
-     * <em>after</em> a curly brace. The only place to put the expected diagnostic message is on the
-     * line with the curly brace.
+     * <em>immediately after</em> a curly brace. The only place to put the expected diagnostic
+     * message is on the line with the curly brace.
      *
      * <p>This implementation replaces "... { // ::" by "// ::", converting the end-of-line
      * diagnostic message to a beginning-of-line one that the rest of the code can handle. It is

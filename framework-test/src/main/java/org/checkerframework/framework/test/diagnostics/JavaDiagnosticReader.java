@@ -95,7 +95,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     /**
      * Reads the entire input file using the given codec and returns the resulting lines, filtering
-     * out empty ones produced by JavaDiagnosticReader..
+     * out empty ones produced by JavaDiagnosticReader.
      *
      * @param file the file (Java or Diagnostics format) to read
      * @param codec a codec corresponding to the file type being read
