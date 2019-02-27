@@ -361,28 +361,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(im);
             }
         }
+
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
-        // classTree.getExtendsClause() is null when there is no explicitly-written extends
-        // clause, as in "class X {}". We assume that this is equivalent to writing
-        // "class X extends @Top Object {}", and there is no need to do any subtype checking.
+        // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
+        // as in "class X {}". This is equivalent to writing "class X extends @Top Object {}", so
+        // there is no need to do any subtype checking.
         if (classTree.getExtendsClause() != null) {
             AnnotatedTypeMirror extendsClauseType =
                     atypeFactory.getAnnotatedType(classTree.getExtendsClause());
             checkExtendsOrImplementsClause(
                     classTree, extendsClauseType, "declaration.inconsistent.with.extends.clause");
         }
-
         // Do the same check as above for implements clauses.
-        if (classTree.getImplementsClause() != null) {
-            List<? extends Tree> implementsClauses = classTree.getImplementsClause();
-            for (Tree implementsClause : implementsClauses) {
-                AnnotatedTypeMirror implementsClauseType =
-                        atypeFactory.getAnnotatedType(implementsClause);
-                checkExtendsOrImplementsClause(
-                        classTree,
-                        implementsClauseType,
-                        "declaration.inconsistent.with.implements.clause");
-            }
+        for (Tree implementsClause : classTree.getImplementsClause()) {
+            AnnotatedTypeMirror implementsClauseType =
+                    atypeFactory.getAnnotatedType(implementsClause);
+            checkExtendsOrImplementsClause(
+                    classTree,
+                    implementsClauseType,
+                    "declaration.inconsistent.with.implements.clause");
         }
 
         super.visitClass(classTree, null);

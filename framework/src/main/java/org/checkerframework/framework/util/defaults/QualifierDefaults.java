@@ -428,7 +428,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} that determines the
+     * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} determines the
      * appropriate scope for defaults.
      *
      * <p>For instance, if the tree is associated with a declaration (e.g., it's the use of a field,
@@ -467,15 +467,13 @@ public class QualifierDefaults {
                     elt = TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
                     applyDefaultsToExtendsAndImplicits(elt, type);
                 }
-                if (!((ClassTree) tree).getImplementsClause().isEmpty()) {
-                    List<? extends Tree> implicitClauses = ((ClassTree) tree).getImplementsClause();
-                    for (Tree implicitClause : implicitClauses) {
-                        elt = TreeUtils.elementFromTree(implicitClause);
-                        applyDefaultsToExtendsAndImplicits(elt, type);
-                    }
+                for (Tree implicitClause : ((ClassTree) tree).getImplementsClause()) {
+                    elt = TreeUtils.elementFromTree(implicitClause);
+                    applyDefaultsToExtendsAndImplicits(elt, type);
                 }
                 elt = nearestEnclosingExceptLocal(tree);
                 break;
+
             default:
                 // If no associated symbol was found, use the tree's (lexical)
                 // scope.
