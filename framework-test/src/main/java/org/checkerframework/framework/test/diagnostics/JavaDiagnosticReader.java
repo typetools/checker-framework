@@ -235,7 +235,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
             advance();
 
-            current = TestDiagnosticUtils.handleInlineJavaDiagnostic(current);
+            current = TestDiagnosticUtils.handleEndOfLineJavaDiagnostic(current);
 
             if (TestDiagnosticUtils.isJavaDiagnosticLineStart(current)) {
                 while (TestDiagnosticUtils.isJavaDiagnosticLineContinuation(nextLine)) {

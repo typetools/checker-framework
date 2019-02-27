@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
@@ -221,20 +222,20 @@ public class TestDiagnosticUtils {
     }
 
     /**
-     * Convert an inline diagnostic message to a beginning-of-line one. Returns the argument
-     * unchanged if it does not contain an inline diagnostic message.
+     * Convert an end-of-line diagnostic message to a beginning-of-line one. Returns the argument
+     * unchanged if it does not contain an end-of-line diagnostic message.
      *
      * <p>Most diagnostics in Java files start at the beginning of a line. Occasionally, javac
      * issues a warning about implicit code, such as an implicit constructor, on the line
      * <em>after</em> a curly brace. The only place to put the expected diagnostic message is on the
      * line with the curly brace.
      *
-     * <p>This implementation replaces "... { // ::" by "// ::", converting the inline diagnostic
-     * message to a line-start one that the rest of the code can handle. It is rather specific (to
-     * avoid false positive matches, and to permit "// ::" to be commented out in source code). It
-     * should be extended in the future if such an extension is necessary.
+     * <p>This implementation replaces "... { // ::" by "// ::", converting the end-of-line
+     * diagnostic message to a beginning-of-line one that the rest of the code can handle. It is
+     * rather specific (to avoid false positive matches, such as when "// ::" is commented out in
+     * source code). It could be extended in the future if such an extension is necessary.
      */
-    public static String handleInlineJavaDiagnostic(String originalLine) {
+    public static String handleEndOfLineJavaDiagnostic(String originalLine) {
         int curlyIndex = originalLine.indexOf("{ // ::");
         if (curlyIndex == -1) {
             return originalLine;
