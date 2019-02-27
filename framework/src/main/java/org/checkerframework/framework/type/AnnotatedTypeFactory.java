@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -3099,12 +3100,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in == null) {
                     // Didn't find the stubfile.
-                    if (checker.getClass().getResourceAsStream("/" + stubPath) != null) {
+                    URL topLevelResource = checker.getClass().getResource("/" + stubPath);
+                    if (topLevelResource != null) {
                         checker.message(
                                 Kind.WARNING,
-                                "Found "
-                                        + stubPath
-                                        + " at the top level in a .jar file, but it should be in the same directory as the checker class.");
+                                stubPath
+                                        + " should be in the same directory as the checker class, but it at the top level of a jar file: "
+                                        + topLevelResource);
                     } else {
                         checker.message(
                                 Kind.WARNING,
