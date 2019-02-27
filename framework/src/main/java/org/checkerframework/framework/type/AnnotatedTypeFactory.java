@@ -1706,9 +1706,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // to constructor return types. The check "returnType.getAnnotations().isEmpty()"
             // returns true for constructors whose return types haven't been explicitly
             // annotated.
-            // TODO: change to getExplicitAnnotations() when http://tinyurl.com/cfissue/2324 is
-            // fixed.  Currently, getExplicitAnnotations() returns the empty set even for
-            // explicitly-annotated types.
+            // TODO: change test to use getExplicitAnnotations() when
+            // http://tinyurl.com/cfissue/2324 is fixed.  Currently, getExplicitAnnotations()
+            // returns the empty set even for explicitly-annotated types.
             if (returnType.getAnnotations().isEmpty()) {
                 DeclaredType classDeclarationType = returnType.getUnderlyingType();
                 AnnotatedTypeMirror underlyingTypeMirror =
