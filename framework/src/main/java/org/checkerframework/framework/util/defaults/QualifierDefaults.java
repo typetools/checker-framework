@@ -63,8 +63,8 @@ public class QualifierDefaults {
 
     /**
      * This field indicates whether or not a default should be applied to type vars located in the
-     * type being default. This should only ever be true when the type variable is a local variable,
-     * non-component use, i.e.
+     * type being defaulted. This should only ever be true when the type variable is a local
+     * variable, non-component use, i.e.
      *
      * <pre>{@code
      * <T> void method(@NOT_HERE T tIn) {
