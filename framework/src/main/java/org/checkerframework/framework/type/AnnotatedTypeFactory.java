@@ -2361,10 +2361,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // type.getAnnotations() returns both default and explicit annotations.
         Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
 
-        // TODO: getExplicitAnnotationsOnNewClassTree() is a hack. Ideally we would want to get all
-        // explicit annotations
-        // by calling type.getExplicitAnnotations(). But this isn't currently working.
-        // See https://github.com/typetools/checker-framework/issues/2324 .
+        // TODO: When https://github.com/typetools/checker-framework/issues/2324 is fixed, use
+        // type.getExplicitAnnotations().
         Set<AnnotationMirror> explicitAnnotations =
                 getExplicitAnnotationsOnNewClassTree(newClassTree, allAnnotations);
 
@@ -2384,11 +2382,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Extracts the set of explicit annotations on a {@code newClassTree} from the set that contains
      * both the default and explicit ({@code allAnnotations}) annotations of this tree.
      */
+    // TODO: This is a hack.  Remove this method when http://tinyurl.com/cfissue/2324 is fixed.
     Set<AnnotationMirror> getExplicitAnnotationsOnNewClassTree(
             NewClassTree newClassTree, Set<? extends AnnotationMirror> allAnnotations) {
-        //        The following code extracts explicit annotations from "newClassTree" using
-        //        string manipulations. This is a hack and this method should be removed
-        // once issue 2324 is fixed.
+        // The following code extracts explicit annotations from "newClassTree" using string
+        // manipulations.
         Set<AnnotationMirror> explicitAnnotations = new HashSet<>();
         String newClassTreeString = newClassTree.toString();
         for (AnnotationMirror anno : allAnnotations) {
