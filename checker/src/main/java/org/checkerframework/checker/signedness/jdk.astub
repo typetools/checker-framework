@@ -47,23 +47,23 @@ class Long {
 package java.util;
 
 class Arrays {
-    public static void fill(@PolySignedness byte[] a, @PolySignedness byte val);
+    public static void fill(@PolySigned byte[] a, @PolySigned byte val);
 
-    public static void fill(@PolySignedness char[] a, @PolySignedness char val);
+    public static void fill(@PolySigned char[] a, @PolySigned char val);
 
-    public static void fill(@PolySignedness short[] a, @PolySignedness short val);
+    public static void fill(@PolySigned short[] a, @PolySigned short val);
 
-    public static void fill(@PolySignedness int[] a, @PolySignedness int val);
+    public static void fill(@PolySigned int[] a, @PolySigned int val);
 
-    public static void fill(@PolySignedness long[] a, @PolySignedness long val);
+    public static void fill(@PolySigned long[] a, @PolySigned long val);
 
-    public static void fill(@PolySignedness byte[] a, int fromIndex, int toIndex, @PolySignedness byte val);
+    public static void fill(@PolySigned byte[] a, int fromIndex, int toIndex, @PolySigned byte val);
 
-    public static void fill(@PolySignedness char[] a, int fromIndex, int toIndex, @PolySignedness char val);
+    public static void fill(@PolySigned char[] a, int fromIndex, int toIndex, @PolySigned char val);
 
-    public static void fill(@PolySignedness short[] a, int fromIndex, int toIndex, @PolySignedness short val);
+    public static void fill(@PolySigned short[] a, int fromIndex, int toIndex, @PolySigned short val);
 
-    public static void fill(@PolySignedness int[] a, int fromIndex, int toIndex, @PolySignedness int val);
+    public static void fill(@PolySigned int[] a, int fromIndex, int toIndex, @PolySigned int val);
 
-    public static void fill(@PolySignedness long[] a, int fromIndex, int toIndex, @PolySignedness long val);
+    public static void fill(@PolySigned long[] a, int fromIndex, int toIndex, @PolySigned long val);
 }
