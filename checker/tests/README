@@ -150,7 +150,7 @@ a warning from the same line of code:
   @Regex(3) String s2 = (@Regex(2) String) s;
 
 
-As a alternative to writing expected errors in the source file using "// ::"
+As an alternative to writing expected errors in the source file using "// ::"
 syntax, expected errors can be specified in a separate file using the .out
 file extension.  These files contain lines of the following format:
 
