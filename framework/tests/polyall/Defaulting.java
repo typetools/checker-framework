@@ -62,10 +62,13 @@ class Defaulting {
         }
 
         void call() {
+            // :: warning: (cast.unsafe.constructor.invocation)
             m(new @H1S1 Object());
-            // :: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible) :: warning:
+            // (cast.unsafe.constructor.invocation)
             m(new @H1S2 Object());
-            // :: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible) :: warning:
+            // (cast.unsafe.constructor.invocation)
             m(new Object());
         }
     }
@@ -91,10 +94,13 @@ class Defaulting {
         }
 
         void call() {
+            // :: warning: (cast.unsafe.constructor.invocation)
             new TestConstructorParameter(new @H1S1 Object());
-            // :: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible) :: warning:
+            // (cast.unsafe.constructor.invocation)
             new TestConstructorParameter(new @H1S2 Object());
-            // :: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible) :: warning:
+            // (cast.unsafe.constructor.invocation)
             new TestConstructorParameter(new Object());
         }
     }
@@ -112,6 +118,7 @@ class Defaulting {
     })
     class TestReturns {
         Object res() {
+            // :: warning: (cast.unsafe.constructor.invocation)
             return new @H1S1 Object();
         }
 
@@ -123,12 +130,12 @@ class Defaulting {
         }
 
         Object res2() {
-            // :: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible) :: warning: (cast.unsafe.constructor.invocation)
             return new @H1S2 Object();
         }
 
         Object res3() {
-            // :: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible) :: warning: (cast.unsafe.constructor.invocation)
             return new Object();
         }
     }
@@ -155,7 +162,9 @@ class Defaulting {
     class TestReceiver {
 
         void call() {
+            // :: warning: (cast.unsafe.constructor.invocation)
             @H1S1 ReceiverDefaulting r2 = new @H1S1 ReceiverDefaulting();
+            // :: warning: (cast.unsafe.constructor.invocation)
             @H1S2 ReceiverDefaulting r3 = new @H1S2 ReceiverDefaulting();
             ReceiverDefaulting r = new ReceiverDefaulting();
 
