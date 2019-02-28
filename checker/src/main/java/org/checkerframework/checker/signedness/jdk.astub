@@ -47,23 +47,25 @@ class Long {
 package java.util;
 
 class Arrays {
+
     public static void fill(@PolySignedness byte[] a, @PolySignedness byte val);
-
     public static void fill(@PolySignedness char[] a, @PolySignedness char val);
-
     public static void fill(@PolySignedness short[] a, @PolySignedness short val);
-
     public static void fill(@PolySignedness int[] a, @PolySignedness int val);
-
     public static void fill(@PolySignedness long[] a, @PolySignedness long val);
-
     public static void fill(@PolySignedness byte[] a, int fromIndex, int toIndex, @PolySignedness byte val);
-
     public static void fill(@PolySignedness char[] a, int fromIndex, int toIndex, @PolySignedness char val);
-
     public static void fill(@PolySignedness short[] a, int fromIndex, int toIndex, @PolySignedness short val);
-
     public static void fill(@PolySignedness int[] a, int fromIndex, int toIndex, @PolySignedness int val);
-
     public static void fill(@PolySignedness long[] a, int fromIndex, int toIndex, @PolySignedness long val);
+
+    public static @PolySignedness byte[] copyOfRange(@PolySignedness byte[] original, int from, int to;
+    public static @PolySignedness short[] copyOfRange(@PolySignedness short[] original, int from, int to;
+    public static @PolySignedness int[] copyOfRange(@PolySignedness int[] original, int from, int to;
+    public static @PolySignedness long[] copyOfRange(@PolySignedness long[] original, int from, int to;
+    public static @PolySignedness char[] copyOfRange(@PolySignedness char[] original, int from, int to;
+    public static @PolySignedness float[] copyOfRange(@PolySignedness float[] original, int from, int to;
+    public static @PolySignedness double[] copyOfRange(@PolySignedness double[] original, int from, int to;
+    public static @PolySignedness boolean[] copyOfRange(@PolySignedness boolean[] original, int from, int to;
+
 }
