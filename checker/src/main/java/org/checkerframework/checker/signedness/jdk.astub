@@ -3,51 +3,51 @@ import org.checkerframework.checker.signedness.qual.*;
 package com.sun.corba.se.impl.encoding;
 
 class CDROutputStream {
-    public final void write(@PolySignedness byte b[]);
-    public final void write(@PolySignedness byte b[], int off, int len);
+    public final void write(@PolySigned byte b[]);
+    public final void write(@PolySigned byte b[], int off, int len);
 }
 
 package com.sun.corba.se.impl.io;
 
 class IIOPOutputStream {
-    public final void write(@PolySignedness byte b[]);
-    public final void write(@PolySignedness byte b[], int off, int len);
+    public final void write(@PolySigned byte b[]);
+    public final void write(@PolySigned byte b[], int off, int len);
 }
 
 package com.sun.corba.se.impl.orbutil;
 
 class HexOutputStream {
-    public synchronized void write(@PolySignedness byte[] b);
-    public synchronized void write(@PolySignedness byte[] b, int off, int len);
+    public synchronized void write(@PolySigned byte[] b);
+    public synchronized void write(@PolySigned byte[] b, int off, int len);
 }
 
 package com.sun.imageio.plugins.png;
 
 class PNGImageWriter {
-    public void write(@PolySignedness byte[] b, int off, int len);
-    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
 }
 
 package com.sun.org.apache.xml.internal.security.utils;
 
 class DigesterOutputStream {
-    public void write(@PolySignedness byte[] arg0);
-    public void write(@PolySignedness byte[] arg0, int arg1, int arg2);
+    public void write(@PolySigned byte[] arg0);
+    public void write(@PolySigned byte[] arg0, int arg1, int arg2);
 }
 
 class SignerOutputStream {
-    public void write(@PolySignedness byte[] arg0) ;
-    public void write(@PolySignedness byte[] arg0, int arg1, int arg2);
+    public void write(@PolySigned byte[] arg0) ;
+    public void write(@PolySigned byte[] arg0, int arg1, int arg2);
 }
 
 class UnsyncBufferedOutputStream {
-    public void write(@PolySignedness byte[] arg0);
-    public void write(@PolySignedness byte[] arg0, int arg1, int len);
+    public void write(@PolySigned byte[] arg0);
+    public void write(@PolySigned byte[] arg0, int arg1, int len);
 }
 
 class UnsyncByteArrayOutputStream {
-    public void write(@PolySignedness byte[] arg0);
-    public void write(@PolySignedness byte[] arg0, int arg1, int arg2);
+    public void write(@PolySigned byte[] arg0);
+    public void write(@PolySigned byte[] arg0, int arg1, int arg2);
 }
 
 package java.lang;
@@ -97,168 +97,166 @@ class Long {
 package java.io;
 
 class BufferedOutputStream {
-    public synchronized void write(@PolySignedness byte b[], int off, int len);
+    public synchronized void write(@PolySigned byte b[], int off, int len);
 }
 
 class ByteArrayOutputStream {
-    public synchronized void write(@PolySignedness byte b[], int off, int len);
+    public synchronized void write(@PolySigned byte b[], int off, int len);
 }
 
 class DataOutputStream {
-    public synchronized void write(@PolySignedness byte b[], int off, int len);
+    public synchronized void write(@PolySigned byte b[], int off, int len);
 }
 
 class FileOutputStream {
-    public void write(@PolySignedness byte b[]);
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[]);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 class FilterOutputStream {
-    public void write(@PolySignedness byte b[]);
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[]);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 class ObjectOutput {
-    public void write(@PolySignedness byte b[]);
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[]);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 class ObjectOutputStream {
-    public void write(@PolySignedness byte[] buf);
-    public void write(@PolySignedness byte[] buf, int off, int len);
+    public void write(@PolySigned byte[] buf);
+    public void write(@PolySigned byte[] buf, int off, int len);
 }
 
 class OutputStream {
-    public void write(@PolySignedness byte b[]);
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[]);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 class PipedOutputStream {
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 class PrintStream {
-    public void write(@PolySignedness byte buf[], int off, int len);
+    public void write(@PolySigned byte buf[], int off, int len);
 }
 
 class RandomAccessFile {
-    public void write(@PolySignedness byte b[]);
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[]);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 package java.net;
 
 class SocketOutputStream {
-    public void write(@PolySignedness byte b[]);
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[]);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 package java.nio.file;
 
 class Files {
-    public static Path write(Path path, @PolySignedness byte[] bytes, OpenOption... options);
+    public static Path write(Path path, @PolySigned byte[] bytes, OpenOption... options);
 }
 
 package java.rmi.server;
 
 class LogStream {
-    public void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[], int off, int len);
 }
 
 package java.security;
 
 class DigestOutputStream {
-    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
 }
 
 package java.util;
 
 class Arrays {
+    public static void fill(@PolySigned byte[] a, @PolySigned byte val);
+    public static void fill(@PolySigned char[] a, @PolySigned char val);
+    public static void fill(@PolySigned short[] a, @PolySigned short val);
+    public static void fill(@PolySigned int[] a, @PolySigned int val);
+    public static void fill(@PolySigned long[] a, @PolySigned long val);
+    public static void fill(@PolySigned byte[] a, int fromIndex, int toIndex, @PolySigned byte val);
+    public static void fill(@PolySigned char[] a, int fromIndex, int toIndex, @PolySigned char val);
+    public static void fill(@PolySigned short[] a, int fromIndex, int toIndex, @PolySigned short val);
+    public static void fill(@PolySigned int[] a, int fromIndex, int toIndex, @PolySigned int val);
+    public static void fill(@PolySigned long[] a, int fromIndex, int toIndex, @PolySigned long val);
 
-    public static void fill(@PolySignedness byte[] a, @PolySignedness byte val);
-    public static void fill(@PolySignedness char[] a, @PolySignedness char val);
-    public static void fill(@PolySignedness short[] a, @PolySignedness short val);
-    public static void fill(@PolySignedness int[] a, @PolySignedness int val);
-    public static void fill(@PolySignedness long[] a, @PolySignedness long val);
-    public static void fill(@PolySignedness byte[] a, int fromIndex, int toIndex, @PolySignedness byte val);
-    public static void fill(@PolySignedness char[] a, int fromIndex, int toIndex, @PolySignedness char val);
-    public static void fill(@PolySignedness short[] a, int fromIndex, int toIndex, @PolySignedness short val);
-    public static void fill(@PolySignedness int[] a, int fromIndex, int toIndex, @PolySignedness int val);
-    public static void fill(@PolySignedness long[] a, int fromIndex, int toIndex, @PolySignedness long val);
-
-    public static @PolySignedness byte[] copyOfRange(@PolySignedness byte[] original, int from, int to;
-    public static @PolySignedness short[] copyOfRange(@PolySignedness short[] original, int from, int to;
-    public static @PolySignedness int[] copyOfRange(@PolySignedness int[] original, int from, int to;
-    public static @PolySignedness long[] copyOfRange(@PolySignedness long[] original, int from, int to;
-    public static @PolySignedness char[] copyOfRange(@PolySignedness char[] original, int from, int to;
-    public static @PolySignedness float[] copyOfRange(@PolySignedness float[] original, int from, int to;
-    public static @PolySignedness double[] copyOfRange(@PolySignedness double[] original, int from, int to;
-    public static @PolySignedness boolean[] copyOfRange(@PolySignedness boolean[] original, int from, int to;
-
+    public static @PolySigned byte[] copyOfRange(@PolySigned byte[] original, int from, int to);
+    public static @PolySigned short[] copyOfRange(@PolySigned short[] original, int from, int to);
+    public static @PolySigned int[] copyOfRange(@PolySigned int[] original, int from, int to);
+    public static @PolySigned long[] copyOfRange(@PolySigned long[] original, int from, int to);
+    public static @PolySigned char[] copyOfRange(@PolySigned char[] original, int from, int to);
+    public static @PolySigned float[] copyOfRange(@PolySigned float[] original, int from, int to);
+    public static @PolySigned double[] copyOfRange(@PolySigned double[] original, int from, int to);
+    public static @PolySigned boolean[] copyOfRange(@PolySigned boolean[] original, int from, int to);
 }
 
 package java.util.zip;
 
 class CheckedOutputStream {
-    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
 }
 
 class DeflaterOutputStream {
-    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
 }
 
 class GZIPOutputStream {
-    public synchronized void write(@PolySignedness byte[] buf, int off, int len);
+    public synchronized void write(@PolySigned byte[] buf, int off, int len);
 }
 
 class InflaterOutputStream {
-    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
 }
 
 class ZipOutputStream {
-    public synchronized void write(@PolySignedness byte[] b, int off, int len);
+    public synchronized void write(@PolySigned byte[] b, int off, int len);
 }
 
 package javax.imageio.stream;
 
 class FileCacheImageOutputStream {
-    public void write(@PolySignedness byte[] b, int off, int len);
-    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
 }
 
 class ImageOutputStreamImpl {
-    public void write(@PolySignedness byte b[]);
-    public abstract void write(@PolySignedness byte b[], int off, int len);
+    public void write(@PolySigned byte b[]);
+    public abstract void write(@PolySigned byte b[], int off, int len);
 }
 
 class MemoryCache {
-    public void write(@PolySignedness byte[] b, int off, int len, long pos);
+    public void write(@PolySigned byte[] b, int off, int len, long pos);
 }
 
 class MemoryCacheImageOutputStream {
-    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySigned byte[] b, int off, int len);
 }
 
 package javax.sound.sampled;
 
 class SourceDataLine {
-    public int write(@PolySignedness byte[] b, int off, int len);
+    public int write(@PolySigned byte[] b, int off, int len);
 }
 
 package javax.swing.text.rtf;
 
 class AbstractFilter {
-    public void write(@PolySignedness byte[] buf, int off, int len);
+    public void write(@PolySigned byte[] buf, int off, int len);
 }
 
 package org.omg.CORBA;
 
 class OctetSeqHelper {
-    public static void write (org.omg.CORBA.portable.OutputStream ostream, @PolySignedness byte[] value);
+    public static void write (org.omg.CORBA.portable.OutputStream ostream, @PolySigned byte[] value);
 }
 
 package org.omg.PortableInterceptor;
 
 class ObjectIdHelper {
-  public static void write (org.omg.CORBA.portable.OutputStream ostream, @PolySignedness byte[] value);
+  public static void write (org.omg.CORBA.portable.OutputStream ostream, @PolySigned byte[] value);
 }
