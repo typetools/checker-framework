@@ -1,8 +1,8 @@
 package org.checkerframework.framework.type;
 
-// The imports from com.sun, but they are all
-// @jdk.Exported and therefore somewhat safe to use.
+// The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -2713,8 +2714,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TypeMirror} for the tree and converts that into an {@link AnnotatedTypeMirror}, but does not
      * add any annotations to the result.
      *
-     * <p>Most users will want to use getAnnotatedType instead; this method is mostly for internal
-     * use.
+     * <p>Most users will want to use {@link #getAnnotatedType(Tree)} instead; this method is mostly
+     * for internal use.
      *
      * @param node the tree to analyze
      * @return the type of {@code node}, without any annotations
@@ -3037,6 +3038,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles = new HashMap<>();
 
         // 1. jdk.astub
+        // Only look in .jar files, and parse it right away.
         if (!checker.hasOption("ignorejdkastub")) {
             InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
@@ -3087,10 +3089,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Parse stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @Stubfiles
         for (String stubPath : allStubFiles) {
-            if (stubPath == null || stubPath.isEmpty()) {
-                continue;
-            }
-            // Handle case when running in jtreg
+            // Special case when running in jtreg.
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
             if (base != null) {
@@ -3100,22 +3099,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (stubs.isEmpty()) {
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in == null) {
-                    checker.message(
-                            Kind.WARNING,
-                            "Did not find stub file or files within directory: "
-                                    + stubPath
-                                    + " "
-                                    + new File(stubPath).getAbsolutePath()
-                                    + (stubPathFull.equals(stubPath) ? "" : (" " + stubPathFull)));
-                    break;
+                    // Didn't find the stubfile.
+                    URL topLevelResource = checker.getClass().getResource("/" + stubPath);
+                    if (topLevelResource != null) {
+                        checker.message(
+                                Kind.WARNING,
+                                stubPath
+                                        + " should be in the same directory as "
+                                        + checker.getClass().getSimpleName()
+                                        + ".class, but is at the top level of a jar file: "
+                                        + topLevelResource);
+                    } else {
+                        checker.message(
+                                Kind.WARNING,
+                                "Did not find stub file "
+                                        + stubPath
+                                        + " on classpath or within directory "
+                                        + new File(stubPath).getAbsolutePath()
+                                        + (stubPathFull.equals(stubPath)
+                                                ? ""
+                                                : (" or at " + stubPathFull)));
+                    }
+                } else {
+                    StubParser.parse(
+                            stubPath,
+                            in,
+                            this,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
                 }
-                StubParser.parse(
-                        stubPath,
-                        in,
-                        this,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;
