@@ -1681,18 +1681,56 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
-
-            // Also skip constructor return types (which somewhat act like
-            // the receiver).
             MethodSymbol methodElt = (MethodSymbol) type.getElement();
             if (methodElt == null || !methodElt.isConstructor()) {
                 scan(type.getReturnType(), p);
+            } else if (methodElt.isConstructor()) {
+                // If a constructor declaration is not explicitly annotated,
+                // annotate it with the type on the class declaration.
+                AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) type.getReturnType();
+                addDefaultsToConstructorDeclaration(returnType, p);
             }
 
             scanAndReduce(type.getParameterTypes(), p, null);
             scanAndReduce(type.getThrownTypes(), p, null);
             scanAndReduce(type.getTypeVariables(), p, null);
             return null;
+        }
+
+        /**
+         * Adds default annotations to the constructor return type {@code returnType}. These
+         * defaults are the same as the annotations on the enclosing class of the constructor.
+         */
+        private void addDefaultsToConstructorDeclaration(
+                AnnotatedDeclaredType returnType, AnnotatedTypeFactory p) {
+            // At this point defaults have been applied to class declarations but not
+            // to constructor return types.
+            // TODO: change test to use getExplicitAnnotations() when
+            // http://tinyurl.com/cfissue/2324 is fixed.  Currently, getExplicitAnnotations()
+            // returns the empty set even for explicitly-annotated types.
+            if (returnType.getAnnotations().isEmpty()) {
+                // This constructor's return type is not explicitly annotated.
+                DeclaredType classDeclarationType = returnType.getUnderlyingType();
+                AnnotatedTypeMirror underlyingTypeMirror =
+                        p.getAnnotatedType(classDeclarationType.asElement());
+                Set<? extends AnnotationMirror> topAnnotations =
+                        p.getQualifierHierarchy().getTopAnnotations();
+                for (AnnotationMirror topAnno : topAnnotations) {
+                    AnnotationMirror annotationOnClass =
+                            underlyingTypeMirror.getAnnotationInHierarchy(topAnno);
+                    // annotationOnClass will not be null since the defaults are applied before
+                    // control reaches here.  However, this check is added because it appears
+                    // that checker-framework-inference runs this code at an earlier stage than
+                    // regular checker-framework does which causes annotationOnClass to be null.
+                    // Without this check, the test AnonymousProblem.java in testdata/ostrusted
+                    // of cf-inference crashes.  The same test case is replicated in this repo
+                    // (checker-framework) tests/tainting/AnonymousProblem.java which does not
+                    // crash, i.e removing this check has no effect on that test.
+                    if (annotationOnClass != null) {
+                        returnType.addAnnotation(annotationOnClass);
+                    }
+                }
+            }
         }
 
         @Override
@@ -2315,9 +2353,55 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // populate the type arguments on the type. To do this, we need to create the type
             // mirror again, using toAnnotatedType(). However, this does not populate any
             // annotations -- so we need to take these from the fromTypeTree() mirror.
-            return annotateTypeArgs(newClassTree, type);
+            type = annotateTypeArgs(newClassTree, type);
+        }
+        // If the user hasn't explicitly annotated a constructor invocation,
+        // annotate it with the type on the constructor declaration.
+
+        // type.getAnnotations() returns both default and explicit annotations.
+        Set<? extends AnnotationMirror> allAnnotations = type.getAnnotations();
+
+        // TODO: When https://github.com/typetools/checker-framework/issues/2324 is fixed, use
+        // type.getExplicitAnnotations().
+        Set<AnnotationMirror> explicitAnnotations =
+                getExplicitAnnotationsOnNewClassTree(newClassTree, allAnnotations);
+
+        // Replace default annotations with annotations from constructor declaration.
+        ExecutableElement ctor = TreeUtils.constructor(newClassTree);
+        AnnotatedExecutableType ctorAnnotated = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        for (AnnotationMirror anno : allAnnotations) {
+            if (!explicitAnnotations.contains(anno)) {
+                AnnotationMirror annoToAdd =
+                        ctorAnnotated.getReturnType().getAnnotationInHierarchy(anno);
+                type.replaceAnnotation(annoToAdd);
+            }
         }
         return type;
+    }
+
+    /**
+     * Extracts the set of explicit annotations on a {@code newClassTree} from the set that contains
+     * both the default and explicit ({@code allAnnotations}) annotations of this tree.
+     */
+    // TODO: This is a hack.  Remove this method when http://tinyurl.com/cfissue/2324 is fixed.
+    Set<AnnotationMirror> getExplicitAnnotationsOnNewClassTree(
+            NewClassTree newClassTree, Set<? extends AnnotationMirror> allAnnotations) {
+        // The following code extracts explicit annotations from "newClassTree" using string
+        // manipulations.
+        Set<AnnotationMirror> explicitAnnotations = new HashSet<>();
+        String newClassTreeString = newClassTree.toString();
+        for (AnnotationMirror anno : allAnnotations) {
+            String annoString = anno.toString();
+            String annoStringName =
+                    annoString.substring(annoString.lastIndexOf('.') + 1, annoString.length() - 1);
+            if (annoString.contains("(")) {
+                annoStringName = annoStringName.substring(0, annoStringName.indexOf('(') - 1);
+            }
+            if (newClassTreeString.contains(annoStringName)) {
+                explicitAnnotations.add(anno);
+            }
+        }
+        return explicitAnnotations;
     }
 
     // This method extracts the ugly hacky parts.
