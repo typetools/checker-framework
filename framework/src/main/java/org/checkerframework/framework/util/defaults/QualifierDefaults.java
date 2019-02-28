@@ -464,12 +464,13 @@ public class QualifierDefaults {
 
             case CLASS:
                 if (((ClassTree) tree).getExtendsClause() != null) {
-                    elt = TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
-                    applyDefaultsToExtendsAndImplicits(elt, type);
+                    Element extendsElt =
+                            TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
+                    applyDefaultsToElement(extendsElt, type);
                 }
                 for (Tree implicitClause : ((ClassTree) tree).getImplementsClause()) {
-                    elt = TreeUtils.elementFromTree(implicitClause);
-                    applyDefaultsToExtendsAndImplicits(elt, type);
+                    Element implementsElt = TreeUtils.elementFromTree(implicitClause);
+                    applyDefaultsToElement(implementsElt, type);
                 }
                 elt = nearestEnclosingExceptLocal(tree);
                 break;
@@ -483,17 +484,7 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
-        boolean defaultTypeVarLocals =
-                (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
-                        && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                                .getShouldDefaultTypeVarLocals();
-        applyToTypeVar =
-                defaultTypeVarLocals
-                        && elt != null
-                        && elt.getKind() == ElementKind.LOCAL_VARIABLE
-                        && type.getKind() == TypeKind.TYPEVAR;
-        applyDefaultsElement(elt, type);
-        applyToTypeVar = false;
+        applyDefaultsToElement(elt, type);
     }
 
     /**
@@ -502,7 +493,7 @@ public class QualifierDefaults {
      * @param elt the element associated with the type
      * @param type the type to which defaults will be applied
      */
-    void applyDefaultsToExtendsAndImplicits(Element elt, AnnotatedTypeMirror type) {
+    void applyDefaultsToElement(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
                         && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
