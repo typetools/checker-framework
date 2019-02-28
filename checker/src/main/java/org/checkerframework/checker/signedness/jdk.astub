@@ -1,5 +1,55 @@
 import org.checkerframework.checker.signedness.qual.*;
 
+package com.sun.corba.se.impl.encoding;
+
+class CDROutputStream {
+    public final void write(@PolySignedness byte b[]);
+    public final void write(@PolySignedness byte b[], int off, int len);
+}
+
+package com.sun.corba.se.impl.io;
+
+class IIOPOutputStream {
+    public final void write(@PolySignedness byte b[]);
+    public final void write(@PolySignedness byte b[], int off, int len);
+}
+
+package com.sun.corba.se.impl.orbutil;
+
+class HexOutputStream {
+    public synchronized void write(@PolySignedness byte[] b);
+    public synchronized void write(@PolySignedness byte[] b, int off, int len);
+}
+
+package com.sun.imageio.plugins.png;
+
+class PNGImageWriter {
+    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySignedness byte[] b, int off, int len);
+}
+
+package com.sun.org.apache.xml.internal.security.utils;
+
+class DigesterOutputStream {
+    public void write(@PolySignedness byte[] arg0);
+    public void write(@PolySignedness byte[] arg0, int arg1, int arg2);
+}
+
+class SignerOutputStream {
+    public void write(@PolySignedness byte[] arg0) ;
+    public void write(@PolySignedness byte[] arg0, int arg1, int arg2);
+}
+
+class UnsyncBufferedOutputStream {
+    public void write(@PolySignedness byte[] arg0);
+    public void write(@PolySignedness byte[] arg0, int arg1, int len);
+}
+
+class UnsyncByteArrayOutputStream {
+    public void write(@PolySignedness byte[] arg0);
+    public void write(@PolySignedness byte[] arg0, int arg1, int arg2);
+}
+
 package java.lang;
 
 class Integer {
@@ -44,6 +94,83 @@ class Long {
     public static @Unsigned long remainderUnsigned(@Unsigned long dividend, @Unsigned long divisor);
 }
 
+package java.io;
+
+class BufferedOutputStream {
+    public synchronized void write(@PolySignedness byte b[], int off, int len);
+}
+
+class ByteArrayOutputStream {
+    public synchronized void write(@PolySignedness byte b[], int off, int len);
+}
+
+class DataOutputStream {
+    public synchronized void write(@PolySignedness byte b[], int off, int len);
+}
+
+class FileOutputStream {
+    public void write(@PolySignedness byte b[]);
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+class FilterOutputStream {
+    public void write(@PolySignedness byte b[]);
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+class ObjectOutput {
+    public void write(@PolySignedness byte b[]);
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+class ObjectOutputStream {
+    public void write(@PolySignedness byte[] buf);
+    public void write(@PolySignedness byte[] buf, int off, int len);
+}
+
+class OutputStream {
+    public void write(@PolySignedness byte b[]);
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+class PipedOutputStream {
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+class PrintStream {
+    public void write(@PolySignedness byte buf[], int off, int len);
+}
+
+class RandomAccessFile {
+    public void write(@PolySignedness byte b[]);
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+package java.net;
+
+class SocketOutputStream {
+    public void write(@PolySignedness byte b[]);
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+package java.nio.file;
+
+class Files {
+    public static Path write(Path path, @PolySignedness byte[] bytes, OpenOption... options);
+}
+
+package java.rmi.server;
+
+class LogStream {
+    public void write(@PolySignedness byte b[], int off, int len);
+}
+
+package java.security;
+
+class DigestOutputStream {
+    public void write(@PolySignedness byte[] b, int off, int len);
+}
+
 package java.util;
 
 class Arrays {
@@ -66,4 +193,70 @@ class Arrays {
     public static void fill(@PolySignedness int[] a, int fromIndex, int toIndex, @PolySignedness int val);
 
     public static void fill(@PolySignedness long[] a, int fromIndex, int toIndex, @PolySignedness long val);
+}
+
+package java.util.zip;
+
+class CheckedOutputStream {
+    public void write(@PolySignedness byte[] b, int off, int len);
+}
+
+class DeflaterOutputStream {
+    public void write(@PolySignedness byte[] b, int off, int len);
+}
+
+class GZIPOutputStream {
+    public synchronized void write(@PolySignedness byte[] buf, int off, int len);
+}
+
+class InflaterOutputStream {
+    public void write(@PolySignedness byte[] b, int off, int len);
+}
+
+class ZipOutputStream {
+    public synchronized void write(@PolySignedness byte[] b, int off, int len);
+}
+
+package javax.imageio.stream;
+
+class FileCacheImageOutputStream {
+    public void write(@PolySignedness byte[] b, int off, int len);
+    public void write(@PolySignedness byte[] b, int off, int len);
+}
+
+class ImageOutputStreamImpl {
+    public void write(@PolySignedness byte b[]);
+    public abstract void write(@PolySignedness byte b[], int off, int len);
+}
+
+class MemoryCache {
+    public void write(@PolySignedness byte[] b, int off, int len, long pos);
+}
+
+class MemoryCacheImageOutputStream {
+    public void write(@PolySignedness byte[] b, int off, int len);
+}
+
+package javax.sound.sampled;
+
+class SourceDataLine {
+    public int write(@PolySignedness byte[] b, int off, int len);
+}
+
+package javax.swing.text.rtf;
+
+class AbstractFilter {
+    public void write(@PolySignedness byte[] buf, int off, int len);
+}
+
+package org.omg.CORBA;
+
+class OctetSeqHelper {
+    public static void write (org.omg.CORBA.portable.OutputStream ostream, @PolySignedness byte[] value);
+}
+
+package org.omg.PortableInterceptor;
+
+class ObjectIdHelper {
+  public static void write (org.omg.CORBA.portable.OutputStream ostream, @PolySignedness byte[] value);
 }
