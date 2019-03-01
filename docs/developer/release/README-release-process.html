@@ -134,6 +134,14 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 	in <code>checker-framework/build.gradle</code>,
 	in the <code>allprojects</code> block.
 	(The AFU version is updated as part of the release scripts.)
+
+	<p>
+	Update the minor version if there are any incompatibilities with the previous version.
+	This includes changes to <code>AnnotatedTypeFactory</code> and
+	<code>BaseTypeChecker</code> (add other classes to this list if relevant),
+	which introduce incompatibilities for people who are maintaining their own
+	checker,
+	</p>
       </li>
       <li>
 	Commit and push these changes to typetools/master.
