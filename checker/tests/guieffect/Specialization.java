@@ -39,6 +39,7 @@ public class Specialization {
                     }
                 };
         @UI I ui =
+                // :: error: (declaration.inconsistent.with.implements.clause)
                 new @UI I() {
                     public void m() {
                         reqUI(null);

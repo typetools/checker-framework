@@ -23,6 +23,7 @@ public class StaticExTest {
         @IntVal({0, 1}) int offset = flag ? 0 : 1;
         char[] data = {'h', 'e', 'l', 'l', 'o', 'b', 'y', 'e', 't', 'o'};
         @IntVal({5, 6}) int charCount = flag ? 5 : 6;
+        // :: warning: (cast.unsafe.constructor.invocation)
         @StringVal({"hello", "ellob", "hellob", "elloby"}) String s = new String(data, offset, charCount);
     }
 
@@ -32,6 +33,7 @@ public class StaticExTest {
         char[] data2 = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
         char @StringVal({"hellobyeto", "abcdefghij"}) [] data = flag ? data1 : data2;
         @IntVal({5, 6}) int charCount = flag ? 5 : 6;
+        // :: warning: (cast.unsafe.constructor.invocation)
         @StringVal({"hello", "ellob", "hellob", "elloby", "abcde", "bcdef", "abcdef", "bcdefg"}) String s = new String(data, offset, charCount);
     }
 

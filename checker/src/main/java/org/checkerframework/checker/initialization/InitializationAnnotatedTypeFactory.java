@@ -738,8 +738,10 @@ public abstract class InitializationAnnotatedTypeFactory<
                 }
                 if (!allCommitted) {
                     p.replaceAnnotation(createFreeAnnotation(type));
+                    return null;
                 }
             }
+            p.replaceAnnotation(COMMITTED);
             return null;
         }
 
