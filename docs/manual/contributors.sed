@@ -7,9 +7,11 @@ s/^J Luo,/Jeff Luo,/
 s/^Jianchu,/Jianchu Li,/
 s/^JonathanGBurke,/Jonathan Burke,/
 s/^Michèle,/Stefan Heule,/
+s/^Rashmi,/Rashmi Mudduluru,/
 s/^Sadaf,/Sadaf Tajik,/
 s/^W. Dietl,/Werner Dietl,/
 s/^atul dada,/Atul Dada,/
+s/^awturner,/Andy Turner,/
 s/^bitterfox,/Shinya Yoshida,/
 s/^charlie garrett,/Charlie Garrett,/
 s/^cmackie,/Christopher Mackie,/

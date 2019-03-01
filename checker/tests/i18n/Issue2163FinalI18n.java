@@ -8,10 +8,12 @@ import org.checkerframework.checker.i18n.qual.*;
 }
 
 @UnknownLocalizableKey class Issue2163FinalAB {
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @LocalizableKey Issue2163FinalAB() {}
 }
 
 @UnknownLocalizableKey class Issue2163FinalAC {
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @LocalizableKeyBottom Issue2163FinalAC() {}
 }
 
@@ -21,10 +23,12 @@ import org.checkerframework.checker.i18n.qual.*;
 }
 
 @LocalizableKey class Issue2163FinalBB {
+    // :: error: (super.invocation.invalid)
     @LocalizableKey Issue2163FinalBB() {}
 }
 
 @LocalizableKey class Issue2163FinalBC {
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @LocalizableKeyBottom Issue2163FinalBC() {}
 }
 
@@ -34,11 +38,12 @@ import org.checkerframework.checker.i18n.qual.*;
 }
 
 @LocalizableKeyBottom class Issue2163FinalCB {
-    // :: error: (type.invalid.annotations.on.use)
+    // :: error: (type.invalid.annotations.on.use) :: error: (super.invocation.invalid)
     @LocalizableKey Issue2163FinalCB() {}
 }
 
 @LocalizableKeyBottom class Issue2163FinalCC {
+    // :: error: (super.invocation.invalid)
     @LocalizableKeyBottom Issue2163FinalCC() {}
 }
 
