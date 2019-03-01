@@ -82,6 +82,7 @@ import org.checkerframework.javacutil.UserError;
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
 
+    /** Create a BaseTypeChecker. */
     public BaseTypeChecker() {
         checkerMessageComparator = new CheckerMessageComparator();
     }
