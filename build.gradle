@@ -350,6 +350,10 @@ subprojects {
 
     dependencies {
         // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
+	// If you update this:
+	//  * Temporarily comment out "-Werror" elsewhere in this file
+	//  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
+	//  * Uncomment "-Werror"
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.3'
     }
 
