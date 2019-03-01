@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -16,9 +17,13 @@ public class ArrayTypeNode extends Node {
 
     protected final ArrayTypeTree tree;
 
-    public ArrayTypeNode(ArrayTypeTree tree) {
+    /** For Types.isSameType. */
+    protected final Types types;
+
+    public ArrayTypeNode(ArrayTypeTree tree, Types types) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
+        this.types = types;
     }
 
     @Override
@@ -42,7 +47,7 @@ public class ArrayTypeNode extends Node {
             return false;
         }
         ArrayTypeNode other = (ArrayTypeNode) obj;
-        return getType().equals(other.getType());
+        return types.isSameType(getType(), other.getType());
     }
 
     @Override
