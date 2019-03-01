@@ -55,6 +55,5 @@ class Issue2163FinalAAClient {
 
 // Testing Default
 class Issue2163FinalBCClient {
-    // :: error: (assignment.type.incompatible)
     @LocalizableKeyBottom Issue2163FinalBC obj = new Issue2163FinalBC();
 }

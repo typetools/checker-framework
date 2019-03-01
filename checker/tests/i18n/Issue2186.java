@@ -16,6 +16,7 @@ import org.checkerframework.checker.i18n.qual.*;
 
     void testDiamond() {
         @LocalizableKeyBottom ArrayList<@LocalizableKeyBottom String> list =
+                // :: warning: (cast.unsafe.constructor.invocation)
                 new @LocalizableKeyBottom ArrayList<@LocalizableKeyBottom String>();
     }
 }
