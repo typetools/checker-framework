@@ -1,5 +1,6 @@
 import typedecldefault.quals.*;
 
+// :: warning: (inconsistent.constructor.type)
 public class TestDefaultForTypeDecl {
     void test(@TypeDeclDefaultTop TestDefaultForTypeDecl arg) {}
 
