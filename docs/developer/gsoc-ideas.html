@@ -664,14 +664,18 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </p>
 
 <p>
-  Here are some possibilities (or, search for code that uses
+  A good way to find a case study project is to search for code that uses
   signedness-sensitive routines in <code>Integer</code>
   and <code>Long</code>, namely
    <code>compareUnsigned</code>
    <code>divideUnsigned</code>
    <code>parseUnsignedInt</code>
    <code>remainderUnsigned</code>, and
-   <code>toUnsignedLong</code>):
+   <code>toUnsignedLong</code>.
+</p>
+
+<p>
+  Here are some possibilities:
 </p>
 <ul>
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
@@ -680,9 +684,11 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </ul>
 
 <p>
-  Your case studies will show the need for enhancements to the Signedness Checker.
-  For example, it does not currently handle boxed integers and BigInteger;
-  these haven't yet come up in case studies but could be worthwhile enhancements.
+  Your case studies will show the need for enhancements to the Signedness
+  Checker.  For example, the Signedness Checker does not currently handle
+  boxed integers and BigInteger; these haven't yet come up in case studies
+  but could be worthwhile enhancements.  There may also be the need to
+  write more annotations for libraries such as the JDK.
 </p>
 
 
