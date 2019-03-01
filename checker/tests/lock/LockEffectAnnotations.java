@@ -139,6 +139,7 @@ public class LockEffectAnnotations {
         }
     }
 
+    // :: warning: (inconsistent.constructor.type)
     @GuardedByUnknown class MyClass2 {}
 
     // :: error: (expression.unparsable.type.invalid)

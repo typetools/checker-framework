@@ -565,6 +565,34 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return null;
             }
 
+            if (TreeUtils.isConstructor(node)) {
+                Set<AnnotationMirror> constructorAnnotations =
+                        methodType.getReturnType().getAnnotations();
+                Set<AnnotationMirror> classAnnotations =
+                        atypeFactory
+                                .getAnnotatedType(methodElement.getEnclosingElement())
+                                .getAnnotations();
+                QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+                for (AnnotationMirror classAnno : classAnnotations) {
+                    for (AnnotationMirror constructorAnno : constructorAnnotations) {
+                        if (qualifierHierarchy.leastUpperBound(classAnno, constructorAnno)
+                                != null) {
+                            if (qualifierHierarchy.isSubtype(constructorAnno, classAnno)) {
+                                if (!AnnotationUtils.areSameByName(constructorAnno, classAnno)) {
+                                    checker.report(
+                                            Result.warning(
+                                                    "inconsistent.constructor.type",
+                                                    constructorAnno,
+                                                    classAnno),
+                                            methodElement);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
             // check method purity if needed
             {
                 boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
@@ -1200,10 +1228,55 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // check precondition annotations
         checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
+        checkSuperConstructorCall(node);
+
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
         scan(node.getMethodSelect(), p);
         return null; // super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * Checks that the following rule is satisfied: The type on a constructor declaration must be a
+     * supertype of the return type of "super()" invocation within that constructor (except for the
+     * Initialization and Rawness Checkers).
+     */
+    void checkSuperConstructorCall(MethodInvocationTree node) {
+        if (!TreeUtils.isSuperCall(node)) {
+            return;
+        }
+        TreePath path = atypeFactory.getPath(node);
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        if (TreeUtils.isConstructor(enclosingMethod)) {
+            AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(node);
+            AnnotatedExecutableType constructorType =
+                    atypeFactory.getAnnotatedType(enclosingMethod);
+            Set<? extends AnnotationMirror> topAnnoations =
+                    atypeFactory.getQualifierHierarchy().getTopAnnotations();
+            for (AnnotationMirror topAnno : topAnnoations) {
+                AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
+                AnnotationMirror constructorTypeMirror =
+                        constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
+
+                if (!AnnotationUtils.areSameByName(
+                                constructorTypeMirror,
+                                "org.checkerframework.checker.initialization.qual.UnderInitialization")
+                        && !AnnotationUtils.areSameByName(
+                                constructorTypeMirror,
+                                "org.checkerframework.checker.nullness.qual.Raw")
+                        && !atypeFactory
+                                .getQualifierHierarchy()
+                                .isSubtype(superTypeMirror, constructorTypeMirror)) {
+                    checker.report(
+                            Result.failure(
+                                    "super.invocation.invalid",
+                                    constructorTypeMirror,
+                                    node,
+                                    superTypeMirror),
+                            enclosingMethod);
+                }
+            }
+        }
     }
 
     /**
