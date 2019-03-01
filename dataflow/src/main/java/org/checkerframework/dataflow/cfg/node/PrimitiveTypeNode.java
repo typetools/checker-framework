@@ -4,7 +4,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -47,7 +47,7 @@ public class PrimitiveTypeNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getType());
+        return Objects.hash(getType());
     }
 
     @Override

@@ -141,11 +141,13 @@ public class LockEffectAnnotations {
 
     @GuardedByUnknown class MyClass2 {}
 
+    // :: error: (expression.unparsable.type.invalid) :: error: (super.invocation.invalid)
     @GuardedBy("lock") class MyClass3 {}
 
     @GuardedBy({}) class MyClass4 {}
-    // :: error: (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed) :: error: (super.invocation.invalid)
     @GuardSatisfied class MyClass5 {}
 
+    // :: error: (super.invocation.invalid)
     @GuardedByBottom class MyClass6 {}
 }

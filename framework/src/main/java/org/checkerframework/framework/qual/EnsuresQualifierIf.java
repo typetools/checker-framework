@@ -25,9 +25,9 @@ import java.lang.annotation.Target;
  *
  * <p>This annotation is only applicable to methods with a boolean return type.
  *
- * <p>Some type systems have specialized versions of this annotation, such as {@link
- * org.checkerframework.checker.nullness.qual.EnsuresNonNullIf @EnsuresNonNullIf} and {@link
- * org.checkerframework.checker.lock.qual.EnsuresLockHeldIf @EnsuresLockHeldIf}.
+ * <p>Some type systems have specialized versions of this annotation, such as {@code
+ * org.checkerframework.checker.nullness.qual.EnsuresNonNullIf} and {@code
+ * org.checkerframework.checker.lock.qual.EnsuresLockHeldIf}.
  *
  * @see EnsuresQualifiersIf
  * @see EnsuresQualifier

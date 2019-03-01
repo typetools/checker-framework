@@ -11,6 +11,7 @@ import java.io.LineNumberReader;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -228,7 +229,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
 
         @Override
         public int hashCode() {
-            return (int) (31 + 3 * treeString.hashCode() + 7 * lineNumber);
+            return Objects.hash(treeString, lineNumber);
         }
 
         @Override

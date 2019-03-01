@@ -3,12 +3,12 @@
 
 // @skip-test until the issue is fixed
 
-import org.checkerframework.checker.signedness.qual.PolySignedness;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 public class PolymorphicReturnType {
 
     // :: error: (some.error.goes.here)
-    public @PolySignedness byte get() {
+    public @PolySigned byte get() {
         return 0;
     }
 }
