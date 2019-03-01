@@ -87,10 +87,14 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   # Run error-prone
   ./gradlew runErrorProne --console=plain --warning-mode=all --no-daemon
 
+  # HTML legality
+  ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
+
   # Documentation
   ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
   make -C docs/manual all
 
+  # This comes last, in case we wish to ignore it
   echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
   # $TRAVIS_COMMIT_RANGE is empty for builds triggered by the initial commit of a new branch.
   if [ -n "$TRAVIS_COMMIT_RANGE" ] ; then
@@ -102,9 +106,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
     wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
     python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
   fi
-
-  # HTML legality
-  ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
 fi
 
