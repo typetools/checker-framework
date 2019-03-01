@@ -361,7 +361,44 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(im);
             }
         }
+
+        // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
+        // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
+        // as in "class X {}". This is equivalent to writing "class X extends @Top Object {}", so
+        // there is no need to do any subtype checking.
+        if (classTree.getExtendsClause() != null) {
+            AnnotatedTypeMirror extendsClauseType =
+                    atypeFactory.getAnnotatedType(classTree.getExtendsClause());
+            checkExtendsOrImplementsClause(
+                    classTree, extendsClauseType, "declaration.inconsistent.with.extends.clause");
+        }
+        // Do the same check as above for implements clauses.
+        for (Tree implementsClause : classTree.getImplementsClause()) {
+            AnnotatedTypeMirror implementsClauseType =
+                    atypeFactory.getAnnotatedType(implementsClause);
+            checkExtendsOrImplementsClause(
+                    classTree,
+                    implementsClauseType,
+                    "declaration.inconsistent.with.implements.clause");
+        }
+
         super.visitClass(classTree, null);
+    }
+
+    /**
+     * Reports an error ({@code msgKey}) if any annotation on {@code classTree} is not a subtype of
+     * the corresponding annotation in the same qualifier hierarchy on {@code type}.
+     */
+    void checkExtendsOrImplementsClause(
+            ClassTree classTree, AnnotatedTypeMirror type, @CompilerMessageKey String msgKey) {
+        for (AnnotationMirror topAnno : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+            AnnotationMirror classType =
+                    atypeFactory.getAnnotatedType(classTree).getAnnotationInHierarchy(topAnno);
+            AnnotationMirror superType = type.getAnnotationInHierarchy(topAnno);
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(classType, superType)) {
+                checker.report(Result.failure(msgKey, classType, superType), classTree);
+            }
+        }
     }
 
     /**
@@ -2429,6 +2466,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             returnType),
                     newClassTree);
             return false;
+        }
+
+        // Issue a warning if the type at constructor invocation is a subtype of the constructor
+        // declaration type.
+        // This is equivalent to down-casting.
+        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
+            checker.report(
+                    Result.warning(
+                            "cast.unsafe.constructor.invocation",
+                            returnType.toString(true),
+                            invocation.toString(true)),
+                    newClassTree);
         }
         return true;
         // TODO: what properties should hold for constructor receivers for
