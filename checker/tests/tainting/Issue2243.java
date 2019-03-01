@@ -6,12 +6,13 @@ import org.checkerframework.checker.tainting.qual.*;
 // :: error: (declaration.inconsistent.with.extends.clause)
 public @Tainted class Issue2243 extends Y {}
 
-// :: error: (type.invalid.annotations.on.use)
+// :: error: (super.invocation.invalid)
 class ExtendsSubTypingExplicit extends @Untainted X {}
 
 class X {}
 
 @Untainted class Y {
+    // :: error: (super.invocation.invalid)
     @Untainted Y() {}
 }
 
