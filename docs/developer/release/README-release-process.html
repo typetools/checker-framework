@@ -137,10 +137,30 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 
 	<p>
 	Update the minor version if there are any incompatibilities with the previous version.
-	This includes changes to <code>AnnotatedTypeFactory</code> and
-	<code>BaseTypeChecker</code> (add other classes to this list if relevant),
-	which introduce incompatibilities for people who are maintaining their own
-	checker,
+	This includes incompatibilities for people who are maintaining a checker,
+	which happens if the signature changes for any method in these classes:
+<!-- Add other classes to this list if relevant. -->
+<pre>
+AnnotatedTypeFactory
+BaseAnnotatedTypeFactory
+GenericAnnotatedTypeFactory
+CFTransfer
+CFAbstractTransfer
+CFAbstractAnalysis
+CFAnalysis
+CFAbstractStore
+CFStore
+CFAbstractValue
+CFValue
+BaseTypeVisitor
+BaseTypeChecker
+SourceChecker
+MultigraphQualifierHierarchy
+AbstractQualifierPolymorphism
+AnnotationUtils
+TreeAnnotator
+</pre>
+        (TODO: Write a command that diffs these classes between the previous and current release.)
 	</p>
       </li>
       <li>
