@@ -153,9 +153,14 @@ def get_current_date():
 
 def download_jsr308_langtools():
     """Download and unzip jsr308-langtools"""
+    langtools_dir = BUILD_DIR+"/jsr308-langtools"
+    langtools_2_4_0_dir = langtools_dir + "/jsr308-langtools-2.4.0"
+    if (os.path.exists(langtools_2_4_0_dir)):
+        print "Not downloading jsr308-langtools because found " + langtools_2_4_0_dir
+        return
     execute('wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
     execute('unzip -q jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
-    execute('mv jsr308-langtools-2.4.0 '+BUILD_DIR+"/jsr308-langtools", True, False, BUILD_DIR)
+    execute('mv jsr308-langtools-2.4.0 '+langtools_dir, True, False, BUILD_DIR)
 
 def build_annotation_tools_release(version, afu_interm_dir):
     """Build the Annotation File Utilities project's artifacts and place them
@@ -210,7 +215,7 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
     print "Here are occurrences of the old version number, " + old_cf_version
     old_cf_version_regex = old_cf_version.replace('.', '\.')
     find_cmd = 'find . -type d \( -path \*/build -o -path \*/.git \) -prune  -o \! -type d \( -name \*\~ -o -name \*.bin \) -prune -o  -type f -exec grep -i -n -e \'\b%s\b\' {} +' % old_cf_version_regex
-    execute(find_cmd, False, True, dataflow_manual_dir)
+    execute(find_cmd, False, True, CHECKER_FRAMEWORK_RELEASE)
     continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
 
     if not manual_only:

@@ -665,13 +665,15 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 
 <p>
   A good way to find a case study project is to search for code that uses
-  signedness-sensitive routines in <code>Integer</code>
-  and <code>Long</code>, namely
+  signedness-sensitive routines.
+  In <code>Integer</code>
+  and <code>Long</code>, these are
    <code>compareUnsigned</code>
    <code>divideUnsigned</code>
    <code>parseUnsignedInt</code>
    <code>remainderUnsigned</code>, and
    <code>toUnsignedLong</code>.
+  Also look for uses of Guava's <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a> class.
 </p>
 
 <p>
