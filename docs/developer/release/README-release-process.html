@@ -134,6 +134,36 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 	in <code>checker-framework/build.gradle</code>,
 	in the <code>allprojects</code> block.
 	(The AFU version is updated as part of the release scripts.)
+
+	<p>
+	Update the minor version if there are any incompatibilities with the previous version.
+	This includes incompatibilities for people who are maintaining a checker,
+	which happens if the signature changes for any method in these classes:
+	</p>
+<!-- Add other classes to this list if relevant. -->
+<pre>
+AnnotatedTypeFactory
+BaseAnnotatedTypeFactory
+GenericAnnotatedTypeFactory
+CFTransfer
+CFAbstractTransfer
+CFAbstractAnalysis
+CFAnalysis
+CFAbstractStore
+CFStore
+CFAbstractValue
+CFValue
+BaseTypeVisitor
+BaseTypeChecker
+SourceChecker
+MultigraphQualifierHierarchy
+AbstractQualifierPolymorphism
+AnnotationUtils
+TreeAnnotator
+</pre>
+        <p>
+        (TODO: Write a command that diffs these classes between the previous and current release.)
+	</p>
       </li>
       <li>
 	Commit and push these changes to typetools/master.

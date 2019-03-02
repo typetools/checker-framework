@@ -433,7 +433,7 @@ public class AnnotationBuilder {
                             + " kind: "
                             + expectedType.getKind());
         }
-        if (!((DeclaredType) expectedType).equals(values[0].asType())) {
+        if (!types.isSameType((DeclaredType) expectedType, values[0].asType())) {
             throw new BugInCF(
                     "expected a different declared component type: "
                             + expectedType
