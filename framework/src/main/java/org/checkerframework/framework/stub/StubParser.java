@@ -371,7 +371,7 @@ public class StubParser {
         StubParser sp = new StubParser(filename, atypeFactory, processingEnv, atypes, declAnnos);
         try {
             sp.parseStubUnit(inputStream);
-            sp.process(atypes, declAnnos);
+            sp.process();
         } catch (ParseProblemException e) {
             StringBuilder message =
                     new StringBuilder(
@@ -409,9 +409,7 @@ public class StubParser {
     }
 
     /** Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. */
-    private void process(
-            Map<Element, AnnotatedTypeMirror> atypes,
-            Map<String, Set<AnnotationMirror>> declAnnos) {
+    private void process() {
         processStubUnit(this.stubUnit);
     }
 

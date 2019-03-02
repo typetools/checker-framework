@@ -402,12 +402,14 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     /** @return true if the underlying types of the bounds for type1 and type2 are equal */
     public boolean boundsMatch(
             final AnnotatedTypeVariable type1, final AnnotatedTypeVariable type2) {
-        return type1.getUpperBound()
-                        .getUnderlyingType()
-                        .equals(type2.getUpperBound().getUnderlyingType())
-                && type1.getLowerBound()
-                        .getUnderlyingType()
-                        .equals(type2.getLowerBound().getUnderlyingType());
+        final Types types = type1.atypeFactory.types;
+
+        return types.isSameType(
+                        type1.getUpperBound().getUnderlyingType(),
+                        type2.getUpperBound().getUnderlyingType())
+                && types.isSameType(
+                        type1.getLowerBound().getUnderlyingType(),
+                        type2.getLowerBound().getUnderlyingType());
     }
 
     /**
