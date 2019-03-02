@@ -1012,7 +1012,7 @@ public class Range {
                             .subtract(BigInteger.valueOf(from))
                             .add(BigInteger.ONE)
                             .compareTo(BigInteger.valueOf(value))
-                    == 1;
+                    > 0;
         }
     }
 

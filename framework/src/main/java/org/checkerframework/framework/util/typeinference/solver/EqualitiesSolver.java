@@ -283,7 +283,8 @@ public class EqualitiesSolver {
     private InferredType mergeTypesAndPrimaries(
             Map<AnnotatedTypeMirror, AnnotationMirrorSet> typesToHierarchies,
             AnnotationMirrorMap<AnnotationMirror> primaries,
-            final AnnotationMirrorSet tops) {
+            final AnnotationMirrorSet tops,
+            AnnotatedTypeFactory typeFactory) {
         final AnnotationMirrorSet missingAnnos = new AnnotationMirrorSet(tops);
 
         Iterator<Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> entryIterator =
@@ -322,9 +323,9 @@ public class EqualitiesSolver {
                         found.add(top);
 
                     } else if (mergedType.getKind() == TypeKind.TYPEVAR
-                            && currentType
-                                    .getUnderlyingType()
-                                    .equals(mergedType.getUnderlyingType())) {
+                            && typeFactory.types.isSameType(
+                                    currentType.getUnderlyingType(),
+                                    mergedType.getUnderlyingType())) {
                         // the options here are we are merging with the same typevar, in which case
                         // we can just remove the annotation from the missing list
                         found.add(top);
@@ -377,7 +378,9 @@ public class EqualitiesSolver {
                 new AnnotationMirrorSet(typeFactory.getQualifierHierarchy().getTopAnnotations());
         InferredValue inferred = null;
         if (!equalities.types.isEmpty()) {
-            inferred = mergeTypesAndPrimaries(equalities.types, equalities.primaries, tops);
+            inferred =
+                    mergeTypesAndPrimaries(
+                            equalities.types, equalities.primaries, tops, typeFactory);
         }
 
         if (inferred != null) {
