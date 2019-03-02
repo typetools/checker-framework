@@ -199,20 +199,12 @@ class Arrays {
     public static @PolySigned int[] copyOfRange(@PolySigned int[] original, int from, int to);
     public static @PolySigned long[] copyOfRange(@PolySigned long[] original, int from, int to);
     public static @PolySigned char[] copyOfRange(@PolySigned char[] original, int from, int to);
-    public static @PolySigned float[] copyOfRange(@PolySigned float[] original, int from, int to);
-    public static @PolySigned double[] copyOfRange(@PolySigned double[] original, int from, int to);
-    public static @PolySigned boolean[] copyOfRange(@PolySigned boolean[] original, int from, int to);
-    public static <T> @PolySigned T[] copyOfRange(@PolySigned T[] original, int from, int to);
 
     public static @PolySigned byte[] copyOf(@PolySigned byte[] original, int newLength);
     public static @PolySigned short[] copyOf(@PolySigned short[] original, int newLength);
     public static @PolySigned int[] copyOf(@PolySigned int[] original, int newLength);
     public static @PolySigned long[] copyOf(@PolySigned long[] original, int newLength);
     public static @PolySigned char[] copyOf(@PolySigned char[] original, int newLength);
-    public static @PolySigned float[] copyOf(@PolySigned float[] original, int newLength);
-    public static @PolySigned double[] copyOf(@PolySigned double[] original, int newLength);
-    public static @PolySigned boolean[] copyOf(@PolySigned boolean[] original, int newLength);
-    public static <T> @PolySigned T[] copyOf(@PolySigned T[] original, int newLength);
 
 }
 
