@@ -20,7 +20,7 @@ Interface changes:
  * Renamed AnnotatedTypeFactory.ParameterizedMethodType to
    ParameterizedExecutableType.
 
-Added misseng checks regarding annotations on classes, constructor
+Added missing checks regarding annotations on classes, constructor
 declarations, and constructor invocations.  You may see new warnings.
 
 Closed issues:
