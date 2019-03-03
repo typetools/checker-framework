@@ -94,7 +94,7 @@ public class DeterminismTransfer extends CFTransfer {
             AnnotatedTypeMirror firstArg =
                     factory.getAnnotatedType(n.getTree().getArguments().get(0));
             AnnotatedArrayType arrayType = (AnnotatedArrayType) firstArg;
-            if (arrayComponentHasAnnotation(factory, arrayType, factory.DET)) {
+            if (arrayComponentHasAnnotation(arrayType, factory.DET)) {
                 if (firstArg.hasAnnotation(factory.ORDERNONDET)
                         && restOfArgumentsAreSubtype(factory, n, factory.DET)) {
                     typeRefine(n.getArgument(0), result, factory.DET, factory);
@@ -271,16 +271,13 @@ public class DeterminismTransfer extends CFTransfer {
     /**
      * Checks if the annotation of the component type of {@code type} is {@code annotation}.
      *
-     * @param factory the determinism factory
      * @param type the array type to check the component type of
      * @param annotation the annotation that the component type must have
      * @return true if the annotation of the component type of {@code type} is {@code annotation},
      *     false otherwise. If the component type is a generic type, examines its upper bound.
      */
     private boolean arrayComponentHasAnnotation(
-            DeterminismAnnotatedTypeFactory factory,
-            AnnotatedArrayType type,
-            AnnotationMirror annotation) {
+            AnnotatedArrayType type, AnnotationMirror annotation) {
         AnnotatedTypeMirror componentType = type.getComponentType();
         if (componentType.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeMirror componentUpperBound =
