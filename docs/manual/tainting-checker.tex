@@ -33,8 +33,7 @@ tainted value ever flows to a sensitive sink.  However, your program is not
 necessarily free from all trust errors.  As a simple example, you might
 have forgotten to annotate a sensitive sink as requiring an untainted type,
 or you might have forgotten to annotate untrusted data as having a tainted
-type. Also see the discussion in Section \ref{string-buffer} about a known
-unsoundness in this checker and others like it.
+type.
 
 To run the Tainting Checker, supply the
 \code{-processor TaintingChecker}
@@ -152,53 +151,68 @@ sources, sinks, and validation/sanitization routines.
 See Chapter~\ref{creating-a-checker} for more
 details.
 
-\sectionAndLabel{Known unsoundness: the StringBuffer problem}{string-buffer}
 
-There is a known unsoundness with the Tainting Checker (and other similar
-information flow checkers that do not explicitly handle the problem). To
-understand the problem, consider the \code{append} function in
+\sectionAndLabel{A caution about polymorphism and side effects}{tainting-polymorphism-caution}
+
+Misuse of polymorphism can lead to unsoundness with the Tainting Checker
+and other similar information flow checkers. To understand the potential
+problem, consider the \code{append} function in
 \code{java.lang.StringBuffer}:
 
 \begin{Verbatim}
   public StringBuffer append(StringBuffer this, String toAppend);
 \end{Verbatim}
 
-Which combinations of \code{@Tainted} and \code{@Untainted} should be
-permitted for the two arguments (the receiver, \code{this}, and the explicit
-\code{String} argument) to this function? Clearly, appending a tainted
-String to a tainted buffer should be permitted. The same is true
-for an untainted buffer and an untainted String.
-
-That both should be permitted suggests that perhaps the function is
-polymorphic---that is, the correct signature is:
+Given these declarations:
 
 \begin{Verbatim}
+  @Tainted StringBuffer tsb;
+  @Tainted String ts;
+  @Unainted StringBuffer usb;
+  @Untainted String us;
+\end{Verbatim}
+
+\noindent
+both of these invocations should be legal:
+
+\begin{Verbatim}
+  tsb.append(ts);
+  usb.append(us);
+\end{Verbatim}
+
+That suggests that perhaps the function should be annotated as polymorphic:
+
+\begin{Verbatim}
+  // UNSOUND annotation -- do not do this!
   public @PolyTainted StringBuffer append(@PolyTainted StringBuffer this, @PolyTainted String toAppend);
 \end{Verbatim}
 
-But this signature permits a program that is unsafe: one that adds a tainted
-String to an untainted buffer! Because \code{@Untainted} is a subtype of
-\code{@Tainted}, such a method call returns an \code{@Tainted StringBuffer}.
-If this code were purely functional this would be fine---assigning the
-now-tainted buffer to itself---an untainted buffer---would be a type
-error. However, the \code{append} method works via side-effect, and only
-returns a reference to the buffer as a convenience. Calling the method
-and throwing away the result can therefore allow tainted values
-to be added to an untainted buffer---destroying the typechecker's
-guarantee.
+The problem with the above annotation is that it permits the undesirable
+invocation:
 
-By default, the typechecker will not permit this behavior. However, many
-programs---including many safe programs, because string concatenation is
-converted to a call to \code{StringBuilder.append()} by the compiler---will
-not typecheck. It is therefore very tempting to make the method (and others
-with similar behavior) polymorphic, but doing so \textbf{will} eliminate
-the Tainting Checker's guarantee.
+\begin{Verbatim}
+  usb.append(ts); // illegal invocation
+\end{Verbatim}
 
-%% For possible solutions, see the implementation of \code{@PolyDet(``use'')}
-%% in the Determinism Checker.
+\noindent
+This invocation is permitted because, in the expression, all
+\<@PolyTainted> annotations on formal parameters are instantiated to
+\<@Tainted>, the top annotation, and each argument is a subtype of the
+corresponding formal parameter.
+
+(Side note:  if \code{append} were purely functional (had no side effects
+and returned a new \<StringBuffer>) the method call would be acceptable,
+because the return type is instantiated to \<@Tainted StringBuffer> for the
+expression \<usb.append(ts)>.  However, the \code{append} method works via
+side-effect, and only returns a reference to the buffer as a convenience
+for writing ``fluent'' client code.)
+
+%% Uncomment this text when the Detemrinism Checker is merged into master.
+% The Determinism Checker enables sound polymorphic annotation of methods
+% like \<StringBuffer.append> via its \code{@PolyDet(``use'')} annotation.
 
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
 
 % LocalWords:  quals untaint PolyTainted mis untainting sanitization java
-%%  LocalWords:  TaintingChecker untrusted unvalidated
+%%  LocalWords:  TaintingChecker untrusted unvalidated usb PolyDet
