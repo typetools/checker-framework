@@ -1063,14 +1063,7 @@ applies to the element type. The annotation documents that the method takes an a
 
 \subsectionAndLabel{What is the meaning of a type qualifier at a class declaration?}{faq-type-qualifier-on-class-declaration}
 
-% TODO: use a more realistic example.
-
-Writing an annotation on a class declaration makes that annotation implicit
-for all uses of the class (see Section~\ref{effective-qualifier}).  If you
-write \<class @MyQual MyClass \ttlcb\ ... \ttrcb>, then every unannotated
-use of \<MyClass> is \<@MyQual MyClass>.  A user is permitted to strengthen
-the type by writing a more restrictive annotation on a use of MyClass, such
-as \<@MyMoreRestrictiveQual MyClass>.
+See Section~\ref{annotations-on-classes-and-constructors}.
 
 
 \subsectionAndLabel{How are type qualifiers written on upper and lower bounds?}{faq-type-qualifier-on-bounds}

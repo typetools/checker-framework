@@ -584,7 +584,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             // final.
             ExpressionTree recvTree = getReceiverTree(node);
 
-            ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(node, methodElement, recvTree);
+            ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(methodElement, recvTree);
 
             // Handle acquiring of explicit locks. Verify that the lock expression is effectively
             // final.
@@ -767,14 +767,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     /**
      * Issues an error if the receiver of an unlock() call is not effectively final.
      *
-     * @param node the MethodInvocationTree for any method call
-     * @param methodElement the ExecutableElement for the method call referred to by {@code node}
-     * @param lockExpression the receiver tree of {@code node}. Can be null.
+     * @param methodElement the ExecutableElement for a method call to unlock()
+     * @param lockExpression the receiver tree for the method call to unlock(). Can be null.
      */
     private void ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(
-            MethodInvocationTree node,
-            ExecutableElement methodElement,
-            ExpressionTree lockExpression) {
+            ExecutableElement methodElement, ExpressionTree lockExpression) {
         if (lockExpression == null) {
             // Implicit this, or class name receivers, are null. But they are also final. So nothing
             // to be checked for them.
