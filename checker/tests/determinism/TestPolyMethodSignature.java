@@ -9,12 +9,12 @@ public class TestPolyMethodSignature {
 
     void testPolyUpValid1(@PolyDet("up") Integer a) {}
 
-    @PolyDet("up") static int checkListValid(@PolyDet List<@PolyDet Integer> lst) {
+    static @PolyDet("up") int checkListValid(@PolyDet List<@PolyDet Integer> lst) {
         return 0;
     }
 
     // :: error: (invalid.polydet.up)
-    @PolyDet("up") static int checkListInvalid(@PolyDet("up") List<@PolyDet Integer> lst) {
+    static @PolyDet("up") int checkListInvalid(@PolyDet("up") List<@PolyDet Integer> lst) {
         return 0;
     }
 
