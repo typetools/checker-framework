@@ -71,34 +71,9 @@ public class DeterminismAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The java.util.Collections class. */
     private final TypeMirror collectionsTypeMirror =
             TypesUtils.typeFromClass(Collections.class, types, processingEnv.getElementUtils());
-    /** The java.util.AbstractList class. */
-    private final TypeMirror abstractListTypeMirror =
-            TypesUtils.typeFromClass(AbstractList.class, types, processingEnv.getElementUtils());
-    /** The java.util.AbstractSequentialList class. */
-    private final TypeMirror abstractSequentialListTypeMirror =
-            TypesUtils.typeFromClass(
-                    AbstractSequentialList.class, types, processingEnv.getElementUtils());
-    /** The java.util.ArrayList class. */
-    private final TypeMirror arrayListTypeMirror =
-            TypesUtils.typeFromClass(ArrayList.class, types, processingEnv.getElementUtils());
-    /** The java.util.LinkedList class. */
-    private final TypeMirror linkedListTypeMirror =
-            TypesUtils.typeFromClass(LinkedList.class, types, processingEnv.getElementUtils());
-    /** The java.util.NavigableSet class. */
-    private final TypeMirror navigableSetTypeMirror =
-            TypesUtils.typeFromClass(NavigableSet.class, types, processingEnv.getElementUtils());
-    /** The java.util.SortedSet class. */
-    private final TypeMirror sortedSetTypeMirror =
-            TypesUtils.typeFromClass(SortedSet.class, types, processingEnv.getElementUtils());
-    /** The java.util.TreeSet class. */
-    private final TypeMirror treeSetTypeMirror =
-            TypesUtils.typeFromClass(TreeSet.class, types, processingEnv.getElementUtils());
     /** The java.util.HashSet class. */
     private final TypeMirror hashSetTypeMirror =
             TypesUtils.typeFromClass(HashSet.class, types, processingEnv.getElementUtils());
-    /** The java.util.Enumeration interface. */
-    private final TypeMirror enumerationTypeMirror =
-            TypesUtils.typeFromClass(Enumeration.class, types, processingEnv.getElementUtils());
 
     /** Creates {@code @PolyDet} annotation mirror constants. */
     public DeterminismAnnotatedTypeFactory(BaseTypeChecker checker) {
