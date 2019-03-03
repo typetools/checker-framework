@@ -200,7 +200,7 @@ List<String> getJavaFilesToFormat(projectName) {
     return args
 }
 
-task htmlValidate(type: Exec) {
+task htmlValidate(type: Exec, group: 'Format') {
     description 'Validate that HTML files are well-formed'
     executable 'html5validator'
     args = [

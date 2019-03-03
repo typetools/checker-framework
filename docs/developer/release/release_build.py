@@ -153,9 +153,14 @@ def get_current_date():
 
 def download_jsr308_langtools():
     """Download and unzip jsr308-langtools"""
+    langtools_dir = BUILD_DIR+"/jsr308-langtools"
+    langtools_2_4_0_dir = langtools_dir + "/jsr308-langtools-2.4.0"
+    if (os.path.exists(langtools_2_4_0_dir)):
+        print "Not downloading jsr308-langtools because found " + langtools_2_4_0_dir
+        return
     execute('wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
     execute('unzip -q jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
-    execute('mv jsr308-langtools-2.4.0 '+BUILD_DIR+"/jsr308-langtools", True, False, BUILD_DIR)
+    execute('mv jsr308-langtools-2.4.0 '+langtools_dir, True, False, BUILD_DIR)
 
 def build_annotation_tools_release(version, afu_interm_dir):
     """Build the Annotation File Utilities project's artifacts and place them
