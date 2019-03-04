@@ -97,7 +97,10 @@ public class ControlFlowGraph {
         this.declaredLambdas = declaredLambdas;
     }
 
-    /** @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. */
+    /**
+     * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. Returns
+     *     null for trees that don't produce a value.
+     */
     public Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
             return convertedTreeLookup.get(t);
@@ -202,7 +205,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Get a list of all successor Blocks for cur
+     * Get a list of all successor Blocks for cur.
      *
      * @return a Deque of successor Blocks
      */

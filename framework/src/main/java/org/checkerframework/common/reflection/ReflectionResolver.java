@@ -4,7 +4,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 
 /**
  * Interface for reflection resolvers that handle reflective method calls such as {@link
@@ -32,8 +32,8 @@ public interface ReflectionResolver {
      * @param tree the reflective invocation tree (m.invoke or c.newInstance)
      * @param origResult the original result for the unresolved, reflective method call
      */
-    public ParameterizedMethodType resolveReflectiveCall(
+    public ParameterizedExecutableType resolveReflectiveCall(
             AnnotatedTypeFactory factory,
             MethodInvocationTree tree,
-            ParameterizedMethodType origResult);
+            ParameterizedExecutableType origResult);
 }

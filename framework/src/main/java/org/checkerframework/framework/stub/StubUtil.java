@@ -29,11 +29,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /** Utility class for stub files. */
@@ -146,29 +142,6 @@ public class StubUtil {
         return toString(field.getVariables().get(0));
     }
 
-    /**
-     * Returns the chosen canonical string of the method declaration.
-     *
-     * <p>The canonical representation contains simple names of the types only.
-     */
-    /*package-scope*/ static String toString(ExecutableElement element) {
-        StringBuilder sb = new StringBuilder();
-
-        // note: constructor simple name is <init>
-        sb.append(element.getSimpleName());
-        sb.append("(");
-        for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-                i.hasNext(); ) {
-            sb.append(standarizeType(i.next().asType()));
-            if (i.hasNext()) {
-                sb.append(",");
-            }
-        }
-        sb.append(")");
-
-        return sb.toString();
-    }
-
     /*package-scope*/ static String toString(VariableElement element) {
         assert element.getKind().isField();
         return element.getSimpleName().toString();
@@ -189,31 +162,6 @@ public class StubUtil {
         String name = imported.substring(imported.lastIndexOf(".") + 1);
         Pair<String, String> typeParts = Pair.of(typeName, name);
         return typeParts;
-    }
-
-    /**
-     * A helper method that standarize type by printing simple names instead of fully qualified
-     * names.
-     *
-     * <p>This eliminates the need for imports.
-     */
-    private static String standarizeType(TypeMirror type) {
-        switch (type.getKind()) {
-            case ARRAY:
-                return standarizeType(((ArrayType) type).getComponentType()) + "[]";
-            case TYPEVAR:
-                return ((TypeVariable) type).asElement().getSimpleName().toString();
-            case DECLARED:
-                {
-                    return ((DeclaredType) type).asElement().getSimpleName().toString();
-                }
-            default:
-                if (type.getKind().isPrimitive()) {
-                    return type.toString();
-                }
-        }
-        ErrorReporter.errorAbort("StubUtil: unhandled type: " + type);
-        return null; // dead code
     }
 
     private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
@@ -307,7 +255,7 @@ public class StubUtil {
                     sb.append("short");
                     break;
                 default:
-                    ErrorReporter.errorAbort("StubUtil: unknown type: " + n.getType());
+                    throw new BugInCF("StubUtil: unknown type: " + n.getType());
             }
         }
 
@@ -326,15 +274,21 @@ public class StubUtil {
         public void visit(WildcardType n, Void arg) {
             // We don't write type arguments
             // TODO: Why?
-            ErrorReporter.errorAbort("StubUtil: don't print type args!");
+            throw new BugInCF("StubUtil: don't print type args");
         }
     }
 
+    /**
+     * Return stub files found in the file system (does not look on classpath).
+     *
+     * @param stub a stub file, a jarfile, or a directory. Look for it as an absolute file and
+     *     relative to the current directory.
+     */
     public static List<StubResource> allStubFiles(String stub) {
         List<StubResource> resources = new ArrayList<>();
         File stubFile = new File(stub);
         if (stubFile.exists()) {
-            allStubFiles(stubFile, resources);
+            addStubFilesToList(stubFile, resources);
         } else {
             // If the stubFile doesn't exist, maybe it is relative to the
             // current working directory, so try that.
@@ -342,7 +296,7 @@ public class StubUtil {
                     System.getProperty("user.dir") + System.getProperty("file.separator");
             stubFile = new File(workingDir + stub);
             if (stubFile.exists()) {
-                allStubFiles(stubFile, resources);
+                addStubFilesToList(stubFile, resources);
             }
         }
         return resources;
@@ -361,10 +315,14 @@ public class StubUtil {
     }
 
     /**
-     * Side-effects {@code resources} by adding to it either {@code stub} if it is a stub file, or
-     * all the contained stub files if {@code stub} is a jar file or a directory.
+     * Side-effects {@code resources} by adding stub files (those ending with ".astub") to it.
+     *
+     * @param stub a stub file, a jarfile, or a directory. If a stubfile, add it to the {@code
+     *     resources} list. If a jarfile, use all stub files contained in it. If a directory,
+     *     recurse on all files contained in it.
+     * @param resources the list to add the found stub files to
      */
-    private static void allStubFiles(File stub, List<StubResource> resources) {
+    private static void addStubFilesToList(File stub, List<StubResource> resources) {
         if (isStub(stub)) {
             resources.add(new FileStubResource(stub));
         } else if (isJar(stub)) {
@@ -393,7 +351,7 @@ public class StubUtil {
                         }
                     });
             for (File enclosed : directoryContents) {
-                allStubFiles(enclosed, resources);
+                addStubFilesToList(enclosed, resources);
             }
         }
     }

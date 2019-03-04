@@ -14,7 +14,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -54,18 +54,14 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
 
-        // Install the SourceChecker as the error handler
-        // TODO: having this static state is ugly. Use the context to instantiate.
-        ErrorReporter.setHandler(checker);
-
         this.treesWithSuppressWarnings = new ArrayList<>();
         this.warnUnneededSuppressions = checker.hasOption("warnUnneededSuppressions");
     }
 
-    /*
-     * Set the CompilationUnitTree to be used during any visits.
-     * For any later calls of {@see com.sun.source.util.TreePathScanner.scan(TreePath, P)},
-     * the CompilationUnitTree of the TreePath has to be equal to {@code root}.
+    /**
+     * Set the CompilationUnitTree to be used during any visits. For any later calls of {@code
+     * com.sun.source.util.TreePathScanner.scan(TreePath, P)}, the CompilationUnitTree of the
+     * TreePath has to be equal to {@code root}.
      */
     public void setRoot(CompilationUnitTree root) {
         this.root = root;
@@ -76,14 +72,11 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
      * blocks in {@link com.sun.source.util.TreePathScanner#scan(TreePath, Object)} and {@link
      * com.sun.source.util.TreePathScanner#scan(Tree, Object)} set the visited Path to null. This
      * field is used to report a rough location for the error in {@link
-     * org.checkerframework.framework.source.SourceChecker#logCheckerError(CheckerError)}.
+     * org.checkerframework.framework.source.SourceChecker#logBugInCF(BugInCF)}.
      */
     /*package-private*/ Tree lastVisited;
 
-    /*
-     * Entry point for a type processor: the TreePath leaf is
-     * a top-level type tree within root.
-     */
+    /** Entry point for a type processor: the TreePath leaf is a top-level type tree within root. */
     public void visit(TreePath path) {
         lastVisited = path.getLeaf();
         this.scan(path, null);

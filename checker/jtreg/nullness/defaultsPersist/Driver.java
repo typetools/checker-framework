@@ -58,7 +58,7 @@ public class Driver {
                 ++passed;
             } catch (Throwable e) {
                 out.println("FAILED:  " + method.getName());
-                out.println("    " + e.toString());
+                out.println("    " + e);
                 ++failed;
             }
         }
@@ -136,7 +136,7 @@ public class Driver {
     }
 
     private List<Integer> wrapIntArray(int[] ints) {
-        List<Integer> list = new ArrayList<Integer>(ints.length);
+        List<Integer> list = new ArrayList<>(ints.length);
         for (int i : ints) {
             list.add(i);
         }

@@ -1,8 +1,8 @@
 package org.checkerframework.framework.stub;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -175,10 +175,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             throws IOException, DefException, ParseException {
         StubUnit iu;
         try {
-            iu = JavaParser.parseStubUnit(in);
+            iu = StaticJavaParser.parseStubUnit(in);
         } catch (ParseProblemException e) {
             iu = null;
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ToIndexFileConverter: exception from JavaParser.parseStubUnit for InputStream."
                             + System.lineSeparator()
                             + "Problem message with problems encountered: "
@@ -568,8 +568,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                             case SHORT:
                                 return "S";
                             default:
-                                throw new IllegalArgumentException(
-                                        "baseTypeName(): unknown primitive type " + type);
+                                throw new BugInCF("unknown primitive type " + type);
                         }
                     }
 

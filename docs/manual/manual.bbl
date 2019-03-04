@@ -154,6 +154,13 @@ Jaime Quinonez, Matthew~S. Tschantz, and Michael~D. Ernst.
 \newblock In {\em ECOOP 2008 --- Object-Oriented Programming, 22nd European
   Conference}, pages 616--641, Paphos, Cyprus, July 2008.
 
+\bibitem[SCSC18]{SteinCSC2018}
+Benno Stein, Lazaro Clapp, Manu Sridharan, and Bor{-}Yuh~Evan Chang.
+\newblock Safe stream-based programming with refinement types.
+\newblock In {\em ASE 2018: Proceedings of the 33rd Annual International
+  Conference on Automated Software Engineering}, pages 565--576, Montpellier,
+  France, September 2018.
+
 \bibitem[SDE12]{SpishakDE2012}
 Eric Spishak, Werner Dietl, and Michael~D. Ernst.
 \newblock A type system for regular expressions.

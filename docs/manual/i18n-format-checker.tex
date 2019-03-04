@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Internationalization Format String Checker (I18n Format String Checker)\label{i18n-formatter-checker}}
+\chapterAndLabel{Internationalization Format String Checker (I18n Format String Checker)}{i18n-formatter-checker}
 
 The Internationalization Format String Checker, or I18n Format String Checker,
 prevents use of incorrect i18n format strings.
@@ -39,7 +39,7 @@ internationalized: any user-visible text should be obtained from a
 localization resource and all keys exist in that resource.
 
 
-\section{Internationalization Format String Checker annotations\label{i18n-format-annotation}}
+\sectionAndLabel{Internationalization Format String Checker annotations}{i18n-format-annotation}
 
 
 \begin{figure}
@@ -47,6 +47,7 @@ localization resource and all keys exist in that resource.
 \caption{The
   Internationalization
   Format String Checker type qualifier hierarchy.
+  The type qualifiers are applicable te \<CharSequence> and its subtypes.
   The figure does not show the subtyping rules among different
   \refqualclass{checker/i18nformatter/qual}{I18nFormat}\code{(...)}
   qualifiers; see
@@ -109,7 +110,7 @@ Figure~\ref{i18n-format-type-hierarchy} shows their subtyping relationships.
   to write this annotation.
 \end{description}
 
-\section{Conversion categories\label{i18n-format-conversion-catgeories}}
+\sectionAndLabel{Conversion categories}{i18n-format-conversion-catgeories}
 
 In a message string, the optional second element within the curly braces is
 called a \emph{format type} and must be one of \<number>, \<date>,
@@ -137,7 +138,7 @@ relationship among all conversion categories.
 \end{figure}
 
 
-\section{Subtyping rules for \<@I18nFormat>\label{i18n-formatter-format-subtyping}}
+\sectionAndLabel{Subtyping rules for \<@I18nFormat>}{i18n-formatter-format-subtyping}
 
 Here are the subtyping rules among different
 \code{@I18nFormat}
@@ -202,7 +203,7 @@ type or a subclass:
 
 \end{description}
 
-\section{What the Internationalization Format String Checker checks\label{i18n-format-checks}}
+\sectionAndLabel{What the Internationalization Format String Checker checks}{i18n-format-checks}
 
 The Internationalization Format String Checker checks calls to the i18n
 formatting method \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
@@ -292,7 +293,7 @@ specific type of format string. For example,
   format = "{0, number} {1, number}";
 \end{Verbatim}
 
-\section{Resource files\label{i18n-format-resource-files}}
+\sectionAndLabel{Resource files}{i18n-format-resource-files}
 
 A programmer rarely writes an i18n format string literally. (The examples
 in this chapter show that for simplicity.) Rather, the i18n format strings are
@@ -325,7 +326,7 @@ resource bundles.
 For more about checking property files, see \chapterpageref{propkey-checker}.
 
 
-\section{Running the Internationalization Format Checker\label{i18n-format-running}}
+\sectionAndLabel{Running the Internationalization Format Checker}{i18n-format-running}
 
 The checker can be invoked by running one of the following commands (with
 the whole command on one line).
@@ -357,7 +358,7 @@ the whole command on one line).
 \end{itemize}
 
 
-\section{Testing whether a string has an i18n format type\label{i18n-format-testing}}
+\sectionAndLabel{Testing whether a string has an i18n format type}{i18n-format-testing}
 
 In the case that the checker cannot infer the i18n format type of a string,
 you can use the \refmethod{checker/i18nformatter}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}
@@ -373,7 +374,7 @@ method to define the type of the string in the scope of a conditional statement.
 \noindent For an example, see Section~\ref{i18n-format-examples}.
 
 
-\section{Examples of using the Internationalization Format Checker\label{i18n-format-examples}}
+\sectionAndLabel{Examples of using the Internationalization Format Checker}{i18n-format-examples}
 
 \begin{itemize}
   \item Using \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}.

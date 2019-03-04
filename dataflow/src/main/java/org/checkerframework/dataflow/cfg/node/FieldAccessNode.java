@@ -5,8 +5,8 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -83,7 +83,7 @@ public class FieldAccessNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof FieldAccessNode)) {
+        if (!(obj instanceof FieldAccessNode)) {
             return false;
         }
         FieldAccessNode other = (FieldAccessNode) obj;
@@ -93,7 +93,7 @@ public class FieldAccessNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getReceiver(), getFieldName());
+        return Objects.hash(getReceiver(), getFieldName());
     }
 
     @Override

@@ -1,4 +1,4 @@
-Demo.java:13: warning: [cast.unsafe] "@PossiblyUnencrypted String" may not be casted to the type "@Encrypted String"
+Demo.java:13: warning: [cast.unsafe] cast from "@PossiblyUnencrypted String" to "@Encrypted String" cannot be statically verified
         return (@Encrypted String) new String(b);
                ^
 Demo.java:36: error: [argument.type.incompatible] incompatible types in argument.

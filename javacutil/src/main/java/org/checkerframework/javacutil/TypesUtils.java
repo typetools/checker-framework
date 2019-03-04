@@ -1,7 +1,5 @@
 package org.checkerframework.javacutil;
 
-import static com.sun.tools.javac.code.TypeTag.WILDCARD;
-
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -143,9 +141,9 @@ public final class TypesUtils {
      */
     public static boolean isAnonymous(TypeMirror type) {
         return (type instanceof DeclaredType)
-                && (((TypeElement) ((DeclaredType) type).asElement())
+                && ((TypeElement) ((DeclaredType) type).asElement())
                         .getNestingKind()
-                        .equals(NestingKind.ANONYMOUS));
+                        .equals(NestingKind.ANONYMOUS);
     }
 
     /**
@@ -315,7 +313,7 @@ public final class TypesUtils {
 
     /**
      * Get the type parameter for this wildcard from the underlying type's bound field This field is
-     * sometimes null, in that case this method will return null
+     * sometimes null, in that case this method will return null.
      *
      * @return the TypeParameterElement the wildcard is an argument to
      */
@@ -359,7 +357,7 @@ public final class TypesUtils {
      */
     public static Type wildLowerBound(TypeMirror tm, ProcessingEnvironment env) {
         Type t = (Type) tm;
-        if (t.hasTag(WILDCARD)) {
+        if (t.hasTag(TypeTag.WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
             Symtab syms = Symtab.instance(context);
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
@@ -383,8 +381,7 @@ public final class TypesUtils {
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
-                ErrorReporter.errorAbort("Unrecognized class: " + clazz);
-                return null; // dead code
+                throw new BugInCF("Unrecognized class: " + clazz);
             }
             return element.asType();
         }

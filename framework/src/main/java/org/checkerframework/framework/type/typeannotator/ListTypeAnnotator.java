@@ -53,4 +53,9 @@ public final class ListTypeAnnotator extends TypeAnnotator {
 
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "ListTypeAnnotator" + annotators;
+    }
 }

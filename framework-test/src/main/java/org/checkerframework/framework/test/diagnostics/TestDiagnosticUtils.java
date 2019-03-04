@@ -13,7 +13,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.javacutil.Pair;
 
-/** A set of utilities and factory methods useful for working with TestDiagnostics */
+/** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
 
     // this regex represents how the diagnostics appear in Java source files
@@ -220,6 +220,29 @@ public class TestDiagnosticUtils {
         return trimmedLine.startsWith("// ::") || trimmedLine.startsWith("// warning:");
     }
 
+    /**
+     * Convert an end-of-line diagnostic message to a beginning-of-line one. Returns the argument
+     * unchanged if it does not contain an end-of-line diagnostic message.
+     *
+     * <p>Most diagnostics in Java files start at the beginning of a line. Occasionally, javac
+     * issues a warning about implicit code, such as an implicit constructor, on the line
+     * <em>immediately after</em> a curly brace. The only place to put the expected diagnostic
+     * message is on the line with the curly brace.
+     *
+     * <p>This implementation replaces "... { // ::" by "// ::", converting the end-of-line
+     * diagnostic message to a beginning-of-line one that the rest of the code can handle. It is
+     * rather specific (to avoid false positive matches, such as when "// ::" is commented out in
+     * source code). It could be extended in the future if such an extension is necessary.
+     */
+    public static String handleEndOfLineJavaDiagnostic(String originalLine) {
+        int curlyIndex = originalLine.indexOf("{ // ::");
+        if (curlyIndex == -1) {
+            return originalLine;
+        } else {
+            return originalLine.substring(curlyIndex + 2);
+        }
+    }
+
     /** Return true if this line in a Java file continues an expected diagnostic. */
     public static boolean isJavaDiagnosticLineContinuation(String originalLine) {
         if (originalLine == null) {
@@ -240,7 +263,12 @@ public class TestDiagnosticUtils {
         return originalLine.trim().substring(2).trim();
     }
 
-    /** Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine */
+    /**
+     * Convert a line in a JavaSource file to a TestDiagnosticLine.
+     *
+     * <p>The input {@code originalLine} is possibly the concatenation of multiple source lines, if
+     * the diagnostic was split across lines in the source code.
+     */
     public static TestDiagnosticLine fromJavaSourceLine(
             String filename, String originalLine, long lineNumber) {
         final String trimmedLine = originalLine.trim();
@@ -274,11 +302,13 @@ public class TestDiagnosticUtils {
             return new TestDiagnosticLine(
                     filename, lineNumber, originalLine, Collections.singletonList(diagnostic));
         } else {
+            // It's a bit gross to create empty diagnostics (returning null might be more
+            // efficient), but they will be filtered out later.
             return new TestDiagnosticLine(filename, errorLine, originalLine, EMPTY);
         }
     }
 
-    /** Convert a line in a DiagnosticFile to a TestDiagnosticLine */
+    /** Convert a line in a DiagnosticFile to a TestDiagnosticLine. */
     public static TestDiagnosticLine fromDiagnosticFileLine(String diagnosticLine) {
         final String trimmedLine = diagnosticLine.trim();
         if (trimmedLine.startsWith("#") || trimmedLine.isEmpty()) {
@@ -319,7 +349,7 @@ public class TestDiagnosticUtils {
      * individually)
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        final List<String> strings = new ArrayList<String>(diagnostics.size());
+        final List<String> strings = new ArrayList<>(diagnostics.size());
         for (TestDiagnostic diagnostic : diagnostics) {
             strings.add(diagnostic.toString());
         }

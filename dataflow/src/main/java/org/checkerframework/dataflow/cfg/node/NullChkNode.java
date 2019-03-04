@@ -4,7 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -47,7 +47,7 @@ public class NullChkNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof NumericalPlusNode)) {
+        if (!(obj instanceof NumericalPlusNode)) {
             return false;
         }
         NumericalPlusNode other = (NumericalPlusNode) obj;
@@ -56,7 +56,7 @@ public class NullChkNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return Objects.hash(getOperand());
     }
 
     @Override

@@ -3,8 +3,8 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.LiteralTree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -46,7 +46,7 @@ public abstract class ValueLiteralNode extends Node {
     /** Compare the value of this nodes. */
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ValueLiteralNode)) {
+        if (!(obj instanceof ValueLiteralNode)) {
             return false;
         }
         ValueLiteralNode other = (ValueLiteralNode) obj;
@@ -57,7 +57,8 @@ public abstract class ValueLiteralNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getValue());
+        // value might be null
+        return Objects.hashCode(getValue());
     }
 
     @Override

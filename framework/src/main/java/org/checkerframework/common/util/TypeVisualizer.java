@@ -26,7 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.ExecUtil;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -253,7 +253,7 @@ public class TypeVisualizer {
                     writer.write("}");
                     writer.flush();
                 } catch (IOException e) {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "Exception visualizing type:\n"
                                     + "file="
                                     + file
@@ -267,7 +267,7 @@ public class TypeVisualizer {
                     }
                 }
             } catch (IOException exc) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Exception visualizing type:\n" + "file=" + file + "\n" + "type=" + type,
                         exc);
             }
@@ -331,7 +331,7 @@ public class TypeVisualizer {
                     lines.add(
                             connect(type, typeVars.get(i))
                                     + " "
-                                    + makeMethodTypeArgLabel(i, typeVarName));
+                                    + makeMethodTypeArgLabel(typeVarName));
                 }
 
                 if (type.getReceiverType() != null) {
@@ -342,7 +342,7 @@ public class TypeVisualizer {
                 final List<AnnotatedTypeMirror> params = type.getParameterTypes();
                 for (int i = 0; i < params.size(); i++) {
                     final String paramName = paramElems.get(i).getSimpleName().toString();
-                    lines.add(connect(type, params.get(i)) + " " + makeParamLabel(i, paramName));
+                    lines.add(connect(type, params.get(i)) + " " + makeParamLabel(paramName));
                 }
 
                 final List<AnnotatedTypeMirror> thrown = type.getThrownTypes();
@@ -400,11 +400,11 @@ public class TypeVisualizer {
                 return makeLabel("<" + argIndex + ">");
             }
 
-            private String makeMethodTypeArgLabel(final int argIndex, final String paramName) {
+            private String makeMethodTypeArgLabel(final String paramName) {
                 return makeLabel("<" + paramName + ">");
             }
 
-            private String makeParamLabel(final int index, final String paramName) {
+            private String makeParamLabel(final String paramName) {
                 return makeLabel(paramName);
             }
 
@@ -491,8 +491,8 @@ public class TypeVisualizer {
                     visitAll(type.getThrownTypes());
 
                 } else {
-                    ErrorReporter.errorAbort(
-                            "Executable types should never be recursive!\n" + "type=" + type);
+                    throw new BugInCF(
+                            "Executable types should never be recursive\n" + "type=" + type);
                 }
                 return null;
             }

@@ -38,7 +38,7 @@ public class PerDirectorySuite extends Suite {
     @Target(ElementType.METHOD)
     public @interface Name {}
 
-    private final ArrayList<Runner> runners = new ArrayList<Runner>();
+    private final ArrayList<Runner> runners = new ArrayList<>();
 
     @Override
     protected List<Runner> getChildren() {
@@ -103,7 +103,7 @@ public class PerDirectorySuite extends Suite {
                             + testClass.getName()
                             + "\n"
                             + "parameterMethods="
-                            + methods.toString());
+                            + methods);
         } // else
 
         FrameworkMethod method = parameterMethods.get(0);
@@ -129,7 +129,7 @@ public class PerDirectorySuite extends Suite {
                                 + testClass.getName()
                                 + "\n"
                                 + "parameterMethods="
-                                + method.toString());
+                                + method);
         }
 
         int modifiers = method.getMethod().getModifiers();

@@ -44,6 +44,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 /**
  * An unbounded {@linkplain BlockingQueue blocking queue} of
@@ -426,7 +427,8 @@ public class DelayQueue<E extends @NonNull Delayed> extends AbstractQueue<E>
      *
      * @return an array containing all of the elements in this queue
      */
-    public Object[] toArray() {
+    @SideEffectFree
+    public @PolyNull Object[] toArray(DelayQueue<@PolyNull E> this) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -471,6 +473,7 @@ public class DelayQueue<E extends @NonNull Delayed> extends AbstractQueue<E>
      *         this queue
      * @throws NullPointerException if the specified array is null
      */
+    @SideEffectFree
     public <T> T[] toArray(T[] a) {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -523,6 +526,7 @@ public class DelayQueue<E extends @NonNull Delayed> extends AbstractQueue<E>
      *
      * @return an iterator over the elements in this queue
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return new Itr(toArray());
     }

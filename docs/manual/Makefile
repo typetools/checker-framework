@@ -47,10 +47,7 @@ figures-all:
 	${MAKE} -C figures all
 
 manual.pdf: bib-update figures-all check-labels
-	pdflatex manual.tex
-	bibtex -min-crossrefs=9999 manual
-	pdflatex manual.tex
-	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
+	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
@@ -64,11 +61,14 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	\mv -f manual.html manual.html-with-htoc
 	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
 	\rm -f manual.html-with-htoc
-# The below is not necessary since Hevea mkes good tables of contents itself.
-#	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
-#	html-update-toc manual.html
 # Add CSS styling, since \newstyle doesn't work for me.
 	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
+# Add CSS styling for some links, since \ahrefloc doesn't permit styling
+	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
+
+.PHONY: contributors.tex
+contributors.tex:
+	git log | grep ^Author: | sed 's/Author: \(.*\) <.*>/\1,/' | sort | uniq | sed -f contributors.sed | sort | uniq | sed '$$ s/,$$/./' > contributors.tex
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
@@ -86,11 +86,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
-ifdef PLUMEBIB
-	ln -s ${PLUMEBIB} bib
-else
 	git clone https://github.com/mernst/plume-bib.git bib
-endif
 .PHONY: bib-update
 bib-update: bib
 # Even if this command fails, it does not terminate the make job.

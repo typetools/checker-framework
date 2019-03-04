@@ -1,7 +1,7 @@
 %\htmlhr
 % Reinstate when lists are supported:
-% \chapter{Index Checker for sequence bounds (arrays, strings, lists)\label{index-checker}}
-\chapter{Index Checker for sequence bounds (arrays and strings)\label{index-checker}}
+% \chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
+\chapterAndLabel{Index Checker for sequence bounds (arrays and strings)}{index-checker}
 
 The Index Checker warns about potentially out-of-bounds accesses to sequence
 data structures, such as arrays
@@ -75,7 +75,7 @@ Here is how to declare a length-2 array of length-4 arrays:
 \end{Verbatim}
 
 
-\section{Index Checker structure and annotations\label{index-annotations}}
+\sectionAndLabel{Index Checker structure and annotations}{index-annotations}
 
 Internally, the Index Checker computes information about integers that
 might be indices:
@@ -192,7 +192,7 @@ annotations, each from a different type system:
 
 \end{description}
 
-\section{Lower bounds\label{index-lowerbound}}
+\sectionAndLabel{Lower bounds}{index-lowerbound}
 
 The Index Checker issues an error when
 a sequence is indexed by an integer that might be negative.
@@ -242,7 +242,7 @@ qualifiers:
 \end{figure}
 
 
-\section{Upper bounds\label{index-upperbound}}
+\sectionAndLabel{Upper bounds}{index-upperbound}
 
 The Index Checker issues an error when a sequence index might be
 too high. To do this, it maintains information about which expressions are
@@ -323,8 +323,8 @@ or \code{@LTOMLengthOf("arr")}.
 
 \end{description}
 
-The following method annotations can be used to establish a postcondition
-of a method which ensures that a certain expression is a valid index for a sequence:
+The following method annotations can be used to establish a method postcondition
+that ensures that a certain expression is a valid index for a sequence:
 
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOf}{String[] value, String[] targetValue, String[] offset}]
@@ -338,29 +338,44 @@ of a method which ensures that a certain expression is a valid index for a seque
   is less than the length of the given sequences with the given offsets.
 \end{description}
 
-The Upper Bound Checker also supports a declaration annotation
-\refqualclasswithparams{checker/index/qual}{HasSubsequence}{String[] value, String[] from, String[] to}. This annotation
-can be written on sequence declarations to indicate that a sequence has a named subsequence with the given name,
-which ranges from \code{from} to \code{to} in the annotated sequence. So, for example:
+There is one declaration annotation that indicates the relationship between
+two sequences:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{HasSubsequence}{String[]
+    value, String[] from, String[] to}]
+  indicates that a subsequence (from \code{from} to \code{to}) of the
+  annotated sequence is equal to some other sequence, named by
+  \code{value}).
+
+For example, to indicate that \<shorter> is a subsequence of \<longer>:
 
 \begin{Verbatim}
-  @HasSubsequence(value="this", from="this.start", to="this.end") int [] array;
+  int startIndex;
+  int endIndex;
+  int[] shorter;
+  @HasSubsequence(value="shorter", from="this.start", to="this.end")
+  int[] longer;
 \end{Verbatim}
 
-The array declaration above indicates that the \code{this} object is a subsequence of \code{array},
-and that valid indexes to \code{this} translate to indexes \code{start} to \code{end - 1} in \code{array}.
-The length of \code{this}
-is \code{end - start}. When an array is assigned to \code{array}, three facts are checked: that \code{start}
-is non-negative, that \code{start} is less than or equal to \code{end}, and that \code{end} is less than or
-equal to the length of \code{array}. Note that this doesn't guarantee that \code{this} is in fact a subsequence,
-just that there is a such a subsequence. The programmer must manually verify that \code{this} actually refers
-to that subsequence. Such a subsequence annotation permits additional types to be inferred for binary expressions
-involving either the \code{from} or \code{to} parameter to the annotation. If \code{x} is \code{@IndexFor("this")}
-in the example above, then \code{start + x} is \code{@IndexFor("array")}. If \code{y} is \code{@IndexFor("array")} and
-\code{@LessThan("end")}, then \code{y - start} is \code{@IndexFor("this")}.
-Finally, \code{end - start} is \code{@IndexOrHigh("this")}.
+Thus, a valid index into \<shorter> is also a valid index (between
+\code{start} and \code{end-1} inclusive) into \<longer>.  More generally,
+if \code{x} is \code{@IndexFor("shorter")} in the example above, then
+\code{start + x} is \code{@IndexFor("longer")}. If \code{y} is
+\code{@IndexFor("longer")} and \code{@LessThan("end")}, then \code{y -
+  start} is \code{@IndexFor("shorter")}. Finally, \code{end - start} is
+\code{@IndexOrHigh("shorter")}.
 
-\section{Sequence minimum lengths\label{index-minlen}}
+This annotation is in part checked and in part trusted.  When an array is
+assigned to \code{longer}, three facts are checked: that \code{start} is
+non-negative, that \code{start} is less than or equal to \code{end}, and
+that \code{end} is less than or equal to the length of \code{longer}.  This
+ensures that the indices are valid. The programmer must manually verify
+that the value of \code{shorter} equals the subsequence that they describe.
+\end{description}
+
+
+\sectionAndLabel{Sequence minimum lengths}{index-minlen}
 
 The Index Checker estimates, for each sequence expression, how long its value
 might be at run time by computing a minimum length that
@@ -441,8 +456,8 @@ can establish the minimum length of a sequence:
   \label{fig-index-array-types}
 \end{figure}
 
-The following method annotation can be used to establish a postcondition
-of a method which ensures that a certain sequence has a minimum length:
+The following method annotation can be used to establish a method postcondition
+that ensures that a certain sequence has a minimum length:
 
 \begin{description}
 \item[\refqualclasswithparams{common/value/qual}{EnsuresMinLenIf}{String[] expression, boolean result, int targetValue}]
@@ -451,7 +466,7 @@ of a method which ensures that a certain sequence has a minimum length:
   with at least \code{targetValue} elements.
 \end{description}
 
-\section{Sequences of the same length\label{index-samelen}}
+\sectionAndLabel{Sequences of the same length}{index-samelen}
 
 The Index Checker determines whether two or more sequences have the same length.
 This enables it to verify that all the indexing operations are safe in code
@@ -494,7 +509,7 @@ When needed, you can specify which sequences have the same length using the foll
 \end{description}
 
 
-\section{Binary search indices\label{index-searchindex}}
+\sectionAndLabel{Binary search indices}{index-searchindex}
 
 The JDK's
 \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}
@@ -536,7 +551,7 @@ The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) h
 \end{description}
 
 
-\section{Substring indices\label{index-substringindex}}
+\sectionAndLabel{Substring indices}{index-substringindex}
 
 The methods
 \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
@@ -620,7 +635,7 @@ qualifiers:
 \end{description}
 
 
-\subsection{The need for the \<@SubstringIndexFor> annotation\label{index-substringindex-justification}}
+\subsectionAndLabel{The need for the \<@SubstringIndexFor> annotation}{index-substringindex-justification}
 
 No other annotation supported by the Index Checker precisely represents the
 possible return values of methods
@@ -683,7 +698,7 @@ the example type-check without false positives, a new annotation such as
 \<@SubstringIndexFor\allowbreak(value = "receiver", offset = "substring.length()-1")>
 is necessary.
 
-\section{Inequalities\label{index-inequalities}}
+\sectionAndLabel{Inequalities}{index-inequalities}
 
 The Index Checker estimates which expression's values are less than other expressions' values.
 
@@ -704,7 +719,7 @@ The Index Checker estimates which expression's values are less than other expres
 
 \end{description}
 
-\section{Annotating fixed-size data structures\label{index-annotating-fixed-size}}
+\sectionAndLabel{Annotating fixed-size data structures}{index-annotating-fixed-size}
 
 The Index Checker has built-in support for Strings and arrays.
 You can add support for additional fixed-size data structures by writing

@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -107,8 +107,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       passed as argument in the object creation call.
      * </ul>
      *
-     * <p>
-     *
      * @param objectCreationNode the new Object() node
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the constructor's parameters' types
@@ -150,8 +148,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       type will be the LUB between the previous type and the type of the respective parameter
      *       on the overridden method.
      * </ul>
-     *
-     * <p>
      *
      * @param methodTree the tree of the method that contains the parameter
      * @param methodElt the element of the method
@@ -197,8 +193,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       type will be the LUB between the previous type and the type of the respective value
      *       passed as argument in the method call.
      * </ul>
-     *
-     * <p>
      *
      * @param methodInvNode the node representing a method invocation
      * @param receiverTree the Tree of the class that contains the method being invoked
@@ -289,8 +283,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       passed as argument in the method call.
      * </ul>
      *
-     * <p>
-     *
      * @param lhs the node representing the parameter
      * @param rhs the node being assigned to the parameter
      * @param classTree the tree of the class that contains the parameter
@@ -357,8 +349,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       overridden method.
      * </ul>
      *
-     * <p>
-     *
      * @param methodTree the tree of the method that contains the receiver
      * @param methodElt the element of the method
      * @param overriddenMethod the overridden method
@@ -397,8 +387,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * <p>If the Scene contains no entry for the field lhs, the entry will be created and its type
      * will be the type of rhs. If the Scene previously contained an entry/type for lhs, its new
      * type will be the LUB between the previous type and the type of rhs.
-     *
-     * <p>
      *
      * @param lhs the field whose type will be refined
      * @param rhs the expression being assigned to the field
@@ -458,8 +446,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * method methodTree, its new type will be the LUB between the previous type and the type of the
      * value passed to the return expression.
      *
-     * <p>
-     *
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
      * @param methodTree the tree of the method whose return type may be updated
@@ -511,7 +497,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         } else if (field instanceof LocalVariableNode) {
             receiverNode = ((LocalVariableNode) field).getReceiver();
         } else {
-            ErrorReporter.errorAbort("Unexpected type: " + field.getClass());
+            throw new BugInCF("Unexpected type: " + field.getClass());
         }
         if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
                 && classTree != null) {

@@ -7,7 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents a type qualifier hierarchy.
@@ -26,7 +26,7 @@ public abstract class QualifierHierarchy {
      */
     public boolean isValid() {
         // For most QH the simplest check is that there are qualifiers.
-        return getTypeQualifiers().size() > 0;
+        return !getTypeQualifiers().isEmpty();
     }
 
     // **********************************************************************
@@ -180,16 +180,16 @@ public abstract class QualifierHierarchy {
         annos1 = replacePolyAll(annos1);
         annos2 = replacePolyAll(annos2);
         if (annos1.size() != annos2.size()) {
-            ErrorReporter.errorAbort(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes!\n"
+            throw new BugInCF(
+                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.\n"
                             + "    Set 1: "
                             + annos1
                             + " Set 2: "
                             + annos2);
         }
         if (annos1.isEmpty()) {
-            throw new Error(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets!");
+            throw new BugInCF(
+                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
         }
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
@@ -203,7 +203,7 @@ public abstract class QualifierHierarchy {
         }
 
         assert result.size() == annos1.size()
-                : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations!\n"
+                : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations.\n"
                         + "    Set 1: "
                         + annos1
                         + " Set 2: "
@@ -250,16 +250,16 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
         if (annos1.size() != annos2.size()) {
-            ErrorReporter.errorAbort(
-                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes!\n"
+            throw new BugInCF(
+                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes.\n"
                             + "    Set 1: "
                             + annos1
                             + " Set 2: "
                             + annos2);
         }
         if (annos1.isEmpty()) {
-            ErrorReporter.errorAbort(
-                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets!");
+            throw new BugInCF(
+                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
         }
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
@@ -273,7 +273,7 @@ public abstract class QualifierHierarchy {
         }
 
         assert result.size() == annos1.size()
-                : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations!\n"
+                : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations.\n"
                         + "    Set 1: "
                         + annos1
                         + " Set 2: "

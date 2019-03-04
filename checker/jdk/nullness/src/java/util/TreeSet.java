@@ -12,6 +12,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E>, Clone
   public TreeSet(Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
   public TreeSet(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public TreeSet(SortedSet<E> a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public NavigableSet<E> descendingSet() { throw new RuntimeException("skeleton method"); }

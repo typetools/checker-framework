@@ -22,7 +22,7 @@ public class ExpressionsNullness {
         ExpressionsNullness.class.getAnnotations(); // valid
     }
 
-    private HashMap<String, String> map = new HashMap<String, String>();
+    private HashMap<String, String> map = new HashMap<>();
 
     public void test() {
         @SuppressWarnings("nullness")

@@ -120,18 +120,30 @@ public class I18nFormatterTreeUtil {
         return list.toArray(new I18nConversionCategory[] {});
     }
 
+    /**
+     * Returns true if the call is to a method with the @I18nChecksFormat annotation. An example of
+     * such a method is I18nFormatUtil.hasFormat.
+     */
     public boolean isHasFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, I18nChecksFormat.class);
         return anno != null;
     }
 
+    /**
+     * Returns true if the call is to a method with the @I18nValidFormat annotation. An example of
+     * such a method is I18nFormatUtil.isFormat.
+     */
     public boolean isIsFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, I18nValidFormat.class);
         return anno != null;
     }
 
+    /**
+     * Returns true if the call is to a method with the @I18nMakeFormat annotation. An example of
+     * such a method is ResourceBundle.getString.
+     */
     public boolean isMakeFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, I18nMakeFormat.class);
@@ -184,7 +196,7 @@ public class I18nFormatterTreeUtil {
         Result<I18nConversionCategory[]> ret = new Result<>(null, node.getTree());
 
         // Now only work with a literal string
-        if (firstParam != null && (firstParam instanceof StringLiteralNode)) {
+        if (firstParam instanceof StringLiteralNode) {
             String s = ((StringLiteralNode) firstParam).getValue();
             if (translations.containsKey(s)) {
                 String value = translations.get(s);
@@ -231,7 +243,7 @@ public class I18nFormatterTreeUtil {
                 AnnotatedTypeFactory atypeFactory) {
             this.tree = tree;
             this.atypeFactory = atypeFactory;
-            List<? extends ExpressionTree> theargs = (tree).getArguments();
+            List<? extends ExpressionTree> theargs = tree.getArguments();
             this.args = null;
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
@@ -401,7 +413,7 @@ public class I18nFormatterTreeUtil {
 
             ExpressionTree loc;
             loc = ((MethodInvocationTree) tree).getMethodSelect();
-            if (type != InvocationType.VARARG && args.size() > 0) {
+            if (type != InvocationType.VARARG && !args.isEmpty()) {
                 loc = args.get(0);
             }
             return new Result<>(type, loc);

@@ -1,4 +1,7 @@
 // @skip-test
+
+import org.checkerframework.checker.interning.qual.PolyInterned;
+
 public final class ArraysMDETest {
 
     public static @PolyInterned Object[] subarray(

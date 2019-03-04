@@ -108,7 +108,7 @@ public class NonNullMapValue {
     }
 
     public static void process_unmatched_procedure_entries() {
-        HashMap<Integer, Date> call_hashmap = new HashMap<Integer, Date>();
+        HashMap<Integer, Date> call_hashmap = new HashMap<>();
         for (Integer i : call_hashmap.keySet()) {
             @NonNull Date d = call_hashmap.get(i);
         }
@@ -187,7 +187,7 @@ public class NonNullMapValue {
         }
         // :: warning: (known.nonnull)
         if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {}
-        // :: warning: (known.nonnull)
+        // :: error: (dereference.of.nullable) :: warning: (known.nonnull)
         if (map2.containsKey(KEY2) && map2.get(KEY2).toString() != null) {}
     }
 

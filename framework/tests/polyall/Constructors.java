@@ -1,6 +1,7 @@
 import polyall.quals.*;
 
 class Constructors {
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @H1S2 @H2S2 Constructors() {}
 
     void test1() {
@@ -18,6 +19,7 @@ class Constructors {
         @H1S2 @H2S1 Constructors e2 = new @H1S2 Constructors();
     }
 
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @H1S2 @H2Poly Constructors(@H1S1 @H2Poly int i) {}
 
     void test2(@H1S1 @H2S2 int p) {
@@ -33,6 +35,7 @@ class Constructors {
         @H1S2 @H2S1 Constructors e3 = new @H1S2 Constructors(p);
     }
 
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s) {}
 
     void test3(@H1S1 @H2S2 String p) {
@@ -53,6 +56,7 @@ class Constructors {
         @H1S2 @H2S2 Constructors e5 = new @H1S2 Constructors(p);
     }
 
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @testlib.util.Encrypted @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
 
     void test4(@H1S1 @H2S2 String p) {

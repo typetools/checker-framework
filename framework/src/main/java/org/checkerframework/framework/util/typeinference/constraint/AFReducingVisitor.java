@@ -17,7 +17,7 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -188,8 +188,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         if (subtype.wasRaw() || supertype.wasRaw()) {
             // The error will be caught in {@link DefaultTypeArgumentInference#infer} and
             // inference will be aborted, but type-checking will continue.
-            ErrorReporter.errorAbort("Can't infer type arguments when raw types are involved.");
-            return null;
+            throw new BugInCF("Can't infer type arguments when raw types are involved.");
         }
 
         if (!TypesUtils.isErasedSubtype(
@@ -244,7 +243,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         // extends Serializable & Iterable<T>>
         for (final AnnotatedTypeMirror intersectionBound : supertype.directSuperTypes()) {
             if (intersectionBound instanceof AnnotatedDeclaredType
-                    && ((AnnotatedDeclaredType) intersectionBound).getTypeArguments().size() > 0) {
+                    && !((AnnotatedDeclaredType) intersectionBound).getTypeArguments().isEmpty()) {
                 addConstraint(subtype, supertype, constraints);
             }
         }

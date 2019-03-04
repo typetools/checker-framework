@@ -27,8 +27,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * This class assists the {@link AnnotatedTypeFactory} by reflectively looking up the list of
@@ -48,9 +49,8 @@ import org.checkerframework.javacutil.InternalUtils;
  *
  * <p>Checker writers may wish to subclass this class if they wish to implement some custom rules to
  * filter or process loaded annotation classes, by providing an override implementation of {@link
- * #isSupportedAnnotationClass(Class)}. See {@link
- * org.checkerframework.checker.units.UnitsAnnotationClassLoader UnitsAnnotationClassLoader} for an
- * example.
+ * #isSupportedAnnotationClass(Class)}. See {@code
+ * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
     // For issuing errors to the user
@@ -472,18 +472,32 @@ public class AnnotationClassLoader {
             // resource URL for the qual directory will have the protocol
             // "jar". This means the whole checker is loaded as a jar file.
 
-            JarFile jarFile = null;
-            // open up that jar file and extract annotation class names
+            JarURLConnection connection;
+            // create a connection to the jar file
             try {
-                JarURLConnection connection = (JarURLConnection) resourceURL.openConnection();
-                jarFile = connection.getJarFile();
+                connection = (JarURLConnection) resourceURL.openConnection();
+
+                // disable caching / connection sharing of the low level URLConnection to the Jar
+                // file
+                connection.setDefaultUseCaches(false);
+                connection.setUseCaches(false);
+
+                // connect to the Jar file
+                connection.connect();
             } catch (IOException e) {
-                ErrorReporter.errorAbort(
-                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open a connection to the Jar file "
+                                + resourceURL.getFile());
             }
 
-            // get class names inside the jar file within the particular package
-            annotationNames = getBundledAnnotationNamesFromJar(jarFile);
+            // open up that jar file and extract annotation class names
+            try (JarFile jarFile = connection.getJarFile()) {
+                // get class names inside the jar file within the particular package
+                annotationNames = getBundledAnnotationNamesFromJar(jarFile);
+            } catch (IOException e) {
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
+            }
 
         } else if (resourceURL.getProtocol().contentEquals("file")) {
             // if the checker class file is found within the file system itself
@@ -674,7 +688,7 @@ public class AnnotationClassLoader {
 
         // load the class
         if (classLoader == null) {
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": no classloaders are available for use to load annotation class "
                             + fullyQualifiedClassName
@@ -685,7 +699,7 @@ public class AnnotationClassLoader {
         try {
             cls = Class.forName(fullyQualifiedClassName, true, classLoader);
         } catch (ClassNotFoundException e) {
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": could not load class for annotation: "
                             + fullyQualifiedClassName
@@ -697,7 +711,7 @@ public class AnnotationClassLoader {
         // return null
         if (!cls.isAnnotation()) {
             if (issueError) {
-                checker.userErrorAbort(
+                throw new UserError(
                         checker.getClass().getSimpleName()
                                 + ": the loaded class: "
                                 + cls.getCanonicalName()
@@ -716,17 +730,17 @@ public class AnnotationClassLoader {
             // issueError is set to true for loading explicitly named external annotations
             // We issue an error here when one of those annotations is not well-defined, since the
             // user expects these external annotations to be loaded
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": the loaded annotation: "
                             + annoClass.getCanonicalName()
                             + " is not a type annotation."
                             + " Check its @Target meta-annotation.");
-            return null;
         } else {
-            // issueError is set to false for loading the qual directory or any external directories
+            // issueError is set to false for loading the qual directory or any external
+            // directories.
             // We don't issue any errors since there may be meta-annotations or non-type annotations
-            // in such directories
+            // in such directories.
             return null;
         }
     }
@@ -764,7 +778,7 @@ public class AnnotationClassLoader {
      *
      * <p>A subclass may override this method to load annotations that are not intended to be
      * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code
-     * Unqualified}
+     * Unqualified}.
      *
      * @param annoClass an annotation class
      * @return true if the annotation is well defined, false if it isn't

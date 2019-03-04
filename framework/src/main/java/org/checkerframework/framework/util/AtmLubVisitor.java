@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -131,7 +131,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     /** Casts lub to the type of type and issues an error if type and lub are not the same kind. */
     private <T extends AnnotatedTypeMirror> T castLub(T type, AnnotatedTypeMirror lub) {
         if (type.getKind() != lub.getKind()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "AtmLubVisitor: unexpected type. Found: %s Required %s",
                     lub.getKind(), type.getKind());
         }
@@ -172,7 +172,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             AnnotatedTypeMirror lubTypeArg = castedLub.getTypeArguments().get(i);
             lubTypeArgument(type1TypeArg, type2TypeArg, lubTypeArg);
         }
-        if (lubTypArgs.size() > 0) {
+        if (!lubTypArgs.isEmpty()) {
             castedLub.setTypeArguments(lubTypArgs);
         }
         return null;

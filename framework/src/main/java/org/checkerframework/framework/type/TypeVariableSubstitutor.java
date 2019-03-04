@@ -91,7 +91,7 @@ public class TypeVariableSubstitutor {
             // updating the underlying Java type of the parent type.  We use the underlying type for
             // various purposes (including equals/hashcode) so this can lead to unpredictable
             // behavior.  Currently, we update the underlying type when substituting on arrays in
-            // order to avoid an ErrorAbort in LubTypeVariableAnnotator.
+            // order to avoid an error in LubTypeVariableAnnotator.
             // TODO: Presumably there are more cases in which we want to do this
             final AnnotatedTypeMirror componentType =
                     visit(original.getComponentType(), originalToCopy);

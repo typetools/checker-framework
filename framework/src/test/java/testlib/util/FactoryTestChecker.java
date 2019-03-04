@@ -11,6 +11,7 @@ import java.io.LineNumberReader;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +24,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -92,7 +94,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
                 }
             }
         } catch (Exception e) {
-            errorAbort("Couldn't load " + checkerClassName + " class.");
+            throw new BugInCF("Couldn't load " + checkerClassName + " class.");
         }
     }
 
@@ -124,7 +126,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
     /** Builds the expected type for the trees from the source file of the tree compilation unit. */
     // This method is extremely ugly
     private Map<TreeSpec, String> buildExpected(CompilationUnitTree tree) {
-        Map<TreeSpec, String> expected = new HashMap<TreeSpec, String>();
+        Map<TreeSpec, String> expected = new HashMap<>();
         try {
             JavaFileObject o = tree.getSourceFile();
             File sourceFile = new File(o.toUri());
@@ -227,7 +229,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
 
         @Override
         public int hashCode() {
-            return (int) (31 + 3 * treeString.hashCode() + 7 * lineNumber);
+            return Objects.hash(treeString, lineNumber);
         }
 
         @Override

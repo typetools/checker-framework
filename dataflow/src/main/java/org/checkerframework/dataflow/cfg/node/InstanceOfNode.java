@@ -4,10 +4,10 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for the instanceof operator:
@@ -25,12 +25,17 @@ public class InstanceOfNode extends Node {
     /** The tree associated with this node. */
     protected final InstanceOfTree tree;
 
+    /** For Types.isSameType. */
+    protected final Types types;
+
+    /** Create an InstanceOfNode. */
     public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
         super(types.getPrimitiveType(TypeKind.BOOLEAN));
         assert tree.getKind() == Tree.Kind.INSTANCE_OF;
         this.tree = (InstanceOfTree) tree;
         this.operand = operand;
         this.refType = refType;
+        this.types = types;
     }
 
     public Node getOperand() {
@@ -63,18 +68,19 @@ public class InstanceOfNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof InstanceOfNode)) {
+        if (!(obj instanceof InstanceOfNode)) {
             return false;
         }
         InstanceOfNode other = (InstanceOfNode) obj;
         // TODO: TypeMirror.equals may be too restrictive.
         // Check whether Types.isSameType is the better comparison.
-        return getOperand().equals(other.getOperand()) && getRefType().equals(other.getRefType());
+        return getOperand().equals(other.getOperand())
+                && types.isSameType(getRefType(), other.getRefType());
     }
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return Objects.hash(getOperand());
     }
 
     @Override

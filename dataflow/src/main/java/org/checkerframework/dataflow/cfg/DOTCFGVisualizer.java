@@ -34,7 +34,8 @@ import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
 public class DOTCFGVisualizer<
@@ -91,7 +92,7 @@ public class DOTCFGVisualizer<
             out.write(dotgraph);
             out.close();
         } catch (IOException e) {
-            ErrorReporter.errorAbort(
+            throw new UserError(
                     "Error creating dot file: " + dotfilename + "; ensure the path is valid", e);
         }
 
@@ -250,9 +251,7 @@ public class DOTCFGVisualizer<
             srcloc.append(((JCTree) cfgs.getCode()).pos);
             srcloc.append('>');
         } else {
-            ErrorReporter.errorAbort(
-                    "Unexpected AST kind: " + ast.getKind() + " value: " + ast.toString());
-            return null;
+            throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
         }
         outfile.append('-');
         outfile.append(checkerName);
@@ -508,7 +507,7 @@ public class DOTCFGVisualizer<
             }
             out.close();
         } catch (IOException e) {
-            ErrorReporter.errorAbort(
+            throw new UserError(
                     "Error creating methods.txt file in: " + outdir + "; ensure the path is valid",
                     e);
         }

@@ -84,7 +84,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                         AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
                 List<String> offsets =
                         AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
-                if (sequences.size() != offsets.size() && offsets.size() > 0) {
+                if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
                     checker.report(
                             Result.failure(
                                     "different.length.sequences.offsets",
@@ -98,7 +98,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // Check that the arguments to a HasSubsequence annotation are valid flow expressions,
             // and issue an error if one of them is not.
 
-            String seq = AnnotationUtils.getElementValue(anno, "value", String.class, true);
+            String seq = AnnotationUtils.getElementValue(anno, "subsequence", String.class, true);
             String from = AnnotationUtils.getElementValue(anno, "from", String.class, true);
             String to = AnnotationUtils.getElementValue(anno, "to", String.class, true);
 
@@ -350,10 +350,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     private boolean checkMinLen(ExpressionTree indexTree, ExpressionTree arrTree) {
         int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
         Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
-        if (valMax != null && valMax < minLen) {
-            return true;
-        }
-        return false;
+        return valMax != null && valMax < minLen;
     }
 
     /**

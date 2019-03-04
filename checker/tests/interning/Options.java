@@ -26,7 +26,7 @@ class Options {
         // Split the args string on whitespace boundaries accounting for quoted
         // strings.
         args = args.trim();
-        List<String> arg_list = new ArrayList<String>();
+        List<String> arg_list = new ArrayList<>();
         String arg = "";
         char active_quote = 0;
         // for (int ii = 0; ii < args.length(); ii++) {
@@ -53,7 +53,7 @@ class Options {
         // Split the args string on whitespace boundaries accounting for quoted
         // strings.
         args = args.trim();
-        List<String> arg_list = new ArrayList<String>();
+        List<String> arg_list = new ArrayList<>();
         String arg = "";
         char active_quote = 0;
         for (int ii = 0; ii < args.length(); ii++) {

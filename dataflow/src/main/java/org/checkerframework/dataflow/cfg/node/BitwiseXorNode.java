@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * A node for the bitwise or logical (single bit) xor operation:
@@ -30,7 +30,7 @@ public class BitwiseXorNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof BitwiseXorNode)) {
+        if (!(obj instanceof BitwiseXorNode)) {
             return false;
         }
         BitwiseXorNode other = (BitwiseXorNode) obj;
@@ -40,6 +40,6 @@ public class BitwiseXorNode extends BinaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+        return Objects.hash(getLeftOperand(), getRightOperand());
     }
 }

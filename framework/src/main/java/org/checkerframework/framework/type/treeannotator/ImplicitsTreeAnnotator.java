@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Adds annotations to a type based on the contents of a tree. By default, this class honors the
@@ -115,7 +115,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for a particular {@link Tree} class
+     * Added an implicit rule for a particular {@link Tree} class.
      *
      * @param treeClass tree class that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeClass}
@@ -123,7 +123,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeClasses, treeClass, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "PropagationTreeAnnotator: invalid update of map "
                             + treeClasses
                             + " at "
@@ -153,8 +153,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
             if (treeKind != null) {
                 addTreeKind(treeKind, theQual);
             } else {
-                ErrorReporter.errorAbort(
-                        "LiteralKind " + literalKind + " is not mapped to a Tree.Kind.");
+                throw new BugInCF("LiteralKind " + literalKind + " is not mapped to a Tree.Kind.");
             }
         }
     }
@@ -168,7 +167,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     public void addTreeKind(Kind treeKind, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "PropagationTreeAnnotator: invalid update of treeKinds "
                             + treeKinds
                             + " at "
@@ -179,7 +178,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for all String literals that match the given pattern
+     * Added an implicit rule for all String literals that match the given pattern.
      *
      * @param pattern pattern to match Strings against
      * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern
@@ -189,7 +188,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 qualHierarchy.updateMappingToMutableSet(
                         stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "PropagationTreeAnnotator: invalid update of stringPatterns "
                             + stringPatterns
                             + " at "
@@ -255,7 +254,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 // Verify that res is not a subtype of any type in nonMatches
                 for (Set<? extends AnnotationMirror> sam : nonMatches) {
                     if (qualHierarchy.isSubtype(res, sam)) {
-                        ErrorReporter.errorAbort(
+                        throw new BugInCF(
                                 "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for \""
                                         + string
                                         + "\" is "

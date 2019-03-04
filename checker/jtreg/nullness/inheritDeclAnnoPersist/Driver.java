@@ -52,7 +52,7 @@ public class Driver {
                 ++passed;
             } catch (Throwable e) {
                 out.println("FAILED:  " + method.getName());
-                out.println("    " + e.toString());
+                out.println("    " + e);
                 ++failed;
             }
         }
@@ -76,7 +76,7 @@ public class Driver {
             return null;
         }
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         if (ta != null) {
             result.add(expectedOf(ta));

@@ -496,7 +496,7 @@ public final class SignednessUtil {
             int lower = (int) l;
 
             // return (upper << 32) + lower
-            return (BigInteger.valueOf(toUnsignedLong(upper)))
+            return BigInteger.valueOf(toUnsignedLong(upper))
                     .shiftLeft(32)
                     .add(BigInteger.valueOf(toUnsignedLong(lower)));
         }

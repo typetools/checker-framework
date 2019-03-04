@@ -6,7 +6,7 @@ import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.compound.CompoundChecker;
 
-/** Tests for the compound checker design pattern */
+/** Tests for the compound checker design pattern. */
 public class CompoundCheckerTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */

@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Map Key Checker\label{map-key-checker}}
+\chapterAndLabel{Map Key Checker}{map-key-checker}
 
 The Map Key Checker tracks which values are keys for which maps.  If variable
 \code{v} has type \code{@KeyFor("m")...}, then the value of \code{v} is a key
@@ -18,7 +18,7 @@ other checkers, in particular the Nullness Checker.
 You can suppress warnings related to map keys with
 \<@SuppressWarnings("keyfor")>; see \chapterpageref{suppressing-warnings}.
 
-\section{Map key annotations\label{map-key-annotations}}
+\sectionAndLabel{Map key annotations}{map-key-annotations}
 
 These qualifiers are part of the Map Key type system:
 
@@ -40,6 +40,22 @@ These qualifiers are part of the Map Key type system:
 
 \end{description}
 
+The following method annotations can be used to establish a method postcondition
+that ensures that a certain expression is a key for a map:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/nullness/qual}{EnsuresKeyFor}{String[] value, String[] map}]
+  When the method with this annotation returns, the expression (or all the
+  expressions) given in the \code{value} element is a key for the given
+  maps. More preciesly, the expression has the \code{@KeyFor} qualifier
+  with the \code{value} arguments taken from the \code{targetValue} element
+  of this annotation.
+\item[\refqualclasswithparams{checker/nullness/qual}{EnsuresKeyForIf}{String[] expression, boolean result, String[] map}]
+  If the method with this annotation returns the given boolean value,
+  then the given expression (or all the given expressions)
+  is a key for the given maps.
+\end{description}
+
 \begin{figure}
 \includeimage{map-key-keyfor}{5cm}
 \caption{The subtyping relationship of the Map Key Checker's qualifiers.
@@ -49,14 +65,14 @@ never be written by a programmer.}
 \label{fig-map-key-keyfor-hierarchy}
 \end{figure}
 
-\section{Default annotations\label{map-key-defaults}}
+\sectionAndLabel{Default annotations}{map-key-defaults}
 
 The \code{null} literal is implicitly annotated with \code{@UnknownKeyFor}.
 If \code{null} were \code{@KeyForBottom}, that would mean that
 \code{null} is guaranteed to be a key for every map (which is not
 necessarily true).
 
-\subsection{Default for lower bounds\label{map-key-defaults-lowerbound}}
+\subsectionAndLabel{Default for lower bounds}{map-key-defaults-lowerbound}
 
 Lower bounds are defaulted to \code{@UnknownKeyFor}.
 However, in \<java.*> packages, the default for lower bounds is
@@ -120,8 +136,43 @@ programmers must write a \<@KeyForBottom> annotation on the type parameter,
 as in \<MySet2> (and \<Set>).
 
 
+\subsectionAndLabel{Diagnosing the need for explicit @KeyFor on lower bounds}{map-key-lowerbound-explicit}
 
-\section{Examples\label{map-key-examples}}
+Under the current defaulting (lower bounds default to
+\code{@UnknownKeyFor}), suppose you write this code:
+
+\begin{Verbatim}
+public class Graph<N> {
+  Map<N, Integer> nodes = new HashMap<>();
+}
+
+class Client {
+  @Nullable Graph<@KeyFor("g.nodes") String> g;
+}
+\end{Verbatim}
+
+\noindent
+The Nullness Checker issues this error message:
+
+\begin{Verbatim}
+Graph.java:14: error: [type.argument.type.incompatible] incompatible types in type argument.
+  @Nullable Graph<@KeyFor("g.nodes") String> g;
+                  ^
+  found   : @KeyFor("this.g.nodes") String
+  required: [extends @UnknownKeyFor Object super @UnknownKeyFor null]
+\end{Verbatim}
+
+Note that the upper ond lower bounds are both \<@UnknownKeyFor>.  You can
+make the code type-check by writing a lower bound, which is written before
+the type variable name (Section~\ref{generics-instantiation}):
+
+\begin{Verbatim}
+public class Graph<@KeyForBottom N> {
+...
+\end{Verbatim}
+
+
+\sectionAndLabel{Examples}{map-key-examples}
 
 The Map Key Checker keeps track of which variables reference keys to
 which maps.  A variable annotated with \<@KeyFor(\emph{mapSet})> can only
@@ -159,9 +210,10 @@ coll.add(x);      // OK
 
 
 
-\section{Inference of @KeyFor annotations\label{map-key-annotations-inference}}
+\sectionAndLabel{Inference of @KeyFor annotations}{map-key-annotations-inference}
 
-Within a method body, you usually do not have to write \<@KeyFor> explicitly,
+Within a method body, you usually do not have to write \<@KeyFor>
+explicitly (except sometimes on type arguments),
 because the checker infers it based on usage patterns.  When the Map Key
 Checker encounters a run-time check for map keys, such as
 ``\<if (m.containsKey(k)) ...>'', then the Map Key Checker refines the type of
@@ -177,7 +229,7 @@ For more details about type refinement, see Section~\ref{type-refinement}.
 Suppose we have these declarations:
 
 \begin{verbatim}
-Map<String,Date> m = new Map<String,Date>();
+Map<String,Date> m = new Map<>();
 String k = "key";
 @KeyFor("m") String km;
 \end{verbatim}

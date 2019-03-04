@@ -94,7 +94,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     /**
-     * Reads the entire input file using the given codec and returns the resulting line.
+     * Reads the entire input file using the given codec and returns the resulting lines, filtering
+     * out empty ones produced by JavaDiagnosticReader.
      *
      * @param file the file (Java or Diagnostics format) to read
      * @param codec a codec corresponding to the file type being read
@@ -104,6 +105,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         List<TestDiagnosticLine> diagnosticLines = new ArrayList<>();
         while (reader.hasNext()) {
             TestDiagnosticLine line = reader.next();
+            // A JavaDiagnosticReader can return a lot of empty diagnostics.  Filter them out.
             if (line.hasDiagnostics()) {
                 diagnosticLines.add(line);
             }
@@ -115,7 +117,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     /** Converts a list of TestDiagnosticLine into a list of TestDiagnostic. */
     private static List<TestDiagnostic> getDiagnostics(List<TestDiagnosticLine> lines) {
-        List<TestDiagnostic> result = new ArrayList<TestDiagnostic>((int) (lines.size() * 1.1));
+        List<TestDiagnostic> result = new ArrayList<>((int) (lines.size() * 1.1));
         for (TestDiagnosticLine line : lines) {
             result.addAll(line.getDiagnostics());
         }
@@ -234,6 +236,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
             int currentLineNumber = nextLineNumber;
 
             advance();
+
+            current = TestDiagnosticUtils.handleEndOfLineJavaDiagnostic(current);
 
             if (TestDiagnosticUtils.isJavaDiagnosticLineStart(current)) {
                 while (TestDiagnosticUtils.isJavaDiagnosticLineContinuation(nextLine)) {

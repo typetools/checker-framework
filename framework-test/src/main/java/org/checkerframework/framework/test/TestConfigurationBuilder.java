@@ -55,7 +55,6 @@ public class TestConfigurationBuilder {
                         .addOption("-g")
                         .addOption("-Xlint:unchecked")
                         .addOption("-XDrawDiagnostics") // use short javac diagnostics
-                        .addOption("-AprintErrorStack")
                         .addSourceFiles(testSourceFiles);
 
         if (outputClassDirectory != null) {
@@ -63,7 +62,6 @@ public class TestConfigurationBuilder {
         }
 
         // Use the annotated jdk for the compile bootclasspath
-        // This is set by build.xml
         String jdkJarPath = getJdkJarPathFromProperty();
         if (notNullOrEmpty(jdkJarPath)) {
             configBuilder.addOption("-Xbootclasspath/p:" + jdkJarPath);
@@ -141,19 +139,19 @@ public class TestConfigurationBuilder {
                 testSourcePath, javaFiles, processors, options, shouldEmitDebugInfo);
     }
 
-    /** The list of files that contain Java diagnostics to compare against */
+    /** The list of files that contain Java diagnostics to compare against. */
     private List<File> diagnosticFiles;
 
-    /** The set of Java files to test against */
+    /** The set of Java files to test against. */
     private List<File> testSourceFiles;
 
-    /** The set of Checker Framework processors to test with */
+    /** The set of Checker Framework processors to test with. */
     private Set<String> processors;
 
-    /** The set of options to the Javac command line used to run the test */
+    /** The set of options to the Javac command line used to run the test. */
     private SimpleOptionMap options;
 
-    /** Should the Javac options be output before running the test */
+    /** Should the Javac options be output before running the test. */
     private boolean shouldEmitDebugInfo;
 
     /**
@@ -357,7 +355,7 @@ public class TestConfigurationBuilder {
                         + "Errors:\n"
                         + String.join("\n", errors)
                         + "\n"
-                        + this.toString()
+                        + this
                         + "\n");
     }
 
@@ -385,7 +383,7 @@ public class TestConfigurationBuilder {
     /** @return a list that first has the items from parameter list then the items from iterable */
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {
-        final List<T> newList = new ArrayList<T>();
+        final List<T> newList = new ArrayList<>();
 
         for (T listObject : list) {
             newList.add(listObject);

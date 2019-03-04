@@ -47,10 +47,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -73,7 +74,7 @@ public class AnnotatedTypes {
      * both declared types, asSuper is called recursively on the direct super types, see {@link
      * AnnotatedTypeMirror#directSuperTypes()}, of {@code type} until {@code type}'s erased Java
      * type is the same as {@code superType}'s erased super type. Then {@code type is returned}. For
-     * compound types, asSuper is call recursively on components.
+     * compound types, asSuper is called recursively on components.
      *
      * <p>Preconditions:<br>
      * {@code superType} may have annotations, but they are ignored. <br>
@@ -262,8 +263,7 @@ public class AnnotatedTypes {
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
             default:
-                ErrorReporter.errorAbort("asMemberOf called on unexpected type.\nt: " + of);
-                return memberType; // dead code
+                throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
         }
     }
 
@@ -314,7 +314,7 @@ public class AnnotatedTypes {
                 new ArrayList<>(enclosingType.getTypeArguments().size());
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Type arguments of a declaration should be type variables\n"
                                 + "enclosingClassOfElem="
                                 + enclosingClassOfElem
@@ -330,7 +330,7 @@ public class AnnotatedTypes {
 
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Unexpected number of parameters.\n"
                             + "enclosingType="
                             + enclosingType
@@ -387,9 +387,7 @@ public class AnnotatedTypes {
         }
 
         if (iterableType.getKind() != TypeKind.DECLARED) {
-            ErrorReporter.errorAbort(
-                    "AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
-            return null; // dead code
+            throw new BugInCF("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
         }
 
         TypeElement iterableElement =
@@ -533,8 +531,7 @@ public class AnnotatedTypes {
             }
         } else {
             // This case should never happen.
-            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
-            return null; // dead code
+            throw new BugInCF("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
         }
 
         // Has the user supplied type arguments?
@@ -714,7 +711,7 @@ public class AnnotatedTypes {
 
         parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
         for (int i = args.size() - parameters.size(); i > 0; --i) {
-            parameters.add(varargs.getComponentType());
+            parameters.add(varargs.getComponentType().deepCopy());
         }
 
         return parameters;
@@ -935,7 +932,7 @@ public class AnnotatedTypes {
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "@Target meta-annotation should not contain both TYPE_USE and "
                                 + otherElementType
                                 + ", for annotation "
@@ -948,18 +945,6 @@ public class AnnotatedTypes {
 
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
-
-    /**
-     * Use {@link org.checkerframework.common.basetype.TypeValidator#isValid(AnnotatedTypeMirror,
-     * Tree)} instead. Method always returns true and will be removed.
-     *
-     * @deprecated Remove after 2.4.0 release.
-     */
-    @Deprecated
-    public static boolean isValidType(
-            QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
-        return true;
-    }
 
     /** @return true if the underlying type of this atm is a java.lang.annotation.Annotation */
     public static boolean isJavaLangAnnotation(final AnnotatedTypeMirror atm) {
@@ -1107,9 +1092,9 @@ public class AnnotatedTypes {
                                     (AnnotatedIntersectionType) source, top, qualifierHierarchy);
 
                     if (glb == null) {
-                        ErrorReporter.errorAbort(
+                        throw new BugInCF(
                                 "AnnotatedIntersectionType has no annotation in hierarchy "
-                                        + "on any of its supertypes!\n"
+                                        + "on any of its supertypes.\n"
                                         + "intersectionType="
                                         + source);
                     }
@@ -1120,8 +1105,8 @@ public class AnnotatedTypes {
                         return null;
                     }
 
-                    ErrorReporter.errorAbort(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!\n"
+                    throw new BugInCF(
+                            "Unexpected AnnotatedTypeMirror with no primary annotation.\n"
                                     + "toSearch="
                                     + toSearch
                                     + "\n"
@@ -1130,7 +1115,6 @@ public class AnnotatedTypes {
                                     + "\n"
                                     + "source="
                                     + source);
-                    return null;
             }
         }
 
@@ -1169,11 +1153,11 @@ public class AnnotatedTypes {
                     return glb;
 
                 default:
-                    ErrorReporter.errorAbort(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!"
-                                    + "toSearch="
+                    throw new BugInCF(
+                            "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                                    + " toSearch="
                                     + toSearch
-                                    + "source="
+                                    + " source="
                                     + source);
             }
 
@@ -1215,11 +1199,11 @@ public class AnnotatedTypes {
                     return glb;
 
                 default:
-                    ErrorReporter.errorAbort(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation!"
-                                    + "toSearch="
+                    throw new BugInCF(
+                            "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                                    + " toSearch="
                                     + toSearch
-                                    + "source="
+                                    + " source="
                                     + source);
             }
 

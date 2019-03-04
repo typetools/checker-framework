@@ -9,10 +9,10 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 /**
  * AFConstraint represent the initial constraints used to infer type arguments for method
  * invocations and new class invocations. These constraints are simplified then converted to
- * TUConstraints during type argument inference..
+ * TUConstraints during type argument inference.
  *
  * <p>Subclasses of AFConstraint represent the following types of constraints found in
- * (https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.12.2.7)
+ * (https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.12.2.7)
  *
  * <p>A 《 F and F 》 A both imply that A is convertible to F. F 《 A and A 》 F both imply that F is
  * convertible to A (this may happen due to wildcard/typevar bounds and recursive types) A = F

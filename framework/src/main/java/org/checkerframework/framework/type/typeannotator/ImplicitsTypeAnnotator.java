@@ -15,18 +15,16 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Adds annotations to a type based on the contents of a type. By default, this class honors the
  * {@link ImplicitFor} annotation and applies implicit annotations specified by {@link ImplicitFor}
  * for any type whose visitor is not overridden or does not call {@code super}; it is designed to be
- * invoked from {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Element,
- * org.checkerframework.framework.type.AnnotatedTypeMirror)} and {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
- * org.checkerframework.framework.type.AnnotatedTypeMirror)}.
+ * invoked from {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Element,
+ * AnnotatedTypeMirror)} and {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
+ * AnnotatedTypeMirror)}.
  *
  * <p>{@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips the
  * method receiver of executable types (for interoperability with {@link
@@ -97,7 +95,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "TypeAnnotator: invalid update of typeKinds "
                             + typeKinds
                             + " at "
@@ -111,7 +109,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
             Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "TypeAnnotator: invalid update of typeClasses "
                             + typeClasses
                             + " at "
@@ -125,7 +123,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         String typeNameString = typeName.getCanonicalName();
         boolean res = qualHierarchy.updateMappingToMutableSet(typeNames, typeNameString, theQual);
         if (!res) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "TypeAnnotator: invalid update of typeNames "
                             + typeNames
                             + " at "

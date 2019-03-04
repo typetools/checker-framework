@@ -23,6 +23,7 @@ import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -43,9 +44,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * the {@link IntRangeFromPositive} annotation, the {@link IntRangeFromNonNegative} annotation,
      * or the {@link IntRangeFromGTENegativeOne} annotation. This annotation is only introduced by
      * the Index Checker's lower bound annotations. It is safe to defer checking of these values to
-     * the Index Checker because this is only introduced for explicitly-written {@link
-     * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@link
-     * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@link
+     * the Index Checker because this is only introduced for explicitly-written {@code
+     * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@code
+     * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@code
      * org.checkerframework.checker.index.qual.GTENegativeOne} annotations, which must be checked by
      * the Lower Bound Checker.
      *
@@ -233,6 +234,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.BYTE && castRange.isByteEverything()) {
                 return p;
             }
+            if (castType.getKind() == TypeKind.CHAR && castRange.isCharEverything()) {
+                return p;
+            }
             if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
                 return p;
             }
@@ -247,17 +251,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // In that case, do not warn if the range of the expression encompasses
                 // the whole type being casted to (i.e. the warning is actually about overflow).
                 Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
-                switch (castType.getKind()) {
-                    case BYTE:
-                        exprRange = exprRange.byteRange();
-                        break;
-                    case SHORT:
-                        exprRange = exprRange.shortRange();
-                        break;
-                    case INT:
-                        exprRange = exprRange.intRange();
-                        break;
-                    default:
+                TypeKind casttypekind = castType.getKind();
+                if (casttypekind == TypeKind.BYTE
+                        || casttypekind == TypeKind.CHAR
+                        || casttypekind == TypeKind.SHORT
+                        || casttypekind == TypeKind.INT) {
+                    exprRange = NumberUtils.castRange(castType.getUnderlyingType(), exprRange);
                 }
                 if (castRange.equals(exprRange)) {
                     return p;

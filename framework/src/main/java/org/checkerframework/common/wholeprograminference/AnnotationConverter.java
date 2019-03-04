@@ -15,7 +15,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.field.AnnotationFieldType;
@@ -105,7 +105,7 @@ public class AnnotationConverter {
             try {
                 return new ArrayAFT(BasicAFT.forType(Class.forName(elemType.toString())));
             } catch (ClassNotFoundException e) {
-                ErrorReporter.errorAbort(e.getMessage());
+                throw new BugInCF(e.getMessage());
             }
         } else if (value instanceof Boolean) {
             return BasicAFT.forType(boolean.class);
@@ -155,8 +155,6 @@ public class AnnotationConverter {
             builder.setValue(fieldKey, (Class<?>) obj);
         } else if (obj instanceof Double) {
             builder.setValue(fieldKey, (Double) obj);
-        } else if (obj instanceof Float) {
-            builder.setValue(fieldKey, (Float) obj);
         } else if (obj instanceof Enum<?>) {
             builder.setValue(fieldKey, (Enum<?>) obj);
         } else if (obj instanceof Enum<?>[]) {
@@ -174,7 +172,7 @@ public class AnnotationConverter {
         } else if (obj instanceof VariableElement[]) {
             builder.setValue(fieldKey, (VariableElement[]) obj);
         } else {
-            ErrorReporter.errorAbort("Unrecognized type: " + obj.getClass());
+            throw new BugInCF("Unrecognized type: " + obj.getClass());
         }
     }
 }

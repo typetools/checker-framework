@@ -9,9 +9,11 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates that a field (or variable) is lazily initialized to a non-null value. Once the field
- * becomes non-null, it never becomes null again. There is no guarantee that the field ever becomes
- * non-null, but if it does, it will stay non-null.
+ * Indicates that once the field (or variable) becomes non-null, it never becomes null again. There
+ * is no guarantee that the field ever becomes non-null, but if it does, it will stay non-null.
+ *
+ * <p>Example use cases include lazy initialization and framework-based initialization in a
+ * lifecycle method other than the constructor.
  *
  * <p>A monotonically non-null field has these two properties:
  *

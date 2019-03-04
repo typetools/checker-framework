@@ -140,8 +140,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         }
 
         /**
-         * print to sb keyWord followed by field. NULL types are substituted with their annotations
-         * followed by " Void"
+         * Print, to sb, {@code keyWord} followed by {@code field}. NULL types are substituted with
+         * their annotations followed by " Void"
          */
         @SideEffectFree
         protected void printBound(
@@ -316,7 +316,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             AnnotatedTypeMirror component;
             while (true) {
                 component = array.getComponentType();
-                if (array.getAnnotations().size() > 0) {
+                if (!array.getAnnotations().isEmpty()) {
                     sb.append(' ');
                     sb.append(
                             annoFormatter.formatAnnotationString(

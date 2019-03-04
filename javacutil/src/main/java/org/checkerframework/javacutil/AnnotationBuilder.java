@@ -60,27 +60,51 @@ public class AnnotationBuilder {
     private final DeclaredType annotationType;
     private final Map<ExecutableElement, AnnotationValue> elementValues;
 
-    /** Caching for annotation creation. */
+    /**
+     * Caching for annotation creation. Each annotation has no values; that is, getElementValues
+     * returns an empty map. This may be in conflict with the annotation's definition, which might
+     * contain elements (annotation fields).
+     */
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
+            Collections.synchronizedMap(new HashMap<>());
 
+    /**
+     * Create a new AnnotationBuilder for the given annotation and environment (with no
+     * elements/fields, but they can be added later).
+     *
+     * @param env the processing environment
+     * @param anno the class of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
 
+    /**
+     * Create a new AnnotationBuilder for the given annotation name (with no elements/fields, but
+     * they can be added later).
+     *
+     * @param env the processing environment
+     * @param name the name of the annotation to build
+     */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
         if (annotationElt == null) {
-            ErrorReporter.errorAbort(
-                    "Could not find annotation: " + name + ". Is it on the classpath?");
+            throw new UserError("Could not find annotation: " + name + ". Is it on the classpath?");
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
         this.elementValues = new LinkedHashMap<>();
     }
 
+    /**
+     * Create a new AnnotationBuilder that copies the given annotation, including its
+     * elements/fields.
+     *
+     * @param env the processing environment
+     * @param annotation the annotation to copy
+     */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -94,19 +118,26 @@ public class AnnotationBuilder {
     }
 
     /**
-     * Creates an {@link AnnotationMirror} given by a particular annotation class.
+     * Creates an {@link AnnotationMirror} given by a particular annotation class. getElementValues
+     * on the result returns an empty map. This may be in conflict with the annotation's definition,
+     * which might contain elements (annotation fields).
+     *
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This is
+     * provided as a convenience to create an AnnotationMirror from scratch in a checker's code.
      *
      * @param elements the element utilities to use
-     * @param clazz the annotation class
+     * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of type given type
      */
-    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
-        return fromName(elements, clazz.getCanonicalName());
+    public static AnnotationMirror fromClass(
+            Elements elements, Class<? extends Annotation> aClass) {
+        return fromName(elements, aClass.getCanonicalName());
     }
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular fully-qualified name.
-     * getElementValues on the result returns an empty map.
+     * getElementValues on the result returns an empty map. This may be in conflict with the
+     * annotation's definition, which might contain elements (annotation fields).
      *
      * @param elements the element utilities to use
      * @param name the name of the annotation to create
@@ -122,8 +153,7 @@ public class AnnotationBuilder {
             return null;
         }
         if (annoElt.getKind() != ElementKind.ANNOTATION_TYPE) {
-            ErrorReporter.errorAbort(annoElt + " is not an annotation");
-            return null; // dead code
+            throw new BugInCF(annoElt + " is not an annotation");
         }
 
         final DeclaredType annoType = (DeclaredType) annoElt.asType();
@@ -145,7 +175,7 @@ public class AnnotationBuilder {
 
     private void assertNotBuilt() {
         if (wasBuilt) {
-            ErrorReporter.errorAbort("AnnotationBuilder: error: type was already built");
+            throw new BugInCF("AnnotationBuilder: error: type was already built");
         }
     }
 
@@ -201,65 +231,86 @@ public class AnnotationBuilder {
         }
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
         setValue(elementName, (Object) value);
         return this;
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> value = new ArrayList<>(values.size());
+        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
-            ErrorReporter.errorAbort("value is an array while expected type is not");
-            return null; // dead code
+            throw new BugInCF("value is an array while expected type is not");
         }
         expectedType = ((ArrayType) expectedType).getComponentType();
 
         for (Object v : values) {
             checkSubtype(expectedType, v);
-            value.add(createValue(v));
+            avalues.add(createValue(v));
         }
-        AnnotationValue val = createValue(value);
-        elementValues.put(var, val);
+        AnnotationValue aval = createValue(avalues);
+        elementValues.put(var, aval);
         return this;
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Object[] values) {
         return setValue(elementName, Arrays.asList(values));
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Boolean value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Character value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Double value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Float value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Integer value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Long value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, Short value) {
         return setValue(elementName, (Object) value);
     }
 
+    /** Set the element/field with the given name, to the given value. */
     public AnnotationBuilder setValue(CharSequence elementName, String value) {
         return setValue(elementName, (Object) value);
+    }
+
+    /**
+     * Remove the element/field with the given name. Does not err if no such element/field is
+     * present.
+     */
+    public AnnotationBuilder removeElement(CharSequence elementName) {
+        assertNotBuilt();
+        ExecutableElement var = findElement(elementName);
+        elementValues.remove(var);
+        return this;
     }
 
     private TypeMirror getErasedOrBoxedType(TypeMirror type) {
@@ -276,8 +327,7 @@ public class AnnotationBuilder {
         ExecutableElement var = findElement(elementName);
         // Check subtyping
         if (!TypesUtils.isClass(var.getReturnType())) {
-            ErrorReporter.errorAbort("expected " + var.getReturnType());
-            return null; // dead code
+            throw new BugInCF("expected " + var.getReturnType());
         }
 
         elementValues.put(var, val);
@@ -297,8 +347,7 @@ public class AnnotationBuilder {
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
-                ErrorReporter.errorAbort("Unrecognized class: " + clazz);
-                return null; // dead code
+                throw new BugInCF("Unrecognized class: " + clazz);
             }
             return element.asType();
         }
@@ -318,13 +367,10 @@ public class AnnotationBuilder {
     public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
         ExecutableElement var = findElement(elementName);
         if (var.getReturnType().getKind() != TypeKind.DECLARED) {
-            ErrorReporter.errorAbort("expected a non enum: " + var.getReturnType());
-            return null; // dead code
+            throw new BugInCF("expected a non enum: " + var.getReturnType());
         }
         if (!((DeclaredType) var.getReturnType()).asElement().equals(value.getEnclosingElement())) {
-            ErrorReporter.errorAbort(
-                    "expected a different type of enum: " + value.getEnclosingElement());
-            return null; // dead code
+            throw new BugInCF("expected a different type of enum: " + value.getEnclosingElement());
         }
         elementValues.put(var, createValue(value));
         return this;
@@ -344,19 +390,16 @@ public class AnnotationBuilder {
 
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
-            ErrorReporter.errorAbort("expected a non array: " + var.getReturnType());
-            return null; // dead code
+            throw new BugInCF("expected a non array: " + var.getReturnType());
         }
 
         expectedType = ((ArrayType) expectedType).getComponentType();
         if (expectedType.getKind() != TypeKind.DECLARED) {
-            ErrorReporter.errorAbort("expected a non enum component type: " + var.getReturnType());
-            return null; // dead code
+            throw new BugInCF("expected a non enum component type: " + var.getReturnType());
         }
         if (!((DeclaredType) expectedType).asElement().equals(enumElt.getEnclosingElement())) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "expected a different type of enum: " + enumElt.getEnclosingElement());
-            return null; // dead code
         }
 
         List<AnnotationValue> res = new ArrayList<>(values.length);
@@ -379,26 +422,23 @@ public class AnnotationBuilder {
 
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
-            ErrorReporter.errorAbort("expected an array, but found: " + expectedType);
-            return null; // dead code
+            throw new BugInCF("expected an array, but found: " + expectedType);
         }
 
         expectedType = ((ArrayType) expectedType).getComponentType();
         if (expectedType.getKind() != TypeKind.DECLARED) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "expected a declared component type, but found: "
                             + expectedType
                             + " kind: "
                             + expectedType.getKind());
-            return null; // dead code
         }
-        if (!((DeclaredType) expectedType).equals(values[0].asType())) {
-            ErrorReporter.errorAbort(
+        if (!types.isSameType((DeclaredType) expectedType, values[0].asType())) {
+            throw new BugInCF(
                     "expected a different declared component type: "
                             + expectedType
                             + " vs. "
                             + values[0]);
-            return null; // dead code
         }
 
         List<AnnotationValue> res = new ArrayList<>(values.length);
@@ -426,8 +466,7 @@ public class AnnotationBuilder {
                 return (VariableElement) enumElt;
             }
         }
-        ErrorReporter.errorAbort("cannot be here");
-        return null; // dead code
+        throw new BugInCF("cannot be here");
     }
 
     private AnnotationBuilder setValue(CharSequence key, Object value) {
@@ -445,8 +484,7 @@ public class AnnotationBuilder {
                 return elt;
             }
         }
-        ErrorReporter.errorAbort("Couldn't find " + key + " element in " + annotationElt);
-        return null; // dead code
+        throw new BugInCF("Couldn't find " + key + " element in " + annotationElt);
     }
 
     // TODO: this method always returns true and no-one ever looks at the return
@@ -491,20 +529,19 @@ public class AnnotationBuilder {
 
         if (!isSubtype) {
             if (types.isSameType(found, expected)) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
                                 + "found: "
                                 + found);
             } else {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "given value differs from expected; "
                                 + "found: "
                                 + found
                                 + "; expected: "
                                 + expected);
             }
-            return false; // dead code
         }
 
         return true;
@@ -599,9 +636,9 @@ public class AnnotationBuilder {
                 return toStringVal;
             }
             if (value instanceof String) {
-                toStringVal = "\"" + value.toString() + "\"";
+                toStringVal = "\"" + value + "\"";
             } else if (value instanceof Character) {
-                toStringVal = "\'" + value.toString() + "\'";
+                toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
                 StringBuilder sb = new StringBuilder();
                 List<?> list = (List<?>) value;
@@ -623,7 +660,7 @@ public class AnnotationBuilder {
                 if (!encl.isEmpty()) {
                     encl = encl + '.';
                 }
-                toStringVal = encl + var.toString();
+                toStringVal = encl + var;
             } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
                 toStringVal = value.toString() + ".class";
             } else {

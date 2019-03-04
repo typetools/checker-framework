@@ -17,6 +17,7 @@ public @Interned class InternedClass {
     }
 
     // Private constructor
+    // :: error: (super.invocation.invalid)
     private InternedClass(int i) {
         value = i;
     }
@@ -28,6 +29,7 @@ public @Interned class InternedClass {
     }
 
     // Factory method
+    // :: error: (super.invocation.invalid)
     private InternedClass(InternedClass ic) {
         value = ic.value;
     }
@@ -42,8 +44,7 @@ public @Interned class InternedClass {
     }
 
     // Interning method
-    private static Map<InternedClass, @Interned InternedClass> pool =
-            new HashMap<InternedClass, @Interned InternedClass>();
+    private static Map<InternedClass, @Interned InternedClass> pool = new HashMap<>();
 
     @SuppressWarnings("interning")
     public @Interned InternedClass intern() /*Uninterned*/ {
@@ -63,7 +64,7 @@ public @Interned class InternedClass {
         InternedClass[] arr2 = new InternedClass[22]; // valid
         InternedClass[] arr3 = new InternedClass[] {}; // valid
 
-        Map<InternedClass, Integer> map = new LinkedHashMap<InternedClass, Integer>();
+        Map<InternedClass, Integer> map = new LinkedHashMap<>();
         for (Map.Entry<InternedClass, Integer> e : map.entrySet()) {
             InternedClass ic3 = e.getKey(); // valid
         }
@@ -131,7 +132,7 @@ public @Interned class InternedClass {
     }
 
     Class[] getSuperClasses(Class<?> c) {
-        Vector<Class<?>> v = new Vector<Class<?>>();
+        Vector<Class<?>> v = new Vector<>();
         while (true) {
             // :: warning: (unnecessary.equals)
             if (c.getSuperclass().equals((new Object()).getClass())) {

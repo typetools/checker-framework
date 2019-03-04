@@ -38,7 +38,7 @@ public class PerFileSuite extends Suite {
     @Target(ElementType.METHOD)
     public @interface Name {}
 
-    private final ArrayList<Runner> runners = new ArrayList<Runner>();
+    private final ArrayList<Runner> runners = new ArrayList<>();
 
     @Override
     protected List<Runner> getChildren() {
@@ -114,7 +114,7 @@ public class PerFileSuite extends Suite {
                             + testClass.getName()
                             + "\n"
                             + "parameterMethods="
-                            + methods.toString());
+                            + methods);
         } // else
 
         FrameworkMethod method = parameterMethods.get(0);
@@ -137,8 +137,7 @@ public class PerFileSuite extends Suite {
                 // subtype thereof is not easy
                 if (!returnType.getCanonicalName().equals(List.class.getCanonicalName())) {
                     throw new RuntimeException(
-                            "getTestFiles must return a List<File>, found "
-                                    + returnType.toString());
+                            "getTestFiles must return a List<File>, found " + returnType);
                 }
                 break;
 
@@ -151,7 +150,7 @@ public class PerFileSuite extends Suite {
                                 + testClass.getName()
                                 + "\n"
                                 + "parameterMethods="
-                                + method.toString());
+                                + method);
         }
 
         int modifiers = method.getMethod().getModifiers();

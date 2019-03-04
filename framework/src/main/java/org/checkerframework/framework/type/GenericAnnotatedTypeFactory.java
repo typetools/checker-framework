@@ -18,7 +18,6 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -75,10 +74,10 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.qual.Unqualified;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -91,17 +90,17 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -581,28 +580,18 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param defs QualifierDefault object to which defaults are added
      */
     protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        boolean foundOtherwise = false;
         // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 final TypeUseLocation[] locations = defaultFor.value();
                 defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
-                foundOtherwise =
-                        foundOtherwise
-                                || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defs.addCheckedCodeDefault(
                         AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
-                foundOtherwise = true;
             }
-        }
-        // If Unqualified is a supported qualifier, make it the default.
-        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
-        if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
-            defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
         }
     }
 
@@ -674,7 +663,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
         if (!defs.hasDefaultsForCheckedCode()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "GenericAnnotatedTypeFactory.createQualifierDefaults: "
                             + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
                             + "Every checker must specify a default qualifier. "
@@ -688,12 +677,23 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates {@link QualifierPolymorphism} which supports QualifierPolymorphism mechanism.
+     * Creates the {@link QualifierPolymorphism} instance which supports the QualifierPolymorphism
+     * mechanism.
      *
-     * @return the QualifierPolymorphism class
+     * @return the QualifierPolymorphism instance to use
      */
     protected QualifierPolymorphism createQualifierPolymorphism() {
-        return new QualifierPolymorphism(processingEnv, this);
+        return new DefaultQualifierPolymorphism(processingEnv, this);
+    }
+
+    /**
+     * Gives the current {@link QualifierPolymorphism} instance which supports the
+     * QualifierPolymorphism mechanism.
+     *
+     * @return the QualifierPolymorphism instance to use
+     */
+    public QualifierPolymorphism getQualifierPolymorphism() {
+        return this.poly;
     }
 
     // **********************************************************************
@@ -843,10 +843,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * compilation unit.
      */
     protected enum ScanState {
+        /** Dataflow analysis in progress. */
         IN_PROGRESS,
+        /** Dataflow analysis finished. */
         FINISHED
-    };
+    }
 
+    /** Map from ClassTree to their dataflow analysis state. */
     protected final Map<ClassTree, ScanState> scannedClasses;
 
     /**
@@ -1336,7 +1339,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     // declared return type.
                     res = getAnnotatedType(lhsTree);
                 } else {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
                                     + "lhsTree: "
                                     + lhsTree
@@ -1370,7 +1373,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
                 break;
             default:
-                throw new AssertionError("Unexpected kind of tree: " + tree);
+                throw new BugInCF("Unexpected kind of tree: " + tree);
         }
 
         assert !args.isEmpty() : "Arguments are empty";
@@ -1394,9 +1397,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        ParameterizedMethodType mType = super.constructorFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType mType = super.constructorFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
@@ -1493,9 +1496,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public Value getInferredValueFor(Tree tree) {
         if (tree == null) {
-            ErrorReporter.errorAbort(
-                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
-            return null; // dead code
+            throw new BugInCF(
+                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
         }
         Value as = null;
         if (analysis.isRunning()) {
@@ -1531,9 +1533,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
-        ParameterizedMethodType mType = super.methodFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedExecutableType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
@@ -1612,7 +1614,7 @@ public abstract class GenericAnnotatedTypeFactory<
         } else if (checker.hasOption("cfgviz")) {
             String cfgviz = checker.getOption("cfgviz");
             if (cfgviz == null) {
-                ErrorReporter.errorAbort(
+                throw new UserError(
                         "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
@@ -1661,7 +1663,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     res.put(split[0], split[1]);
                     break;
                 default:
-                    ErrorReporter.errorAbort("Too many `=` in cfgviz option: " + opt);
+                    throw new UserError("Too many `=` in cfgviz option: " + opt);
             }
         }
         return res;

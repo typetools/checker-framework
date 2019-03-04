@@ -33,10 +33,11 @@ public class Arrays {
         @Interned String @Interned [][] multi2 = new @Interned String @Interned [2][];
     }
 
+    // :: error: (super.invocation.invalid)
     public final @Interned class InternedClass {}
 
     private static InternedClass[] returnToArray() {
-        List<InternedClass> li = new ArrayList<InternedClass>();
+        List<InternedClass> li = new ArrayList<>();
         return li.toArray(new InternedClass[li.size()]);
     }
 

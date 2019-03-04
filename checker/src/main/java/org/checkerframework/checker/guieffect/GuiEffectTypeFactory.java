@@ -1,10 +1,12 @@
 package org.checkerframework.checker.guieffect;
 
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,8 +35,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -49,11 +51,22 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * <p>{@link #constrainLambdaToUI(LambdaExpressionTree) constrainLambdaToUI} adds lambda
      * expressions to this set, and is called from GuiEffectVisitor whenever a lambda expression
      * calls a @UIEffect method. Afterwards {@link
-     * #getInferedEffectForLambdaExpression(LambdaExpressionTree lambdaTree)
+     * #getInferedEffectForLambdaExpression(LambdaExpressionTree)
      * getInferedEffectForLambdaExpression} uses this set and the type annotations of the functional
      * interface of the lambda to figure out if it can affect the UI or not.
      */
     protected final Set<LambdaExpressionTree> uiLambdas = new HashSet<>();
+
+    /**
+     * Keeps track of all anonymous inner classes with inferred UIEffect.
+     *
+     * <p>{@link #constrainAnonymousClassToUI(TypeElement) constrainAnonymousClassToUI} adds
+     * anonymous inner classes to this set, and is called from GuiEffectVisitor whenever an
+     * anonymous inner class calls a @UIEffect method. Afterwards {@link #isUIType(TypeElement)
+     * isUIType} and {@link #getAnnotatedType(Tree) getAnnotatedType} will treat this inner class as
+     * if it had been annotated with @UI.
+     */
+    protected final Set<TypeElement> uiAnonClasses = new HashSet<>();
 
     public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
         // use true to enable flow inference, false to disable it
@@ -123,6 +136,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         // they're so often used for closures to run async on background
         // threads.
         if (isAnonymousType(cls)) {
+            // However, we need to look into Anonymous class effect inference
+            if (uiAnonClasses.contains(cls)) {
+                return true;
+            }
             return false;
         }
 
@@ -293,7 +310,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 srcType = callerReceiver;
             } else {
-                ErrorReporter.errorAbort("Unexpected getMethodSelect() kind at callsite " + node);
+                throw new BugInCF("Unexpected getMethodSelect() kind at callsite " + node);
             }
 
             // Instantiate type-polymorphic effects
@@ -332,14 +349,58 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         return getDeclaredEffect(functionalInterfaceMethodElt);
     }
 
+    /**
+     * Test if this tree corresponds to a lambda expression or new class marked as UI affecting by
+     * either {@link #constrainLambdaToUI(LambdaExpressionTree) constrainLambdaToUI}} or {@link
+     * #constrainAnonymousClassToUI(TypeElement)}. Only explicit markings due to inference are
+     * considered here, for the properly computed type of the expression, use {@link
+     * #getAnnotatedType(Tree)} instead.
+     *
+     * @param tree The tree to check.
+     * @return Whether it is a lambda expression or new class marked as UI by inference
+     */
+    public boolean isDirectlyMarkedUIThroughInference(Tree tree) {
+        if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            return uiLambdas.contains((LambdaExpressionTree) tree);
+        } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+            AnnotatedTypeMirror typeMirror = super.getAnnotatedType(tree);
+            if (typeMirror.getKind().equals(TypeKind.DECLARED)) {
+                return uiAnonClasses.contains(
+                        ((DeclaredType) typeMirror.getUnderlyingType()).asElement());
+            }
+        }
+        return false;
+    }
+
     @Override
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         AnnotatedTypeMirror typeMirror = super.getAnnotatedType(tree);
-        if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
-                && uiLambdas.contains((LambdaExpressionTree) tree)
-                && !typeMirror.hasAnnotation(UI.class)) {
-            typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
+        if (typeMirror.hasAnnotation(UI.class)) {
+            return typeMirror;
         }
+        // Check if this an @UI anonymous class or lambda due to inference, or an expression
+        // containing such class/lambda
+        if (isDirectlyMarkedUIThroughInference(tree)) {
+            typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
+        } else if (tree.getKind().equals(Tree.Kind.PARENTHESIZED)) {
+            ParenthesizedTree parenthesizedTree = (ParenthesizedTree) tree;
+            return this.getAnnotatedType(parenthesizedTree.getExpression());
+        } else if (tree.getKind().equals(Tree.Kind.CONDITIONAL_EXPRESSION)) {
+            ConditionalExpressionTree cet = (ConditionalExpressionTree) tree;
+            boolean isTrueOperandUI =
+                    (cet.getTrueExpression() != null
+                            && this.getAnnotatedType(cet.getTrueExpression())
+                                    .hasAnnotation(UI.class));
+            boolean isFalseOperandUI =
+                    (cet.getFalseExpression() != null
+                            && this.getAnnotatedType(cet.getFalseExpression())
+                                    .hasAnnotation(UI.class));
+            if (isTrueOperandUI || isFalseOperandUI) {
+                typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
+            }
+        }
+        // TODO: Do we need to support other expression here?
+        // (i.e. are there any other operators that take new or lambda expressions as operands)
         return typeMirror;
     }
 
@@ -473,7 +534,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                         // @UI on an anon class decl extending Runnable
                         boolean isAnonInstantiation =
                                 isAnonymousType(declaringType)
-                                        && fromElement(declaringType).hasAnnotation(UI.class);
+                                        && (fromElement(declaringType).hasAnnotation(UI.class)
+                                                || uiAnonClasses.contains(declaringType));
                         if (!isAnonInstantiation && !supdecl.hasAnnotation(UI.class)) {
                             checker.report(
                                     Result.failure(
@@ -552,6 +614,21 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public void constrainLambdaToUI(LambdaExpressionTree lambdaExpressionTree) {
         uiLambdas.add(lambdaExpressionTree);
+    }
+
+    /**
+     * Force the given anonymous inner class to be an @UI instantiation of its base class.
+     *
+     * <p>Used by GuiEffectVisitor to mark as @UI all anonymous inner classes which: inherit from a
+     * PolyUIType annotated superclass, override a PolyUIEffect method from said superclass, and
+     * perform UIEffect calls inside the body of this method.
+     *
+     * @param classElt The TypeElement corresponding to the anonymous inner class to mark as an @UI
+     *     instantiation of an UI-polymorphic superclass.
+     */
+    public void constrainAnonymousClassToUI(TypeElement classElt) {
+        assert TypesUtils.isAnonymous(classElt.asType());
+        uiAnonClasses.add(classElt);
     }
 
     /** A class for adding annotations based on tree. */

@@ -201,10 +201,10 @@ public class TreeBuilder {
         Symbol.TypeSymbol methodClass = methodType.asElement();
         Type elementType;
 
-        if (exprType.getTypeArguments().size() > 0) {
-            elementType = (Type) exprType.getTypeArguments().get(0);
-        } else {
+        if (exprType.getTypeArguments().isEmpty()) {
             elementType = symtab.objectType;
+        } else {
+            elementType = (Type) exprType.getTypeArguments().get(0);
         }
 
         // Replace the next method's generic return type with
@@ -224,7 +224,7 @@ public class TreeBuilder {
     }
 
     /**
-     * Builds an AST Tree to dereference the length field of an array
+     * Builds an AST Tree to dereference the length field of an array.
      *
      * @param expression the array expression whose length is being accessed
      * @return a MemberSelectTree to dereference the length of the array

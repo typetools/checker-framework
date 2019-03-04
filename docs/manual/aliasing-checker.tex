@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Aliasing Checker\label{aliasing-checker}}
+\chapterAndLabel{Aliasing Checker}{aliasing-checker}
 
 The Aliasing Checker identifies expressions that definitely have no
 aliases.
@@ -27,11 +27,12 @@ type refinement --- if an expression has no aliases, a more refined type
 can often be inferred, otherwise the type-checker makes conservative
 assumptions.
 
-\section{Aliasing annotations\label{aliasing-annotations}}
+\sectionAndLabel{Aliasing annotations}{aliasing-annotations}
 
 \begin{figure}
 \includeimage{aliasing}{2cm}
-\caption{Type hierarchy for the Aliasing type system.}
+\caption{Type hierarchy for the Aliasing type system.
+  These qualifiers are applicable to any reference (non-primitive) type.}
 \label{fig-aliasing-hierarchy}
 \end{figure}
 
@@ -76,7 +77,7 @@ this, String s)} is
 
 \end{description}
 
-\section{Leaking contexts\label{aliasing-leaking-contexts}}
+\sectionAndLabel{Leaking contexts}{aliasing-leaking-contexts}
 This section lists the expressions that create aliases.  These are also
 called ``leaking contexts''.
 
@@ -192,7 +193,7 @@ void foo() {
 \end{description}
 
 
-\section{Restrictions on where \<@Unique> may be written\label{aliasing-unique-restrictions}}
+\sectionAndLabel{Restrictions on where \<@Unique> may be written}{aliasing-unique-restrictions}
 
 The \<@Unique> qualifier may not be written on locations such as fields,
 array elements, and type parameters.
@@ -230,7 +231,7 @@ even though both have type \<@Unique>.  The Aliasing Checker forbids this
 code by rejecting the type \code{List<@Unique Object>}.
 
 
-\section{Aliasing type refinement\label{aliasing-refinement}}
+\sectionAndLabel{Aliasing type refinement}{aliasing-refinement}
 
 Type refinement enables a type checker to treat an expression as a subtype
 of its declared type.  For example, even if you declare a local variable as
@@ -309,7 +310,7 @@ void bar() {
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
-\caption{Example of Aliasing Checker's type refinement rules.}
+\caption{Example of the Aliasing Checker's type refinement rules.}
 \label{fig-aliasing-refinement-example}
 \end{figure}
 

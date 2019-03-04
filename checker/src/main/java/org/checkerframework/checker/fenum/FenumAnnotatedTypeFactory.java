@@ -89,15 +89,15 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, FENUM)
-                    && AnnotationUtils.areSameIgnoringValues(subAnno, FENUM)) {
+            if (AnnotationUtils.areSameByName(superAnno, FENUM)
+                    && AnnotationUtils.areSameByName(subAnno, FENUM)) {
                 return AnnotationUtils.areSame(superAnno, subAnno);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, FENUM)) {
+            if (AnnotationUtils.areSameByName(superAnno, FENUM)) {
                 superAnno = FENUM;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, FENUM)) {
+            if (AnnotationUtils.areSameByName(subAnno, FENUM)) {
                 subAnno = FENUM;
             }
             return super.isSubtype(subAnno, superAnno);
