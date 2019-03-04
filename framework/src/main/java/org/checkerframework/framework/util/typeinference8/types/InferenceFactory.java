@@ -55,8 +55,8 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -110,8 +110,7 @@ public class InferenceFactory {
 
             for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
                 if (typeMirror.getKind() != TypeKind.TYPEVAR) {
-                    ErrorReporter.errorAbort("Expected type variable, found: %s", typeMirror);
-                    return map;
+                    throw new BugInCF("Expected type variable, found: %s", typeMirror);
                 }
                 TypeVariable pl = (TypeVariable) typeMirror;
                 AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
@@ -146,8 +145,7 @@ public class InferenceFactory {
             Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
             for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
                 if (typeMirror.getKind() != TypeKind.TYPEVAR) {
-                    ErrorReporter.errorAbort("Expected type variable, found: %s", typeMirror);
-                    return map;
+                    throw new BugInCF("Expected type variable, found: %s", typeMirror);
                 }
                 TypeVariable pl = (TypeVariable) typeMirror;
                 AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
@@ -214,9 +212,11 @@ public class InferenceFactory {
     public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
         AnnotatedExecutableType executableType;
         if (invocation.getKind() == Kind.METHOD_INVOCATION) {
-            executableType = typeFactory.methodFromUse((MethodInvocationTree) invocation).first;
+            executableType =
+                    typeFactory.methodFromUse((MethodInvocationTree) invocation).executableType;
         } else {
-            executableType = typeFactory.constructorFromUse((NewClassTree) invocation).first;
+            executableType =
+                    typeFactory.constructorFromUse((NewClassTree) invocation).executableType;
         }
         return new InvocationType(
                 executableType,
@@ -314,10 +314,9 @@ public class InferenceFactory {
 
                     return Pair.of(res, TreeUtils.typeOf(var));
                 } else {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "Unexpected assignment context.\nKind: %s\nTree: %s",
                             assignmentContext.getKind(), assignmentContext);
-                    return null;
                 }
         }
     }
@@ -523,7 +522,7 @@ public class InferenceFactory {
                     // No receiver for the constructor.
                     return (ExecutableType) ele.asType();
                 } else {
-                    ErrorReporter.errorAbort("Method not found");
+                    throw new BugInCF("Method not found");
                 }
             }
             receiverType = (DeclaredType) enclosing;
@@ -587,7 +586,8 @@ public class InferenceFactory {
         // The type of the compileTimeDeclaration if it were invoked with a receiver expression
         // of type {@code type}
         AnnotatedExecutableType compileTimeType =
-                typeFactory.methodFromUse(memRef, compileTimeDeclaration, enclosingType).first;
+                typeFactory.methodFromUse(memRef, compileTimeDeclaration, enclosingType)
+                        .executableType;
 
         return new InvocationType(
                 compileTimeType,

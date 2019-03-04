@@ -13,7 +13,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -51,7 +51,7 @@ public class Typing extends Constraint {
             case TYPE_EQUALITY:
                 break;
             default:
-                ErrorReporter.errorAbort("Unexpected kind: " + kind);
+                throw new BugInCF("Unexpected kind: " + kind);
         }
         this.S = s;
         this.kind = kind;
@@ -103,8 +103,7 @@ public class Typing extends Constraint {
             case TYPE_EQUALITY:
                 return reduceEquality();
             default:
-                ErrorReporter.errorAbort("Unexpected kind: " + getKind());
-                throw new RuntimeException();
+                throw new BugInCF("Unexpected kind: " + getKind());
         }
     }
 

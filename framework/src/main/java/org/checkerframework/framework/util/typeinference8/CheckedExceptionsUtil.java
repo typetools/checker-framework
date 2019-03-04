@@ -77,7 +77,7 @@ public class CheckedExceptionsUtil {
             if (result == null) {
                 result = new ArrayList<>();
             }
-            AnnotatedExecutableType method = context.typeFactory.methodFromUse(node).first;
+            AnnotatedExecutableType method = context.typeFactory.methodFromUse(node).executableType;
             for (AnnotatedTypeMirror type : method.getThrownTypes()) {
                 if (isCheckedException(type, context)) {
                     result.add(type);
@@ -92,7 +92,8 @@ public class CheckedExceptionsUtil {
             if (result == null) {
                 result = new ArrayList<>();
             }
-            AnnotatedExecutableType method = context.typeFactory.constructorFromUse(node).first;
+            AnnotatedExecutableType method =
+                    context.typeFactory.constructorFromUse(node).executableType;
 
             for (AnnotatedTypeMirror type : method.getThrownTypes()) {
                 if (isCheckedException(type, context)) {

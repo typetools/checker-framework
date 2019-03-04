@@ -21,7 +21,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Theta;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -92,10 +92,9 @@ public class Expression extends Constraint {
             case MEMBER_REFERENCE:
                 return reduceMethodRef(context);
             default:
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "Unexpected expression kind: %s, Expression: %s",
                         expression.getKind(), expression);
-                throw new RuntimeException();
         }
     }
 
