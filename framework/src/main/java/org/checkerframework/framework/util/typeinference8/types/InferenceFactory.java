@@ -750,8 +750,8 @@ public class InferenceFactory {
                     CheckedExceptionsUtil.thrownCheckedExceptions(
                             (LambdaExpressionTree) expression, context);
             thrownTypes =
-                    org.checkerframework.framework.util.typeinference8.CheckedExceptionsUtil
-                            .thrownCheckedExceptions((LambdaExpressionTree) expression, context);
+                    CheckedExceptionsUtil.thrownCheckedExceptionsATM(
+                            (LambdaExpressionTree) expression, context);
         } else {
             thrownTypeMirrors =
                     TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env)
