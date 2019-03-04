@@ -99,7 +99,7 @@ class Long {
 }
 
 class Object {
-    protected @Unsigned Object clone() throws CloneNotSupportedException;
+    protected @PolySigned Object clone() throws CloneNotSupportedException;
 }
 
 
