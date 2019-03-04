@@ -111,19 +111,17 @@ public class InvocationTypeInference {
         this.context = new Java8InferenceContext(factory, pathToExpression, this);
     }
 
-    /** Perform invocation type inference on {@code invocation}. */
-    public List<Variable> infer(ExpressionTree invocation, InvocationType invocationType) {
-        ProperType targetType = context.inferenceTypeFactory.getTargetType();
-        return infer(invocation, invocationType, targetType);
-    }
-
     public Java8InferenceContext getContext() {
         return context;
     }
 
-    /** @param target Nullable if invocation isn't assigned. */
-    public List<Variable> infer(
-            ExpressionTree invocation, InvocationType methodType, ProperType target) {
+    /**
+     * Perform invocation type inference on {@code invocation}. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
+     * 18.5.2</a>
+     */
+    public List<Variable> infer(ExpressionTree invocation, InvocationType invocationType) {
+        ProperType target = context.inferenceTypeFactory.getTargetType();
         List<? extends ExpressionTree> args;
         if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
             args = ((MethodInvocationTree) invocation).getArguments();
@@ -131,15 +129,15 @@ public class InvocationTypeInference {
             args = ((NewClassTree) invocation).getArguments();
         }
 
-        Theta map = context.inferenceTypeFactory.createTheta(invocation, methodType, context);
-        BoundSet b2 = createB2(invocation, methodType, args, map);
+        Theta map = context.inferenceTypeFactory.createTheta(invocation, invocationType, context);
+        BoundSet b2 = createB2(invocation, invocationType, args, map);
         BoundSet b3;
         if (target != null && TreeUtils.isPolyExpression(invocation)) {
-            b3 = createB3(b2, invocation, methodType, target, map);
+            b3 = createB3(b2, invocation, invocationType, target, map);
         } else {
             b3 = b2;
         }
-        ConstraintSet c = createC(invocation, methodType, args, map);
+        ConstraintSet c = createC(invocation, invocationType, args, map);
 
         BoundSet b4 = getB4(b3, c);
         List<Variable> thetaPrime = b4.resolve();
