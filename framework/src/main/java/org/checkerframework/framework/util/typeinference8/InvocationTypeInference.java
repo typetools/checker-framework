@@ -48,27 +48,25 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Performs invocation type inference as described in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2">JLS Chapter
- * 18</a>. Main entry point is {@link InvocationTypeInference#infer(ExpressionTree,
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS Section
+ * 18.5.2</a>. Main entry point is {@link InvocationTypeInference#infer(ExpressionTree,
  * InvocationType)}.
  *
- * <p>At a high level, type inference starts by creating variables as place holders for the method
- * type arguments for some method invocation. Then it creates constraints for those variables base
- * on the method invocation. The it solves those constrains producing a type for each variable.
- * Below is more detail for each step:
+ * <p>Invocation type inference is the process by which method type arguments are inferred for a
+ * given method invocation. An overview of the process is given below.
  *
- * <p>1. Inference creates a variables for each method type arguments for the method invocation.
- * Each variable has upper, lower, and equal bounds The bounds on the type argument give the initial
- * bounds for the variable. More bounds are infered in later steps. Also, more variables can be
- * created in later steps if any subexpression of the method invocation requires type inference.
+ * <p>1. Inference creates a variable for each method type argument for a given method invocation.
+ * Each variable may zero or more upper, lower, and equal bounds. The bounds of a variable are
+ * initially the bounds on the type argument. More bounds may be infered in later steps.
+ *
+ * <p>Bounds are between a variable and an abstract type. {@link AbstractType}s are type-like
+ * structures that might include variables. Abstract types might also be a variable or a type
+ * without any inverence variables, which is also know as a proper type.
  *
  * <p>Variables are represented by {@link Variable} objects which holds bounds for the variable in
  * an {@link org.checkerframework.framework.util.typeinference8.types.VariableBounds} object.
- *
- * <p>Bounds are between an inference variable and another abstract type, including another
- * variable. {@link AbstractType}s are type-like structures that might include inference variables.
- * Abstract types might also be an inference variable or a type without any inverence variables,
- * which is also know as a proper type.
+ * Additional variables may be created in later steps if any subexpression of the method invocation
+ * requires type inference.
  *
  * <p>2. Next, inference creates constraints between the arguments to the method invocation and its
  * formal parameters. Also, for non-void methods, a constraint between the declared return type and
@@ -95,12 +93,13 @@ import org.checkerframework.javacutil.TypesUtils;
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.3">JLS section
  * 18.3</a>.
  *
- * <p>5. Finally, A type for each variable is computed by "resolving" the bounds.
+ * <p>5. Finally, a type for each variable is computed by "resolving" the bounds.
  *
  * <p>Variables are resolved via {@link
  * org.checkerframework.framework.util.typeinference8.Resolution#resolve(LinkedHashSet, BoundSet)}.
- * Resolution is defined in the <a href="
- * https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section 18.4</a>.
+ * Resolution is defined in the <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section
+ * 18.4</a>.
  */
 public class InvocationTypeInference {
 
