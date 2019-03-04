@@ -200,6 +200,9 @@ This invocation is permitted because, in the expression, all
 \<@Tainted>, the top annotation, and each argument is a subtype of the
 corresponding formal parameter.
 
+Beware this problem both in code you write, and also in annotated libraries
+(such as stub files).
+
 (Side note:  if \code{append} were purely functional (had no side effects
 and returned a new \<StringBuffer>) the method call would be acceptable,
 because the return type is instantiated to \<@Tainted StringBuffer> for the
