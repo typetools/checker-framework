@@ -15,7 +15,7 @@ public class Foo {
         return false;
     }
 
-    @Nullable public Object getTheObject() {
+    public @Nullable Object getTheObject() {
         return null;
     }
 }

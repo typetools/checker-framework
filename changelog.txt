@@ -8,11 +8,23 @@ that no weak cipher algorithms are used with the Java crypto API.
 The Nullness Checker supports RxJava annotations
 io.reactivex.annotations.NonNull and io.reactivex.annotations.Nullable.
 
-In the @HasSubsequence annotation, the "value" element has been renamed to
-"subsequence".
+The checker-qual artifact (jar file) contains an OSGi manifest.
 
-Renamed AnnotatedTypeFactory.ParameterizedMethodType to the more
-appropriate ParameterizedExecutableType.
+New TYPE_DECLARATION enum constant in TypeUseLocation makes it possible to
+(for example) set defaults annotations for class/interface definitions.
+
+Interface changes:
+ * Renamed the "value" element of the @HasSubsequence annotation to
+   "subsequence".
+ * Renamed @PolySignedness to @PolySigned.
+ * Renamed AnnotatedTypeFactory.ParameterizedMethodType to
+   ParameterizedExecutableType.
+
+Added missing checks regarding annotations on classes, constructor
+declarations, and constructor invocations.  You may see new warnings.
+
+Closed issues:
+788, 1751, 2147, 2163, 2186, 2235, 2243, 2263, 2264, 2286, 2302, 2326, 2327.
 
 ---------------------------------------------------------------------------
 

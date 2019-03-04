@@ -94,11 +94,11 @@ public class JCIPAnnotations {
     // :: error: (multiple.lock.precondition.annotations)
     void testMultipleMethodAnnotations4() {}
 
-    @org.checkerframework.checker.lock.qual.GuardedBy("lock") @GuardedBy("lock")
+    @GuardedBy("lock") @org.checkerframework.checker.lock.qual.GuardedBy("lock")
     // :: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations1;
 
-    @org.checkerframework.checker.lock.qual.GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock")
+    @javax.annotation.concurrent.GuardedBy("lock") @org.checkerframework.checker.lock.qual.GuardedBy("lock")
     // :: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations2;
 
@@ -106,7 +106,7 @@ public class JCIPAnnotations {
     // :: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations3;
 
-    @org.checkerframework.checker.lock.qual.GuardedBy("lock") @GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock")
+    @GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock") @org.checkerframework.checker.lock.qual.GuardedBy("lock")
     // :: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations4;
 }

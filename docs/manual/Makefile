@@ -66,6 +66,10 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 # Add CSS styling for some links, since \ahrefloc doesn't permit styling
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
+.PHONY: contributors.tex
+contributors.tex:
+	git log | grep ^Author: | sed 's/Author: \(.*\) <.*>/\1,/' | sort | uniq | sed -f contributors.sed | sort | uniq | sed '$$ s/,$$/./' > contributors.tex
+
 ../api:
 	cd ../.. && ./gradlew allJavadoc
 
