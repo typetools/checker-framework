@@ -18,7 +18,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.typeinference8.CFInvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -85,7 +84,7 @@ public class Java8InferenceContext {
     public Java8InferenceContext(
             AnnotatedTypeFactory factory,
             TreePath pathToExpression,
-            CFInvocationTypeInference inference) {
+            InvocationTypeInference inference) {
         this.typeFactory = factory;
         this.pathToExpression = pathToExpression;
         this.env = factory.getProcessingEnv();

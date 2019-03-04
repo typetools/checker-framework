@@ -52,7 +52,7 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
-import org.checkerframework.framework.util.typeinference8.CFInvocationTypeInference;
+import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
@@ -104,8 +104,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final SupertypesSolver supertypesSolver = new SupertypesSolver();
     private final SubtypesSolver subtypesSolver = new SubtypesSolver();
     private final ConstraintMapBuilder constraintMapBuilder = new ConstraintMapBuilder();
-    private CFInvocationTypeInference java8Inference = null;
-    private final Stack<CFInvocationTypeInference> java8InferenceStack = new Stack<>();
+    private InvocationTypeInference java8Inference = null;
+    private final Stack<InvocationTypeInference> java8InferenceStack = new Stack<>();
 
     private final boolean showInferenceSteps;
 
@@ -134,7 +134,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             }
             java8InferenceStack.push(java8Inference);
             try {
-                java8Inference = new CFInvocationTypeInference(typeFactory, pathToExpression);
+                java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
                 List<Variable> result = java8Inference.infer(expressionTree, methodType);
                 if (result != null) {
                     System.out.println("Inferred the following for: " + expressionTree);
