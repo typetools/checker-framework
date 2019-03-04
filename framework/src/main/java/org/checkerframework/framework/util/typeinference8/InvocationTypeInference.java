@@ -47,29 +47,60 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Performs invocation type inference as described in JLS Chapter 18.5.2. Main entry point is {@link
- * InvocationTypeInference#infer(ExpressionTree, InvocationType)}.
+ * Performs invocation type inference as described in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2">JLS Chapter
+ * 18</a>. Main entry point is {@link InvocationTypeInference#infer(ExpressionTree,
+ * InvocationType)}.
  *
- * <p>At a high level, inference creates variables, as place holders for the method type arguments
- * to infer for the invocation of a method. Then it creates constraints between the arguments to the
- * method invocation and its formal parameter types and the return type of the method and the target
- * type of the invocation. These constraints are reduced to produce bounds on the variables. These
- * variables are then incorporated, which produces more bounds or constraints. Then a type for each
- * variable is computed by resolving the bounds.
+ * <p>At a high level, type inference starts by creating variables as place holders for the method
+ * type arguments for some method invocation. Then it creates constraints for those variables base
+ * on the method invocation. The it solves those constrains producing a type for each variable.
+ * Below is more detail for each step:
  *
- * <p>{@link AbstractType}s are type-like structures that might include inference variables.
+ * <p>1. Inference creates a variables for each method type arguments for the method invocation.
+ * Each variable has upper, lower, and equal bounds The bounds on the type argument give the initial
+ * bounds for the variable. More bounds are infered in later steps. Also, more variables can be
+ * created in later steps if any subexpression of the method invocation requires type inference.
  *
- * <p>Constraints, {@link Constraint}, are between abstract types and either expressions, see {@link
- * Expression}; other abstract types, see {@link Typing}; or abstract types that might be thrown,
- * see {@link CheckedExceptionConstraint}. They are reduced by invoking {@link Constraint#reduce}.
- * Groups of constraints are stored in {@link ConstraintSet}s.
+ * <p>Variables are represented by {@link Variable} objects which holds bounds for the variable in
+ * an {@link org.checkerframework.framework.util.typeinference8.types.VariableBounds} object.
  *
  * <p>Bounds are between an inference variable and another abstract type, including another
- * variable. They are stored in {@link Variable} and {@link Variable}s are stored in {@link
- * BoundSet}s.
+ * variable. {@link AbstractType}s are type-like structures that might include inference variables.
+ * Abstract types might also be an inference variable or a type without any inverence variables,
+ * which is also know as a proper type.
+ *
+ * <p>2. Next, inference creates constraints between the arguments to the method invocation and its
+ * formal parameters. Also, for non-void methods, a constraint between the declared return type and
+ * the "target type" of the method invocation is created. "Target types" are defined in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html">JLS Chapter 5</a>. For
+ * example, the target type of a method invocation assigned to a variable is the type of the
+ * variable.
+ *
+ * <p>Constraints are represented by {@link Constraint} objectst and are between abstract types, see
+ * {@link AbstractType} and either expressions, see {@link Expression}, or other abstract types. A
+ * constraint might also be an abstract type that might be thrown by the method invocation, see
+ * {@link CheckedExceptionConstraint}. Groups of constraints are stored in {@link ConstraintSet}s.
+ *
+ * <p>3. Next, these constraints are "reduced" producing bounds on the variables. Reduction depends
+ * on the kind of constraint and is defined in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2">JLS section
+ * 18.2</a>. . In this code base, constraints are reduced via {@link
+ * ConstraintSet#reduce(Java8InferenceContext)}.
+ *
+ * <p>4. The variables' bounds are then "incorporated" which produces more bounds and/or constraints
+ * that must then be "reduced" or "incorporated". Incorporation and reduction continue until no new
+ * bounds or constraints are produced. Bounds are incorporated via {@link
+ * BoundSet#incorporateToFixedPoint(BoundSet)}. Incorporation in defined in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.3">JLS section
+ * 18.3</a>.
+ *
+ * <p>5. Finally, A type for each variable is computed by "resolving" the bounds.
  *
  * <p>Variables are resolved via {@link
  * org.checkerframework.framework.util.typeinference8.Resolution#resolve(LinkedHashSet, BoundSet)}.
+ * Resolution is defined in the <a href="
+ * https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section 18.4</a>.
  */
 public class InvocationTypeInference {
 
