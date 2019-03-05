@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.typeinference8;
+package org.checkerframework.framework.util.typeinference8.util;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -16,15 +16,41 @@ import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
-import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
-import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
+/**
+ * Resolution finds an instantiation for each variable in a given set of variables. It does this
+ * usings all the bounds on a variable. Because a bound on a variable by be another unresolved
+ * variable, the order in which the variables must be computed before resolution. If the set of
+ * variables contains any captured variables, then a different resolution algorthim is used. If a
+ * set of variables does not contain a captured variable, but the resolution fails, then the
+ * resolution algorithm for captured variables is used.
+ *
+ * <p>Resolution is discussed in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS Section
+ * 18.4</a>.
+ *
+ * <p>Entry point is two static methods, {@link #resolveSmallestSet(LinkedHashSet, BoundSet)} and
+ * {@link #resolve(Variable, BoundSet, Java8InferenceContext)}, which create {@link Resolution}
+ * objects that actually preform the resolution.
+ */
 public class Resolution {
+
+    /**
+     * Instantiates a set of variables, {@code as}.
+     *
+     * @param as the set of variables to resolve
+     * @param boundSet the bound set that includes {@code as}
+     * @param context Java8InferenceContext
+     * @return bound set where {@code as} have instantiations
+     */
     public static BoundSet resolve(
             Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
         if (as.isEmpty()) {
             return boundSet;
         }
+
+        // Calculate the dependencies between variables. (A variable depends on another if it is
+        // included in one of its bounds.)
         Dependencies dependencies = boundSet.getDependencies();
         Queue<Variable> unresolvedVars = new ArrayDeque<>(as);
         for (Variable var : as) {
@@ -35,18 +61,28 @@ public class Resolution {
             }
         }
 
+        // Remove any variables that already have instantiations
         List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
         unresolvedVars.removeAll(resolvedVars);
         if (unresolvedVars.isEmpty()) {
             return boundSet;
         }
 
+        // Resolve the variables
         Resolution resolution = new Resolution(context, dependencies);
         boundSet = resolution.resolve(boundSet, unresolvedVars);
         assert !boundSet.containsFalse();
         return boundSet;
     }
 
+    /**
+     * Instantiates the variable {@code a}.
+     *
+     * @param a the variable to resolve
+     * @param boundSet the bound set that includes {@code a}
+     * @param context Java8InferenceContext
+     * @return bound set where {@code a} is instantiated
+     */
     public static BoundSet resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
         if (a.getBounds().hasInstantiation()) {
             return boundSet;
@@ -56,12 +92,13 @@ public class Resolution {
         LinkedHashSet<Variable> unresolvedVars = new LinkedHashSet<>();
         unresolvedVars.add(a);
         Resolution resolution = new Resolution(context, dependencies);
-        boundSet = resolution.resolve(unresolvedVars, boundSet);
+        boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
         assert !boundSet.containsFalse();
         return boundSet;
     }
 
     private final Java8InferenceContext context;
+    /** The set of dependencies between the variables. */
     private final Dependencies dependencies;
 
     private Resolution(Java8InferenceContext context, Dependencies dependencies) {
@@ -69,7 +106,7 @@ public class Resolution {
         this.dependencies = dependencies;
     }
 
-    public BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
+    private BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
         List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
 
         while (!unresolvedVars.isEmpty()) {
@@ -79,7 +116,7 @@ public class Resolution {
                     getSmallestDependecySet(resolvedVars, unresolvedVars);
 
             // Resolve the smallest unresolved dependency set.
-            boundSet = resolve(smallestDependencySet, boundSet);
+            boundSet = resolveSmallestSet(smallestDependencySet, boundSet);
 
             resolvedVars = boundSet.getInstantiatedVariables();
             unresolvedVars.removeAll(resolvedVars);
@@ -110,7 +147,7 @@ public class Resolution {
         return smallestDependencySet;
     }
 
-    private BoundSet resolve(LinkedHashSet<Variable> as, BoundSet boundSet) {
+    private BoundSet resolveSmallestSet(LinkedHashSet<Variable> as, BoundSet boundSet) {
         assert !boundSet.containsFalse();
 
         BoundSet resolvedBounds;

@@ -12,9 +12,9 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
@@ -43,6 +43,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.InferenceUtils;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -95,11 +96,9 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <p>5. Finally, a type for each variable is computed by "resolving" the bounds.
  *
- * <p>Variables are resolved via {@link
- * org.checkerframework.framework.util.typeinference8.Resolution#resolve(LinkedHashSet, BoundSet)}.
- * Resolution is defined in the <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section
- * 18.4</a>.
+ * <p>Variables are resolved via {@link Resolution#resolve(BoundSet, Queue)}. Resolution is defined
+ * in the <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS
+ * section 18.4</a>.
  */
 public class InvocationTypeInference {
 
