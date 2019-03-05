@@ -51,6 +51,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
             return true;
         }
 
+        @SuppressWarnings("TypeEquals") // TODO
         boolean sameUnderlyingType = type1.getUnderlyingType().equals(type2.getUnderlyingType());
         return sameUnderlyingType && arePrimeAnnosEqual(type1, type2);
     }

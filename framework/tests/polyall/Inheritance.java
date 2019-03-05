@@ -1,5 +1,6 @@
 import polyall.quals.*;
 
+// :: error: (super.invocation.invalid)
 @H1S1 class Inheritance {
     void bar1(@H1Bot Inheritance param) {}
 

@@ -162,7 +162,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final Elements elements;
 
     /** Utility class for working with {@link TypeMirror}s. */
-    protected final Types types;
+    public final Types types;
 
     /** The state of the visitor. */
     protected final VisitorState visitorState;

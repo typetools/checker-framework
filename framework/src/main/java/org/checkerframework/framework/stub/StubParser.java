@@ -1,8 +1,8 @@
 package org.checkerframework.framework.stub;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
@@ -371,7 +371,7 @@ public class StubParser {
         StubParser sp = new StubParser(filename, atypeFactory, processingEnv, atypes, declAnnos);
         try {
             sp.parseStubUnit(inputStream);
-            sp.process(atypes, declAnnos);
+            sp.process();
         } catch (ParseProblemException e) {
             StringBuilder message =
                     new StringBuilder(
@@ -395,7 +395,8 @@ public class StubParser {
         if (debugStubParser) {
             stubDebug(String.format("parsing stub file %s", filename));
         }
-        stubUnit = JavaParser.parseStubUnit(inputStream);
+
+        stubUnit = StaticJavaParser.parseStubUnit(inputStream);
 
         // getAllStubAnnotations() also modifies importedConstants and importedTypes. This should
         // be refactored to be nicer.
@@ -409,9 +410,7 @@ public class StubParser {
     }
 
     /** Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. */
-    private void process(
-            Map<Element, AnnotatedTypeMirror> atypes,
-            Map<String, Set<AnnotationMirror>> declAnnos) {
+    private void process() {
         processStubUnit(this.stubUnit);
     }
 

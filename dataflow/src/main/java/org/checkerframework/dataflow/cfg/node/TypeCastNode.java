@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 /**
  * A node for the cast operator:
@@ -16,10 +17,14 @@ public class TypeCastNode extends Node {
     protected final Tree tree;
     protected final Node operand;
 
-    public TypeCastNode(Tree tree, Node operand, TypeMirror type) {
+    /** For Types.isSameType. */
+    protected final Types types;
+
+    public TypeCastNode(Tree tree, Node operand, TypeMirror type, Types types) {
         super(type);
         this.tree = tree;
         this.operand = operand;
+        this.types = types;
     }
 
     public Node getOperand() {
@@ -52,9 +57,8 @@ public class TypeCastNode extends Node {
             return false;
         }
         TypeCastNode other = (TypeCastNode) obj;
-        // TODO: TypeMirror.equals may be too restrictive.
-        // Check whether Types.isSameType is the better comparison.
-        return getOperand().equals(other.getOperand()) && getType().equals(other.getType());
+        return getOperand().equals(other.getOperand())
+                && types.isSameType(getType(), other.getType());
     }
 
     @Override

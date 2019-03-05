@@ -252,13 +252,13 @@ public class ElementUtils {
                 return false;
             }
         }
-        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+        return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
     /**
      * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
      */
-    private static boolean isElementFromByteCode(Element elt, Element orig) {
+    private static boolean isElementFromByteCodeHelper(Element elt) {
         if (elt == null) {
             return false;
         }
@@ -273,7 +273,7 @@ public class ElementUtils {
                 return false;
             }
         }
-        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+        return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
     /** Returns the field of the class. */
