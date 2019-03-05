@@ -102,7 +102,7 @@ allprojects {
                 options.memberLevel = javadocMemberLevel
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
-                options.tagletPath(project(':framework-test').sourceSets.taglet.output as File[])
+                options.tagletPath(project(':framework-test').sourceSets.taglet.output.getFiles() as File[])
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
