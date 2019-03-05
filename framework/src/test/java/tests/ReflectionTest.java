@@ -7,7 +7,7 @@ import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.reflection.ReflectionTestChecker;
 
-/** Tests the reflection resolution using a toy type system. */
+/** Tests the reflection resolution using a simple type system. */
 public class ReflectionTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */

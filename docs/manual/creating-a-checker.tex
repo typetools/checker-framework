@@ -1600,7 +1600,7 @@ the result of \code{RegexUtils.asRegex} invocations:
     if (receiver instanceof ClassNameNode) {
       String receiverName = ((ClassNameNode) receiver).getElement().toString();
 
-      // Is this a call to method RegexUtil.isRegex(s, groups)?
+      // Is this a call to static method isRegex(s, groups) in a class named RegexUtil?
       if (receiverName.equals("RegexUtil")
           && ElementUtils.matchesElement(method,
                  null, "isRegex", String.class, int.class)) {
@@ -1839,9 +1839,8 @@ refinement, you can create a graphical representation of the CFG.
 Typical use is:
 
 \begin{Verbatim}
-javac -processor myProcessor -Aflowdotdir=someDirectory MyClass.java
-cd someDirectory
-dot -Tpdf -o MyClass.pdf MyClass.dot
+javac -processor myProcessor -Aflowdotdir=. MyClass.java
+for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
 \noindent

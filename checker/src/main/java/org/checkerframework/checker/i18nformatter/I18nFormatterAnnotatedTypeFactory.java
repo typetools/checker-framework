@@ -90,8 +90,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                     try {
                         Properties prop = new Properties();
 
-                        InputStream in = null;
-
                         ClassLoader cl = this.getClass().getClassLoader();
                         if (cl == null) {
                             // the class loader is null if the system class
@@ -99,7 +97,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                             // used
                             cl = ClassLoader.getSystemClassLoader();
                         }
-                        in = cl.getResourceAsStream(name);
+                        InputStream in = cl.getResourceAsStream(name);
 
                         if (in == null) {
                             // if the classloader didn't manage to load the
@@ -223,8 +221,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(superAnno, I18NFORMAT)) {
+            if (AnnotationUtils.areSameByName(subAnno, I18NFORMAT)
+                    && AnnotationUtils.areSameByName(superAnno, I18NFORMAT)) {
 
                 I18nConversionCategory[] rhsArgTypes =
                         treeUtil.formatAnnotationToCategories(subAnno);
@@ -243,30 +241,30 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 return true;
             }
 
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NINVALIDFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(subAnno, I18NINVALIDFORMAT)) {
+            if (AnnotationUtils.areSameByName(superAnno, I18NINVALIDFORMAT)
+                    && AnnotationUtils.areSameByName(subAnno, I18NINVALIDFORMAT)) {
                 return AnnotationUtils.getElementValue(subAnno, "value", String.class, true)
                         .equals(
                                 AnnotationUtils.getElementValue(
                                         superAnno, "value", String.class, true));
             }
 
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NFORMAT)) {
+            if (AnnotationUtils.areSameByName(superAnno, I18NFORMAT)) {
                 superAnno = I18NFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NFORMAT)) {
+            if (AnnotationUtils.areSameByName(subAnno, I18NFORMAT)) {
                 subAnno = I18NFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NINVALIDFORMAT)) {
+            if (AnnotationUtils.areSameByName(superAnno, I18NINVALIDFORMAT)) {
                 superAnno = I18NINVALIDFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NINVALIDFORMAT)) {
+            if (AnnotationUtils.areSameByName(subAnno, I18NINVALIDFORMAT)) {
                 subAnno = I18NINVALIDFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NFORMATFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, I18NFORMATFOR)) {
                 superAnno = I18NFORMATFOR;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NFORMATFOR)) {
+            if (AnnotationUtils.areSameByName(subAnno, I18NFORMATFOR)) {
                 subAnno = I18NFORMATFOR;
             }
 
@@ -275,14 +273,14 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror anno1, AnnotationMirror anno2) {
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMATBOTTOM)) {
+            if (AnnotationUtils.areSameByName(anno1, I18NFORMATBOTTOM)) {
                 return anno2;
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno2, I18NFORMATBOTTOM)) {
+            if (AnnotationUtils.areSameByName(anno2, I18NFORMATBOTTOM)) {
                 return anno1;
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(anno2, I18NFORMAT)) {
+            if (AnnotationUtils.areSameByName(anno1, I18NFORMAT)
+                    && AnnotationUtils.areSameByName(anno2, I18NFORMAT)) {
                 I18nConversionCategory[] shorterArgTypesList =
                         treeUtil.formatAnnotationToCategories(anno1);
                 I18nConversionCategory[] longerArgTypesList =
@@ -310,8 +308,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 }
                 return treeUtil.categoriesToFormatAnnotation(resultArgTypes);
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NINVALIDFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(anno2, I18NINVALIDFORMAT)) {
+            if (AnnotationUtils.areSameByName(anno1, I18NINVALIDFORMAT)
+                    && AnnotationUtils.areSameByName(anno2, I18NINVALIDFORMAT)) {
                 assert !anno1.getElementValues().isEmpty();
                 assert !anno2.getElementValues().isEmpty();
 
@@ -328,7 +326,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
             }
 
             // All @I18nFormatFor annotations are unrelated by subtyping.
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMATFOR)
+            if (AnnotationUtils.areSameByName(anno1, I18NFORMATFOR)
                     && AnnotationUtils.areSame(anno1, anno2)) {
                 return anno1;
             }
@@ -338,14 +336,14 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror anno1, AnnotationMirror anno2) {
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NUNKNOWNFORMAT)) {
+            if (AnnotationUtils.areSameByName(anno1, I18NUNKNOWNFORMAT)) {
                 return anno2;
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno2, I18NUNKNOWNFORMAT)) {
+            if (AnnotationUtils.areSameByName(anno2, I18NUNKNOWNFORMAT)) {
                 return anno1;
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(anno2, I18NFORMAT)) {
+            if (AnnotationUtils.areSameByName(anno1, I18NFORMAT)
+                    && AnnotationUtils.areSameByName(anno2, I18NFORMAT)) {
                 I18nConversionCategory[] anno1ArgTypes =
                         treeUtil.formatAnnotationToCategories(anno1);
                 I18nConversionCategory[] anno2ArgTypes =
@@ -367,8 +365,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 }
                 return treeUtil.categoriesToFormatAnnotation(anno3ArgTypes);
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NINVALIDFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(anno2, I18NINVALIDFORMAT)) {
+            if (AnnotationUtils.areSameByName(anno1, I18NINVALIDFORMAT)
+                    && AnnotationUtils.areSameByName(anno2, I18NINVALIDFORMAT)) {
                 assert !anno1.getElementValues().isEmpty();
                 assert !anno2.getElementValues().isEmpty();
 
@@ -384,7 +382,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                 + ")");
             }
             // All @I18nFormatFor annotations are unrelated by subtyping.
-            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMATFOR)
+            if (AnnotationUtils.areSameByName(anno1, I18NFORMATFOR)
                     && AnnotationUtils.areSame(anno1, anno2)) {
                 return anno1;
             }

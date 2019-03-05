@@ -210,7 +210,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.8.zip}
+  \url{https://checkerframework.org/checker-framework-2.7.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -497,20 +497,24 @@ maintainers, so you do not need to do anything special.
 Over time, this should become more common.
 
 For some other libraries, the Checker Framework developers have provided an
-annotated version of the library.  During type-checking, you should use the
-annotated version of the library to improve type-checking results (to issue
-fewer false positive warnings).  When doing ordinary compilation or while
-running your code, you can use either the annotated library or the regular
-distributed version of the library --- they behave identically.
-
+annotated version of the library.
 The annotated libraries appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
+(If the library you are interested in does not appear there, you can
+contribute by annotating it, which will help you and all other Checker
+Framework users; see \chapterpageref{annotating-libraries}.)
+The annotated library has \emph{identical} bytecodes and behavior to the
+upstream, unannotated version; only the annotations are different, so the
+only difference is with respect to pluggable type-checking of clients.
+
+To use an annotated library:
 
 \begin{itemize}
 \item
-If your project stores \<.jar> files locally, then download the \<.jar> file
-from the Central Repository.
+If your project stores \<.jar> files locally, then
+\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{download
+  the \<.jar> file from the Central Repository}.
 
 \item
 If your project manages dependencies using a tool such as Gradle or Maven,
@@ -525,30 +529,37 @@ group.  For example, in \<build.gradle>, change
 to
 
 \begin{Verbatim}
-  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.2'
+  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.2.0.2'
 \end{Verbatim}
 
 \noindent
 Use the same version number.  (Sometimes you will use a slightly larger
 number, if the Checker Framework developers have improved the type
 annotations since the last release by the upstream maintainers.)  If a
-newer version of the upstream library is available, then
+newer version of the upstream library is available but that version is not
+available in \<org.checkerframework.annotatedlib>, then
 \ahrefloc{reporting-bugs}{open an issue} requesting that the
 \<org.checkerframework.annotatedlib> version be updated.
 \end{itemize}
 
+%% This is for paranoid users.
+% During type-checking, you should use the
+% annotated version of the library to improve type-checking results (to issue
+% fewer false positive warnings).  When doing ordinary compilation or while
+% running your code, you can use either the annotated library or the regular
+% distributed version of the library --- they behave identically.
+
 There are two special cases.
+\begin{itemize}
+\item
 The annotated JDK is automatically put on your
 classpath; you don't have to do anything special for it.
-For the Javadoc classes in the JDK's com.sun.javadoc package,
+\item
+For the Javadoc classes in the JDK's \<com.sun.javadoc> package,
 % are not exposed by ct.sym and therefore cannot be part of an
 % annotated JDK
 use the stub file \<checker/resources/javadoc.astub>.
-
-If a library you wish to use is not available, then you can request that it
-be annotated, or you can volunteer to write the annotations (see
-\chapterpageref{annotating-libraries}), which will help you and all other
-Checker Framework users.
+\end{itemize}
 
 
 \subsectionAndLabel{Distributing your annotated project}{distributing}
@@ -1264,35 +1275,60 @@ able to do more precise checking, than if line 141 has an annotation.
 It is a pleasant feature of the Checker Framework that in many cases, no
 annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
+\subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
 
-\subsectionAndLabel{Annotations on constructor invocations}{annotations-on-constructor-invocations}
-
-%% I want to get rid of this syntax.
-
-In the checkers distributed with the Checker Framework, an annotation on a
-constructor invocation is equivalent to a cast on a constructor result.
-That is, the following two expressions have identical semantics:  one is
-just shorthand for the other.
+If a constructor declaration is unannotated, it defaults to the same type as that of
+its enclosing class (rather than the default qualifier in hierarchy).
+For example: the Tainting Checker (Chapter~\ref{tainting-checker}) has \code{@Tainted}
+as its default qualifier. Consider the following class:
 
 \begin{Verbatim}
-  new @Untainted Date()
-  (@Untainted Date) new Date()
-\end{Verbatim}
-
-However, you should rarely have to use this.  The Checker Framework will
-determine the qualifier on the result, based on the ``return value''
-annotation on the constructor definition.  The ``return value'' annotation
-appears before the constructor name, for example:
-
-\begin{Verbatim}
-  class MyClass {
-    @Untainted MyClass() { ... }
+  @Untainted class MyClass {
+    MyClass() {}
   }
 \end{Verbatim}
 
-In general, you should only use an annotation on a constructor invocation
-when you know that the cast is
-guaranteed to succeed.
+The constructor declaration is equivalent to \<@Untainted MyClass() \ttlcb\ttrcb>.
+
+\subsectionAndLabel{Annotations on classes and
+  constructors}{annotations-on-classes-and-constructors}
+
+% TODO: use a more realistic example.
+
+Writing an annotation on a class declaration makes that annotation implicit
+for all uses of the class (see Section~\ref{effective-qualifier}).
+Consider the type hierarchy \code{@A :> @B :> @C :> @D} and the following
+declaration:
+
+\begin{Verbatim}
+@B class MyClass { ... }
+\end{Verbatim}
+
+Every unannotated use of \<MyClass> is \<@B MyClass>, and every use of
+\<MyClass> must be a subtype of \<@B> --- that is, \<@A MyClass> is not a
+valid type, but \<@C MyClass> is valid.
+
+An annotation on the ``return type'' of a constructor declaration indicates
+what the constructor creates.  For example,
+
+\begin{Verbatim}
+@B class MyClass {
+  @C MyClass() {}
+}
+\end{Verbatim}
+
+\noindent
+means that invoking that constructor creates a \<@C MyClass>.  The Checker
+Framework cannot verify that the constructor really creates such an object,
+so it issues a warning.  The programmer should suppress the warning, if the
+programmer is sure the annotation sound.
+
+An annotation on a constructor invocation is equivalent to a cast on a
+constructor result.  For example, \<new @D MyClass()> is equivalent to writing
+\<(@D MyClass) new MyClass()>.  Since this is a downcast from the declared
+type of \<@C>, the Checker Framework will issue a warning.  As above, the
+programmer should manually determine that the annotation is valid and then
+suppress the warning.
 
 
 \subsectionAndLabel{What to do if a checker issues a warning about your code}{handling-warnings}
@@ -1306,14 +1342,17 @@ errors.  Don't panic!  There are three general causes for the warnings:
   your code to prevent that crash.
 
 \item
-  There is a weakness in the annotations you wrote.  In other words, the
-  specification you wrote is incorrect or inadequate.  Improve the
+  The annotations are too strong (they are incorrect) or too weak (they
+  are imprecise).  Improve the
   annotations, usually by writing more annotations in order to better
   express the specification.
-  %% Only write annotations that
-  %% accurately describe the intended behavior of the software, of course ---
-  %% it would be counterproductive to write annotations just for the purpose
-  %% of eliminating type-checker warnings.
+  Only write annotations that accurately describe the intended behavior of
+  the software --- don't write inaccurate annotations just for the purpose
+  of eliminating type-checker warnings.
+
+  Usually you need to improve the annotations in your source code.
+  Sometimes you need to improve annotations in a library that your program
+  uses (see \chapterpageref{annotating-libraries}).
 
 \item
   There is a weakness in the type-checker.  Your code is safe --- it never
@@ -1324,6 +1363,12 @@ errors.  Don't panic!  There are three general causes for the warnings:
   Chapter~\ref{suppressing-warnings}); be sure to include a code
   comment explaining how you know the code is correct even though the
   type-checker cannot deduce that fact.
+
+  (Do not add an \<if> test that can never fail, just to suppress a
+  warning.  Adding a gratuitous \<if> clutters the code and confuses
+  readers, who will assume that every \<if> condition can evaluate to true
+  or false.  It can be acceptable to add an \<if> test that throws a
+  descriptive error message.)
 \end{itemize}
 
 For each warning issued by the checker, you need to determine which of the
@@ -1431,12 +1476,12 @@ same methodology in different words.
 % LocalWords:  nonnull langtools sourcepath classpath OpenJDK pre jsr lst
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
-% LocalWords:  Nullness unselect checkbox unsetting PolyNull
+% LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
-% LocalWords:  int XDTA newdir Awarns signedness urgin
+% LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
@@ -1448,9 +1493,9 @@ same methodology in different words.
 %  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
 %  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
 %  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
-%  LocalWords:  AresourceStats jls r78 JDKs i18n
+%  LocalWords:  AresourceStats jls r78 JDKs i18n AignoreRangeOverflow L129
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
-%  LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles
+%  LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
 %%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
 %%  LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 %%  LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
@@ -1458,4 +1503,7 @@ same methodology in different words.
 %%  LocalWords:  AuseDefaultsForUncheckedCode AresolveReflection Ainfer
 %%  LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
 %%  LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
-%%  LocalWords:  AatfDoNotCache AatfCacheSize
+%%  LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
+%%  LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
+%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions
+%%  LocalWords:  EnsuresNonNull EnsuresNonNullIf

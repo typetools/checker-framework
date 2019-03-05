@@ -15,7 +15,9 @@ correct the underlying problem.
 This section describes what to do if the methodology of
 Section~\ref{handling-warnings} indicates that you need to suppress the
 warning.  You won't change your code, but you will prevent the Checker
-Framework from reporting this particular warning to you.
+Framework from reporting this particular warning to you.  (Changing the
+code to fix a bug is another way to prevent the Checker Framework from
+issuing a warning, but it is not what this chapter is about.)
 
 You may wish to suppress checker warnings because of unannotated libraries
 or un-annotated portions of your own code, because of application
@@ -730,7 +732,7 @@ When possible, you should use type annotations rather than declaration
 annotations.
 
 Users who are using old Java 5--7 declaration annotations (for instance,
-FindBugs annotations, which are no longer supported) can use annotations in
+from the no-longer-supported FindBugs tool) can use annotations in
 package \<org.checkerframework.checker.nullness.compatqual> to avoid name
 conflicts.  These are available in package
 \href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}

@@ -171,7 +171,7 @@ public class ElementUtils {
                 || elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
-            return getQualifiedClassName(elt) + "." + elt.toString();
+            return getQualifiedClassName(elt) + "." + elt;
         }
     }
 
@@ -252,13 +252,13 @@ public class ElementUtils {
                 return false;
             }
         }
-        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+        return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
     /**
      * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
      */
-    private static boolean isElementFromByteCode(Element elt, Element orig) {
+    private static boolean isElementFromByteCodeHelper(Element elt) {
         if (elt == null) {
             return false;
         }
@@ -273,7 +273,7 @@ public class ElementUtils {
                 return false;
             }
         }
-        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+        return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
     /** Returns the field of the class. */
@@ -326,8 +326,17 @@ public class ElementUtils {
      */
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
+        int origCardinality = names.size();
         Set<VariableElement> elements = new HashSet<>();
         findFieldsInTypeOrSuperType(type, names, elements);
+        // Since names may contain duplicates, I don't trust the claim in the documentation about
+        // cardinality.  (Does any code depend on the invariant, though?)
+        if (origCardinality != names.size() + elements.size()) {
+            throw new BugInCF(
+                    String.format(
+                            "Bad sizes: %d != %d + %d",
+                            origCardinality, names.size(), elements.size()));
+        }
         return elements;
     }
 

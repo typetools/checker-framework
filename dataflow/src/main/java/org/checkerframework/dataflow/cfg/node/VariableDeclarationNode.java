@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -50,7 +50,7 @@ public class VariableDeclarationNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof VariableDeclarationNode)) {
+        if (!(obj instanceof VariableDeclarationNode)) {
             return false;
         }
         VariableDeclarationNode other = (VariableDeclarationNode) obj;
@@ -59,7 +59,7 @@ public class VariableDeclarationNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getName());
+        return Objects.hash(getName());
     }
 
     @Override

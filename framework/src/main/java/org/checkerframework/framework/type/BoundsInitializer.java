@@ -395,11 +395,10 @@ public class BoundsInitializer {
 
             } else {
                 throw new BugInCF(
-                        "Wildcard super field should not be initialized:\n"
-                                + "wildcard="
-                                + wildcard.toString()
-                                + "currentPath="
-                                + currentStructure.currentPath);
+                        "Wildcard super field should not be initialized:%n"
+                                + "wildcard=%s%n"
+                                + "currentPath=%s%n",
+                        wildcard, currentStructure.currentPath);
             }
 
             if (wildcard.getExtendsBoundField() == null) {
@@ -407,10 +406,9 @@ public class BoundsInitializer {
             } else {
                 throw new BugInCF(
                         "Wildcard extends field should not be initialized:\n"
-                                + "wildcard="
-                                + wildcard.toString()
-                                + "currentPath="
-                                + currentStructure.currentPath);
+                                + "wildcard=%s%n"
+                                + "currentPath=%s%n",
+                        wildcard, currentStructure.currentPath);
             }
 
             return null;

@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -77,7 +78,6 @@ import org.checkerframework.javacutil.UserError;
  * behavior must be overridden, the subclass may override the {@link
  * BaseAnnotatedTypeFactory#createQualifierHierarchy()} method.
  *
- * @see org.checkerframework.framework.qual
  * @checker_framework.manual #creating-compiler-interface The checker class
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
@@ -98,20 +98,17 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         super.initChecker();
     }
 
-    /*
-     * The full list of subcheckers that need to be run prior to this one,
-     * in the order they need to be run in.  This list will only be
-     * non-empty for the one checker that runs all other subcheckers.  Do
-     * not read this field directly. Instead, retrieve it via {@link
+    /**
+     * The full list of subcheckers that need to be run prior to this one, in the order they need to
+     * be run in. This list will only be non-empty for the one checker that runs all other
+     * subcheckers. Do not read this field directly. Instead, retrieve it via {@link
      * #getSubcheckers}.
-     * <p>
      *
-     * If the list still null when {@link #getSubcheckers} is called, then
-     * getSubcheckers() will call {@link #instantiateSubcheckers}.
-     * However, if the current object was itself instantiated by a prior
-     * call to instantiateSubcheckers, this field will have been
-     * initialized to an empty list before getSubcheckers() is called,
-     * thereby ensuring that this list is non-empty only for one checker.
+     * <p>If the list still null when {@link #getSubcheckers} is called, then getSubcheckers() will
+     * call {@link #instantiateSubcheckers}. However, if the current object was itself instantiated
+     * by a prior call to instantiateSubcheckers, this field will have been initialized to an empty
+     * list before getSubcheckers() is called, thereby ensuring that this list is non-empty only for
+     * one checker.
      */
     private List<BaseTypeChecker> subcheckers = null;
 
@@ -611,11 +608,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         @Override
         public int hashCode() {
-            int result = kind.hashCode();
-            result = 31 * result + message.hashCode();
-            result = 31 * result + source.hashCode();
-            result = 31 * result + checker.hashCode();
-            return result;
+            return Objects.hash(kind, message, source, checker);
         }
 
         @Override

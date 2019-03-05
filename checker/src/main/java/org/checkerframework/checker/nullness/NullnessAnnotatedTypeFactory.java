@@ -57,7 +57,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -76,7 +75,8 @@ public class NullnessAnnotatedTypeFactory
     /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
-    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
+    // List is in alphabetical order.  If you update it, also update
+    // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nonnull}. */
     private static final List<String> NONNULL_ALIASES =
             Arrays.asList(
@@ -91,6 +91,9 @@ public class NullnessAnnotatedTypeFactory
                     "com.sun.istack.internal.NotNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
                     "edu.umd.cs.findbugs.annotations.NonNull",
+                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
+                    "io.reactivex.annotations.NonNull",
+                    // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.Nonnull",
                     // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
                     "javax.validation.constraints.NotNull",
@@ -112,7 +115,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
                     "org.springframework.lang.NonNull");
 
-    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
+    // List is in alphabetical order.  If you update it, also update
+    // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nullable}. */
     private static final List<String> NULLABLE_ALIASES =
             Arrays.asList(
@@ -133,6 +137,9 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.PossiblyNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
+                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
+                    "io.reactivex.annotations.Nullable",
+                    // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.CheckForNull",
                     "javax.annotation.Nullable",
                     // https://search.maven.org/search?q=a:checker-compat-qual
@@ -144,7 +151,7 @@ public class NullnessAnnotatedTypeFactory
                     "org.eclipse.jgit.annotations.Nullable",
                     // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/Nullable.java
                     "org.jetbrains.annotations.Nullable",
-                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
+                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
@@ -299,9 +306,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
-        ParameterizedMethodType mType = super.methodFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedExecutableType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
 
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
@@ -360,49 +367,6 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * If the element is {@link NonNull} when used in a static member access, modifies the element's
-     * type (by adding {@link NonNull}).
-     *
-     * @param elt the element being accessed
-     * @param type the type of the element {@code elt}
-     */
-    private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-        if (elt == null) {
-            return;
-        }
-
-        if (elt.getKind().isClass()
-                || elt.getKind().isInterface()
-                // Workaround for System.{out,in,err} issue: assume all static
-                // fields in java.lang.System are nonnull.
-                || isSystemField(elt)) {
-            type.replaceAnnotation(NONNULL);
-        }
-    }
-
-    private static boolean isSystemField(Element elt) {
-        if (!elt.getKind().isField()) {
-            return false;
-        }
-
-        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt)) {
-            return false;
-        }
-
-        VariableElement var = (VariableElement) elt;
-
-        // Heuristic: if we have a static final field in a system package,
-        // treat it as NonNull (many like Boolean.TYPE and System.out
-        // have constant value null but are set by the VM).
-        boolean inJavaPackage =
-                ElementUtils.getQualifiedClassName(var).toString().startsWith("java.");
-
-        return (var.getConstantValue() != null
-                || var.getSimpleName().contentEquals("class")
-                || inJavaPackage);
-    }
-
-    /**
      * Nullness doesn't call propagation on binary and unary because the result is
      * always @Initialized (the default qualifier).
      *
@@ -437,8 +401,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-            // case 8: class in static member access
-            annotateIfStatic(elt, type);
             return null;
         }
 
@@ -459,9 +421,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-
-            // case 8. static method access
-            annotateIfStatic(elt, type);
 
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 // TODO: It's surprising that we have to do this in

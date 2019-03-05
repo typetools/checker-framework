@@ -12,6 +12,7 @@ public class Creation {
         // :: error: (assignment.type.incompatible)
         @Interned Foo f = new Foo(); // error
         Foo g = new Foo(); // valid
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Interned Foo h = new @Interned Foo(); // valid
         // :: error: (not.interned)
         boolean b = (f == g); // error

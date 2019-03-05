@@ -33,7 +33,7 @@ public class LongLiteralNode extends ValueLiteralNode {
     @Override
     public boolean equals(Object obj) {
         // test that obj is a LongLiteralNode
-        if (obj == null || !(obj instanceof LongLiteralNode)) {
+        if (!(obj instanceof LongLiteralNode)) {
             return false;
         }
         // super method compares values

@@ -2,9 +2,6 @@ package org.checkerframework.checker.regex;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -20,21 +17,37 @@ import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
+/** The transfer function for the Regex Checker. */
 public class RegexTransfer extends CFTransfer {
 
+    // isRegex and asRegex are tested as signatures (string name plus formal parameters), not
+    // ExecutableElement, because they exist in two packages:
+    // org.checkerframework.checker.regex.RegexUtil.isRegex(String,int)
+    // org.plumelib.util.RegexUtil.isRegex(String,int)
+    // and org.plumelib.util might not be on the classpath.
     private static final String IS_REGEX_METHOD_NAME = "isRegex";
     private static final String AS_REGEX_METHOD_NAME = "asRegex";
-    private static final String GROUP_COUNT_METHOD_NAME = "groupCount";
 
+    /** The MatchResult.groupCount() method. */
+    private final ExecutableElement matchResultgroupCount;
+
+    /** Create the transfer function for the Regex Checker. */
     public RegexTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
+        this.matchResultgroupCount =
+                TreeUtils.getMethod(
+                        "java.util.regex.MatchResult",
+                        "groupCount",
+                        0,
+                        analysis.getTypeFactory().getProcessingEnv());
     }
 
     // TODO: These are special cases for isRegex(String, int) and asRegex(String, int).
@@ -123,7 +136,7 @@ public class RegexTransfer extends CFTransfer {
         // Look for: constant < mat.groupCount()
         // Make mat be @Regex(constant + 1)
         TransferResult<CFValue, CFStore> res = super.visitLessThan(n, in);
-        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), false, in, res);
+        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), false, res);
     }
 
     @Override
@@ -132,7 +145,7 @@ public class RegexTransfer extends CFTransfer {
         // Look for: constant <= mat.groupCount()
         // Make mat be @Regex(constant)
         TransferResult<CFValue, CFStore> res = super.visitLessThanOrEqual(n, in);
-        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), true, in, res);
+        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), true, res);
     }
 
     @Override
@@ -140,7 +153,7 @@ public class RegexTransfer extends CFTransfer {
             GreaterThanNode n, TransferInput<CFValue, CFStore> in) {
 
         TransferResult<CFValue, CFStore> res = super.visitGreaterThan(n, in);
-        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, in, res);
+        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, res);
     }
 
     @Override
@@ -149,7 +162,7 @@ public class RegexTransfer extends CFTransfer {
         // Look for: mat.groupCount() >= constant
         // Make mat be @Regex(constant)
         TransferResult<CFValue, CFStore> res = super.visitGreaterThanOrEqual(n, in);
-        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, in, res);
+        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, res);
     }
 
     /**
@@ -167,7 +180,6 @@ public class RegexTransfer extends CFTransfer {
             Node possibleMatcher,
             Node possibleConstant,
             boolean isAlsoEqual,
-            TransferInput<CFValue, CFStore> in,
             TransferResult<CFValue, CFStore> resultIn) {
         if (!(possibleMatcher instanceof MethodInvocationNode)) {
             return resultIn;
@@ -176,13 +188,15 @@ public class RegexTransfer extends CFTransfer {
             return resultIn;
         }
 
-        MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
-        ExecutableElement method = methodAccessNode.getMethod();
-        Node receiver = methodAccessNode.getReceiver();
-
-        if (!isMatcherGroupCountMethod(method, receiver)) {
+        if (!NodeUtils.isMethodInvocation(
+                possibleMatcher,
+                matchResultgroupCount,
+                analysis.getTypeFactory().getProcessingEnv())) {
             return resultIn;
         }
+
+        MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
+        Node receiver = methodAccessNode.getReceiver();
 
         Receiver matcherReceiver =
                 FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
@@ -207,19 +221,11 @@ public class RegexTransfer extends CFTransfer {
         return newResult;
     }
 
-    private boolean isMatcherGroupCountMethod(ExecutableElement method, Node receiver) {
-        if (ElementUtils.matchesElement(method, GROUP_COUNT_METHOD_NAME)) {
-            TypeMirror matcherType = receiver.getType();
-            if (matcherType.getKind() != TypeKind.DECLARED) {
-                return false;
-            }
-            DeclaredType matcherDT = (DeclaredType) matcherType;
-            return TypesUtils.getQualifiedName(matcherDT)
-                    .contentEquals(java.util.regex.Matcher.class.getCanonicalName());
-        }
-        return false;
-    }
-    /** Returns true if the given receiver is a class named "RegexUtil". */
+    /**
+     * Returns true if the given receiver is a class named "RegexUtil". Examples of such classes are
+     * org.checkerframework.checker.regex.RegexUtil and org.plumelib.util.RegexUtil, and the user
+     * might copy one into their own project.
+     */
     private boolean isRegexUtil(String receiver) {
         return receiver.equals("RegexUtil") || receiver.endsWith(".RegexUtil");
     }

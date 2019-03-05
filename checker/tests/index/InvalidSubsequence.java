@@ -5,19 +5,19 @@ import org.checkerframework.checker.index.qual.LessThan;
 
 class InvalidSubsequence {
     // :: error: flowexpr.parse.error :: error: not.final
-    @HasSubsequence(value = "banana", from = "this.from", to = "this.to")
+    @HasSubsequence(subsequence = "banana", from = "this.from", to = "this.to")
     int[] a;
 
     // :: error: flowexpr.parse.error :: error: not.final
-    @HasSubsequence(value = "this", from = "banana", to = "this.to")
+    @HasSubsequence(subsequence = "this", from = "banana", to = "this.to")
     int[] b;
 
     // :: error: flowexpr.parse.error :: error: not.final
-    @HasSubsequence(value = "this", from = "this.from", to = "banana")
+    @HasSubsequence(subsequence = "this", from = "this.from", to = "banana")
     int[] c;
 
     // :: error: not.final
-    @HasSubsequence(value = "this", from = "this.from", to = "10")
+    @HasSubsequence(subsequence = "this", from = "this.from", to = "10")
     int[] e;
 
     @IndexFor("a") @LessThan("to") int from;

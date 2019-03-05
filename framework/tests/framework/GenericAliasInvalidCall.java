@@ -13,6 +13,7 @@ public class GenericAliasInvalidCall {
     public void test() {
         Set<@Odd Map<@Odd List<@Odd String>, @Odd String>> s = new SuperSetOne();
         @Odd Map<List<@Odd String>, @Odd String> mapA =
+                // :: warning: (cast.unsafe.constructor.invocation)
                 new @Odd HashMap<List<@Odd String>, @Odd String>();
         // :: error: (argument.type.incompatible)
         s.add(mapA);

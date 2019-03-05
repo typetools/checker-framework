@@ -2,18 +2,21 @@ import org.checkerframework.common.aliasing.qual.*;
 
 class ReceiverParameterTest {
 
+    // :: warning: (inconsistent.constructor.type)
     public @Unique ReceiverParameterTest() {
         nonLeaked();
         // :: error: (unique.leaked)
         mayLeak();
     }
 
+    // :: warning: (inconsistent.constructor.type)
     public @Unique ReceiverParameterTest(int i) {
         leakedToResult();
         // :: error: (unique.leaked)
         ReceiverParameterTest b = leakedToResult();
     }
 
+    // :: warning: (inconsistent.constructor.type)
     public @Unique ReceiverParameterTest(String s) {}
 
     void receiverTest() {

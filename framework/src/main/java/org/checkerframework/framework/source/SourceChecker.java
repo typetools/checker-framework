@@ -78,9 +78,8 @@ import org.checkerframework.javacutil.UserError;
  *
  * Most type-checker plug-ins will want to extend {@link BaseTypeChecker}, instead of this class.
  * Only checkers that require annotated types but not subtype checking (e.g. for testing purposes)
- * should extend this. Non-type checkers (e.g. for enforcing coding styles) should extend {@link
- * AbstractProcessor} (or even this class) as the Checker Framework is not designed for such
- * checkers.
+ * should extend this. Non-type checkers (e.g. for enforcing coding styles) may extend {@link
+ * AbstractProcessor} (or even this class).
  */
 @SupportedOptions({
     // When adding a new standard option:
@@ -426,7 +425,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     private static final String OPTION_SEPARATOR = "_";
 
     /** The line separator. */
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
+    private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
@@ -754,28 +753,35 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             if (this.visitor != null) {
                 DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-                DiagnosticSource source =
-                        new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-                int linenr = source.getLineNumber(pos.getStartPosition());
-                int col = source.getColumnNumber(pos.getStartPosition(), true);
-                String line = source.getLine(pos.getStartPosition());
+                if (pos != null) {
+                    DiagnosticSource source =
+                            new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+                    int linenr = source.getLineNumber(pos.getStartPosition());
+                    int col = source.getColumnNumber(pos.getStartPosition(), true);
+                    String line = source.getLine(pos.getStartPosition());
 
-                msg.append(
-                        "\nLast visited tree at line " + linenr + " column " + col + ":\n" + line);
+                    msg.append(
+                            "\nLast visited tree at line "
+                                    + linenr
+                                    + " column "
+                                    + col
+                                    + ":\n"
+                                    + line);
+                }
             }
 
             msg.append(
                     "\nException: "
-                            + ce.getCause().toString()
+                            + ce.getCause()
                             + "; "
                             + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
                 msg.append(
                         "\nUnderlying Exception: "
-                                + (cause.toString()
-                                        + "; "
-                                        + formatStackTrace(cause.getStackTrace())));
+                                + cause
+                                + "; "
+                                + formatStackTrace(cause.getStackTrace()));
                 cause = cause.getCause();
             }
         }
@@ -1036,7 +1042,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 for (String errorKey : errorKeys) {
                     // The keyFromAnno may only be a part of an error key.
                     // For example, @SuppressWarnings("purity") suppresses errors with keys:
-                    // purity.deterministic.void.method, purity.deterministic.constructor, etc..
+                    // purity.deterministic.void.method, purity.deterministic.constructor, etc.
                     if (errorKey.contains(keyFromAnno)) {
                         reportUnneededSuppression(tree, keyFromAnno);
                     }

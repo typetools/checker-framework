@@ -24,7 +24,10 @@
     </ul></li>
   <li><a href="#case-studies">Case studies</a>
     <ul>
-      <li><a href="#library-annotations">Library annotations</a></li>
+      <li><a href="#library-annotations">Library annotations</a>
+        <ul>
+          <li><a href="#choose-a-library">Choosing a library to annotate</a></li>
+        </ul></li>
       <li><a href="#case-study-signature">Signature strings</a></li>
       <li><a href="#case-study-index-out-of-bounds">Array indexing (index-out-of-bounds errors)</a></li>
       <li><a href="#case-study-android-support">Android support annotations</a></li>
@@ -189,9 +192,22 @@ You can find more potential projects in the
   <li>
     Annotate the program, based on its documentation.
   <li>
-    Run the type-checker.  This might require adding more annotations,
-    fixing bugs in the program, or suppressing warnings.  Repeat until
+    Run the type-checker.  If it issues
+    warnings, <a href="https://checkerframework.org/manual/#handling-warnings">correct them</a>.
+    This might require adding more annotations,
+    fixing bugs in the program, or suppressing warnings.
+    Be sure that the program's test suite continues to pass.
+    Repeat until
     the type-checker passes on the program.
+    <ul>
+      <li>Don't add an <code>if</code> statement that always succeeds, just
+	to suppress a warning.  Convince yourself that both branches can
+	execute, or else don't add the <code>if</code> statement.
+      <li>If you add a <code>@SuppressWarnings</code> annotation,
+	<a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
+	why</a> the checker warning is a false positive and you are certain
+	the code is safe.
+    </ul>
   <li>
     Share it with us so that
     we can evaluate it and give you feedback.  (If the code compiles
@@ -203,7 +219,8 @@ You can find more potential projects in the
     <p>
     Share the case study as soon
     as you finish it or as soon as you have a question that is not answered
-    in the manual; don't wait until you submit your proposal.
+    in the <a href="https://checkerframework.org/manual/">manual</a>;
+    don't wait until you submit your proposal.
     The subject line should be descriptive (not just "Case study", but
     "Nullness case study of Apache Commons Exec library").
     You should give us access to
@@ -368,9 +385,10 @@ not happen until you have completed a case study on an open-source program.
     about extensions, about details that are not mentioned on this webpage,
     about implementation strategies, and so forth.  If you want to do a
     case study, say what program you will do your case study on.  Don't
-    submit a proposal that is just a rearrangement of ideas that already
-    appear on this page or in the Checker Framework manual, because it does
-    not help us to assess your likelihood of being successful.
+    submit a proposal that is just a rearrangement of text that already
+    appears on this page or in the Checker Framework manual, because it does
+    not help us to assess your likelihood of being successful.  (You can
+    propose an idea that's here, but show what progress you have made.)
     </p>
   </li>
 
@@ -492,23 +510,12 @@ Checker Framework needs an annotated version of the library.
 The Checker Framework comes with a
 few <a href="https://search.maven.org/search?q=annotatedlib">annotated
 libraries</a>.  Increasing this number will make the Checker Framework even
-more useful.
+more useful, and easier to use.
 </p>
 
 <p>
-For this project, choose
-a <a href="https://docs.google.com/spreadsheets/d/17x_jKkGquEFq7LBQhS9HGXiG7iIl2AlXoPGfB6N5_bw">popular
-Java library</a> that is
-not <a href="https://github.com/typetools/checker-framework/tree/master/checker/lib">already
-annotated</a>.  (Or, choose a library that is already annotated for some
-type system, and annotate it for an additional type system.  One advantage
-of this is that the library's build system is already set up to run the
-Checker Framework.  You can tell which type systems a library is annotated
-for by examining its source code.)  There are some specific suggestions below.
-</p>
-
-<p>
-Fork the library's source code, adjust
+After you have <a href="#choose-a-library">chosen a library</a>,
+fork the library's source code, adjust
 its <a href="https://checkerframework.org/manual/#external-tools">build
 system</a> to run the Checker Framework, and add annotations to it until
 the type-checker issues no warnings.
@@ -521,6 +528,54 @@ to get started annotating legacy code</a>.  More generally, read the
 <a href="https://checkerframework.org/manual/#how-to-read-this-manual">relevant
 sections of the Checker Framework manual</a>.
 </p>
+
+
+<h3 id="choose-a-library">Choosing a library to annotate</h3>
+
+<p>
+There are several ways to <b>choose a library</b> to annotate:
+</p>
+<ul>
+  <li>
+    Choose a <a href="https://docs.google.com/spreadsheets/d/17x_jKkGquEFq7LBQhS9HGXiG7iIl2AlXoPGfB6N5_bw">popular
+      Java library</a>.
+  </li>
+  <li>
+    Choose a library that you need annotations for.  That is, choose a
+    library that is used by a program (or another library) that you have
+    tried to annotate.
+  </li>
+  <li>
+    Choose one of the suggestions below.
+  </li>
+</ul>
+
+<p>
+  Whatever library you choose, you will need to deeply understand its
+  source code.  You will find it easier to work with a library that is
+  well-designed and well-documented.
+</p>
+
+<p>
+  You should choose a library that is
+  not <a href="https://github.com/typetools/checker-framework/tree/master/checker/lib">already
+    annotated</a>.  There are two exceptions to this.
+</p>
+<ul>
+  <li>
+    A library might be annotated for one type system, but you add
+    annotations for a different type system.  One advantage of this is that
+    the library's build system is already set up to run the Checker
+    Framework.  You can tell which type systems a library is annotated for
+    by examining its source code.
+  </li>
+  <li>
+    A library might be annotated, but the annotations have not been
+    verified by running the type-checker on the library source code.  You
+    would verify that the annotations in the library are correct.
+  </li>
+</ul>
+
 
 <h2 id="case-study-signature">Signature strings</h2>
 
@@ -651,14 +706,20 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </p>
 
 <p>
-  Here are some possibilities (or, search for code that uses
-  signedness-sensitive routines in <code>Integer</code>
-  and <code>Long</code>, namely
+  A good way to find a case study project is to search for code that uses
+  signedness-sensitive routines.
+  In <code>Integer</code>
+  and <code>Long</code>, these are
    <code>compareUnsigned</code>
    <code>divideUnsigned</code>
    <code>parseUnsignedInt</code>
    <code>remainderUnsigned</code>, and
-   <code>toUnsignedLong</code>):
+   <code>toUnsignedLong</code>.
+  Also look for uses of Guava's <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a> class.
+</p>
+
+<p>
+  Here are some possibilities:
 </p>
 <ul>
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
@@ -667,9 +728,11 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </ul>
 
 <p>
-  Your case studies will show the need for enhancements to the Signedness Checker.
-  For example, it does not currently handle boxed integers and BigInteger;
-  these haven't yet come up in case studies but could be worthwhile enhancements.
+  Your case studies will show the need for enhancements to the Signedness
+  Checker.  For example, the Signedness Checker does not currently handle
+  boxed integers and BigInteger; these haven't yet come up in case studies
+  but could be worthwhile enhancements.  There may also be the need to
+  write more annotations for libraries such as the JDK.
 </p>
 
 
@@ -700,12 +763,21 @@ to detect other mis-uses of Optional.
 
 <h2 id="case-study-nullness">Null pointer exceptions</h2>
 
+<p>
+These are just some suggestions; many other libraries need annotations.
+</p>
+
+
 <h3 id="case-study-nullness-bcel">BCEL library</h3>
 
 <p>
   Annotate the BCEL library to express its contracts with respect to nullness.
   Show that the BCEL library has no null pointer exceptions (or find bugs
-  in BCEL).
+  in BCEL).  There are
+  already <a href="https://github.com/apache/commons-bcel/compare/trunk...typetools:trunk?expand=1">some
+  annotations</a> in BCEL, but they have not been verified as correct by
+  running the Nullness Checker on BCEL.  (Currently, those annotations are
+  trusted when type-checking clients of BCEL.)
 </p>
 
 <p>
@@ -1274,7 +1346,7 @@ differences from the real Nullness checker:
 </p>
 
 <p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
-  Checker form a spetrum from easy-to-use bug detectors to sound
+  Checker form a spectrum from easy-to-use bug detectors to sound
   verification.  NullnessLight represents a new point in the design space.
   It will be interesting to compare these checkers:
 </p>
@@ -1863,7 +1935,7 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis CWE
  -->
-<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks
+<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre
  -->
-<!--  LocalWords:  checklink
+<!--  LocalWords:  checklink subparts UnsignedBytes runtime
  -->

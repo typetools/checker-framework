@@ -14,8 +14,6 @@ import java.lang.annotation.Target;
  * &mdash; one version for each qualifier in the qualifier hierarchy. In each version of the method,
  * all instances of the polymorphic type qualifier are replaced by one of the other type qualifiers.
  *
- * <p>
- *
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented

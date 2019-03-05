@@ -4,8 +4,8 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -56,7 +56,7 @@ public class MethodAccessNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof MethodAccessNode)) {
+        if (!(obj instanceof MethodAccessNode)) {
             return false;
         }
         MethodAccessNode other = (MethodAccessNode) obj;
@@ -65,7 +65,7 @@ public class MethodAccessNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getReceiver(), getMethod());
+        return Objects.hash(getReceiver(), getMethod());
     }
 
     @Override

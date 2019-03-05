@@ -3,8 +3,8 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -53,7 +53,7 @@ public class NarrowingConversionNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof NarrowingConversionNode)) {
+        if (!(obj instanceof NarrowingConversionNode)) {
             return false;
         }
         NarrowingConversionNode other = (NarrowingConversionNode) obj;
@@ -63,7 +63,7 @@ public class NarrowingConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return Objects.hash(getOperand());
     }
 
     @Override

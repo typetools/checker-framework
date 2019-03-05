@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * A node for the unary plus operation:
@@ -30,7 +30,7 @@ public class NumericalPlusNode extends UnaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof NumericalPlusNode)) {
+        if (!(obj instanceof NumericalPlusNode)) {
             return false;
         }
         NumericalPlusNode other = (NumericalPlusNode) obj;
@@ -39,6 +39,6 @@ public class NumericalPlusNode extends UnaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getOperand());
+        return Objects.hash(getOperand());
     }
 }

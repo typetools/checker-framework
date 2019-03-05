@@ -1,16 +1,17 @@
 package org.checkerframework.framework.util;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -129,16 +130,20 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = expression != null ? expression.hashCode() : 0;
-            result = 31 * result + (annotation != null ? annotation.hashCode() : 0);
-            result = 31 * result + (kind != null ? kind.hashCode() : 0);
-            return result;
+            return Objects.hash(expression, annotation, kind);
         }
     }
 
-    /** A precondition annotation. */
+    /** A precondition contract. */
     public static class Precondition extends Contract {
-        /** Construct a Precondition object. */
+        /**
+         * Create a precondition contract.
+         *
+         * @param expression the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the precondition annotation that the programmer wrote; used for
+         *     diagnostic messages
+         */
         public Precondition(
                 String expression,
                 AnnotationMirror annotation,
@@ -147,9 +152,16 @@ public class ContractsUtils {
         }
     }
 
-    /** A postcondition annotation. */
+    /** A postcondition contract. */
     public static class Postcondition extends Contract {
-        /** Construct a Postcondition object. */
+        /**
+         * Create a postcondition contract.
+         *
+         * @param expression the Java expression that should have a type qualifier
+         * @param annotation the type qualifier that {@code expression} should have
+         * @param contractAnnotation the postcondition annotation that the programmer wrote; used
+         *     for diagnostic messages
+         */
         public Postcondition(
                 String expression,
                 AnnotationMirror annotation,
@@ -175,13 +187,13 @@ public class ContractsUtils {
         public final boolean annoResult;
 
         /**
-         * Creates a new conditional postcondition.
+         * Create a new conditional postcondition.
          *
          * @param expression the Java expression that should have a type qualifier
          * @param annoResult whether the condition is the method returning true or false
          * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the pre- or post-condition annotation that the programmer
-         *     wrote; used for diagnostic messages
+         * @param contractAnnotation the postcondition annotation that the programmer wrote; used
+         *     for diagnostic messages
          */
         public ConditionalPostcondition(
                 String expression,
@@ -210,9 +222,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            int result = super.hashCode();
-            result = 31 * result + (annoResult ? 1 : 0);
-            return result;
+            return Objects.hash(super.hashCode(), annoResult);
         }
     }
 
@@ -283,15 +293,12 @@ public class ContractsUtils {
             AnnotationMirror argumentAnno,
             Map<String, String> argumentRenaming) {
 
-        @SuppressWarnings("unchecked")
-        Class<? extends Annotation> c =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(qualifierAnno, "qualifier", false);
+        Name c = AnnotationUtils.getElementValueClassName(qualifierAnno, "qualifier", false);
 
         AnnotationMirror anno;
         if (argumentAnno == null || argumentRenaming.isEmpty()) {
             // If there are no arguments, use factory method that allows caching
-            anno = AnnotationBuilder.fromClass(factory.getElementUtils(), c);
+            anno = AnnotationBuilder.fromName(factory.getElementUtils(), c);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
             builder.copyRenameElementValuesFromAnnotation(argumentAnno, argumentRenaming);
@@ -301,7 +308,7 @@ public class ContractsUtils {
         if (factory.isSupportedQualifier(anno)) {
             return anno;
         } else {
-            AnnotationMirror aliasedAnno = factory.aliasedAnnotation(anno);
+            AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
             if (factory.isSupportedQualifier(aliasedAnno)) {
                 return aliasedAnno;
             } else {
@@ -338,7 +345,7 @@ public class ContractsUtils {
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(contractAnnoElement.getEnclosedElements())) {
             AnnotationMirror argumentAnnotation =
-                    factory.getDeclAnnotationNoAliases(meth, QualifierArgument.class);
+                    factory.getDeclAnnotation(meth, QualifierArgument.class);
             if (argumentAnnotation != null) {
                 String sourceName = meth.getSimpleName().toString();
                 String targetName =
@@ -492,7 +499,7 @@ public class ContractsUtils {
 
     /**
      * Returns a set of triples {@code (expr, result, annotation)} of conditional postconditions
-     * according to the given {@link EnsuresQualifierIf}.
+     * that are expressed in the source code using the given postcondition annotation.
      */
     private Set<ConditionalPostcondition> getConditionalPostcondition(
             AnnotationMirror ensuresQualifierIf) {

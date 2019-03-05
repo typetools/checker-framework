@@ -9,10 +9,10 @@ set -e
 
 # "ant -e check-style" would check every file; on commit we only need to
 # check files that changed.
-# Need to keep checked files in sync with formatted.java.files in
-# build.xml. Otherwise `ant reformat` might not reformat a file that this
+# Need to keep checked files in sync with getJavaFilesToFormat in build.gradle.
+# Otherwise `./gradlew reformat` might not reformat a file that this
 # hook complains about.
-CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/BadCast1.java$' | grep -v '/BadCast2.java$' ` || true
+CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/nullness-javac-errors/' ` || true
 # echo CHANGED_JAVA_FILES "'"${CHANGED_JAVA_FILES}"'"
 if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     ./gradlew getCodeFormatScripts -q
