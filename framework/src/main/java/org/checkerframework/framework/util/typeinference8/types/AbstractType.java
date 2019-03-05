@@ -32,6 +32,18 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
+/**
+ * As explained in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.1">section 18.1</a>,
+ * the JLS Chapter on type inference use the term "type" to "include type-like syntax that contains
+ * inference variables". This class represents this types. Three subclasses of this class are:
+ *
+ * <ul>
+ *   <li>{@link ProperType}: types that do not contain inference variables
+ *   <li>{@link Variable}: inference variables
+ *   <li>{@link InferenceType}: type-like syntax that contain at least one inference variable
+ * </ul>
+ */
 public abstract class AbstractType {
     protected final Java8InferenceContext context;
     protected final AnnotatedTypeFactory typeFactory;
