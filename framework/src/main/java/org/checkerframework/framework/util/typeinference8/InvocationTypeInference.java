@@ -51,7 +51,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * Performs invocation type inference as described in <a
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS Section
  * 18.5.2</a>. Main entry point is {@link InvocationTypeInference#infer(ExpressionTree,
- * InvocationType)}.
+ * AnnotatedExecutableType)}
  *
  * <p>Invocation type inference is the process by which method type arguments are inferred for a
  * given method invocation. An overview of the process is given below.
@@ -119,7 +119,40 @@ public class InvocationTypeInference {
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
      * 18.5.2</a>
      */
-    public List<Variable> infer(ExpressionTree invocation, InvocationType invocationType) {
+    public List<Variable> infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
+        Tree assignmentContext = TreeUtils.getAssignmentContext(context.pathToExpression);
+        if (!shouldTryInference(assignmentContext, context.pathToExpression)) {
+            return null;
+        }
+        ExecutableType e = InferenceFactory.getTypeOfMethodAdaptedToUse(invocation, context);
+        List<Variable> result;
+        try {
+            InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
+            result = inferInternal(invocation, invocationType);
+        } catch (FalseBoundException ex) {
+            if (ex.isAnnotatedTypeFailed()) {
+                checker.report(Result.failure("type.inference.failed"), invocation);
+            } else {
+                // Catch any exception so all crashes in a compilation unit are reported.
+                logException(invocation, ex);
+            }
+            return null;
+        } catch (Exception ex) {
+            // Catch any exception so all crashes in a compilation unit are reported.
+            logException(invocation, ex);
+            return null;
+        }
+
+        checkResult(result, invocation, e);
+        return result;
+    }
+
+    /**
+     * Perform invocation type inference on {@code invocation}. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
+     * 18.5.2</a>
+     */
+    private List<Variable> inferInternal(ExpressionTree invocation, InvocationType invocationType) {
         ProperType target = context.inferenceTypeFactory.getTargetType();
         List<? extends ExpressionTree> args;
         if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -245,29 +278,6 @@ public class InvocationTypeInference {
         b1.incorporateToFixedPoint(newBounds);
 
         return b1;
-    }
-
-    /**
-     * Returns the result of reducing and incorporating the set of constraints, {@code c}. The
-     * constraints must be reduced in a particular order. See <a
-     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
-     * 18.5.2.2</a>.
-     */
-    private BoundSet getB4(BoundSet current, ConstraintSet c) {
-        // C might contain new variables that have not yet been added to the current bound set.
-        Set<Variable> newVariables = c.getAllInferenceVariables();
-        while (!c.isEmpty()) {
-            ConstraintSet subset = c.getClosedSubset(current.getDependencies(newVariables));
-            Set<Variable> alphas = subset.getAllInputVariables();
-            if (!alphas.isEmpty()) {
-                BoundSet resolved = Resolution.resolve(alphas, current, context);
-                c.applyInstantiations(resolved.getInstantiationsInAlphas(alphas));
-            }
-            c.remove(subset);
-            BoundSet newBounds = subset.reduce(context);
-            current.incorporateToFixedPoint(newBounds);
-        }
-        return current;
     }
 
     /**
@@ -491,32 +501,27 @@ public class InvocationTypeInference {
         }
     }
 
-    public List<Variable> infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
-        Tree assignmentContext = TreeUtils.getAssignmentContext(context.pathToExpression);
-        if (!shouldTryInference(assignmentContext, context.pathToExpression)) {
-            return null;
-        }
-        ExecutableType e = InferenceFactory.getTypeOfMethodAdaptedToUse(invocation, context);
-        List<Variable> result;
-        try {
-            InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
-            result = infer(invocation, invocationType);
-        } catch (FalseBoundException ex) {
-            if (ex.isAnnotatedTypeFailed()) {
-                checker.report(Result.failure("type.inference.failed"), invocation);
-            } else {
-                // Catch any exception so all crashes in a compilation unit are reported.
-                logException(invocation, ex);
+    /**
+     * Returns the result of reducing and incorporating the set of constraints, {@code c}. The
+     * constraints must be reduced in a particular order. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
+     * 18.5.2.2</a>.
+     */
+    private BoundSet getB4(BoundSet current, ConstraintSet c) {
+        // C might contain new variables that have not yet been added to the current bound set.
+        Set<Variable> newVariables = c.getAllInferenceVariables();
+        while (!c.isEmpty()) {
+            ConstraintSet subset = c.getClosedSubset(current.getDependencies(newVariables));
+            Set<Variable> alphas = subset.getAllInputVariables();
+            if (!alphas.isEmpty()) {
+                BoundSet resolved = Resolution.resolve(alphas, current, context);
+                c.applyInstantiations(resolved.getInstantiationsInAlphas(alphas));
             }
-            return null;
-        } catch (Exception ex) {
-            // Catch any exception so all crashes in a compilation unit are reported.
-            logException(invocation, ex);
-            return null;
+            c.remove(subset);
+            BoundSet newBounds = subset.reduce(context);
+            current.incorporateToFixedPoint(newBounds);
         }
-
-        checkResult(result, invocation, e);
-        return result;
+        return current;
     }
 
     /** Convert the exceptions into a checker error and report it. */
