@@ -129,7 +129,7 @@ public class InvocationTypeInference {
         }
 
         Theta map = context.inferenceTypeFactory.createTheta(invocation, invocationType, context);
-        BoundSet b2 = createB2(invocation, invocationType, args, map);
+        BoundSet b2 = createB2(invocationType, args, map);
         BoundSet b3;
         if (target != null && TreeUtils.isPolyExpression(invocation)) {
             b3 = createB3(b2, invocation, invocationType, target, map);
@@ -155,28 +155,32 @@ public class InvocationTypeInference {
     }
 
     /**
-     * Creates the bound set used to determine whether a method is applicable. (See JLS 18.5.1) It
-     * does this by: 1. Creates the variables to be solved and add bounds from the type parameter
-     * declaration. 2. Adds any bounds implied by the throws clause of {@code methodType}. 3.
-     * Constructs constraints between formal parameters and arguments that are pertinent to
-     * applicable in {@code invocation}. 4. Reduces and incorporates those constraints which
-     * produces B2
+     * Creates the bound set used to determine whether a method is applicable. This method is called
+     * B2 in <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.1">JLS
+     * Section 18.5.1</a>
      *
-     * <p>Generally, all arguments are applicable except: inexact method reference, implicitly typed
-     * lambdas, or explicitly type lambda whose return expression(s) are not pertinent. See
-     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.12.2.2
+     * <p>It does this by:
      *
-     * @param invocation method or constructor invocation
-     * @param methodType the type of the method or constructor invoked by expression
+     * <ol>
+     *   <li value="1">Creating the variables to be solved and initializing their bounds based on
+     *       the type parameter declaration.
+     *   <li value="2">Adding any bounds implied by the throws clause of {@code methodType}.
+     *   <li value="3">Constructing constraints between formal parameters and arguments that are
+     *       pertinent to applicable. Generally, all arguments are applicable except: inexact method
+     *       reference, implicitly typed lambdas, or explicitly typed lambda whose return
+     *       expression(s) are not pertinent. See <a
+     *       href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.2">JLS
+     *       Section 15.12.2.2</a> for more details. *
+     *   <li value="4">Reducing and incorporating those constraints which finally produces B2
+     * </ol>
+     *
+     * @param methodType the type of the method or constructor invoked
      * @param args argument expression tress
      * @param map map of type variables to (inference) variables
      * @return bound set used to determine whether a method is applicable.
      */
     public BoundSet createB2(
-            ExpressionTree invocation,
-            InvocationType methodType,
-            List<? extends ExpressionTree> args,
-            Theta map) {
+            InvocationType methodType, List<? extends ExpressionTree> args, Theta map) {
         BoundSet b0 = BoundSet.initialBounds(map, context);
 
         // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
@@ -209,9 +213,9 @@ public class InvocationTypeInference {
     }
 
     /**
-     * Same as {@link #createB2(ExpressionTree, InvocationType, List, Theta)}, but for method
-     * references. A list of types is used instead of a list of arguments. These types are the types
-     * of the formal parameters of function type of target type of the method reference.
+     * Same as {@link #createB2(InvocationType, List, Theta)}, but for method references. A list of
+     * types is used instead of a list of arguments. These types are the types of the formal
+     * parameters of function type of target type of the method reference.
      */
     public BoundSet createB2MethodRef(
             InvocationType methodType, List<AbstractType> args, Theta map) {
@@ -268,7 +272,7 @@ public class InvocationTypeInference {
      * Creates constraints against the targets type of {@code invocation} and then reduces and
      * incorporates those constraints with {@code b2}. (See JLS 18.5.2.1)
      *
-     * @param b2 BoundSet created by {@link #createB2(ExpressionTree, InvocationType, List, Theta)}
+     * @param b2 BoundSet created by {@link #createB2(InvocationType, List, Theta)}
      * @param invocation method or constructor invocation
      * @param methodType the type of the method or constructor invoked by expression
      * @param target target type of the invocation

@@ -136,7 +136,7 @@ public class Expression extends Constraint {
         InvocationType methodType =
                 context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
         Theta map = context.inferenceTypeFactory.createTheta(expressionTree, methodType, context);
-        BoundSet b2 = context.inference.createB2(expressionTree, methodType, args, map);
+        BoundSet b2 = context.inference.createB2(methodType, args, map);
         return context.inference.createB3(b2, expressionTree, methodType, T, map);
     }
 
