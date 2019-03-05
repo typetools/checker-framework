@@ -1342,14 +1342,17 @@ errors.  Don't panic!  There are three general causes for the warnings:
   your code to prevent that crash.
 
 \item
-  There is a weakness in the annotations you wrote.  In other words, the
-  specification you wrote is incorrect or inadequate.  Improve the
+  The annotations are too strong (they are incorrect) or too weak (they
+  are imprecise).  Improve the
   annotations, usually by writing more annotations in order to better
   express the specification.
-  %% Only write annotations that
-  %% accurately describe the intended behavior of the software, of course ---
-  %% it would be counterproductive to write annotations just for the purpose
-  %% of eliminating type-checker warnings.
+  Only write annotations that accurately describe the intended behavior of
+  the software --- don't write inaccurate annotations just for the purpose
+  of eliminating type-checker warnings.
+
+  Usually you need to improve the annotations in your source code.
+  Sometimes you need to improve annotations in a library that your program
+  uses (see \chapterpageref{annotating-libraries}).
 
 \item
   There is a weakness in the type-checker.  Your code is safe --- it never
