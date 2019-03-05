@@ -395,6 +395,27 @@ public class InvocationTypeInference {
         return c;
     }
 
+    /**
+     * Adds additional argument constraints for the argument {@code ei} and its subexpressions.
+     *
+     * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
+     * invocation, new class tree, conditional expression, or parenthesized expression.
+     *
+     * <p>If {@code ei} is a method invocation or new class tree, that expression might require type
+     * argument inference. In that case then additional variables, bounds, and constraints are added
+     * here.
+     *
+     * <p>(See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
+     * 18.5.2.2</a>)
+     *
+     * @param ei expression that is an argument to a method that corresponds to the formal
+     *     parameter, {@code fi}
+     * @param fi type that is the formal parameter to a method whose corresponding argument is
+     *     {@code ei}
+     * @param map map from type variable to inference variable
+     * @return the additional argument constraints.
+     */
     private ConstraintSet createAdditionalArgConstraints(
             ExpressionTree ei, AbstractType fi, Theta map) {
         ConstraintSet c = new ConstraintSet();
