@@ -136,7 +136,7 @@ public class InvocationTypeInference {
         } else {
             b3 = b2;
         }
-        ConstraintSet c = createC(invocation, invocationType, args, map);
+        ConstraintSet c = createC(invocationType, args, map);
 
         BoundSet b4 = getB4(b3, c);
         List<Variable> thetaPrime = b4.resolve();
@@ -248,11 +248,13 @@ public class InvocationTypeInference {
     }
 
     /**
-     * Returns the result of reducing and incorporating {@code c}. The constraints are reduced in a
-     * particular order. See JLS 18.5.2.2.
+     * Returns the result of reducing and incorporating the set of constraints, {@code c}. The
+     * constraints must be reduced in a particular order. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
+     * 18.5.2.2</a>.
      */
     private BoundSet getB4(BoundSet current, ConstraintSet c) {
-        // C might contain new variables that have not yet been added to this bound set.
+        // C might contain new variables that have not yet been added to the current bound set.
         Set<Variable> newVariables = c.getAllInferenceVariables();
         while (!c.isEmpty()) {
             ConstraintSet subset = c.getClosedSubset(current.getDependencies(newVariables));
@@ -270,7 +272,9 @@ public class InvocationTypeInference {
 
     /**
      * Creates constraints against the targets type of {@code invocation} and then reduces and
-     * incorporates those constraints with {@code b2}. (See JLS 18.5.2.1)
+     * incorporates those constraints with {@code b2}. (See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.1">JLS
+     * 18.5.2.1</a>.)
      *
      * @param b2 BoundSet created by {@link #createB2(InvocationType, List, Theta)}
      * @param invocation method or constructor invocation
@@ -354,20 +358,18 @@ public class InvocationTypeInference {
 
     /**
      * Creates the constraints between the formal parameters and arguments that are not pertinent to
-     * applicability. (See 18.5.2.2)
+     * applicability. (See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
+     * 18.5.2.2</a>)
      *
-     * @param invocation method or constructor invocation
-     * @param methodType type of method invoked by {@code invocation}
+     * @param methodType type of method invoked
      * @param args argument expression trees
      * @param map map from type variable to inference variable
      * @return the constraints between the formal parameters and arguments that are not pertinent to
      *     applicability
      */
     private ConstraintSet createC(
-            ExpressionTree invocation,
-            InvocationType methodType,
-            List<? extends ExpressionTree> args,
-            Theta map) {
+            InvocationType methodType, List<? extends ExpressionTree> args, Theta map) {
         ConstraintSet c = new ConstraintSet();
         List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
 
@@ -407,12 +409,7 @@ public class InvocationTypeInference {
                     Theta newMap =
                             context.inferenceTypeFactory.createTheta(
                                     methodInvocation, methodType, context);
-                    c.addAll(
-                            createC(
-                                    methodInvocation,
-                                    methodType,
-                                    methodInvocation.getArguments(),
-                                    newMap));
+                    c.addAll(createC(methodType, methodInvocation.getArguments(), newMap));
                 }
                 break;
             case NEW_CLASS:
@@ -424,8 +421,7 @@ public class InvocationTypeInference {
                     Theta newMap =
                             context.inferenceTypeFactory.createTheta(
                                     newClassTree, methodType, context);
-                    c.addAll(
-                            createC(newClassTree, methodType, newClassTree.getArguments(), newMap));
+                    c.addAll(createC(methodType, newClassTree.getArguments(), newMap));
                 }
                 break;
             case PARENTHESIZED:
@@ -444,9 +440,9 @@ public class InvocationTypeInference {
     }
 
     /**
-     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.12.2.2 (Assuming the
-     * method is a generic method and the method invocation does not provide explicit type
-     * arguments)
+     * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-15.12.2.2">JLS
+     * 15.12.2.2</a> (Assuming the method is a generic method and the method invocation does not
+     * provide explicit type arguments)
      *
      * @param expressionTree expression tree
      * @param isTargetVariable whether the corresponding target type (as derived from the signature
