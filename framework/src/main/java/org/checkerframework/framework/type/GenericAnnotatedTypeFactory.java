@@ -1406,6 +1406,10 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         poly.annotate(tree, method);
 
+        // If the newClassTree "tree" is explicitly annotated with a polymorphic annotation,
+        // do not replace that. This ensures consistent behaviour with constructor invocations that
+        // are cast to the polymorphic type i.e "(@Poly X) new X();" is the same as
+        // "new @Poly X();"
         Set<? extends AnnotationMirror> explicitAnnotations =
                 getExplicitAnnotationsOnNewClassTree(
                         tree, getAnnotatedType(tree.getIdentifier()).getAnnotations());
