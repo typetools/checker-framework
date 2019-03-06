@@ -2,7 +2,10 @@ package org.checkerframework.framework.type.poly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -124,7 +127,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         if (TreeUtils.isEnumSuper(tree)) {
             return;
         }
-
         List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
@@ -159,7 +161,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         if (polyQuals.isEmpty()) {
             return;
         }
-
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
@@ -177,44 +178,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             completer.visit(type);
         }
         reset();
-
-        //        System.out.println(" --- NewClass tree AFTER: " + tree + " :: " + type);
-        //
-        //        List<? extends AnnotationMirror> explicitAnnotations =
-        //                TreeUtils.typeOf(tree.getIdentifier()).getAnnotationMirrors();
-        //        System.out.println("Explicit annotations: ");
-        //
-        //        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-        //        Set<? extends AnnotationMirror> topAnnotations =
-        // qualifierHierarchy.getTopAnnotations();
-        //        for (AnnotationMirror top : topAnnotations) {
-        //            AnnotationMirror polyAnnotation =
-        // qualifierHierarchy.getPolymorphicAnnotation(top);
-        //            if (AnnotationUtils.containsSameByName(explicitAnnotations, polyAnnotation)) {
-        //                type.replaceAnnotation(polyAnnotation);
-        //            } else {
-        //                List<AnnotatedTypeMirror> requiredArgs =
-        //                        AnnotatedTypes.expandVarArgs(atypeFactory, type,
-        // tree.getArguments());
-        //                List<AnnotatedTypeMirror> arguments =
-        //                        AnnotatedTypes.getAnnotatedTypes(
-        //                                atypeFactory, requiredArgs, tree.getArguments());
-        //
-        //                AnnotationMirrorMap<AnnotationMirrorSet> matchingMapping =
-        //                        collector.visit(arguments, requiredArgs);
-        //                // TODO: poly on receiver for constructors?
-        //                // matchingMapping = collector.reduce(matchingMapping,
-        //                //        collector.visit(factory.getReceiverType(tree),
-        // type.getReceiverType()));
-        //
-        //                if (matchingMapping != null && !matchingMapping.isEmpty()) {
-        //                    replacer.visit(type, matchingMapping);
-        //                } else {
-        //                    completer.visit(type);
-        //                }
-        //                reset();
-        //            }
-        //        }
     }
 
     @Override

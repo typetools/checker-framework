@@ -2685,7 +2685,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             invocation.toString(true)),
                     newClassTree);
         }
-
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
