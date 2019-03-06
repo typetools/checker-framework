@@ -98,11 +98,6 @@ class Long {
     public static @Unsigned long remainderUnsigned(@Unsigned long dividend, @Unsigned long divisor);
 }
 
-class Object {
-    protected @PolySigned Object clone() throws CloneNotSupportedException;
-}
-
-
 package java.io;
 
 class BufferedOutputStream {
