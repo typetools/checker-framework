@@ -137,9 +137,9 @@ public final class TypesUtils {
      */
     public static boolean isAnonymous(TypeMirror type) {
         return (type instanceof DeclaredType)
-                && (((TypeElement) ((DeclaredType) type).asElement())
+                && ((TypeElement) ((DeclaredType) type).asElement())
                         .getNestingKind()
-                        .equals(NestingKind.ANONYMOUS));
+                        .equals(NestingKind.ANONYMOUS);
     }
 
     /**
@@ -309,7 +309,7 @@ public final class TypesUtils {
 
     /**
      * Get the type parameter for this wildcard from the underlying type's bound field This field is
-     * sometimes null, in that case this method will return null
+     * sometimes null, in that case this method will return null.
      *
      * @return the TypeParameterElement the wildcard is an argument to
      */

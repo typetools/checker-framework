@@ -50,6 +50,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.Resolver;
@@ -124,7 +125,7 @@ public class FlowExpressionParseUtil {
             TreePath localScope,
             boolean useLocalScope)
             throws FlowExpressionParseException {
-        context.useLocalScope = useLocalScope;
+        context = context.copyAndSetUseLocalScope(useLocalScope);
         FlowExpressions.Receiver result = parseHelper(expression, context, localScope);
         if (result instanceof ClassName && !expression.endsWith("class")) {
             throw constructParserException(
@@ -150,7 +151,7 @@ public class FlowExpressionParseUtil {
         } else if (isFloatLiteral(expression, context)) {
             throw constructParserException(
                     expression,
-                    String.format("Cannot parse floating-point values '%s'", expression));
+                    String.format("floating-point values '%s' cannot be parsed", expression));
         } else if (isStringLiteral(expression, context)) {
             return parseStringLiteral(expression, types, env.getElementUtils());
         } else if (isThisLiteral(expression, context)) {
@@ -170,10 +171,17 @@ public class FlowExpressionParseUtil {
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
         } else {
-            throw constructParserException(
-                    expression,
-                    String.format("unrecognized expression '%s'", expression)
-                            + (context.parsingMember ? " in context with parsingMember=true" : ""));
+            String message;
+            if (expression.equals("#0")) {
+                message =
+                        "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
+            } else {
+                message = String.format("is an unrecognized expression");
+            }
+            if (context.parsingMember) {
+                message += " in a context with parsingMember=true";
+            }
+            throw constructParserException(expression, message);
         }
     }
 
@@ -334,7 +342,7 @@ public class FlowExpressionParseUtil {
 
     private static boolean isThisLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
-            // TODO: this is probably wrong because you could have and inner class receiver
+            // TODO: this is probably wrong because you could have an inner class receiver
             // Outer.this
             return false;
         }
@@ -433,6 +441,19 @@ public class FlowExpressionParseUtil {
         if (classType != null) {
             return new ClassName(classType);
         }
+
+        MethodTree enclMethod = TreeUtils.enclosingMethod(path);
+        if (enclMethod != null) {
+            List<? extends VariableTree> params = enclMethod.getParameters();
+            for (int i = 0; i < params.size(); i++) {
+                if (params.get(i).getName().contentEquals(s)) {
+                    throw constructParserException(
+                            s,
+                            String.format(DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
+                }
+            }
+        }
+
         throw constructParserException(s, "identifier not found");
     }
 
@@ -620,7 +641,7 @@ public class FlowExpressionParseUtil {
         } else {
             if (context.receiver instanceof ClassName) {
                 throw constructParserException(
-                        s, "a non-static method call cannot have a class name as a receiver.");
+                        s, "a non-static method call cannot have a class name as a receiver");
             }
             TypeMirror methodType =
                     TypesUtils.substituteMethodReturnType(
@@ -1062,8 +1083,8 @@ public class FlowExpressionParseUtil {
          * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
          */
         public final boolean parsingMember;
-        /** Whether the TreePath should be used to find identifiers. */
-        public boolean useLocalScope;
+        /** Whether the TreePath should be used to find identifiers. Defaults to true. */
+        public final boolean useLocalScope;
 
         /**
          * Creates context for parsing a flow expression.
@@ -1305,15 +1326,29 @@ public class FlowExpressionParseUtil {
 
         /**
          * Returns a copy of the context that differs in that it uses the outer receiver as main
-         * receiver (and also uses it as the outer receiver).
+         * receiver (and also retains it as the outer receiver), and parsingMember is set to false.
          */
         public FlowExpressionContext copyAndUseOuterReceiver() {
             return new FlowExpressionContext(
-                    outerReceiver,
+                    outerReceiver, // NOTE different than in this object
                     outerReceiver,
                     arguments,
                     checkerContext,
                     /*parsingMember=*/ false,
+                    useLocalScope);
+        }
+
+        /**
+         * Returns a copy of the context that differs in that useLocalScope is set to the given
+         * value.
+         */
+        public FlowExpressionContext copyAndSetUseLocalScope(boolean useLocalScope) {
+            return new FlowExpressionContext(
+                    receiver,
+                    outerReceiver,
+                    arguments,
+                    checkerContext,
+                    parsingMember,
                     useLocalScope);
         }
     }
@@ -1420,6 +1455,8 @@ public class FlowExpressionParseUtil {
             throw new Error("Must have an explanation.");
         }
         return new FlowExpressionParseException(
-                (Throwable) null, "flowexpr.parse.error", "'" + expr + "' because " + explanation);
+                (Throwable) null,
+                "flowexpr.parse.error",
+                "Invalid '" + expr + "' because " + explanation);
     }
 }

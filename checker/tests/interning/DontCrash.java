@@ -22,6 +22,7 @@ public class DontCrash {
             Map<@Interned String, @Interned String> mymap;
             mymap = theDefault.map;
             mymap = new HashMap<@Interned String, @Interned String>(theDefault.map);
+            mymap = new HashMap<>(theDefault.map);
         }
     }
 }

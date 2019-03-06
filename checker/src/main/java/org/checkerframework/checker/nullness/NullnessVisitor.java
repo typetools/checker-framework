@@ -45,7 +45,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.util.QualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -270,7 +270,7 @@ public class NullnessVisitor
         for (ExpressionTree dim : node.getDimensions()) {
             if (dim instanceof LiteralTree) {
                 Object val = ((LiteralTree) dim).getValue();
-                if (!(val instanceof Number) || !(Integer.valueOf(0).equals(val))) {
+                if (!(val instanceof Number) || !Integer.valueOf(0).equals(val)) {
                     isAllZeros = false;
                     break;
                 }

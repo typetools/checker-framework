@@ -84,6 +84,10 @@ public class NullnessAnnotatedTypeFactory
                     "android.annotation.NonNull",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/NonNull.java
                     "android.support.annotation.NonNull",
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/NonNull.java
+                    "androidx.annotation.NonNull",
+                    // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNonNull.java
+                    "androidx.annotation.RecentlyNonNull",
                     "com.sun.istack.internal.NotNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
                     "edu.umd.cs.findbugs.annotations.NonNull",
@@ -92,6 +96,9 @@ public class NullnessAnnotatedTypeFactory
                     "javax.validation.constraints.NotNull",
                     // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/NonNull.java
                     "lombok.NonNull",
+                    // https://search.maven.org/search?q=a:checker-compat-qual
+                    "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NonNullType",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -113,6 +120,10 @@ public class NullnessAnnotatedTypeFactory
                     "android.annotation.Nullable",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/Nullable.java
                     "android.support.annotation.Nullable",
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/Nullable.java
+                    "androidx.annotation.Nullable",
+                    // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNullable.java
+                    "androidx.annotation.RecentlyNullable",
                     "com.sun.istack.internal.Nullable",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
                     "edu.umd.cs.findbugs.annotations.CheckForNull",
@@ -124,6 +135,9 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
                     "javax.annotation.CheckForNull",
                     "javax.annotation.Nullable",
+                    // https://search.maven.org/search?q=a:checker-compat-qual
+                    "org.checkerframework.checker.nullness.compatqual.NullableDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NullableType",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
@@ -141,6 +155,7 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
                     "org.springframework.lang.Nullable");
 
+    /** Creates NullnessAnnotatedTypeFactory. */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
 
@@ -162,22 +177,14 @@ public class NullnessAnnotatedTypeFactory
 
         // Add compatibility annotations:
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
+                "org.checkerframework.checker.nullness.compatqual.PolyNullDecl", POLYNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class,
+                "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl",
                 MONOTONIC_NONNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
+                "org.checkerframework.checker.nullness.compatqual.PolyNullType", POLYNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class,
+                "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);

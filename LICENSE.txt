@@ -1,3 +1,7 @@
+The Checker Framework
+Copyright 2004-present by the Checker Framework developers
+
+
 Most of the Checker Framework is licensed under the GNU General Public
 License, version 2 (GPL2), with the classpath exception.  The text of this
 license appears below.  This is the same license used for OpenJDK.

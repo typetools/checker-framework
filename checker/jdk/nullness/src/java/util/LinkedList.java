@@ -1059,6 +1059,7 @@ public class LinkedList<E>
      * @return an array containing all of the elements in this list
      *         in proper sequence
      */
+    @SideEffectFree
     public @PolyNull Object[] toArray(LinkedList<@PolyNull E> this) {
         Object[] result = new Object[size];
         int i = 0;
@@ -1106,6 +1107,7 @@ public class LinkedList<E>
      * @throws NullPointerException if the specified array is null
      */
     @SuppressWarnings("unchecked")
+    @SideEffectFree
     public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a) {
         if (a.length < size)
             a = (T[])java.lang.reflect.Array.newInstance(
@@ -1179,6 +1181,7 @@ public class LinkedList<E>
      * @since 1.8
      */
     @Override
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         return new LLSpliterator<E>(this, -1, 0);
     }

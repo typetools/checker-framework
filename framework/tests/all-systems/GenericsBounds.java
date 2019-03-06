@@ -14,7 +14,7 @@ class Upper<ID, X extends A<ID>, Y extends X> {}
 class Lower extends Upper<Long, B2, C> {}
 
 class GenericsBounds {
-    Upper<Long, B2, C> f = new Upper<Long, B2, C>();
+    Upper<Long, B2, C> f = new Upper<>();
 }
 
 class Upper1<ID, X extends List<ID>> {}

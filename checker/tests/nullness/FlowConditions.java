@@ -17,7 +17,7 @@ class FlowConditions {
         }
     }
 
-    private final Map<String, Set<String>> graph = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> graph = new HashMap<>();
 
     public void addEdge1(String e, String parent, String child) {
         if (!graph.containsKey(parent)) {

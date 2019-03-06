@@ -70,7 +70,7 @@ public class StubGenerator {
             return;
         }
 
-        String pkg = ElementUtils.getVerboseName((ElementUtils.enclosingPackage(elt)));
+        String pkg = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
         if (!"".equals(pkg)) {
             currentPackage = pkg;
             currentIndention = "    ";
@@ -271,7 +271,7 @@ public class StubGenerator {
     }
 
     /**
-     * Helper method that outputs the method declaration for the given method
+     * Helper method that outputs the method declaration for the given method.
      *
      * <p>IT indicates whether the field is {@code protected}.
      */

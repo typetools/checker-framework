@@ -124,10 +124,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** @return Is left less than right? */
     public boolean isLessThan(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        if (leftATM.getAnnotations().size() != 1) {
-            return false;
-        }
-        return isLessThan(leftATM.getAnnotations().iterator().next(), right);
+        return isLessThan(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
     }
 
     /** @return Is left less than right? */
@@ -217,10 +214,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** @return Is left less than or equal to right? */
     public boolean isLessThanOrEqual(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        if (leftATM.getAnnotations().size() != 1) {
-            return false;
-        }
-        return isLessThanOrEqual(leftATM.getAnnotations().iterator().next(), right);
+        return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
     }
 
     /** @return Is left less than or equal to right? */
@@ -250,10 +244,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public List<String> getLessThanExpressions(ExpressionTree expression) {
         AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-        if (annotatedTypeMirror.getAnnotations().size() != 1) {
-            return new ArrayList<>();
-        }
-        return getLessThanExpressions(annotatedTypeMirror.getAnnotations().iterator().next());
+        return getLessThanExpressions(annotatedTypeMirror.getAnnotationInHierarchy(UNKNOWN));
     }
 
     /**

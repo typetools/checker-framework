@@ -784,7 +784,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             CFValue value = store.getValue(receiver);
             if (value != null && value.getAnnotations().size() == 1) {
                 UBQualifier newUBQ =
-                        UBQualifier.createUBQualifier(value.getAnnotations().iterator().next());
+                        UBQualifier.createUBQualifier(
+                                qualHierarchy.findAnnotationInHierarchy(
+                                        value.getAnnotations(), UNKNOWN));
                 if (ubQualifier == null) {
                     ubQualifier = newUBQ;
                 } else {

@@ -29,14 +29,14 @@ class Raw3 {
 
     // no raw types
     List<String> foo3() {
-        List<@Interned String> sl = new ArrayList<@Interned String>();
+        List<@Interned String> sl = new ArrayList<>();
         // :: error: (return.type.incompatible)
         return (List<@Interned String>) sl;
     }
 
     // with raw types
     List<String> foo4() {
-        List<@Interned String> sl = new ArrayList<@Interned String>();
+        List<@Interned String> sl = new ArrayList<>();
         // :: warning: [unchecked] unchecked conversion
         return (List) sl;
     }

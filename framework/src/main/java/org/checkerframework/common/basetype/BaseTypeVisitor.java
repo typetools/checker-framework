@@ -93,6 +93,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
@@ -104,7 +105,6 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -676,12 +676,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
                     case POSTCONDTION:
-                        checkPostcondition(node, annotation, expr);
+                        checkPostcondition(node, annotation, contract.contractAnnotation, expr);
                         break;
                     case CONDITIONALPOSTCONDTION:
                         checkConditionalPostcondition(
                                 node,
                                 annotation,
+                                contract.contractAnnotation,
                                 expr,
                                 ((ConditionalPostcondition) contract).annoResult);
                         break;
@@ -697,6 +698,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.warning(
                                 key,
+                                contract.contractAnnotation
+                                        .getAnnotationType()
+                                        .asElement()
+                                        .getSimpleName(),
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
@@ -755,10 +760,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param methodTree declaration of the method
      * @param annotation expression's type must have this annotation
-     * @param expression the expression that the postcondition concerns
+     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
+     *     expression}. Used only for diagnostic messages.
+     * @param expression the expression that the postcondition {@code contractAnnotation} concerns
      */
     protected void checkPostcondition(
-            MethodTree methodTree, AnnotationMirror annotation, Receiver expression) {
+            MethodTree methodTree,
+            AnnotationMirror annotation,
+            AnnotationMirror contractAnnotation,
+            Receiver expression) {
         CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
         if (exitStore == null) {
             // if there is no regular exitStore, then the method
@@ -775,7 +785,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
                         Result.failure(
-                                "contracts.postcondition.not.satisfied", expression.toString()),
+                                "contracts.postcondition.not.satisfied",
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+                                expression.toString()),
                         methodTree);
             }
         }
@@ -787,11 +799,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param node tree of method with the postcondition
      * @param annotation expression's type must have this annotation
+     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
+     *     expression}. Used only for diagnostic messages.
      * @param expression the expression that the postcondition concerns
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree node, AnnotationMirror annotation, Receiver expression, boolean result) {
+            MethodTree node,
+            AnnotationMirror annotation,
+            AnnotationMirror contractAnnotation,
+            Receiver expression,
+            boolean result) {
         boolean booleanReturnType =
                 TypesUtils.isBooleanType(TreeUtils.typeOf(node.getReturnType()));
         if (!booleanReturnType) {
@@ -839,6 +857,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.conditional.postcondition.not.satisfied",
+                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
                                 expression.toString()),
                         returnStmt.getTree());
             }
@@ -1722,6 +1741,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // **********************************************************************
 
     /**
+     * Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once.
+     */
+    private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCache = null;
+    /** The same as {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache. */
+    private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCached() {
+        if (getExceptionParameterLowerBoundAnnotationsCache == null) {
+            getExceptionParameterLowerBoundAnnotationsCache =
+                    getExceptionParameterLowerBoundAnnotations();
+        }
+        return getExceptionParameterLowerBoundAnnotationsCache;
+    }
+
+    /**
      * Issue error if the exception parameter is not a supertype of the annotation specified by
      * {@link #getExceptionParameterLowerBoundAnnotations()}, which is top by default.
      *
@@ -1734,7 +1766,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkExceptionParameter(CatchTree node) {
 
         Set<? extends AnnotationMirror> requiredAnnotations =
-                getExceptionParameterLowerBoundAnnotations();
+                getExceptionParameterLowerBoundAnnotationsCached();
         AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(node.getParameter());
 
         for (AnnotationMirror required : requiredAnnotations) {
@@ -1956,8 +1988,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     checker.report(
                             Result.failure(
                                     "monotonic.type.incompatible",
-                                    mono.getCanonicalName(),
-                                    mono.getCanonicalName(),
+                                    mono.getSimpleName(),
+                                    mono.getSimpleName(),
                                     valueType.toString()),
                             valueTree);
                     return;
@@ -2037,7 +2069,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
                 new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                    /** Maps from a type's toString to its verbose toString */
+                    /** Maps from a type's toString to its verbose toString. */
                     Map<String, String> map = new HashMap<>();
 
                     @Override
@@ -2602,8 +2634,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // Use the function type's parameters to resolve polymorphic qualifiers.
-        QualifierPolymorphism poly =
-                new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
+        QualifierPolymorphism poly = atypeFactory.getQualifierPolymorphism();
         poly.annotate(functionType, invocationType);
 
         AnnotatedTypeMirror invocationReturnType;
@@ -3021,7 +3052,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
             // Fix up method reference parameters.
-            // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1
+            // See https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.13.1
             if (methodReference) {
                 // The functional interface of an unbound member reference has an extra parameter
                 // (the receiver).
@@ -3094,6 +3125,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 msgKey,
+                                overrider.getElement().getParameters().get(index).toString(),
                                 overriderMeth,
                                 overriderTyp,
                                 overriddenMeth,
@@ -3217,7 +3249,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Postcondition> result = new LinkedHashSet<>();
         for (ConditionalPostcondition p : conditionalPostconditions) {
             if (p.annoResult == b) {
-                result.add(new Postcondition(p.expression, p.annotation));
+                result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
             }
         }
         return result;
@@ -3328,7 +3360,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the variable accessed is an assignable variable or not, given the current scope
+     * Tests whether the variable accessed is an assignable variable or not, given the current
+     * scope.
      *
      * <p>TODO: document which parameters are nullable; e.g. receiverType is null in many cases,
      * e.g. local variables.

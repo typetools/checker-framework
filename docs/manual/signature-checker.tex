@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Signature String Checker for string representations of types\label{signature-checker}}
+\chapterAndLabel{Signature String Checker for string representations of types}{signature-checker}
 
 The Signature String Checker, or Signature Checker for short, verifies that
 string representations of types and signatures are used correctly.
@@ -12,7 +12,7 @@ problem for fully qualified and binary names, which are nearly the same ---
 they differ only for nested classes and arrays.
 
 
-\section{Signature annotations\label{signature-annotations}}
+\sectionAndLabel{Signature annotations}{signature-annotations}
 
 Java defines six formats for the string representation of a type.
 There is an annotation for each of these representations.
@@ -31,7 +31,7 @@ examples appear in a table below.
 \begin{description}
 
 \item[\refqualclass{checker/signature/qual}{FullyQualifiedName}]
-  A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7}{JLS \S
+  A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-6.html#jls-6.7}{JLS \S
     6.7}), such as
   \<package.Outer.Inner>, is used in Java code and in messages to
   the user.
@@ -43,28 +43,28 @@ examples appear in a table below.
   and \<Class.forName(String, boolean, ClassLoader)> methods.  This format
   is:  for any non-array type, the binary name; and for any array type, a
   format like the
-  \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor
+  \href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor
     field descriptor}, but using
   ``\<.>''~where the field descriptor uses ``\</>''.  See examples below.
 \end{sloppypar}
 
 \item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
-  A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
+  A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
   \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
   for example to refer to other types.  It abbreviates primitive types and
   array types.  It uses internal form (binary names, but with \</> instead of
   \<.>; see
-  \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS
+  \href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.2.1}{JVMS
     \S 4.2}) for class names.  See examples below.
 
 \item[\refqualclass{checker/signature/qual}{BinaryName}]
-  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
+  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
   \<package.Outer\$Inner>, is
   the conceptual name of a type in its own \<.class> file.
 
 \item[\refqualclass{checker/signature/qual}{InternalForm}]
   The \emph{internal form}
-  (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2}{JVMS
+  (\href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.2}{JVMS
     \S 4.2}), such as \<package/Outer\$Inner>, is how a class name is
   actually represented in its own \<.class> file.  It is also known as the
   ``syntax of binary names that appear in class file structures''.  It is
@@ -78,7 +78,7 @@ examples appear in a table below.
   method.  This format is not required by any method in the JDK, so you
   will rarely write it in source code.  The string can be empty.  This
   is not the same as the ``simple name'' defined in
-  (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.2}{JLS
+  (\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-6.html#jls-6.2}{JLS
     \S 6.2}), which is the same as
   \refqualclass{checker/signature/qual}{Identifier}.
 
@@ -95,9 +95,9 @@ literals sufficiently precise types that they can be used in any
 appropriate context.
 
 Java also defines other string formats for a type:  qualified names
-(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.2}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-6.html#jls-6.2}{JLS
   \S 6.2}) and canonical names
-(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-6.html#jls-6.7}{JLS
   \S 6.7}).  The Signature Checker does not include annotations for these.
 
 Here are examples of the supported formats:
@@ -137,7 +137,7 @@ Java defines one format for the string representation of a method signature:
 \begin{description}
 
 \item[\refqualclass{checker/signature/qual}{MethodDescriptor}]
-  A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.3}{JVMS \S
+  A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.3.3}{JVMS \S
     4.3.3}) identifies a method's signature (its parameter and return
   types), just as a field descriptor identifies a
   type.   The method descriptor for the method
@@ -152,7 +152,7 @@ Java defines one format for the string representation of a method signature:
 \end{description}
 
 
-\section{What the Signature Checker checks\label{signature-checks}}
+\sectionAndLabel{What the Signature Checker checks}{signature-checks}
 
 Certain methods in the JDK, such as \<Class.forName>, are annotated
 indicating the type they require.  The Signature Checker ensures that

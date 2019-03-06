@@ -685,7 +685,7 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(finishValue(resultValue, store), store);
     }
 
-    /** Revert the role of the 'thenStore' and 'elseStore'. */
+    /** Reverse the role of the 'thenStore' and 'elseStore'. */
     @Override
     public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitConditionalNot(n, p);
@@ -1058,7 +1058,7 @@ public abstract class CFAbstractTransfer<
                 Result result;
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];
-                    args[0] = ElementUtils.getVerboseName(TreeUtils.elementFromUse(n.getTree()));
+                    args[0] = ElementUtils.getSimpleName(TreeUtils.elementFromUse(n.getTree()));
                     System.arraycopy(e.args, 0, args, 1, e.args.length);
                     result = Result.failure("flowexpr.parse.error.postcondition", args);
                 } else {
@@ -1070,6 +1070,7 @@ public abstract class CFAbstractTransfer<
             }
         }
     }
+
     /**
      * A case produces no value, but it may imply some facts about the argument to the switch
      * statement.

@@ -279,9 +279,11 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the annotations on this type.
+     * Returns the annotations on this type. It does not include annotations in deep types (type
+     * arguments, array components, etc).
      *
-     * <p>It does not include annotations in deep types (type arguments, array components, etc).
+     * <p>To get the single annotation in a particular hierarchy, use {@link
+     * #getAnnotationInHierarchy}.
      *
      * @return a unmodifiable set of the annotations on this
      */
@@ -695,7 +697,7 @@ public abstract class AnnotatedTypeMirror {
      * Returns the erasure type of the this type, according to JLS specifications.
      *
      * @see <a
-     *     href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.6</a>
+     *     href="https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.6</a>
      * @return the erasure of this AnnotatedTypeMirror, this is always a copy even if the erasure
      *     and the original type are equivalent
      */
@@ -725,6 +727,11 @@ public abstract class AnnotatedTypeMirror {
     public abstract AnnotatedTypeMirror deepCopy(final boolean copyAnnotations);
 
     /**
+     * Returns a deep copy of this type with annotations.
+     *
+     * <p>Each subclass implements this method with the subclass return type. The method body must
+     * always be a call to deepCopy(true).
+     *
      * @return a deep copy of this type with annotations
      * @see #deepCopy(boolean)
      */
@@ -732,7 +739,7 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns a shallow copy of this type. A shallow copy implies that each component type in the
-     * output copy refers to the same object as the object being copie.
+     * output copy refers to the same object as the object being copied.
      *
      * @param copyAnnotations whether copy should have annotations, i.e. whether field {@code
      *     annotations} should be copied.
@@ -741,6 +748,9 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns a shallow copy of this type with annotations.
+     *
+     * <p>Each subclass implements this method with the subclass return type. The method body must
+     * always be a call to shallowCopy(true).
      *
      * @see #shallowCopy(boolean)
      */
@@ -1102,7 +1112,7 @@ public abstract class AnnotatedTypeMirror {
                     && !ElementUtils.isStatic(getElement())
                     // Array constructors should also not have a receiver. Array members have a
                     // getEnclosingElement().getEnclosingElement() of NONE
-                    && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
+                    && !(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
                                     .getSimpleName()
@@ -1113,7 +1123,7 @@ public abstract class AnnotatedTypeMirror {
                                             .getEnclosingElement()
                                             .asType()
                                             .getKind()
-                                    == TypeKind.NONE))
+                                    == TypeKind.NONE)
                     // Top-level constructors don't have a receiver
                     && (getElement().getKind() != ElementKind.CONSTRUCTOR
                             || getElement().getEnclosingElement().getEnclosingElement().getKind()
@@ -1386,7 +1396,7 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Set the lower bound of this variable type
+         * Set the lower bound of this variable type.
          *
          * <p>Returns the lower bound of this type variable. While a type parameter cannot include
          * an explicit lower bound declaration, capture conversion can produce a type variable with

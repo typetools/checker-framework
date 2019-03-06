@@ -6,7 +6,6 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -1110,31 +1109,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitIdentifier(tree, p);
     }
 
-    /**
-     * Disallows annotations from the @GuardedBy hierarchy on class declarations (other
-     * than @GuardedBy({}).
-     */
-    @Override
-    public void processClassTree(ClassTree node) {
-        List<AnnotationMirror> annos =
-                TreeUtils.annotationsFromTypeAnnotationTrees(node.getModifiers().getAnnotations());
-
-        for (AnnotationMirror anno : annos) {
-            if (!AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBY)
-                    && (AnnotationUtils.areSameIgnoringValues(anno, atypeFactory.GUARDEDBYUNKNOWN)
-                            || AnnotationUtils.areSameIgnoringValues(anno, atypeFactory.GUARDEDBY)
-                            || AnnotationUtils.areSameIgnoringValues(
-                                    anno, atypeFactory.GUARDSATISFIED)
-                            || AnnotationUtils.areSameIgnoringValues(
-                                    anno, atypeFactory.GUARDEDBYBOTTOM))) {
-                checker.report(
-                        Result.failure("class.declaration.guardedby.annotation.invalid"), node);
-            }
-        }
-
-        super.processClassTree(node);
-    }
-
     @Override
     public Void visitBinary(BinaryTree binaryTree, Void p) {
         if (TreeUtils.isStringConcatenation(binaryTree)) {
@@ -1297,7 +1271,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         LockExpression lockExpression = new LockExpression(expression);
         if (DependentTypesError.isExpressionError(expression)) {
-            lockExpression.error = new DependentTypesError(expression);
+            lockExpression.error = DependentTypesError.unparse(expression);
             return lockExpression;
         }
 

@@ -51,7 +51,7 @@ def promote_release(path_to_releases, release_version):
     from_dir = os.path.join(path_to_releases, release_version)
     to_dir = os.path.join(path_to_releases, "..")
     # Trailing slash is crucial.
-    cmd = "rsync -a --omit-dir-times %s/ %s" % (from_dir, to_dir)
+    cmd = "rsync -aJ --omit-dir-times %s/ %s" % (from_dir, to_dir)
     execute(cmd)
 
 def copy_htaccess():
@@ -102,10 +102,10 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-compat-qual.jar, so use the same javadoc jar
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
-                            CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_COMPAT_QUAL_SOURCE),
+    # checker.jar is a superset of checker-qual-andriod.jar, so use the same javadoc jar
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_ANDROID_RELEASE_POM,
+                            CHECKER_QUAL_ANDROID,
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_ANDROID_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
@@ -336,9 +336,8 @@ def main(argv):
         print_step("4b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
-            " * Browse to https://oss.sonatype.org/\n" +
+            " * Browse to https://oss.sonatype.org/#stagingRepositories\n" +
             " * Log in using your Sonatype credentials\n" +
-            " * Click \"Staging Repositories\" or browse to https://oss.sonatype.org/#stagingRepositories\n" +
             " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
@@ -444,12 +443,7 @@ def main(argv):
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
-        print_step("Push Step 10. Announce the release.") # MANUAL
-        continue_or_exit("Please announce the release using the email structure below.\n" +
-                         "Note that this text may have changed since the last time a release was performed.\n" +
-                         get_announcement_email(new_checker_version))
-
-        print_step("Push Step 11. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
+        print_step("Push Step 10. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
                "* Download the following files to your local machine." +
@@ -473,7 +467,12 @@ def main(argv):
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 
-    print  msg
+        print  msg
+
+        print_step("Push Step 11. Announce the release.") # MANUAL
+        continue_or_exit("Please announce the release using the email structure below.\n" +
+                         "Note that this text may have changed since the last time a release was performed.\n" +
+                         get_announcement_email(new_checker_version))
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 

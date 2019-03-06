@@ -124,7 +124,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     private List<BaseTypeChecker> immediateSubcheckers;
 
-    /** Supported options for this checker */
+    /** Supported options for this checker. */
     private Set<String> supportedOptions;
 
     /**
@@ -262,7 +262,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         } catch (Throwable t) {
             if (t instanceof InvocationTargetException) {
                 Throwable err = t.getCause();
-                String msg;
                 if (err instanceof UserError) {
                     UserError ue = (UserError) err;
                     // Don't add another stack frame, just show the message.

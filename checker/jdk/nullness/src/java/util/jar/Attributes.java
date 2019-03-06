@@ -38,6 +38,8 @@ import sun.util.logging.PlatformLogger;
 import java.util.Comparator;
 import sun.misc.ASCIICaseInsensitiveComparator;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -148,6 +150,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @exception ClassCastException if the name is not a Attributes.Name
      *            or the value is not a String
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public @Nullable Object put(Object name, Object value) {
         return map.put((Attributes.Name)name, (String)value);
     }
@@ -201,6 +204,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @param name the attribute name
      * @return true if this Map contains the specified attribute name
      */
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(Object name) {
         return map.containsKey(name);
     }

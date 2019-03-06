@@ -278,7 +278,7 @@ public class PluginUtil {
     }
 
     /**
-     * Any options found in props to the cmd list
+     * Any options found in props to the cmd list.
      *
      * @param cmd a list to which the options should be added
      * @param props the map of checker properties too search for options in
@@ -522,19 +522,29 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever).
+     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever), or the
+     * whole version number if it is an integer.
      *
-     * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever), or the
+     *     whole version number if it is an integer
      */
     public static double getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
 
+        // 1.8.0
         final Pattern versionPattern = Pattern.compile("^(\\d+\\.\\d+)\\..*$");
         final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
 
         // For Early Access version of the JDK
         final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
         final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr);
+
+        // JDK 11 has java.version as just "11", not like "1.8.0"
+        try {
+            return Integer.parseInt(jreVersionStr);
+        } catch (NumberFormatException e) {
+            // Nothing to do; fall through to parse other types of version numbers
+        }
 
         final double version;
         if (versionMatcher.matches()) {

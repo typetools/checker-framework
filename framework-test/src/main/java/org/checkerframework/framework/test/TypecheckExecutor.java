@@ -18,7 +18,7 @@ public class TypecheckExecutor {
 
     public TypecheckExecutor() {}
 
-    /** Runs a typechecking test using the given configuration and returns the test result */
+    /** Runs a typechecking test using the given configuration and returns the test result. */
     public TypecheckResult runTest(TestConfiguration configuration) {
         CompilationResult result = compile(configuration);
         return interpretResults(configuration, result);
@@ -32,7 +32,7 @@ public class TypecheckExecutor {
         TestUtilities.ensureDirectoryExists(new File(configuration.getOptions().get("-d")));
 
         final StringWriter javacOutput = new StringWriter();
-        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
@@ -45,10 +45,10 @@ public class TypecheckExecutor {
         // error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only
         // accepted if annotation processing is explicitly requested
         // Therefore, we now add them to the beginning of the options list.
-        final List<String> options = new ArrayList<String>();
+        final List<String> options = new ArrayList<>();
         options.add("-processor");
         options.add(String.join(",", configuration.getProcessors()));
-        List<String> nonJvmOptions = new ArrayList<String>();
+        List<String> nonJvmOptions = new ArrayList<>();
         for (String option : configuration.getFlatOptions()) {
             if (!option.startsWith("-J-")) {
                 nonJvmOptions.add(option);

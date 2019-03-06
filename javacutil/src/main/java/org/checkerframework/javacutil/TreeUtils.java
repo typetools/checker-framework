@@ -248,7 +248,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the first enclosing tree in path, of the specified class
+     * Gets the first enclosing tree in path, of the specified class.
      *
      * @param path the path defining the tree node
      * @param treeClass the class of the desired tree
@@ -698,12 +698,12 @@ public final class TreeUtils {
         }
     }
 
-    /** Returns true if the tree represents a {@code String} concatenation operation */
+    /** Returns true if the tree represents a {@code String} concatenation operation. */
     public static final boolean isStringConcatenation(Tree tree) {
         return (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree)));
     }
 
-    /** Returns true if the compound assignment tree is a string concatenation */
+    /** Returns true if the compound assignment tree is a string concatenation. */
     public static final boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
         return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
                 && TypesUtils.isString(TreeUtils.typeOf(tree)));
@@ -738,7 +738,7 @@ public final class TreeUtils {
         }
     }
 
-    /** Returns the receiver tree of a field access or a method invocation */
+    /** Returns the receiver tree of a field access or a method invocation. */
     public static ExpressionTree getReceiverTree(ExpressionTree expression) {
         ExpressionTree receiver = TreeUtils.skipParens(expression);
 
@@ -939,7 +939,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether {@code tree} is a class literal, such as
+     * Determine whether {@code tree} is a class literal, such as.
      *
      * <pre>
      *   <em>Object</em> . <em>class</em>
@@ -955,7 +955,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether {@code tree} is a field access expressions, such as
+     * Determine whether {@code tree} is a field access expressions, such as.
      *
      * <pre>
      *   <em>f</em>
@@ -999,7 +999,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether {@code tree} refers to a method element, such as
+     * Determine whether {@code tree} refers to a method element, such as.
      *
      * <pre>
      *   <em>m</em>(...)
@@ -1171,11 +1171,11 @@ public final class TreeUtils {
         // check if its in a variable initializer
         Tree t = enclosingVariable(path);
         if (t != null) {
-            return ((VariableTree) t).getModifiers().getFlags().contains((Modifier.STATIC));
+            return ((VariableTree) t).getModifiers().getFlags().contains(Modifier.STATIC);
         }
         ClassTree classTree = enclosingClass(path);
         if (classTree != null) {
-            return classTree.getModifiers().getFlags().contains((Modifier.STATIC));
+            return classTree.getModifiers().getFlags().contains(Modifier.STATIC);
         }
         return false;
     }

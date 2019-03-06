@@ -1,12 +1,12 @@
 \htmlhr
-\chapter{Signedness Checker\label{signedness-checker}}
+\chapterAndLabel{Signedness Checker}{signedness-checker}
 
 The Signedness Checker guarantees that signed and unsigned values are not mixed
 together in a computation. In addition, it prohibits meaningless operations, such
 as division on an unsigned value.
 
 
-\section{Annotations\label{signedness-checker-annotations}}
+\sectionAndLabel{Annotations}{signedness-checker-annotations}
 
 The Signedness Checker uses type annotations to indicate the signedness that the programmer intends an expression to have.
 
@@ -60,7 +60,7 @@ compared to a signed value, or used in arithmetic operations with a signed
 value, then $v$ should have signed type.
 
 
-\subsection{Default qualifiers\label{signedness-checker-annotations-default-qualifiers}}
+\subsectionAndLabel{Default qualifiers}{signedness-checker-annotations-default-qualifiers}
 
 The only type qualifier that the programmer should need to write is
 \refqualclass{checker/signedness/qual}{Unsigned}.
@@ -81,7 +81,7 @@ Signedness Checker treats it in one of the following ways:
 \end{itemize}
 
 
-\section{Prohibited operations\label{signedness-checker-prohibited-operations}}
+\sectionAndLabel{Prohibited operations}{signedness-checker-prohibited-operations}
 
 The Signedness Checker prohibits the following uses of operators:
 
@@ -110,7 +110,7 @@ For example, it is not permitted to assign a \code{@Signed} expression to an
 \code{@Unsigned} variable or vice versa.
 
 
-\section{Rationale\label{signedness-checker-rationale}}
+\sectionAndLabel{Rationale}{signedness-checker-rationale}
 
 The Signedness Checker prevents misuse of unsigned values in Java code.
 Most Java operations interpret operands as signed.  If applied to unsigned
@@ -119,16 +119,16 @@ values, those operations would produce unexpected, incorrect results.
 Consider the following Java code:
 
 \begin{Verbatim}
-  int s1 = -1;
-  int s2 = -2;
+  int s1 = -2;
+  int s2 = -1;
 
-  @Unsigned int u1 = 0xFFFFFFFF;  // unsigned: 2^32 - 1, signed: -1
-  @Unsigned int u2 = 0xFFFFFFFE;  // unsigned: 2^32 - 2, signed: -2
+  @Unsigned int u1 = 0xFFFFFFFE;  // unsigned: 2^32 - 2, signed: -2
+  @Unsigned int u2 = 0xFFFFFFFF;  // unsigned: 2^32 - 1, signed: -1
 
   int result;
 
-  result = s2 / s1;   // OK: result is 2, which is correct for -2 / -1
-  result = u2 / u1;   // ERROR: result is 2, which is incorrect for (2^32 - 1) / (2^32 - 2)
+  result = s1 / s2;   // OK: result is 2, which is correct for -2 / -1
+  result = u1 / u2;   // ERROR: result is 2, which is incorrect for (2^32 - 2) / (2^32 - 1)
 
   int s3 = -1;
   int s4 = 5;
@@ -136,15 +136,15 @@ Consider the following Java code:
   @Unsigned int u3 = 0xFFFFFFFF;    // unsigned: 2^32 - 1, signed: -1
   @Unsigned int u4 = 5;
 
-  result = s3 % s4;    // OK: result is 4, which is correct for -2 % 5
-  result = u3 % u4;    // ERROR: result is 4, which is incorrect for (2^32 - 1) % 5
+  result = s3 % s4;    // OK: result is -1, which is correct for -1 % 5
+  result = u3 % u4;    // ERROR: result is -1, which is incorrect for (2^32 - 1) % 5
 \end{Verbatim}
 
 These examples illustrate why division and modulus with an unsigned operand
 are illegal.  Other uses of operators are prohibited for similar reasons.
 
 
-\section{Utility routines for manipulating unsigned values\label{signedness-utilities}}
+\sectionAndLabel{Utility routines for manipulating unsigned values}{signedness-utilities}
 
 Class \refclass{checker/signedness}{SignednessUtil} provides static
 utility methods for working with unsigned values.  Some of these
