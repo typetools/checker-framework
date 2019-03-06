@@ -755,14 +755,14 @@ brew cask install java
 brew cask install mactex
 \end{Verbatim}
 
-Make latex directory and copy hevea.sty file into it.
+Make a \<latex> directory and copy \<hevea.sty> file into it:
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
-Note: If copy permission denied, try sudo.
+Note: If copy permission denied, try \<sudo>.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
@@ -934,29 +934,10 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 \end{enumerate}
 
 
-\subsectionAndLabel{Configure Eclipse to edit the Checker Framework}{building-eclipse}
+\subsectionAndLabel{Code style, IDE configuration, pull requests, etc.}{building-developer-manual}
 
-These instructions are relevant if you use Eclipse as your IDE\@.
-
-\begin{enumerate}
-\item Follow the instructions earlier in Section~\ref{build-source} to
-clone and build all projects from their sources.
-\item Download Eclipse from
-the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
-and install it.
-\item Run Eclipse.
-\item Enter the main Eclipse working screen and in the ``File'' menu,
-select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
-Projects into Workspace''.
-\item After the ``Import Projects'' window appears, select ``Select
-Root Directory'', and select the parent of the \code{\$CHECKERFRAMEWORK} directory.
-\item Ensure ``Search for nested projects'' is selected in the Options panel.
-\item Select all the projects in the folder except for ``personalblog-demo'',
-then select ``Finish'' to import the projects.
-\end{enumerate}
-Eclipse should successfully build all the imported projects.
-If Eclipse reports any errors, ensure you followed the instructions
-in Section~\ref{build-source}.
+Please see the
+\href{../developer/developer-manual.html}{Checker Framework Developer Manual}.
 
 
 \subsectionAndLabel{Enable Travis continuous integration builds}{building-travis}
@@ -1012,20 +993,6 @@ git clone -b $BRANCHNAME --depth 9 https://github.com/$USER/checker-framework.gi
 cd checker-framework
 ./.travis-build.sh all-tests downloadjdk
 \end{Verbatim}
-
-
-\subsectionAndLabel{Code style}{code-style}
-
-Code in this project follows the
-\ahref{https://google.github.io/styleguide/javaguide.html}{Google Java Style
-Guide} except 4 spaces are used for indentation.  If you commit changes to the
-Git repository, then a pre-commit hook verifies that the changes follow the
-style by running \<./gradlew checkFormat> in the top-level directory.
-
-If
-the pre-commit hook fails
-because of improper formatting, run \<./gradlew reformat>, stage the
-changes, and try the commit operation again.
 
 
 \sectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
@@ -1218,10 +1185,12 @@ For details, see file
 %  LocalWords:  extJavac ZipFile AnoPrintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
 %  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
-%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre
+%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre yml
 %%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted ElementType
-%%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex
+%%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex IGJ
 %%  LocalWords:  JavaUI EnerJ App CCS ReIm ReImInfer Anatoly Kupriyanov
 %%  LocalWords:  Asumu Takikawa Brotherston McArthur Luo Bayne Coblenz Lai
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
-%%  LocalWords:  toolset's
+%%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
+%%  LocalWords:  astub homebrew hevea cloneAndBuildDependencies allTests
+%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ
