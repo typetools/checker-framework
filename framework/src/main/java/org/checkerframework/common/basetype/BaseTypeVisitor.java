@@ -1908,7 +1908,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
         } else {
-            // checkCastElementType option wasn't specified, so only check effective annotations,
+            // checkCastElementType option wasn't specified, so only check effective annotations.
             return qualifierHierarchy.isSubtype(
                     exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
@@ -2685,6 +2685,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             invocation.toString(true)),
                     newClassTree);
         }
+
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
