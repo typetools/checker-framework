@@ -1410,6 +1410,9 @@ public abstract class GenericAnnotatedTypeFactory<
         // do not replace that. This ensures consistent behaviour with constructor invocations that
         // are cast to the polymorphic type i.e "(@Poly X) new X();" is the same as
         // "new @Poly X();"
+        // TODO: Replace getExplicitAnnotationsOnNewClassTree() with getExplicitAnnotations()
+        // when issue 2324 is fixed.
+        // See https://github.com/typetools/checker-framework/issues/2324.
         Set<? extends AnnotationMirror> explicitAnnotations =
                 getExplicitAnnotationsOnNewClassTree(
                         tree, getAnnotatedType(tree.getIdentifier()).getAnnotations());
