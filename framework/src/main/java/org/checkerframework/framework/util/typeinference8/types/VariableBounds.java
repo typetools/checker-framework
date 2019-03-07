@@ -38,7 +38,7 @@ public class VariableBounds {
     public final ConstraintSet constraints = new ConstraintSet();
     /** Whether or not this variable has a throws bounds. */
     public boolean hasThrowsBound = false;
-    /** Saved bounds. */
+    /** Saved bounds used in the event the first attempt at resolution fails. */
     public EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
 
     public VariableBounds(Java8InferenceContext context) {
@@ -48,7 +48,7 @@ public class VariableBounds {
         bounds.put(BoundKind.LOWER, new LinkedHashSet<>());
     }
 
-    /** Save the current bounds. */
+    /** Save the current bounds in case the first attempt at resolution fails. */
     public void save() {
         savedBounds = new EnumMap<>(BoundKind.class);
         savedBounds.put(BoundKind.EQUAL, new LinkedHashSet<>(bounds.get(BoundKind.EQUAL)));
@@ -56,7 +56,10 @@ public class VariableBounds {
         savedBounds.put(BoundKind.LOWER, new LinkedHashSet<>(bounds.get(BoundKind.LOWER)));
     }
 
-    /** Restore the bounds to the state previously saved. */
+    /**
+     * Restore the bounds to the state previously saved. This method is called if the first attempt
+     * at resolution fails.
+     */
     public void restore() {
         assert savedBounds != null;
         instantiation = null;

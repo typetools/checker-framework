@@ -26,6 +26,7 @@ public class BoundSet implements ReductionResult {
      * Max number of incorporation loops. Use same constant as {@link
      * com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS}
      */
+    // TODO: revert to com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS
     private static final int MAX_INCORPORATION_STEPS = 100;
 
     /** All inference variables in this bound set. */
@@ -60,13 +61,24 @@ public class BoundSet implements ReductionResult {
         this.captures = new LinkedHashSet<>(toCopy.captures);
         this.variables = new LinkedHashSet<>(toCopy.variables);
         this.uncheckedConversion = toCopy.uncheckedConversion;
-        // Save the current state of the variables so they can be restored later.
+    }
+
+    /**
+     * Save the current state of the variables so they can be restored if the first attempt at
+     * resolution fails.
+     */
+    public void saveBounds() {
+        // Save the current state of the variables so they can be restored if the first attempt at
+        // resolution fails.
         for (Variable v : variables) {
             v.save();
         }
     }
 
-    /** Restore the bounds to the last saved state. */
+    /**
+     * Restore the bounds to the last saved state. This method is called if the first attempt at
+     * resolution fails.
+     */
     public void restore() {
         for (Variable v : variables) {
             v.restore();

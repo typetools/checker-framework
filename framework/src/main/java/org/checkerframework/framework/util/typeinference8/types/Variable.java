@@ -184,12 +184,15 @@ public class Variable extends AbstractType {
         return "a" + id;
     }
 
-    /** Save the current bounds. */
+    /** in case the first attempt at resolution fails. */
     public void save() {
         variableBounds.save();
     }
 
-    /** Restore the bounds to the state previously saved. */
+    /**
+     * Restore the bounds to the state previously saved. This method is called if the first attempt
+     * at resolution fails.
+     */
     public void restore() {
         variableBounds.restore();
     }

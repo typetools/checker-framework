@@ -164,6 +164,8 @@ public class Resolution {
             resolvedBounds = resolveWithCapture(as, boundSet, context);
         } else {
             BoundSet copy = new BoundSet(boundSet);
+            // Save the current bounds in case the first attempt at resolution fails.
+            copy.saveBounds();
             try {
                 resolvedBounds = resolveNoCapture(as, boundSet);
             } catch (FalseBoundException ex) {
@@ -171,6 +173,8 @@ public class Resolution {
             }
             if (resolvedBounds == null || resolvedBounds.containsFalse()) {
                 boundSet = copy;
+                // If resolveNoCapture fails, then undo an resolved variables from the failed
+                // attempt.
                 boundSet.restore();
                 resolvedBounds = resolveWithCapture(as, boundSet, context);
             }
