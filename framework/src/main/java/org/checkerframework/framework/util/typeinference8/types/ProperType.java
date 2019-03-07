@@ -19,36 +19,22 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** A type that does not contain any inference variables. */
 public class ProperType extends AbstractType {
+    public static class CantCompute extends RuntimeException {
+        private static final long serialVersionUID = 1;
+    }
+
     private final AnnotatedTypeMirror type;
     private final TypeMirror properType;
 
     public ProperType(
             AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
         super(context);
-        type = verify(type, properType);
+        type = verifyTypeKinds(type, properType);
 
         this.properType = properType;
         this.type = type;
-    }
-
-    private static AnnotatedTypeMirror verify(AnnotatedTypeMirror type, TypeMirror properType) {
-        assert properType != null && properType.getKind() != TypeKind.VOID && type != null;
-        if (type.getKind() == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
-            if (TypesUtils.isCaptured(properType)) {
-                type = ((AnnotatedWildcardType) type).capture((TypeVariable) properType);
-            } else if (wildcardType.isUninferredTypeArgument()) {
-                throw new CantCompute();
-            }
-        }
-
-        assert properType.getKind() == type.getKind();
-        return type;
-    }
-
-    public static class CantCompute extends RuntimeException {
-        private static final long serialVersionUID = 1;
     }
 
     public ProperType(ExpressionTree tree, Java8InferenceContext context) {
@@ -58,7 +44,7 @@ public class ProperType extends AbstractType {
         context.getAnnotatedTypeOfProperType = false;
 
         TypeMirror properType = TreeUtils.typeOf(tree);
-        this.type = verify(type, properType);
+        this.type = verifyTypeKinds(type, properType);
         this.properType = properType;
     }
 
@@ -68,8 +54,25 @@ public class ProperType extends AbstractType {
         AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(varTree);
         context.getAnnotatedTypeOfProperType = false;
         TypeMirror properType = TreeUtils.typeOf(varTree);
-        this.type = verify(type, properType);
+        this.type = verifyTypeKinds(type, properType);
         this.properType = properType;
+    }
+
+    /** Asserts that the underlying type of {@code atm} is the same kind as {@code typeMirror} */
+    private static AnnotatedTypeMirror verifyTypeKinds(
+            AnnotatedTypeMirror atm, TypeMirror typeMirror) {
+        assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
+        if (atm.getKind() == TypeKind.WILDCARD) {
+            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
+            if (TypesUtils.isCaptured(typeMirror)) {
+                atm = ((AnnotatedWildcardType) atm).capture((TypeVariable) typeMirror);
+            } else if (wildcardType.isUninferredTypeArgument()) {
+                throw new CantCompute();
+            }
+        }
+
+        assert typeMirror.getKind() == atm.getKind();
+        return atm;
     }
 
     @Override

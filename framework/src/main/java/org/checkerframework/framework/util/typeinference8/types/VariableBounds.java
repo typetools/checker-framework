@@ -15,6 +15,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** Data structure to stores the bounds of a variable. */
 public class VariableBounds {
 
     public enum BoundKind {
@@ -28,7 +29,8 @@ public class VariableBounds {
 
     private final Java8InferenceContext context;
 
-    public ProperType instantiation = null;
+    /** The type to which this variable is instantiated. */
+    private ProperType instantiation = null;
     /**
      * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
      * {@link AbstractType}s.
@@ -149,7 +151,7 @@ public class VariableBounds {
         }
     }
 
-    public List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
+    private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
         Pair<AbstractType, AbstractType> pair =
                 context.inferenceTypeFactory.getParameterizedSupers(s, t);
 

@@ -14,6 +14,7 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
+/** An inference variable. */
 public class Variable extends AbstractType {
 
     protected final VariableBounds variableBounds;
@@ -60,6 +61,7 @@ public class Variable extends AbstractType {
         this.id = id;
     }
 
+    /** @return this variable's current bounds */
     public VariableBounds getBounds() {
         return variableBounds;
     }
@@ -197,6 +199,7 @@ public class Variable extends AbstractType {
         variableBounds.restore();
     }
 
+    /** @return whether or not this variable was created for a capture bound */
     public boolean isCaptureVariable() {
         return false;
     }
