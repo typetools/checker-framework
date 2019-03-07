@@ -151,6 +151,17 @@ public class VariableBounds {
         }
     }
 
+    /**
+     * Returns the constraints between the type arguments to {@code s} and {@code t}.
+     *
+     * <p>If the there exists a supertype of S of the form G<S1, ..., Sn> and a supertype of T of
+     * the form G<T1,..., Tn> (for some generic class or interface, G), then for all i (1 <= i <=
+     * n), if Si and Ti are types (not wildcards), the constraint formula <Si = Ti> is implied.
+     *
+     * @param s
+     * @param t
+     * @return
+     */
     private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
         Pair<AbstractType, AbstractType> pair =
                 context.inferenceTypeFactory.getParameterizedSupers(s, t);
@@ -174,6 +185,7 @@ public class VariableBounds {
         return constraints;
     }
 
+    /** @return all lower bounds that are poper types */
     public LinkedHashSet<ProperType> findProperLowerBounds() {
         LinkedHashSet<ProperType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.LOWER)) {
@@ -184,6 +196,7 @@ public class VariableBounds {
         return set;
     }
 
+    /** @return all upper bounds that are poper types */
     public LinkedHashSet<ProperType> findProperUpperBounds() {
         LinkedHashSet<ProperType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
@@ -194,6 +207,7 @@ public class VariableBounds {
         return set;
     }
 
+    /** @return all upper bounds */
     public LinkedHashSet<AbstractType> upperBounds() {
         LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
