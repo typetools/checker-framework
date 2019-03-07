@@ -18,6 +18,7 @@ import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -31,7 +32,11 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -49,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -107,6 +113,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -187,7 +194,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The type of java.util.Vector. */
     private final AnnotatedDeclaredType vectorType;
 
-    /** @param checker the type-checker associated with this visitor */
+    /** The @java.lang.annotation.Target annotation. */
+    protected final AnnotationMirror TARGET;
+
+    /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
+    protected final ExecutableElement targetValueElement;
+
+    /**
+     * @param checker the type-checker associated with this visitor (for callbacks to {@link
+     *     TypeHierarchy#isSubtype})
+     */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         this(checker, null);
     }
@@ -210,6 +226,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
         this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.TARGET = AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
+        targetValueElement =
+                TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
+
         checkForAnnotatedJdk();
     }
 
@@ -534,10 +554,43 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
+        ModifiersTree modifiersTree = node.getModifiers();
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+
         try {
             if (TreeUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
                 return null;
+            }
+
+            if (TreeUtils.isConstructor(node)) {
+                Set<AnnotationMirror> constructorAnnotations =
+                        methodType.getReturnType().getAnnotations();
+                Set<AnnotationMirror> classAnnotations =
+                        atypeFactory
+                                .getAnnotatedType(methodElement.getEnclosingElement())
+                                .getAnnotations();
+                QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+                for (AnnotationMirror classAnno : classAnnotations) {
+                    for (AnnotationMirror constructorAnno : constructorAnnotations) {
+                        if (qualifierHierarchy.leastUpperBound(classAnno, constructorAnno)
+                                != null) {
+                            if (qualifierHierarchy.isSubtype(constructorAnno, classAnno)) {
+                                if (!AnnotationUtils.areSameByName(constructorAnno, classAnno)) {
+                                    checker.report(
+                                            Result.warning(
+                                                    "inconsistent.constructor.type",
+                                                    constructorAnno,
+                                                    classAnno),
+                                            methodElement);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
             }
 
             // check method purity if needed
@@ -933,6 +986,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
+
+        ModifiersTree modifiersTree = node.getModifiers();
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         visitorState.setAssignmentContext(
                 Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
@@ -955,6 +1014,108 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         } finally {
             visitorState.setAssignmentContext(preAssCtxt);
         }
+    }
+
+    /**
+     * Warn if a type annotation is written before a modifier such as "public" or before a
+     * declaration annotation.
+     *
+     * @param node a VariableTree or a MethodTree
+     * @param modifierSet the modifiers in node
+     * @param annotations the annotations in node
+     */
+    private void warnAboutTypeAnnotationsTooEarly(
+            Tree node, Set<Modifier> modifierSet, List<? extends AnnotationTree> annotations) {
+
+        // Warn about type annotations written before modifiers such as "public".  javac retains no
+        // information about modifier locations.  So, this is a very partial check:  Issue a warning
+        // if a type annotation is at the very beginning of the VariableTree, and a modifer follows
+        // it.
+        if (!annotations.isEmpty()) {
+            // Check if a type annotation precedes a declaration annotation.
+            int lastDeclAnnoIndex = -1;
+            for (int i = annotations.size() - 1; i > 0; i--) { // no need to check index 0
+                if (!isTypeAnnotation(annotations.get(i))) {
+                    lastDeclAnnoIndex = i;
+                    break;
+                }
+            }
+            if (lastDeclAnnoIndex != -1) {
+                List<AnnotationTree> badTypeAnnos = new ArrayList<>();
+                for (int i = 0; i < lastDeclAnnoIndex; i++) {
+                    AnnotationTree anno = annotations.get(i);
+                    if (isTypeAnnotation(anno)) {
+                        badTypeAnnos.add(anno);
+                    }
+                }
+                if (!badTypeAnnos.isEmpty()) {
+                    checker.report(
+                            Result.warning(
+                                    "type.anno.before.decl.anno",
+                                    badTypeAnnos,
+                                    annotations.get(lastDeclAnnoIndex)),
+                            node);
+                }
+            }
+
+            // Determine the length of the text that ought to precede the first type annotation.
+            // If the type annotation appears before that text could appear, then warn that a
+            // modifier appears after the type annotation.
+            // TODO: in the future, account for the lengths of declaration annotations.  Length of
+            // toString of the annotation isn't useful, as it might be different length than
+            // original input.  Can use JCTree.getEndPosition(EndPosTable) and
+            // com.sun.tools.javac.tree.EndPosTable, but it requires -Xjcov.
+            AnnotationTree firstAnno = annotations.get(0);
+            if (!modifierSet.isEmpty() && isTypeAnnotation(firstAnno)) {
+                int precedingTextLength = 0;
+                for (Modifier m : modifierSet) {
+                    precedingTextLength += m.toString().length() + 1; // +1 for the space
+                }
+                int annoStartPos = ((JCTree) firstAnno).getStartPosition();
+                int varStartPos = ((JCTree) node).getStartPosition();
+                if (annoStartPos < varStartPos + precedingTextLength) {
+                    checker.report(
+                            Result.warning("type.anno.before.modifier", firstAnno, modifierSet),
+                            node);
+                }
+            }
+        }
+    }
+
+    /**
+     * Return true if the given annotation is a type annotation: that is, its definition is
+     * meta-annotated with {@code @Target({TYPE_USE,....})}.
+     */
+    private boolean isTypeAnnotation(AnnotationTree anno) {
+        Tree annoType = anno.getAnnotationType();
+        ClassSymbol annoSymbol;
+        switch (annoType.getKind()) {
+            case IDENTIFIER:
+                annoSymbol = (ClassSymbol) ((JCIdent) annoType).sym;
+                break;
+            case MEMBER_SELECT:
+                annoSymbol = (ClassSymbol) ((JCFieldAccess) annoType).sym;
+                break;
+            default:
+                throw new Error("Unhandled kind: " + annoType.getKind() + " for " + anno);
+        }
+        for (AnnotationMirror metaAnno : annoSymbol.getAnnotationMirrors()) {
+            if (AnnotationUtils.areSameByName(metaAnno, TARGET)) {
+                AnnotationValue valueValue = metaAnno.getElementValues().get(targetValueElement);
+                @SuppressWarnings("unchecked")
+                List<? extends AnnotationValue> targets =
+                        (List<? extends AnnotationValue>) valueValue.getValue();
+                for (AnnotationValue target : targets) {
+                    VarSymbol targetSymbol = ((Attribute.Enum) target).value;
+                    if (targetSymbol.toString().equals("TYPE_USE")) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1067,10 +1228,55 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // check precondition annotations
         checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
+        checkSuperConstructorCall(node);
+
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
         scan(node.getMethodSelect(), p);
         return null; // super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * Checks that the following rule is satisfied: The type on a constructor declaration must be a
+     * supertype of the return type of "super()" invocation within that constructor (except for the
+     * Initialization and Rawness Checkers).
+     */
+    void checkSuperConstructorCall(MethodInvocationTree node) {
+        if (!TreeUtils.isSuperCall(node)) {
+            return;
+        }
+        TreePath path = atypeFactory.getPath(node);
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        if (TreeUtils.isConstructor(enclosingMethod)) {
+            AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(node);
+            AnnotatedExecutableType constructorType =
+                    atypeFactory.getAnnotatedType(enclosingMethod);
+            Set<? extends AnnotationMirror> topAnnoations =
+                    atypeFactory.getQualifierHierarchy().getTopAnnotations();
+            for (AnnotationMirror topAnno : topAnnoations) {
+                AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
+                AnnotationMirror constructorTypeMirror =
+                        constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
+
+                if (!AnnotationUtils.areSameByName(
+                                constructorTypeMirror,
+                                "org.checkerframework.checker.initialization.qual.UnderInitialization")
+                        && !AnnotationUtils.areSameByName(
+                                constructorTypeMirror,
+                                "org.checkerframework.checker.nullness.qual.Raw")
+                        && !atypeFactory
+                                .getQualifierHierarchy()
+                                .isSubtype(superTypeMirror, constructorTypeMirror)) {
+                    checker.report(
+                            Result.failure(
+                                    "super.invocation.invalid",
+                                    constructorTypeMirror,
+                                    node,
+                                    superTypeMirror),
+                            enclosingMethod);
+                }
+            }
+        }
     }
 
     /**

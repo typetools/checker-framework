@@ -3,7 +3,6 @@ package org.checkerframework.common.value;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -167,7 +166,7 @@ public class ReflectiveEvaluator {
             ExecutableElement ele = TreeUtils.elementFromUse(tree);
             Name clazz =
                     TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
-            List<Class<?>> paramClzz = getParameterClasses(tree, ele);
+            List<Class<?>> paramClzz = getParameterClasses(ele);
             Class<?> clzz = Class.forName(clazz.toString());
             Method method =
                     clzz.getMethod(
@@ -204,7 +203,7 @@ public class ReflectiveEvaluator {
         }
     }
 
-    private List<Class<?>> getParameterClasses(Tree tree, ExecutableElement ele)
+    private List<Class<?>> getParameterClasses(ExecutableElement ele)
             throws ClassNotFoundException {
         List<? extends VariableElement> paramEles = ele.getParameters();
         List<Class<?>> paramClzz = new ArrayList<>();
@@ -315,7 +314,7 @@ public class ReflectiveEvaluator {
     private Constructor<?> getConstructorObject(NewClassTree tree, TypeMirror typeToCreate)
             throws ClassNotFoundException, NoSuchMethodException {
         ExecutableElement ele = TreeUtils.elementFromUse(tree);
-        List<Class<?>> paramClasses = getParameterClasses(tree, ele);
+        List<Class<?>> paramClasses = getParameterClasses(ele);
         Class<?> recClass = boxPrimitives(ValueCheckerUtils.getClassFromType(typeToCreate));
         Constructor<?> constructor = recClass.getConstructor(paramClasses.toArray(new Class<?>[0]));
         return constructor;

@@ -25,12 +25,17 @@ public class InstanceOfNode extends Node {
     /** The tree associated with this node. */
     protected final InstanceOfTree tree;
 
+    /** For Types.isSameType. */
+    protected final Types types;
+
+    /** Create an InstanceOfNode. */
     public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
         super(types.getPrimitiveType(TypeKind.BOOLEAN));
         assert tree.getKind() == Tree.Kind.INSTANCE_OF;
         this.tree = (InstanceOfTree) tree;
         this.operand = operand;
         this.refType = refType;
+        this.types = types;
     }
 
     public Node getOperand() {
@@ -69,7 +74,8 @@ public class InstanceOfNode extends Node {
         InstanceOfNode other = (InstanceOfNode) obj;
         // TODO: TypeMirror.equals may be too restrictive.
         // Check whether Types.isSameType is the better comparison.
-        return getOperand().equals(other.getOperand()) && getRefType().equals(other.getRefType());
+        return getOperand().equals(other.getOperand())
+                && types.isSameType(getRefType(), other.getRefType());
     }
 
     @Override
