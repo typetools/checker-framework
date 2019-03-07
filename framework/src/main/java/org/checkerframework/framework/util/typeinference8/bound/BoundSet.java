@@ -306,9 +306,9 @@ public class BoundSet implements ReductionResult {
     }
 
     /**
-     * Remove constraints between proper types introduced adding an instantiation against a captured
-     * wildcard. If the captured wildcard should be recursive, then the bounds won't be satisfiable,
-     * because the captured wildcard won't be recursive. (See {@link
+     * The Checker Framework cannot create recursive wildcard type mirrors. This causes
+     * incorporation to never reach a fixed point. To avoid this, this method removes constraints
+     * that were adding because a {@code alpha} was instantiated to a proper type. (See {@link
      * Resolution#resolveWithCapture(LinkedHashSet, BoundSet, Java8InferenceContext)}}.
      */
     private void removeProblematicConstraints(Variable alpha) {
