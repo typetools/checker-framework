@@ -121,22 +121,6 @@ public class InvocationTypeInference {
         this.context = new Java8InferenceContext(factory, pathToExpression, this);
     }
 
-    /**
-     * Returns a mapping of type variable to type argument computed using the type of {@code
-     * methodInvocationTree} and the return type of {@code methodType}.
-     */
-    public static Map<TypeVariable, TypeMirror> getMappingFromReturnType(
-            ExpressionTree methodInvocationTree,
-            ExecutableType methodType,
-            ProcessingEnvironment env) {
-        TypeMirror methodCallType = TreeUtils.typeOf(methodInvocationTree);
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
-        Types types = Types.instance(javacEnv.getContext());
-        GetMapping mapping = new GetMapping(methodType.getTypeVariables(), types);
-        mapping.visit(methodType.getReturnType(), methodCallType);
-        return mapping.subs;
-    }
-
     public Java8InferenceContext getContext() {
         return context;
     }
@@ -712,6 +696,22 @@ public class InvocationTypeInference {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns a mapping of type variable to type argument computed using the type of {@code
+     * methodInvocationTree} and the return type of {@code methodType}.
+     */
+    public static Map<TypeVariable, TypeMirror> getMappingFromReturnType(
+            ExpressionTree methodInvocationTree,
+            ExecutableType methodType,
+            ProcessingEnvironment env) {
+        TypeMirror methodCallType = TreeUtils.typeOf(methodInvocationTree);
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+        Types types = Types.instance(javacEnv.getContext());
+        GetMapping mapping = new GetMapping(methodType.getTypeVariables(), types);
+        mapping.visit(methodType.getReturnType(), methodCallType);
+        return mapping.subs;
     }
 
     /**
