@@ -45,6 +45,19 @@ import org.checkerframework.javacutil.TypesUtils;
  * </ul>
  */
 public abstract class AbstractType {
+
+    public enum Kind {
+        /** {@link ProperType},a type that contains no inference variables* */
+        PROPER,
+        /** {@link Variable}, an inference variable. */
+        VARIABLE,
+        /**
+         * {@link InferenceType}, a type that contains inference variables, but is not an inference
+         * variable.
+         */
+        INFERENCE_TYPE
+    }
+
     protected final Java8InferenceContext context;
     protected final AnnotatedTypeFactory typeFactory;
 
@@ -233,7 +246,17 @@ public abstract class AbstractType {
         }
     }
 
-    public static void makeGround(AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
+    /**
+     * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.27.3">JLS
+     * section 15.27.3</a>
+     *
+     * @param type
+     * @param typeFactory
+     */
+    // TODO: This method is named make ground, but is actually implements non-wildcard
+    // parameterization
+    // as defined in https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html#jls-9.9
+    static void makeGround(AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
         Element e = type.getUnderlyingType().asElement();
         AnnotatedDeclaredType decl = typeFactory.getAnnotatedType((TypeElement) e);
         Iterator<AnnotatedTypeMirror> bounds = decl.getTypeArguments().iterator();
@@ -465,17 +488,5 @@ public abstract class AbstractType {
         } else {
             return null;
         }
-    }
-
-    public enum Kind {
-        /** {@link ProperType},a type that contains no inference variables* */
-        PROPER,
-        /** {@link Variable}, an inference variable. */
-        VARIABLE,
-        /**
-         * {@link InferenceType}, a type that contains inference variables, but is not an inference
-         * variable.
-         */
-        INFERENCE_TYPE
     }
 }
