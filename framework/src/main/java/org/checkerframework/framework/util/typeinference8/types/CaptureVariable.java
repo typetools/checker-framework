@@ -7,6 +7,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
+/** Variables created as a part of a capture bound. */
 public class CaptureVariable extends Variable {
 
     CaptureVariable(

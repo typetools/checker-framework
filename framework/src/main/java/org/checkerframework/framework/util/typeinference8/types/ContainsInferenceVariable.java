@@ -18,6 +18,7 @@ import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 
+/** Helper class for determining if a type contains an inference variable. */
 public class ContainsInferenceVariable {
 
     /** Returns true if {@code type} contains any of the type variables in {@code typeVariables}. */
