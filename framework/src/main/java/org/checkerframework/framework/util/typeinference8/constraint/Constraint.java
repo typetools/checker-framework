@@ -14,7 +14,12 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.1.2 */
+/**
+ * Constraints are between either an expression and a type, two types, or an expression and a thrown
+ * type. Defined in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.1.2">JLS section
+ * 18.1.2</a>
+ */
 public abstract class Constraint implements ReductionResult {
 
     public enum Kind {
@@ -46,7 +51,10 @@ public abstract class Constraint implements ReductionResult {
         METHOD_REF_EXCEPTION,
     }
 
-    /** T: may contain inference variables. */
+    /** @return the kind of constraint */
+    public abstract Kind getKind();
+
+    /** T, the type on the right hand side of the constraint; may contain inference variables. */
     protected AbstractType T;
 
     protected Constraint(AbstractType t) {
@@ -54,13 +62,60 @@ public abstract class Constraint implements ReductionResult {
         T = t;
     }
 
+    /** @return T, that is the type on the right hand side of the constraint */
     public AbstractType getT() {
         return T;
     }
 
+    /**
+     * Reduce this constraint what this means depends on the kind of constraint. Reduction can
+     * produce new bounds and/or new constraints.
+     *
+     * <p>Reduction is documented in <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2">JLS section
+     * 18.2</a>
+     *
+     * @param context Java8InferenceContext
+     * @return the result of reducing this constraint
+     */
     public abstract ReductionResult reduce(Java8InferenceContext context);
 
-    /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200 */
+    /** @return a collection of all inference variables mentioned by this constraint. */
+    public Collection<Variable> getInferenceVariables() {
+        return T.getInferenceVariables();
+    }
+
+    /**
+     * For lambda and method references constraints, input variables are roughly the inference
+     * variables mentioned by they function type's parameter types and return types. For conditional
+     * expressions constraints, input variables are the union of the input variables of its
+     * subexpressions. For all other constraints, no input variables exist.
+     *
+     * <p>Defined in <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
+     * section 18.5.2.2</a>
+     *
+     * @return input variables for this constraint
+     */
+    public abstract List<Variable> getInputVariables();
+
+    /**
+     * "The output variables of [expression] constraints are all inference variables mentioned by
+     * the type on the right-hand side of the constraint, T, that are not input variables."
+     *
+     * <p>As defined in <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
+     * section 18.5.2.2</a>
+     *
+     * @return output variables for this constraint
+     */
+    public abstract List<Variable> getOutputVariables();
+
+    /**
+     * Implementation of {@link #getInputVariables()} that is used both by expressions constraints
+     * and checked exception constraints
+     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200
+     */
     protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType t) {
 
         switch (tree.getKind()) {
@@ -120,6 +175,16 @@ public abstract class Constraint implements ReductionResult {
         }
     }
 
+    /**
+     * Apply the given instantiations to any type mentioned in this constraint -- meaning replace
+     * any mention of a variable in {@code instantiations} with its proper type.
+     *
+     * @param instantiations variables that have been instantiated
+     */
+    public void applyInstantiations(List<Variable> instantiations) {
+        T = T.applyInstantiations(instantiations);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -137,19 +202,5 @@ public abstract class Constraint implements ReductionResult {
     @Override
     public int hashCode() {
         return T.hashCode();
-    }
-
-    public abstract Kind getKind();
-
-    public Collection<Variable> getInferenceVariables() {
-        return T.getInferenceVariables();
-    }
-
-    public abstract List<Variable> getInputVariables();
-
-    public abstract List<Variable> getOutputVariables();
-
-    public void applyInstantiations(List<Variable> instantiations) {
-        T = T.applyInstantiations(instantiations);
     }
 }
