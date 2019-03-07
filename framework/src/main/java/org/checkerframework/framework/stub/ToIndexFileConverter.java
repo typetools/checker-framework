@@ -1,8 +1,8 @@
 package org.checkerframework.framework.stub;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
@@ -175,7 +175,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             throws IOException, DefException, ParseException {
         StubUnit iu;
         try {
-            iu = JavaParser.parseStubUnit(in);
+            iu = StaticJavaParser.parseStubUnit(in);
         } catch (ParseProblemException e) {
             iu = null;
             throw new BugInCF(

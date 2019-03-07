@@ -63,8 +63,8 @@ public class QualifierDefaults {
 
     /**
      * This field indicates whether or not a default should be applied to type vars located in the
-     * type being default. This should only ever be true when the type variable is a local variable,
-     * non-component use, i.e.
+     * type being defaulted. This should only ever be true when the type variable is a local
+     * variable, non-component use, i.e.
      *
      * <pre>{@code
      * <T> void method(@NOT_HERE T tIn) {
@@ -428,7 +428,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} that determines the
+     * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} determines the
      * appropriate scope for defaults.
      *
      * <p>For instance, if the tree is associated with a declaration (e.g., it's the use of a field,
@@ -462,6 +462,19 @@ public class QualifierDefaults {
                 // (The above probably means that we should use defaults in the
                 // scope of the declaration of the array.  Is that right?  -MDE)
 
+            case CLASS:
+                if (((ClassTree) tree).getExtendsClause() != null) {
+                    Element extendsElt =
+                            TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
+                    applyDefaultsToElement(extendsElt, type);
+                }
+                for (Tree implicitClause : ((ClassTree) tree).getImplementsClause()) {
+                    Element implementsElt = TreeUtils.elementFromTree(implicitClause);
+                    applyDefaultsToElement(implementsElt, type);
+                }
+                elt = nearestEnclosingExceptLocal(tree);
+                break;
+
             default:
                 // If no associated symbol was found, use the tree's (lexical)
                 // scope.
@@ -471,6 +484,16 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
+        applyDefaultsToElement(elt, type);
+    }
+
+    /**
+     * Applies default annotations to {@code type}.
+     *
+     * @param elt the element associated with the type
+     * @param type the type to which defaults will be applied
+     */
+    void applyDefaultsToElement(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
                         && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
