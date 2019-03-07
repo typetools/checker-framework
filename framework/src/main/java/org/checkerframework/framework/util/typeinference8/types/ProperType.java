@@ -85,6 +85,13 @@ public class ProperType extends AbstractType {
         return new ProperType(atm, type, context);
     }
 
+    /**
+     * if this is a primitive type, then the proper type corresponding to its wrapper is returned.
+     * Otherwise, this is return.
+     *
+     * @return the proper type that is the wrapper type for this type or this if no such wrapper
+     *     exists
+     */
     public ProperType boxType() {
         if (properType.getKind().isPrimitive()) {
             return new ProperType(
