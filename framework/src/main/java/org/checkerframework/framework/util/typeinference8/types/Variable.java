@@ -23,7 +23,7 @@ public class Variable extends AbstractType {
 
     /**
      * The expression for which this variable is being solved. Used to differentiate inference
-     * variables for two different invocations to the same method.
+     * variables for two different invocations of the same method.
      */
     protected final ExpressionTree invocation;
 

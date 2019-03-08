@@ -1422,6 +1422,16 @@ public final class TreeUtils {
         }
     }
 
+    /**
+     * Is the tree a reference to a constructor of a generic class whose type argument isn't
+     * specified?
+     *
+     * <p>For example, {@code HashSet::new)}.
+     *
+     * @param tree may or may not be a {@link MemberReferenceTree}
+     * @return true if tree is a reference to a constructor of a generic class whose type argument
+     *     isn't specified
+     */
     public static boolean isDiamondMemberReference(ExpressionTree tree) {
         if (tree.getKind() != Kind.MEMBER_REFERENCE) {
             return false;
