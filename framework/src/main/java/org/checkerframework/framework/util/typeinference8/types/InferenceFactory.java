@@ -63,6 +63,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** Factory that creates AbstractTypes. Also acts as a wrapper around an AnnotatedTypeFactory. */
 public class InferenceFactory {
     private final AnnotatedTypeFactory typeFactory;
     private Java8InferenceContext context;
@@ -587,6 +588,13 @@ public class InferenceFactory {
         return map;
     }
 
+    /**
+     * Returns the type of the method or constructor invocation adapted to its arguments. This type
+     * may include inference variables.
+     *
+     * @param invocation method or constructor invocation
+     * @return the type of the method or constructor invocation adapted to its arguments
+     */
     public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
         AnnotatedExecutableType executableType;
         if (invocation.getKind() == Kind.METHOD_INVOCATION) {
@@ -614,6 +622,19 @@ public class InferenceFactory {
         return targetType;
     }
 
+    /**
+     * Returns the compile-time declaration of the method reference that is the method to which the
+     * expression refers. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
+     * 15.13.1</a> for a complete definition.
+     *
+     * <p>See {@link #findFunctionType(MemberReferenceTree, AbstractType)} for an explanation of the
+     * difference between compile-time declaration type and function type of a method reference.
+     *
+     * @param memRef method reference tree
+     * @param targetType {@code memRef}'s target type
+     * @return the compile-time declaration of the method reference
+     */
     public InvocationType compileTimeDeclarationType(
             MemberReferenceTree memRef, AbstractType targetType) {
         // The type of the expression or type use, <expression>::method or <type use>::method.
@@ -668,6 +689,31 @@ public class InferenceFactory {
                 context);
     }
 
+    /**
+     * Returns the function type of the member reference when the target type is {@code targetType}.
+     *
+     * <p>The type of a member reference is a functional interface. The function type of a member
+     * reference is the type of the single abstract method declared by the functional interface. The
+     * compile-time declaration type is the type of the actual method referenced by the method
+     * reference, i.e. the method that is actually being referenced.
+     *
+     * <p>For example,
+     *
+     * <pre>{@code
+     * static class MyClass {
+     *   String field;
+     *   public static int compareByField(MyClass a, MyClass b) { ... }
+     * }
+     * Comparator<MyClass> func = MyClass::compareByField;
+     * }</pre>
+     *
+     * The function type is {@code compare​(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
+     * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+     *
+     * @param memRef method reference tree
+     * @param targetType target type of the method reference tree
+     * @return the function type of the member reference when the target type is {@code targetType}
+     */
     public InvocationType findFunctionType(MemberReferenceTree memRef, AbstractType targetType) {
         InvocationType other = compileTimeDeclarationType(memRef, targetType);
 
