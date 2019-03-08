@@ -86,8 +86,8 @@ public class ProperType extends AbstractType {
     }
 
     /**
-     * if this is a primitive type, then the proper type corresponding to its wrapper is returned.
-     * Otherwise, this is return.
+     * If this is a primitive type, then the proper type corresponding to its wrapper is returned.
+     * Otherwise, this object is return.
      *
      * @return the proper type that is the wrapper type for this type or this if no such wrapper
      *     exists
@@ -102,6 +102,13 @@ public class ProperType extends AbstractType {
         return this;
     }
 
+    /**
+     * Is {@code this} a subtype of {@code superType}?
+     *
+     * @param superType
+     * @return if {@code this} is a subtype of {@code superType}, then return {@link
+     *     ConstraintSet#TRUE}; otherwise, a false bound is returned
+     */
     public ReductionResult isSubType(ProperType superType) {
         TypeMirror subType = getJavaType();
         TypeMirror superJavaType = superType.getJavaType();
@@ -119,6 +126,13 @@ public class ProperType extends AbstractType {
         }
     }
 
+    /**
+     * Is {@code this} an unchecked subtype of {@code superType}?
+     *
+     * @param superType
+     * @return if {@code this} is an unchecked subtype of {@code superType}, then return {@link
+     *     ConstraintSet#TRUE}; otherwise, a false bound is returned
+     */
     public ReductionResult isSubTypeUnchecked(ProperType superType) {
         TypeMirror subType = getJavaType();
         TypeMirror superJavaType = superType.getJavaType();
@@ -136,6 +150,13 @@ public class ProperType extends AbstractType {
         }
     }
 
+    /**
+     * Is {@code this} assignable to {@code superType}?
+     *
+     * @param superType
+     * @return if {@code this} assignable to {@code superType}, then return {@link
+     *     ConstraintSet#TRUE}; otherwise, a false bound is returned
+     */
     public ReductionResult isAssignable(ProperType superType) {
         TypeMirror subType = getJavaType();
         TypeMirror superJavaType = superType.getJavaType();
