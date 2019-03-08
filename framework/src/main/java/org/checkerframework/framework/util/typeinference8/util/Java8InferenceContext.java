@@ -112,12 +112,20 @@ public class Java8InferenceContext {
         return captureVariableCount++;
     }
 
+    /**
+     * Adds the parameters to the list of trees that are lambda parameters.
+     *
+     * <p>There's no way to tell if a tree is a parameter of a lambda, so keep track of them.
+     *
+     * @param parameters list of lambda parameters
+     */
     public void addLambdaParms(List<? extends VariableTree> parameters) {
         for (VariableTree tree : parameters) {
             lambdaParms.add(TreeUtils.elementFromDeclaration(tree));
         }
     }
 
+    /** @return whether or not the {@code expression} is a lambda parameter */
     public boolean isLambdaParam(ExpressionTree expression) {
         Element element = TreeUtils.elementFromUse(expression);
         if (element == null || element.getKind() != ElementKind.PARAMETER) {
