@@ -232,6 +232,15 @@ public class InferenceFactory {
         return map;
     }
 
+    /**
+     * Creates capture variables for variables introduced by a capture bounds. The new variables
+     * correspond to the type parameters of {@code captureType}.
+     *
+     * @param tree invocation tree that created the capture bound
+     * @param capturedType type that should be captured
+     * @return a mapping of the type variables of {@code capturedType} to capture inference
+     *     variables
+     */
     public Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType) {
         // Don't save this theta, because there is also a noncapture theta for this tree.
         DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
@@ -273,7 +282,7 @@ public class InferenceFactory {
      *
      * @return type that path leaf is assigned to
      */
-    public static Pair<AnnotatedTypeMirror, TypeMirror> getTargetType(
+    private static Pair<AnnotatedTypeMirror, TypeMirror> getTargetType(
             AnnotatedTypeFactory factory, TreePath path, Java8InferenceContext context) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(path);
         if (assignmentContext == null) {
