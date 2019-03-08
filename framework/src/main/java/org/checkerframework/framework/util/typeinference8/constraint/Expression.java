@@ -69,7 +69,7 @@ public class Expression extends Constraint {
         } else if (TreeUtils.isStandaloneExpression(expression)) {
             AbstractType s;
             if (!context.isLambdaParam(expression)) {
-                s = context.inferenceTypeFactory.getTypeOfExpression(expression);
+                s = new ProperType(expression, context);
             } else {
                 AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
                 s = getT().create(atm, atm.getUnderlyingType());
@@ -161,7 +161,7 @@ public class Expression extends Constraint {
                     AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(qualifierExp);
                     referenceType = T.create(atm, atm.getUnderlyingType());
                 } else {
-                    referenceType = context.inferenceTypeFactory.getTypeOfExpression(qualifierExp);
+                    referenceType = new ProperType(qualifierExp, context);
                 }
                 constraintSet.add(
                         new Typing(targetReference, referenceType, Constraint.Kind.SUBTYPE));
@@ -242,7 +242,7 @@ public class Expression extends Constraint {
 
             for (int i = 0; i < gs.size(); i++) {
                 VariableTree parameter = parameters.get(i);
-                AbstractType fi = context.inferenceTypeFactory.getTypeOfVariable(parameter);
+                AbstractType fi = new ProperType(parameter, context);
                 AbstractType gi = gs.get(i);
                 constraintSet.add(new Typing(fi, gi, Constraint.Kind.TYPE_EQUALITY));
             }
@@ -329,7 +329,7 @@ public class Expression extends Constraint {
         // of F may be derived as the ground target type of the lambda expression as follows.
         List<ProperType> ps = new ArrayList<>();
         for (VariableTree paramTree : lambda.getParameters()) {
-            ps.add(context.inferenceTypeFactory.getTypeOfVariable(paramTree));
+            ps.add(new ProperType(paramTree, context));
         }
 
         // Let Q1, ..., Qk be the parameter types of the function type of the type F<alpha1, ...,

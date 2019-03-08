@@ -63,7 +63,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** Factory that creates AbstractTypes. Also acts as a wrapper around an AnnotatedTypeFactory. */
+/** Factory that creates AbstractTypes. */
 public class InferenceFactory {
     private final AnnotatedTypeFactory typeFactory;
     private Java8InferenceContext context;
@@ -741,25 +741,34 @@ public class InferenceFactory {
         return Pair.of(a.asSuper(asSuperOfA), b.asSuper(asSuperOfB));
     }
 
-    public ProperType getTypeOfExpression(ExpressionTree tree) {
-        return new ProperType(tree, context);
-    }
-
-    public ProperType getTypeOfVariable(VariableTree tree) {
-        return new ProperType(tree, context);
-    }
-
+    /**
+     * Returns the type of {@code element} using the type variable to inference variable mapping,
+     * {@code map}.
+     *
+     * @param element some element
+     * @param map type parameter to inference variables to use
+     * @return the type of {@code element}
+     */
     public AbstractType getTypeOfElement(Element element, Theta map) {
         AnnotatedTypeMirror atm = typeFactory.getAnnotatedType(element);
         return InferenceType.create(atm, element.asType(), map, context);
     }
 
+    /**
+     * Returns the type of {@code pEle} using the type variable to inference variable mapping,
+     * {@code map}.
+     *
+     * @param pEle some element
+     * @param map type parameter to inference variables to use
+     * @return the type of {@code pEle}
+     */
     public AbstractType getTypeOfBound(TypeParameterElement pEle, Theta map) {
         AnnotatedTypeVariable atm = (AnnotatedTypeVariable) typeFactory.getAnnotatedType(pEle);
         return InferenceType.create(
                 atm.getUpperBound(), ((TypeVariable) pEle.asType()).getUpperBound(), map, context);
     }
 
+    /** @return the proper type for object */
     public ProperType getObject() {
         TypeMirror objectTypeMirror =
                 TypesUtils.typeFromClass(
@@ -770,13 +779,17 @@ public class InferenceFactory {
         return new ProperType(object, objectTypeMirror, context);
     }
 
-    public ProperType lub(LinkedHashSet<ProperType> lowerBounds) {
-        if (lowerBounds.isEmpty()) {
+    /**
+     * @param properTypes types to lub
+     * @return the least upper bounds of {@code properTypes}
+     */
+    public ProperType lub(LinkedHashSet<ProperType> properTypes) {
+        if (properTypes.isEmpty()) {
             return null;
         }
         TypeMirror tiTypeMirror = null;
         AnnotatedTypeMirror ti = null;
-        for (ProperType liProperType : lowerBounds) {
+        for (ProperType liProperType : properTypes) {
             AnnotatedTypeMirror li = liProperType.getAnnotatedType();
             TypeMirror liTypeMirror = liProperType.getJavaType();
             if (ti == null) {
@@ -790,9 +803,13 @@ public class InferenceFactory {
         return new ProperType(ti, tiTypeMirror, context);
     }
 
-    public AbstractType glb(LinkedHashSet<AbstractType> lowerBounds) {
+    /**
+     * @param abstractTypes types to glb
+     * @return the greatest upper bounds of {@code abstractTypes}
+     */
+    public AbstractType glb(LinkedHashSet<AbstractType> abstractTypes) {
         AbstractType ti = null;
-        for (AbstractType liProperType : lowerBounds) {
+        for (AbstractType liProperType : abstractTypes) {
             AbstractType li = liProperType;
             if (ti == null) {
                 ti = li;
@@ -803,6 +820,11 @@ public class InferenceFactory {
         return ti;
     }
 
+    /**
+     * @param a type to glb
+     * @param b type to glb
+     * @return the greatest lower bound of {@code a} and {@code b}
+     */
     public AbstractType glb(AbstractType a, AbstractType b) {
         Type aJavaType = (Type) a.getJavaType();
         Type bJavaType = (Type) b.getJavaType();
@@ -829,6 +851,7 @@ public class InferenceFactory {
         return new ProperType(glbATM, glb, context);
     }
 
+    /** @return the proper type for RuntimeException */
     public ProperType getRuntimeException() {
         AnnotatedTypeMirror runtimeEx =
                 AnnotatedTypeMirror.createType(context.runtimeEx, typeFactory, false);
