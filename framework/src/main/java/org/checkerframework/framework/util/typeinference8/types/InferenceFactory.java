@@ -859,6 +859,15 @@ public class InferenceFactory {
         return new ProperType(runtimeEx, context.runtimeEx, context);
     }
 
+    /**
+     * Creates and returns the set of checked exception constraints for the given lambda or method
+     * reference.
+     *
+     * @param expression a lambda or method reference expression
+     * @param targetType the target type of {@code expression}
+     * @param map theta
+     * @return the set of checked exception constraints for the given lambda or method reference.
+     */
     public ConstraintSet getCheckedExceptionConstraints(
             ExpressionTree expression, AbstractType targetType, Theta map) {
         ConstraintSet constraintSet = new ConstraintSet();
@@ -926,6 +935,13 @@ public class InferenceFactory {
         return constraintSet;
     }
 
+    /**
+     * Creates a wildcard using the upper and lower bounds provided
+     *
+     * @param lowerBound a proper type or null
+     * @param upperBound an abstract type or null
+     * @return a wildcard with the provide upper and lower bounds.
+     */
     public ProperType createWildcard(ProperType lowerBound, AbstractType upperBound) {
         TypeMirror wildcard =
                 TypesUtils.createWildcard(
@@ -944,6 +960,14 @@ public class InferenceFactory {
         return new ProperType(wildcardAtm, wildcard, context);
     }
 
+    /**
+     * Substitute the type variables with the given type arguments in the
+     *
+     * @param typeVar
+     * @param typeArg
+     * @param asList
+     * @return
+     */
     public List<ProperType> getSubsTypeArgs(
             List<TypeVariable> typeVar, List<ProperType> typeArg, List<Variable> asList) {
         List<TypeMirror> javaTypeArgs = new ArrayList<>();
