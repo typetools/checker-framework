@@ -86,7 +86,7 @@ public class InferenceFactory {
      * @param context Java8InferenceContext
      * @return a mapping of the type variables of {@code methodType} to inference variables
      */
-    public Theta createTheta(
+    public Theta createThetaForInvocation(
             ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
         if (context.maps.containsKey(invocation)) {
             return context.maps.get(invocation);
@@ -133,7 +133,7 @@ public class InferenceFactory {
     }
 
     /**
-     * If a mapping, theta, for {@code invocation} doesn't exist create it by:
+     * If a mapping, theta, for {@code memRef} doesn't exist create it by:
      *
      * <p>Creates inference variables for the type parameters to {@code compileTimeDecl} for a
      * particular method reference. Initializes the bounds of the variables. Returns a mapping from
@@ -146,7 +146,7 @@ public class InferenceFactory {
      * @param context Java8InferenceContext
      * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
      */
-    public Theta createTheta(
+    public Theta createThetaForMethodReference(
             MemberReferenceTree memRef,
             InvocationType compileTimeDecl,
             Java8InferenceContext context) {
@@ -195,11 +195,26 @@ public class InferenceFactory {
         return map;
     }
 
-    public Theta createTheta(LambdaExpressionTree lambda, AbstractType t) {
+    /**
+     * If a mapping, theta, for {@code lambda} doesn't exist create it by:
+     *
+     * <p>Creates inference variables for the type parameters to the functional inference of the
+     * lambda. Initializes the bounds of the variables. Returns a mapping from type variables to
+     * newly created variables.
+     *
+     * <p>Otherwise, returns the previously created mapping.
+     *
+     * @param lambda lambda expression tree
+     * @param functionalInterface functional interface of the lambda
+     * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
+     */
+    public Theta createThetaForLambda(
+            LambdaExpressionTree lambda, AbstractType functionalInterface) {
         if (context.maps.containsKey(lambda)) {
             return context.maps.get(lambda);
         }
-        TypeElement typeEle = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
+        TypeElement typeEle =
+                (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
         AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
 
         Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();

@@ -135,7 +135,9 @@ public class Expression extends Constraint {
 
         InvocationType methodType =
                 context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
-        Theta map = context.inferenceTypeFactory.createTheta(expressionTree, methodType, context);
+        Theta map =
+                context.inferenceTypeFactory.createThetaForInvocation(
+                        expressionTree, methodType, context);
         BoundSet b2 = context.inference.createB2(methodType, args, map);
         return context.inference.createB3(b2, expressionTree, methodType, T, map);
     }
@@ -195,7 +197,9 @@ public class Expression extends Constraint {
         // determine the method reference's invocation type when targeting the return type of the
         // function type, as defined in 18.5.2. B3 may contain new inference variables, as well as
         // dependencies between these new variables and the inference variables in T.
-        Theta map = context.inferenceTypeFactory.createTheta(memRef, compileTimeDecl, context);
+        Theta map =
+                context.inferenceTypeFactory.createThetaForMethodReference(
+                        memRef, compileTimeDecl, context);
         AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
         if ((TreeUtils.isDiamondMemberReference(memRef)
                         || (memRef.getTypeArguments() == null
@@ -329,9 +333,8 @@ public class Expression extends Constraint {
         }
 
         // Let Q1, ..., Qk be the parameter types of the function type of the type F<alpha1, ...,
-        // alpham>,
-        // where alpha1, ..., alpham are fresh inference variables.
-        Theta map = context.inferenceTypeFactory.createTheta(lambda, t);
+        // alpham>, where alpha1, ..., alpham are fresh inference variables.
+        Theta map = context.inferenceTypeFactory.createThetaForLambda(lambda, t);
         List<Variable> alphas = new ArrayList<>(map.values());
         AbstractType tprime =
                 InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
