@@ -106,6 +106,13 @@ public class Resolution {
         this.dependencies = dependencies;
     }
 
+    /**
+     * Resolve all the variables in {@code unresolvedVars}.
+     *
+     * @param boundSet current bound set
+     * @param unresolvedVars set of unresolved variables that includes all dependencies
+     * @return the bounds set with the resolved bounds.
+     */
     private BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
         List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
 
@@ -124,6 +131,14 @@ public class Resolution {
         return boundSet;
     }
 
+    /**
+     * Returns the smallest set of unresolved variables that includes any variable on which a
+     * variable in the set depends.
+     *
+     * @param resolvedVars variables that have been resolved
+     * @param unresolvedVars variables that have not been resolved
+     * @return the smallest set of unresolved variable
+     */
     private LinkedHashSet<Variable> getSmallestDependecySet(
             List<Variable> resolvedVars, Queue<Variable> unresolvedVars) {
         LinkedHashSet<Variable> smallestDependencySet = null;
@@ -147,6 +162,14 @@ public class Resolution {
         return smallestDependencySet;
     }
 
+    /**
+     * Resolves {@code as}
+     *
+     * @param as the smallest set of unresolved variables that includes all any variable on which a
+     *     variable in the set depends.
+     * @param boundSet current bounds set
+     * @return current bound set
+     */
     private BoundSet resolveSmallestSet(LinkedHashSet<Variable> as, BoundSet boundSet) {
         assert !boundSet.containsFalse();
 
@@ -182,8 +205,9 @@ public class Resolution {
         return resolvedBounds;
     }
 
+    // TODO: I'm not sure what's going on with this method, I need to investigate it.
     private void fixes(List<Variable> variables, BoundSet boundSet) {
-        Variable smallV = null;
+        Variable smallV;
         do {
             smallV = null;
             int smallest = Integer.MAX_VALUE;
@@ -191,6 +215,7 @@ public class Resolution {
                 v.getBounds().applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
                 if (v.getBounds().hasInstantiation()) {
                     variables.remove(v);
+                    // TODO: Why break rather than searching all variables?
                     break;
                 }
                 if (!v.isCaptureVariable()) {
@@ -223,6 +248,7 @@ public class Resolution {
         return boundSet;
     }
 
+    /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-A */
     private void resolveNoCapture(Variable ai) {
         assert !ai.getBounds().hasInstantiation();
         LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
