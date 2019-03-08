@@ -64,217 +64,14 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class InferenceFactory {
-    private Java8InferenceContext context;
     private final AnnotatedTypeFactory typeFactory;
+    private Java8InferenceContext context;
 
     public InferenceFactory(Java8InferenceContext context) {
         this.context = context;
         this.typeFactory = context.typeFactory;
     }
 
-    /**
-     * If a mapping, theta, for {@code invocation} doesn't exist create it by:
-     *
-     * <p>Creates inference variables for the type parameters to {@code methodType} for a particular
-     * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
-     * variables to newly created variables.
-     *
-     * <p>Otherwise, returns the previously created mapping.
-     *
-     * @param invocation method or constructor invocation
-     * @param methodType type of generic method
-     * @param context Java8InferenceContext
-     * @return a mapping of the type variables of {@code methodType} to inference variables
-     */
-    public Theta createThetaForInvocation(
-            ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
-        if (context.maps.containsKey(invocation)) {
-            return context.maps.get(invocation);
-        }
-        Theta map = new Theta();
-
-        // Create inference variables for the type parameters to methodType
-        Iterator<? extends AnnotatedTypeVariable> iter1 =
-                methodType.getAnnotatedTypeVariables().iterator();
-        for (TypeVariable pl : methodType.getTypeVariables()) {
-            Variable al = new Variable(iter1.next(), pl, invocation, context, map);
-            map.put(pl, al);
-        }
-        if (TreeUtils.isDiamondTree(invocation)) {
-            // If the invocation is a diamondTree, such as new List<>(...), then create variables
-            // for the class type parameters, too.
-            Element classEle =
-                    ElementUtils.enclosingClass(
-                            TreeUtils.elementFromUse((NewClassTree) invocation));
-            DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
-
-            AnnotatedDeclaredType classType =
-                    (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classEle);
-
-            Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
-
-            for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
-                if (typeMirror.getKind() != TypeKind.TYPEVAR) {
-                    throw new BugInCF("Expected type variable, found: %s", typeMirror);
-                }
-                TypeVariable pl = (TypeVariable) typeMirror;
-                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-                Variable al = new Variable(atv, pl, invocation, context, map);
-                map.put(pl, al);
-            }
-        }
-
-        // Initialize variable bounds.
-        for (Variable v : map.values()) {
-            v.initialBounds(map);
-        }
-        context.maps.put(invocation, map);
-        return map;
-    }
-
-    /**
-     * If a mapping, theta, for {@code memRef} doesn't exist create it by:
-     *
-     * <p>Creates inference variables for the type parameters to {@code compileTimeDecl} for a
-     * particular method reference. Initializes the bounds of the variables. Returns a mapping from
-     * type variables to newly created variables.
-     *
-     * <p>Otherwise, returns the previously created mapping.
-     *
-     * @param memRef method reference tree
-     * @param compileTimeDecl type of generic method
-     * @param context Java8InferenceContext
-     * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
-     */
-    public Theta createThetaForMethodReference(
-            MemberReferenceTree memRef,
-            InvocationType compileTimeDecl,
-            Java8InferenceContext context) {
-        if (context.maps.containsKey(memRef)) {
-            return context.maps.get(memRef);
-        }
-
-        Theta map = new Theta();
-        if (TreeUtils.isDiamondMemberReference(memRef)) {
-            // If memRef is a constructor of a generic class whose type argument isn't specified
-            // such as HashSet::new,
-            // then add variables for the type arguments to the class.
-            TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
-            TypeElement classEle = (TypeElement) ((Type) type).asElement();
-            DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
-
-            AnnotatedDeclaredType classType =
-                    (AnnotatedDeclaredType)
-                            typeFactory.getAnnotatedType(classTypeMirror.asElement());
-
-            Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
-            for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
-                if (typeMirror.getKind() != TypeKind.TYPEVAR) {
-                    throw new BugInCF("Expected type variable, found: %s", typeMirror);
-                }
-                TypeVariable pl = (TypeVariable) typeMirror;
-                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-                Variable al = new Variable(atv, pl, memRef, context, map);
-                map.put(pl, al);
-            }
-        }
-
-        // Create inference variables for the type parameters to compileTypeDecl
-        if (memRef.getTypeArguments() == null && compileTimeDecl.hasTypeVariables()) {
-            Iterator<? extends AnnotatedTypeVariable> iter1 =
-                    compileTimeDecl.getAnnotatedTypeVariables().iterator();
-            for (TypeVariable pl : compileTimeDecl.getTypeVariables()) {
-                Variable al = new Variable(iter1.next(), pl, memRef, context, map);
-                map.put(pl, al);
-            }
-        }
-        for (Variable v : map.values()) {
-            v.initialBounds(map);
-        }
-        context.maps.put(memRef, map);
-        return map;
-    }
-
-    /**
-     * If a mapping, theta, for {@code lambda} doesn't exist create it by:
-     *
-     * <p>Creates inference variables for the type parameters to the functional inference of the
-     * lambda. Initializes the bounds of the variables. Returns a mapping from type variables to
-     * newly created variables.
-     *
-     * <p>Otherwise, returns the previously created mapping.
-     *
-     * @param lambda lambda expression tree
-     * @param functionalInterface functional interface of the lambda
-     * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
-     */
-    public Theta createThetaForLambda(
-            LambdaExpressionTree lambda, AbstractType functionalInterface) {
-        if (context.maps.containsKey(lambda)) {
-            return context.maps.get(lambda);
-        }
-        TypeElement typeEle =
-                (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
-        AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
-
-        Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
-        Theta map = new Theta();
-        for (TypeParameterElement param : typeEle.getTypeParameters()) {
-            TypeVariable typeVar = (TypeVariable) param.asType();
-            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-            Variable ai = new Variable(atv, typeVar, lambda, context, map);
-            map.put(typeVar, ai);
-        }
-        for (Variable v : map.values()) {
-            v.initialBounds(map);
-        }
-        context.maps.put(lambda, map);
-        return map;
-    }
-
-    /**
-     * Creates capture variables for variables introduced by a capture bounds. The new variables
-     * correspond to the type parameters of {@code captureType}.
-     *
-     * @param tree invocation tree that created the capture bound
-     * @param capturedType type that should be captured
-     * @return a mapping of the type variables of {@code capturedType} to capture inference
-     *     variables
-     */
-    public Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType) {
-        // Don't save this theta, because there is also a noncapture theta for this tree.
-        DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
-        TypeElement ele = TypesUtils.getTypeElement(underlying);
-        AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(ele);
-        Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
-        Theta map = new Theta();
-        for (TypeParameterElement pEle : ele.getTypeParameters()) {
-            TypeVariable pl = (TypeVariable) pEle.asType();
-            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-            CaptureVariable al = new CaptureVariable(atv, pl, tree, context, map);
-            map.put(pl, al);
-        }
-        for (Variable v : map.values()) {
-            v.initialBounds(map);
-        }
-        return map;
-    }
-
-    public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
-        AnnotatedExecutableType executableType;
-        if (invocation.getKind() == Kind.METHOD_INVOCATION) {
-            executableType =
-                    typeFactory.methodFromUse((MethodInvocationTree) invocation).executableType;
-        } else {
-            executableType =
-                    typeFactory.constructorFromUse((NewClassTree) invocation).executableType;
-        }
-        return new InvocationType(
-                executableType,
-                getTypeOfMethodAdaptedToUse(invocation, context),
-                invocation,
-                context);
-    }
     /**
      * Returns the type that the leaf of path is assigned to, if it is within an assignment context.
      * Returns the type that the method invocation at the leaf is assigned to. If the result is a
@@ -580,6 +377,230 @@ public class InferenceFactory {
         }
         javax.lang.model.util.Types types = context.env.getTypeUtils();
         return (ExecutableType) types.asMemberOf(receiverType, ele);
+    }
+
+    public static TypeMirror lub(
+            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
+        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
+        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        Types types = Types.instance(javacEnv.getContext());
+
+        return types.lub(t1, t2);
+    }
+
+    public static TypeMirror glb(
+            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
+        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
+        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        Types types = Types.instance(javacEnv.getContext());
+
+        return types.glb(t1, t2);
+    }
+
+    /**
+     * If a mapping, theta, for {@code invocation} doesn't exist create it by:
+     *
+     * <p>Creates inference variables for the type parameters to {@code methodType} for a particular
+     * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
+     * variables to newly created variables.
+     *
+     * <p>Otherwise, returns the previously created mapping.
+     *
+     * @param invocation method or constructor invocation
+     * @param methodType type of generic method
+     * @param context Java8InferenceContext
+     * @return a mapping of the type variables of {@code methodType} to inference variables
+     */
+    public Theta createThetaForInvocation(
+            ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
+        if (context.maps.containsKey(invocation)) {
+            return context.maps.get(invocation);
+        }
+        Theta map = new Theta();
+
+        // Create inference variables for the type parameters to methodType
+        Iterator<? extends AnnotatedTypeVariable> iter1 =
+                methodType.getAnnotatedTypeVariables().iterator();
+        for (TypeVariable pl : methodType.getTypeVariables()) {
+            Variable al = new Variable(iter1.next(), pl, invocation, context, map);
+            map.put(pl, al);
+        }
+        if (TreeUtils.isDiamondTree(invocation)) {
+            // If the invocation is a diamondTree, such as new List<>(...), then create variables
+            // for the class type parameters, too.
+            Element classEle =
+                    ElementUtils.enclosingClass(
+                            TreeUtils.elementFromUse((NewClassTree) invocation));
+            DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
+
+            AnnotatedDeclaredType classType =
+                    (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classEle);
+
+            Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
+
+            for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
+                if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+                    throw new BugInCF("Expected type variable, found: %s", typeMirror);
+                }
+                TypeVariable pl = (TypeVariable) typeMirror;
+                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+                Variable al = new Variable(atv, pl, invocation, context, map);
+                map.put(pl, al);
+            }
+        }
+
+        // Initialize variable bounds.
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        context.maps.put(invocation, map);
+        return map;
+    }
+
+    /**
+     * If a mapping, theta, for {@code memRef} doesn't exist create it by:
+     *
+     * <p>Creates inference variables for the type parameters to {@code compileTimeDecl} for a
+     * particular method reference. Initializes the bounds of the variables. Returns a mapping from
+     * type variables to newly created variables.
+     *
+     * <p>Otherwise, returns the previously created mapping.
+     *
+     * @param memRef method reference tree
+     * @param compileTimeDecl type of generic method
+     * @param context Java8InferenceContext
+     * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
+     */
+    public Theta createThetaForMethodReference(
+            MemberReferenceTree memRef,
+            InvocationType compileTimeDecl,
+            Java8InferenceContext context) {
+        if (context.maps.containsKey(memRef)) {
+            return context.maps.get(memRef);
+        }
+
+        Theta map = new Theta();
+        if (TreeUtils.isDiamondMemberReference(memRef)) {
+            // If memRef is a constructor of a generic class whose type argument isn't specified
+            // such as HashSet::new,
+            // then add variables for the type arguments to the class.
+            TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
+            TypeElement classEle = (TypeElement) ((Type) type).asElement();
+            DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
+
+            AnnotatedDeclaredType classType =
+                    (AnnotatedDeclaredType)
+                            typeFactory.getAnnotatedType(classTypeMirror.asElement());
+
+            Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
+            for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
+                if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+                    throw new BugInCF("Expected type variable, found: %s", typeMirror);
+                }
+                TypeVariable pl = (TypeVariable) typeMirror;
+                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+                Variable al = new Variable(atv, pl, memRef, context, map);
+                map.put(pl, al);
+            }
+        }
+
+        // Create inference variables for the type parameters to compileTypeDecl
+        if (memRef.getTypeArguments() == null && compileTimeDecl.hasTypeVariables()) {
+            Iterator<? extends AnnotatedTypeVariable> iter1 =
+                    compileTimeDecl.getAnnotatedTypeVariables().iterator();
+            for (TypeVariable pl : compileTimeDecl.getTypeVariables()) {
+                Variable al = new Variable(iter1.next(), pl, memRef, context, map);
+                map.put(pl, al);
+            }
+        }
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        context.maps.put(memRef, map);
+        return map;
+    }
+
+    /**
+     * If a mapping, theta, for {@code lambda} doesn't exist create it by:
+     *
+     * <p>Creates inference variables for the type parameters to the functional inference of the
+     * lambda. Initializes the bounds of the variables. Returns a mapping from type variables to
+     * newly created variables.
+     *
+     * <p>Otherwise, returns the previously created mapping.
+     *
+     * @param lambda lambda expression tree
+     * @param functionalInterface functional interface of the lambda
+     * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
+     */
+    public Theta createThetaForLambda(
+            LambdaExpressionTree lambda, AbstractType functionalInterface) {
+        if (context.maps.containsKey(lambda)) {
+            return context.maps.get(lambda);
+        }
+        TypeElement typeEle =
+                (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
+        AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
+
+        Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
+        Theta map = new Theta();
+        for (TypeParameterElement param : typeEle.getTypeParameters()) {
+            TypeVariable typeVar = (TypeVariable) param.asType();
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+            Variable ai = new Variable(atv, typeVar, lambda, context, map);
+            map.put(typeVar, ai);
+        }
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        context.maps.put(lambda, map);
+        return map;
+    }
+
+    /**
+     * Creates capture variables for variables introduced by a capture bounds. The new variables
+     * correspond to the type parameters of {@code captureType}.
+     *
+     * @param tree invocation tree that created the capture bound
+     * @param capturedType type that should be captured
+     * @return a mapping of the type variables of {@code capturedType} to capture inference
+     *     variables
+     */
+    public Theta createThetaForCapture(ExpressionTree tree, AbstractType capturedType) {
+        // Don't save this theta, because there is also a noncapture theta for this tree.
+        DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
+        TypeElement ele = TypesUtils.getTypeElement(underlying);
+        AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(ele);
+        Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
+        Theta map = new Theta();
+        for (TypeParameterElement pEle : ele.getTypeParameters()) {
+            TypeVariable pl = (TypeVariable) pEle.asType();
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+            CaptureVariable al = new CaptureVariable(atv, pl, tree, context, map);
+            map.put(pl, al);
+        }
+        for (Variable v : map.values()) {
+            v.initialBounds(map);
+        }
+        return map;
+    }
+
+    public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
+        AnnotatedExecutableType executableType;
+        if (invocation.getKind() == Kind.METHOD_INVOCATION) {
+            executableType =
+                    typeFactory.methodFromUse((MethodInvocationTree) invocation).executableType;
+        } else {
+            executableType =
+                    typeFactory.constructorFromUse((NewClassTree) invocation).executableType;
+        }
+        return new InvocationType(
+                executableType,
+                getTypeOfMethodAdaptedToUse(invocation, context),
+                invocation,
+                context);
     }
 
     public ProperType getTargetType() {
@@ -908,25 +929,5 @@ public class InferenceFactory {
             subsTypeArg.add(new ProperType(subs, iter.next(), context));
         }
         return subsTypeArg;
-    }
-
-    public static TypeMirror lub(
-            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
-        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
-        Types types = Types.instance(javacEnv.getContext());
-
-        return types.lub(t1, t2);
-    }
-
-    public static TypeMirror glb(
-            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
-        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
-        Types types = Types.instance(javacEnv.getContext());
-
-        return types.glb(t1, t2);
     }
 }
