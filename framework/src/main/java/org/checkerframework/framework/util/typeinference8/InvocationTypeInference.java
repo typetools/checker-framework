@@ -142,9 +142,14 @@ public class InvocationTypeInference {
             result = inferInternal(invocation, invocationType);
         } catch (FalseBoundException ex) {
             if (ex.isAnnotatedTypeFailed()) {
+                // This error indicates that type inference failed because constraint between
+                // annotated types could not be satisfied.
+                // In other words, the invocation does not type check.
+
+                // TODO: Add more detail to the error message to indicate which bounds/constraints
+                // could not be stisfied so that the user can figure out how to correct their code.
                 checker.report(Result.failure("type.inference.failed"), invocation);
             } else {
-                // Catch any exception so all crashes in a compilation unit are reported.
                 logException(invocation, ex);
             }
             return null;
@@ -556,7 +561,10 @@ public class InvocationTypeInference {
         return current;
     }
 
-    /** Convert the exceptions into a checker error and report it. */
+    /**
+     * Convert the exceptions into a checker error and report it. Don't throw the exceptions so that
+     * the checker continues checking. Eventually this method should throw the exception.
+     */
     private void logException(ExpressionTree methodInvocation, Exception ex) {
         if (ex instanceof ProperType.CantCompute) {
             return;
@@ -571,7 +579,7 @@ public class InvocationTypeInference {
     }
 
     /** Format a list of {@link StackTraceElement}s to be printed out as an error message. */
-    protected String formatStackTrace(StackTraceElement[] stackTrace) {
+    private String formatStackTrace(StackTraceElement[] stackTrace) {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
         if (stackTrace.length == 0) {
@@ -702,7 +710,7 @@ public class InvocationTypeInference {
      * Returns a mapping of type variable to type argument computed using the type of {@code
      * methodInvocationTree} and the return type of {@code methodType}.
      */
-    public static Map<TypeVariable, TypeMirror> getMappingFromReturnType(
+    private static Map<TypeVariable, TypeMirror> getMappingFromReturnType(
             ExpressionTree methodInvocationTree,
             ExecutableType methodType,
             ProcessingEnvironment env) {
@@ -724,7 +732,7 @@ public class InvocationTypeInference {
         final List<? extends TypeVariable> typeVariables;
         final Types types;
 
-        public GetMapping(List<? extends TypeVariable> typeVariables, Types types) {
+        private GetMapping(List<? extends TypeVariable> typeVariables, Types types) {
             this.typeVariables = typeVariables;
             this.types = types;
         }
