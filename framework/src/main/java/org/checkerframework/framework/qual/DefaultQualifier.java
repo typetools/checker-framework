@@ -6,6 +6,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.annotation.Repeatable;
 
 /**
  * Applied to a declaration of a package, type, method, variable, etc., specifies that the given
@@ -38,6 +39,7 @@ import java.lang.annotation.Target;
     ElementType.LOCAL_VARIABLE,
     ElementType.PARAMETER
 })
+@Repeatable(DefaultQualifiers.class)
 public @interface DefaultQualifier {
 
     /**
