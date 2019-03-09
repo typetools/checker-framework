@@ -364,7 +364,7 @@ public class NullnessAnnotatedTypeFactory
 
         return new ListTreeAnnotator(
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
-                new NullnessPropagationAnnotator(this),
+                new NullnessPropagationTreeAnnotator(this),
                 implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
@@ -376,9 +376,9 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
-    protected static class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+    protected static class NullnessPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
-        public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+        public NullnessPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
@@ -468,6 +468,7 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            System.out.printf("NullnessTreeAnnotator.visitNewArray %s%n  type =  %s%n", node, type);
             // The most precise element type for `new Object[] {null}` is @FBCBottom, but
             // the most useful element type is @Initialized (which is also accurate).
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;

@@ -1453,9 +1453,16 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
+        System.out.printf("addComputedTypeAnnotations(%s)%n", tree, tree.hashCode());
+
+        System.out.printf(" aCTA start: %s for %s%n", type, tree);
+        System.out.printf(" treeAnnotator=%s%n", treeAnnotator);
         treeAnnotator.visit(tree, type);
+        System.out.printf(" aCTA after treeAnnotator: %s for %s%n", type, tree);
         typeAnnotator.visit(type, null);
+        System.out.printf(" aCTA after typeAnnotator: %s for %s%n", type, tree);
         defaults.annotate(tree, type);
+        System.out.printf(" aCTA after defaults: %s for %s%n", type, tree);
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
@@ -1464,6 +1471,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 applyInferredAnnotations(type, as);
             }
         }
+
+        System.out.printf(" aCTA after inference: %s %s%n", type, tree);
     }
 
     /**
