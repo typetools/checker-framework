@@ -6,6 +6,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.annotation.Repeatable;
 
 /**
  * A conditional postcondition annotation to indicate that a method ensures that certain expressions
@@ -37,6 +38,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @InheritedAnnotation
+@Repeatable(EnsuresQualifiersIf.class)
 public @interface EnsuresQualifierIf {
     /**
      * The Java expressions for which the qualifier holds if the method terminates with return value
