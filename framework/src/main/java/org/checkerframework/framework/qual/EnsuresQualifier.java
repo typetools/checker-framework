@@ -6,6 +6,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.annotation.Repeatable;
 
 /**
  * A postcondition annotation to indicate that a method ensures certain expressions to have a
@@ -34,6 +35,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
+@Repeatable(EnsuresQualifiers.class)
 public @interface EnsuresQualifier {
     /**
      * The Java expressions for which the qualifier holds after successful method termination.
