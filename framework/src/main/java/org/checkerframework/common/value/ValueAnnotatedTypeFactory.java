@@ -1145,13 +1145,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =
                                 componentType.getAnnotation(ArrayLenRange.class);
+                        Range range;
                         if (arrayLenRangeAnno != null) {
-                            Range range = getRange(arrayLenRangeAnno);
-                            if (rolv != null) {
-                                rolv.add(range);
-                            } else {
-                                arrayLenOfDimensions.add(new RangeOrListOfValues(range));
-                            }
+                            range = getRange(arrayLenRangeAnno);
+                        } else {
+                            range = Range.EVERYTHING;
+                        }
+                        if (rolv != null) {
+                            rolv.add(range);
+                        } else {
+                            arrayLenOfDimensions.add(new RangeOrListOfValues(range));
                         }
                     }
 
