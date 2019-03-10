@@ -1,6 +1,6 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -79,6 +79,6 @@ public abstract class TUConstraint {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(this.getClass(), typeVariable, relatedType);
+        return Objects.hash(this.getClass(), typeVariable, relatedType);
     }
 }
