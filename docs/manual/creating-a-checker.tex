@@ -1839,9 +1839,8 @@ refinement, you can create a graphical representation of the CFG.
 Typical use is:
 
 \begin{Verbatim}
-javac -processor myProcessor -Aflowdotdir=someDirectory MyClass.java
-cd someDirectory
-dot -Tpdf -o MyClass.pdf MyClass.dot
+javac -processor myProcessor -Aflowdotdir=. MyClass.java
+for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
 \noindent

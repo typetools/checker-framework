@@ -4,9 +4,9 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for exception throws:
@@ -56,7 +56,7 @@ public class ThrowNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(ThrowNode.class, expression);
+        return Objects.hash(ThrowNode.class, expression);
     }
 
     @Override

@@ -117,13 +117,61 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     See <a href="https://github.com/typetools/annotated-libraries/blob/master/README.md">the README</a> for instructions.
     Check that all tests pass (when using the <code>typetools/master</code> branch).
   </li>
-  <li> Update the Checker Framework version in <code>checker-framework/build.gradle</code>,
-    in the <code>allprojects</code> block.
-    (The AFU version is updated as part of the release scripts.)
-  </li>
-  <li> Update AFU and Checker Framework change logs by following the instructions at <a href="#content_guidelines">content guidelines</a>.
-    Commit and push these changes to typetools/master.
-  </li>
+  <li>Update the Checker Framework source code:
+    <ul>
+      <li>
+	Update the list of contributors by running
+	<code>make contributors.tex</code>
+	in <code>checker-framework/docs/manual/</code>.  Double-check the edits
+	with <code>git diff</code>; update file <code>contributors.sed</code> if
+	any customizations are necessary.
+      </li>
+      <li>
+	Update AFU and Checker Framework change logs by following the instructions
+	at <a href="#content_guidelines">content guidelines</a>.
+      </li>
+      <li> Update the Checker Framework version number
+	in <code>checker-framework/build.gradle</code>,
+	in the <code>allprojects</code> block.
+	(The AFU version is updated as part of the release scripts.)
+
+	<p>
+	Update the minor version if there are any incompatibilities with the previous version.
+	This includes incompatibilities for people who are maintaining a checker,
+	which happens if the signature changes for any method in these classes:
+	</p>
+<!-- Add other classes to this list if relevant. -->
+<pre>
+AnnotatedTypeFactory
+BaseAnnotatedTypeFactory
+GenericAnnotatedTypeFactory
+CFTransfer
+CFAbstractTransfer
+CFAbstractAnalysis
+CFAnalysis
+CFAbstractStore
+CFStore
+CFAbstractValue
+CFValue
+BaseTypeVisitor
+BaseTypeChecker
+SourceChecker
+MultigraphQualifierHierarchy
+AbstractQualifierPolymorphism
+AnnotationUtils
+TreeAnnotator
+</pre>
+        <p>
+        (TODO: Write a command that diffs these classes between the previous and current release.)
+	</p>
+        <p>
+	A rule of thumb is that any framework change that requires changes to more than one typechecker should be at least a minor version bump.
+	</p>
+      </li>
+      <li>
+	Commit and push these changes to typetools/master.
+      </li>
+    </ul>
   <li>
       <strong>Log into Buffalo</strong><br/>
       <code>ssh $USER@buffalo.cs.washington.edu<br/></code>

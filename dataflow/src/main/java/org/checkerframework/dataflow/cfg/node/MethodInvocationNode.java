@@ -6,8 +6,8 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -105,7 +105,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(target, arguments);
+        return Objects.hash(target, arguments);
     }
 
     @Override

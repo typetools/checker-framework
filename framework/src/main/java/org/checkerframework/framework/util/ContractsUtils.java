@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -130,7 +130,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(expression, annotation, kind);
+            return Objects.hash(expression, annotation, kind);
         }
     }
 
@@ -222,7 +222,7 @@ public class ContractsUtils {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(super.hashCode(), annoResult);
+            return Objects.hash(super.hashCode(), annoResult);
         }
     }
 
@@ -308,7 +308,7 @@ public class ContractsUtils {
         if (factory.isSupportedQualifier(anno)) {
             return anno;
         } else {
-            AnnotationMirror aliasedAnno = factory.aliasedAnnotation(anno);
+            AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
             if (factory.isSupportedQualifier(aliasedAnno)) {
                 return aliasedAnno;
             } else {

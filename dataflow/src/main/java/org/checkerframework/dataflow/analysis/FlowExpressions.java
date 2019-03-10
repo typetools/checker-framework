@@ -34,7 +34,6 @@ import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
@@ -538,7 +537,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(getField(), getReceiver());
+            return Objects.hash(getField(), getReceiver());
         }
 
         @Override
@@ -595,7 +594,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(0);
+            return 0;
         }
 
         @Override
@@ -647,7 +646,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(typeString);
+            return Objects.hash(typeString);
         }
 
         @Override
@@ -750,7 +749,7 @@ public class FlowExpressions {
         @Override
         public int hashCode() {
             VarSymbol vs = (VarSymbol) element;
-            return HashCodeUtils.hash(
+            return Objects.hash(
                     vs.name.toString(),
                     TypeAnnotationUtils.unannotatedType(vs.type).toString(),
                     vs.owner.toString());
@@ -834,7 +833,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(value, type.toString());
+            return Objects.hash(value, type.toString());
         }
 
         @Override
@@ -971,7 +970,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(method, receiver, parameters);
+            return Objects.hash(method, receiver, parameters);
         }
 
         @Override
@@ -1073,7 +1072,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(receiver, index);
+            return Objects.hash(receiver, index);
         }
 
         @Override
@@ -1129,7 +1128,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(dimensions, initializers, getType().toString());
+            return Objects.hash(dimensions, initializers, getType().toString());
         }
 
         @Override

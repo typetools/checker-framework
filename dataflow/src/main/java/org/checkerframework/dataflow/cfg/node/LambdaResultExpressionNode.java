@@ -3,9 +3,9 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.ExpressionTree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** A node for the single expression body of a single expression lambda. */
@@ -69,7 +69,7 @@ public class LambdaResultExpressionNode extends Node {
     public int hashCode() {
         // No need to incorporate tree, since in a well-formed LambdaResultExpressionNode, result
         // will be the same only when tree is the same (this is similar to ReturnNode).
-        return HashCodeUtils.hash(LambdaResultExpressionNode.class, result);
+        return Objects.hash(LambdaResultExpressionNode.class, result);
     }
 
     @Override

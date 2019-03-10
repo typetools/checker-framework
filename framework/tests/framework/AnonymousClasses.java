@@ -12,6 +12,7 @@ public class AnonymousClasses {
             @Odd Object o = this; // error
         };
 
+        // :: warning: (cast.unsafe.constructor.invocation)
         new @Odd Object() {
             @Odd Object o = this;
         };

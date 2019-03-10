@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -111,7 +111,7 @@ public class Range {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(from, to);
+        return Objects.hash(from, to);
     }
 
     /** Return true if this range contains every {@code long} value. */
@@ -1012,7 +1012,7 @@ public class Range {
                             .subtract(BigInteger.valueOf(from))
                             .add(BigInteger.ONE)
                             .compareTo(BigInteger.valueOf(value))
-                    == 1;
+                    > 0;
         }
     }
 

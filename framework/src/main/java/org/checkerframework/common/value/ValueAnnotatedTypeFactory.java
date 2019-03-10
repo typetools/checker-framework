@@ -136,13 +136,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
-        addAliasedAnnotation(
-                "android.support.annotation.IntRange",
-                AnnotationBuilder.fromClass(elements, IntRange.class),
-                true);
+        addAliasedAnnotation("android.support.annotation.IntRange", IntRange.class, true);
 
         // The actual ArrayLenRange is created by
-        // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
+        // {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
@@ -192,13 +189,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
+    public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
             int from = getMinLenValue(anno);
             return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
         }
 
-        return super.aliasedAnnotation(anno);
+        return super.canonicalAnnotation(anno);
     }
 
     @Override
@@ -305,10 +302,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * number of possible values of the enum.
      */
     @Override
-    public ParameterizedMethodType methodFromUse(
+    public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
-        ParameterizedMethodType superPair = super.methodFromUse(tree, methodElt, receiverType);
+        ParameterizedExecutableType superPair = super.methodFromUse(tree, methodElt, receiverType);
         if (ElementUtils.matchesElement(methodElt, "values")
                 && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
                 && ElementUtils.isStatic(methodElt)) {
@@ -320,7 +317,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             AnnotationMirror am = createArrayLenAnnotation(Collections.singletonList(count));
-            superPair.methodType.getReturnType().replaceAnnotation(am);
+            superPair.executableType.getReturnType().replaceAnnotation(am);
         }
         return superPair;
     }
@@ -2119,7 +2116,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
-     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
      * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     private Integer getSpecifiedMinLenValue(AnnotationMirror annotation) {
@@ -2145,7 +2142,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns 0 if there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
-     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
      * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public int getMinLenValue(AnnotationMirror annotation) {

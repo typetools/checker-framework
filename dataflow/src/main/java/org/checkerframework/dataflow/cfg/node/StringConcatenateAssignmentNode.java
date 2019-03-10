@@ -4,7 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -70,6 +70,6 @@ public class StringConcatenateAssignmentNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+        return Objects.hash(getLeftOperand(), getRightOperand());
     }
 }

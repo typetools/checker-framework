@@ -3,10 +3,10 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * MarkerNodes are no-op Nodes used for debugging information. They can hold a Tree and a message,
@@ -63,7 +63,7 @@ public class MarkerNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(tree, getMessage());
+        return Objects.hash(tree, getMessage());
     }
 
     @Override

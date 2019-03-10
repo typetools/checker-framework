@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * A node for the bitwise complement operation:
@@ -39,6 +39,6 @@ public class BitwiseComplementNode extends UnaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(BitwiseComplementNode.class, getOperand());
+        return Objects.hash(BitwiseComplementNode.class, getOperand());
     }
 }

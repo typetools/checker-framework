@@ -3,8 +3,8 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for the string conversion operation. See JLS 5.1.11 for the definition of string
@@ -63,7 +63,7 @@ public class StringConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(StringConversionNode.class, getOperand());
+        return Objects.hash(StringConversionNode.class, getOperand());
     }
 
     @Override

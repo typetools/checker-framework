@@ -12,7 +12,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <pre>{@code
  * ArrayWrapper(@NonNegative int size) { delegate = new Object[size]; }
- *
  * }</pre>
  *
  * @checker_framework.manual #index-checker Index Checker

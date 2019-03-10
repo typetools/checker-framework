@@ -1,5 +1,6 @@
 package org.checkerframework.framework.flow;
 
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -12,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -154,7 +154,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @Pure
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(underlyingType, getAnnotations());
+        return Objects.hash(getAnnotations(), underlyingType);
     }
 
     /** @return the string representation as a comma-separated list */

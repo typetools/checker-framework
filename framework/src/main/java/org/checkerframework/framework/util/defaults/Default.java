@@ -1,7 +1,7 @@
 package org.checkerframework.framework.util.defaults;
 
+import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -47,7 +47,7 @@ public class Default implements Comparable<Default> {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(anno, location);
+        return Objects.hash(anno, location);
     }
 
     @Override

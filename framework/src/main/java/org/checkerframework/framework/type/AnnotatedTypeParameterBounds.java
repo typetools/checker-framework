@@ -1,7 +1,8 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
+/** Represents upper and lower bounds, each an AnnotatedTypeMirror. */
 public class AnnotatedTypeParameterBounds {
     private final AnnotatedTypeMirror upper;
     private final AnnotatedTypeMirror lower;
@@ -36,7 +37,7 @@ public class AnnotatedTypeParameterBounds {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(upper, lower);
+        return Objects.hash(upper, lower);
     }
 
     @Override

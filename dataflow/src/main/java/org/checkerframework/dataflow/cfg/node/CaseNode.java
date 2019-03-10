@@ -4,9 +4,9 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
@@ -65,7 +65,7 @@ public class CaseNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getSwitchOperand(), getCaseOperand());
+        return Objects.hash(getSwitchOperand(), getCaseOperand());
     }
 
     @Override

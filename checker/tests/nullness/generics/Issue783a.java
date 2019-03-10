@@ -16,7 +16,7 @@ public class Issue783a<T> {
         this.val = val;
     }
 
-    @Nullable public T get() {
+    public @Nullable T get() {
         return val;
     }
 }

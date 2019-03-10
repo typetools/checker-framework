@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -24,7 +25,6 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -364,7 +364,7 @@ class MethodSignature {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(className, methodName, params);
+        return Objects.hash(className, methodName, params);
     }
 
     @Override

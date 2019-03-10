@@ -5,7 +5,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -79,7 +79,7 @@ public class FunctionalInterfaceNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(tree);
+        return Objects.hash(tree);
     }
 
     @Override

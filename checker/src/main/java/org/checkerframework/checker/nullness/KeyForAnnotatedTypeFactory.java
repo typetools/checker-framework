@@ -15,7 +15,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -36,7 +35,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
@@ -54,8 +52,6 @@ public class KeyForAnnotatedTypeFactory
 
     private final KeyForPropagator keyForPropagator;
 
-    private final TypeMirror erasedMapType;
-
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
@@ -72,9 +68,6 @@ public class KeyForAnnotatedTypeFactory
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForType", KEYFOR);
 
-        TypeMirror mapType = TypesUtils.typeFromClass(Map.class, types, elements);
-        erasedMapType = types.erasure(mapType);
-
         this.postInit();
     }
 
@@ -90,9 +83,9 @@ public class KeyForAnnotatedTypeFactory
     }
 
     @Override
-    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        ParameterizedMethodType result = super.constructorFromUse(tree);
-        keyForPropagator.propagateNewClassTree(tree, result.methodType.getReturnType(), this);
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType result = super.constructorFromUse(tree);
+        keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
         return result;
     }
 

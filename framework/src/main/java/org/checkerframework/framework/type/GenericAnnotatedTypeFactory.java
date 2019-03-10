@@ -74,7 +74,6 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -1398,9 +1397,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        ParameterizedMethodType mType = super.constructorFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType mType = super.constructorFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
@@ -1534,9 +1533,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
-        ParameterizedMethodType mType = super.methodFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedExecutableType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
