@@ -3643,7 +3643,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // (https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.10)
 
             // For example:
-            // class MyClass<@A T extends @B Number> { }
+            // class MyClass<@A T extends @B Number> {}
             // MyClass<@C ? extends @D Serializable>
             // The upper bound of the captured wildcard:
             // glb(@B Number, @D Serializable) = @B Number & @D Serializable
