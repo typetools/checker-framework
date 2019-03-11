@@ -1,32 +1,32 @@
 class RawPartial2 {
   static class A extends Object {
-    void nonRawReceiver() { } // receiver has type "@NonRaw A".
-    void nonRawAReceiver() @NonRaw(A.class) { }
+    void nonRawReceiver() {} // receiver has type "@NonRaw A".
+    void nonRawAReceiver() @NonRaw(A.class) {}
     // the next two declarations are equivalent
-    void rawAReceiver1() @Raw { }
-    void rawAReceiver2() @NonRaw(Object.class) { }
+    void rawAReceiver1() @Raw {}
+    void rawAReceiver2() @NonRaw(Object.class) {}
   }
 
   // Identical annotations as in superclass
   static  class B1 extends A {
-    void nonRawReceiver() { }
-    void nonRawAReceiver() @NonRaw(A.class) { }
-    void rawAReceiver1() @Raw { }
-    void rawAReceiver2() @NonRaw(Object.class) { }
+    void nonRawReceiver() {}
+    void nonRawAReceiver() @NonRaw(A.class) {}
+    void rawAReceiver1() @Raw {}
+    void rawAReceiver2() @NonRaw(Object.class) {}
   }
 
   // Equivalent annotations as in superclass
   static class B2 extends A {
-    void nonRawReceiver() { }
-    void nonRawAReceiver() Raw { }
-    void rawAReceiver1() @NonRaw(Object.class) { }
-    void rawAReceiver2() @Raw { }
+    void nonRawReceiver() {}
+    void nonRawAReceiver() Raw {}
+    void rawAReceiver1() @NonRaw(Object.class) {}
+    void rawAReceiver2() @Raw {}
   }
 
   // Weaker annotations than in superclass -- OK.
   static class B3 extends A {
-    void nonRawReceiver() @Raw { }
-    void nonRawAReceiver() @NonRaw(Object.class) { }
+    void nonRawReceiver() @Raw {}
+    void nonRawAReceiver() @NonRaw(Object.class) {}
   }
 
   static class B extends A {

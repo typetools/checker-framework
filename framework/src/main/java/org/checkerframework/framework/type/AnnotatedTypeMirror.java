@@ -346,7 +346,7 @@ public abstract class AnnotatedTypeMirror {
      * annotations in type use locations but will not return explicit annotations that had an impact
      * on defaulting, such as an explicit annotation on a class declaration. For example, given:
      *
-     * <p>{@code @MyExplicitAnno class MyClass { }; MyClass myClassInstance; }
+     * <p>{@code @MyExplicitAnno class MyClass {}; MyClass myClassInstance; }
      *
      * <p>the result of calling {@code
      * atypeFactory.getAnnotatedType(variableTreeForMyClassInstance).getExplicitAnnotations()}
