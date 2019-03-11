@@ -111,7 +111,7 @@ public class Resolution {
      *
      * @param boundSet current bound set
      * @param unresolvedVars set of unresolved variables that includes all dependencies
-     * @return the bounds set with the resolved bounds.
+     * @return the bounds set with the resolved bounds
      */
     private BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
         List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
@@ -166,7 +166,7 @@ public class Resolution {
      * Resolves {@code as}
      *
      * @param as the smallest set of unresolved variables that includes all any variable on which a
-     *     variable in the set depends.
+     *     variable in the set depends
      * @param boundSet current bounds set
      * @return current bound set
      */

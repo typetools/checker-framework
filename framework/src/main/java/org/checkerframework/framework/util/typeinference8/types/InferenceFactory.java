@@ -318,7 +318,7 @@ public class InferenceFactory {
     }
 
     /**
-     * @return ExecutableType of the method invocation or new class tree adapted to the call site.
+     * @return ExecutableType of the method invocation or new class tree adapted to the call site
      */
     public static ExecutableType getTypeOfMethodAdaptedToUse(
             ExpressionTree expressionTree, Java8InferenceContext context) {
@@ -866,7 +866,7 @@ public class InferenceFactory {
      * @param expression a lambda or method reference expression
      * @param targetType the target type of {@code expression}
      * @param map theta
-     * @return the set of checked exception constraints for the given lambda or method reference.
+     * @return the set of checked exception constraints for the given lambda or method reference
      */
     public ConstraintSet getCheckedExceptionConstraints(
             ExpressionTree expression, AbstractType targetType, Theta map) {
@@ -936,11 +936,11 @@ public class InferenceFactory {
     }
 
     /**
-     * Creates a wildcard using the upper and lower bounds provided
+     * Creates a wildcard using the upper and lower bounds provided.
      *
      * @param lowerBound a proper type or null
      * @param upperBound an abstract type or null
-     * @return a wildcard with the provide upper and lower bounds.
+     * @return a wildcard with the provide upper and lower bounds
      */
     public ProperType createWildcard(ProperType lowerBound, AbstractType upperBound) {
         TypeMirror wildcard =
@@ -961,7 +961,7 @@ public class InferenceFactory {
     }
 
     /**
-     * Substitute the type variables with the given type arguments in the
+     * Substitute the type variables with the given type arguments in the TODO FINISH THIS SENTENCE.
      *
      * @param typeVar
      * @param typeArg

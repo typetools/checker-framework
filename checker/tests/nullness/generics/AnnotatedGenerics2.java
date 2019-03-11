@@ -16,13 +16,13 @@ class AnnotatedGenerics2 {
              myFieldNble = myFieldNN;
              myFieldT = myFieldNN;
 
-             //TODO:: error: (assignment.type.incompatible)
+             // TODO:: error: (assignment.type.incompatible)
              myFieldNN = myFieldNble;
              myFieldNble = myFieldNble;
-             //TODO:: error: (assignment.type.incompatible)
+             // TODO:: error: (assignment.type.incompatible)
              myFieldT = myFieldNble;
 
-             //TODO:: error: (assignment.type.incompatible)
+             // TODO:: error: (assignment.type.incompatible)
              myFieldNN = myFieldT;
              myFieldNble = myFieldT;
              myFieldT = myFieldT;
@@ -81,13 +81,13 @@ class AnnotatedGenerics2 {
             myFieldNble = myFieldNN;
             myFieldT = myFieldNN;
 
-            //TODO:: error: (assignment.type.incompatible)
+            // TODO:: error: (assignment.type.incompatible)
             myFieldNN = myFieldNble;
             myFieldNble = myFieldNble;
-            //TODO:: error: (assignment.type.incompatible)
+            // TODO:: error: (assignment.type.incompatible)
             myFieldT = myFieldNble;
 
-            //TODO:: error: (assignment.type.incompatible)
+            // TODO:: error: (assignment.type.incompatible)
             myFieldNN = myFieldT;
             myFieldNble = myFieldT;
             myFieldT = myFieldT;

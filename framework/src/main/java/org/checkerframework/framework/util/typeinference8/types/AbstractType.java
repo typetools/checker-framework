@@ -229,7 +229,7 @@ public abstract class AbstractType {
      * function type of that functional interface. Otherwise, it returns null.
      *
      * @return the parameter types of the function type of this type or null if no function type
-     *     exists.
+     *     exists
      */
     public List<AbstractType> getFunctionTypeParameterTypes() {
         if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
@@ -324,7 +324,7 @@ public abstract class AbstractType {
      * Whether the proper type is a parameterized class or interface type, or an inner class type of
      * a parameterized class or interface type (directly or indirectly)
      *
-     * @return whether T is a parameterized type.
+     * @return whether T is a parameterized type
      */
     public boolean isParameterizedType() {
         // TODO this isn't matching the JavaDoc.
@@ -389,7 +389,7 @@ public abstract class AbstractType {
 
     /**
      * @return assuming this type is a type variable, this method returns the upper bound of this
-     *     type.
+     *     type
      */
     public AbstractType getTypeVarUpperBound() {
         TypeMirror javaUpperBound = ((TypeVariable) getJavaType()).getUpperBound();
@@ -398,7 +398,7 @@ public abstract class AbstractType {
 
     /**
      * @return assuming this type is a type variable that has a lower bound, this method returns the
-     *     lower bound of this type.
+     *     lower bound of this type
      */
     public AbstractType getTypeVarLowerBound() {
         TypeMirror lowerBound = ((TypeVariable) getJavaType()).getLowerBound();
@@ -412,7 +412,7 @@ public abstract class AbstractType {
 
     /**
      * @return true if this type is a parameterized type whose has at least one wildcard as a type
-     *     argument.
+     *     argument
      */
     public boolean isWildcardParameterizedType() {
         return TypesUtils.isWildcardParameterized(getJavaType());

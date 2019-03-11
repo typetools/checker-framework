@@ -709,7 +709,7 @@ public class StubParser {
      * Adds declaration and type annotations to the parameters of {@code methodType}, which is
      * either a method or constructor.
      *
-     * @param method Method or Constructor declaration
+     * @param method a Method or Constructor declaration
      * @param elt ExecutableElement of {@code method}
      * @param declAnnos map of declaration elements strings to annotations
      * @param methodType annotated type of {@code method}
@@ -1559,7 +1559,7 @@ public class StubParser {
      * Converts {@code number} to {@code expectedKind}. The value converted is multiplied by -1 if
      * {@code negate} is true
      *
-     * @param number Number value to be converted
+     * @param number a Number value to be converted
      * @param expectedKind one of type {byte, short, int, long, char, float, double}
      * @param negate whether to negate the value of the Number Object while converting
      * @return the converted Object

@@ -138,7 +138,7 @@ public class DefaultsSignedness {
         conChar = testChar;
 
         /*
-        //Test boxed bytes
+        // Test boxed bytes
         @Signed Byte sinBoxedByte;
         @Constant Byte conBoxedByte;
 
@@ -147,7 +147,7 @@ public class DefaultsSignedness {
         //// :: error: (assignment.type.incompatible)
         conBoxedByte = testBoxedByte;
 
-        //Test boxed shorts
+        // Test boxed shorts
         @Signed Short sinBoxedShort;
         @Constant Short conBoxedShort;
 
@@ -156,7 +156,7 @@ public class DefaultsSignedness {
         //// :: error: (assignment.type.incompatible)
         conBoxedShort = testBoxedShort;
 
-        //Test boxed Integers
+        // Test boxed Integers
         @Signed Integer sinBoxedInteger;
         @Constant Integer conBoxedInteger;
 
@@ -165,7 +165,7 @@ public class DefaultsSignedness {
         //// :: error: (assignment.type.incompatible)
         conBoxedInteger = testBoxedInteger;
 
-        //Test boxed Longs
+        // Test boxed Longs
         @Signed Long sinBoxedLong;
         @Constant Long conBoxedLong;
 

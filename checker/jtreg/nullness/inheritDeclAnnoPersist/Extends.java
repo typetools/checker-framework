@@ -13,7 +13,7 @@ public class Extends {
     })
     public String m1() {
         StringBuilder sb = new StringBuilder();
-        return TestWrapper.wrap("@Override void setf() {f = new Object();}\n");
+        return TestWrapper.wrap("@Override void setf() { f = new Object(); }\n");
     }
 
     @ADescriptions({})

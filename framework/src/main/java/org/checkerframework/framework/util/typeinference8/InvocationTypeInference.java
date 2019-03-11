@@ -228,7 +228,7 @@ public class InvocationTypeInference {
      * @param methodType the type of the method or constructor invoked
      * @param args argument expression tress
      * @param map map of type variables to (inference) variables
-     * @return bound set used to determine whether a method is applicable.
+     * @return bound set used to determine whether a method is applicable
      */
     public BoundSet createB2(
             InvocationType methodType, List<? extends ExpressionTree> args, Theta map) {
@@ -432,7 +432,7 @@ public class InvocationTypeInference {
      * @param fi type that is the formal parameter to a method whose corresponding argument is
      *     {@code ei}
      * @param map map from type variable to inference variable
-     * @return the additional argument constraints.
+     * @return the additional argument constraints
      */
     private ConstraintSet createAdditionalArgConstraints(
             ExpressionTree ei, AbstractType fi, Theta map) {
@@ -605,7 +605,7 @@ public class InvocationTypeInference {
      *
      * @param assignmentContext tree to which the leaf of path is assigned
      * @param path path to the method invocation
-     * @return if inference should be preformed.
+     * @return if inference should be preformed
      */
     private boolean shouldTryInference(Tree assignmentContext, TreePath path) {
         if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {

@@ -110,7 +110,7 @@ public class ArrayCreationNullable {
         // Given array is too small -> new one is created.
         nna = nns.toArray(new Object[nns.size()-2]);
         // Padding elements will be null.
-        //TODO:: error: (assignment.type.incompatible)
+        // TODO:: error: (assignment.type.incompatible)
         nna = nns.toArray(new Object[nns.size() + 2]);
         @Nullable Object [] nbla = nns.toArray(new Object[nns.size() + 2]);
     }

@@ -13,8 +13,8 @@ public class Implements {
     })
     public String m1() {
         StringBuilder sb = new StringBuilder();
-        sb.append("public Test() {f = new Object();}\n");
-        sb.append("@Override public void setf() {f = new Object();}\n");
+        sb.append("public Test() { f = new Object(); }\n");
+        sb.append("@Override public void setf() { f = new Object(); }\n");
         sb.append("@Override public void setg() {}\n");
         return TestWrapper.wrap(sb.toString());
     }

@@ -1337,7 +1337,7 @@ public final class TreeUtils {
     /**
      * Returns all expressions that might be the result of {@code lambda}.
      *
-     * @param lambda a lambda with or without a body.
+     * @param lambda a lambda with or without a body
      * @return a list of expressions are returned by {@code lambda}
      */
     public static List<ExpressionTree> getReturnedExpressions(LambdaExpressionTree lambda) {

@@ -58,7 +58,7 @@ public class StringIntern {
         if (b) {
             return "";
         } else {
-            return ("");
+            return "";
         }
     }
 }

@@ -32,7 +32,7 @@ public class BoundSet implements ReductionResult {
     /** All inference variables in this bound set. */
     private final LinkedHashSet<Variable> variables;
 
-    /** All capture bounds */
+    /** All capture bounds. */
     private final LinkedHashSet<CaptureBound> captures;
 
     private final Java8InferenceContext context;
@@ -54,7 +54,7 @@ public class BoundSet implements ReductionResult {
         this.uncheckedConversion = false;
     }
 
-    /** Copy constructor */
+    /** Copy constructor. */
     public BoundSet(BoundSet toCopy) {
         this.context = toCopy.context;
         this.containsFalse = toCopy.containsFalse;
@@ -108,7 +108,7 @@ public class BoundSet implements ReductionResult {
      *
      * </blockquote>
      *
-     * @param theta Map from type variable to inference variable
+     * @param theta a Map from type variable to inference variable
      * @param context inference context
      * @return initial bounds
      */

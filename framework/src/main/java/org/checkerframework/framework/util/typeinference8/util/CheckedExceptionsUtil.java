@@ -23,7 +23,7 @@ public class CheckedExceptionsUtil {
      *
      * @param lambda an expression
      * @param context inference context
-     * @return a list of types of checked exceptions that can be thrown by the lambda.
+     * @return a list of types of checked exceptions that can be thrown by the lambda
      */
     public static List<TypeMirror> thrownCheckedExceptions(
             LambdaExpressionTree lambda, Java8InferenceContext context) {
@@ -148,7 +148,7 @@ public class CheckedExceptionsUtil {
      *
      * @param lambda an expression
      * @param context inference context
-     * @return a list of types of checked exceptions that can be thrown by the lambda.
+     * @return a list of types of checked exceptions that can be thrown by the lambda
      */
     public static List<AnnotatedTypeMirror> thrownCheckedExceptionsATM(
             LambdaExpressionTree lambda, Java8InferenceContext context) {

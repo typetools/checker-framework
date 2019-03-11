@@ -230,7 +230,7 @@ public class NullnessAnnotatedTypeFactory
                             NonNull.class,
                             NonRaw.class,
                             Raw.class,
-                            // PolyRaw.class, //TODO: support PolyRaw in the future
+                            // PolyRaw.class, // TODO: support PolyRaw in the future
                             PolyNull.class,
                             PolyAll.class));
         }

@@ -4682,7 +4682,7 @@ public class CFGBuilder {
         /**
          * Create assignment node which represent increment or decrement.
          *
-         * @param target Target tree for assignment node. If it's null, corresponding assignment
+         * @param target target tree for assignment node. If it's null, corresponding assignment
          *     tree will be generated.
          * @param expr expression node to be incremented or decremented
          * @param isIncrement true when it's increment

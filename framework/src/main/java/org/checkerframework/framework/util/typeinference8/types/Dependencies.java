@@ -38,7 +38,7 @@ public class Dependencies {
     }
 
     /**
-     * Calculate and add transitive dependencies
+     * Calculate and add transitive dependencies.
      *
      * <p>JLS 18.4 "An inference variable alpha depends on the resolution of an inference variable
      * beta if there exists an inference variable gamma such that alpha depends on the resolution of
