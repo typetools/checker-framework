@@ -95,8 +95,8 @@ public class AssertIfChecked {
 
     @EnsuresNonNullIf(result = false, expression = "#1")
     boolean testLitFFbad1(final @Nullable Object param) {
-        // :: error: (contracts.conditional.postcondition.not.satisfied)
         if (param == null) {
+            // :: error: (contracts.conditional.postcondition.not.satisfied)
             return false;
         }
         return true;
