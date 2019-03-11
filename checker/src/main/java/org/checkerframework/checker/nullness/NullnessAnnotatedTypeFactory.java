@@ -71,7 +71,10 @@ public class NullnessAnnotatedTypeFactory
     /** Annotation constants. */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL, INITIALIZED;
 
+    /** Handles invocations of {@link java.lang.System#getProperty(String)}. */
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
+
+    /** Determines the nullness type of calls to {@link java.util.Collection#toArray()}. */
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
     /** Cache for the nullness annotations. */
