@@ -325,8 +325,8 @@ public class Expression extends Constraint {
             AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
         // Where a lambda expression with explicit parameter types P1, ..., Pn targets a functional
         // interface type F<A1, ..., Am> with at least one wildcard type argument, then a
-        // parameterization
-        // of F may be derived as the ground target type of the lambda expression as follows.
+        // parameterization of F may be derived as the ground target type of the lambda expression
+        // as follows.
         List<ProperType> ps = new ArrayList<>();
         for (VariableTree paramTree : lambda.getParameters()) {
             ps.add(new ProperType(paramTree, context));

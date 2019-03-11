@@ -74,11 +74,9 @@ public class Variable extends AbstractType {
     public void initialBounds(Theta map) {
         TypeMirror upperBound = typeVariableJava.getUpperBound();
         // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise,
-        // for
-        // each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,...,
-        // Pp:=ap]}
-        // appears in the set; if this results in no proper upper bounds for al (only dependencies),
-        // then the bound {@literal al <: Object} also appears in the set.
+        // for each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,...,
+        // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
+        // dependencies), then the bound {@literal al <: Object} also appears in the set.
         switch (upperBound.getKind()) {
             case INTERSECTION:
                 Iterator<? extends TypeMirror> iter =
