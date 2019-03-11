@@ -228,8 +228,7 @@ public class InitializationVisitor<
             }
         }
 
-        // TODO: this is most certainly unsafe!! (and may be hiding some
-        // problems)
+        // TODO: this is most certainly unsafe!! (and may be hiding some problems)
         // If we don't find a commitment annotation, then we just assume that
         // the subtyping is alright.
         // The case that has come up is with wildcards not getting a type for
