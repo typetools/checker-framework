@@ -99,8 +99,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                                     && prevIsSubtype))) {
                 post = contextComponentType.getAnnotations();
             } else {
-                // The type of the array initializers is incompatible with the
-                // context type!
+                // The type of the array initializers is incompatible with the context type!
                 // Somebody else will complain.
                 post = prev;
             }

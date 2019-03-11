@@ -35,7 +35,7 @@ public class MaskedShifts {
         testRes = (signed >> 8) & 0x1FFFFFF;
 
         // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
-        // irrelevent
+        // irrelevant.
 
         // Now the left-most introduced bit matters
         testRes = (unsigned >>> 8) & 0x90FFFFFF;
@@ -197,7 +197,7 @@ public class MaskedShifts {
         testRes = (signed >> 8) | 0xFE000000;
 
         // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
-        // irrelevent
+        // irrelevant.
 
         // Now the left-most introduced bit matters
         testRes = (unsigned >>> 8) | 0x8F000000;

@@ -474,8 +474,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     //    AnnotatedTypeMirror.AnnotatedDeclaredType supdecl =
                     // fromElement((TypeElement)(((DeclaredType)superclass).asElement()));//((DeclaredType)superclass).asElement());
                     //    // Need to special case an anonymous class with @UI on the decl, because
-                    // "new @UI Runnable {...}" parses as @UI on an anon class decl extending
-                    // Runnable
+                    //    // "new @UI Runnable {...}" parses as @UI on an anon class decl extending
+                    //    // Runnable.
                     //    boolean isAnonInstantiation =
                     // TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) &&
                     // getDeclAnnotation(declaringType, UI.class) != null;

@@ -2460,8 +2460,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             default:
                 if (ctxtype.getKind().isPrimitive()) {
                     // See Issue 438. Ignore primitive types for diamond inference - a primitive
-                    // type
-                    // is never a suitable context anyways.
+                    // type is never a suitable context anyway.
                 } else {
                     throw new BugInCF(
                             "AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: "
