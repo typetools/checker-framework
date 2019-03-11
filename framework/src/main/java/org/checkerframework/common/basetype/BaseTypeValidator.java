@@ -289,8 +289,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         // Don't call the super version, because it creates a mismatch
-        // between
-        // the first and second parameters.
+        // between the first and second parameters.
         // return super.visitDeclared(type, tree);
 
         return null;

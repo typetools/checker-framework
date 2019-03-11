@@ -167,20 +167,20 @@ public class AnnotationClassLoader {
 
         // In checkers, there will be a resource URL for the qual directory. But
         // when called in the framework (eg GeneralAnnotatedTypeFactory), there
-        // won't be a resourceURL since there isn't a qual directory
+        // won't be a resourceURL since there isn't a qual directory.
 
-        // each path from the set of classpaths will be checked to see if it
+        // Each path from the set of classpaths will be checked to see if it
         // contains the qual directory of a checker, if so, the first
         // directory or jar that contains the package will be used as the source
-        // for loading classes from the qual package
+        // for loading classes from the qual package.
 
-        // if either a directory or a jar contains the package, resourceURL will
+        // If either a directory or a jar contains the package, resourceURL will
         // be updated to refer to that source, otherwise resourceURL remains as
-        // null
+        // null.
 
-        // if both a jar and a directory contain the qual package, then the
+        // If both a jar and a directory contain the qual package, then the
         // order of the jar and the directory in the command line option(s)
-        // or environment variables will decide which one gets examined first
+        // or environment variables will decide which one gets examined first.
         for (String path : paths) {
             // see if the current classpath segment is a jar or a directory
             if (path.endsWith(JAR_SUFFIX)) {
