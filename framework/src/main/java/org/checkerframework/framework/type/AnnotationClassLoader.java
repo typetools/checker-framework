@@ -576,7 +576,7 @@ public class AnnotationClassLoader {
      * @param annoName canonical name of an external annotation class, e.g.
      *     "myproject.qual.myannotation"
      * @return the loaded annotation class, or null if it was not a supported annotation as decided
-     *     by {@link #isSupportedAnnotationClass(Class)}.
+     *     by {@link #isSupportedAnnotationClass(Class)}
      */
     public final @Nullable Class<? extends Annotation> loadExternalAnnotationClass(
             final String annoName) {

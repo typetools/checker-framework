@@ -2587,7 +2587,7 @@ public class CFGBuilder {
         /**
          * Find nearest owner element(Method or Class) which holds current tree.
          *
-         * @return Nearest owner element of current tree
+         * @return nearest owner element of current tree
          */
         private Element findOwner() {
             MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
@@ -4684,9 +4684,9 @@ public class CFGBuilder {
          *
          * @param target Target tree for assignment node. If it's null, corresponding assignment
          *     tree will be generated.
-         * @param expr Expression node to be incremented or decremented
-         * @param isIncrement True when it's increment
-         * @return Assignment node for corresponding increment or decrement
+         * @param expr expression node to be incremented or decremented
+         * @param isIncrement true when it's increment
+         * @return assignment node for corresponding increment or decrement
          */
         private AssignmentNode createIncrementOrDecrementAssign(
                 Tree target, Node expr, boolean isIncrement) {
