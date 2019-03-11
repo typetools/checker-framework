@@ -69,7 +69,7 @@ public class NullnessAnnotatedTypeFactory
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
     /** Annotation constants. */
-    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL, INITIALIZED;
+    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
 
     /** Handles invocations of {@link java.lang.System#getProperty(String)}. */
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
@@ -175,8 +175,6 @@ public class NullnessAnnotatedTypeFactory
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
         MONOTONIC_NONNULL = AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
-
-        INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
