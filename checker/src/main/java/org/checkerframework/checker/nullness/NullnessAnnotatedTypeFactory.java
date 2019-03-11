@@ -476,7 +476,7 @@ public class NullnessAnnotatedTypeFactory
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
             AnnotatedTypeMirror componentType = arrayType.getComponentType();
             if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
-                componentType.replaceAnnotation(INITIALIZED);
+                componentType.replaceAnnotation(COMMITTED);
             }
             return null;
         }
