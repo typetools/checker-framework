@@ -3668,7 +3668,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a member reference is the type to which it is assigned or casted.
      *
      * @param tree member reference tree
-     * @return the functional interface and the function type that this method reference targets.
+     * @return the functional interface and the function type that this method reference targets
      */
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
             MemberReferenceTree tree) {
@@ -3684,7 +3684,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a lambda is the type to which it is assigned or casted.
      *
      * @param tree lambda expression tree
-     * @return the functional interface and the function type that this lambda targets.
+     * @return the functional interface and the function type that this lambda targets
      */
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
             LambdaExpressionTree tree) {
@@ -3703,7 +3703,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param tree lambda expression tree or member reference tree
      * @return the functional interface and the function type that this method reference or lambda
-     *     targets.
+     *     targets
      */
     private Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
 

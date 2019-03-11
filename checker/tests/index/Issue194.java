@@ -24,7 +24,9 @@ public class Issue194 {
             return false;
         }
         for (int i = 0; i < a.length(); ++i) {
-            if (a.get(i) != b.get(i)) return false;
+            if (a.get(i) != b.get(i)) {
+                return false;
+            }
         }
         return true;
     }
