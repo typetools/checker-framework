@@ -326,7 +326,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code from} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm An annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
      * @return either the from value from the passed int range annotation, or the minimum value of
      *     the domain of the underlying type (i.e. Integer.MIN_VALUE if the underlying type is int)
      */
@@ -361,7 +361,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code to} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm An annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
      * @return either the to value from the passed int range annotation, or the maximum value of the
      *     domain of the underlying type (i.e. Integer.MAX_VALUE if the underlying type is int)
      */
@@ -1145,13 +1145,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =
                                 componentType.getAnnotation(ArrayLenRange.class);
+                        Range range;
                         if (arrayLenRangeAnno != null) {
-                            Range range = getRange(arrayLenRangeAnno);
-                            if (rolv != null) {
-                                rolv.add(range);
-                            } else {
-                                arrayLenOfDimensions.add(new RangeOrListOfValues(range));
-                            }
+                            range = getRange(arrayLenRangeAnno);
+                        } else {
+                            range = Range.EVERYTHING;
+                        }
+                        if (rolv != null) {
+                            rolv.add(range);
+                        } else {
+                            arrayLenOfDimensions.add(new RangeOrListOfValues(range));
                         }
                     }
 
@@ -1642,7 +1645,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
     }
 
-    /** Convert a {@code List&lt;Long&gt;} to a {@code List&lt;Double&gt;}. */
+    /** Convert a {@code List<Long>} to a {@code List<Double>}. */
     private List<Double> convertLongListToDoubleList(List<Long> intValues) {
         List<Double> doubleValues = new ArrayList<>(intValues.size());
         for (Long intValue : intValues) {

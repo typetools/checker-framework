@@ -92,19 +92,14 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
                         ClassLoader cl = this.getClass().getClassLoader();
                         if (cl == null) {
-                            // the class loader is null if the system class
-                            // loader was
-                            // used
+                            // The class loader is null if the system class loader was used.
                             cl = ClassLoader.getSystemClassLoader();
                         }
                         InputStream in = cl.getResourceAsStream(name);
 
                         if (in == null) {
-                            // if the classloader didn't manage to load the
-                            // file, try
-                            // whether a FileInputStream works. For absolute
-                            // paths this
-                            // might help.
+                            // If the classloader didn't manage to load the file, try whether a
+                            // FileInputStream works. For absolute paths this might help.
                             try {
                                 in = new FileInputStream(name);
                             } catch (FileNotFoundException e) {
@@ -114,8 +109,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
                         if (in == null) {
                             System.err.println("Couldn't find the properties file: " + name);
-                            // report(Result.failure("propertykeychecker.filenotfound",
-                            // name), null);
+                            // report(Result.failure("propertykeychecker.filenotfound", name),
+                            // null);
                             // return Collections.emptySet();
                             continue;
                         }
@@ -126,10 +121,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                             result.put(key, prop.getProperty(key));
                         }
                     } catch (Exception e) {
-                        // TODO: is there a nicer way to report messages, that
-                        // are not
-                        // connected to an AST node?
-                        // One cannot use report, because it needs a node.
+                        // TODO: is there a nicer way to report messages, that are not connected to
+                        // an AST node?  One cannot use report, because it needs a node.
                         System.err.println(
                                 "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
                         e.printStackTrace();

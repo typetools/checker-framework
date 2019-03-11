@@ -35,7 +35,7 @@ public class I18nFormatUtil {
      * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
      *
      * @param format the format string to parse
-     * @throws IllegalFormatException if the format is not syntactically valid.
+     * @throws IllegalFormatException if the format is not syntactically valid
      */
     public static I18nConversionCategory[] formatParameterCategories(String format)
             throws IllegalFormatException {

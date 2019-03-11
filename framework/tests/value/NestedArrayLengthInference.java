@@ -1,5 +1,3 @@
-// @skip-test until the bug is fixed
-
 class NestedArrayLengthInference {
     public void doStuff(int r) {
 
