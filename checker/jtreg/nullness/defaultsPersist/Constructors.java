@@ -42,7 +42,7 @@ public class Constructors {
         //     type = METHOD_RETURN),
     })
     public String retDefault1() {
-        return "Test() { }";
+        return "Test() {}";
     }
 
     @TADescriptions({

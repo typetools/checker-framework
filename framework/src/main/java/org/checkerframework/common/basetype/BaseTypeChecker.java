@@ -112,12 +112,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     private List<BaseTypeChecker> subcheckers = null;
 
-    /*
-     * The list of subcheckers that are direct dependencies of this checker.
-     * This list will be non-empty for any checker that has at least one subchecker.
+    /**
+     * The list of subcheckers that are direct dependencies of this checker. This list will be
+     * non-empty for any checker that has at least one subchecker.
      *
-     * Does not need to be initialized to null or an empty list because it is always
-     * initialized via calls to instantiateSubcheckers.
+     * <p>Does not need to be initialized to null or an empty list because it is always initialized
+     * via calls to instantiateSubcheckers.
      */
     private List<BaseTypeChecker> immediateSubcheckers;
 
@@ -569,8 +569,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         final Diagnostic.Kind kind;
         final String message;
         final Tree source;
+
         /**
-         * This checker that issued this message. The compound checker that depends on this checker
+         * The checker that issued this message. The compound checker that depends on this checker
          * uses this to sort the messages.
          */
         final BaseTypeChecker checker;

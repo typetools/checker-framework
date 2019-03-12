@@ -406,7 +406,7 @@ public class EqualitiesSolver {
 
     // If we determined that this target T1 is equal to a type ATM in hierarchies @A,@B,@C
     // for each of those hierarchies, if a target is equal to T1 in that hierarchy it is also equal
-    // to ATM
+    // to ATM.
     // e.g.
     //   if : T1 == @A @B @C ATM in only the A,B hierarchies
     //    and T1 == T2 only in @A hierarchy

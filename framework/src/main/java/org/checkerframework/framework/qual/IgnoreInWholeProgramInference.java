@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * For example, if the definition of {@code @Inject} is meta-annotated with
  * {@code @IgnoreInWholeProgramInference}:<br>
  * <tt>@IgnoreInWholeProgramInference</tt><br>
- * <tt>@interface Inject { }</tt><br>
+ * <tt>@interface Inject {}</tt><br>
  * then no type qualifier will be inferred for any field annotated by {@code @Inject}.
  *
  * <p>This is appropriate for fields that are set reflectively, so there are no calls in client code

@@ -29,10 +29,10 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  * <ul>
  *   <li>give appropriate types to compile time constants. For example, the type of 7 is Positive, 0
  *       is NonNegative, etc.
- *   <li>in a subtraction expression of the form `a.length - x`, if x is a compile time constant,
- *       and if the minimum length of a &gt; x, the resulting expression is non-negative.
- *   <li>when typing an array length (i.e. `a.length`), if the minimum length of the array is &gt;=
- *       1, then the type is @Positive; if its MinLen is zero, then the type is @NonNegative.
+ *   <li>in a subtraction expression of the form {@code a.length - x}, if x is a compile-time
+ *       constant, and if the minimum length of a &gt; x, the resulting expression is non-negative.
+ *   <li>when typing an array length (i.e. {@code a.length}), if the minimum length of the array is
+ *       &ge; 1, then the type is @Positive; if its MinLen is zero, then the type is @NonNegative.
  * </ul>
  *
  * <p>The Upper Bound Checker depends on all three other checkers.
