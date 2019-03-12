@@ -552,6 +552,7 @@ public class InvocationTypeInference {
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
      * 18.5.2.2</a>.
      */
+    // TODO: Is the parameter current returned, sideeffected or both?
     private BoundSet getB4(BoundSet current, ConstraintSet c) {
         // C might contain new variables that have not yet been added to the current bound set.
         Set<Variable> newVariables = c.getAllInferenceVariables();
@@ -609,8 +610,13 @@ public class InvocationTypeInference {
     }
 
     /**
-     * Is the leaf of the path a generic method invocation that elides method type arguments that
-     * does not require a invocation type inference to determine its target type?
+     * Returns whether or not inference should be preformed.
+     *
+     * <p>Inference should be preformed if both of the following are true: 1.) {@code path} points
+     * to a generic method invocation that does not have explicit method type arguments. 2.) The
+     * target type of that method invocation does not itself require inference to determine.
+     *
+     * <p>This method should be removed once the rest of the framework uses Java 8 inference.
      *
      * @param assignmentContext tree to which the leaf of path is assigned
      * @param path path to the method invocation
