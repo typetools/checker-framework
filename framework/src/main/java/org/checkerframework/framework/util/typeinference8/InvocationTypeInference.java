@@ -433,12 +433,12 @@ public class InvocationTypeInference {
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
      * 18.5.2.2</a>)
      *
-     * @param ei expression that is an argument to a method that corresponds to the formal
-     *     parameter, {@code fi}
+     * @param ei expression that is an argument to a method that corresponds to the formal parameter
+     *     whose type is {@code fi}
      * @param fi type that is the formal parameter to a method whose corresponding argument is
      *     {@code ei}
      * @param map map from type variable to inference variable
-     * @return the additional argument constraints
+     * @return the additional argument constraints.
      */
     private ConstraintSet createAdditionalArgConstraints(
             ExpressionTree ei, AbstractType fi, Theta map) {
@@ -501,7 +501,7 @@ public class InvocationTypeInference {
      *
      * @param expressionTree expression tree
      * @param isTargetVariable whether the corresponding target type (as derived from the signature
-     *     of m) is a type parameter of m
+     *     of m) is a type parameter of m and therefore a variable
      * @return whether or not {@code expressionTree} is pertinent to applicability
      */
     private boolean notPertinentToApplicability(
@@ -575,6 +575,9 @@ public class InvocationTypeInference {
      */
     private void logException(ExpressionTree methodInvocation, Exception ex) {
         if (ex instanceof ProperType.CantCompute) {
+            // This exception is thrown when inference found an uninferred type argument when
+            // getting the type of an expression.
+            // This should be removed once Java 8 inference is actually used by the framework.
             return;
         }
         StringBuilder message = new StringBuilder();
@@ -597,7 +600,7 @@ public class InvocationTypeInference {
         }
         for (StackTraceElement ste : stackTrace) {
             if (!first) {
-                sb.append("\n");
+                sb.append(Character.LINE_SEPARATOR);
             }
             first = false;
             sb.append(ste.toString());
@@ -658,6 +661,7 @@ public class InvocationTypeInference {
                 getMappingFromReturnType(invocation, methodType, context.env);
         for (Variable variable : result) {
             if (!variable.getInvocation().equals(invocation)) {
+                // The variable is for a subexpression.
                 continue;
             }
             TypeVariable typeVariable = variable.getJavaType();

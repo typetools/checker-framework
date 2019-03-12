@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Manages a set of bounds. Bounds are stored in the variable to which they apply, except for
- * capture bounds which are stores in a set in this class.
+ * capture bounds which are stored in this class.
  */
 public class BoundSet implements ReductionResult {
     /**
@@ -68,8 +68,6 @@ public class BoundSet implements ReductionResult {
      * resolution fails.
      */
     public void saveBounds() {
-        // Save the current state of the variables so they can be restored if the first attempt at
-        // resolution fails.
         for (Variable v : variables) {
             v.save();
         }
@@ -86,27 +84,8 @@ public class BoundSet implements ReductionResult {
     }
 
     /**
-     * Creates the initial bounds for variables in {@code theta} and returns a new bound set.
-     *
-     * <p>These bounds are defined in
-     * https://docs.oracle.com/javase/specs/jls/se9/html/jls-18.html#jls-18.1.3-410:
-     *
-     * <blockquote>
-     *
-     * <p>When inference begins, a bound set is typically generated from a list of type parameter
-     * declarations P1, ..., Pp and associated inference variables a1, ..., ap.
-     *
-     * <p>Such a bound set is constructed as follows:
-     *
-     * <p>For each l ({@literal 1 <= l <= p)}:
-     *
-     * <p>If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set.
-     *
-     * <p>Otherwise, for each type T delimited by {@code &} in the TypeBound, the bound {@literal al
-     * <: T[P1:=a1,..., Pp:=ap]} appears in the set; if this results in no proper upper bounds for
-     * al (only dependencies), then the bound {@literal al <: Object} also appears in the set.
-     *
-     * </blockquote>
+     * Creates a new bound set for the variables in theta. (The initial bounds for the variables
+     * were added to the variables when theta was created.)
      *
      * @param theta a Map from type variable to inference variable
      * @param context inference context
@@ -142,12 +121,18 @@ public class BoundSet implements ReductionResult {
         return containsFalse;
     }
 
-    /** @return whether or not unchecked conversion is required. */
+    /**
+     * @return whether or not unchecked conversion was necessary to reduce and incorporate this
+     *     bound set.
+     */
     public boolean isUncheckedConversion() {
         return uncheckedConversion;
     }
 
-    /** Sets whether or not unchecked conversion is required. */
+    /**
+     * Sets Whether or not unchecked conversion was necessary to reduce and incorporate this bound
+     * set.
+     */
     public void setUncheckedConversion(boolean uncheckedConversion) {
         this.uncheckedConversion = uncheckedConversion;
     }
@@ -158,7 +143,10 @@ public class BoundSet implements ReductionResult {
         variables.addAll(capture.getAllVariablesOnLHS());
     }
 
-    /** Does the bound set contain a bound of the form {@code G<..., ai, ...> = capture(G<...>)}? */
+    /**
+     * Does the bound set contain a bound of the form {@code G<..., ai, ...> = capture(G<...>)} for
+     * any variable in as?
+     */
     public boolean containsCapture(Collection<Variable> as) {
         List<Variable> list = new ArrayList<>();
         for (CaptureBound c : captures) {
@@ -205,7 +193,13 @@ public class BoundSet implements ReductionResult {
         return getDependencies(new ArrayList<>());
     }
 
-    /** Returns the dependencies between variables. */
+    /**
+     * Adds the {@code additionalVars} to this bound set and returns the dependencies between all
+     * variables in this bound set.
+     *
+     * @param additionalVars variables to add to this bound set
+     * @return the dependencies between all variables in this bound set
+     */
     public Dependencies getDependencies(Collection<Variable> additionalVars) {
         variables.addAll(additionalVars);
         Dependencies dependencies = new Dependencies();

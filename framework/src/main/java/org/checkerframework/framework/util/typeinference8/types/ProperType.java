@@ -21,6 +21,11 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** A type that does not contain any inference variables. */
 public class ProperType extends AbstractType {
+
+    /**
+     * Exception thrown when the proper type is an uninferred type argument. This should be removed
+     * once Java 8 inference is actually used by the framework.
+     */
     public static class CantCompute extends RuntimeException {
         private static final long serialVersionUID = 1;
     }
@@ -67,6 +72,7 @@ public class ProperType extends AbstractType {
             if (TypesUtils.isCaptured(typeMirror)) {
                 atm = ((AnnotatedWildcardType) atm).capture((TypeVariable) typeMirror);
             } else if (wildcardType.isUninferredTypeArgument()) {
+                // TODO: Should be removed when inference is corrected
                 throw new CantCompute();
             }
         }
