@@ -67,17 +67,20 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>Invocation type inference is the process by which method type arguments are inferred for a
  * given method invocation. An overview of the process is given below.
  *
- * <p>1. Inference creates a variable for each method type argument for a given method invocation.
- * Each variable may zero or more upper, lower, and equal bounds. The bounds of a variable are
- * initially the bounds on the type argument. More bounds may be infered in later steps.
+ * <p>1. Inference creates an inference variable for each method type argument for a given method
+ * invocation. Each inference variable may have zero or more upper, lower, and equal bounds. The
+ * bounds of an inference variable are initially the bounds on the type argument. More bounds may be
+ * infered in later steps.
  *
- * <p>Bounds are between a variable and an abstract type. {@link AbstractType}s are type-like
- * structures that might include variables. Abstract types might also be a variable or a type
- * without any inverence variables, which is also know as a proper type.
+ * <p>Bounds are between an inference variable and an abstract type. {@link AbstractType}s are
+ * type-like structures that might include inference variables. Abstract types might also be an
+ * inference variable or a type without any inference variables, which is also know as a proper
+ * type.
  *
- * <p>Variables are represented by {@link Variable} objects which holds bounds for the variable in
- * an {@link org.checkerframework.framework.util.typeinference8.types.VariableBounds} object.
- * Additional variables may be created in later steps if any subexpression of the method invocation
+ * <p>An inference variable is represented by a {@link Variable} object which holds bounds for the
+ * inference variable, in an {@link
+ * org.checkerframework.framework.util.typeinference8.types.VariableBounds} object. Additional
+ * inference variables may be created in later steps if any subexpression of the method invocation
  * requires type inference.
  *
  * <p>2. Next, inference creates constraints between the arguments to the method invocation and its
@@ -87,29 +90,31 @@ import org.checkerframework.javacutil.TypesUtils;
  * example, the target type of a method invocation assigned to a variable is the type of the
  * variable.
  *
- * <p>Constraints are represented by {@link Constraint} objectst and are between abstract types, see
- * {@link AbstractType} and either expressions, see {@link Expression}, or other abstract types. A
- * constraint might also be an abstract type that might be thrown by the method invocation, see
- * {@link CheckedExceptionConstraint}. Groups of constraints are stored in {@link ConstraintSet}s.
+ * <p>Constraints are represented by {@link Constraint} objects and are between abstract types (see
+ * {@link AbstractType}) and either expressions (see {@link Expression}) or other abstract types. A
+ * constraint might also be an abstract type that might be thrown by the method invocation (see
+ * {@link CheckedExceptionConstraint}). Groups of constraints are stored in {@link ConstraintSet}s.
  *
- * <p>3. Next, these constraints are "reduced" producing bounds on the variables. Reduction depends
- * on the kind of constraint and is defined in <a
+ * <p>3. Next, these constraints are "reduced" producing bounds on the inference variables.
+ * Reduction depends on the kind of constraint and is defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2">JLS section
- * 18.2</a>. . In this code base, constraints are reduced via {@link
+ * 18.2</a>. In this code base, constraints are reduced via {@link
  * ConstraintSet#reduce(Java8InferenceContext)}.
  *
- * <p>4. The variables' bounds are then "incorporated" which produces more bounds and/or constraints
- * that must then be "reduced" or "incorporated". Incorporation and reduction continue until no new
- * bounds or constraints are produced. Bounds are incorporated via {@link
+ * <p>4. The inference variables' bounds are then "incorporated" which produces more bounds and/or
+ * constraints that must then be "reduced" or "incorporated". Incorporation and reduction continue
+ * until no new bounds or constraints are produced. Bounds are incorporated via {@link
  * BoundSet#incorporateToFixedPoint(BoundSet)}. Incorporation in defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.3">JLS section
  * 18.3</a>.
  *
- * <p>5. Finally, a type for each variable is computed by "resolving" the bounds.
+ * <p>5. Finally, a type for each inference variable is computed by "resolving" the bounds.
+ * Variables are resolved via {@link Resolution#resolve(BoundSet, Queue)}. Resolution is defined in
+ * the <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section
+ * 18.4</a>.
  *
- * <p>Variables are resolved via {@link Resolution#resolve(BoundSet, Queue)}. Resolution is defined
- * in the <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS
- * section 18.4</a>.
+ * <p>An object of this class stores information about some particular invocation that requires
+ * inference.
  */
 public class InvocationTypeInference {
 
@@ -128,7 +133,11 @@ public class InvocationTypeInference {
     /**
      * Perform invocation type inference on {@code invocation}. See <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
-     * 18.5.2</a>
+     * 18.5.2</a>.
+     *
+     * @param invocation invocation which needs inference
+     * @param methodType type of the method invocation
+     * @return a list of inference variables that have been instantiated
      */
     public List<Variable> infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(context.pathToExpression);
@@ -142,9 +151,9 @@ public class InvocationTypeInference {
             result = inferInternal(invocation, invocationType);
         } catch (FalseBoundException ex) {
             if (ex.isAnnotatedTypeFailed()) {
-                // This error indicates that type inference failed because constraint between
+                // This error indicates that type inference failed because some constraint between
                 // annotated types could not be satisfied.
-                // In other words, the invocation does not type check.
+                // In other words, the invocation does not type check with respect to qualifiers.
 
                 // TODO: Add more detail to the error message to indicate which bounds/constraints
                 // could not be stisfied so that the user can figure out how to correct their code.
@@ -166,7 +175,7 @@ public class InvocationTypeInference {
     /**
      * Perform invocation type inference on {@code invocation}. See <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
-     * 18.5.2</a>
+     * 18.5.2</a>.
      */
     private List<Variable> inferInternal(ExpressionTree invocation, InvocationType invocationType) {
         ProperType target = context.inferenceTypeFactory.getTargetType();
@@ -207,21 +216,21 @@ public class InvocationTypeInference {
     /**
      * Creates the bound set used to determine whether a method is applicable. This method is called
      * B2 in <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.1">JLS
-     * Section 18.5.1</a>
+     * Section 18.5.1</a>.
      *
      * <p>It does this by:
      *
      * <ol>
-     *   <li value="1">Creating the variables to be solved and initializing their bounds based on
-     *       the type parameter declaration.
+     *   <li value="1">Creating the inference variables and initializing their bounds based on the
+     *       type parameter declaration.
      *   <li value="2">Adding any bounds implied by the throws clause of {@code methodType}.
      *   <li value="3">Constructing constraints between formal parameters and arguments that are
-     *       pertinent to applicable. Generally, all arguments are applicable except: inexact method
-     *       reference, implicitly typed lambdas, or explicitly typed lambda whose return
-     *       expression(s) are not pertinent. See <a
+     *       "pertinent to applicability" (See <a
      *       href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.2">JLS
-     *       Section 15.12.2.2</a> for more details. *
-     *   <li value="4">Reducing and incorporating those constraints which finally produces B2
+     *       Section 15.12.2.2</a>). Generally, all arguments are applicable except: inexact method
+     *       reference, implicitly typed lambdas, or explicitly typed lambda whose return
+     *       expression(s) are not pertinent.
+     *   <li value="4">Reducing and incorporating those constraints which finally produces B2.
      * </ol>
      *
      * @param methodType the type of the method or constructor invoked
@@ -298,13 +307,13 @@ public class InvocationTypeInference {
     }
 
     /**
-     * Creates constraints against the targets type of {@code invocation} and then reduces and
+     * Creates constraints against the target type of {@code invocation} and then reduces and
      * incorporates those constraints with {@code b2}. (See <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.1">JLS
      * 18.5.2.1</a>.)
      *
      * @param b2 BoundSet created by {@link #createB2(InvocationType, List, Theta)}
-     * @param invocation method or constructor invocation
+     * @param invocation a method or constructor invocation
      * @param methodType the type of the method or constructor invoked by expression
      * @param target target type of the invocation
      * @param map map of type variables to (inference) variables
@@ -329,7 +338,7 @@ public class InvocationTypeInference {
             return b2;
 
         } else if (r.isWildcardParameterizedType()) {
-            // Otherwise, if R theta is a parameterized type, G<A1, ..., An>, and one of A1, ...,
+            // Otherwise, if r is a parameterized type, G<A1, ..., An>, and one of A1, ...,
             // An is a wildcard, then, for fresh inference variables B1, ..., Bn, the constraint
             // formula <G<B1, ..., Bn> -> T> is reduced and incorporated, along with the bound
             // G<B1, ..., Bn> = capture(G<A1, ..., An>), with B2.
@@ -339,33 +348,31 @@ public class InvocationTypeInference {
             return b2;
         } else if (r.isVariable()) {
             Variable alpha = (Variable) r;
-            boolean compatiblity = false;
-            // T is a reference type, but is not a wildcard-parameterized type, and either
+            // Should a type compatibility constraint be added?
+            boolean compatibility = false;
+            // If the target type is a reference type, but is not a wildcard-parameterized type.
             if (!target.isWildcardParameterizedType()) {
                 // i) B2 contains a bound of one of the forms alpha = S or S <: alpha, where S is a
                 // wildcard-parameterized type, or
-                compatiblity = alpha.getBounds().hasWildcardParameterizedLowerOrEqualBound();
-                if (!compatiblity) {
-                    // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1
-                    // and S2 have supertypes that are two different parameterizations of the same
-                    // generic class or interface.
-                    compatiblity = alpha.getBounds().hasLowerBoundDifferentParam();
-                }
-            }
-            if (target.isParameterizedType()) {
-                // T is a parameterization of a generic class or interface, G, and B2 contains a
+                compatibility = alpha.getBounds().hasWildcardParameterizedLowerOrEqualBound();
+                // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1
+                // and S2 have supertypes that are two different parameterizations of the same
+                // generic class or interface.
+                compatibility |= compatibility = alpha.getBounds().hasLowerBoundDifferentParam();
+            } else if (target.isParameterizedType()) {
+                // The target type is a parameterization of a generic class or interface, G, and B2
+                // contains a
                 // bound of one of the forms alpha = S or S <: alpha, where there exists no type of
                 // the form G<...> that is a supertype of S, but the raw type |G<...>| is a
                 // supertype of S.
-                compatiblity = alpha.getBounds().hasRawTypeLowerOrEqualBound(target);
+                compatibility = alpha.getBounds().hasRawTypeLowerOrEqualBound(target);
+            } else if (target.getTypeKind().isPrimitive()) {
+                // The target is a primitive type, and one of the primitive wrapper classes
+                // mentioned in
+                // 5.1.7 is an instantiation, upper bound, or lower bound for alpha in B2.
+                compatibility = alpha.getBounds().hasPrimitiveWrapperBound();
             }
-            if (target.getTypeKind().isPrimitive()) {
-                // T is a primitive type, and one of the primitive wrapper classes mentioned in
-                // 5.1.7
-                // is an instantiation, upper bound, or lower bound for alpha in B2.
-                compatiblity = alpha.getBounds().hasPrimitiveWrapperBound();
-            }
-            if (compatiblity) {
+            if (compatibility) {
                 BoundSet resolve = Resolution.resolve(alpha, b2, context);
                 ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture();
                 ConstraintSet constraintSet =
@@ -386,7 +393,7 @@ public class InvocationTypeInference {
      * Creates the constraints between the formal parameters and arguments that are not pertinent to
      * applicability. (See <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
-     * 18.5.2.2</a>)
+     * 18.5.2.2</a>.)
      *
      * @param methodType type of method invoked
      * @param args argument expression trees
@@ -412,13 +419,14 @@ public class InvocationTypeInference {
     }
 
     /**
-     * Adds additional argument constraints for the argument {@code ei} and its subexpressions.
+     * Adds argument constraints for the argument {@code ei} and its subexpressions. These are in
+     * addtion to the constraints added in {@link #createC(InvocationType, List, Theta)}.
      *
      * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
      * invocation, new class tree, conditional expression, or parenthesized expression.
      *
      * <p>If {@code ei} is a method invocation or new class tree, that expression might require type
-     * argument inference. In that case then additional variables, bounds, and constraints are added
+     * argument inference. In that case the additional variables, bounds, and constraints are added
      * here.
      *
      * <p>(See <a
