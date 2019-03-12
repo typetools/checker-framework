@@ -17,5 +17,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface IntVal {
+    /** The values that the expression might evaluate to. */
     long[] value();
 }
