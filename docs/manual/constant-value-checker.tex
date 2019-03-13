@@ -107,7 +107,10 @@ subtype of a \<@DoubleVal> annotation with the same values.
 \begin{figure}
 \includeimage{value-subtyping}{7.9cm}
 \caption{At the top, the type qualifier hierarchy of the Constant Value Checker
-annotations. Qualifiers in gray are used
+  annotations.
+  The first four qualifiers are applicable to primitives and their
+  wrappers; the next to \<String>s, and the final two to arrays.
+Qualifiers in gray are used
 internally by the type system but should never be written by a
 programmer.  At the bottom are examples of additional subtyping
 relationships that depend on the annotations' arguments.}

@@ -5,9 +5,9 @@ import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for new array creation.
@@ -110,14 +110,7 @@ public class ArrayCreationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        for (Node dim : dimensions) {
-            hash = HashCodeUtils.hash(hash, dim.hashCode());
-        }
-        for (Node init : initializers) {
-            hash = HashCodeUtils.hash(hash, init.hashCode());
-        }
-        return hash;
+        return Objects.hash(dimensions, initializers);
     }
 
     @Override

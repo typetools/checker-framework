@@ -38,6 +38,8 @@ public class PolyAllVisitor extends BaseTypeVisitor<PolyAllAnnotatedTypeFactory>
             if (AnnotatedTypes.containsModifier(type, h1Invalid)) {
                 checker.report(
                         Result.failure(
+                                // An error specific to this type system, with no corresponding text
+                                // in a messages.properties file; this checker is just for testing.
                                 "polyall.h1invalid.forbidden",
                                 type.getAnnotations(),
                                 type.toString()),

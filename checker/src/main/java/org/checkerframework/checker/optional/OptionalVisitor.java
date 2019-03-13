@@ -97,7 +97,7 @@ public class OptionalVisitor
 
     /**
      * @return true iff expression is a call to Optional elimination: get, orElse, orElseGet,
-     *     orElseThrow.
+     *     orElseThrow
      */
     private boolean isOptionalElimation(MethodInvocationTree methInvok) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();

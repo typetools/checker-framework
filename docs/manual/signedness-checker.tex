@@ -1,9 +1,33 @@
 \htmlhr
 \chapterAndLabel{Signedness Checker}{signedness-checker}
 
-The Signedness Checker guarantees that signed and unsigned values are not mixed
+The Signedness Checker guarantees that signed and unsigned integral values are not mixed
 together in a computation. In addition, it prohibits meaningless operations, such
 as division on an unsigned value.
+
+Recall that a computer represents a number as a sequence of bits.
+Signedness indicates how to interpret the most significant bit.  For
+example, the bits \<10000010> ordinarily represent the value -126, but when
+interpreted as unsigned, those bits represent the value 130.  The bits
+\<01111110> represent the value 126 in signed and in unsigned interpretation.
+The range of signed byte values is -128 to 127.  The range of unsigned byte
+values is 0 to 255.
+
+Signedness is only applicable to integral types:  \<bype>, \<char>,
+\<short>, \<int>, and \<long>.  Floating-point types (\<float> and
+\<double>) do not have operations that interpret the bits as unsigned.
+
+Signedness is primarily about how the bits of the representation are
+interpreted, not about the values that it can represent.  An unsigned value
+is always positive, but just because a variable's value is positive does
+not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
+compared to a signed value, or used in arithmetic operations with a signed
+value, then $v$ should have signed type.
+To indicate the range of possible values for a variable, use the
+\refqualclass{checker/index/qual}{NonNegative} annotation of the Index
+Checker (see \chapterpageref{index-checker}) or the
+\refqualclass{common/value/qual}{IntRange} annotation of the Constant Value
+Checker (see \chapterpageref{constant-value-checker}).
 
 
 \sectionAndLabel{Annotations}{signedness-checker-annotations}
@@ -40,6 +64,11 @@ These are the qualifiers in the signedness type system:
     This annotation is used internally, and should not
     be written by the programmer.
 
+ \item[\refqualclass{checker/signedness/qual}{PolySigned}]
+   indicates qualifier polymorphism.
+   For a description of qualifier polymorphism, see
+   Section~\ref{qualifier-polymorphism}.
+
 \item[\refqualclass{checker/signedness/qual}{UnknownSignedness}]
     indicates that a value's type is not relevant or known to this checker.
     This annotation is used internally, and should not be
@@ -51,13 +80,6 @@ These are the qualifiers in the signedness type system:
     be written by the programmer.
 
 \end{description}
-
-Signedness is primarily about how the bits of the representation are
-interpreted, not about the values that it can represent.  An unsigned value
-is always positive, but just because a variable's value is positive does
-not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
-compared to a signed value, or used in arithmetic operations with a signed
-value, then $v$ should have signed type.
 
 
 \subsectionAndLabel{Default qualifiers}{signedness-checker-annotations-default-qualifiers}

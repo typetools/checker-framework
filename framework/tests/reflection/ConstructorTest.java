@@ -7,8 +7,10 @@ class ConstructorTest {
     @Sibling1 int sibling1;
     @Sibling2 int sibling2;
 
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     public @Sibling1 ConstructorTest(@Sibling1 int a) {}
 
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     public @Sibling2 ConstructorTest(@Sibling2 int a, @Sibling2 int b) {}
 
     public void pass1() {
