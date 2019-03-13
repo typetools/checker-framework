@@ -1,3 +1,7 @@
+// Test case for issue #XXXXX: https://tinyurl.com/cfissue/XXXXX
+
+// @skip-test until the bug is fixed.
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
