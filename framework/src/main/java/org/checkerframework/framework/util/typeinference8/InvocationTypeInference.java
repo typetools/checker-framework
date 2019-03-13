@@ -118,7 +118,9 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class InvocationTypeInference {
 
+    /** Checker used to issue errors/warnings. */
     protected final SourceChecker checker;
+    /** Stores information about the current inference problem being solved. */
     protected Java8InferenceContext context;
 
     public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {

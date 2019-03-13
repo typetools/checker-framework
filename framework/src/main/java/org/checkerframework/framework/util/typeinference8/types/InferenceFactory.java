@@ -65,7 +65,10 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** Factory that creates AbstractTypes. */
 public class InferenceFactory {
+
+    /** AnnotatedTypeFactory used to get annotated types. */
     private final AnnotatedTypeFactory typeFactory;
+    /** Stores information about the current inference problem being solved. */
     private Java8InferenceContext context;
 
     public InferenceFactory(Java8InferenceContext context) {
