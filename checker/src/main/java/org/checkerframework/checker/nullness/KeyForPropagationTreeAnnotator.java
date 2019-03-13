@@ -20,16 +20,16 @@ import org.checkerframework.javacutil.TreeUtils;
  * keySet to the lhs. e.g.,
  *
  * <pre>{@code
- * // Previously, the user would be required to annotate the LHS's type argument with @KeyFor("m")
+ * // The user is not required to explicitly annotate the LHS's type argument with @KeyFor("m")
  * Set<String> keySet = m.keySet();
  * }</pre>
  *
  * 2. If a variable declaration contains type arguments with an @KeyFor annotation and its
  * initializer is a new class tree with corresponding type arguments that have an @UknownKeyFor
- * primary annotation we transfer from the LHS to RHS. e.g.,
+ * primary annotation, we transfer from the LHS to RHS. e.g.,
  *
  * <pre>{@code
- * // normally a user would have to write the @KeyFor("m") on both sides
+ * // The user does not have to write @KeyFor("m") on both sides
  * List<@KeyFor("m") String> keys = new ArrayList<String>();
  * }</pre>
  *
