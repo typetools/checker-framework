@@ -87,7 +87,6 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                 && context.second instanceof AnnotatedArrayType) {
             AnnotatedTypeMirror contextComponentType =
                     ((AnnotatedArrayType) context.second).getComponentType();
-            System.out.printf("contextComponentType = %s%n", contextComponentType);
             // Only compare the qualifiers that existed in the array type.
             // Defaulting wasn't performed yet, so prev might have fewer qualifiers than
             // contextComponentType, which would cause a failure.
@@ -108,8 +107,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                                     && prevIsSubtype))) {
                 post = contextComponentType.getAnnotations();
             } else {
-                // The type of the array initializers is incompatible with the
-                // context type!
+                // The type of the array initializers is incompatible with the context type!
                 // Somebody else will complain.
                 post = prev;
             }
@@ -119,7 +117,6 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         }
         // TODO (issue #599): This only works at the top level.  It should work at all levels of
         // the array.
-        System.out.printf("about to call addMissingAnnotations(%s) on %s%n", post, componentType);
         componentType.addMissingAnnotations(post);
         System.out.printf("called addMissingAnnotations(%s) on %s%n", post, componentType);
 

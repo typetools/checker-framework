@@ -977,7 +977,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
-     * @return the {@link Node}s for a given {@link Tree}.
+     * @return the {@link Node}s for a given {@link Tree}
      */
     public Set<Node> getNodesForTree(Tree tree) {
         return flowResult.getNodesForTree(tree);

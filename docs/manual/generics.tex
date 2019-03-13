@@ -397,8 +397,8 @@ has, in the ellipsis, these declarations:
   T t;
   @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
   @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
-  void add(T arg) { }
-  T get(int i) { }
+  void add(T arg) {}
+  T get(int i) {}
 \end{Verbatim}
 
 \noindent
@@ -542,7 +542,7 @@ qualifier for the Nullness type system:
 
   @PolymorphicQualifier
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface PolyNull { }
+  public @interface PolyNull {}
 \end{Verbatim}
 
 \noindent

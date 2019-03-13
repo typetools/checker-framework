@@ -218,9 +218,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
-                // throw new BugInCF("TypeFromTree.forTypeVariable: did not find source
-                // for:
-                // " + elt);
+                // throw new BugInCF("TypeFromTree.forTypeVariable: did not find source for: "
+                //                   + elt);
                 return type;
             }
         } else {

@@ -71,7 +71,10 @@ public class NullnessAnnotatedTypeFactory
     /** Annotation constants. */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
 
+    /** Handles invocations of {@link java.lang.System#getProperty(String)}. */
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
+
+    /** Determines the nullness type of calls to {@link java.util.Collection#toArray()}. */
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
     /** Cache for the nullness annotations. */
@@ -466,7 +469,6 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
-            System.out.printf("NullnessTreeAnnotator.visitNewArray %s%n  type =  %s%n", node, type);
             // The most precise element type for `new Object[] {null}` is @FBCBottom, but
             // the most useful element type is @Initialized (which is also accurate).
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;

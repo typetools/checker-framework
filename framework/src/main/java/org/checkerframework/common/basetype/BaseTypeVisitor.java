@@ -3619,8 +3619,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             try {
                 // TODO: currently, these expressions are parsed many times.
-                // this could
-                // be optimized to store the result the first time.
+                // This could be optimized to store the result the first time.
                 // (same for other annotations)
                 FlowExpressions.Receiver expr =
                         FlowExpressionParseUtil.parse(expression, flowExprContext, path, false);
