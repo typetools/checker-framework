@@ -1082,13 +1082,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + tree.getKind());
         }
 
-        if (type != null)
-            System.out.printf(
-                    "Before addComputedTypeAnnotations%n  type = %s%n  tree = %s%n", type, tree);
         addComputedTypeAnnotations(tree, type);
-        if (type != null)
-            System.out.printf(
-                    "After  addComputedTypeAnnotations%n  type = %s%n  tree = %s%n", type, tree);
 
         if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
             // Don't cache VARIABLE

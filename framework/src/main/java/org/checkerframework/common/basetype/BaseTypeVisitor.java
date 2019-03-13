@@ -1779,9 +1779,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid && node.getType() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            System.out.printf(
-                    "visitNewArray(%s)%n  arrayType=%s%n  atypeFactory=%s%n",
-                    node, arrayType, atypeFactory);
             if (atypeFactory.getDependentTypesHelper() != null) {
                 atypeFactory.getDependentTypesHelper().checkType(arrayType, node);
             }
