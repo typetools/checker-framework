@@ -1,4 +1,4 @@
-// Test case for issue #XXXXX: https://tinyurl.com/cfissue/XXXXX
+// Test case for issue ##2358: https://tinyurl.com/cfissue/#2358
 
 // @skip-test until the bug is fixed.
 
