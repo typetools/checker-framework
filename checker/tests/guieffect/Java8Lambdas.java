@@ -60,8 +60,7 @@ public class Java8Lambdas {
 
         public void doUISafely(@UI PolymorphicFunctionalInterface<UIElement> func) {
             // In a real program some intelligent dispatch could be done here to avoid running on UI
-            // thread unless
-            // needed.
+            // thread unless needed.
             arg.runOnUIThread(
                     new IAsyncUITask() {
                         final UIElement e2 = arg;
@@ -108,6 +107,7 @@ public class Java8Lambdas {
         // failing that (call.invalid.ui) since doEither is @PolyUIEffect ?
         safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
         safePolymorphicLambdaRunner.doEither(
+                // :: error: (declaration.inconsistent.with.implements.clause)
                 new @UI PolymorphicFunctionalInterface<UIElement>() {
                     public void executePolymorphic(UIElement arg) {
                         arg.dangerous();
@@ -123,7 +123,8 @@ public class Java8Lambdas {
         // :: error: (assignment.type.incompatible)
         PolymorphicFunctionalInterface<UIElement> func2 = e -> e.dangerous(); // Incompatible types!
         PolymorphicFunctionalInterface<UIElement> func2p =
-                // :: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible) :: error:
+                // (declaration.inconsistent.with.implements.clause)
                 (new @UI PolymorphicFunctionalInterface<UIElement>() {
                     public void executePolymorphic(UIElement arg) {
                         arg.dangerous();
@@ -168,7 +169,8 @@ public class Java8Lambdas {
 
     // Just to check
     public PolymorphicFunctionalInterface<UIElement> returnLambdasTest3() {
-        // :: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible) :: error:
+        // (declaration.inconsistent.with.implements.clause)
         return (new @UI PolymorphicFunctionalInterface<UIElement>() {
             public void executePolymorphic(UIElement arg) {
                 arg.dangerous();

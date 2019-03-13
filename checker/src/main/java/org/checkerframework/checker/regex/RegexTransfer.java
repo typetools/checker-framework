@@ -136,7 +136,7 @@ public class RegexTransfer extends CFTransfer {
         // Look for: constant < mat.groupCount()
         // Make mat be @Regex(constant + 1)
         TransferResult<CFValue, CFStore> res = super.visitLessThan(n, in);
-        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), false, in, res);
+        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), false, res);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class RegexTransfer extends CFTransfer {
         // Look for: constant <= mat.groupCount()
         // Make mat be @Regex(constant)
         TransferResult<CFValue, CFStore> res = super.visitLessThanOrEqual(n, in);
-        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), true, in, res);
+        return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), true, res);
     }
 
     @Override
@@ -153,7 +153,7 @@ public class RegexTransfer extends CFTransfer {
             GreaterThanNode n, TransferInput<CFValue, CFStore> in) {
 
         TransferResult<CFValue, CFStore> res = super.visitGreaterThan(n, in);
-        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, in, res);
+        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, res);
     }
 
     @Override
@@ -162,7 +162,7 @@ public class RegexTransfer extends CFTransfer {
         // Look for: mat.groupCount() >= constant
         // Make mat be @Regex(constant)
         TransferResult<CFValue, CFStore> res = super.visitGreaterThanOrEqual(n, in);
-        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, in, res);
+        return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, res);
     }
 
     /**
@@ -180,7 +180,6 @@ public class RegexTransfer extends CFTransfer {
             Node possibleMatcher,
             Node possibleConstant,
             boolean isAlsoEqual,
-            TransferInput<CFValue, CFStore> in,
             TransferResult<CFValue, CFStore> resultIn) {
         if (!(possibleMatcher instanceof MethodInvocationNode)) {
             return resultIn;
@@ -197,7 +196,6 @@ public class RegexTransfer extends CFTransfer {
         }
 
         MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
-        ExecutableElement method = methodAccessNode.getMethod();
         Node receiver = methodAccessNode.getReceiver();
 
         Receiver matcherReceiver =

@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * A node for bitwise right shift operations with zero extension:
@@ -40,6 +40,6 @@ public class UnsignedRightShiftNode extends BinaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+        return Objects.hash(getLeftOperand(), getRightOperand());
     }
 }

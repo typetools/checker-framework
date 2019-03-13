@@ -379,9 +379,9 @@ Here is how the Nullness Checker overrides part of the CLIMB-to-top rule:
 \begin{Verbatim}
 @DefaultQualifierInHierarchy
 @DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
-public @interface NonNull { }
+public @interface NonNull {}
 
-public @interface Nullable { }
+public @interface Nullable {}
 \end{Verbatim}
 
 \noindent
@@ -1338,7 +1338,7 @@ Chapter~\ref{typestate-checker}.
 A Java subtype can have more fields than its supertype.  For example:
 
 \begin{Verbatim}
-class Animal { }
+class Animal {}
 class Mammal extends Animal { ... }
 class Marsupial extends Mammal {
   int pouchSize;  // pouch capacity, in cubic centimeters
@@ -1365,8 +1365,8 @@ class Animal {
   int pouchSize;  // pouch capacity, in cubic centimeters
   ...
 }
-@interface Mammal { }
-@interface Marsupial { }
+@interface Mammal {}
+@interface Marsupial {}
 
 @Marsupial Animal joey = ...;
 ... joey.pouchSize ...    // OK
@@ -1407,8 +1407,8 @@ class @Marsupial-Animal {
 % \refqualclass{framework/qual}{Dependent}:
 %
 % \begin{Verbatim}
-% @interface Mammal { }
-% @interface Marsupial { }
+% @interface Mammal {}
+% @interface Marsupial {}
 % class Animal {
 %   // pouch capacity, in cubic centimeters
 %   // (non-null if this animal is a marsupial)

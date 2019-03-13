@@ -167,7 +167,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * Callers of this method should always iterate through the returned set, possibly ignoring all
      * {@code Node}s they are not interested in.
      *
-     * @return the set of {@link Node}s for a given {@link Tree}.
+     * @return the set of {@link Node}s for a given {@link Tree}
      */
     public @Nullable Set<Node> getNodesForTree(Tree tree) {
         return treeLookup.get(tree);

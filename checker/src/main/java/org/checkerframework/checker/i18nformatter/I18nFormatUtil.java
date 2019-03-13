@@ -35,7 +35,7 @@ public class I18nFormatUtil {
      * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
      *
      * @param format the format string to parse
-     * @throws IllegalFormatException if the format is not syntactically valid.
+     * @throws IllegalFormatException if the format is not syntactically valid
      */
     public static I18nConversionCategory[] formatParameterCategories(String format)
             throws IllegalFormatException {
@@ -228,7 +228,7 @@ public class I18nFormatUtil {
                             case '}':
                                 if (braceStack == 0) {
                                     part = SEG_RAW;
-                                    makeFormat(i, numFormat, segments);
+                                    makeFormat(numFormat, segments);
                                     numFormat++;
                                     // throw away other segments
                                     segments[SEG_INDEX] = null;
@@ -262,8 +262,8 @@ public class I18nFormatUtil {
             }
         }
 
-        private static void makeFormat(
-                int position, int offsetNumber, StringBuilder[] textSegments) {
+        /** Side-effects {@code categories} field, adding to it an I18nConversionCategory. */
+        private static void makeFormat(int offsetNumber, StringBuilder[] textSegments) {
             String[] segments = new String[textSegments.length];
             for (int i = 0; i < textSegments.length; i++) {
                 StringBuilder oneseg = textSegments[i];

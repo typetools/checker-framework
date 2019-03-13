@@ -49,9 +49,8 @@ import org.checkerframework.javacutil.UserError;
  *
  * <p>Checker writers may wish to subclass this class if they wish to implement some custom rules to
  * filter or process loaded annotation classes, by providing an override implementation of {@link
- * #isSupportedAnnotationClass(Class)}. See {@link
- * org.checkerframework.checker.units.UnitsAnnotationClassLoader UnitsAnnotationClassLoader} for an
- * example.
+ * #isSupportedAnnotationClass(Class)}. See {@code
+ * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
     // For issuing errors to the user
@@ -168,20 +167,20 @@ public class AnnotationClassLoader {
 
         // In checkers, there will be a resource URL for the qual directory. But
         // when called in the framework (eg GeneralAnnotatedTypeFactory), there
-        // won't be a resourceURL since there isn't a qual directory
+        // won't be a resourceURL since there isn't a qual directory.
 
-        // each path from the set of classpaths will be checked to see if it
+        // Each path from the set of classpaths will be checked to see if it
         // contains the qual directory of a checker, if so, the first
         // directory or jar that contains the package will be used as the source
-        // for loading classes from the qual package
+        // for loading classes from the qual package.
 
-        // if either a directory or a jar contains the package, resourceURL will
+        // If either a directory or a jar contains the package, resourceURL will
         // be updated to refer to that source, otherwise resourceURL remains as
-        // null
+        // null.
 
-        // if both a jar and a directory contain the qual package, then the
+        // If both a jar and a directory contain the qual package, then the
         // order of the jar and the directory in the command line option(s)
-        // or environment variables will decide which one gets examined first
+        // or environment variables will decide which one gets examined first.
         for (String path : paths) {
             // see if the current classpath segment is a jar or a directory
             if (path.endsWith(JAR_SUFFIX)) {
@@ -577,7 +576,7 @@ public class AnnotationClassLoader {
      * @param annoName canonical name of an external annotation class, e.g.
      *     "myproject.qual.myannotation"
      * @return the loaded annotation class, or null if it was not a supported annotation as decided
-     *     by {@link #isSupportedAnnotationClass(Class)}.
+     *     by {@link #isSupportedAnnotationClass(Class)}
      */
     public final @Nullable Class<? extends Annotation> loadExternalAnnotationClass(
             final String annoName) {
