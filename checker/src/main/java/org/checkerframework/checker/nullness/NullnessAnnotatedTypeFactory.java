@@ -379,6 +379,7 @@ public class NullnessAnnotatedTypeFactory
      */
     protected static class NullnessPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
+        /** Create the NullnessPropagationTreeAnnotator. */
         public NullnessPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
