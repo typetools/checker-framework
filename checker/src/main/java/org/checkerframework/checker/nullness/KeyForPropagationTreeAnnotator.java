@@ -82,7 +82,6 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
                 final AnnotatedDeclaredType variableType = (AnnotatedDeclaredType) type;
                 final AnnotatedTypeMirror initializerType =
                         atypeFactory.getAnnotatedType(initializer);
-                System.out.printf("initializer %s%n  type %s%n", initializer, initializerType);
 
                 // array types and boxed primitives etc don't require propagation
                 if (variableType.getKind() == TypeKind.DECLARED) {
