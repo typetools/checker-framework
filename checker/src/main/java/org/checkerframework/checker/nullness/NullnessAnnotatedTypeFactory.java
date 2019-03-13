@@ -69,7 +69,7 @@ public class NullnessAnnotatedTypeFactory
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
     /** Annotation constants. */
-    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL, INITIALIZED;
+    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
 
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
@@ -172,8 +172,6 @@ public class NullnessAnnotatedTypeFactory
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
         MONOTONIC_NONNULL = AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
-
-        INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
@@ -474,7 +472,7 @@ public class NullnessAnnotatedTypeFactory
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
             AnnotatedTypeMirror componentType = arrayType.getComponentType();
             if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
-                componentType.replaceAnnotation(INITIALIZED);
+                componentType.replaceAnnotation(COMMITTED);
             }
             return null;
         }
