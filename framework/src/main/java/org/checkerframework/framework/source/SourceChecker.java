@@ -721,6 +721,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return Collections.unmodifiableMap(activeOpts);
     }
 
+    /** Only ever called once; the value is cached in field {@link #suppressWarnings}. */
     private String @Nullable [] createSuppressWarnings(Map<String, String> options) {
         if (!options.containsKey("suppressWarnings")) {
             return null;
