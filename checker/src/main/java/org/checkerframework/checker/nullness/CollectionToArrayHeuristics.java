@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li value="2">The passed array size is less than the collection size. Here are heuristics to
  *       handle the most common cases:
  *       <ol>
- *         <li value="1">an empty array initializer, e.g. {@code c.toArray(new String[] { })},
+ *         <li value="1">an empty array initializer, e.g. {@code c.toArray(new String[] {})},
  *         <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}, or
  *         <li value="3">array creation tree of the collection size method invocation {@code
  *             c.toArray(new String[c.size()])}

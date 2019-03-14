@@ -48,8 +48,9 @@ class Lambda {
     // Complex block body with returns
     Supplier<Integer> f6 =
             () -> {
-                if (true) return 12;
-                else {
+                if (true) {
+                    return 12;
+                } else {
                     int result = 15;
                     for (int i = 1; i < 10; i++) {
                         result *= i;

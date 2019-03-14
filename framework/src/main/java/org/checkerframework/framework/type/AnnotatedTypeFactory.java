@@ -1101,7 +1101,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
      * checked.
      *
-     * @param classTree ClassTree on which to perfrom preprocessing
+     * @param classTree ClassTree on which to perform preprocessing
      */
     public void preProcessClassTree(ClassTree classTree) {}
 
@@ -2460,8 +2460,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             default:
                 if (ctxtype.getKind().isPrimitive()) {
                     // See Issue 438. Ignore primitive types for diamond inference - a primitive
-                    // type
-                    // is never a suitable context anyways.
+                    // type is never a suitable context anyway.
                 } else {
                     throw new BugInCF(
                             "AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: "
@@ -3644,7 +3643,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // (https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.10)
 
             // For example:
-            // class MyClass<@A T extends @B Number> { }
+            // class MyClass<@A T extends @B Number> {}
             // MyClass<@C ? extends @D Serializable>
             // The upper bound of the captured wildcard:
             // glb(@B Number, @D Serializable) = @B Number & @D Serializable
@@ -3668,7 +3667,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a member reference is the type to which it is assigned or casted.
      *
      * @param tree member reference tree
-     * @return the functional interface and the function type that this method reference targets.
+     * @return the functional interface and the function type that this method reference targets
      */
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
             MemberReferenceTree tree) {
@@ -3684,7 +3683,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a lambda is the type to which it is assigned or casted.
      *
      * @param tree lambda expression tree
-     * @return the functional interface and the function type that this lambda targets.
+     * @return the functional interface and the function type that this lambda targets
      */
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
             LambdaExpressionTree tree) {
@@ -3703,7 +3702,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param tree lambda expression tree or member reference tree
      * @return the functional interface and the function type that this method reference or lambda
-     *     targets.
+     *     targets
      */
     private Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
 
