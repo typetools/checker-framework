@@ -5,6 +5,12 @@ Version ??, April 2, 2019
 Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
 2.6.0, but not previously documented).
 
+The following qualifiers are now repeatable:  `@DefaultQualifier`
+`@EnsuresQualifierIf` `@EnsuresQualifier` `@RequiresQualifier`.  Therefore,
+users generally do not need to write the following wrapper annotations any
+longer:  `@DefaultQualifiers` `@EnsuresQualifiersIf` `@EnsuresQualifiers`
+`@RequiresQualifiers`.
+
 ---------------------------------------------------------------------------
 
 Version 2.7.0, March 1, 2019

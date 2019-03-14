@@ -30,7 +30,6 @@ import java.lang.annotation.Target;
  * org.checkerframework.checker.nullness.qual.EnsuresNonNullIf} and {@code
  * org.checkerframework.checker.lock.qual.EnsuresLockHeldIf}.
  *
- * @see EnsuresQualifiersIf
  * @see EnsuresQualifier
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */

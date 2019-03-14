@@ -7,7 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation to allow multiple postcondition annotations.
+ * An annotation wrapper to allow multiple postcondition annotations.
+ *
+ * <p>Programmers generally do not need to use this; it is created by Java when a programmer writes
+ * more than one {@code @EnsuresQualifier} annotation at the same location.
  *
  * @see EnsuresQualifier
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions

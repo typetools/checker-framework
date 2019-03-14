@@ -27,7 +27,6 @@ import java.lang.annotation.Target;
  * org.checkerframework.checker.nullness.qual.EnsuresNonNull} and {@code
  * org.checkerframework.checker.lock.qual.EnsuresLockHeld}.
  *
- * @see EnsuresQualifiers
  * @see EnsuresQualifierIf
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
