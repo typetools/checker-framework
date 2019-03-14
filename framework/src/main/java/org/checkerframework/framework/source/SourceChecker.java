@@ -1271,7 +1271,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         } else {
             // The key for the warning/error being printed, in brackets; prefixes the error message.
-            final String =suppressing;
+            final String suppressing;
             if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
                 suppressing = String.format("[%s:%s] ", this.getSuppressWarningsKeys(), msgKey);
             } else if (this.processingEnv
@@ -1279,7 +1279,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     .containsKey("requirePrefixInWarningSuppressions")) {
                 // If the warning key must be prefixed with a checker key, then add that to the
                 // warning key that is printed.
-                String defaultKey = getDefaultWarningSuppressionKey().toLowerCase();
+                String defaultKey = getDefaultWarningSuppressionKey();
                 Collection<String> keys = getSuppressWarningsKeys();
                 if (keys.contains(defaultKey)) {
                     suppressing = String.format("[%s:%s] ", defaultKey, msgKey);
@@ -2084,7 +2084,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             // No @SuppressWarningsKeys annotation, by default infer key from class name
             String key = getDefaultWarningSuppressionKey();
-            result.add(key.trim().toLowerCase());
+            result.add(key);
         }
 
         return result;
@@ -2097,7 +2097,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (indexOfChecker == -1) {
             indexOfChecker = className.lastIndexOf("Subchecker");
         }
-        return (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+        result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+        return result.toLowerCase();
     }
 
     /**
