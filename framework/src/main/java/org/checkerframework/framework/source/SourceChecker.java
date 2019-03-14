@@ -2081,7 +2081,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (indexOfChecker == -1) {
             indexOfChecker = className.lastIndexOf("Subchecker");
         }
-        result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+        String result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
         return result.toLowerCase();
     }
 
