@@ -199,6 +199,12 @@ import org.checkerframework.javacutil.UserError;
     // org.checkerframework.framework.source.SourceeVisitor.checkForSuppressWarningsAnno
     "warnUnneededSuppressions",
 
+    // Require that warning suppression annotations contain a checker key as a prefix in order for
+    // the warning to be suppressed.
+    // org.checkerframework.framework.source.SourceChecker.checkSuppressWarnings(java.lang.String[],
+    // java.lang.String)
+    "requirePrefixInWarningSuppressions",
+
     ///
     /// Partially-annotated libraries
     ///
@@ -715,6 +721,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return Collections.unmodifiableMap(activeOpts);
     }
 
+    /** Only ever called once; the value is cached in field {@link #suppressWarnings}. */
     private String @Nullable [] createSuppressWarnings(Map<String, String> options) {
         if (!options.containsKey("suppressWarnings")) {
             return null;
@@ -1264,9 +1271,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             fmtString = sb.toString();
 
         } else {
+            // The key for the warning/error being printed, in brackets; prefixes the error message.
             final String suppressing;
             if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
                 suppressing = String.format("[%s:%s] ", this.getSuppressWarningsKeys(), msgKey);
+            } else if (this.processingEnv
+                    .getOptions()
+                    .containsKey("requirePrefixInWarningSuppressions")) {
+                // If the warning key must be prefixed with a checker key, then add that to the
+                // warning key that is printed.
+                String defaultKey = getDefaultWarningSuppressionKey();
+                Collection<String> keys = getSuppressWarningsKeys();
+                if (keys.contains(defaultKey)) {
+                    suppressing = String.format("[%s:%s] ", defaultKey, msgKey);
+                } else if (keys.isEmpty()) {
+                    keys.remove(SUPPRESS_ALL_KEY);
+                    if (keys.isEmpty()) {
+                        suppressing = String.format("[%s:%s] ", SUPPRESS_ALL_KEY, msgKey);
+                    } else {
+                        String firstKey = keys.iterator().next();
+                        suppressing = String.format("[%s:%s] ", firstKey, msgKey);
+                    }
+                } else {
+                    suppressing = String.format("[%s] ", msgKey);
+                }
             } else {
                 suppressing = String.format("[%s] ", msgKey);
             }
@@ -1390,14 +1418,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
 
-        String[] userSwKeys = (anno == null ? null : anno.value());
         if (this.suppressWarnings == null) {
             this.suppressWarnings = createSuppressWarnings(getOptions());
         }
         String[] cmdLineSwKeys = this.suppressWarnings;
+        if (checkSuppressWarnings(cmdLineSwKeys, errKey)) {
+            return true;
+        }
 
-        return checkSuppressWarnings(userSwKeys, errKey)
-                || checkSuppressWarnings(cmdLineSwKeys, errKey);
+        if (anno != null) {
+            String[] userSwKeys = anno.value();
+            if (checkSuppressWarnings(userSwKeys, errKey)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1413,6 +1449,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (userSwKeys == null) {
             return false;
         }
+        // Is the name of the checker required to suppress a warning?
+        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
         Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
 
@@ -1420,12 +1458,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         for (String suppressWarningValue : userSwKeys) {
             for (String checkerKey : checkerSwKeys) {
                 if (suppressWarningValue.equalsIgnoreCase(checkerKey)) {
+                    // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
                     return true;
                 }
 
                 String expected = checkerKey + ":" + errKey;
                 if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase())) {
-                    return true;
+                    if (!requirePrefix
+                            || suppressWarningValue
+                                    .toLowerCase()
+                                    .startsWith(checkerKey.toLowerCase())) {
+                        return true;
+                    }
                 }
             }
         }
@@ -2034,12 +2078,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return collection of warning keys
      */
     protected final Collection<String> getStandardSuppressWarningsKeys() {
-        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
-
         // TreeSet ensures keys are returned in a consistent order.
         Set<String> result = new TreeSet<>();
         result.add(SUPPRESS_ALL_KEY);
 
+        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {
             // Add from annotation
             for (String key : annotation.value()) {
@@ -2047,18 +2090,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
 
         } else {
-            // No annotation, by default infer key from class name
-            String className = this.getClass().getSimpleName();
-            int indexOfChecker = className.lastIndexOf("Checker");
-            if (indexOfChecker == -1) {
-                indexOfChecker = className.lastIndexOf("Subchecker");
-            }
-            String key =
-                    (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
-            result.add(key.trim().toLowerCase());
+            // No @SuppressWarningsKeys annotation, by default infer key from class name
+            String key = getDefaultWarningSuppressionKey();
+            result.add(key);
         }
 
         return result;
+    }
+
+    /** @return the default warning suppression key for this checker based on the checker name */
+    private String getDefaultWarningSuppressionKey() {
+        String className = this.getClass().getSimpleName();
+        int indexOfChecker = className.lastIndexOf("Checker");
+        if (indexOfChecker == -1) {
+            indexOfChecker = className.lastIndexOf("Subchecker");
+        }
+        String result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+        return result.toLowerCase();
     }
 
     /**

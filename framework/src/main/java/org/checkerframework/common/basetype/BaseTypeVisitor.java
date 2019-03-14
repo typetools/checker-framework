@@ -2677,7 +2677,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue a warning if the type at constructor invocation is a subtype of the constructor
         // declaration type.
         // This is equivalent to down-casting.
-        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
+        // Only check the primary annotations, the type arguments are checked elsewhere.
+        if (!atypeFactory
+                .getQualifierHierarchy()
+                .isSubtype(returnType.getAnnotations(), invocation.getAnnotations())) {
             checker.report(
                     Result.warning(
                             "cast.unsafe.constructor.invocation",
