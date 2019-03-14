@@ -203,7 +203,7 @@ import org.checkerframework.javacutil.UserError;
     // the warning to be suppressed.
     // org.checkerframework.framework.source.SourceChecker.checkSuppressWarnings(java.lang.String[],
     // java.lang.String)
-    "requireCheckerPrefixInWarningSuppressions",
+    "requirePrefixInWarningSuppressions",
 
     ///
     /// Partially-annotated libraries
@@ -1270,14 +1270,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             fmtString = sb.toString();
 
         } else {
-            final String suppressing;
+            // The key for the warning/error being printed, in brackets; prefixes the error message.
+            final String =suppressing;
             if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
                 suppressing = String.format("[%s:%s] ", this.getSuppressWarningsKeys(), msgKey);
             } else if (this.processingEnv
                     .getOptions()
-                    .containsKey("requireCheckerPrefixInWarningSuppressions")) {
+                    .containsKey("requirePrefixInWarningSuppressions")) {
                 // If the warning key must be prefixed with a checker key, then add that to the
-                // warning key that it printed.
+                // warning key that is printed.
                 String defaultKey = getDefaultWarningSuppressionKey().toLowerCase();
                 Collection<String> keys = getSuppressWarningsKeys();
                 if (keys.contains(defaultKey)) {
@@ -1440,7 +1441,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
         // Is the name of the checker required to suppress a warning?
-        boolean requirePrefix = hasOption("requireCheckerPrefixInWarningSuppressions");
+        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
         Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
 
@@ -1448,12 +1449,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         for (String suppressWarningValue : userSwKeys) {
             for (String checkerKey : checkerSwKeys) {
                 if (suppressWarningValue.equalsIgnoreCase(checkerKey)) {
-                    // emitted error is exactly a suppress warnings key. "nullness" for example
+                    // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
                     return true;
                 }
 
                 String expected = checkerKey + ":" + errKey;
-
                 if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase())) {
                     if (!requirePrefix
                             || suppressWarningValue
@@ -2082,7 +2082,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
 
         } else {
-            // No annotation, by default infer key from class name
+            // No @SuppressWarningsKeys annotation, by default infer key from class name
             String key = getDefaultWarningSuppressionKey();
             result.add(key.trim().toLowerCase());
         }
