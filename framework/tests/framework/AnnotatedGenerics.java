@@ -47,9 +47,9 @@ class AnnotatedGenerics {
     // Tests the type of the constructed class is correctly inferred when the
     // diamond operator is used.
     public void testConstructorsWithTypeParameterInferrence() {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<@Odd String> innerClass1 = new @Odd MyClass<>();
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<>();
 
         // Should error because the RHS isn't annotated as '@Odd'
@@ -58,9 +58,9 @@ class AnnotatedGenerics {
         // :: error: (assignment.type.incompatible)
         @Odd NormalClass<@Odd String> normal2 = new NormalClass<>();
 
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd MyClass<String> innerClass3 = new @Odd MyClass<>();
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @Odd NormalClass<String> normal3 = new @Odd NormalClass<>();
 
         // Should error because the RHS isn't annotated as '@Odd'
