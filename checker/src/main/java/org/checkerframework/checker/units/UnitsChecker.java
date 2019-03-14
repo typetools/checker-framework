@@ -3,6 +3,7 @@ package org.checkerframework.checker.units;
 import java.util.Collection;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.subtyping.SubtypingChecker;
 
 /**
  * Units Checker main class.

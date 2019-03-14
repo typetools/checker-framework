@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.source.SourceVisitor;
 
 /**
  * A checker for type qualifier systems that only checks subtyping relationships.
@@ -31,7 +32,7 @@ public final class SubtypingChecker extends BaseTypeChecker {
      * it is final). Clients should call it like:
      *
      * <pre>{@code
-     * SubtypingChecker.getSuppressWarningsKeys(this, super.getSuppressWarningsKeys());
+     * SubtypingChecker.getSuppressWarningsKeys(this.visitor, super.getSuppressWarningsKeys());
      * }</pre>
      *
      * @param checker the visitor
@@ -39,12 +40,12 @@ public final class SubtypingChecker extends BaseTypeChecker {
      *     executed by checker
      */
     public static Collection<String> getSuppressWarningsKeys(
-            BaseTypeVisitor<?> visitor, Collection<String> superSupportedTypeQualifiers) {
+            SourceVisitor<?, ?> visitor, Collection<String> superSupportedTypeQualifiers) {
         TreeSet<String> result = new TreeSet<>(superSupportedTypeQualifiers);
         result.add(SUPPRESS_ALL_KEY); // Is this always already in superSupportedTypeQualifiers?
 
         Set<Class<? extends Annotation>> annos =
-                visitor.getTypeFactory().getSupportedTypeQualifiers();
+                ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
         for (Class<? extends Annotation> anno : annos) {
             result.add(anno.getSimpleName().toLowerCase());
         }
