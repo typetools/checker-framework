@@ -2266,13 +2266,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates an AnnotatedDeclaredType for a NewClassTree. Adds explicit annotations and
-     * annotations inherited from class declarations {@link
-     * #annotateInheritedFromClass(AnnotatedTypeMirror)}.
-     *
-     * <p>If the NewClassTree has type arguments, then any explicit (or inherited from class)
-     * annotations on those type arguments are included. If the NewClassTree has a diamond operator,
-     * then the annotations on the type arguments are inferred using the assignment context.
+     * Creates an AnnotatedDeclaredType for a NewClassTree. Only adds explicit annotations, unless
+     * newClassTree has a diamond operator. In that case, the annotations on the type arguments are
+     * inferred using the assignment context and contain defaults.
      *
      * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
      *
@@ -2293,10 +2289,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     fromNewClassContextHelper(type, ctxtype);
                 }
             }
-            AnnotatedDeclaredType old =
+            AnnotatedDeclaredType fromTypeTree =
                     (AnnotatedDeclaredType)
                             TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
-            type.replaceAnnotations(old.getAnnotations());
+            type.replaceAnnotations(fromTypeTree.getAnnotations());
             return type;
         } else if (newClassTree.getClassBody() != null) {
             AnnotatedDeclaredType type =
