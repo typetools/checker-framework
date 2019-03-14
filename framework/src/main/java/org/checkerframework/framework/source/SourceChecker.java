@@ -1418,14 +1418,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
 
-        String[] userSwKeys = (anno == null ? null : anno.value());
         if (this.suppressWarnings == null) {
             this.suppressWarnings = createSuppressWarnings(getOptions());
         }
         String[] cmdLineSwKeys = this.suppressWarnings;
+        if (checkSuppressWarnings(cmdLineSwKeys, errKey)) {
+            return true;
+        }
 
-        return checkSuppressWarnings(userSwKeys, errKey)
-                || checkSuppressWarnings(cmdLineSwKeys, errKey);
+        if (anno != null) {
+            String[] userSwKeys = anno.value();
+            if (checkSuppressWarnings(userSwKeys, errKey)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
