@@ -145,17 +145,19 @@ public class TypeArgInferenceUtil {
                     && ((MemberSelectTree) methodInvocation.getMethodSelect()).getExpression()
                             == path.getLeaf()) {
                 // treepath's leaf is assigned to the method declared receiver type
-                AnnotatedExecutableType declMethodType = atypeFactory.getAnnotatedType(methodElt);
-                return declMethodType.getReceiverType();
+                //                AnnotatedExecutableType declMethodType =
+                // atypeFactory.getAnnotatedType(methodElt);
+                //                return declMethodType.getReceiverType();
+                return null;
             } // Removing above if block causes StackOverflowException via getReceiverType ->
             // assignedTo -> getReceiverType loop!
-            AnnotatedTypeMirror receiver = null;
-            try {
-                receiver = atypeFactory.getReceiverType(methodInvocation);
-            } catch (Throwable e) {
-                new Object();
-            }
-
+            //            AnnotatedTypeMirror receiver = null;
+            //            try {
+            //                receiver = atypeFactory.getReceiverType(methodInvocation);
+            //            } catch (Throwable e) {
+            //                new Object();
+            //            }
+            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(methodInvocation);
             res =
                     assignedToExecutable(
                             atypeFactory,

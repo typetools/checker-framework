@@ -2,7 +2,6 @@ package org.checkerframework.framework.type.poly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -150,20 +148,20 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                                     atypeFactory.getReceiverType(tree), type.getReceiverType()));
         }
 
-        TreePath path = atypeFactory.getPath(tree);
-        if (path != null) {
-            AnnotatedTypeMirror assignmentContext = null;
-            assignmentContext = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
-
-            if (assignmentContext != null) {
-                matchingMapping =
-                        collector.reduce2(
-                                matchingMapping,
-                                collector.visit(
-                                        // Actual assignment lhs type
-                                        type.getReturnType(), assignmentContext));
-            }
-        }
+        //        TreePath path = atypeFactory.getPath(tree);
+        //        if (path != null) {
+        //            AnnotatedTypeMirror assignmentContext = null;
+        //            assignmentContext = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
+        //
+        //            if (assignmentContext != null) {
+        //                matchingMapping =
+        //                        collector.reduce2(
+        //                                matchingMapping,
+        //                                collector.visit(
+        //                                        // Actual assignment lhs type
+        //                                        type.getReturnType(), assignmentContext));
+        //            }
+        //        }
 
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             replacer.visit(type, matchingMapping);
@@ -493,11 +491,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                     if (typeQual != null) {
                         result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
                     }
-                } else if (type.hasAnnotation(poly)) {
-                    AnnotationMirror typeQual = actualType.getAnnotationInHierarchy(top);
-                    if (typeQual != null) {
-                        result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
-                    }
+                    //                } else if (type.hasAnnotation(poly)) {
+                    //                    AnnotationMirror typeQual =
+                    // actualType.getAnnotationInHierarchy(top);
+                    //                    if (typeQual != null) {
+                    //                        result.put(poly,
+                    // AnnotationMirrorSet.singleElementSet(typeQual));
+                    //                    }
                 }
             }
             return result;
