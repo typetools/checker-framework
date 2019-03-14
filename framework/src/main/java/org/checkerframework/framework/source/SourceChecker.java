@@ -1419,6 +1419,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
      */
     private boolean checkSuppressWarnings(@Nullable SuppressWarnings anno, String errKey) {
+
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
         if (checkerSwKeys.isEmpty()) {
