@@ -2293,6 +2293,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     fromNewClassContextHelper(type, ctxtype);
                 }
             }
+            AnnotatedDeclaredType old =
+                    (AnnotatedDeclaredType)
+                            TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
+            type.replaceAnnotations(old.getAnnotations());
             return type;
         } else if (newClassTree.getClassBody() != null) {
             AnnotatedDeclaredType type =
