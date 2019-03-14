@@ -1253,7 +1253,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // are no annotations from that hierarchy already on the type.
 
             if (classElt != null) {
-                AnnotatedTypeMirror classType = fromElement(classElt);
+                AnnotatedTypeMirror classType = getAnnotatedType(classElt);
                 assert classType != null : "Unexpected null type for class element: " + classElt;
                 annotateInheritedFromClass(returnType, classType.getAnnotations());
             }
