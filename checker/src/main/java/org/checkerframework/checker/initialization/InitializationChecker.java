@@ -34,8 +34,6 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         if (useFbc) {
             result.add("initialization");
             result.add("fbc");
-            // TODO: Temporary, to make transition easier.
-            result.add("rawness");
         } else {
             result.add("rawness");
         }
