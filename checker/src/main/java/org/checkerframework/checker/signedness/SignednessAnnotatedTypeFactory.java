@@ -85,8 +85,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the tree is a local variable and the type is a byte, short, int or long, then it adds the
-     * UnknownSignedness annotation so that data flow can refine it.
+     * If the tree is a local variable and the type is a byte, short, int or long, then add the
+     * UnknownSignedness annotation so that dataflow can refine it.
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
         switch (type.getKind()) {
@@ -105,8 +105,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Nothing for other cases.
         }
 
-        // This code commented out until issues with making boxed implicitly signed
-        // are worked out. (https://github.com/typetools/checker-framework/issues/797)
+        // This code is commented out until boxed primitives can be made implicitly signed.
+        // (https://github.com/typetools/checker-framework/issues/797)
 
         /*switch (TypesUtils.getQualifiedName(type.getUnderlyingType()).toString()) {
         case JAVA_LANG_BYTE:
@@ -141,7 +141,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Change the type of booleans to @UnknownSignedness so that the {@link
+         * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
          */
         private void annotateBoolean(AnnotatedTypeMirror type) {
