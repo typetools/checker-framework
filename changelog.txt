@@ -7,8 +7,8 @@ Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
 
 The following qualifiers are now repeatable:  `@DefaultQualifier`
 `@EnsuresQualifierIf` `@EnsuresQualifier` `@RequiresQualifier`.  Therefore,
-users generally do not need to write the following wrapper annotations any
-longer:  `@DefaultQualifiers` `@EnsuresQualifiersIf` `@EnsuresQualifiers`
+users generally do not need to write the following wrapper annotations:
+`@DefaultQualifiers` `@EnsuresQualifiersIf` `@EnsuresQualifiers`
 `@RequiresQualifiers`.
 
 ---------------------------------------------------------------------------
