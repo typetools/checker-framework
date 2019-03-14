@@ -23,5 +23,5 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 @Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@PolymorphicQualifier
+@PolymorphicQualifier(UpperBoundUnknown.class)
 public @interface PolyIndex {}

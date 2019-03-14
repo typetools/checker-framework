@@ -45,6 +45,7 @@
     </ul></li>
   <li><a href="#new-type-systems">New type systems</a>
     <ul>
+      <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#Make_programs_deterministic">Make programs deterministic</a></li>
       <li><a href="#custom-tainting-checking">Custom tainting checking</a></li>
       <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
@@ -1019,9 +1020,65 @@ usable and effective in finding/preventing bugs.
 </p>
 
 
-<h2 id="Make_programs_deterministic">Make programs deterministic</h2>
+<h2 id="non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</h2>
 
-<!-- John Field of Google is interested in this. -->
+<p>
+The Nullness Checker issues a false positive warning for this code:
+</p>
+
+<pre>
+import java.util.PriorityQueue;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+public class MyClass {
+    public static void usePriorityQueue(PriorityQueue&lt;@NonNull Object&gt; active) {
+        while (!(active.isEmpty())) {
+            @NonNull Object queueMinPathNode = active.peek();
+        }
+    }
+}
+</pre>
+
+<p>
+The Checker Framework does not determine that <code>active.peek()</code> returns a non-null value in this context.
+</p>
+
+<p>
+The contract of <code>peek()</code> is that it returns a non-null value if the queue is not empty and the queue contains no null values.
+</p>
+
+<p>
+To handle this code precisely, the Nullness Checker needs to know, for each queue, whether it is empty.
+This is analogous to how the Nullness Checker tracks whether a particular value is a key in a map.
+</p>
+
+<p>
+It should be handled the same way:  by adding a new subchecker, called the Nonempty Checker to the Nullness Checker.  Its types are:
+  UnknownNonEmpty &mdash; the queue might or might not be empty
+  NonEmpty &mdash; the queue is definitely non-empty
+</p>
+
+<p>
+There is a start at this type-checker in branch <code>nonempty-checker</code>.  It:
+</p>
+<ul>
+  <li>defines the annotations
+  </li>
+  <li>creates the integration into the Nullness Checker
+  </li>
+</ul>
+<p>
+However, it is not done.  (In fact, it doesn't even compile.)
+For information about what needs to be done, see <a href="https://github.com/typetools/checker-framework/issues/399">issue #399</a>.
+</p>
+
+<p>
+When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
+You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+</p>
+
+
+<h2 id="Make_programs_deterministic">Make programs deterministic</h2>
 
 <p>
 Programs are easier to use and debug if their output is deterministic.  For
@@ -1104,12 +1161,12 @@ The standard library would have annotations for
 <p>
 You can find
 a <a href="https://checkerframework.org/determinism-checker-manual/manual.html#determinism-checker">draft
-    manual chapter</a> that documents a possible design for a Determinism
+manual chapter</a> that documents a possible design for a Determinism
 Checker.  It differs slightly from the above proposal, for instance by
-having a single type hierarchy instead of two.
-That type system is nearly implemented, so your best choice for this
-project might be to do a case study of it, which could lead to design work
-to improve it.
+having a single type hierarchy instead of two.  That type system
+is <a href="https://github.com/t-rasmud/checker-framework/tree/nondet-checker">implemented</a>,
+so your best choice for this project is to do a case study of it, which
+could lead to design work to improve it.
 </p>
 
 
