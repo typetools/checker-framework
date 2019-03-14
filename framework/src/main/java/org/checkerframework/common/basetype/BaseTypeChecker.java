@@ -601,7 +601,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             if (!message.equals(that.message)) {
                 return false;
             }
-            if (source == that.source) {
+            if (source != that.source) {
                 return false;
             }
             return checker == that.checker;
