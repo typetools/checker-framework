@@ -2065,20 +2065,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             // No @SuppressWarningsKeys annotation, by default infer key from class name
             String key = getDefaultWarningSuppressionKey();
-            result.add(key.trim().toLowerCase());
+            result.add(key);
         }
 
         return result;
     }
 
-    /** @return the default warning suppression key for this checker based on the checker name */
+    /**
+     * @return the default warning suppression key for this checker based on the checker name;
+     *     always a lower-case string
+     */
     private String getDefaultWarningSuppressionKey() {
         String className = this.getClass().getSimpleName();
         int indexOfChecker = className.lastIndexOf("Checker");
         if (indexOfChecker == -1) {
             indexOfChecker = className.lastIndexOf("Subchecker");
         }
-        return (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+        return (indexOfChecker == -1)
+                ? className
+                : className.substring(0, indexOfChecker).trim().toLowerCase();
     }
 
     /**
