@@ -2119,20 +2119,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * @return the default warning suppression key for this checker based on the checker name;
-     *     always a lower-case string
-     */
-    private String getDefaultWarningSuppressionKey() {
-        String className = this.getClass().getSimpleName();
-        int indexOfChecker = className.lastIndexOf("Checker");
-        if (indexOfChecker == -1) {
-            indexOfChecker = className.lastIndexOf("Subchecker");
-        }
-        String result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
-        return result.toLowerCase();
-    }
-
-    /**
      * Tests whether the class owner of the passed element is an unannotated class and matches the
      * pattern specified in the {@code checker.skipUses} property.
      *
