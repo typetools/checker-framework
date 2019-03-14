@@ -2244,19 +2244,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);
         }
 
-        AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) con.getReturnType();
-
-        Element classElt = returnType.getUnderlyingType().asElement();
-
-        // Only add annotations from the class declaration if there
-        // are no annotations from that hierarchy already on the type.
-
-        if (classElt != null) {
-            AnnotatedTypeMirror classType = fromElement(classElt);
-            assert classType != null : "Unexpected null type for class element: " + classElt;
-            annotateInheritedFromClass(returnType, classType.getAnnotations());
-        }
-
         return new ParameterizedExecutableType(con, typeargs);
     }
 
