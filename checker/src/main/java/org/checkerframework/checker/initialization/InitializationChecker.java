@@ -32,6 +32,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public Collection<String> getSuppressWarningsKeys() {
         Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
         if (useFbc) {
+            // This suppresses *all* warnings, not just those related to initialization.
             result.add("initialization");
             result.add("fbc");
             // TODO: Temporary, to make transition easier.
