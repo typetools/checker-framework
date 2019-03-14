@@ -1500,6 +1500,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // Public so it can be called from a few places in
     // org.checkerframework.framework.flow.CFAbstractTransfer
     public boolean shouldSuppressWarnings(Tree tree, String errKey) {
+
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
         if (checkerKeys.isEmpty()) {
