@@ -687,6 +687,12 @@ Type-checking modes:  enable/disable functionality
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning issued by
   the checker.  These warnings are only issued if the \<@SuppressWarnings>
   contains a key that would suppress any warning from this checker.
+\item \<-ArequirePrefixInWarningSuppressions>
+  Require that the key in a warning suppression annotation begin with a checker
+  warning supression key.  Otherwise, the suppress warning annotation does not
+  suppress any warnings.  For example, if this command-line option is
+  supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
+  \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
 \end{itemize}
 
 Partially-annotated libraries

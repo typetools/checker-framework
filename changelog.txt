@@ -5,6 +5,11 @@ Version ??, April 2, 2019
 Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
 2.6.0, but not previously documented).
 
+New command-line option `-ArequirePrefixInWarningSuppressions` makes
+`@SuppressWarnings` recognize warning keys of the form
+"checkername:key.about.problem" but ignore warning keys of the form
+"key.about.problem" without the checker name as a prefix.
+
 ---------------------------------------------------------------------------
 
 Version 2.7.0, March 1, 2019
