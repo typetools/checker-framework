@@ -365,7 +365,7 @@ public class NullnessAnnotatedTypeFactory
 
         return new ListTreeAnnotator(
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
-                new NullnessPropagationAnnotator(this),
+                new NullnessPropagationTreeAnnotator(this),
                 implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
@@ -377,9 +377,10 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
-    protected static class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+    protected static class NullnessPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
-        public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+        /** Create the NullnessPropagationTreeAnnotator. */
+        public NullnessPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 

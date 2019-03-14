@@ -347,6 +347,9 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      *
      * @return a set view of the keys contained in this map
      */
+    // TODO: Make the below comment true.  https://tinyurl.com/cfissue/#2358
+    // This annotation is not strong enough and is overridden in KeyForAnnotatedTypeFactory.
+    // The keys are "this" and all the keys on the receiver's key type.
     @SideEffectFree
     Set<@KeyFor("this") K> keySet();
 
