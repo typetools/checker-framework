@@ -264,7 +264,8 @@ public class NullnessTransfer
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
                     && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
-                refineToNonNull(result, n);
+                makeNonNull(result, n);
+                refineToNonNull(result);
             }
         }
 
@@ -272,10 +273,7 @@ public class NullnessTransfer
     }
 
     /** Refine the given result to @NonNull. */
-    void refineToNonNull(
-            TransferResult<NullnessValue, NullnessStore> result, MethodInvocationNode n) {
-        makeNonNull(result, n);
-
+    void refineToNonNull(TransferResult<NullnessValue, NullnessStore> result) {
         NullnessValue oldResultValue = result.getResultValue();
         NullnessValue refinedResultValue =
                 analysis.createSingleAnnotationValue(NONNULL, oldResultValue.getUnderlyingType());
