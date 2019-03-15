@@ -5,6 +5,12 @@ Version ??, April 2, 2019
 Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
 2.6.0, but not previously documented).
 
+The following qualifiers are now repeatable:  `@DefaultQualifier`
+`@EnsuresQualifierIf` `@EnsuresQualifier` `@RequiresQualifier`.  Therefore,
+users generally do not need to write the following wrapper annotations:
+`@DefaultQualifiers` `@EnsuresQualifiersIf` `@EnsuresQualifiers`
+`@RequiresQualifiers`.
+
 New command-line option `-ArequirePrefixInWarningSuppressions` makes
 `@SuppressWarnings` recognize warning keys of the form
 "checkername:key.about.problem" but ignore warning keys of the form
