@@ -67,8 +67,9 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
 .PHONY: contributors.tex
+# The `git-authors` script is in https://github.com/plume-lib/plume-scripts
 contributors.tex:
-	git log | grep ^Author: | sed 's/Author: \(.*\) <.*>/\1,/' | sort | uniq | sed -f contributors.sed | sort | uniq | sed '$$ s/,$$/./' > contributors.tex
+	git-authors --latex --punctuation > contributors.tex
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
