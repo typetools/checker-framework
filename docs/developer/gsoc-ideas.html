@@ -1058,10 +1058,13 @@ This is analogous to how the Nullness Checker tracks whether a particular value 
 </p>
 
 <p>
-It should be handled the same way:  by adding a new subchecker, called the Nonempty Checker to the Nullness Checker.  Its types are:
-  UnknownNonEmpty &mdash; the queue might or might not be empty
-  NonEmpty &mdash; the queue is definitely non-empty
+It should be handled the same way:  by adding a new subchecker, called the
+  Nonempty Checker, to the Nullness Checker.  Its types are:
 </p>
+<ul>
+<li><code>@UnknownNonEmpty</code> &mdash; the queue might or might not be empty
+<li><code>@NonEmpty</code> &mdash; the queue is definitely non-empty
+</ul>
 
 <p>
 There is a start at this type-checker in branch <code>nonempty-checker</code>.  It:
@@ -1286,25 +1289,67 @@ and prevent problems such as these.
 </p>
 
 <p>
-As a concrete application,
+One way to write this is as an extension of the Constant Value Checker,
+which already keeps track of integer ranges.  It even already
+<a href="https://checkerframework.org/manual/#value-checker-overflow">checks
+  for overflow</a>, but it never issues a warning when it discovers
+  possible overflow.  Your variant would do so.
+</p>
+
+<p>
+This problem is so challenging that there has been almost no previous
+research on static approaches to the problem.  (Two relevant papers are
+<a href="https://www.researchgate.net/publication/221655385_IntScope_Automatically_Detecting_Integer_Overflow_Vulnerability_in_X86_Binary_Using_Symbolic_Execution">IntScope:
+Automatically Detecting Integer Overflow Vulnerability in x86 Binary Using
+Symbolic Execution</a> and
+<a href="https://dl.acm.org/citation.cfm?id=3136872">Integer Overflow
+Vulnerabilities Detection in Software Binary Code</a>.)  Researchers are
+concerned that users will have to write a lot of annotations indicating the
+possible ranges of variables, and that even so there will be a lot of false
+positive warnings due to approximations in the conservative analysis.
+You can convince yourself of the difficulty by manually analyzing programs
+to see how clever the analysis has to be, or manually simulating your
+proposed analysis to learn its weaknesses.
+</p>
+
+<p>
+One way to make the problem tractable is to limit its scope:  instead of
+being concerned with all possible arithmetic overflow, focus on a specific
+use case.
+As one concrete application,
 the <a href="https://checkerframework.org/manual/#index-checker">Index
 Checker</a> is currently unsound in the presence of integer overflow.  If
 an integer <code>i</code> is known to be <code>@Positive</code>, and 1 is
 added to it, then the Index Checker believes that its type
 remains <code>@Positive</code>. If <code>i</code> was
-already <code>Integer.MAX_VALUE</code>, then this type would be false.
+already <code>Integer.MAX_VALUE</code>, then the result is negative &mdash;
+that is, the Index Checker's approximation to it is unsound.
 </p>
 
 <p>
 This project involves removing this unsoundness by implementing a type system to track when an
-integer value might overflow. Implementing such a type system would permit the Index Checker
-to extend its guarantees even to programs that might overflow. We have noticed that this is
-important for some indexing bugs in practice (using the Index Checker, we found 5 bugs in Google
-Guava related to overflow). A key challenge will be keeping the number of false positives in this
-new type system low: previous attempts to build static analyses for integer overflows have either been
-unsound or had high false positive rates. Because we are using this analysis for a specialized
-purpose (i.e. only the types are only important when the Index Checker's analysis might become unsound),
-false positives may be less of a concern.
+integer value might overflow &mdash but this only matters for values that
+are used as an array index. Implementing such an analysis would permit the Index Checker
+to extend its guarantees even to programs that might overflow.
+</p>
+
+<p>
+This analysis is important for some indexing bugs in practice.
+Using the Index Checker, we found 5 bugs in Google
+Guava related to overflow.  Google marked these as high priority and
+fixed them immediately.  In practice, there would be a run-time exception
+only for an array of size approximately <code>Integer.MAX_INT</code>.
+</p>
+
+<p>
+You could write an extension of the Constant Value Checker, which already
+keeps track of integer ranges and
+even <a href="https://checkerframework.org/manual/#value-checker-overflow">determines
+when overflow is possible</a>.  It doesn't issue a warning, but your
+checker could record whether overflow was possible (this could be a
+two-element type system) and then issue a warning, if the value is used as
+an array index.
+Other implementation strategies may be possible.
 </p>
 
 
@@ -1427,8 +1472,9 @@ differences from the real Nullness checker:
 
 <p>
   Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
-  be an implementation of this idea (that is, a fast, but incomplete and
-  unsound, nullness checker).  NullAway doesn't even handle Java Generics.
+  an implementation of this idea (that is, a fast, but incomplete and
+  unsound, nullness checker).  NullAway doesn't let the user specify Java
+  Generics:  it assumes that every type parameter is <code>@NonNull</code>.
   Does Uber's tool provide users a good
   introduction to the ideas that a user can use to transition to a nullness
   type system later?
@@ -1999,5 +2045,9 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre
  -->
-<!--  LocalWords:  checklink subparts UnsignedBytes runtime
+<!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass
+ -->
+<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode
+ -->
+<!--  LocalWords:  subchecker IntScope
  -->
