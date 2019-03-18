@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -33,6 +34,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = KeyFor.class)
 @InheritedAnnotation
+@Repeatable(EnsuresMultiKeyFor.class)
 public @interface EnsuresKeyFor {
     /**
      * Java expressions that are keys in the given maps on successful method termination.
