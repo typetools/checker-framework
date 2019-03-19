@@ -1,5 +1,4 @@
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import polyall.quals.*;
 
@@ -19,17 +18,15 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(
-                value = H1Top.class,
-                locations = {TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(
-                value = H1S1.class,
-                locations = {TypeUseLocation.UPPER_BOUND}),
-        @DefaultQualifier(
-                value = H1S2.class,
-                locations = {TypeUseLocation.OTHERWISE})
-    })
+    @DefaultQualifier(
+            value = H1Top.class,
+            locations = {TypeUseLocation.LOCAL_VARIABLE})
+    @DefaultQualifier(
+            value = H1S1.class,
+            locations = {TypeUseLocation.UPPER_BOUND})
+    @DefaultQualifier(
+            value = H1S2.class,
+            locations = {TypeUseLocation.OTHERWISE})
     // Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
     // and should not be in the same bound
     // :: error: (bound.type.incompatible) :: error: (super.invocation.invalid)
@@ -42,17 +39,15 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(
-                value = H1Top.class,
-                locations = {TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(
-                value = H1S1.class,
-                locations = {TypeUseLocation.PARAMETER}),
-        @DefaultQualifier(
-                value = H1S2.class,
-                locations = {TypeUseLocation.OTHERWISE})
-    })
+    @DefaultQualifier(
+            value = H1Top.class,
+            locations = {TypeUseLocation.LOCAL_VARIABLE})
+    @DefaultQualifier(
+            value = H1S1.class,
+            locations = {TypeUseLocation.PARAMETER})
+    @DefaultQualifier(
+            value = H1S2.class,
+            locations = {TypeUseLocation.OTHERWISE})
     // :: error: (super.invocation.invalid)
     class TestParameter {
         void m(Object p) {
@@ -74,17 +69,15 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(
-                value = H1Top.class,
-                locations = {TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(
-                value = H1S1.class,
-                locations = {TypeUseLocation.PARAMETER}),
-        @DefaultQualifier(
-                value = H1S2.class,
-                locations = {TypeUseLocation.OTHERWISE})
-    })
+    @DefaultQualifier(
+            value = H1Top.class,
+            locations = {TypeUseLocation.LOCAL_VARIABLE})
+    @DefaultQualifier(
+            value = H1S1.class,
+            locations = {TypeUseLocation.PARAMETER})
+    @DefaultQualifier(
+            value = H1S2.class,
+            locations = {TypeUseLocation.OTHERWISE})
     class TestConstructorParameter {
 
         // :: error: (super.invocation.invalid)
@@ -107,17 +100,15 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(
-                value = H1Top.class,
-                locations = {TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(
-                value = H1S1.class,
-                locations = {TypeUseLocation.RETURN}),
-        @DefaultQualifier(
-                value = H1S2.class,
-                locations = {TypeUseLocation.OTHERWISE})
-    })
+    @DefaultQualifier(
+            value = H1Top.class,
+            locations = {TypeUseLocation.LOCAL_VARIABLE})
+    @DefaultQualifier(
+            value = H1S1.class,
+            locations = {TypeUseLocation.RETURN})
+    @DefaultQualifier(
+            value = H1S2.class,
+            locations = {TypeUseLocation.OTHERWISE})
     // :: error: (super.invocation.invalid)
     class TestReturns {
         Object res() {
@@ -143,25 +134,21 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(
-                value = H1Top.class,
-                locations = {TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(
-                value = H1S1.class,
-                locations = {TypeUseLocation.RECEIVER})
-    })
+    @DefaultQualifier(
+            value = H1Top.class,
+            locations = {TypeUseLocation.LOCAL_VARIABLE})
+    @DefaultQualifier(
+            value = H1S1.class,
+            locations = {TypeUseLocation.RECEIVER})
     public class ReceiverDefaulting {
         public ReceiverDefaulting() {};
 
         public void m() {}
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(
-                value = H1Top.class,
-                locations = {TypeUseLocation.LOCAL_VARIABLE}),
-    })
+    @DefaultQualifier(
+            value = H1Top.class,
+            locations = {TypeUseLocation.LOCAL_VARIABLE})
     class TestReceiver {
 
         void call() {
