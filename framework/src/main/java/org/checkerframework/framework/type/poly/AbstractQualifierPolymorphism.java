@@ -475,7 +475,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                         type2Arg.getUnderlyingType(),
                         atypeFactory.getContext().getTypeUtils())) {
                     result = reduce(result, visit(type1Arg, type2Arg));
-                }
+                } // else an unchecked warning was issued by Java, ignore this part of the type.
             }
 
             return result;
