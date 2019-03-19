@@ -28,8 +28,6 @@ import java.lang.annotation.Target;
  * Therefore, every type system should define a polymorphic qualifier. Then, to support
  * {@code @PolyAll} in a type system, simply add it to the list of supported type qualifiers.
  *
- * @see org.checkerframework.checker.nullness.qual.PolyNull
- * @see org.checkerframework.checker.interning.qual.PolyInterned
  * @see org.checkerframework.framework.type.poly.QualifierPolymorphism
  * @checker_framework.manual #polyall The @PolyAll qualifier applies to every type system
  */

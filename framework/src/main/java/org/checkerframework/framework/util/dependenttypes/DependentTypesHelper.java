@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.dependenttypes;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -254,6 +255,34 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(context, factory.getPath(m), atm);
     }
 
+    /**
+     * Standardize the Java expressions in annotations in a class declaration.
+     *
+     * @param node the class declaration
+     * @param type the type of the class declaration
+     * @param ele the element of the class declaration
+     */
+    public void standardizeClass(ClassTree node, AnnotatedTypeMirror type, Element ele) {
+        if (!hasDependentType(type)) {
+            return;
+        }
+        TreePath path = factory.getPath(node);
+        if (path == null) {
+            return;
+        }
+        FlowExpressions.Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
+        FlowExpressionContext classContext =
+                new FlowExpressionContext(receiverF, null, factory.getContext());
+        standardizeDoNotUseLocals(classContext, path, type);
+    }
+
+    /**
+     * Standardize the Java expressions in annotations in a variable declaration.
+     *
+     * @param node the variable declaration
+     * @param type the type of the variable declaration
+     * @param ele the element of the variable declaration
+     */
     public void standardizeVariable(Tree node, AnnotatedTypeMirror type, Element ele) {
         if (!hasDependentType(type)) {
             return;
@@ -320,10 +349,16 @@ public class DependentTypesHelper {
                 standardizeDoNotUseLocals(fieldContext, path, type);
                 break;
             default:
-                // Nothing to do.
+                throw new BugInCF(
+                        this.getClass()
+                                + ": unexpected element kind "
+                                + ele.getKind()
+                                + ": "
+                                + ele);
         }
     }
 
+    /** Standardize the Java expressions in annotations in a field access. */
     public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
         if (!hasDependentType(type)) {
             return;
@@ -573,9 +608,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expression in the given annotated type to see if the expression string is an error
-     * string as specified by {@link DependentTypesError#isExpressionError}. If the annotated type
-     * has any errors, a flowexpr.parse.error is issued at the errorTree.
+     * Checks all Java expressions in the given annotated type to see if the expression string is an
+     * error string as specified by {@link DependentTypesError#isExpressionError}. If the annotated
+     * type has any errors, a flowexpr.parse.error is issued at the errorTree.
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -653,9 +688,24 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expressions in the method declaration AnnotatedTypeMirror to see if the expression
-     * string is an error string as specified by DependentTypesError#isExpressionError. If the
-     * annotated type has any errors, a flowexpr.parse.error is issued.
+     * Checks all Java expressions in the class declaration AnnotatedTypeMirror to see if the
+     * expression string is an error string as specified by DependentTypesError#isExpressionError.
+     * If the annotated type has any errors, a flowexpr.parse.error is issued. Note that this checks
+     * the class declaration itself, not the body or extends/implements clauses.
+     *
+     * @param classTree class to check
+     * @param type annotated type of the class
+     */
+    public void checkClass(ClassTree classTree, AnnotatedDeclaredType type) {
+        // TODO: check that invalid annotations in type variable bounds are properly
+        // formatted. They are part of the type, but the output isn't nicely formatted.
+        checkType(type, classTree);
+    }
+
+    /**
+     * Checks all Java expressions in the method declaration AnnotatedTypeMirror to see if the
+     * expression string is an error string as specified by DependentTypesError#isExpressionError.
+     * If the annotated type has any errors, a flowexpr.parse.error is issued.
      *
      * @param methodTree method to check
      * @param type annotated type of the method
@@ -668,7 +718,9 @@ public class DependentTypesHelper {
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
             AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodTree);
-            checkType(returnType, methodTree.getReturnType());
+            Tree treeForError =
+                    TreeUtils.isConstructor(methodTree) ? methodTree : methodTree.getReturnType();
+            checkType(returnType, treeForError);
         }
     }
 

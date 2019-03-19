@@ -2,11 +2,15 @@ import de.undercouch.gradle.tasks.download.Download
 import org.gradle.internal.jvm.Jvm
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
-    id "de.undercouch.download" version "3.3.0"
+    // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
+    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    // https://plugins.gradle.org/plugin/de.undercouch.download
+    id "de.undercouch.download" version "3.4.3"
     id 'java'
+    // TODO: Migrate to newer version: https://github.com/tbroyer/gradle-errorprone-plugin#migration-from-versions-00x
     id "net.ltgt.errorprone-base" version "0.0.13"
-    id 'org.ajoberstar.grgit' version '2.3.0' apply false
+    // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
+    id 'org.ajoberstar.grgit' version '3.0.0' apply false
 }
 apply plugin: "de.undercouch.download"
 
@@ -34,13 +38,26 @@ ext {
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
+
+    // The local git repository, typically in the .git directory, but not for worktrees.
+    // This value is always overwritten, but Gradle needs the variable to be initialized.
+    localRepo = ".git"
 }
 
-task installGitHooks(type: Copy) {
+task setLocalRepo(type:Exec) {
+    commandLine 'git', 'worktree', 'list'
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+       String worktreeList = standardOutput.toString()
+       localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+    }
+}
+
+task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
     rename('git\\.(.*)', '$1')
-    into '.git/hooks'
+    into localRepo + "/hooks"
 }
 
 allprojects {
@@ -51,10 +68,10 @@ allprojects {
 
     group 'org.checkerframework'
     // Increment the minor version rather than just the patch level if:
-    //   * any new checkers have been added,\n")
-    //   * the patch level is 9 (keep the patch level as a single digit), or\n")
-    //   * backward-incompatible changes have been made to APIs or elsewhere.\n")
-    version '2.5.8'
+    //   * any new checkers have been added,
+    //   * the patch level is 9 (keep the patch level as a single digit), or
+    //   * backward-incompatible changes have been made to APIs or elsewhere.
+    version '2.7.0'
 
     repositories {
         mavenCentral()
@@ -183,7 +200,7 @@ List<String> getJavaFilesToFormat(projectName) {
     return args
 }
 
-task htmlValidate(type: Exec) {
+task htmlValidate(type: Exec, group: 'Format') {
     description 'Validate that HTML files are well-formed'
     executable 'html5validator'
     args = [
@@ -226,6 +243,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
+    // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
     compile group: 'org.plumelib', name: 'require-javadoc', version: '0.1.0'
 }
 task requireJavadoc(type: Javadoc, group: "Documentation") {
@@ -274,7 +292,28 @@ task downloadJtreg(type: Download) {
     }
 }
 
-task getCodeFormatScripts {
+// See alternate implementation getCodeFormatScriptsInGradle below.
+task getCodeFormatScripts() {
+    description 'Obtain or update the run-google-java-format scripts'
+    if (file(formatScriptsHome).exists()) {
+        exec {
+            workingDir formatScriptsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${formatScriptsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+        }
+    }
+}
+
+// This implementation is preferable to the above because it does work in Gradle rather than in bash.
+// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97
+task getCodeFormatScriptsInGradle {
   description "Obtain the run-google-java-format scripts"
   doLast {
     if (! new File(formatScriptsHome).exists()) {
@@ -310,7 +349,12 @@ subprojects {
     }
 
     dependencies {
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.2'
+        // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
+	// If you update this:
+	//  * Temporarily comment out "-Werror" elsewhere in this file
+	//  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
+	//  * Uncomment "-Werror"
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.3'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -515,7 +559,13 @@ subprojects {
                     '-Xep:StringSplitter:OFF',
                     // Too broad, rejects seemingly-correct code.
                     '-Xep:EqualsGetClass:OFF',
-                    '-Werror',
+		    // Not a real problem
+		    '-Xep:MixedMutabilityReturnType:OFF',
+		    // -Werror halts the build if Error Prone issues a warning, which ensures that
+		    // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
+		    // stops as soon as it one warning, rather than outputting them all.
+		    // https://github.com/google/error-prone/issues/436
+ 		    '-Werror',
             ]
         }
 

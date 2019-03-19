@@ -85,11 +85,7 @@ public class OffsetEquation {
 
     @Override
     public int hashCode() {
-        int result = addedTerms.hashCode();
-        result = 31 * result + subtractedTerms.hashCode();
-        result = 31 * result + intValue;
-        result = 31 * result + Objects.hashCode(error);
-        return result;
+        return Objects.hash(addedTerms, subtractedTerms, intValue, error);
     }
 
     @Override

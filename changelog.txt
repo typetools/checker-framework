@@ -1,9 +1,66 @@
-Version 2.6.0, January 1, 2019
+---------------------------------------------------------------------------
+
+Version ??, April 2, 2019
+
+Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
+2.6.0, but not previously documented).
+
+The following qualifiers are now repeatable:  `@DefaultQualifier`
+`@EnsuresQualifierIf` `@EnsuresQualifier` `@RequiresQualifier`.  Therefore,
+users generally do not need to write the following wrapper annotations:
+`@DefaultQualifiers` `@EnsuresQualifiersIf` `@EnsuresQualifiers`
+`@RequiresQualifiers`.
+
+New command-line option `-ArequirePrefixInWarningSuppressions` makes
+`@SuppressWarnings` recognize warning keys of the form
+"checkername:key.about.problem" but ignore warning keys of the form
+"key.about.problem" without the checker name as a prefix.
+
+---------------------------------------------------------------------------
+
+Version 2.7.0, March 1, 2019
+
+The manual links to the AWS crypto policy compliance checker, which enforces
+that no weak cipher algorithms are used with the Java crypto API.
+
+The Nullness Checker supports RxJava annotations
+io.reactivex.annotations.NonNull and io.reactivex.annotations.Nullable.
+
+The checker-qual artifact (jar file) contains an OSGi manifest.
+
+New TYPE_DECLARATION enum constant in TypeUseLocation makes it possible to
+(for example) set defaults annotations for class/interface definitions.
+
+Interface changes:
+ * Renamed the "value" element of the @HasSubsequence annotation to
+   "subsequence".
+ * Renamed @PolySignedness to @PolySigned.
+ * Renamed AnnotatedTypeFactory.ParameterizedMethodType to
+   ParameterizedExecutableType.
+
+Added missing checks regarding annotations on classes, constructor
+declarations, and constructor invocations.  You may see new warnings.
+
+Closed issues:
+788, 1751, 2147, 2163, 2186, 2235, 2243, 2263, 2264, 2286, 2302, 2326, 2327.
+
+---------------------------------------------------------------------------
+
+Version 2.6.0, February 3, 2019
+
+The manual includes a section about how to use Lombok and the Checker
+Framework simultaneously.
+
+Commons CSV has been added to the annotated libraries on Maven Central.
 
 Some error messages have been changed to improve comprehensibility,
 such as by adjusting wording or adding additional information.
 
-Commons CSV has been added to the annotated libraries on Maven Central.
+Relevant to type system implementers:
+Renamed method areSameIgnoringValues to areSameByName.
+
+Closed issues: 2008, 2166, 2185, 2187, 2221, 2224, 2229, 2234, 2248.
+Also fixed false negatives in handling of Map.get().
 
 ---------------------------------------------------------------------------
 

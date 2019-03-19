@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'a2e4d9b1f2505b7495d24c54e9b5045c4b21e2c7'
+    jdkShaHash = 'ecafdf9b336fdbf74b92ee5f01fdc1537bbc2fa7'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -34,6 +34,13 @@ dependencies {
 jar {
     manifest {
         attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
+    }
+    doLast {
+        new File("$projectDir/build/libs/README.txt").text =
+"""Do not use file checker-X.Y.Z.jar, which contains only the checker subproject
+and lacks other parts of the Checker Framework.
+Instead, use checker/dist/checker.jar.
+"""
     }
 }
 
@@ -139,7 +146,7 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 assemble.dependsOn copyJarsToDist
 
 shadowJar {
-    description 'Creates the "fat" checker.jar in dist.'
+    description 'Creates the "fat" checker.jar in dist/.'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker.jar"
     // To see what files are incorporated into the shadow jar file:

@@ -55,7 +55,7 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Creates the appropriate AnnotatedTypeMirror specific wrapper for the provided type.
      *
-     * @param isDeclaration true if the result should is a type declaration
+     * @param isDeclaration true if the result should be a type declaration
      */
     public static AnnotatedTypeMirror createType(
             TypeMirror type, AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
@@ -159,7 +159,7 @@ public abstract class AnnotatedTypeMirror {
             return true;
         }
 
-        if (o == null || !(o instanceof AnnotatedTypeMirror)) {
+        if (!(o instanceof AnnotatedTypeMirror)) {
             return false;
         }
 
@@ -241,7 +241,7 @@ public abstract class AnnotatedTypeMirror {
     public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
         if (!atypeFactory.isSupportedQualifier(aliased)) {
-            aliased = atypeFactory.aliasedAnnotation(p);
+            aliased = atypeFactory.canonicalAnnotation(p);
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
@@ -265,7 +265,7 @@ public abstract class AnnotatedTypeMirror {
     public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
         if (!atypeFactory.isSupportedQualifier(aliased)) {
-            aliased = atypeFactory.aliasedAnnotation(p);
+            aliased = atypeFactory.canonicalAnnotation(p);
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
@@ -318,7 +318,7 @@ public abstract class AnnotatedTypeMirror {
         //                .size() : "Invalid number of effective annotations ("
         //                + effectiveAnnotations + "). Should be "
         //                + atypeFactory.qualHierarchy.getWidth() + " but is "
-        //                + effectiveAnnotations.size() + ". Type: " + this.toString();
+        //                + effectiveAnnotations.size() + ". Type: " + this;
         return effectiveAnnotations;
     }
 
@@ -346,7 +346,7 @@ public abstract class AnnotatedTypeMirror {
      * annotations in type use locations but will not return explicit annotations that had an impact
      * on defaulting, such as an explicit annotation on a class declaration. For example, given:
      *
-     * <p>{@code @MyExplicitAnno class MyClass { }; MyClass myClassInstance; }
+     * <p>{@code @MyExplicitAnno class MyClass {}; MyClass myClassInstance; }
      *
      * <p>the result of calling {@code
      * atypeFactory.getAnnotatedType(variableTreeForMyClassInstance).getExplicitAnnotations()}
@@ -366,7 +366,7 @@ public abstract class AnnotatedTypeMirror {
                 atypeFactory.getQualifierHierarchy().getTypeQualifiers();
         for (AnnotationMirror explicitAnno : typeAnnotations) {
             for (AnnotationMirror validAnno : validAnnotations) {
-                if (AnnotationUtils.areSameIgnoringValues(explicitAnno, validAnno)) {
+                if (AnnotationUtils.areSameByName(explicitAnno, validAnno)) {
                     explicitAnnotations.add(explicitAnno);
                 }
             }
@@ -470,7 +470,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(annotations, a);
+        return AnnotationUtils.containsSameByName(annotations, a);
     }
 
     /**
@@ -480,7 +480,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getEffectiveAnnotations(), a);
+        return AnnotationUtils.containsSameByName(getEffectiveAnnotations(), a);
     }
 
     /**
@@ -494,7 +494,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), a);
+        return AnnotationUtils.containsSameByName(getExplicitAnnotations(), a);
     }
 
     /**
@@ -511,8 +511,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
-        return AnnotationUtils.containsSameIgnoringValues(
-                getExplicitAnnotations(), getAnnotation(a));
+        return AnnotationUtils.containsSameByName(getExplicitAnnotations(), getAnnotation(a));
     }
 
     /**
@@ -522,12 +521,12 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null argument.");
         }
         if (atypeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
         } else {
-            AnnotationMirror aliased = atypeFactory.aliasedAnnotation(a);
+            AnnotationMirror aliased = atypeFactory.canonicalAnnotation(a);
             if (atypeFactory.isSupportedQualifier(aliased)) {
                 addAnnotation(aliased);
             }

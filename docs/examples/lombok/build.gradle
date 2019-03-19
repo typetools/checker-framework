@@ -1,0 +1,46 @@
+///////////////////////////////////////////////////////////////////////////
+/// Checker Framework pluggable type-checking and Lombok example
+///
+
+plugins {
+    id 'java'
+    id 'net.ltgt.apt' version '0.15'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.4'
+    annotationProcessor 'org.projectlombok:lombok:1.18.4'
+}
+
+configurations {
+  checkerFrameworkAnnotatedJDK {
+    description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+  }
+}
+
+dependencies {
+  ext.checkerFrameworkVersion = '2.7.0'
+  checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
+  annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
+  implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+}
+
+allprojects {
+  tasks.withType(JavaCompile).all { JavaCompile compile ->
+    def processors = [
+            'org.checkerframework.checker.nullness.NullnessChecker',
+            'lombok.launch.AnnotationProcessorHider\$AnnotationProcessor',
+    ]
+    options.compilerArgs = [
+            '-processor', processors.join(','),
+            '-Xmaxerrs', '10000',
+            '-Xmaxwarns', '10000',
+            '-AcheckPurityAnnotations',
+            "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+    ]
+  }
+}

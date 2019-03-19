@@ -73,7 +73,7 @@ public class AnnotatedTypes {
      * both declared types, asSuper is called recursively on the direct super types, see {@link
      * AnnotatedTypeMirror#directSuperTypes()}, of {@code type} until {@code type}'s erased Java
      * type is the same as {@code superType}'s erased super type. Then {@code type is returned}. For
-     * compound types, asSuper is call recursively on components.
+     * compound types, asSuper is called recursively on components.
      *
      * <p>Preconditions:<br>
      * {@code superType} may have annotations, but they are ignored. <br>
@@ -863,18 +863,6 @@ public class AnnotatedTypes {
 
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
-
-    /**
-     * Use {@link org.checkerframework.common.basetype.TypeValidator#isValid(AnnotatedTypeMirror,
-     * Tree)} instead. Method always returns true and will be removed.
-     *
-     * @deprecated Remove after 2.4.0 release.
-     */
-    @Deprecated
-    public static boolean isValidType(
-            QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
-        return true;
-    }
 
     /** @return true if the underlying type of this atm is a java.lang.annotation.Annotation */
     public static boolean isJavaLangAnnotation(final AnnotatedTypeMirror atm) {

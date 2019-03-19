@@ -6,8 +6,8 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -95,7 +95,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof MethodInvocationNode)) {
+        if (!(obj instanceof MethodInvocationNode)) {
             return false;
         }
         MethodInvocationNode other = (MethodInvocationNode) obj;
@@ -105,12 +105,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash = HashCodeUtils.hash(target);
-        for (Node arg : arguments) {
-            hash = HashCodeUtils.hash(hash, arg.hashCode());
-        }
-        return hash;
+        return Objects.hash(target, arguments);
     }
 
     @Override

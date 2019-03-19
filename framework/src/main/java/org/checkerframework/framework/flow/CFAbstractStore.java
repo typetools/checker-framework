@@ -656,9 +656,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 continue; // remove information completely
             }
             if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
-                // TODO: one could be less strict here, and only raise the
-                // abstract value
-                // for all array expressions with potentially aliasing receivers
+                // TODO: one could be less strict here, and only raise the abstract
+                // value for all array expressions with potentially aliasing receivers.
                 continue; // remove information completely
             }
             // information is save to be carried over
@@ -923,7 +922,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     @Override
     public boolean equals(Object o) {
-        if (o != null && o instanceof CFAbstractStore) {
+        if (o instanceof CFAbstractStore) {
             @SuppressWarnings("unchecked")
             CFAbstractStore<V, S> other = (CFAbstractStore<V, S>) o;
             return this.supersetOf(other) && other.supersetOf(this);

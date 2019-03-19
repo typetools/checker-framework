@@ -17,10 +17,10 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Utility class for handling {@link java.lang.System#getProperty(String)} invocations.
  *
- * <p>If the argument is a literal key that is guaranteed to be present in the system properties may
- * (according to the documentation of {@link java.lang.System#getProperty(String)}), as in {@code
- * System.getProperties("line.separator")}, then the result of the method call is assumed to be
- * non-null.
+ * <p>The result of the method call is is assumed to be non-null if the argument is a literal key
+ * that is guaranteed to be present in the system properties (according to the documentation of
+ * {@link java.lang.System#getProperty(String)}), as in {@code
+ * System.getProperties("line.separator")}.
  */
 public class SystemGetPropertyHandler {
 

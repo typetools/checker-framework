@@ -24,7 +24,10 @@
     </ul></li>
   <li><a href="#case-studies">Case studies</a>
     <ul>
-      <li><a href="#library-annotations">Library annotations</a></li>
+      <li><a href="#library-annotations">Library annotations</a>
+        <ul>
+          <li><a href="#choose-a-library">Choosing a library to annotate</a></li>
+        </ul></li>
       <li><a href="#case-study-signature">Signature strings</a></li>
       <li><a href="#case-study-index-out-of-bounds">Array indexing (index-out-of-bounds errors)</a></li>
       <li><a href="#case-study-android-support">Android support annotations</a></li>
@@ -42,6 +45,7 @@
     </ul></li>
   <li><a href="#new-type-systems">New type systems</a>
     <ul>
+      <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#Make_programs_deterministic">Make programs deterministic</a></li>
       <li><a href="#custom-tainting-checking">Custom tainting checking</a></li>
       <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
@@ -188,10 +192,28 @@ You can find more potential projects in the
     program.
   <li>
     Annotate the program, based on its documentation.
+    <br/>
+    Please do <em>not</em> make changes unrelated to annotating the
+    program, such as inserting/removing whitespace or sorting
+    the <code>import</code> statements.  Doing so bloats the size of the
+    diffs and makes it hard to understand the essential changes.
   <li>
-    Run the type-checker.  This might require adding more annotations,
-    fixing bugs in the program, or suppressing warnings.  Repeat until
+    Run the type-checker.  If it issues
+    warnings, <a href="https://checkerframework.org/manual/#handling-warnings">correct them</a>.
+    This might require adding more annotations,
+    fixing bugs in the program, or suppressing warnings.
+    Be sure that the program's test suite continues to pass.
+    Repeat until
     the type-checker passes on the program.
+    <ul>
+      <li>Don't add an <code>if</code> statement that always succeeds, just
+	to suppress a warning.  Convince yourself that both branches can
+	execute, or else don't add the <code>if</code> statement.
+      <li>If you add a <code>@SuppressWarnings</code> annotation,
+	<a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
+	why</a> the checker warning is a false positive and you are certain
+	the code is safe.
+    </ul>
   <li>
     Share it with us so that
     we can evaluate it and give you feedback.  (If the code compiles
@@ -203,7 +225,8 @@ You can find more potential projects in the
     <p>
     Share the case study as soon
     as you finish it or as soon as you have a question that is not answered
-    in the manual; don't wait until you submit your proposal.
+    in the <a href="https://checkerframework.org/manual/">manual</a>;
+    don't wait until you submit your proposal.
     The subject line should be descriptive (not just "Case study", but
     "Nullness case study of Apache Commons Exec library").
     You should give us access to
@@ -368,9 +391,10 @@ not happen until you have completed a case study on an open-source program.
     about extensions, about details that are not mentioned on this webpage,
     about implementation strategies, and so forth.  If you want to do a
     case study, say what program you will do your case study on.  Don't
-    submit a proposal that is just a rearrangement of ideas that already
-    appear on this page or in the Checker Framework manual, because it does
-    not help us to assess your likelihood of being successful.
+    submit a proposal that is just a rearrangement of text that already
+    appears on this page or in the Checker Framework manual, because it does
+    not help us to assess your likelihood of being successful.  (You can
+    propose an idea that's here, but show what progress you have made.)
     </p>
   </li>
 
@@ -492,23 +516,12 @@ Checker Framework needs an annotated version of the library.
 The Checker Framework comes with a
 few <a href="https://search.maven.org/search?q=annotatedlib">annotated
 libraries</a>.  Increasing this number will make the Checker Framework even
-more useful.
+more useful, and easier to use.
 </p>
 
 <p>
-For this project, choose
-a <a href="https://docs.google.com/spreadsheets/d/17x_jKkGquEFq7LBQhS9HGXiG7iIl2AlXoPGfB6N5_bw">popular
-Java library</a> that is
-not <a href="https://github.com/typetools/checker-framework/tree/master/checker/lib">already
-annotated</a>.  (Or, choose a library that is already annotated for some
-type system, and annotate it for an additional type system.  One advantage
-of this is that the library's build system is already set up to run the
-Checker Framework.  You can tell which type systems a library is annotated
-for by examining its source code.)  There are some specific suggestions below.
-</p>
-
-<p>
-Fork the library's source code, adjust
+After you have <a href="#choose-a-library">chosen a library</a>,
+fork the library's source code, adjust
 its <a href="https://checkerframework.org/manual/#external-tools">build
 system</a> to run the Checker Framework, and add annotations to it until
 the type-checker issues no warnings.
@@ -521,6 +534,54 @@ to get started annotating legacy code</a>.  More generally, read the
 <a href="https://checkerframework.org/manual/#how-to-read-this-manual">relevant
 sections of the Checker Framework manual</a>.
 </p>
+
+
+<h3 id="choose-a-library">Choosing a library to annotate</h3>
+
+<p>
+There are several ways to <b>choose a library</b> to annotate:
+</p>
+<ul>
+  <li>
+    Choose a <a href="https://docs.google.com/spreadsheets/d/17x_jKkGquEFq7LBQhS9HGXiG7iIl2AlXoPGfB6N5_bw">popular
+      Java library</a>.
+  </li>
+  <li>
+    Choose a library that you need annotations for.  That is, choose a
+    library that is used by a program (or another library) that you have
+    tried to annotate.
+  </li>
+  <li>
+    Choose one of the suggestions below.
+  </li>
+</ul>
+
+<p>
+  Whatever library you choose, you will need to deeply understand its
+  source code.  You will find it easier to work with a library that is
+  well-designed and well-documented.
+</p>
+
+<p>
+  You should choose a library that is
+  not <a href="https://github.com/typetools/checker-framework/tree/master/checker/lib">already
+    annotated</a>.  There are two exceptions to this.
+</p>
+<ul>
+  <li>
+    A library might be annotated for one type system, but you add
+    annotations for a different type system.  One advantage of this is that
+    the library's build system is already set up to run the Checker
+    Framework.  You can tell which type systems a library is annotated for
+    by examining its source code.
+  </li>
+  <li>
+    A library might be annotated, but the annotations have not been
+    verified by running the type-checker on the library source code.  You
+    would verify that the annotations in the library are correct.
+  </li>
+</ul>
+
 
 <h2 id="case-study-signature">Signature strings</h2>
 
@@ -651,14 +712,20 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </p>
 
 <p>
-  Here are some possibilities (or, search for code that uses
-  signedness-sensitive routines in <code>Integer</code>
-  and <code>Long</code>, namely
+  A good way to find a case study project is to search for code that uses
+  signedness-sensitive routines.
+  In <code>Integer</code>
+  and <code>Long</code>, these are
    <code>compareUnsigned</code>
    <code>divideUnsigned</code>
    <code>parseUnsignedInt</code>
    <code>remainderUnsigned</code>, and
-   <code>toUnsignedLong</code>):
+   <code>toUnsignedLong</code>.
+  Also look for uses of Guava's <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a> class.
+</p>
+
+<p>
+  Here are some possibilities:
 </p>
 <ul>
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
@@ -667,9 +734,11 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </ul>
 
 <p>
-  Your case studies will show the need for enhancements to the Signedness Checker.
-  For example, it does not currently handle boxed integers and BigInteger;
-  these haven't yet come up in case studies but could be worthwhile enhancements.
+  Your case studies will show the need for enhancements to the Signedness
+  Checker.  For example, the Signedness Checker does not currently handle
+  boxed integers and BigInteger; these haven't yet come up in case studies
+  but could be worthwhile enhancements.  There may also be the need to
+  write more annotations for libraries such as the JDK.
 </p>
 
 
@@ -700,12 +769,21 @@ to detect other mis-uses of Optional.
 
 <h2 id="case-study-nullness">Null pointer exceptions</h2>
 
+<p>
+These are just some suggestions; many other libraries need annotations.
+</p>
+
+
 <h3 id="case-study-nullness-bcel">BCEL library</h3>
 
 <p>
   Annotate the BCEL library to express its contracts with respect to nullness.
   Show that the BCEL library has no null pointer exceptions (or find bugs
-  in BCEL).
+  in BCEL).  There are
+  already <a href="https://github.com/apache/commons-bcel/compare/trunk...typetools:trunk?expand=1">some
+  annotations</a> in BCEL, but they have not been verified as correct by
+  running the Nullness Checker on BCEL.  (Currently, those annotations are
+  trusted when type-checking clients of BCEL.)
 </p>
 
 <p>
@@ -947,9 +1025,68 @@ usable and effective in finding/preventing bugs.
 </p>
 
 
-<h2 id="Make_programs_deterministic">Make programs deterministic</h2>
+<h2 id="non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</h2>
 
-<!-- John Field of Google is interested in this. -->
+<p>
+The Nullness Checker issues a false positive warning for this code:
+</p>
+
+<pre>
+import java.util.PriorityQueue;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+public class MyClass {
+    public static void usePriorityQueue(PriorityQueue&lt;@NonNull Object&gt; active) {
+        while (!(active.isEmpty())) {
+            @NonNull Object queueMinPathNode = active.peek();
+        }
+    }
+}
+</pre>
+
+<p>
+The Checker Framework does not determine that <code>active.peek()</code> returns a non-null value in this context.
+</p>
+
+<p>
+The contract of <code>peek()</code> is that it returns a non-null value if the queue is not empty and the queue contains no null values.
+</p>
+
+<p>
+To handle this code precisely, the Nullness Checker needs to know, for each queue, whether it is empty.
+This is analogous to how the Nullness Checker tracks whether a particular value is a key in a map.
+</p>
+
+<p>
+It should be handled the same way:  by adding a new subchecker, called the
+  Nonempty Checker, to the Nullness Checker.  Its types are:
+</p>
+<ul>
+<li><code>@UnknownNonEmpty</code> &mdash; the queue might or might not be empty
+<li><code>@NonEmpty</code> &mdash; the queue is definitely non-empty
+</ul>
+
+<p>
+There is a start at this type-checker in branch <code>nonempty-checker</code>.  It:
+</p>
+<ul>
+  <li>defines the annotations
+  </li>
+  <li>creates the integration into the Nullness Checker
+  </li>
+</ul>
+<p>
+However, it is not done.  (In fact, it doesn't even compile.)
+For information about what needs to be done, see <a href="https://github.com/typetools/checker-framework/issues/399">issue #399</a>.
+</p>
+
+<p>
+When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
+You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+</p>
+
+
+<h2 id="Make_programs_deterministic">Make programs deterministic</h2>
 
 <p>
 Programs are easier to use and debug if their output is deterministic.  For
@@ -1032,12 +1169,12 @@ The standard library would have annotations for
 <p>
 You can find
 a <a href="https://checkerframework.org/determinism-checker-manual/manual.html#determinism-checker">draft
-    manual chapter</a> that documents a possible design for a Determinism
+manual chapter</a> that documents a possible design for a Determinism
 Checker.  It differs slightly from the above proposal, for instance by
-having a single type hierarchy instead of two.
-That type system is nearly implemented, so your best choice for this
-project might be to do a case study of it, which could lead to design work
-to improve it.
+having a single type hierarchy instead of two.  That type system
+is <a href="https://github.com/t-rasmud/checker-framework/tree/nondet-checker">implemented</a>,
+so your best choice for this project is to do a case study of it, which
+could lead to design work to improve it.
 </p>
 
 
@@ -1152,25 +1289,67 @@ and prevent problems such as these.
 </p>
 
 <p>
-As a concrete application,
+One way to write this is as an extension of the Constant Value Checker,
+which already keeps track of integer ranges.  It even already
+<a href="https://checkerframework.org/manual/#value-checker-overflow">checks
+  for overflow</a>, but it never issues a warning when it discovers
+  possible overflow.  Your variant would do so.
+</p>
+
+<p>
+This problem is so challenging that there has been almost no previous
+research on static approaches to the problem.  (Two relevant papers are
+<a href="https://www.researchgate.net/publication/221655385_IntScope_Automatically_Detecting_Integer_Overflow_Vulnerability_in_X86_Binary_Using_Symbolic_Execution">IntScope:
+Automatically Detecting Integer Overflow Vulnerability in x86 Binary Using
+Symbolic Execution</a> and
+<a href="https://dl.acm.org/citation.cfm?id=3136872">Integer Overflow
+Vulnerabilities Detection in Software Binary Code</a>.)  Researchers are
+concerned that users will have to write a lot of annotations indicating the
+possible ranges of variables, and that even so there will be a lot of false
+positive warnings due to approximations in the conservative analysis.
+You can convince yourself of the difficulty by manually analyzing programs
+to see how clever the analysis has to be, or manually simulating your
+proposed analysis to learn its weaknesses.
+</p>
+
+<p>
+One way to make the problem tractable is to limit its scope:  instead of
+being concerned with all possible arithmetic overflow, focus on a specific
+use case.
+As one concrete application,
 the <a href="https://checkerframework.org/manual/#index-checker">Index
 Checker</a> is currently unsound in the presence of integer overflow.  If
 an integer <code>i</code> is known to be <code>@Positive</code>, and 1 is
 added to it, then the Index Checker believes that its type
 remains <code>@Positive</code>. If <code>i</code> was
-already <code>Integer.MAX_VALUE</code>, then this type would be false.
+already <code>Integer.MAX_VALUE</code>, then the result is negative &mdash;
+that is, the Index Checker's approximation to it is unsound.
 </p>
 
 <p>
 This project involves removing this unsoundness by implementing a type system to track when an
-integer value might overflow. Implementing such a type system would permit the Index Checker
-to extend its guarantees even to programs that might overflow. We have noticed that this is
-important for some indexing bugs in practice (using the Index Checker, we found 5 bugs in Google
-Guava related to overflow). A key challenge will be keeping the number of false positives in this
-new type system low: previous attempts to build static analyses for integer overflows have either been
-unsound or had high false positive rates. Because we are using this analysis for a specialized
-purpose (i.e. only the types are only important when the Index Checker's analysis might become unsound),
-false positives may be less of a concern.
+integer value might overflow &mdash but this only matters for values that
+are used as an array index. Implementing such an analysis would permit the Index Checker
+to extend its guarantees even to programs that might overflow.
+</p>
+
+<p>
+This analysis is important for some indexing bugs in practice.
+Using the Index Checker, we found 5 bugs in Google
+Guava related to overflow.  Google marked these as high priority and
+fixed them immediately.  In practice, there would be a run-time exception
+only for an array of size approximately <code>Integer.MAX_INT</code>.
+</p>
+
+<p>
+You could write an extension of the Constant Value Checker, which already
+keeps track of integer ranges and
+even <a href="https://checkerframework.org/manual/#value-checker-overflow">determines
+when overflow is possible</a>.  It doesn't issue a warning, but your
+checker could record whether overflow was possible (this could be a
+two-element type system) and then issue a warning, if the value is used as
+an array index.
+Other implementation strategies may be possible.
 </p>
 
 
@@ -1274,7 +1453,7 @@ differences from the real Nullness checker:
 </p>
 
 <p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
-  Checker form a spetrum from easy-to-use bug detectors to sound
+  Checker form a spectrum from easy-to-use bug detectors to sound
   verification.  NullnessLight represents a new point in the design space.
   It will be interesting to compare these checkers:
 </p>
@@ -1293,8 +1472,9 @@ differences from the real Nullness checker:
 
 <p>
   Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
-  be an implementation of this idea (that is, a fast, but incomplete and
-  unsound, nullness checker).  NullAway doesn't even handle Java Generics.
+  an implementation of this idea (that is, a fast, but incomplete and
+  unsound, nullness checker).  NullAway doesn't let the user specify Java
+  Generics:  it assumes that every type parameter is <code>@NonNull</code>.
   Does Uber's tool provide users a good
   introduction to the ideas that a user can use to transition to a nullness
   type system later?
@@ -1863,7 +2043,11 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis CWE
  -->
-<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks
+<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre
  -->
-<!--  LocalWords:  checklink
+<!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass
+ -->
+<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode
+ -->
+<!--  LocalWords:  subchecker IntScope
  -->

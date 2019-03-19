@@ -3,8 +3,9 @@
 
 When your code uses a library that is not currently being compiled,
 the Checker Framework looks up the library's annotations in its class files.
-Section~\ref{annotated-libraries-using} tells you how to use a
+Section~\ref{annotated-libraries-using} tells you how to find and use a
 version of a library that contains type annotations.
+
 If your code uses a library that does \emph{not} contain type annotations,
 then the type-checker has no way to know the library's behavior.
 The type-checker
@@ -79,7 +80,8 @@ You can write annotations for a library, and make them known to a checker, in tw
 \end{enumerate}
 
 
-If you annotate a new library, please inform the Checker Framework
+If you annotate a new library (either in its source code or in a stub
+file), please inform the Checker Framework
 developers so that your annotated library can be distributed with the
 Checker Framework.
 Sharing your annotations is useful even if the library is only partially
@@ -168,7 +170,7 @@ they do, you can also express the fact as an annotation.
 
 While annotating the library, you may discover bugs or missing/wrong
 documentation.  If you have a documentation improvement or a bug fix, then
-open a pullrequest against the upstream version of the library.  This will
+open a pull request against the upstream version of the library.  This will
 benefit all users of the library.  And, once the documentation is updated,
 you will be able to add annotations that are consistent with the
 documentation.
@@ -217,20 +219,27 @@ This section describes how to create an annotated library.
 %     This step has no semantic effect.  It only saves you the trouble of
 %     typing those 17 characters later.
 
-  If it exists, fork its repository in \url{https://github.com/typetools/},
-  tweak its buildfile to run an additional checker, and add annotations for
-  that checker.
+  \begin{itemize}
+  \item
+    If it exists, but you want to add annotations for a different checker:
 
-  If it does not already exist, fork the project (if its license permits
-  forking).  Add a note, perhaps in a README, indicating how to obtain the
-  corresponding upstream version (such as a git commit id); that will
-  enable others to see exactly what edits you have made.
+    Clone its repository from \url{https://github.com/typetools/}, tweak
+    its buildfile to run an additional checker.
+
+  \item
+    If it does not already exist:
+
+    Fork the project.  (First, verify that its license permits forking.)
+
+    Add a line in its main README to indicate that this is an annotated
+    version of the library.  That line should also indicate how to obtain
+    the corresponding upstream version (typically a git tag
+    \ahref{../developer/developer-manual.html#annotated-library-version-numbers}{corresponding
+      to a release}), so that others can see exactly what edits you have
+    made.
 
   Adjust the library's
   build process, such as an Ant, Gradle, or Maven buildfile.
-  \begin{sloppypar}
-  \begin{enumerate}
-  \item
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
@@ -241,13 +250,12 @@ This section describes how to create an annotated library.
       annotations exist, using \<-processor
       \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
     \end{itemize}
-  \end{enumerate}
-  \end{sloppypar}
 
   You are not adding new build targets, but modifying existing targets.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
   unannotated type uses.
+  \end{itemize}
 
 \item Annotate some files.
 %  You can determine which files need to be annotated by using the
@@ -277,7 +285,7 @@ This section describes how to create an annotated library.
   \begin{itemize}
   \item
     Please inform the Checker Framework developers
-    about your new annotated library by opening an issue.
+    about your new annotated library by opening a pull request or an issue.
     This will let us add your annotations to a repository in
     \url{https://github.com/typetools/} and upload a compiled artifact to
     the Maven Central Repository.
@@ -373,6 +381,9 @@ JDK that is not in the annotated JDK\@.  If the missing part is relatively
 small, please add it.  If the missing part is large, then you can make
 small changes to the JDK source code, such as commenting out a method body.
 (Use \</*> and \<*/> on their own lines, so that the diffs are minimal.)
+
+To upload a compiled version of the annotated JDK, for use by other people,
+see \url{https://github.com/typetools/annotated-libraries}.
 
 \end{enumerate}
 
@@ -476,7 +487,8 @@ original library classes.  For example:
 \end{Verbatim}
 \end{myxsmall}
 
-Each stub path entry is a file or a directory; specifying a directory is
+Each stub path entry is a stub file (ending with \<.astub>), directory, or
+\<.jar> file; specifying a directory or \<.jar> file is
 equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
@@ -527,7 +539,7 @@ As an illustration, a stub file for the Interning type system
 \begin{Verbatim}
   import org.checkerframework.checker.interning.qual.Interned;
   package java.lang;
-  @Interned class Class<T> { }
+  @Interned class Class<T> {}
   class String {
     @Interned String intern();
   }
@@ -665,26 +677,28 @@ By default, the stub parser silently ignores
 annotations on unknown classes and methods.
 The stub parser also silently ignores unknown annotations, so don't forget to
 \<import> any annotations.
+Some command-line options make the stub parser issue more warnings:
 
-Use command-line option
-\<-AstubWarnIfNotFound> to warn whenever some element of a stub file cannot
-be found.
+\begin{description}
+\item[\<-AstubWarnIfNotFound>]
+  Warn whenever some element of a stub file cannot be found.
+  The \<@NoStubParserWarning> annotation on a package or type in a stub file
+  overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
+  will be issued.
 
-The \<@NoStubParserWarning> annotation on a package or type in a stub file
-overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
-will be issued.
+\item[\<-AstubWarnIfNotFoundIgnoresClasses>]
+  Modifies the behavior of \<-AstubWarnIfNotFound>
+  to report only missing methods/fields, but ignore missing classes, even if
+  other classes from the same package are present.
+  Useful if a package spans more than one jar.
 
-Use command-line option
-\<-AstubWarnIfNotFoundIgnoresClasses> in conjuntion with the previous option
-to report only missing methods/fields, but ignore missing classes, even if
-other classes from the same package are present.
-Useful if a package spans more than one jar.
+\item[\<-AstubWarnIfOverwritesBytecode>]
+  Warn whenever some element of a
+  stub file overwrites annotations contained in bytecode.
+\end{description}
 
-Use command-line option
-\<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a
-stub file overwrites annotations contained in bytecode.
-
-Use command-line option \<-AstubDebug> to output debugging messages while
+Finally,
+use command-line option {\bf\<-AstubDebug>} to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
 annotations.  This overrides the \<@NoStubParserWarning> annotation.
 
@@ -696,18 +710,24 @@ When using command-line option \<-AstubWarnIfNotFound>,
 an error is issued if a stub file has a typo or the API method does not
 exist.
 
-Fix this error by removing the extra L in the method name:
+Fix an error of the form
 \begin{Verbatim}
 StubParser: Method isLLowerCase(char) not found in type java.lang.Character
 \end{Verbatim}
 
-Fix this error by removing the method \<enableForgroundNdefPush(...)> from
-the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
-in the version of the library you are using:
+\noindent
+by removing the extra ``L'' in the method name.
+
+Fix an error of the form
 \begin{Verbatim}
 StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
+
+\noindent
+by removing the method \<enableForgroundNdefPush(...)> from
+the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
+in the version of the library you are using.
 
 
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
@@ -733,7 +753,7 @@ read whether the library's annotations are parsed.
 % LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
-%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug
+%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
@@ -741,4 +761,7 @@ read whether the library's annotations are parsed.
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
 %%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
 %  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
-%  LocalWords:  AstubWarnIfOverwritesBytecode Awarns
+%  LocalWords:  AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
+%%  LocalWords:  Makefile buildJdk PuseLocalJdk jdkShaHash AonlyDefs
+%%  LocalWords:  AuseDefaultsForUncheckedCodesource
+%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses

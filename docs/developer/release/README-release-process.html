@@ -102,17 +102,76 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
   <li>
+    Update dependencies; see all occurrences of <code>version</code> in file
+    <code>build.gradle</code>.
+  </li>
+  <li>
+    If there has been
+    a <a href="https://github.com/javaparser/javaparser/releases">JavaParser
+    release</a> since the last Checker Framework
+    release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
+    Stubparser from JavaParser</a>.
+  </li>
+  <li>
     Rebuild jdk8.jar and upload it to https://github.com/typetools/annotated-libraries.
     See <a href="https://github.com/typetools/annotated-libraries/blob/master/README.md">the README</a> for instructions.
-    Change typetools/master to use the new version and check that all tests pass.
+    Check that all tests pass (when using the <code>typetools/master</code> branch).
   </li>
-  <li> Update the Checker Framework version in <code>checker-framework/build.gradle</code>,
-    in the <code>allprojects</code> block.  Commit and push this change to typetools/master.
-    (The AFU version is updated as part of the release scripts.)
-  </li>
-  <li> Update AFU and Checker Framework change logs by following the instructions at <a href="#content_guidelines">content guidelines</a>.
-    Commit and push these changes to typetools/master.
-  </li>
+  <li>Update the Checker Framework source code:
+    <ul>
+      <li>
+	Update the list of contributors by running
+	<code>make contributors.tex</code>
+	in <code>checker-framework/docs/manual/</code>.  Double-check the edits
+	with <code>git diff</code>; update file <code>contributors.sed</code> if
+	any customizations are necessary.
+      </li>
+      <li>
+	Update AFU and Checker Framework change logs by following the instructions
+	at <a href="#content_guidelines">content guidelines</a>.
+      </li>
+      <li> Update the Checker Framework version number
+	in <code>checker-framework/build.gradle</code>,
+	in the <code>allprojects</code> block.
+	(The AFU version is updated as part of the release scripts.)
+
+	<p>
+	Update the minor version if there are any incompatibilities with the previous version.
+	This includes incompatibilities for people who are maintaining a checker,
+	which happens if the signature changes for any method in these classes:
+	</p>
+<!-- Add other classes to this list if relevant. -->
+<pre>
+AnnotatedTypeFactory
+BaseAnnotatedTypeFactory
+GenericAnnotatedTypeFactory
+CFTransfer
+CFAbstractTransfer
+CFAbstractAnalysis
+CFAnalysis
+CFAbstractStore
+CFStore
+CFAbstractValue
+CFValue
+BaseTypeVisitor
+BaseTypeChecker
+SourceChecker
+MultigraphQualifierHierarchy
+AbstractQualifierPolymorphism
+AnnotationUtils
+TreeAnnotator
+</pre>
+        <p>
+        (TODO: Write a command that diffs these classes between the previous and current release.)
+	</p>
+        <p>
+	A rule of thumb is that any framework change that requires changes to more than one typechecker should be at least a minor version bump.
+	</p>
+      </li>
+      <li>
+	Commit and push these changes to typetools/master.
+      </li>
+    </ul>
   <li>
       <strong>Log into Buffalo</strong><br/>
       <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
@@ -125,23 +184,14 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
   </li>
-  <li><strong>Review the changelogs and documentation</strong><br/>
-      This part of the release script is broken because all of the Checker Framework dependencies must be built to build the manual.
-      Ensure that the changelogs and documentation for the Checker Framework and
-      AFU are complete.  First follow the instructions at <a href="#content_guidelines">content guidelines</a>.  Then,
-      run release_build in a mode that reviews the documentation only:
-      <code>cd /scratch/$USER/jsr308-release/checker-framework/docs/developer/release<br/></code>
-      <code>python release_build.py all --review-manual</code><br/><br/>
-      <strong>Note:</strong> This step can be performed in advance of the release day. It is recommended
-      that this be done the work morning after Feature Freeze.
-  </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
-      <code>python release_build.py all --auto</code><br/><br/>
+      <code>python release_build.py all</code><br/><br/>
+      [TODO: Add <code>--auto</code> here, or not?]<br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
       There has been some work done in order to select only specific projects (AFU and Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
-      See also <a href="#fi_buffalo_integeration">Buffalo Integration</a> for more information
+      See also <a href="#future_continuous_integration">Release in Continuous Integration (nightly tests)</a> for more information
       on the option &quot;--auto&quot;, which you can omit in order to
       be asked more questions during the build.
   </li>
@@ -269,7 +319,7 @@ git config --global user.email you@example.com</pre>
       <td><strong>Run release_build once</strong><br/>
         To save time on release day addressing potential configuration issues, before your first
         release day, ensure that <code>release_build</code> is working correctly
-        by following steps 3, 5, 6, and 8 of the <a href="#step_by_step">Step by Step</a> section.
+        by following the initial steps of the <a href="#step_by_step">Step by Step</a> section.
         <code>release_build</code> still needs to be re-run on release day (even if no changes
         were pushed to any repositories since the last run of <code>release_build</code>) in
         order for the release date to be correct in all documents.
@@ -446,26 +496,50 @@ git config --global user.email you@example.com</pre>
     <ul>
       <li>Only (and all) changes that affect users go into the changelog.
         If a change is breaking, no matter how small, mention it.</li>
-      <li>List all issues (in issue trackers) resolved since the previous release, for
-          the Checker Framework (<a href="https://checkerframework.org/changelog.txt">previous release</a>,
-          <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-          <a href="https://github.com/typetools/checker-framework/blob/master/changelog.txt">current changelog</a>),
-          Annotation File Utilities (<a href="https://checkerframework.org/annotation-file-utilities/changelog.html">previous release</a>,
-          <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-           and <a href="https://github.com/typetools/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>),
-      </li>
-          <li>
-            Examine the version control logs since the last release tag to ensure they are reflected in the changelogs when appropriate.
-        This can be done from the command-line with:<br/>
-            <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-        or by opening the following commit queries for
-        the <a href="https://github.com/typetools/annotation-tools/commits/master">Annotation File Utilities</a> and the
-            <a href="https://github.com/typetools/checker-framework/commits/master">Checker Framework</a>.
-      </li>
-          <li>
+      <li>
             Even if some code has been committed to the repository, don't
             announce the feature until it has been documented in the manual.
+      </li>
+      <li>Checker Framework:
+	<ul>
+	  <li>List all issues (in issue trackers) resolved since the previous release:
+            <a href="https://checkerframework.org/changelog.txt">previous release</a>,
+            <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+            <a href="https://github.com/typetools/checker-framework/blob/master/changelog.txt">current changelog</a>.
+	  </li>
+          <li>
+            Ensure the changelogs reflect version control commits since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+	    or via <a href="https://github.com/typetools/checker-framework/commits/master">GitHub Checker Framework commit logs</a>.
+	  </li>
+          <li>
+            Ensure the changelogs reflect changes to the manual since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK && git diff -w `git describe --abbrev=0 --tags` docs/manual</code>
+	  </li>
+	</ul>
+      </li>
+
+      <li>Annotation File Utilities:
+	<ul>
+	  <li>List all issues (in issue trackers) resolved since the previous release:
+	    <a href="https://checkerframework.org/annotation-file-utilities/changelog.html">previous release</a>,
+            <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+            <a href="https://github.com/typetools/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>
+	  </li>
+          <li>
+            Ensure the changelogs reflect version control commits since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+	    or via <a href="https://github.com/typetools/annotation-tools/commits/master">GitHub Annotation File Utilities commit logs</a>.
+	  </li>
+          <li>
+            Ensure the changelogs reflect changes to the manual since the last release, via the
+	    command line:<br/>
+            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git diff -w `git describe --abbrev=0 --tags` annotation-file-utilities/annotation-file-utilities.html</code>
+	  </li>
+	</ul>
       </li>
     </ul>
     <h3 id="style_guidelines">Style Guidelines</h3>
@@ -540,7 +614,7 @@ git config --global user.email you@example.com</pre>
     and More Sanity Checks) should have any appreciable priority.
   </p>
 
-    <h3 id="fi_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
+    <h3 id="future_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
     There are likely more sanity checks we might want to run during the release process.  One such example
     would be running the tutorial from the command line.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -553,7 +627,7 @@ git config --global user.email you@example.com</pre>
     <ul>
       <li>Run tutorial sanity check automatically via command line.</li>
     </ul>
-    <h3 id="fi_buffalo_integeration">Buffalo Integration</h3> <!-- omit from toc -->
+    <h3 id="future_continuous_integration">Release in Continuous Integration (nightly tests)</h3> <!-- omit from toc -->
     If we could have Buffalo run the release_build script nightly, we could head off broken links and other
     release related errors.  There is an &quot;--auto&quot; option for this specific reason but a number of
     errors start happening when we run the script from Buffalo.
@@ -567,7 +641,7 @@ git config --global user.email you@example.com</pre>
         link-checking results rather than waiting for the link checker to execute in the push script.
       </li>
     </ul>
-    <h3 id="fi_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
+    <h3 id="future_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
     The first step in running the release process, after the pre-release checklist, is to copy the
     release scripts into the <code>jsr308-release</code> directory.  We could automate this.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -576,7 +650,7 @@ git config --global user.email you@example.com</pre>
       <li>Edit the script so that it downloads all release scripts into the jsr308-release directory.</li>
       <li>Update this document to reflect this new process.</li>
     </ul>
-    <h3 id="fi_option_parsing">Option Parsing</h3> <!-- omit from toc -->
+    <h3 id="future_option_parsing">Option Parsing</h3> <!-- omit from toc -->
     There is currently some primitive option parsing written into the release scripts.  We should use
     Python's built-in option parsing library.  There are multiple built-in libraries.  Please use the latest one.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -584,11 +658,11 @@ git config --global user.email you@example.com</pre>
       <li>Look up the latest Python parsing library.</li>
       <li>Replace the option parsing in the release_build.py and release_push.py scripts with library calls.</li>
     </ul>
-    <h3 id="fi_option_projects">Optional Projects</h3> <!-- omit from toc -->
+    <h3 id="future_option_projects">Optional Projects</h3> <!-- omit from toc -->
     A user might want to test the release_build script only on a specific project.  Some work has gone into
     the ability to select a project to build.  However, this currently doesn't take into consideration of dependencies.
     It might be more hassle than it's worth to implement this feature.  We should either complete the implementation
-    or remove the partial implementation that already exists.  See <a href="#fi_repl_mode">REPL Mode</a>.
+    or remove the partial implementation that already exists.  See <a href="#future_repl_mode">REPL Mode</a>.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Improve option parsing to allow the user to select only certain projects to build.</li>
@@ -596,7 +670,7 @@ git config --global user.email you@example.com</pre>
         their dependencies.
       </li>
     </ul>
-    <h3 id="fi_repl_mode">REPL Mode</h3> <!-- omit from toc -->
+    <h3 id="future_repl_mode">REPL Mode</h3> <!-- omit from toc -->
     The current script is built in an imperative style with little use of object orientation.  This improvement
     would create methods or objects that further encapsulate the current set of steps.  We could then provide
     an easy way to execute these steps from the Python REPL.  This would allow the user to execute individual steps

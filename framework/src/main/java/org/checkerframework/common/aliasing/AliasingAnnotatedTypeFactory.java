@@ -72,7 +72,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // This hack ignores any annotation written in the following location:
             // new @A SomeClass();
             AnnotatedTypeMirror defaulted =
-                    atypeFactory.constructorFromUse(node).methodType.getReturnType();
+                    atypeFactory.constructorFromUse(node).executableType.getReturnType();
             Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
             p.replaceAnnotations(defaultedSet);
             return null;

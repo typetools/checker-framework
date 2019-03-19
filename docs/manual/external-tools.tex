@@ -15,6 +15,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item javac (Section~\ref{javac-installation})
+\item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
 \item tIDE (Section~\ref{tide})
@@ -53,14 +54,14 @@ annotations.
 Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
 annotations.  (See
 \url{https://developer.android.com/studio/write/java8-support}
-for more details.)  This section explains how to configure your Andriod
+for more details.)  This section explains how to configure your Android
 project to use the Checker Framework.  All the changes should be made to
 the module's \<build.gradle> file --- not the app's \<build.gradle> file.
 
 \begin{enumerate}
 
 \item In your module's \<build.gradle> file, set the source and target
-  compatiblity to \<JavaVersion.VERSION\_1\_8>
+  compatibility to \<JavaVersion.VERSION\_1\_8>
 
 \begin{Verbatim}
 android {
@@ -108,7 +109,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.5.8'
+    ext.checkerFrameworkVersion = '2.7.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
@@ -261,13 +262,13 @@ Here is an example Buck \<BUILD> file:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-2.5.8.jar',
+    binary_jar = 'checker-2.7.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-2.5.8.jar',
+    binary_jar = 'checker-qual-2.7.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -299,6 +300,13 @@ The reason is that the Checker Framework is built upon javac,
 and ejc represents the Java program differently.  (If both javac and ejc
 implemented JSR 198~\cite{JSR198}, then it would be possible to build
 a type-checking plug-in that works with both compilers.)
+
+
+There is no dedicated Eclipse plug-in for running the Checker Framework,
+but it's still easy to run the Checker Framework.  First, create a
+target/task in your build system to run the Checker Framework.  Then, run
+the target/task from Eclipse.  Section~\ref{eclipse-ant} gives details for
+Ant, but other build systems are similar.
 
 
 \subsectionAndLabel{Using an Ant task}{eclipse-ant}
@@ -460,14 +468,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.5.8/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.7.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.7.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -491,7 +499,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.7.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -510,11 +518,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.5.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.7.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.5.8\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.7.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -577,6 +585,64 @@ use the last one.
 %
 % This is a permanent change that only needs to be done once ever.
 % \end{itemize}
+
+
+\sectionAndLabel{Lombok}{lombok}
+
+Project Lombok (\url{https://projectlombok.org/}) is a library that
+generates getter, setter, and builder methods --- among other features.
+For example, if you declare
+a field:
+
+\begin{Verbatim}
+  @Getter @Setter
+  private @Regex String role;
+\end{Verbatim}
+
+\noindent
+then Lombok will generate getter and setter methods:
+
+\begin{Verbatim}
+  public String getRole() { return role; }
+  public void setRole(String role) { this.role = role; }
+\end{Verbatim}
+
+Unfortunately, the generated code is lacking \<@Regex> annotations on
+the return type of \<getRole> and the argument type of \<setRole>.
+You need to tell Lombok to copy type annotations from the field, so that
+clients that use the generated methods will type-check properly.
+
+In your \<lombok.config> file, add to the \<lombok.copyableAnnotations>
+configuration key any type annotations that might interact with a
+Lombok feature (e.g., a type use annotation on a field annotated with
+\<@Getter> or \<@Setter>).  For example:
+
+\begin{Verbatim}
+  lombok.copyableAnnotations += org.checkerframework.checker.regex.qual.Regex
+\end{Verbatim}
+
+Directory \<docs/examples/lombok> contains an example Gradle project that
+augments the configuration key.
+
+(Note:
+Lombok does support a limited set of annotations without the need for the
+\<lombok.copyableAnnotations> configuration key, but as of version 1.18.4
+(October 2018),
+Lombok does not yet support any of the Checker Framework annotations; see variable
+\<BASE\_COPYABLE\_ANNOTATIONS> in
+\url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}.)
+
+% Alternatives:
+%  * It would be better if Lombok automatically copied all type annotations.
+%    Unfortunately, there is no way for Lombok to know whether an annotation
+%    is a type annotation, at the (early) point in the javac pipeline where
+%    Lombok runs.
+%  * Add all Checker Framework annotations to BASE_COPYABLE_ANNOTATIONS in
+%    the Lombok implementation.  But lombok.copyableAnnotations is still
+%    needed for user-defined type annotations.
+
+% TODO: write a simple tool that generates a lombok.config file for a particular
+% project, with all type annotations used in the project.
 
 
 \sectionAndLabel{Maven}{maven}
@@ -770,7 +836,7 @@ project properties, or via a custom ant target.
 Note: The 'compile and save' action in NetBeans 8.1 automatically
 runs the Checker Framework whereas this functionality has not yet
 been incorporated into NetBeans 8.2. Additionally, JDK annotations
-are currently unavailable on Netbeans 8.1 and 8.2.
+are currently unavailable on NetBeans 8.1 and 8.2.
 
 % NetBeans 8.2 switched to a Java 9 javac, which breaks the Checker Framework as
 % annotation processor.
@@ -1030,7 +1096,8 @@ inside the body of a method (except sometimes on type arguments).
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
 % LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
 % LocalWords:  javacheck checkerframework MavenExample org arg typecheck
-% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled
+% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled dex
 % LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
-% LocalWords:  targetJavaVersion GradleExamples
-% LocalWords:  systemPath artifactID MacOS
+% LocalWords:  targetJavaVersion GradleExamples gradle JavaVersion
+% LocalWords:  systemPath artifactID MacOS eclipsec getter getRole setRole
+% LocalWords:  config copyableAnnotations

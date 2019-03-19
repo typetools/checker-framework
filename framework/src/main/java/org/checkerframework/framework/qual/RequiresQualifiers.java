@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 /**
  * A meta-annotation to allow multiple precondition annotations.
  *
+ * <p>Programmers generally do not need to use this; it is created by Java when a programmer writes
+ * more than one {@code @RequiresQualifier} annotation at the same location.
+ *
  * @see RequiresQualifier
  */
 @Documented

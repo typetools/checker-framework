@@ -619,6 +619,7 @@ Otherwise, we may be unable to understand it or to reproduce it, either of
 which would prevent us from helping you.  Your bug report will be most
 helpful if you:
 
+% If you update this, also update ../../.github/ISSUE_TEMPLATE
 \begin{itemize}
 \item
   Add \code{-version -verbose -AprintAllQualifiers}
@@ -644,7 +645,7 @@ helpful if you:
 \item
   Indicate exactly what the result was by attaching a file or using
   cut-and-paste from your command shell (don't merely describe it in
-  words).
+  words, and don't use a screenshot).
 \item
   Indicate what you expected the result to be, since a bug is a difference
   between desired and actual outcomes.  Also, please indicate \textbf{why}
@@ -754,14 +755,14 @@ brew cask install java
 brew cask install mactex
 \end{Verbatim}
 
-Make latex directory and copy hevea.sty file into it.
+Make a \<latex> directory and copy \<hevea.sty> file into it:
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
-Note: If copy permission denied, try sudo.
+Note: If copy permission denied, try \<sudo>.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
@@ -899,7 +900,7 @@ export PATH=$CHECKERFRAMEWORK/checker/bin-devel:${PATH}
 The developer version of \<javac> allows you to not have to rebuild
 the jar files after every code change, in turn allowing you to test
 your changes faster. Source files can be compiled using command \<./gradlew
-compile> in the \<checker> directory, or can be automatically compiled by
+compileJava>, or can be automatically compiled by
 an IDE such as Eclipse.
 
 \item Test that everything works:
@@ -933,29 +934,10 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 \end{enumerate}
 
 
-\subsectionAndLabel{Configure Eclipse to edit the Checker Framework}{building-eclipse}
+\subsectionAndLabel{Code style, IDE configuration, pull requests, etc.}{building-developer-manual}
 
-These instructions are relevant if you use Eclipse as your IDE\@.
-
-\begin{enumerate}
-\item Follow the instructions earlier in Section~\ref{build-source} to
-clone and build all projects from their sources.
-\item Download Eclipse from
-the \href{https://www.eclipse.org/downloads/}{official Eclipse website}
-and install it.
-\item Run Eclipse.
-\item Enter the main Eclipse working screen and in the ``File'' menu,
-select ``Import'' $\rightarrow$ ``General'' $\rightarrow$ ``Existing
-Projects into Workspace''.
-\item After the ``Import Projects'' window appears, select ``Select
-Root Directory'', and select the parent of the \code{\$CHECKERFRAMEWORK} directory.
-\item Ensure ``Search for nested projects'' is selected in the Options panel.
-\item Select all the projects in the folder except for ``personalblog-demo'',
-then select ``Finish'' to import the projects.
-\end{enumerate}
-Eclipse should successfully build all the imported projects.
-If Eclipse reports any errors, ensure you followed the instructions
-in Section~\ref{build-source}.
+Please see the
+\href{../developer/developer-manual.html}{Checker Framework Developer Manual}.
 
 
 \subsectionAndLabel{Enable Travis continuous integration builds}{building-travis}
@@ -1011,20 +993,6 @@ git clone -b $BRANCHNAME --depth 9 https://github.com/$USER/checker-framework.gi
 cd checker-framework
 ./.travis-build.sh all-tests downloadjdk
 \end{Verbatim}
-
-
-\subsectionAndLabel{Code style}{code-style}
-
-Code in this project follows the
-\ahref{https://google.github.io/styleguide/javaguide.html}{Google Java Style
-Guide} except 4 spaces are used for indentation.  If you commit changes to the
-Git repository, then a pre-commit hook verifies that the changes follow the
-style by running \<./gradlew checkFormat> in the top-level directory.
-
-If
-the pre-commit hook fails
-because of improper formatting, run \<./gradlew reformat>, stage the
-changes, and try the commit operation again.
 
 
 \sectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
@@ -1171,65 +1139,6 @@ Framework is never discussed publicly.
 the Checker Framework developers so we can add it.)
 
 
-\sectionAndLabel{Comparison to other tools}{other-tools}
-
-A pluggable type-checker, such as those created by the Checker Framework,
-is a verification tool that prevents or detects all errors of a given variety.  An
-alternate approach is to use a bug detector such as
-\href{http://findbugs.sourceforge.net/}{FindBugs},
-\href{http://jlint.sourceforge.net/}{Jlint}, or
-\href{https://pmd.github.io}{PMD}.
-
-A pluggable type-checker or verifier
-differs from a bug detector in several ways:
-\begin{itemize}
-\item
-  A type-checker aims to find \emph{all} errors.  Thus, it can verify the
-  \emph{absence} of errors:  if the type-checker says there are no null
-  pointer errors in your code, then there are none.  (This guarantee only
-  holds for the code it checks, of course; see
-  Section~\ref{checker-guarantees}.)
-
-  A bug detector aims to find \emph{some} of the most obvious errors.  Even
-  if it reports no errors, then there may still be errors in your code.
-
-  Both types of tools may issue false alarms,
-  also known as false positive warnings;
-  see Chapter~\ref{suppressing-warnings}.
-
-\item
-  A type-checker requires you to annotate your code with type qualifiers,
-  or to run an inference tool that does so for you.  Some bug detectors do not
-  require annotations.  This means that it may be easier to get started
-  running a bug detector.
-
-\item
-  A type-checker may use a more sophisticated and complete analysis.
-  A bug detector typically does a more lightweight analysis, coupled with
-  heuristics to suppress false positives.
-
-  As one example, a type-checker can take advantage of annotations on
-  generic type parameters, such as \code{List<@NonNull String>}, permitting
-  it to be much more precise for code that uses generics.
-
-\end{itemize}
-
-A case study~\cite[\S6]{PapiACPE2008} compared the Checker Framework's nullness
-checker with those of FindBugs, Jlint, and PMD\@.  The case study was on a
-well-tested program in daily use.  The Checker Framework tool found 8
-nullness errors (that is, null pointer dereferences).  None of the other
-tools found any errors.
-
-Another alternative is to use an IDE tool such as those built into Eclipse
-or IntelliJ\@.  They are bug-finding tools that give up on precision,
-soundness, or both.
-For a more detailed comparison to Eclipse, see Section~\ref{faq-eclipse}.
-
-Also see the
-\href{https://checkerframework.org/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}
-documentation for another discussion of related work.
-
-
 \sectionAndLabel{Credits and changelog}{credits}
 
 Differences from previous versions of the checkers and framework can be found
@@ -1238,83 +1147,7 @@ Checker Framework distribution and is also available on the web at
 \myurl{https://checkerframework.org/changelog.txt}.
 
 Developers who have contributed code to the Checker Framework include
-%
-% To generote the below, run:
-% git log | grep ^Author: | sed 's/Author: \(.*\) <.*>/\1,/' | sort | uniq | sed -f contributors.sed | sort | uniq | sed '$ s/,$/./' > contributors.txt
-%
-Abraham Lin,
-Alvin Abdagic,
-Anatoly Kupriyanov,
-Arie van Deursen,
-Arthur Baars,
-Ashish Rana,
-Asumu Takikawa,
-Atul Dada,
-Basil Peace,
-Bohdan Sharipov,
-Brian Corcoran,
-Calvin Loncaric,
-Charles Chen,
-Charlie Garrett,
-Christopher Mackie,
-Colin S. Gordon,
-Dan Brotherston,
-Dan Brown,
-David Lazar,
-David McArthur,
-Eric Spishak,
-Felipe R. Monteiro,
-Google Inc.\ (via @wmdietlGC),
-Haaris Ahmed,
-Javier Thaine,
-Jeff Luo,
-Jenny Xiang,
-Jianchu Li,
-Jiasen (Jason) Xu,
-Joe Schafer,
-John Vandenberg,
-Jonathan Burke,
-Jonathan Nieder,
-Kivanc Muslu,
-Konstantin Weitz,
-L\'azaro Clapp,
-Liam Miller-Cushon,
-Luqman Aden,
-Mahmood Ali,
-Manu Sridharan,
-Mark Roberts,
-Martin Kellogg,
-Matt Mullen,
-Michael Bayne,
-Michael Coblenz,
-Michael Ernst,
-Michael Sloan,
-Mier Ta,
-Nhat Dinh,
-Nikhil Shinde,
-Pascal Wittmann,
-Patrick Meiring,
-Paulo Barros,
-Paul Vines,
-Philip Lai,
-Ravi Roshan,
-Renato Athaydes,
-Ren\'e Just,
-Ruturaj Mohanty,
-Ryan Oblak,
-Sadaf Tajik,
-Shinya Yoshida,
-Stefan Heule,
-Steph Dietzel,
-Stuart Pernsteiner,
-Suzanne Millstein,
-Tony Wang,
-Trask Stalnaker,
-Utsav Oza,
-Vatsal Sura,
-Vlastimil Dort,
-Werner Dietl.
-%
+\input{contributors.tex}
 In addition, too many users to list have provided valuable feedback, which
 has improved the toolset's design and implementation.
 Thanks for your help!
@@ -1352,10 +1185,12 @@ For details, see file
 %  LocalWords:  extJavac ZipFile AnoPrintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
 %  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
-%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre
+%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre yml
 %%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted ElementType
-%%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex
+%%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex IGJ
 %%  LocalWords:  JavaUI EnerJ App CCS ReIm ReImInfer Anatoly Kupriyanov
 %%  LocalWords:  Asumu Takikawa Brotherston McArthur Luo Bayne Coblenz Lai
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
-%%  LocalWords:  toolset's
+%%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
+%%  LocalWords:  astub homebrew hevea cloneAndBuildDependencies allTests
+%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ

@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -77,7 +78,6 @@ import org.checkerframework.javacutil.UserError;
  * behavior must be overridden, the subclass may override the {@link
  * BaseAnnotatedTypeFactory#createQualifierHierarchy()} method.
  *
- * @see org.checkerframework.framework.qual
  * @checker_framework.manual #creating-compiler-interface The checker class
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
@@ -98,29 +98,26 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         super.initChecker();
     }
 
-    /*
-     * The full list of subcheckers that need to be run prior to this one,
-     * in the order they need to be run in.  This list will only be
-     * non-empty for the one checker that runs all other subcheckers.  Do
-     * not read this field directly. Instead, retrieve it via {@link
+    /**
+     * The full list of subcheckers that need to be run prior to this one, in the order they need to
+     * be run in. This list will only be non-empty for the one checker that runs all other
+     * subcheckers. Do not read this field directly. Instead, retrieve it via {@link
      * #getSubcheckers}.
-     * <p>
      *
-     * If the list still null when {@link #getSubcheckers} is called, then
-     * getSubcheckers() will call {@link #instantiateSubcheckers}.
-     * However, if the current object was itself instantiated by a prior
-     * call to instantiateSubcheckers, this field will have been
-     * initialized to an empty list before getSubcheckers() is called,
-     * thereby ensuring that this list is non-empty only for one checker.
+     * <p>If the list still null when {@link #getSubcheckers} is called, then getSubcheckers() will
+     * call {@link #instantiateSubcheckers}. However, if the current object was itself instantiated
+     * by a prior call to instantiateSubcheckers, this field will have been initialized to an empty
+     * list before getSubcheckers() is called, thereby ensuring that this list is non-empty only for
+     * one checker.
      */
     private List<BaseTypeChecker> subcheckers = null;
 
-    /*
-     * The list of subcheckers that are direct dependencies of this checker.
-     * This list will be non-empty for any checker that has at least one subchecker.
+    /**
+     * The list of subcheckers that are direct dependencies of this checker. This list will be
+     * non-empty for any checker that has at least one subchecker.
      *
-     * Does not need to be initialized to null or an empty list because it is always
-     * initialized via calls to instantiateSubcheckers.
+     * <p>Does not need to be initialized to null or an empty list because it is always initialized
+     * via calls to instantiateSubcheckers.
      */
     private List<BaseTypeChecker> immediateSubcheckers;
 
@@ -262,7 +259,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         } catch (Throwable t) {
             if (t instanceof InvocationTargetException) {
                 Throwable err = t.getCause();
-                String msg;
                 if (err instanceof UserError) {
                     UserError ue = (UserError) err;
                     // Don't add another stack frame, just show the message.
@@ -573,8 +569,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         final Diagnostic.Kind kind;
         final String message;
         final Tree source;
+
         /**
-         * This checker that issued this message. The compound checker that depends on this checker
+         * The checker that issued this message. The compound checker that depends on this checker
          * uses this to sort the messages.
          */
         final BaseTypeChecker checker;
@@ -604,7 +601,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             if (!message.equals(that.message)) {
                 return false;
             }
-            if (source == that.source) {
+            if (source != that.source) {
                 return false;
             }
             return checker == that.checker;
@@ -612,11 +609,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         @Override
         public int hashCode() {
-            int result = kind.hashCode();
-            result = 31 * result + message.hashCode();
-            result = 31 * result + source.hashCode();
-            result = 31 * result + checker.hashCode();
-            return result;
+            return Objects.hash(kind, message, source, checker);
         }
 
         @Override

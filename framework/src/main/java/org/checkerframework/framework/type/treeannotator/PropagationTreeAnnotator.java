@@ -22,8 +22,8 @@ import org.checkerframework.javacutil.Pair;
  * of an input type, e.g. the result of a binary operation is a LUB of the type of expressions in
  * the binary operation.
  *
- * <p>{@link PropagationTreeAnnotator} is generally ran first by {@link ListTreeAnnotator} since the
- * trees it handles are not usually targets of @implicit for.
+ * <p>{@link PropagationTreeAnnotator} is generally run first by {@link ListTreeAnnotator} since the
+ * trees it handles are not usually targets of {@code @ImplicitFor}.
  *
  * <p>{@link PropagationTreeAnnotator} does not traverse trees deeply by default.
  *
@@ -49,10 +49,13 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
         AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
 
+        // prev is the lub of the initializers if they exist, otherwise the current component type.
         Collection<? extends AnnotationMirror> prev = null;
         if (tree.getInitializers() != null && !tree.getInitializers().isEmpty()) {
             // We have initializers, either with or without an array type.
 
+            // TODO (issue #599): This only works at the top level.  It should work at all levels of
+            // the array.
             for (ExpressionTree init : tree.getInitializers()) {
                 AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
                 // initType might be a typeVariable, so use effectiveAnnotations.
@@ -76,7 +79,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                 && context.second instanceof AnnotatedArrayType) {
             AnnotatedTypeMirror contextComponentType =
                     ((AnnotatedArrayType) context.second).getComponentType();
-            // Only compare the qualifiers that existed in the array type
+            // Only compare the qualifiers that existed in the array type.
             // Defaulting wasn't performed yet, so prev might have fewer qualifiers than
             // contextComponentType, which would cause a failure.
             // TODO: better solution?
@@ -96,8 +99,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                                     && prevIsSubtype))) {
                 post = contextComponentType.getAnnotations();
             } else {
-                // The type of the array initializers is incompatible with the
-                // context type!
+                // The type of the array initializers is incompatible with the context type!
                 // Somebody else will complain.
                 post = prev;
             }
@@ -105,6 +107,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             // No context is available - simply use what we have.
             post = prev;
         }
+        // TODO (issue #599): This only works at the top level.  It should work at all levels of
+        // the array.
         componentType.addMissingAnnotations(post);
 
         return null;

@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * A node for the greater than comparison:
@@ -30,7 +30,7 @@ public class GreaterThanNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof GreaterThanNode)) {
+        if (!(obj instanceof GreaterThanNode)) {
             return false;
         }
         GreaterThanNode other = (GreaterThanNode) obj;
@@ -40,6 +40,6 @@ public class GreaterThanNode extends BinaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+        return Objects.hash(getLeftOperand(), getRightOperand());
     }
 }

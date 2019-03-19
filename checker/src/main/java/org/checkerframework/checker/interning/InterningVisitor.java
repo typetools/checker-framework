@@ -63,11 +63,18 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /** See method typeToCheck(). */
     private final DeclaredType typeToCheck;
 
+    /** The Comparabel.compareTo method. */
+    private final ExecutableElement comparableCompareTo;
+
+    /** Create an InterningVisitor. */
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
         this.INTERNED_DISTINCT = AnnotationBuilder.fromClass(elements, InternedDistinct.class);
         typeToCheck = typeToCheck();
+        comparableCompareTo =
+                TreeUtils.getMethod(
+                        "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
     }
 
     /**
@@ -289,11 +296,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Tests whether a method invocation is an invocation of {@link #equals} that overrides or hides
-     * {@link Object#equals(Object)}.
+     * Tests whether a method invocation is an invocation of {@link #equals} with one argument.
      *
-     * <p>Returns true even if a method does not override {@link Object#equals(Object)}, because of
-     * the common idiom of writing an equals method with a non-Object parameter, in addition to the
+     * <p>Returns true even if a method overloads {@link Object#equals(Object)}, because of the
+     * common idiom of writing an equals method with a non-Object parameter, in addition to the
      * equals method that overrides {@link Object#equals(Object)}.
      *
      * @param node a method invocation node
@@ -301,25 +307,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     private boolean isInvocationOfEquals(MethodInvocationTree node) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
-        // TODO: CODE REVIEW NEITHER OF THE TWO
         return (method.getParameters().size() == 1
                 && method.getReturnType().getKind() == TypeKind.BOOLEAN
                 // method symbols only have simple names
                 && method.getSimpleName().contentEquals("equals"));
-    }
-
-    /**
-     * Tests whether a method invocation is an invocation of {@link Comparable#compareTo}.
-     *
-     * @param node a method invocation node
-     * @return true iff {@code node} is a invocation of {@code compareTo()}
-     */
-    private boolean isInvocationOfCompareTo(MethodInvocationTree node) {
-        ExecutableElement method = TreeUtils.elementFromUse(node);
-        return (method.getParameters().size() == 1
-                && method.getReturnType().getKind() == TypeKind.INT
-                // method symbols only have simple names
-                && method.getSimpleName().contentEquals("compareTo"));
     }
 
     /**
@@ -413,10 +404,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
                     @Override
                     public Boolean visitBlock(BlockTree tree, Void p) {
-                        if (tree.getStatements().size() > 0) {
-                            return visit(tree.getStatements().get(0), p);
+                        if (tree.getStatements().isEmpty()) {
+                            return false;
                         }
-                        return false;
+                        return visit(tree.getStatements().get(0), p);
                     }
 
                     @Override
@@ -691,7 +682,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
                     @Override
                     public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
-                        if (!isInvocationOfCompareTo(tree)) {
+                        if (!TreeUtils.isMethodInvocation(
+                                tree, comparableCompareTo, checker.getProcessingEnvironment())) {
                             return false;
                         }
 

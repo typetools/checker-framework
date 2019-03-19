@@ -28,6 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -106,12 +107,13 @@ public class WholeProgramInferenceScenesHelper {
                 AScene scene = scenes.get(jaifPath).clone();
                 removeIgnoredAnnosFromScene(scene);
                 new File(jaifPath).delete();
-                if (!scene.prune()) {
+                scene.prune();
+                if (!scene.isEmpty()) {
                     // Only write non-empty scenes into .jaif files.
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
             } catch (IOException e) {
-                throw new BugInCF(
+                throw new UserError(
                         "Problem while reading file in: "
                                 + jaifPath
                                 + ". Exception message: "
@@ -143,7 +145,7 @@ public class WholeProgramInferenceScenesHelper {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    throw new BugInCF(
+                    throw new UserError(
                             "Problem while reading file in: "
                                     + jaifPath
                                     + "."
@@ -163,7 +165,7 @@ public class WholeProgramInferenceScenesHelper {
     protected AClass getAClass(String className, String jaifPath) {
         // Possibly reads .jaif file to obtain a Scene.
         AScene scene = getScene(jaifPath);
-        return scene.classes.vivify(className);
+        return scene.classes.getVivify(className);
     }
 
     /**
@@ -175,8 +177,6 @@ public class WholeProgramInferenceScenesHelper {
      *   <li>If there was a previous annotation, the updated set will be the LUB between the
      *       previous annotation and newATM.
      * </ul>
-     *
-     * <p>
      *
      * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
@@ -240,7 +240,7 @@ public class WholeProgramInferenceScenesHelper {
      * #shouldIgnore}).
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
-        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere.toString();
+        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere;
         Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
         if (annosToIgnoreForLocation != null) {
             Set<Annotation> annosToRemove = new HashSet<>();
@@ -339,10 +339,7 @@ public class WholeProgramInferenceScenesHelper {
      * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(
-            AnnotationMirror am,
-            TypeUseLocation location,
-            AnnotatedTypeFactory atf,
-            AnnotatedTypeMirror atm) {
+            AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
         Element elt = am.getAnnotationType().asElement();
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
@@ -418,7 +415,10 @@ public class WholeProgramInferenceScenesHelper {
         return false;
     }
 
-    /** Returns a subset of annosSet, consisting of the annotations supported by atf. */
+    /**
+     * Returns a subset of annosSet, consisting of the annotations supported by atf. These are not
+     * necessarily legal annotations: they have the right name, but they may lack elements (fields).
+     */
     private Set<Annotation> getSupportedAnnosInSet(
             Set<Annotation> annosSet, AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<>();
@@ -512,7 +512,7 @@ public class WholeProgramInferenceScenesHelper {
         if (curATM.getExplicitAnnotations().isEmpty()) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
-                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+                        newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -526,7 +526,7 @@ public class WholeProgramInferenceScenesHelper {
                     break;
                 }
                 addAnnotationsToATypeElement(
-                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+                        newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         }
 
@@ -538,7 +538,7 @@ public class WholeProgramInferenceScenesHelper {
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
                     atf,
-                    typeToUpdate.innerTypes.vivify(
+                    typeToUpdate.innerTypes.getVivify(
                             new InnerTypeLocation(
                                     TypeAnnotationPosition.getTypePathFromBinary(
                                             Collections.nCopies(2 * idx, 0)))),
@@ -549,7 +549,6 @@ public class WholeProgramInferenceScenesHelper {
 
     private void addAnnotationsToATypeElement(
             AnnotatedTypeMirror newATM,
-            AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
             AnnotationMirror am,
@@ -557,12 +556,11 @@ public class WholeProgramInferenceScenesHelper {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
         if (anno != null) {
             typeToUpdate.tlAnnotationsHere.add(anno);
-            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, atf, newATM)) {
+            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
                 // firstKey works as a unique identifier for each annotation
                 // that should not be inserted in source code
                 String firstKey =
-                        typeToUpdate.description.toString()
-                                + typeToUpdate.tlAnnotationsHere.toString();
+                        typeToUpdate.description.toString() + typeToUpdate.tlAnnotationsHere;
                 Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {

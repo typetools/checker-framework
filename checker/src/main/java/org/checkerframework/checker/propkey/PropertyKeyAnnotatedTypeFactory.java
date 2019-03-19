@@ -153,15 +153,13 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             try {
                 Properties prop = new Properties();
 
-                InputStream in = null;
-
                 ClassLoader cl = this.getClass().getClassLoader();
                 if (cl == null) {
                     // the class loader is null if the system class loader was
                     // used
                     cl = ClassLoader.getSystemClassLoader();
                 }
-                in = cl.getResourceAsStream(name);
+                InputStream in = cl.getResourceAsStream(name);
 
                 if (in == null) {
                     // if the classloader didn't manage to load the file, try
@@ -176,8 +174,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (in == null) {
                     checker.message(Kind.WARNING, "Couldn't find the properties file: " + name);
-                    // report(Result.failure("propertykeychecker.filenotfound",
-                    // name), null);
+                    // report(Result.failure("propertykeychecker.filenotfound", name), null);
                     // return Collections.emptySet();
                     continue;
                 }

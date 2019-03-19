@@ -54,4 +54,9 @@ public class ListTreeAnnotator extends TreeAnnotator {
 
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "ListTreeAnnotator(" + annotators + ")";
+    }
 }

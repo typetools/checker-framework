@@ -44,9 +44,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * the {@link IntRangeFromPositive} annotation, the {@link IntRangeFromNonNegative} annotation,
      * or the {@link IntRangeFromGTENegativeOne} annotation. This annotation is only introduced by
      * the Index Checker's lower bound annotations. It is safe to defer checking of these values to
-     * the Index Checker because this is only introduced for explicitly-written {@link
-     * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@link
-     * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@link
+     * the Index Checker because this is only introduced for explicitly-written {@code
+     * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@code
+     * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@code
      * org.checkerframework.checker.index.qual.GTENegativeOne} annotations, which must be checked by
      * the Lower Bound Checker.
      *
@@ -103,7 +103,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * prevent these annotations from being required on the left hand side of assignments.
      *
      * @param varType an annotated type mirror that may contain IntRangeFromX annotations, which
-     *     will be used on the lhs of an assignment or pseudo-assignment.
+     *     will be used on the lhs of an assignment or pseudo-assignment
      */
     private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
         AnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =

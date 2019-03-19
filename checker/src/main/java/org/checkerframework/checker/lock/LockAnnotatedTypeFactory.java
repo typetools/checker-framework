@@ -101,7 +101,7 @@ public class LockAnnotatedTypeFactory
         LOCKPOSSIBLYHELD = AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
         SIDEEFFECTFREE = AnnotationBuilder.fromClass(elements, SideEffectFree.class);
         GUARDEDBYUNKNOWN = AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = AnnotationBuilder.fromClass(elements, GuardedBy.class);
+        GUARDEDBY = createGuardedByAnnotationMirror(new ArrayList<String>());
         GUARDEDBYBOTTOM = AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
         GUARDSATISFIED = AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
@@ -274,11 +274,11 @@ public class LockAnnotatedTypeFactory
         }
 
         boolean isGuardedBy(AnnotationMirror am) {
-            return AnnotationUtils.areSameIgnoringValues(am, GUARDEDBY);
+            return AnnotationUtils.areSameByName(am, GUARDEDBY);
         }
 
         boolean isGuardSatisfied(AnnotationMirror am) {
-            return AnnotationUtils.areSameIgnoringValues(am, GUARDSATISFIED);
+            return AnnotationUtils.areSameByName(am, GUARDSATISFIED);
         }
 
         @Override
@@ -569,9 +569,9 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public ParameterizedMethodType methodFromUse(
+    public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
-        ParameterizedMethodType mType = super.methodFromUse(tree, methodElt, receiverType);
+        ParameterizedExecutableType mType = super.methodFromUse(tree, methodElt, receiverType);
 
         if (tree.getKind() != Kind.METHOD_INVOCATION) {
             return mType;
@@ -583,7 +583,7 @@ public class LockAnnotatedTypeFactory
         // the call site (e.g. @GuardedBy("someLock") and replace the return type at the call site
         // with this type.
 
-        AnnotatedExecutableType invokedMethod = mType.methodType;
+        AnnotatedExecutableType invokedMethod = mType.executableType;
 
         if (invokedMethod.getElement().getKind() == ElementKind.CONSTRUCTOR) {
             return mType;

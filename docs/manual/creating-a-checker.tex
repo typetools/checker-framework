@@ -524,7 +524,7 @@ hierarchy.
   \begin{Verbatim}
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @SubtypeOf( { Nullable.class } )
-    public @interface NonNull { }
+    public @interface NonNull {}
   \end{Verbatim}
 
   % (The actual definition of \refclass{checker/nullness/qual}{NonNull} is slightly more complex.)
@@ -553,8 +553,8 @@ hierarchy.
 
   \begin{Verbatim}
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    @SubtypeOf( { } )
-    public @interface Nullable { }
+    @SubtypeOf( {} )
+    public @interface Nullable {}
   \end{Verbatim}
 
   \begin{sloppypar}
@@ -572,7 +572,7 @@ hierarchy.
   \begin{Verbatim}
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @PolymorphicQualifier
-    public @interface PolyNull { }
+    public @interface PolyNull {}
   \end{Verbatim}
 
   For a description of polymorphic qualifiers, see
@@ -844,12 +844,12 @@ checker classes for the Interning Checker and the Nullness Checker:
   package my.package;
   import org.checkerframework.common.basetype.BaseTypeChecker;
   @SupportedLintOptions({"dotequals"})
-  public final class InterningChecker extends BaseTypeChecker { }
+  public final class InterningChecker extends BaseTypeChecker {}
 
   package my.package;
   import org.checkerframework.common.basetype.BaseTypeChecker;
   @SupportedLintOptions({"flow", "cast", "cast:redundant"})
-  public class NullnessChecker extends BaseTypeChecker { }
+  public class NullnessChecker extends BaseTypeChecker {}
 \end{Verbatim}
 
 (The \refqualclass{framework/source}{SupportedLintOptions} annotation is
@@ -1190,7 +1190,7 @@ type qualifiers:
   @ImplicitFor(literals = { LiteralKind.NULL },
                typeNames = { java.lang.Void.class })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Nullable { }
+  public @interface Nullable {}
 
   @SubtypeOf( { Nullable.class } )
   @ImplicitFor(literals = { LiteralKind.STRING },
@@ -1600,7 +1600,7 @@ the result of \code{RegexUtils.asRegex} invocations:
     if (receiver instanceof ClassNameNode) {
       String receiverName = ((ClassNameNode) receiver).getElement().toString();
 
-      // Is this a call to method RegexUtil.isRegex(s, groups)?
+      // Is this a call to static method isRegex(s, groups) in a class named RegexUtil?
       if (receiverName.equals("RegexUtil")
           && ElementUtils.matchesElement(method,
                  null, "isRegex", String.class, int.class)) {
@@ -1839,9 +1839,8 @@ refinement, you can create a graphical representation of the CFG.
 Typical use is:
 
 \begin{Verbatim}
-javac -processor myProcessor -Aflowdotdir=someDirectory MyClass.java
-cd someDirectory
-dot -Tpdf -o MyClass.pdf MyClass.dot
+javac -processor myProcessor -Aflowdotdir=. MyClass.java
+for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
 \noindent
@@ -2187,6 +2186,18 @@ the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
 \code{Utils} suffix to distinguish the class names (e.g., \refclass{javacutil}{TypesUtils},
 \refclass{javacutil}{TreeUtils}, \refclass{javacutil}{ElementUtils}), with one
 notable exception: \refclass{framework/util}{AnnotatedTypes}.
+
+
+\subsubsectionAndLabel{Equality for annotations}{equality-for-annotations}
+
+\<AnnotationMirror> is an interface that is implemented both by javac and
+the Checker Framework. Using \<equals> with one object created by the
+Checker Framework and one by javac will always return false even if they
+represent the same annotation. Therefore, never use any method that
+compares \<AnnotationMirror>s using equals. \refclass{javacutil}{AnnotationUtils} has various
+methods that should be used instead. Also,
+\refclass{framework/util}{AnnotationMirrorMap} and
+\refclass{framework/util}{AnnotationMirrorSet} can be used.
 
 
 \subsectionAndLabel{How a checker fits in the compiler as an annotation processor}{creating-checker-as-annotation-processor}

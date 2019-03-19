@@ -30,7 +30,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -271,8 +271,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             assert callerReceiverType != null;
             final TypeElement callerReceiverElt = (TypeElement) callerReceiverType.asElement();
             // Note: All these checks should be fast in the common case, but happen for every method
-            // call inside the
-            // anonymous class. Consider a cache here if profiling surfaces this as taking too long.
+            // call inside the anonymous class. Consider a cache here if profiling surfaces this as
+            // taking too long.
             if (TypesUtils.isAnonymous(callerReceiverType)
                     // Skip if already inferred @UI
                     && !effStack.peek().isUI()
@@ -429,8 +429,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     public Void visitNewClass(NewClassTree node, Void p) {
         Void v = super.visitNewClass(node, p);
         // If this is an anonymous inner class inferred to be @UI, scan up the path and re-check any
-        // assignments
-        // involving it.
+        // assignments involving it.
         if (atypeFactory.isDirectlyMarkedUIThroughInference(node)) {
             // Backtrack path to the new class expression itself
             TreePath path = visitorState.getPath();
@@ -473,8 +472,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             case METHOD_INVOCATION:
                 MethodInvocationTree invocationTree = (MethodInvocationTree) tree;
                 List<? extends ExpressionTree> args = invocationTree.getArguments();
-                ParameterizedMethodType mType = atypeFactory.methodFromUse(invocationTree);
-                AnnotatedExecutableType invokedMethod = mType.methodType;
+                ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
+                AnnotatedExecutableType invokedMethod = mType.executableType;
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(
                                 atypeFactory, invokedMethod, invocationTree.getArguments());
@@ -527,8 +526,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 break;
             case METHOD:
                 // Stop scanning at method boundaries, since the expression can't escape the method
-                // without
-                // either being assigned to a field or returned.
+                // without either being assigned to a field or returned.
                 return;
             case CLASS:
                 // Can't ever happen, because we stop scanning at either method or field initializer
@@ -550,7 +548,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // public void processClassTree(ClassTree node) {
     // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
     // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the
-    // TypeFactory
+    // TypeFactory.
     // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
 
     // Push a null method and UI effect onto the stack for static field initialization
