@@ -245,18 +245,8 @@ class MyClass {
 }
 \end{Verbatim}
 
-If you wish to write multiple
-\refqualclass{framework/qual}{DefaultQualifier} annotations at a single location,
-use
-\refqualclass{framework/qual}{DefaultQualifiers} instead.  For example:
-
-\begin{Verbatim}
-@DefaultQualifiers({
-  @DefaultQualifier(NonNull.class),
-  @DefaultQualifier(Tainted.class)
-})
-\end{Verbatim}
-
+You may write multiple
+\refqualclass{framework/qual}{DefaultQualifier} annotations at a single location.
 
 If \code{@DefaultQualifier}[\code{s}] is placed on a package (via the
 \<package-info.java> file), then it applies to the given package \emph{and}
@@ -1481,7 +1471,7 @@ class @Marsupial-Animal {
 
 
 % LocalWords:  MyClass qual PolymorphicQualifier DefaultQualifier subpackages
-% LocalWords:  DefaultQualifiers actuals toArray CollectionToArrayHeuristics nn
+% LocalWords:  actuals toArray CollectionToArrayHeuristics nn
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf

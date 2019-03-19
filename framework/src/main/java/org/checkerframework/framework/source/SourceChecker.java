@@ -721,6 +721,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return Collections.unmodifiableMap(activeOpts);
     }
 
+    /** Only ever called once; the value is cached in field {@link #suppressWarnings}. */
     private String @Nullable [] createSuppressWarnings(Map<String, String> options) {
         if (!options.containsKey("suppressWarnings")) {
             return null;
@@ -1417,14 +1418,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
 
-        String[] userSwKeys = (anno == null ? null : anno.value());
         if (this.suppressWarnings == null) {
             this.suppressWarnings = createSuppressWarnings(getOptions());
         }
         String[] cmdLineSwKeys = this.suppressWarnings;
+        if (checkSuppressWarnings(cmdLineSwKeys, errKey)) {
+            return true;
+        }
 
-        return checkSuppressWarnings(userSwKeys, errKey)
-                || checkSuppressWarnings(cmdLineSwKeys, errKey);
+        if (anno != null) {
+            String[] userSwKeys = anno.value();
+            if (checkSuppressWarnings(userSwKeys, errKey)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -2069,12 +2078,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return collection of warning keys
      */
     protected final Collection<String> getStandardSuppressWarningsKeys() {
-        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
-
         // TreeSet ensures keys are returned in a consistent order.
         Set<String> result = new TreeSet<>();
         result.add(SUPPRESS_ALL_KEY);
 
+        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {
             // Add from annotation
             for (String key : annotation.value()) {
