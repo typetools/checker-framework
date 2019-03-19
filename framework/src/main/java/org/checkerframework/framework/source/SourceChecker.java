@@ -732,7 +732,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return null;
         }
 
-        return swString.split(",");
+        return arrayToLowerCase(swString.split(","));
+    }
+
+    /** Side-effects the array to make each string lowercase, then returns the array. */
+    private static String[] arrayToLowerCase(String[] a) {
+        for (int i = 0; i < a.length; i++) {
+            a[i] = a[i].toLowerCase();
+        }
+        return a;
     }
 
     /** Log a user error. */
@@ -1427,7 +1435,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (anno != null) {
-            String[] userSwKeys = anno.value();
+            String[] userSwKeys = arrayToLowerCase(anno.value());
             if (checkSuppressWarnings(userSwKeys, errKey)) {
                 return true;
             }
@@ -1440,8 +1448,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Return true if the given error should be suppressed, based on the given @SuppressWarnings
      * keys.
      *
-     * @param userSwKeys the @SuppressWarnings keys supplied by the user
-     * @param errKey the error key the checker is emitting
+     * @param userSwKeys the @SuppressWarnings keys supplied by the user; may be null (in which case
+     *     this method returns false), otherwise contains lowercase strings
+     * @param errKey the error key the checker is emitting; a lowercase string
      * @return true if one of the {@code userSwKeys} is returned by {@link
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
      */
@@ -1457,13 +1466,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Check each value of the user-written @SuppressWarnings annotation.
         for (String suppressWarningValue : userSwKeys) {
             for (String checkerKey : checkerSwKeys) {
-                if (suppressWarningValue.equalsIgnoreCase(checkerKey)) {
+                if (suppressWarningValue.equals(checkerKey)) {
                     // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
                     return true;
                 }
 
                 String expected = checkerKey + ":" + errKey;
-                if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase())) {
+                if (expected.contains(suppressWarningValue)) {
                     if (!requirePrefix
                             || suppressWarningValue
                                     .toLowerCase()
@@ -2063,8 +2072,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * @return string keys that a checker honors for suppressing warnings and errors that it issues.
-     *     Each such key suppresses all warnings issued by the checker.
+     * @return collection of lower-case string keys that a checker honors for suppressing warnings
+     *     and errors that it issues. Each such key suppresses all warnings issued by the checker.
      * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
@@ -2086,7 +2095,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (annotation != null) {
             // Add from annotation
             for (String key : annotation.value()) {
-                result.add(key);
+                result.add(key.toLowerCase());
             }
 
         } else {
