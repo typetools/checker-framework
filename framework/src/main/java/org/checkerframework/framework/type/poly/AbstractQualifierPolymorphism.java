@@ -30,6 +30,7 @@ import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Implements framework support for qualifier polymorphism.
@@ -469,7 +470,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             Iterator<AnnotatedTypeMirror> type2Args = type2.getTypeArguments().iterator();
             for (AnnotatedTypeMirror type1Arg : type1.getTypeArguments()) {
                 AnnotatedTypeMirror type2Arg = type2Args.next();
-                result = reduce(result, visit(type1Arg, type2Arg));
+                if (TypesUtils.isErasedSubtype(
+                        type1Arg.getUnderlyingType(),
+                        type2Arg.getUnderlyingType(),
+                        atypeFactory.getContext().getTypeUtils())) {
+                    result = reduce(result, visit(type1Arg, type2Arg));
+                }
             }
 
             return result;

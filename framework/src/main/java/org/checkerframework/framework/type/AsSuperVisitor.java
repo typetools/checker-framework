@@ -342,11 +342,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
         }
 
-        if (type.getUnderlyingType().asElement().getKind().isInterface()) {
-            // An interface might actually implement the supertype.
-            return superType;
-        }
-
         return errorTypeNotErasedSubtypeOfSuperType(type, superType, p);
     }
 
@@ -803,9 +798,16 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             isUninferredTypeAgrument = true;
             superType.setUninferredTypeArgument();
         }
-        AnnotatedTypeMirror upperBound =
-                visit(type.getExtendsBound(), superType.getExtendsBound(), p);
-        superType.setExtendsBound(upperBound);
+        if (types.isSubtype(
+                type.getExtendsBound().getUnderlyingType(),
+                superType.getExtendsBound().getUnderlyingType())) {
+            AnnotatedTypeMirror upperBound =
+                    visit(type.getExtendsBound(), superType.getExtendsBound(), p);
+            superType.setExtendsBound(upperBound);
+        } else {
+            copyPrimaryAnnos(type.getExtendsBound(), superType.getExtendsBound());
+            annotatedTypeFactory.addDefaultAnnotations(superType.getExtendsBound());
+        }
 
         AnnotatedTypeMirror lowerBound;
         if (type.getSuperBound().getKind() == TypeKind.NULL
