@@ -1,3 +1,4 @@
+@SuppressWarnings("")
 public class Issue2371<T extends Issue2371<T>> {
     void method(Issue2371<? extends Object> i) {
         other(i);
