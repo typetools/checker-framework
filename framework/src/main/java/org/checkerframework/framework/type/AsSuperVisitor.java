@@ -317,13 +317,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     // <editor-fold defaultstate="collapsed" desc="visitDeclared_Other methods">
     @Override
-    public AnnotatedTypeMirror visitDeclared_Array(
-            AnnotatedDeclaredType type, AnnotatedArrayType superType, Void p) {
-        // TODO: what is the right behavior? Is j.l.Object the only legal type for `type`?
-        return type;
-    }
-
-    @Override
     public AnnotatedTypeMirror visitDeclared_Declared(
             AnnotatedDeclaredType type, AnnotatedDeclaredType superType, Void p) {
         if (areErasedJavaTypesEquivalent(type, superType)) {
