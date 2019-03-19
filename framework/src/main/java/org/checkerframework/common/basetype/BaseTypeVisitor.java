@@ -2663,12 +2663,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue a warning if the type at constructor invocation is a subtype of the constructor
         // declaration type.
         // This is equivalent to down-casting.
-        if (!atypeFactory.getQualifierHierarchy().isSubtype(returnType, invocationAnnos)) {
-            checker.report(
-                    Result.warning(
-                            "cast.unsafe.constructor.invocation", returnType, invocationAnnos),
-                    newClassTree);
+        // Only check the primary annotations, the type arguments are checked elsewhere.
+        AnnotatedTypeMirror newClassTreeATM = atypeFactory.fromNewClass(newClassTree);
+        for (AnnotationMirror explictAnno : newClassTreeATM.getAnnotations()) {
+            AnnotationMirror returnAnno =
+                    atypeFactory
+                            .getQualifierHierarchy()
+                            .findAnnotationInSameHierarchy(returnType, explictAnno);
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(returnAnno, explictAnno)) {
+                checker.report(
+                        Result.warning(
+                                "cast.unsafe.constructor.invocation", returnType, explictAnno),
+                        newClassTree);
+            }
         }
+
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
