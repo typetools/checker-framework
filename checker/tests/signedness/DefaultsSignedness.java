@@ -180,8 +180,11 @@ public class DefaultsSignedness {
 
         @SignednessBottom Object botObj;
 
+        botObj = null;
+
         Object testObj = null;
 
+        // :: error: (assignment.type.incompatible)
         botObj = testObj;
     }
 

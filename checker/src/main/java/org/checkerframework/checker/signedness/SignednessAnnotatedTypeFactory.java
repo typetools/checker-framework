@@ -55,7 +55,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     */
 
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+        super(checker, /*useFlow=*/ false);
         UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
         CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
