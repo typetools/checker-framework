@@ -38,7 +38,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
-@Repeatable(EnsuresMultiNonNull.class)
+@Repeatable(EnsuresNonNullMultiple.class)
 public @interface EnsuresNonNull {
     /**
      * The Java expressions that are ensured to be {@link NonNull} on successful method termination.
