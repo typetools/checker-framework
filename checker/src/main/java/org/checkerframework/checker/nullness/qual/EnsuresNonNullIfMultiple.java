@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
-public @interface EnsuresMultiNonNullIf {
+public @interface EnsuresNonNullIfMultiple {
     /**
      * Constitutes the Java expressions that are ensured to be {@link NonNull} after the method returns the given result.
      *
