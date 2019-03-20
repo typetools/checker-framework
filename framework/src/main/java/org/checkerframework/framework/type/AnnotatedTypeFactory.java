@@ -708,6 +708,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return null;
     }
 
+    public ViewpointAdapter getViewpointAdapter() {
+        return viewpointAdapter;
+    }
+
     /**
      * TypeVariableSubstitutor provides a method to replace type parameters with their arguments.
      */
