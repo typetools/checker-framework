@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
 @InheritedAnnotation
-@Repeatable(EnsuresMultiKeyForIf.class)
+@Repeatable(EnsuresKeyForIfMultiple.class)
 public @interface EnsuresKeyForIf {
     /** The value the method must return, in order for the postcondition to hold. */
     boolean result();
