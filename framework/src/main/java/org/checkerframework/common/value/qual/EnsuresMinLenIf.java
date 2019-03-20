@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
-@Repeatable(EnsuresMultiMinLenIf.class)
+@Repeatable(EnsuresMinLenIfMultiple.class)
 public @interface EnsuresMinLenIf {
     /**
      * Java expression(s) that are a sequence with the given minimum length after the method returns
