@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
 @InheritedAnnotation
-public @interface EnsuresMultiLTLengthOfIf {
+public @interface EnsuresLTLengthOfIfMultiple {
     /**
      * Constitutes the java expression(s) that are less than the length of the given sequences after
      * the method returns the given result.
