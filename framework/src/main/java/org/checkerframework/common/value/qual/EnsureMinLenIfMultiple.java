@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
-public @interface EnsuresMultiMinLenIf {
+public @interface EnsuresMinLenIfMultiple {
     /**
      * Constitutes the java expression(s) that are a sequence with the given minimum length after
      * the method returns the given result.
