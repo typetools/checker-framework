@@ -53,7 +53,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = LTLengthOf.class)
 @InheritedAnnotation
-@Repeatable(EnsuresMultiLTLengthOf.class)
+@Repeatable(EnsuresLTLengthOfMultiple.class)
 public @interface EnsuresLTLengthOf {
     /**
      * The Java expressions that are less than the length of the given sequences on successful
