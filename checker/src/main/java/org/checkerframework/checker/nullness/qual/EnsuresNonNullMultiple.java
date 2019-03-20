@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
-public @interface EnsuresMultiNonNull {
+public @interface EnsuresNonNullMultiple {
     /**
      * Constitutes the Java expressions that are ensured to be {@link NonNull} on successful method termination.
      *
