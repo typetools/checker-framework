@@ -68,7 +68,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
-@Repeatable(EnsuresMultiNonNullIf.class)
+@Repeatable(EnsuresNonNullIfMultiple.class)
 public @interface EnsuresNonNullIf {
     /**
      * Java expression(s) that are non-null after the method returns the given result.
