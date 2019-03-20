@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -53,6 +54,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
 @InheritedAnnotation
+@Repeatable(EnsuresMultiLTLengthOfIf.class)
 public @interface EnsuresLTLengthOfIf {
     /**
      * Java expression(s) that are less than the length of the given sequences after the method
