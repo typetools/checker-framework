@@ -1242,22 +1242,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
         annotateInheritedFromClass(result);
-        if (result.getKind() == TypeKind.EXECUTABLE
-                && ((AnnotatedExecutableType) result).getElement().getKind()
-                        == ElementKind.CONSTRUCTOR) {
-            AnnotatedDeclaredType returnType =
-                    (AnnotatedDeclaredType) ((AnnotatedExecutableType) result).getReturnType();
-            Element classElt = returnType.getUnderlyingType().asElement();
 
-            // Only add annotations from the class declaration if there
-            // are no annotations from that hierarchy already on the type.
-
-            if (classElt != null) {
-                AnnotatedTypeMirror classType = getAnnotatedType(classElt);
-                assert classType != null : "Unexpected null type for class element: " + classElt;
-                annotateInheritedFromClass(returnType, classType.getAnnotations());
-            }
-        }
         if (shouldCache) {
             fromMemberTreeCache.put(tree, result.deepCopy());
         }
@@ -1672,7 +1657,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
             MethodSymbol methodElt = (MethodSymbol) type.getElement();
-            if (methodElt == null || !methodElt.isConstructor()) {
+            if (methodElt == null) {
                 scan(type.getReturnType(), p);
             }
 
