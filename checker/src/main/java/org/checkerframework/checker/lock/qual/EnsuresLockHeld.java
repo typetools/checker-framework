@@ -2,6 +2,7 @@ package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -20,6 +21,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = LockHeld.class)
 @InheritedAnnotation
+@Repeatable(EnsuresLockHeldMultiple.class)
 public @interface EnsuresLockHeld {
     /**
      * The Java expressions whose values are held after the method terminates successfully.
