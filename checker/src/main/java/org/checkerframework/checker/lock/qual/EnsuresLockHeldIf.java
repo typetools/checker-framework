@@ -2,6 +2,7 @@ package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -21,6 +22,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
 @InheritedAnnotation
+@Repeatable(EnsuresLockHeldIfMultiple.class)
 public @interface EnsuresLockHeldIf {
     /**
      * Java expressions whose values are held after the method returns the given result.
