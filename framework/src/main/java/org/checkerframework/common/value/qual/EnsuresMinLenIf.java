@@ -1,6 +1,7 @@
 package org.checkerframework.common.value.qual;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -22,6 +23,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
+@Repeatable(EnsuresMultiMinLenIf.class)
 public @interface EnsuresMinLenIf {
     /**
      * Java expression(s) that are a sequence with the given minimum length after the method returns
