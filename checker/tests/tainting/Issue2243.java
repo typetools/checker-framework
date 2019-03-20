@@ -6,7 +6,7 @@ import org.checkerframework.checker.tainting.qual.*;
 // :: error: (declaration.inconsistent.with.extends.clause)
 public @Tainted class Issue2243 extends Y {}
 
-// :: error: (super.invocation.invalid)
+// :: error: (declaration.inconsistent.with.extends.clause)
 class ExtendsSubTypingExplicit extends @Untainted X {}
 
 class X {}
@@ -20,3 +20,8 @@ class X {}
 
 // :: error: (declaration.inconsistent.with.implements.clause)
 @Tainted class Z implements SuperClass {}
+
+class Issue224Test {
+    @Untainted ExtendsSubTypingExplicit field;
+    @Tainted ExtendsSubTypingExplicit field2;
+}

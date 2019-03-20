@@ -2642,33 +2642,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedDeclaredType invocation,
             AnnotatedExecutableType constructor,
             NewClassTree newClassTree) {
-        AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) constructor.getReturnType();
-        // When an interface is used as the identifier in an anonymous class (e.g. new Comparable()
-        // {}) the constructor method will be Object.init() {} which has an Object return type When
-        // TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
-        // null from asSuper and return false for the check.  Instead, copy the primary annotations
-        // to the declared type and then do a subtyping check.
-        if (invocation.getUnderlyingType().asElement().getKind().isInterface()
-                && TypesUtils.isObject(returnType.getUnderlyingType())) {
-            final AnnotatedDeclaredType retAsDt = invocation.deepCopy();
-            retAsDt.replaceAnnotations(returnType.getAnnotations());
-            returnType = retAsDt;
-        } else if (newClassTree.getClassBody() != null) {
-            // An anonymous class invokes the constructor of its super class, so the underlying
-            // types of invocation and returnType are not the same.  Call asSuper so they are the
-            // same and the is subtype tests below work correctly
-            invocation = AnnotatedTypes.asSuper(atypeFactory, invocation, returnType);
-        }
+        // Only check the primary annotations, the type arguments are checked elsewhere.
+        Set<AnnotationMirror> returnType = constructor.getReturnType().getAnnotations();
+        Set<AnnotationMirror> invocationAnnos = invocation.getAnnotations();
 
         // The return type of the constructor (returnType) must be comparable to the type of the
         // constructor invocation (invocation).
-        if (!(atypeFactory.getTypeHierarchy().isSubtype(invocation, returnType)
-                || atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation))) {
+        if (!(atypeFactory.getQualifierHierarchy().isSubtype(invocationAnnos, returnType)
+                || atypeFactory.getQualifierHierarchy().isSubtype(returnType, invocationAnnos))) {
             checker.report(
                     Result.failure(
                             "constructor.invocation.invalid",
                             constructor.toString(),
-                            invocation,
+                            invocationAnnos,
                             returnType),
                     newClassTree);
             return false;
@@ -2678,16 +2664,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // declaration type.
         // This is equivalent to down-casting.
         // Only check the primary annotations, the type arguments are checked elsewhere.
-        if (!atypeFactory
-                .getQualifierHierarchy()
-                .isSubtype(returnType.getAnnotations(), invocation.getAnnotations())) {
-            checker.report(
-                    Result.warning(
-                            "cast.unsafe.constructor.invocation",
-                            returnType.toString(true),
-                            invocation.toString(true)),
-                    newClassTree);
+        AnnotatedTypeMirror newClassTreeATM = atypeFactory.fromNewClass(newClassTree);
+        for (AnnotationMirror explictAnno : newClassTreeATM.getAnnotations()) {
+            AnnotationMirror returnAnno =
+                    atypeFactory
+                            .getQualifierHierarchy()
+                            .findAnnotationInSameHierarchy(returnType, explictAnno);
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(returnAnno, explictAnno)) {
+                checker.report(
+                        Result.warning(
+                                "cast.unsafe.constructor.invocation", returnType, explictAnno),
+                        newClassTree);
+            }
         }
+
         return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?

@@ -261,7 +261,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // Therefore, ensure to only add the qualifiers that are explicitly on
         // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).executableType;
-        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
+        //        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
+        type.addMissingAnnotations(ex.getReturnType().getAnnotations());
 
         return type;
     }

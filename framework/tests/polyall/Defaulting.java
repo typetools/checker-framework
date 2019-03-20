@@ -63,8 +63,7 @@ class Defaulting {
             // :: error: (argument.type.incompatible) :: warning:
             // (cast.unsafe.constructor.invocation)
             m(new @H1S2 Object());
-            // :: error: (argument.type.incompatible) :: warning:
-            // (cast.unsafe.constructor.invocation)
+            // :: error: (argument.type.incompatible)
             m(new Object());
         }
     }
@@ -94,8 +93,7 @@ class Defaulting {
             // :: error: (argument.type.incompatible) :: warning:
             // (cast.unsafe.constructor.invocation)
             new TestConstructorParameter(new @H1S2 Object());
-            // :: error: (argument.type.incompatible) :: warning:
-            // (cast.unsafe.constructor.invocation)
+            // :: error: (argument.type.incompatible)
             new TestConstructorParameter(new Object());
         }
     }
@@ -129,7 +127,7 @@ class Defaulting {
         }
 
         Object res3() {
-            // :: error: (return.type.incompatible) :: warning: (cast.unsafe.constructor.invocation)
+            // :: error: (return.type.incompatible)
             return new Object();
         }
     }

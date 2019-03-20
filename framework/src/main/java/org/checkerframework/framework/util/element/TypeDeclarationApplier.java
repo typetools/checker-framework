@@ -83,12 +83,13 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     protected void handleTargeted(List<Attribute.TypeCompound> extendsAndImplementsAnnos) {
-        for (final Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
-
-            if (anno.position.type_index >= SUPERCLASS_INDEX && anno.position.location.isEmpty()) {
-                type.addAnnotation(anno);
-            }
-        }
+        //        for (final Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
+        //
+        //            if (anno.position.type_index >= SUPERCLASS_INDEX &&
+        // anno.position.location.isEmpty()) {
+        //                type.addAnnotation(anno);
+        //            }
+        //        }
     }
 
     /** Adds extends/implements and class annotations to type. Annotates type parameters. */
