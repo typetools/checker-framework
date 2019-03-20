@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = KeyFor.class)
 @InheritedAnnotation
-public @interface EnsuresMultiKeyFor {
+public @interface EnsuresKeyForMultiple {
     /**
      * Constitutes the Java expressions that are keys in the given maps on successful method termination.
      *
