@@ -1250,10 +1250,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an AnnotatedTypeMirror for an ExpressionTree. The AnnotatedTypeMirror contains
-     * explicit annotations written with on the expression, annotations inherited from class
+     * explicit annotations written on the expression, annotations inherited from class
      * declarations, and for some expressions, annotations from sub-expressions that could have been
      * explicitly written, implicited, defaulted, refined, or otherwise computed. (Expression whose
-     * type include annotations from sub- expressions are: ArrayAccessTree,
+     * type include annotations from sub-expressions are: ArrayAccessTree,
      * ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and MethodInvocationTree.)
      *
      * <p>For example, the AnnotatedTypeMirror returned for an array access expression is the fully
