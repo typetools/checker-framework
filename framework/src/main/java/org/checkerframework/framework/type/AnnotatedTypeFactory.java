@@ -22,7 +22,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import java.io.File;
 import java.io.IOException;
@@ -1656,10 +1655,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
-            MethodSymbol methodElt = (MethodSymbol) type.getElement();
-            if (methodElt == null) {
-                scan(type.getReturnType(), p);
-            }
+
+            scan(type.getReturnType(), p);
 
             scanAndReduce(type.getParameterTypes(), p, null);
             scanAndReduce(type.getThrownTypes(), p, null);
