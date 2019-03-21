@@ -2,7 +2,11 @@
 
 Version ??, April 2, 2019
 
-Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
+The Signedness type system no longer uses local type refinement (local type
+inference).  Users must explicitly annotate unsigned local variables as
+`@Unsigned`.
+
+Support `androidx.annotation.RecentlyNonNull` and `RecentlyNullable` (as of
 2.6.0, but not previously documented).
 
 The following qualifiers are now repeatable:  `@DefaultQualifier`

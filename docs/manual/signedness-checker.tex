@@ -29,6 +29,14 @@ Checker (see \chapterpageref{index-checker}) or the
 \refqualclass{common/value/qual}{IntRange} annotation of the Constant Value
 Checker (see \chapterpageref{constant-value-checker}).
 
+The Signedness type system does not use local type refinement (local type
+inference).  Users must explicitly annotate unsigned local variables as
+\<@Unsigned>.
+% The reason for this is to respect user annotations.  An assignment
+% ``@Unsigned int u = 5'' should not cause variable u to be refined to
+% @Constant, which would let it be used in divisions and other places it
+% should not be.
+
 
 \sectionAndLabel{Annotations}{signedness-checker-annotations}
 
