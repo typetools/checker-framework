@@ -74,7 +74,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitBinary(BinaryTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror res = f.type(node);
-        // TODO: why do we need to clear the type?
+        // TODO: Why do we need to clear the type?  Related to flow-sensitive type refinement?
         res.clearAnnotations();
         return res;
     }
@@ -88,7 +88,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         if (f instanceof GenericAnnotatedTypeFactory
                 && ((GenericAnnotatedTypeFactory) f).getUseFlow()) {
-            // TODO: why do we need to clear the type?
             res.clearAnnotations();
         }
         return res;
