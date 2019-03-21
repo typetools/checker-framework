@@ -56,7 +56,7 @@ public class BoundsInitializer {
      * is set to the upper bound of the type parameter for which it is an argument. If {@code
      * declaredType} is raw, then the type arguments are uninferred wildcards.
      *
-     * @param declaredType type whose arguments are initialized.
+     * @param declaredType type whose arguments are initialized
      */
     public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
         final DeclaredType actualType = (DeclaredType) declaredType.actualType;
@@ -440,7 +440,7 @@ public class BoundsInitializer {
          * If the underlying type of (@code type} has been visited before, return the previous
          * AnnotatedTypeMirror. Otherwise, visit {@code type} and return it.
          *
-         * @param type type to visit.
+         * @param type type to visit
          * @return {@code type} or an AnnotatedTypeMirror with the same underlying type that was
          *     previously visited.
          */

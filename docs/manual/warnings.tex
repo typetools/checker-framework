@@ -139,6 +139,11 @@ With the \code{-AshowSuppressWarningKeys} command-line option,
 the compiler lists every key that would suppress the warning,
 not just the most specific one.
 
+With the \code{-ArequirePrefixInWarningSuppressions} command-line
+option, a warning is only suppressed if the key begins with the checker
+name followed by a colon, as in
+\<@SuppressWarnings("nullness:assignment.type.incompatible")>.
+
 %% This is true, but relevant mostly to developers, not users.
 % For a list of all message keys for a given checker, see two files:
 % \begin{enumerate}

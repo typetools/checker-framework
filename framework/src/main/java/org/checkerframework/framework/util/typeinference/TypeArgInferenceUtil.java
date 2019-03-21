@@ -431,8 +431,7 @@ public class TypeArgInferenceUtil {
     private static final TypeVariableSubstitutor substitutor = new TypeVariableSubstitutor();
 
     // Substituter requires an input map that the substitute methods build.  We just reuse the same
-    // map rather than
-    // recreate it each time.
+    // map rather than recreate it each time.
     private static final Map<TypeVariable, AnnotatedTypeMirror> substituteMap = new HashMap<>(5);
 
     /**

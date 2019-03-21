@@ -1908,7 +1908,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
         } else {
-            // checkCastElementType option wasn't specified, so only check effective annotations,
+            // checkCastElementType option wasn't specified, so only check effective annotations.
             return qualifierHierarchy.isSubtype(
                     exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
@@ -2677,7 +2677,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue a warning if the type at constructor invocation is a subtype of the constructor
         // declaration type.
         // This is equivalent to down-casting.
-        if (!atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation)) {
+        // Only check the primary annotations, the type arguments are checked elsewhere.
+        if (!atypeFactory
+                .getQualifierHierarchy()
+                .isSubtype(returnType.getAnnotations(), invocation.getAnnotations())) {
             checker.report(
                     Result.warning(
                             "cast.unsafe.constructor.invocation",
@@ -3616,8 +3619,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             try {
                 // TODO: currently, these expressions are parsed many times.
-                // this could
-                // be optimized to store the result the first time.
+                // This could be optimized to store the result the first time.
                 // (same for other annotations)
                 FlowExpressions.Receiver expr =
                         FlowExpressionParseUtil.parse(expression, flowExprContext, path, false);
