@@ -1307,9 +1307,17 @@ Vulnerabilities Detection in Software Binary Code</a>.)  Researchers are
 concerned that users will have to write a lot of annotations indicating the
 possible ranges of variables, and that even so there will be a lot of false
 positive warnings due to approximations in the conservative analysis.
+For example, will every loop that contains <code>i++</code> cause a warning that <code>i</code> might overflow?
+That would not be acceptable:  users would just disable the check.
+</p>
+
+<p>
 You can convince yourself of the difficulty by manually analyzing programs
 to see how clever the analysis has to be, or manually simulating your
-proposed analysis to learn its weaknesses.
+proposed analysis on a selection of real-world code to learn its
+weaknesses.  You might also try it
+on <a href="https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html">good
+  and bad binary search code</a>.
 </p>
 
 <p>
@@ -1329,7 +1337,10 @@ that is, the Index Checker's approximation to it is unsound.
 <p>
 This project involves removing this unsoundness by implementing a type system to track when an
 integer value might overflow &mdash but this only matters for values that
-are used as an array index. Implementing such an analysis would permit the Index Checker
+are used as an array index.
+That is, checking can be restricted to computations that involve an operand
+of type <code>@IntRange</code>).
+Implementing such an analysis would permit the Index Checker
 to extend its guarantees even to programs that might overflow.
 </p>
 
@@ -1351,6 +1362,28 @@ two-element type system) and then issue a warning, if the value is used as
 an array index.
 Other implementation strategies may be possible.
 </p>
+
+<p>
+Here are some ideas for how to avoid the specific problem
+of issuing a warning about potential overflow for every <code>i++</code> in
+a loop (but maybe other approaches are possible):
+</p>
+<ul>
+  <li>
+    The loop checks whether <code>i == Integer.MAX_VALUE</code> before
+    incrementing.  This wide-scale, disruptive code change is not
+    acceptable.
+  </li>
+  <li>
+    Make the default array size (the length of an unannotated array) be
+    <code>@ArrayLenRange(0, Integer.MAX_VALUE-1)</code> rather
+    than <code>@UnknownVal</code>, which is equivalent
+    to <code>@ArrayLenRange(0, Integer.MAX_VALUE-1)</code>.  Now, every
+    array construction requires the client to establish that the length is
+    not <code>Integer.MAX_VALUE</code>.  I don't have a feel for whether
+    this would be unduly burdensome to users.
+  </li>
+</ul>
 
 
 <h2 id="lock-ordering">Lock ordering</h2>

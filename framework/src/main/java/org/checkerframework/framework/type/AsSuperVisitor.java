@@ -342,11 +342,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
         }
 
-        if (type.getUnderlyingType().asElement().getKind().isInterface()) {
-            // An interface might actually implement the supertype.
-            return superType;
-        }
-
         return errorTypeNotErasedSubtypeOfSuperType(type, superType, p);
     }
 
@@ -803,9 +798,26 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             isUninferredTypeAgrument = true;
             superType.setUninferredTypeArgument();
         }
-        AnnotatedTypeMirror upperBound =
-                visit(type.getExtendsBound(), superType.getExtendsBound(), p);
-        superType.setExtendsBound(upperBound);
+        if (types.isSubtype(
+                type.getExtendsBound().getUnderlyingType(),
+                superType.getExtendsBound().getUnderlyingType())) {
+            AnnotatedTypeMirror upperBound =
+                    visit(type.getExtendsBound(), superType.getExtendsBound(), p);
+            superType.setExtendsBound(upperBound);
+        } else {
+            // The upper bound of a wildcard can be a super type of upper bound of the type
+            // parameter for which it is an argument.
+            // See org.checkerframework.framework.type.AnnotatedTypeFactory.widenToUpperBound for an
+            // example.  In these cases, the upper bound of type might be a super type of the
+            // upper bound of superType.
+
+            // The underlying type of the annotated type mirror returned by asSuper must be the
+            // same as the passed type, so just copy the primary annotations.
+            copyPrimaryAnnos(type.getExtendsBound(), superType.getExtendsBound());
+
+            // Add defaults in case any locations are missing annotations.
+            annotatedTypeFactory.addDefaultAnnotations(superType.getExtendsBound());
+        }
 
         AnnotatedTypeMirror lowerBound;
         if (type.getSuperBound().getKind() == TypeKind.NULL
