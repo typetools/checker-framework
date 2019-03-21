@@ -1,7 +1,5 @@
 // Example code from the user manual
 
-// @skip-test because the example code does not yet work
-
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public class ManualExample {

@@ -85,8 +85,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         // Recurse on the type of the variable.
         AnnotatedTypeMirror res = visit(node.getVariable(), f);
-        // TODO: why do we need to clear the type?
-        res.clearAnnotations();
+
+        if (f instanceof GenericAnnotatedTypeFactory
+                && ((GenericAnnotatedTypeFactory) f).getUseFlow()) {
+            // TODO: why do we need to clear the type?
+            res.clearAnnotations();
+        }
         return res;
     }
 
