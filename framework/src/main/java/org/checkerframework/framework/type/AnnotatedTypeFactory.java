@@ -1376,7 +1376,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             addAnnotationFromFieldInvariant(type, owner, (VariableElement) element);
         }
         addComputedTypeAnnotations(element, type);
-        if (viewpointAdapter != null) {
+        if (viewpointAdapter != null && type.getKind() != TypeKind.EXECUTABLE) {
             viewpointAdapter.viewpointAdaptMember(owner, element, type);
         }
     }
