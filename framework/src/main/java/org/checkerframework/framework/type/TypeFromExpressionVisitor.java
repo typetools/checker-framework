@@ -74,8 +74,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitBinary(BinaryTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror res = f.type(node);
-        // TODO: Why do we need to clear the type?  Related to flow-sensitive type refinement?
-        res.clearAnnotations();
         return res;
     }
 
