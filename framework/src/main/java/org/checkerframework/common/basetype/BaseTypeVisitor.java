@@ -381,7 +381,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(im);
             }
         }
+        checkExtendsImplements(classTree);
 
+        super.visitClass(classTree, null);
+    }
+
+    protected void checkExtendsImplements(ClassTree classTree) {
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
         // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
         // as in "class X {}". This is equivalent to writing "class X extends @Top Object {}", so
@@ -401,8 +406,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     implementsClauseType,
                     "declaration.inconsistent.with.implements.clause");
         }
-
-        super.visitClass(classTree, null);
     }
 
     /**

@@ -83,13 +83,17 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     protected void handleTargeted(List<Attribute.TypeCompound> extendsAndImplementsAnnos) {
-        //                for (final Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
-        //
-        //                    if (anno.position.type_index >= SUPERCLASS_INDEX &&
-        //         anno.position.location.isEmpty()) {
-        //                        type.addAnnotation(anno);
-        //                    }
-        //                }
+        if (typeSymbol.className().contains("anonymous")) {
+            // If this is an anonymous class, then the annotations after "new" but before the
+            // class name are stored as super class annotations. Treat them as annotations on the
+            // class.
+            for (final Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
+                if (anno.position.type_index >= SUPERCLASS_INDEX
+                        && anno.position.location.isEmpty()) {
+                    type.addAnnotation(anno);
+                }
+            }
+        }
     }
 
     /** Adds extends/implements and class annotations to type. Annotates type parameters. */
