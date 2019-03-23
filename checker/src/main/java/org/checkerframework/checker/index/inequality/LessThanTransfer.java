@@ -50,7 +50,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // left > right so right < left
         // Refine right to @LessThan("left")
         Receiver leftRec = FlowExpressions.internalReprOf(factory, left);
-        if (leftRec != null && leftRec.isUnmodifiableByOtherCode()) {
+        if (leftRec != null && leftRec.isUnassignableByOtherCode()) {
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
@@ -80,7 +80,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // left > right so right is less than left
         // Refine right to @LessThan("left")
         Receiver leftRec = FlowExpressions.internalReprOf(factory, left);
-        if (leftRec != null && leftRec.isUnmodifiableByOtherCode()) {
+        if (leftRec != null && leftRec.isUnassignableByOtherCode()) {
             List<String> lessThanExpressions =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(rightAnno);
             if (lessThanExpressions == null) {
@@ -100,7 +100,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         LessThanAnnotatedTypeFactory factory =
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         Receiver leftRec = FlowExpressions.internalReprOf(factory, n.getLeftOperand());
-        if (leftRec != null && leftRec.isUnmodifiableByOtherCode()) {
+        if (leftRec != null && leftRec.isUnassignableByOtherCode()) {
             ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
             Long right = IndexUtil.getMinValue(n.getRightOperand().getTree(), valueFactory);
             if (right != null && 0 < right) {
