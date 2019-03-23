@@ -462,11 +462,12 @@ public class FlowExpressions {
         }
 
         /**
-         * Returns true if and only if the value this expression stands for cannot be changed by a
-         * method call. This is the case for local variables, the self reference as well as final
-         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * Returns true if and only if the value this expression stands for cannot be changed (with
+         * respect to ==) by a method call. This is the case for local variables, the self reference
+         * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
+         * true.
          */
-        public abstract boolean isUnmodifiableByOtherCode();
+        public abstract boolean isUnassignableByOtherCode();
 
         /** @return true if and only if the two receiver are syntactically identical */
         public boolean syntacticEquals(Receiver other) {
@@ -577,8 +578,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
-            return isFinal() && getReceiver().isUnmodifiableByOtherCode();
+        public boolean isUnassignableByOtherCode() {
+            return isFinal() && getReceiver().isUnassignableByOtherCode();
         }
     }
 
@@ -613,7 +614,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
         }
 
@@ -665,7 +666,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
         }
 
@@ -706,7 +707,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return false;
         }
     }
@@ -780,7 +781,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
         }
     }
@@ -805,7 +806,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
         }
 
@@ -904,7 +905,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return false;
         }
 
@@ -1035,7 +1036,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return false;
         }
 
@@ -1127,7 +1128,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return false;
         }
 
