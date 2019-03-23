@@ -1003,7 +1003,7 @@ public class FlowExpressions {
         }
     }
 
-    /** A deterministic method call. */
+    /** An array access. */
     public static class ArrayAccess extends Receiver {
 
         protected final Receiver receiver;
