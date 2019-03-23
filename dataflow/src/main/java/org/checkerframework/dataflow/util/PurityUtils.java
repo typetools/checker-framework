@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BasicAnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -38,10 +39,35 @@ public class PurityUtils {
         return isDeterministic(provider, methodElement);
     }
 
+    /**
+     * Is the method {@code tree} deterministic?
+     *
+     * <p>This implementation does not require an AnnotationProvider and does not handle aliases.
+     * There are currently no aliases for @Pure or @Deterministic in the Checker Framework.
+     */
+    public static boolean isDeterministic(MethodTree tree) {
+        Element methodElement = TreeUtils.elementFromTree(tree);
+        return isDeterministic(methodElement);
+    }
+
     /** Is the method {@code methodElement} deterministic? */
     public static boolean isDeterministic(AnnotationProvider provider, Element methodElement) {
         List<Kind> kinds = getPurityKinds(provider, methodElement);
         return kinds.contains(Kind.DETERMINISTIC);
+    }
+
+    /**
+     * Is the method {@code methodElement} deterministic?
+     *
+     * <p>This implementation does not require an AnnotationProvider and does not handle aliases.
+     * There are currently no aliases for @Pure or @Deterministic in the Checker Framework.
+     */
+    public static boolean isDeterministic(Element methodElement) {
+        return BasicAnnotationProvider.getDeclAnnotationWithoutAliases(methodElement, Pure.class)
+                        != null
+                || BasicAnnotationProvider.getDeclAnnotationWithoutAliases(
+                                methodElement, Deterministic.class)
+                        != null;
     }
 
     /** Is the method {@code tree} side-effect-free? */

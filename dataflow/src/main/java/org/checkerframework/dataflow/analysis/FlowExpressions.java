@@ -463,8 +463,15 @@ public class FlowExpressions {
 
         /**
          * Returns true if and only if the value this expression stands for cannot be changed by a
-         * method call. This is the case for local variables, the self reference as well as final
-         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * method call. This is the case for
+         *
+         * <ul>
+         *   <li>local variables,
+         *   <li>the self reference,
+         *   <li>final field accesses whose receiver is {@link #isUnmodifiableByOtherCode}, and
+         *   <li>deterministic method calls all of whose arguments (including the receiver) are
+         *       {@link #isUnmodifiableByOtherCode}.
+         * </ul>
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
@@ -905,7 +912,9 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return false;
+            return PurityUtils.isDeterministic(method)
+                    && receiver.isUnmodifiableByOtherCode()
+                    && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
         }
 
         @Override
@@ -1003,7 +1012,7 @@ public class FlowExpressions {
         }
     }
 
-    /** A deterministic method call. */
+    /** An array access. */
     public static class ArrayAccess extends Receiver {
 
         protected final Receiver receiver;
