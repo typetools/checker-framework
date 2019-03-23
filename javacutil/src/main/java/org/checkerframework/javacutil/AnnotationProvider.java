@@ -9,8 +9,12 @@ import javax.lang.model.element.Element;
 public interface AnnotationProvider {
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
-     * annotationName if one exists, null otherwise.
+     * Returns the AnnotationMirror, of the given class, used to annotate the element. Returns null
+     * if none exists.
+     *
+     * <p>May return an AnnotationMirror of a different class if the given class is aliased to it.
+     * The default implementation does not handle aliasing. The purpose of this method is to permit
+     * AnnotatedTypeFactory to override it to return an alias.
      *
      * @param elt the element
      * @param anno annotation class
@@ -19,8 +23,12 @@ public interface AnnotationProvider {
     AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
 
     /**
-     * Return the annotation on {@code tree} that has the class {@code target}. If no annotation for
-     * the given target class exists, the result is {@code null}
+     * Return the annotation on {@code tree} that is in the hierarchy that contains the class {@code
+     * target}. Returns null if none exists.
+     *
+     * <p>The default implementation always returns null. AnnotatedTypeFactory returns non-null if
+     * {@code target} is a supported qualifier, in which case the result might be any annotation in
+     * its hierarchy.
      *
      * @param tree the tree of which the annotation is returned
      * @param target the class of the annotation
