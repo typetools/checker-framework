@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.interning.qual.*;
 
-public class TypeVarPrimitives {
+public class TypeVarPrimitivesInterning {
     <T extends @UnknownInterned Long> void method(T tLong) {
         long l = tLong;
     }

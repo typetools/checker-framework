@@ -631,8 +631,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         // Check that matching @GuardSatisfied(index) on a method's formal receiver/parameters
-        // matches
-        // those in corresponding locations on the method call site.
+        // matches those in corresponding locations on the method call site.
 
         ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
         AnnotatedExecutableType invokedMethod = mType.executableType;

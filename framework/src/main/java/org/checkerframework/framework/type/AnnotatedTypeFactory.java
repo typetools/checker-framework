@@ -1029,29 +1029,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Populates the type arguments of the diamond tree ({@code tree}) and annotates their types
-     * with annotations from {@code type}.
-     */
-    private AnnotatedDeclaredType annotateTypeArgs(
-            ExpressionTree tree, AnnotatedDeclaredType type) {
-        AnnotatedDeclaredType typeWithInferences =
-                (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
-        typeWithInferences.addAnnotations(type.getAnnotations());
-
-        if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
-                .tsym
-                .getTypeParameters()
-                .nonEmpty()) {
-            Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-            if (ctx != null) {
-                AnnotatedTypeMirror ctxtype = ctx.second;
-                fromNewClassContextHelper(typeWithInferences, ctxtype);
-            }
-        }
-        return typeWithInferences;
-    }
-
-    /**
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree}.
      *
      * @param tree the AST node
@@ -1073,9 +1050,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
-            if (TreeUtils.isDiamondTree(tree)) {
-                type = annotateTypeArgs((ExpressionTree) tree, (AnnotatedDeclaredType) type);
-            }
         } else {
             throw new BugInCF(
                     "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
@@ -1101,7 +1075,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
      * checked.
      *
-     * @param classTree ClassTree on which to perfrom preprocessing
+     * @param classTree ClassTree on which to perform preprocessing
      */
     public void preProcessClassTree(ClassTree classTree) {}
 
@@ -1276,10 +1250,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an AnnotatedTypeMirror for an ExpressionTree. The AnnotatedTypeMirror contains
-     * explicit annotations written with on the expression, annotations inherited from class
+     * explicit annotations written on the expression, annotations inherited from class
      * declarations, and for some expressions, annotations from sub-expressions that could have been
      * explicitly written, implicited, defaulted, refined, or otherwise computed. (Expression whose
-     * type include annotations from sub- expressions are: ArrayAccessTree,
+     * type include annotations from sub-expressions are: ArrayAccessTree,
      * ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and MethodInvocationTree.)
      *
      * <p>For example, the AnnotatedTypeMirror returned for an array access expression is the fully
@@ -2353,7 +2327,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // populate the type arguments on the type. To do this, we need to create the type
             // mirror again, using toAnnotatedType(). However, this does not populate any
             // annotations -- so we need to take these from the fromTypeTree() mirror.
-            type = annotateTypeArgs(newClassTree, type);
+            AnnotatedDeclaredType typeWithInferences =
+                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+            typeWithInferences.addAnnotations(type.getAnnotations());
+
+            if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
+                    .tsym
+                    .getTypeParameters()
+                    .nonEmpty()) {
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    AnnotatedTypeMirror ctxtype = ctx.second;
+                    fromNewClassContextHelper(typeWithInferences, ctxtype);
+                }
+            }
+            type = typeWithInferences;
         }
         // If the user hasn't explicitly annotated a constructor invocation,
         // annotate it with the type on the constructor declaration.
@@ -2460,8 +2448,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             default:
                 if (ctxtype.getKind().isPrimitive()) {
                     // See Issue 438. Ignore primitive types for diamond inference - a primitive
-                    // type
-                    // is never a suitable context anyways.
+                    // type is never a suitable context anyway.
                 } else {
                     throw new BugInCF(
                             "AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: "
@@ -3644,7 +3631,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // (https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.10)
 
             // For example:
-            // class MyClass<@A T extends @B Number> { }
+            // class MyClass<@A T extends @B Number> {}
             // MyClass<@C ? extends @D Serializable>
             // The upper bound of the captured wildcard:
             // glb(@B Number, @D Serializable) = @B Number & @D Serializable
@@ -3668,7 +3655,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a member reference is the type to which it is assigned or casted.
      *
      * @param tree member reference tree
-     * @return the functional interface and the function type that this method reference targets.
+     * @return the functional interface and the function type that this method reference targets
      */
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
             MemberReferenceTree tree) {
@@ -3684,7 +3671,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a lambda is the type to which it is assigned or casted.
      *
      * @param tree lambda expression tree
-     * @return the functional interface and the function type that this lambda targets.
+     * @return the functional interface and the function type that this lambda targets
      */
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
             LambdaExpressionTree tree) {
@@ -3703,7 +3690,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param tree lambda expression tree or member reference tree
      * @return the functional interface and the function type that this method reference or lambda
-     *     targets.
+     *     targets
      */
     private Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
 

@@ -151,6 +151,7 @@ annotation was available, but it was not available at run time.
 You can use JDK 8 at run time.
 
 \item
+\label{troubleshooting-class-file-not-found}
 A ``class file for \ldots\ not found'' error, especially for an inner class
 in the JDK, is probably due to a JDK version mismatch.  To solve the
 problem, you need to perform compilation with a different Java version or
@@ -166,37 +167,22 @@ compiled library refers to a class that only appears in JDK 6 or 7.  (If only
 one version of Java existed, or the Checker Framework didn't try to support
 multiple different versions of Java, this would not be a problem.)
 
-Examples of classes that were in JDK 7 but were removed in JDK 8 include:
+Examples of classes that were removed from the JDK include:
 
 \begin{Verbatim}
-  class file for java.util.TimeZone$DisplayNames not found
+  class file for java.io.File$LazyInitialization not found  -- removed in JDK 7
+  class file for java.util.Hashtable$EmptyIterator not found  -- removed in JDK 7
+  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator  -- removed in JDK 7
+  class file for java.util.TimeZone$DisplayNames not found  -- removed in JDK 8
 \end{Verbatim}
 
-Examples of classes that were in JDK 6 but were removed in JDK 7 include:
+Examples of classes that were added to the JDK include:
 
 \begin{Verbatim}
-  class file for java.io.File$LazyInitialization not found
-  class file for java.util.Hashtable$EmptyIterator not found
-  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
-\end{Verbatim}
-
-Examples of classes that were not in JDK 7 but were introduced in JDK 8 include:
-
-\begin{Verbatim}
-  The type java.lang.Class$ReflectionData cannot be resolved
-\end{Verbatim}
-
-Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
-
-\begin{Verbatim}
-  class file for java.util.Vector$Itr not found
-\end{Verbatim}
-
-There are even classes that were introduced within a single JDK release.
-Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
-
-\begin{Verbatim}
-  class file for java.lang.Class$ReflectionData not found
+  class file for java.util.Vector$Itr not found  -- introduced in JDK 7
+  class file for java.lang.Class$ReflectionData not found  -- introduced in JDK 7 release 45
+  The type java.lang.Class$ReflectionData cannot be resolved  -- introduced in JDK 8
+  class file for java.util.regex.Pattern$HorizWS not found  -- introduced in JDK 9
 \end{Verbatim}
 
 You may be able to solve the problem by running

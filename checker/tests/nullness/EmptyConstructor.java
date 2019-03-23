@@ -14,7 +14,7 @@ class SuperClass {
 // The error message is very confusing:
 //   EmptyConstructor.java:22: error: call to non-side-effect-free method not allowed in
 // side-effect-free method
-//     public EmptyConstructor() { }
+//     public EmptyConstructor() {}
 //                               ^
 // because there's no obvious call.  The message key should be changed to
 // one whose message is "call to non-side-effect-free superclass
