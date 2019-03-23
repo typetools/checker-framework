@@ -1,4 +1,8 @@
 dependencies {
-    compile project(':javacutil')
+    // https://mvnrepository.com/artifact/org.plumelib/plume-util
+    // TODO:  compile 'org.plumelib:plume-util:1.0.6'
+    implementation files('/home/mernst/java/plume-lib/plume-util/build/libs/plume-util-1.0.5.jar')
+
+    implementation project(':javacutil')
     compile project(':checker-qual')
 }

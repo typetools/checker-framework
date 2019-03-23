@@ -439,6 +439,10 @@ public class FlowExpressions {
         return internalArguments;
     }
 
+    public static boolean isImmutable(Receiver r) {
+        return TypesUtils.isImmutable(r.type);
+    }
+
     /**
      * The poorly-named Receiver class is actually a Java AST. Each subclass represents a different
      * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
@@ -462,9 +466,23 @@ public class FlowExpressions {
         }
 
         /**
+         * Returns true if and only if the value this expression stands for cannot be changed (with
+         * respect to ==) by a method call. This is the case for local variables, the self reference
+         * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
+         * true.
+         *
+         * @see #isUnmodifiableByOtherCode
+         */
+        public abstract boolean isUnassignableByOtherCode();
+
+        /**
          * Returns true if and only if the value this expression stands for cannot be changed by a
-         * method call. This is the case for local variables, the self reference as well as final
-         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * method call, including changes to any of its fields.
+         *
+         * <p>Approximately, this returns true if the expression is {@link
+         * #isUnassignableByOtherCode} and its type is immutable.
+         *
+         * @see #isUnassignableByOtherCode
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
@@ -577,8 +595,13 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return isFinal() && getReceiver().isUnassignableByOtherCode();
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
-            return isFinal() && getReceiver().isUnmodifiableByOtherCode();
+            return isUnassignableByOtherCode() && isImmutable(getReceiver());
         }
     }
 
@@ -613,8 +636,13 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutable(type);
         }
 
         @Override
@@ -665,6 +693,11 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return true;
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
             return true;
         }
@@ -703,6 +736,11 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             return getClass().equals(clazz);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
         }
 
         @Override
@@ -780,8 +818,13 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutable(((VarSymbol) element).type);
         }
     }
 
@@ -802,6 +845,11 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             return getClass().equals(clazz);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return true;
         }
 
         @Override
@@ -901,6 +949,11 @@ public class FlowExpressions {
         /** @return the ExecutableElement for the method call */
         public ExecutableElement getElement() {
             return method;
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
         }
 
         @Override
@@ -1035,6 +1088,11 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
             return false;
         }
@@ -1123,6 +1181,11 @@ public class FlowExpressions {
                     return true;
                 }
             }
+            return false;
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
             return false;
         }
 
