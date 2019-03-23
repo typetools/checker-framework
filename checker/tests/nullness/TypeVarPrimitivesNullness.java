@@ -2,7 +2,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-public class TypeVarPrimitives {
+public class TypeVarPrimitivesNullness {
     <T extends @Nullable Long> void method(T tLong) {
         // :: error: (unboxing.of.nullable)
         long l = tLong;

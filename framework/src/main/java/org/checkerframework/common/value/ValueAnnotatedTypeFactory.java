@@ -136,13 +136,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
-        addAliasedAnnotation(
-                "android.support.annotation.IntRange",
-                AnnotationBuilder.fromClass(elements, IntRange.class),
-                true);
+        addAliasedAnnotation("android.support.annotation.IntRange", IntRange.class, true);
 
         // The actual ArrayLenRange is created by
-        // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
+        // {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
@@ -192,13 +189,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
+    public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
             int from = getMinLenValue(anno);
             return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
         }
 
-        return super.aliasedAnnotation(anno);
+        return super.canonicalAnnotation(anno);
     }
 
     @Override
@@ -329,7 +326,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code from} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm An annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
      * @return either the from value from the passed int range annotation, or the minimum value of
      *     the domain of the underlying type (i.e. Integer.MIN_VALUE if the underlying type is int)
      */
@@ -364,7 +361,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Finds the appropriate value for the {@code to} value of an annotated type mirror containing
      * an {@code IntRange} annotation.
      *
-     * @param atm An annotated type mirror that contains an {@code IntRange} annotation.
+     * @param atm an annotated type mirror that contains an {@code IntRange} annotation.
      * @return either the to value from the passed int range annotation, or the maximum value of the
      *     domain of the underlying type (i.e. Integer.MAX_VALUE if the underlying type is int)
      */
@@ -1148,13 +1145,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =
                                 componentType.getAnnotation(ArrayLenRange.class);
+                        Range range;
                         if (arrayLenRangeAnno != null) {
-                            Range range = getRange(arrayLenRangeAnno);
-                            if (rolv != null) {
-                                rolv.add(range);
-                            } else {
-                                arrayLenOfDimensions.add(new RangeOrListOfValues(range));
-                            }
+                            range = getRange(arrayLenRangeAnno);
+                        } else {
+                            range = Range.EVERYTHING;
+                        }
+                        if (rolv != null) {
+                            rolv.add(range);
+                        } else {
+                            arrayLenOfDimensions.add(new RangeOrListOfValues(range));
                         }
                     }
 
@@ -1645,7 +1645,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
     }
 
-    /** Convert a {@code List&lt;Long&gt;} to a {@code List&lt;Double&gt;}. */
+    /** Convert a {@code List<Long>} to a {@code List<Double>}. */
     private List<Double> convertLongListToDoubleList(List<Long> intValues) {
         List<Double> doubleValues = new ArrayList<>(intValues.size());
         for (Long intValue : intValues) {
@@ -2119,7 +2119,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
-     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
      * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     private Integer getSpecifiedMinLenValue(AnnotationMirror annotation) {
@@ -2145,7 +2145,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns 0 if there is no minimum length known, or if the passed annotation is null.
      *
      * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
-     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
      * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public int getMinLenValue(AnnotationMirror annotation) {

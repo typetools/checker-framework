@@ -830,8 +830,10 @@ Section~\ref{declaration-annotations-moved}.
  ~android.annotation.NonNull~ \\ \hline
  ~android.support.annotation.NonNull~ \\ \hline
  ~androidx.annotation.NonNull~ \\ \hline
+ ~androidx.annotation.RecentlyNonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
+ ~io.reactivex.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
@@ -855,11 +857,13 @@ $\Rightarrow$
  ~android.annotation.Nullable~ \\ \hline
  ~android.support.annotation.Nullable~ \\ \hline
  ~androidx.annotation.Nullable~ \\ \hline
+ ~androidx.annotation.RecentlyNullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
+ ~io.reactivex.annotations.Nullable~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
@@ -2386,6 +2390,7 @@ types.)
 
 \paragraphAndLabel{Suppressing warnings}{rawness-checking-suppressing-warnings}
 
+% TODO: use @SuppressWarnings("initialization") instead of @SuppressWarnings("rawness")?
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("rawness")>.  Do not confuse this with the unrelated

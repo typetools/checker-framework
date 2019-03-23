@@ -37,6 +37,7 @@ public class ExpressionsInterning {
         }
     }
 
+    // :: warning: (cast.unsafe.constructor.invocation)
     public @Interned Foo THEONE = new @Interned Foo();
 
     public boolean isItTheOne(Foo f) {

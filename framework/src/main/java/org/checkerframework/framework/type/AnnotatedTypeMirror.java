@@ -241,7 +241,7 @@ public abstract class AnnotatedTypeMirror {
     public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
         if (!atypeFactory.isSupportedQualifier(aliased)) {
-            aliased = atypeFactory.aliasedAnnotation(p);
+            aliased = atypeFactory.canonicalAnnotation(p);
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
@@ -265,7 +265,7 @@ public abstract class AnnotatedTypeMirror {
     public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
         if (!atypeFactory.isSupportedQualifier(aliased)) {
-            aliased = atypeFactory.aliasedAnnotation(p);
+            aliased = atypeFactory.canonicalAnnotation(p);
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
@@ -346,7 +346,7 @@ public abstract class AnnotatedTypeMirror {
      * annotations in type use locations but will not return explicit annotations that had an impact
      * on defaulting, such as an explicit annotation on a class declaration. For example, given:
      *
-     * <p>{@code @MyExplicitAnno class MyClass { }; MyClass myClassInstance; }
+     * <p>{@code @MyExplicitAnno class MyClass {}; MyClass myClassInstance; }
      *
      * <p>the result of calling {@code
      * atypeFactory.getAnnotatedType(variableTreeForMyClassInstance).getExplicitAnnotations()}
@@ -521,12 +521,12 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null argument.");
         }
         if (atypeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
         } else {
-            AnnotationMirror aliased = atypeFactory.aliasedAnnotation(a);
+            AnnotationMirror aliased = atypeFactory.canonicalAnnotation(a);
             if (atypeFactory.isSupportedQualifier(aliased)) {
                 addAnnotation(aliased);
             }

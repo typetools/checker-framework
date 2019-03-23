@@ -286,11 +286,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * Get the effect of a method call at its callsite, acknowledging polymorphic instantiation
      * using type use annotations.
      *
-     * @param node The method invocation as an AST node.
-     * @param callerReceiver The type of the receiver object if available. Used to resolve direct
+     * @param node the method invocation as an AST node
+     * @param callerReceiver the type of the receiver object if available. Used to resolve direct
      *     calls like "super()"
-     * @param methodElt The element of the callee method.
-     * @return The computed effect (SafeEffect or UIEffect) for the method call.
+     * @param methodElt the element of the callee method
+     * @return the computed effect (SafeEffect or UIEffect) for the method call
      */
     public Effect getComputedEffectAtCallsite(
             MethodInvocationTree node,
@@ -332,8 +332,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * with @PolyUIEffect functional interfaces as being explicitly UI-affecting using the {@link
      * #constrainLambdaToUI(LambdaExpressionTree) constrainLambdaToUI} method.
      *
-     * @param lambdaTree A lambda expression's AST node.
-     * @return The inferred effect of the lambda.
+     * @param lambdaTree a lambda expression's AST node
+     * @return the inferred effect of the lambda
      */
     public Effect getInferedEffectForLambdaExpression(LambdaExpressionTree lambdaTree) {
         // @UI type if annotated on the lambda expression explicitly
@@ -356,8 +356,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * considered here, for the properly computed type of the expression, use {@link
      * #getAnnotatedType(Tree)} instead.
      *
-     * @param tree The tree to check.
-     * @return Whether it is a lambda expression or new class marked as UI by inference
+     * @param tree the tree to check
+     * @return whether it is a lambda expression or new class marked as UI by inference
      */
     public boolean isDirectlyMarkedUIThroughInference(Tree tree) {
         if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
@@ -474,8 +474,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     //    AnnotatedTypeMirror.AnnotatedDeclaredType supdecl =
                     // fromElement((TypeElement)(((DeclaredType)superclass).asElement()));//((DeclaredType)superclass).asElement());
                     //    // Need to special case an anonymous class with @UI on the decl, because
-                    // "new @UI Runnable {...}" parses as @UI on an anon class decl extending
-                    // Runnable
+                    //    // "new @UI Runnable {...}" parses as @UI on an anon class decl extending
+                    //    // Runnable.
                     //    boolean isAnonInstantiation =
                     // TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) &&
                     // getDeclAnnotation(declaringType, UI.class) != null;
@@ -610,7 +610,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * <p>Used by GuiEffectVisitor to mark as UIEffect all lambdas that perform UIEffect calls
      * inside their bodies.
      *
-     * @param lambdaExpressionTree A lambda expression's AST node.
+     * @param lambdaExpressionTree a lambda expression's AST node
      */
     public void constrainLambdaToUI(LambdaExpressionTree lambdaExpressionTree) {
         uiLambdas.add(lambdaExpressionTree);
@@ -623,7 +623,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * PolyUIType annotated superclass, override a PolyUIEffect method from said superclass, and
      * perform UIEffect calls inside the body of this method.
      *
-     * @param classElt The TypeElement corresponding to the anonymous inner class to mark as an @UI
+     * @param classElt the TypeElement corresponding to the anonymous inner class to mark as an @UI
      *     instantiation of an UI-polymorphic superclass.
      */
     public void constrainAnonymousClassToUI(TypeElement classElt) {

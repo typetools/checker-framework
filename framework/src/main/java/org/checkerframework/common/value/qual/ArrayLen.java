@@ -11,7 +11,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * annotation, then at run time, the expression evaluates to an array or a string whose length is
  * one of the annotation's arguments.
  *
- * <p>For example, {@code String @ArrayLen(2) []} is the type for an array of two strings.
+ * <p>For example, {@code String @ArrayLen(2) []} is the type for an array of two strings, and
+ * {@code String @ArrayLen({1, 2, 4, 8}) []} is the type for an array that contains 1, 2, 4, or 8
+ * strings.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
@@ -19,5 +21,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface ArrayLen {
+    /** The possible lengths of the array. */
     int[] value();
 }

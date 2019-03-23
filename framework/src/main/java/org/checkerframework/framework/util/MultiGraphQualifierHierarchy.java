@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
@@ -56,20 +57,26 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          * once GraphQualifierHierarchy is built. No polymorphic qualifiers are contained in this
          * map.
          */
-        protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypes;
+        protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesDirect;
 
         /**
-         * Map from qualifier hierarchy to the corresponding polymorphic qualifier. The key is: *
-         * the argument to @PolymorphicQualifier (typically the top qualifier in the hierarchy), or
-         * * "PolymorphicQualifier" if @PolymorphicQualifier is used without an argument, or * null,
-         * for the PolyAll qualifier.
+         * Map from qualifier hierarchy to the corresponding polymorphic qualifier. The key is:
+         *
+         * <ul>
+         *   <li>the argument to @PolymorphicQualifier (typically the top qualifier in the
+         *       hierarchy), or
+         *   <li>"PolymorphicQualifier" if @PolymorphicQualifier is used without an argument, or
+         *   <li>null, for the PolyAll qualifier.
+         * </ul>
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
+        /** The annotated type factory associated with this hierarchy. */
         protected final AnnotatedTypeFactory atypeFactory;
 
+        /** Create a factory. */
         public MultiGraphFactory(AnnotatedTypeFactory atypeFactory) {
-            this.supertypes = AnnotationUtils.createAnnotationMap();
+            this.supertypesDirect = AnnotationUtils.createAnnotationMap();
             this.polyQualifiers = new HashMap<>();
             this.atypeFactory = atypeFactory;
         }
@@ -80,7 +87,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          */
         public void addQualifier(AnnotationMirror qual) {
             assertNotBuilt();
-            if (AnnotationUtils.containsSame(supertypes.keySet(), qual)) {
+            if (AnnotationUtils.containsSame(supertypesDirect.keySet(), qual)) {
                 return;
             }
 
@@ -96,7 +103,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     this.polyQualifiers.put(pqtop, qual);
                 }
             } else {
-                supertypes.put(qual, AnnotationUtils.createAnnotationSet());
+                supertypesDirect.put(qual, AnnotationUtils.createAnnotationSet());
             }
         }
 
@@ -111,7 +118,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             assertNotBuilt();
             addQualifier(sub);
             addQualifier(sup);
-            supertypes.get(sub).add(sup);
+            supertypesDirect.get(sub).add(sup);
         }
 
         /**
@@ -135,8 +142,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         /** Throw an exception if the factory was already built. */
         protected void assertNotBuilt() {
             if (wasBuilt) {
-                throw new BugInCF(
-                        "MultiGraphQualifierHierarchy.Factory was already built. Method build can only be called once.");
+                throw new BugInCF("MultiGraphQualifierHierarchy.Factory was already built.");
             }
         }
     }
@@ -145,12 +151,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * The declared, direct supertypes for each qualifier, without added transitive relations.
      * Immutable after construction finishes. No polymorphic qualifiers are contained in this map.
      *
-     * @see MultiGraphQualifierHierarchy.MultiGraphFactory#supertypes
+     * @see MultiGraphQualifierHierarchy.MultiGraphFactory#supertypesDirect
      */
-    protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesGraph;
+    protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesDirect;
 
-    /** The transitive closure of the supertypesGraph. Immutable after construction finishes. */
-    protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesMap;
+    /** The transitive closure of the supertypesDirect. Immutable after construction finishes. */
+    protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesTransitive;
 
     /** The top qualifiers of the individual type hierarchies. */
     protected final Set<AnnotationMirror> tops;
@@ -181,30 +187,31 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         super();
         // no need for copying as f.supertypes has no mutable references to it
         // TODO: also make the Set of supertypes immutable?
-        this.supertypesGraph = Collections.unmodifiableMap(f.supertypes);
+        this.supertypesDirect = Collections.unmodifiableMap(f.supertypesDirect);
 
         // Calculate the transitive closure
-        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = buildFullMap(f.supertypes);
+        Map<AnnotationMirror, Set<AnnotationMirror>> supertypesTransitive =
+                transitiveClosure(f.supertypesDirect);
 
-        Set<AnnotationMirror> newtops = findTops(fullMap);
-        Set<AnnotationMirror> newbottoms = findBottoms(fullMap);
+        Set<AnnotationMirror> newtops = findTops(supertypesTransitive);
+        Set<AnnotationMirror> newbottoms = findBottoms(supertypesTransitive);
 
         this.polymorphicQualifier =
                 AnnotationBuilder.fromClass(
                         f.atypeFactory.getElementUtils(), PolymorphicQualifier.class);
         this.polyQualifiers = f.polyQualifiers;
 
-        addPolyRelations(this, fullMap, this.polyQualifiers, newtops, newbottoms);
+        addPolyRelations(this, supertypesTransitive, this.polyQualifiers, newtops, newbottoms);
 
-        finish(this, fullMap, this.polyQualifiers, newtops, newbottoms, args);
+        finish(this, supertypesTransitive, this.polyQualifiers, newtops, newbottoms, args);
 
         this.tops = Collections.unmodifiableSet(newtops);
         this.bottoms = Collections.unmodifiableSet(newbottoms);
         // TODO: make polyQualifiers immutable also?
 
-        this.supertypesMap = Collections.unmodifiableMap(fullMap);
+        this.supertypesTransitive = Collections.unmodifiableMap(supertypesTransitive);
         Set<AnnotationMirror> typeQualifiers = AnnotationUtils.createAnnotationSet();
-        typeQualifiers.addAll(supertypesMap.keySet());
+        typeQualifiers.addAll(supertypesTransitive.keySet());
         this.typeQualifiers = Collections.unmodifiableSet(typeQualifiers);
         // System.out.println("MGH: " + this);
     }
@@ -215,7 +222,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      */
     protected void finish(
             QualifierHierarchy qualHierarchy,
-            Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
+            Map<AnnotationMirror, Set<AnnotationMirror>> supertypesTransitive,
             Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
             Set<AnnotationMirror> tops,
             Set<AnnotationMirror> bottoms,
@@ -227,7 +234,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         StringBuilder sb = new StringBuilder();
         sb.append("Supertypes Graph: ");
 
-        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesGraph.entrySet()) {
+        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesDirect.entrySet()) {
             sb.append("\n\t");
             sb.append(qual.getKey());
             sb.append(" = ");
@@ -236,7 +243,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         sb.append("\nSupertypes Map: ");
 
-        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesMap.entrySet()) {
+        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual :
+                supertypesTransitive.entrySet()) {
             sb.append("\n\t");
             sb.append(qual.getKey());
             sb.append(" = [");
@@ -325,13 +333,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return polyQualifiers.get(polymorphicQualifier);
         } else {
             // No polymorphic qualifier exists for that hierarchy.
-            throw new BugInCF(
-                    "MultiGraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier "
-                            + start
-                            + "; all polymorphic qualifiers: "
-                            + polyQualifiers
-                            + "; this: "
-                            + this);
+            return null;
         }
     }
 
@@ -449,7 +451,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * {@inheritDoc}
      *
      * <p>Most qualifiers have no value fields. However, two annotations with values are subtype of
-     * each other only if they have the same values. i.e. I(m) is a subtype of I(n) iff m = n
+     * each other only if they have the same values. i.e. I(m) is a subtype of I(n) iff m = n.
      *
      * <p>When client specifies an annotation, a1, to be a subtype of annotation with values, a2,
      * then a1 is a subtype of all instances of a2 regardless of a2 values.
@@ -473,7 +475,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         if (AnnotationUtils.areSameByName(subAnno, superAnno)) {
             return AnnotationUtils.areSame(subAnno, superAnno);
         }
-        Set<AnnotationMirror> supermap1 = this.supertypesMap.get(subAnno);
+        Set<AnnotationMirror> supermap1 = this.supertypesTransitive.get(subAnno);
         return AnnotationUtils.containsSame(supermap1, superAnno);
     }
 
@@ -491,7 +493,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     private final void checkAnnoInGraph(AnnotationMirror a) {
-        if (AnnotationUtils.containsSame(supertypesMap.keySet(), a)
+        if (AnnotationUtils.containsSame(supertypesTransitive.keySet(), a)
                 || AnnotationUtils.containsSame(polyQualifiers.values(), a)) {
             return;
         }
@@ -511,7 +513,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     /**
-     * Infer the tops of the subtype hierarchy. Simple finds the qualifiers that have no supertypes.
+     * Infer the tops of the subtype hierarchy. Simply finds the qualifiers that have no supertypes.
      */
     // Not static to allow adaptation in subclasses. Only parameters should be modified.
     protected Set<AnnotationMirror> findTops(
@@ -544,16 +546,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /* The method gets all required parameters passed in and could be static. However,
      * we want to allow subclasses to adapt the behavior and therefore make it an instance method.
      */
-    protected Map<AnnotationMirror, Set<AnnotationMirror>> buildFullMap(
+    protected Map<AnnotationMirror, Set<AnnotationMirror>> transitiveClosure(
             Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
-        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap =
-                AnnotationUtils.createAnnotationMap();
+        Map<AnnotationMirror, Set<AnnotationMirror>> result = AnnotationUtils.createAnnotationMap();
         for (AnnotationMirror anno : supertypes.keySet()) {
-            // this method directly modifies fullMap and is
+            // this method directly modifies result and is
             // ignoring the returned value
-            findAllSupers(anno, supertypes, fullMap);
+            findAllSupers(anno, supertypes, result);
         }
-        return fullMap;
+        return result;
     }
 
     /**
@@ -566,7 +567,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      *   <li>a supertype of all the bottom qualifiers (e.g. {@code NonNull})
      * </ol>
      *
-     * Field supertypesMap is not set yet when this method is called -- use fullMap instead.
+     * Field supertypesTransitive is not set yet when this method is called -- use parameter fullMap
+     * instead.
      */
     // The method gets all required parameters passed in and could be static. However,
     // we want to allow subclasses to adapt the behavior and therefore make it an instance method.
@@ -728,7 +730,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror a1Super : supertypesGraph.get(a1)) {
+        for (AnnotationMirror a1Super : supertypesDirect.get(a1)) {
             // TODO: we take the first of the smallest supertypes, maybe we would
             // get a different LUB if we used a different one?
             AnnotationMirror a1Lub = findLub(a1Super, a2);
@@ -842,7 +844,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror a1Sub : supertypesGraph.keySet()) {
+        for (AnnotationMirror a1Sub : supertypesDirect.keySet()) {
             if (isSubtype(a1Sub, a1) && !a1Sub.equals(a1)) {
                 AnnotationMirror a1lb = findGlb(a1Sub, a2);
                 if (a1lb != null) {
@@ -950,13 +952,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         @Override
         public int hashCode() {
             if (hashCode == -1) {
-                hashCode = 31;
-                if (a1 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a1).hashCode();
-                }
-                if (a2 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a2).hashCode();
-                }
+                hashCode =
+                        Objects.hash(
+                                AnnotationUtils.annotationName(a1),
+                                AnnotationUtils.annotationName(a2));
             }
             return hashCode;
         }
