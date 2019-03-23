@@ -45,6 +45,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
 \\ \ref{faq-100-warnings}: Why does the checker always say there are 100 errors or warnings?
 \\ \ref{faq-type-i-did-not-write}: Why does the Checker Framework report an error regarding a type I have not written in my program?
+\\ \ref{faq-same-code-different-behavior}: Why does the Checker Framework accept code on one line but reject it on the next?
 \\ \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked?
 
 \faqtocpara{\ref{faq-false-positives-section}: False positive warnings}
@@ -608,6 +609,24 @@ Section~\ref{type-refinement}.
 Note that an invocation of an impure method may cause the loss of all
 information that was determined via flow-sensitive type refinement; see
 Section~\ref{type-refinement-purity}.
+
+
+\subsectionAndLabel{Why does the Checker Framework accept code on one line but reject it on the next?}{faq-same-code-different-behavior}
+
+Sometimes, the Checker Framework permits code on one line, but rejects the
+same code a few lines later:
+
+\begin{Verbatim}
+  if (myField != null) {
+    myField.hashCode();   // no warning
+    someMethod();
+    myField.hashCode();   // warning about potential NullPointerException
+  }
+\end{Verbatim}
+
+The reason is explained in the section on type refinement
+(Section~\ref{type-refinement}), which also tells how to specify the side
+effects of \<someMethod> (Section~\ref{type-refinement-purity}).
 
 
 \subsectionAndLabel{How can I do run-time monitoring of properties that were not statically checked?}{faq-run-time-checking}
@@ -1336,7 +1355,7 @@ is an example of a complete, useful type-checker.
 \begin{Verbatim}
   @SubtypeOf(Unqualified.class)
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Encrypted { }
+  public @interface Encrypted {}
 \end{Verbatim}
 
 Section~\ref{subtyping-example} explains this checker and tells
