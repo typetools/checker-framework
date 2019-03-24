@@ -1,7 +1,6 @@
 // Test case for issue #2334: http://tinyurl.com/cfissue/2334
 
 import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.dataflow.qual.Pure;
 
 class Issue2334 {
 
@@ -20,23 +19,5 @@ class Issue2334 {
             // :: error: (assignment.type.incompatible)
             @NonNegative int i = stringField.indexOf('d');
         }
-    }
-
-    public @Pure @Nullable Object getSuperclass() {
-        return null;
-    }
-
-    void setSuperclass(@Nullable Object no) {
-        // set the field returned by getSuperclass.
-    }
-
-    static void testInstanceofPositive3(PureTest pt) {
-        if (!(pt.getSuperclass() instanceof Object)) {
-            return;
-        } else {
-            pt.setSuperclass(null);
-        }
-        // :: error: (dereference.of.nullable)
-        pt.getSuperclass().toString();
     }
 }
