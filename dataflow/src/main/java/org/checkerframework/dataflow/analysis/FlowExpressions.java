@@ -949,17 +949,14 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnassignableByOtherCode() {
-            boolean result =
-                    PurityUtils.isDeterministic(method)
-                            && receiver.isUnmodifiableByOtherCode()
-                            && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
-            System.out.printf("isUnmodifiableByOtherCode(%s) => %s%n", this, result);
-            return result;
+            return PurityUtils.isDeterministic(method)
+                    && receiver.isUnmodifiableByOtherCode()
+                    && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
         }
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return false;
+            return isUnassignableByOtherCode();
         }
 
         @Override
