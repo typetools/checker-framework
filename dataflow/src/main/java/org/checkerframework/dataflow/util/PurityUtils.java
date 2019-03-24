@@ -44,7 +44,7 @@ public class PurityUtils {
      *
      * <p>This implementation does not require an AnnotationProvider and does not handle aliases.
      * There are currently no aliases for @Deterministic, and the only alias for @Pure is
-     * org.jmlspecs.annotation.Pure.
+     * org.jmlspecs.annotation.Pure (which this method ignores).
      */
     public static boolean isDeterministic(MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
@@ -62,7 +62,7 @@ public class PurityUtils {
      *
      * <p>This implementation does not require an AnnotationProvider and does not handle aliases.
      * There are currently no aliases for @Deterministic, and the only alias for @Pure is
-     * org.jmlspecs.annotation.Pure.
+     * org.jmlspecs.annotation.Pure (which this method ignores).
      */
     public static boolean isDeterministic(Element methodElement) {
         return BasicAnnotationProvider.getDeclAnnotationWithoutAliases(methodElement, Pure.class)

@@ -123,7 +123,7 @@ public final class TypesUtils {
      * <p>This does not use immutabliity annotations and always returns false for user-defined
      * classes.
      */
-    public static boolean isImmutable(TypeMirror type) {
+    public static boolean isImmutableTypeInJdk(TypeMirror type) {
         return isPrimitive(type)
                 || (type.getKind() == TypeKind.DECLARED
                         && ImmutableTypes.isImmutable(

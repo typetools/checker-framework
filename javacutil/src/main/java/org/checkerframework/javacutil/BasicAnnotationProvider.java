@@ -14,7 +14,8 @@ public class BasicAnnotationProvider implements AnnotationProvider {
     }
 
     /** Behaves like {@link #getDeclAnnotation}, but never considers aliases. */
-    // The point of this method is that it is static.
+    // The point of this method is that it is static, so it can be called by clients that do not use
+    // this AnnotationProvider.
     public static AnnotationMirror getDeclAnnotationWithoutAliases(
             Element elt, Class<? extends Annotation> anno) {
         List<? extends AnnotationMirror> annotationMirrors = elt.getAnnotationMirrors();

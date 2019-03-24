@@ -597,7 +597,8 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return isUnassignableByOtherCode() && TypesUtils.isImmutable(getReceiver().type);
+            return isUnassignableByOtherCode()
+                    && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
         }
     }
 
@@ -638,7 +639,7 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return TypesUtils.isImmutable(type);
+            return TypesUtils.isImmutableTypeInJdk(type);
         }
 
         @Override
@@ -820,7 +821,7 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return TypesUtils.isImmutable(((VarSymbol) element).type);
+            return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
         }
     }
 
