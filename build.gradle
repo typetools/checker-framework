@@ -389,7 +389,7 @@ subprojects {
     }
 
     shadowJar {
-        // Relocate packages that might conflict with users classpath.
+        // Relocate packages that might conflict with user's classpath.
         doFirst {
             if (release) {
                 // Only relocate JavaParser during a release:
