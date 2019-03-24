@@ -484,7 +484,7 @@ public class FlowExpressions {
          *
          * @see #isUnassignableByOtherCode
          */
-        public abstract boolean isUnassignableByOtherCode();
+        public abstract boolean isUnmodifiableByOtherCode();
 
         /** @return true if and only if the two receiver are syntactically identical */
         public boolean syntacticEquals(Receiver other) {
@@ -952,7 +952,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             boolean result =
                     PurityUtils.isDeterministic(method)
                             && receiver.isUnmodifiableByOtherCode()
