@@ -541,7 +541,7 @@ public class RangeTest {
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
                 Range result = re1.range.bitwiseAnd(re2.range);
-                if (re2.range.isConstant()) {
+                if (re2.range.isConstant() || re1.range.isConstant()) {
                     Long witness = re1.element & re2.element;
                     assert result.contains(witness)
                             : String.format(
