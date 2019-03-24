@@ -484,7 +484,7 @@ public class FlowExpressions {
          *
          * @see #isUnassignableByOtherCode
          */
-        public abstract boolean isUnmodifiableByOtherCode();
+        public abstract boolean isUnassignableByOtherCode();
 
         /** @return true if and only if the two receiver are syntactically identical */
         public boolean syntacticEquals(Receiver other) {
