@@ -116,6 +116,19 @@ public final class TypesUtils {
                 || qualifiedName.equals("java.lang.Float"));
     }
 
+    /**
+     * Return true if this is an immutable type in the JDK.
+     *
+     * <p>This does not use immutabliity annotations and always returns false for user-defined
+     * classes.
+     */
+    public static boolean isImmutable(TypeMirror type) {
+        return isPrimitive(type)
+                || (type.getKind() == TypeKind.DECLARED
+                        && ImmutableTypes.isImmutable(
+                                getQualifiedName((DeclaredType) type).toString()));
+    }
+
     /** @return type represents a Throwable type (e.g. Exception, Error) */
     public static boolean isThrowable(TypeMirror type) {
         while (type != null && type.getKind() == TypeKind.DECLARED) {

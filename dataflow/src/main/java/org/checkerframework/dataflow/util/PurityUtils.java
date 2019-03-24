@@ -43,7 +43,8 @@ public class PurityUtils {
      * Is the method {@code tree} deterministic?
      *
      * <p>This implementation does not require an AnnotationProvider and does not handle aliases.
-     * There are currently no aliases for @Pure or @Deterministic in the Checker Framework.
+     * There are currently no aliases for @Deterministic, and the only alias for @Pure is
+     * org.jmlspecs.annotation.Pure.
      */
     public static boolean isDeterministic(MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
@@ -60,7 +61,8 @@ public class PurityUtils {
      * Is the method {@code methodElement} deterministic?
      *
      * <p>This implementation does not require an AnnotationProvider and does not handle aliases.
-     * There are currently no aliases for @Pure or @Deterministic in the Checker Framework.
+     * There are currently no aliases for @Deterministic, and the only alias for @Pure is
+     * org.jmlspecs.annotation.Pure.
      */
     public static boolean isDeterministic(Element methodElement) {
         return BasicAnnotationProvider.getDeclAnnotationWithoutAliases(methodElement, Pure.class)

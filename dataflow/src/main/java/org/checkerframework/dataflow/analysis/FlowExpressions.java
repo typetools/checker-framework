@@ -912,9 +912,12 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return PurityUtils.isDeterministic(method)
-                    && receiver.isUnmodifiableByOtherCode()
-                    && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
+            boolean result =
+                    PurityUtils.isDeterministic(method)
+                            && receiver.isUnmodifiableByOtherCode()
+                            && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
+            System.out.printf("isUnmodifiableByOtherCode(%s) => %s%n", this, result);
+            return result;
         }
 
         @Override
