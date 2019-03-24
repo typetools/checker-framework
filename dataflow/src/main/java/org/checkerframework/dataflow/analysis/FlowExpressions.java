@@ -439,10 +439,6 @@ public class FlowExpressions {
         return internalArguments;
     }
 
-    public static boolean isImmutable(Receiver r) {
-        return TypesUtils.isImmutable(r.type);
-    }
-
     /**
      * The poorly-named Receiver class is actually a Java AST. Each subclass represents a different
      * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
@@ -601,7 +597,7 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return isUnassignableByOtherCode() && isImmutable(getReceiver());
+            return isUnassignableByOtherCode() && TypesUtils.isImmutable(getReceiver().type);
         }
     }
 
