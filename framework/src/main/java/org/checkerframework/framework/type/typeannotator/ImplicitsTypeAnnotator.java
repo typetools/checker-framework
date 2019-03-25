@@ -8,13 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
@@ -168,15 +166,5 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         }
 
         return super.scan(type, p);
-    }
-
-    @Override
-    public Void visitExecutable(AnnotatedExecutableType t, Void p) {
-        if (t.getElement().getKind() == ElementKind.CONSTRUCTOR) {
-            AnnotatedTypeMirror classD =
-                    typeFactory.getAnnotatedType(t.getElement().getEnclosingElement());
-            t.getReturnType().addMissingAnnotations(classD.getAnnotations());
-        }
-        return super.visitExecutable(t, p);
     }
 }

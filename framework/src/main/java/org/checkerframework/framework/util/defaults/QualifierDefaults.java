@@ -955,6 +955,21 @@ public class QualifierDefaults {
                             break;
                         }
 
+                    case CONSTRUCTOR_RESULT:
+                        {
+                            if (scope != null
+                                    && scope.getKind() == ElementKind.CONSTRUCTOR
+                                    && t.getKind() == TypeKind.EXECUTABLE
+                                    && t == type) {
+                                final AnnotatedTypeMirror returnType =
+                                        ((AnnotatedExecutableType) t).getReturnType();
+                                if (shouldBeAnnotated(returnType, false)) {
+                                    addAnnotation(returnType, qual);
+                                }
+                            }
+                            break;
+                        }
+
                     case IMPLICIT_LOWER_BOUND:
                         {
                             if (isLowerBound
