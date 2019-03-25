@@ -6,6 +6,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+/** An AnnotationProvider that is independent of any type hierarchy. */
 public class BasicAnnotationProvider implements AnnotationProvider {
 
     /**
