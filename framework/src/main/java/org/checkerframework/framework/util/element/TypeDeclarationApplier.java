@@ -83,7 +83,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     protected void handleTargeted(List<Attribute.TypeCompound> extendsAndImplementsAnnos) {
-        if (typeSymbol.className().contains("anonymous")) {
+        if (typeSymbol.fullname.isEmpty()) {
             // If this is an anonymous class, then the annotations after "new" but before the
             // class name are stored as super class annotations. Treat them as annotations on the
             // class.
