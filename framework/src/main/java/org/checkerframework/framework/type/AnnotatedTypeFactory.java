@@ -1241,7 +1241,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
         annotateInheritedFromClass(result);
-
         if (shouldCache) {
             fromMemberTreeCache.put(tree, result.deepCopy());
         }

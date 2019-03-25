@@ -60,8 +60,7 @@ public class Java8Lambdas {
 
         public void doUISafely(@UI PolymorphicFunctionalInterface<UIElement> func) {
             // In a real program some intelligent dispatch could be done here to avoid running on UI
-            // thread unless
-            // needed.
+            // thread unless needed.
             arg.runOnUIThread(
                     new IAsyncUITask() {
                         final UIElement e2 = arg;
