@@ -1401,7 +1401,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(
                         Result.failure(
                                 "contracts.precondition.not.satisfied",
-                                tree.toString(),
+                                tree.getMethodSelect().toString(),
                                 expr == null ? expression : expr.toString()),
                         tree);
             }

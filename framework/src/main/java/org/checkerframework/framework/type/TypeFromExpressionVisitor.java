@@ -74,8 +74,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitBinary(BinaryTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror res = f.type(node);
-        // TODO: why do we need to clear the type?
-        res.clearAnnotations();
         return res;
     }
 
