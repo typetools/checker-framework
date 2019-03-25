@@ -2681,8 +2681,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         Result.failure(
                                 "constructor.invocation.invalid",
                                 constructor.toString(),
-                                explicitAnnos,
-                                resultAnnos),
+                                explicit,
+                                resultAnno),
                         newClassTree);
                 return false;
             } else if (!atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit)) {
