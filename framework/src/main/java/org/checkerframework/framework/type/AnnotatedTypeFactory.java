@@ -3065,9 +3065,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>TODO: Find a better way to store information about enclosing Trees.
      *
-     * <p>TODO: Is this actually guaranteed to be a method? What about CFG generated trees in field
-     * initializers?
-     *
      * @param node the {@link Tree} to get the enclosing method for
      * @return the method {@link Element} enclosing the argument, or null if none has been recorded
      */
