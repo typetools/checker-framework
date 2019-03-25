@@ -2,7 +2,7 @@
 
 Version ??, April 2, 2019
 
-Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
+Support `androidx.annotation.RecentlyNonNull` and `RecentlyNullable` (as of
 2.6.0, but not previously documented).
 
 The following qualifiers are now repeatable:  `@DefaultQualifier`

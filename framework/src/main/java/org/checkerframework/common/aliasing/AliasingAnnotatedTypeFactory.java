@@ -1,7 +1,6 @@
 package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
@@ -61,21 +60,6 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         public AliasingTreeAnnotator(AliasingAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
-        }
-
-        @Override
-        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
-            // Copied hack below from SPARTA:
-            // This is a horrible hack around the implementation of constructor
-            // results (CF treats annotations on constructor results in stub
-            // files as if it were a default and therefore ignores it.)
-            // This hack ignores any annotation written in the following location:
-            // new @A SomeClass();
-            AnnotatedTypeMirror defaulted =
-                    atypeFactory.constructorFromUse(node).executableType.getReturnType();
-            Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
-            p.replaceAnnotations(defaultedSet);
-            return null;
         }
 
         @Override

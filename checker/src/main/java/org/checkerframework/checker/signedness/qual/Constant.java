@@ -10,7 +10,12 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The value is a compile-time constant, and could be {@link Signed} or {@link Unsigned}.
+ * The value is a compile-time constant, and may be interpreted as {@link Signed} or {@link
+ * Unsigned}.
+ *
+ * <p>This annotation is automatically applied to manifest literals. It is also applied to
+ * compile-time constants whose most significant bit is not set (that is, they have the same
+ * interpretation as signed or unsigned).
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */

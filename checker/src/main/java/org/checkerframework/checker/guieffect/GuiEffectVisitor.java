@@ -1,6 +1,7 @@
 package org.checkerframework.checker.guieffect;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -227,6 +228,11 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             scanUp(path);
         }
         return v;
+    }
+
+    @Override
+    protected void checkExtendsImplements(ClassTree classTree) {
+        // Skip this check
     }
 
     // Check that the invoked effect is <= permitted effect (effStack.peek())

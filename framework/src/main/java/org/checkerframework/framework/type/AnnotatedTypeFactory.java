@@ -22,7 +22,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import java.io.File;
 import java.io.IOException;
@@ -1243,7 +1242,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
         annotateInheritedFromClass(result);
-
         if (shouldCache) {
             fromMemberTreeCache.put(tree, result.deepCopy());
         }
@@ -1252,10 +1250,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an AnnotatedTypeMirror for an ExpressionTree. The AnnotatedTypeMirror contains
-     * explicit annotations written with on the expression, annotations inherited from class
+     * explicit annotations written on the expression, annotations inherited from class
      * declarations, and for some expressions, annotations from sub-expressions that could have been
      * explicitly written, implicited, defaulted, refined, or otherwise computed. (Expression whose
-     * type include annotations from sub- expressions are: ArrayAccessTree,
+     * type include annotations from sub-expressions are: ArrayAccessTree,
      * ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and MethodInvocationTree.)
      *
      * <p>For example, the AnnotatedTypeMirror returned for an array access expression is the fully
@@ -1657,10 +1655,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
-            MethodSymbol methodElt = (MethodSymbol) type.getElement();
-            if (methodElt == null) {
-                scan(type.getReturnType(), p);
-            }
+
+            scan(type.getReturnType(), p);
 
             scanAndReduce(type.getParameterTypes(), p, null);
             scanAndReduce(type.getThrownTypes(), p, null);
@@ -2206,7 +2202,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
         ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
-        addComputedTypeAnnotations(tree.getIdentifier(), type);
+        addComputedTypeAnnotations(tree, type);
         AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
 
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
