@@ -14,7 +14,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Eclipse (Section~\ref{eclipse})
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
-\item javac (Section~\ref{javac-installation})
+\item javac or command line (Section~\ref{javac-installation})
 \item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
@@ -393,7 +393,12 @@ then always use \<./gradlew> where you would have used \<gradle>.
 
 % The following method has been tested with IntelliJ IDEA 15.0.3.
 
-To run a checker within IntelliJ:
+This section tells you how to make IntelliJ IDEA automatically run a
+checker on every compile.  If you want to run the checker from a terminal
+within IntelliJ IDEA, follow the command-line instructions in
+Section~\ref{javac-installation}.
+
+To run a checker within IntelliJ IDEA:
 
 \begin{enumerate}
 
@@ -454,7 +459,7 @@ For information about the extension points, see
 \url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
 
 
-\sectionAndLabel{Javac compiler}{javac-installation}
+\sectionAndLabel{Javac compiler (command line)}{javac-installation}
 
 To perform pluggable type-checking, run the \<javac> compiler with the
 Checker Framework on the classpath.
