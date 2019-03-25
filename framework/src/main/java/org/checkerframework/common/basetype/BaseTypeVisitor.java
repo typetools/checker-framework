@@ -695,7 +695,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that the result type of the constructor is NOT a subtype of the declaring class.
+     * Issue a warning if the result type of the constructor is a subtype of the declaring class. If
+     * it is a supertype of the class, then a type.invalid.conflicting.annos error will be issued by
+     * {@link #isValidUse(AnnotatedDeclaredType, AnnotatedDeclaredType, Tree)}.
      *
      * @param constructorType AnnotatedExecutableType for the constructor
      * @param constructorElement element that declares the constructor
