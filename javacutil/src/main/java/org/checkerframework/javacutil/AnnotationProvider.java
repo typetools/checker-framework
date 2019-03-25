@@ -5,30 +5,25 @@ import java.lang.annotation.Annotation;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+// This class exists to break a circular dependency between the dataflow framework and
+// type-checkers.
 /** An implementation of AnnotationProvider returns annotations on Java AST elements. */
 public interface AnnotationProvider {
 
     /**
-     * Returns the AnnotationMirror, of the given class, used to annotate the element. Returns null
-     * if none exists.
-     *
-     * <p>May return an AnnotationMirror of a different class if the given class is aliased to it.
-     * The default implementation does not handle aliasing. The purpose of this method is to permit
-     * AnnotatedTypeFactory to override it to return an alias.
+     * Returns the AnnotationMirror, of the given class or an alias of it, used to annotate the
+     * element. Returns null if no annotation equivalent to {@code anno} exists on {@code elt}.
      *
      * @param elt the element
      * @param anno annotation class
-     * @return the annotation mirror for anno
+     * @return an annotation mirror of class {@code anno} on {@code elt}, or an equivalent one, or
+     *     null if none exists on {@code anno}
      */
     AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
 
     /**
      * Return the annotation on {@code tree} that is in the hierarchy that contains the class {@code
      * target}. Returns null if none exists.
-     *
-     * <p>The default implementation always returns null. AnnotatedTypeFactory returns non-null if
-     * {@code target} is a supported qualifier, in which case the result might be any annotation in
-     * its hierarchy.
      *
      * @param tree the tree of which the annotation is returned
      * @param target the class of the annotation

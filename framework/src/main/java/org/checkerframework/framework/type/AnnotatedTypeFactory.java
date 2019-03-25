@@ -1018,6 +1018,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
+    /**
+     * Return the annotation on {@code tree} that is in the hierarchy that contains the {@code
+     * target}. Returns null if none exists, or if {@code target} is not a supported qualifier.
+     */
     @Override
     public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
         AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
