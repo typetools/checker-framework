@@ -378,9 +378,9 @@ public class QualifierDefaults {
     private Element nearestEnclosingExceptLocal(Tree tree) {
         TreePath path = atypeFactory.getPath(tree);
         if (path == null) {
-            Element method = atypeFactory.getEnclosingMethod(tree);
-            if (method != null) {
-                return method;
+            Element element = atypeFactory.getEnclosingElementForArtificialTree(tree);
+            if (element != null) {
+                return element;
             } else {
                 return TreeUtils.elementFromTree(tree);
             }
