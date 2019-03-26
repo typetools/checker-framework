@@ -119,11 +119,22 @@ class Precondition {
     }
 
     /** *** multiple preconditions ***** */
+    @RequiresQualifier(expression = "f1", qualifier = Value.class)
+    @RequiresQualifier(expression = "f2", qualifier = Odd.class)
+    void multi() {
+        @Value String l1 = f1;
+        @Odd String l2 = f2;
+        // :: error: (assignment.type.incompatible)
+        @Value String l3 = f2;
+        // :: error: (assignment.type.incompatible)
+        @Odd String l4 = f1;
+    }
+
     @RequiresQualifiers({
         @RequiresQualifier(expression = "f1", qualifier = Value.class),
         @RequiresQualifier(expression = "f2", qualifier = Odd.class)
     })
-    void multi() {
+    void multi_explicit_requiresqualifiers() {
         @Value String l1 = f1;
         @Odd String l2 = f2;
         // :: error: (assignment.type.incompatible)

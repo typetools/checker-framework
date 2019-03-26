@@ -73,7 +73,7 @@ class Integer {
 
     public static @Unsigned int rotateRight(@Unsigned int i, int distance);
 
-    public static @Unsigned int rotateLeft(@Unsigned int i, int distance);	
+    public static @Unsigned int rotateLeft(@Unsigned int i, int distance);
 
 }
 

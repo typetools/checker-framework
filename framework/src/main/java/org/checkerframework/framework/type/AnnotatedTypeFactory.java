@@ -371,6 +371,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from an Element to the source Tree of the declaration. */
     private final Map<Element, Tree> elementToTreeCache;
 
+    /** Mapping from a Tree to its TreePath. Shared between all instances. */
+    private final TreePathCacher treePathCache;
+
+    /** Mapping from CFG generated trees to their enclosing elements. */
+    private final Map<Tree, Element> artificialTreeToEnclosingElementMap;
+
     /**
      * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
      * 979.
@@ -409,6 +415,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
         this.cacheDeclAnnos = new HashMap<>();
+
+        this.artificialTreeToEnclosingElementMap = new HashMap<>();
+        // get the shared instance from the checker
+        this.treePathCache = checker.getTreePathCacher();
 
         this.shouldCache = !checker.hasOption("atfDoNotCache");
         if (shouldCache) {
@@ -578,13 +588,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
-    // TODO: document
-    // Set the CompilationUnitTree that should be used.
-    // What's a better name? Maybe "reset" or "start"?
+    /**
+     * Set the CompilationUnitTree that should be used.
+     *
+     * @param root the new compilation unit to use
+     */
+    // What's a better name? Maybe "reset" or "restart"?
     public void setRoot(@Nullable CompilationUnitTree root) {
         this.root = root;
-        treePathCache.clear();
-        pathHack.clear();
+        // Do not clear here. Only the primary checker should clear this cache.
+        // treePathCache.clear();
+        artificialTreeToEnclosingElementMap.clear();
 
         if (shouldCache) {
             // Clear the caches with trees because once the compilation unit changes,
@@ -990,9 +1004,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
 
-    /** Mapping from a Tree to its TreePath. */
-    private final TreePathCacher treePathCache = new TreePathCacher();
-
     /**
      * Returns the int supplied to the checker via the atfCacheSize option or the default cache
      * size.
@@ -1030,6 +1041,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
+    /**
+     * Return the annotation on {@code tree} that is in the hierarchy that contains the qualifier
+     * {@code target}. Returns null if none exists, or if {@code target} is not a supported
+     * qualifier.
+     */
     @Override
     public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
         AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
@@ -1038,29 +1054,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return atm.getAnnotation(target);
         }
         return null;
-    }
-
-    /**
-     * Populates the type arguments of the diamond tree ({@code tree}) and annotates their types
-     * with annotations from {@code type}.
-     */
-    private AnnotatedDeclaredType annotateTypeArgs(
-            ExpressionTree tree, AnnotatedDeclaredType type) {
-        AnnotatedDeclaredType typeWithInferences =
-                (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
-        typeWithInferences.addAnnotations(type.getAnnotations());
-
-        if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
-                .tsym
-                .getTypeParameters()
-                .nonEmpty()) {
-            Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-            if (ctx != null) {
-                AnnotatedTypeMirror ctxtype = ctx.second;
-                fromNewClassContextHelper(typeWithInferences, ctxtype);
-            }
-        }
-        return typeWithInferences;
     }
 
     /**
@@ -1085,9 +1078,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
-            if (TreeUtils.isDiamondTree(tree)) {
-                type = annotateTypeArgs((ExpressionTree) tree, (AnnotatedDeclaredType) type);
-            }
         } else {
             throw new BugInCF(
                     "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
@@ -1113,7 +1103,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
      * checked.
      *
-     * @param classTree ClassTree on which to perfrom preprocessing
+     * @param classTree ClassTree on which to perform preprocessing
      */
     public void preProcessClassTree(ClassTree classTree) {}
 
@@ -1288,10 +1278,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an AnnotatedTypeMirror for an ExpressionTree. The AnnotatedTypeMirror contains
-     * explicit annotations written with on the expression, annotations inherited from class
+     * explicit annotations written on the expression, annotations inherited from class
      * declarations, and for some expressions, annotations from sub-expressions that could have been
      * explicitly written, implicited, defaulted, refined, or otherwise computed. (Expression whose
-     * type include annotations from sub- expressions are: ArrayAccessTree,
+     * type include annotations from sub-expressions are: ArrayAccessTree,
      * ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and MethodInvocationTree.)
      *
      * <p>For example, the AnnotatedTypeMirror returned for an array access expression is the fully
@@ -2378,7 +2368,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // populate the type arguments on the type. To do this, we need to create the type
             // mirror again, using toAnnotatedType(). However, this does not populate any
             // annotations -- so we need to take these from the fromTypeTree() mirror.
-            type = annotateTypeArgs(newClassTree, type);
+            AnnotatedDeclaredType typeWithInferences =
+                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+            typeWithInferences.addAnnotations(type.getAnnotations());
+
+            if (((com.sun.tools.javac.code.Type) typeWithInferences.actualType)
+                    .tsym
+                    .getTypeParameters()
+                    .nonEmpty()) {
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    AnnotatedTypeMirror ctxtype = ctx.second;
+                    fromNewClassContextHelper(typeWithInferences, ctxtype);
+                }
+            }
+            type = typeWithInferences;
         }
         // If the user hasn't explicitly annotated a constructor invocation,
         // annotate it with the type on the constructor declaration.
@@ -2993,12 +2997,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         throw new BugInCF("AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here");
     }
 
-    private final Map<Tree, Element> pathHack = new HashMap<>();
-
-    public final void setPathHack(Tree node, Element enclosing) {
-        pathHack.put(node, enclosing);
-    }
-
     /**
      * Gets the path for the given {@link Tree} under the current root by checking from the
      * visitor's current path, and only using {@link Trees#getPath(CompilationUnitTree, Tree)}
@@ -3025,7 +3023,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null) {
-            return TreePath.getPath(root, node);
+            TreePath path = TreePath.getPath(root, node);
+            treePathCache.addPath(node, path);
+            return path;
         }
 
         // This method uses multiple heuristics to avoid calling
@@ -3033,6 +3033,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // If the current path you are visiting is for this node we are done
         if (currentPath.getLeaf() == node) {
+            treePathCache.addPath(node, currentPath);
             return currentPath;
         }
 
@@ -3042,19 +3043,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // When testing on Daikon, two steps resulted in the best performance
         if (currentPath.getParentPath() != null) {
             currentPath = currentPath.getParentPath();
-        }
-        if (currentPath.getLeaf() == node) {
-            return currentPath;
-        }
-        if (currentPath.getParentPath() != null) {
-            currentPath = currentPath.getParentPath();
-        }
-        if (currentPath.getLeaf() == node) {
-            return currentPath;
+            treePathCache.addPath(currentPath.getLeaf(), currentPath);
+            if (currentPath.getLeaf() == node) {
+                return currentPath;
+            }
+            if (currentPath.getParentPath() != null) {
+                currentPath = currentPath.getParentPath();
+                treePathCache.addPath(currentPath.getLeaf(), currentPath);
+                if (currentPath.getLeaf() == node) {
+                    return currentPath;
+                }
+            }
         }
 
         final TreePath pathWithinSubtree = TreePath.getPath(currentPath, node);
         if (pathWithinSubtree != null) {
+            treePathCache.addPath(node, pathWithinSubtree);
             return pathWithinSubtree;
         }
 
@@ -3063,6 +3067,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // class
         TreePath current = currentPath;
         while (current != null) {
+            treePathCache.addPath(current.getLeaf(), current);
             if (current.getLeaf() == node) {
                 return current;
             }
@@ -3083,8 +3088,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param node the {@link Tree} to get the enclosing method for
      * @return the method {@link Element} enclosing the argument, or null if none has been recorded
      */
-    public final Element getEnclosingMethod(Tree node) {
-        return pathHack.get(node);
+    public final Element getEnclosingElementForArtificialTree(Tree node) {
+        return artificialTreeToEnclosingElementMap.get(node);
+    }
+
+    /**
+     * Handle an artificial tree by mapping it to the enclosing element.
+     *
+     * <p>See {@code
+     * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
+     */
+    public final void setEnclosingElementForArtificialTree(Tree node, Element enclosing) {
+        artificialTreeToEnclosingElementMap.put(node, enclosing);
     }
 
     /**

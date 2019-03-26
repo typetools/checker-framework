@@ -64,6 +64,9 @@ public enum I18nConversionCategory {
         this.strings = strings;
     }
 
+    /** Used by {@link #stringToI18nConversionCategory}. */
+    static I18nConversionCategory[] namedCategories = new I18nConversionCategory[] {DATE, NUMBER};
+
     /**
      * Creates a conversion cagetogry from a string name.
      *
@@ -75,7 +78,7 @@ public enum I18nConversionCategory {
      */
     public static I18nConversionCategory stringToI18nConversionCategory(String string) {
         string = string.toLowerCase();
-        for (I18nConversionCategory v : new I18nConversionCategory[] {DATE, NUMBER}) {
+        for (I18nConversionCategory v : namedCategories) {
             for (String s : v.strings) {
                 if (s.equals(string)) {
                     return v;

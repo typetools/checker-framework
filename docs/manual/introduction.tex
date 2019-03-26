@@ -459,14 +459,17 @@ A concrete example (using the Nullness Checker) is:
 where \<javac> is as specified in Section~\ref{javac-installation}.
 
 You can also run a checker from within your favorite IDE or build system.  See
-Chapter~\ref{external-tools} for details about
+Chapter~\ref{external-tools} for details about build tools such as
 Ant (Section~\ref{ant-task}),
-Maven (Section~\ref{maven}),
-Gradle (Section~\ref{gradle}),
+Buck (Section~\ref{buck}),
+Gradle (Section~\ref{gradle}), and
+Maven (Section~\ref{maven});
+IDEs such as
 IntelliJ IDEA (Section~\ref{intellij}),
 Eclipse (Section~\ref{eclipse}),
+NetBeans (Section~\ref{netbeans}),
 and
-tIDE (Section~\ref{tide}),
+tIDE (Section~\ref{tide});
 and about customizing other IDEs and build tools.
 
 The checker is run on only the Java files that javac compiles.
@@ -587,7 +590,7 @@ checkers support the following command-line options.
 Unsound checking: ignore some errors
 \begin{itemize}
 \item \<-AsuppressWarnings>
-  Suppress all warnings matching the given key; see
+  Suppress all errors and warnings matching the given key; see
   Section~\ref{suppresswarnings-command-line}.
 \item \<-AskipUses>, \<-AonlyUses>
   Suppress all errors and warnings at all uses of a given class --- or at all
@@ -687,6 +690,12 @@ Type-checking modes:  enable/disable functionality
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning issued by
   the checker.  These warnings are only issued if the \<@SuppressWarnings>
   contains a key that would suppress any warning from this checker.
+\item \<-ArequirePrefixInWarningSuppressions>
+  Require that the key in a warning suppression annotation begin with a checker
+  warning supression key.  Otherwise, the suppress warning annotation does not
+  suppress any warnings.  For example, if this command-line option is
+  supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
+  \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
 \end{itemize}
 
 Partially-annotated libraries
@@ -1479,7 +1488,7 @@ same methodology in different words.
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
-% LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
+% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
