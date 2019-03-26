@@ -1739,9 +1739,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Check for illegal re-assignment
     // **********************************************************************
 
-    /**
-     * Performs assignability check using {@link #checkAssignability(AnnotatedTypeMirror, Tree)}.
-     */
+    /** Performs assignability check. */
     @Override
     public Void visitUnary(UnaryTree node, Void p) {
         if ((node.getKind() == Tree.Kind.PREFIX_DECREMENT)
@@ -1756,9 +1754,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return super.visitUnary(node, p);
     }
 
-    /**
-     * Performs assignability check using {@link #checkAssignability(AnnotatedTypeMirror, Tree)}.
-     */
+    /** Performs assignability check. */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         // If node is the tree representing the compounds assignment s += expr,
@@ -2138,8 +2134,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!validateType(varTree, var)) {
             return;
         }
-
-        checkAssignability(var, varTree);
 
         commonAssignmentCheck(var, valueExp, errorKey);
     }
@@ -3633,42 +3627,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests, for a re-assignment, whether the variable is assignable or not. If not, it emits an
-     * assignability.invalid error.
+     * Call this only when the current path is an identifier.
      *
-     * @param varType the type of the variable being re-assigned
-     * @param varTree the tree used to access the variable in the assignment
+     * @return the enclosing member select, or null if the identifier is not the field in a member
+     *     selection
      */
-    protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
-        if (TreeUtils.isExpressionTree(varTree)) {
-            AnnotatedTypeMirror rcvType = atypeFactory.getReceiverType((ExpressionTree) varTree);
-            if (!isAssignable(varType, rcvType, varTree)) {
-                checker.report(
-                        Result.failure(
-                                "assignability.invalid",
-                                TreeUtils.elementFromTree(varTree),
-                                rcvType),
-                        varTree);
-            }
-        }
-    }
-
-    /**
-     * Tests whether the variable accessed is an assignable variable or not, given the current
-     * scope.
-     *
-     * <p>TODO: document which parameters are nullable; e.g. receiverType is null in many cases,
-     * e.g. local variables.
-     *
-     * @param varType the annotated variable type
-     * @param variable tree used to access the variable
-     * @return true iff variable is assignable in the current scope
-     */
-    protected boolean isAssignable(
-            AnnotatedTypeMirror varType, AnnotatedTypeMirror receiverType, Tree variable) {
-        return true;
-    }
-
     protected MemberSelectTree enclosingMemberSelect() {
         TreePath path = this.getCurrentPath();
         assert path.getLeaf().getKind() == Tree.Kind.IDENTIFIER
