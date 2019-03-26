@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -796,6 +798,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                             + ce.getCause()
                             + "; "
                             + formatStackTrace(ce.getCause().getStackTrace()));
+            boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
                 msg.append(
@@ -803,7 +806,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                 + cause
                                 + "; "
                                 + formatStackTrace(cause.getStackTrace()));
+                printClasspath |= cause instanceof NoClassDefFoundError;
                 cause = cause.getCause();
+            }
+
+            if (printClasspath) {
+                msg.append("\nClasspath:");
+                ClassLoader cl = ClassLoader.getSystemClassLoader();
+                URL[] urls = ((URLClassLoader) cl).getURLs();
+                for (URL url : urls) {
+                    msg.append("\n" + url.getFile());
+                }
             }
         }
 
@@ -982,7 +995,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 message(Kind.NOTE, new java.util.Date().toString());
                 message(
                         Kind.NOTE,
-                        "Checker: %s is type-checking: %s",
+                        "%s is type-checking %s",
                         (Object) this.getClass().getSimpleName(),
                         currentRoot.getSourceFile().getName());
             }
