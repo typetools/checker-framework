@@ -392,6 +392,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param classTree class tree to check
      */
     protected void checkExtendsImplements(ClassTree classTree) {
+        if (classTree.getSimpleName().contentEquals("")) {
+            // Don't check extends clause on anonymous classes.
+            return;
+        }
         AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(classTree);
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
