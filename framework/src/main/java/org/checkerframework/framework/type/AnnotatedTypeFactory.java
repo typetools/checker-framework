@@ -372,7 +372,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final TreePathCacher treePathCache;
 
     /** Mapping from CFG generated trees to their enclosing elements. */
-    private final Map<Tree, Element> pathHack;
+    private final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
     /**
      * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
@@ -413,7 +413,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.cacheDeclAnnos = new HashMap<>();
 
-        this.pathHack = new HashMap<>();
+        this.artificialTreeToEnclosingElementMap = new HashMap<>();
         // get the shared instance from the checker
         this.treePathCache = checker.getTreePathCacher();
 
@@ -594,7 +594,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         // Do not clear here. Only the primary checker should clear this cache.
         // treePathCache.clear();
-        pathHack.clear();
+        artificialTreeToEnclosingElementMap.clear();
 
         if (shouldCache) {
             // Clear the caches with trees because once the compilation unit changes,
@@ -2973,16 +2973,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Handle an artificial tree by mapping it to the enclosing element.
-     *
-     * <p>See {@code
-     * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
-     */
-    public final void setPathHack(Tree node, Element enclosing) {
-        pathHack.put(node, enclosing);
-    }
-
-    /**
      * Gets the path for the given {@link Tree} under the current root by checking from the
      * visitor's current path, and only using {@link Trees#getPath(CompilationUnitTree, Tree)}
      * (which is much slower) only if {@code node} is not found on the current path.
@@ -3073,8 +3063,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param node the {@link Tree} to get the enclosing method for
      * @return the method {@link Element} enclosing the argument, or null if none has been recorded
      */
-    public final Element getEnclosingMethod(Tree node) {
-        return pathHack.get(node);
+    public final Element getEnclosingElementForArtificialTree(Tree node) {
+        return artificialTreeToEnclosingElementMap.get(node);
+    }
+
+    /**
+     * Handle an artificial tree by mapping it to the enclosing element.
+     *
+     * <p>See {@code
+     * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
+     */
+    public final void setEnclosingElementForArtificialTree(Tree node, Element enclosing) {
+        artificialTreeToEnclosingElementMap.put(node, enclosing);
     }
 
     /**
