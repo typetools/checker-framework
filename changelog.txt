@@ -600,8 +600,8 @@ Version 1.9.10, 4 January 2016
 The Checker Framework distribution files now contain a version number:
 for example, checker-framework-1.9.9.zip rather than checker-framework.zip.
 
-Nullness Checker supports org.eclipse.jgit.annotations.Nullable and NonNull
-annotations.
+The Nullness Checker supports the org.eclipse.jgit.annotations.Nullable and
+NonNull annotations.
 
 Buildfiles do less unnecessary recomputation.
 
