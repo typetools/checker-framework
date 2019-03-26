@@ -2421,10 +2421,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         String newClassTreeString = newClassTree.toString();
         for (AnnotationMirror anno : allAnnotations) {
             String annoString = anno.toString();
+            // @x.y.z(...) --> z(...)
             String annoStringName =
                     annoString.substring(annoString.lastIndexOf('.') + 1, annoString.length() - 1);
-            if (annoString.contains("(")) {
-                annoStringName = annoStringName.substring(0, annoStringName.indexOf('(') - 1);
+            // z(...) --> z
+            if (annoStringName.contains("(")) {
+                annoStringName = annoStringName.substring(0, annoStringName.indexOf("(") - 1);
             }
             if (newClassTreeString.contains(annoStringName)) {
                 explicitAnnotations.add(anno);
