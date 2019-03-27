@@ -367,10 +367,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         validateType(classTree, classType);
 
-        /* Visit the extends and implements clauses.
-         * The superclass also visits them, but only calls visitParameterizedType, which
-         * loses a main modifier.
-         */
+        checkExtendsImplements(classTree);
+
+        super.visitClass(classTree, null);
+    }
+
+    /**
+     * If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
+     *
+     * <p>Also validate the types of the extends and implements clauses.
+     *
+     * @param classTree class tree to check
+     */
+    protected void checkExtendsImplements(ClassTree classTree) {
+        if (TypesUtils.isAnonymous(TreeUtils.typeOf(classTree))) {
+            // Don't check extends clause on anonymous classes.
+            return;
+        }
+
         Tree ext = classTree.getExtendsClause();
         if (ext != null) {
             validateTypeOf(ext);
@@ -382,21 +396,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(im);
             }
         }
-        checkExtendsImplements(classTree);
 
-        super.visitClass(classTree, null);
-    }
-
-    /**
-     * If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
-     *
-     * @param classTree class tree to check
-     */
-    protected void checkExtendsImplements(ClassTree classTree) {
-        if (TypesUtils.isAnonymous(TreeUtils.typeOf(classTree))) {
-            // Don't check extends clause on anonymous classes.
-            return;
-        }
         AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(classTree);
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
