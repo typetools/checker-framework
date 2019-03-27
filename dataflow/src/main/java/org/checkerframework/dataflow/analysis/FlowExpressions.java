@@ -951,7 +951,7 @@ public class FlowExpressions {
         @Override
         public boolean isUnassignableByOtherCode() {
             // There is no need to check that the method is deterministic, because a MethodCall is
-            // only created for deteriminsic methods.
+            // only created for deterministic methods.
             return receiver.isUnmodifiableByOtherCode()
                     && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
         }
