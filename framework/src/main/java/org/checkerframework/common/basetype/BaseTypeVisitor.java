@@ -392,7 +392,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param classTree class tree to check
      */
     protected void checkExtendsImplements(ClassTree classTree) {
-        if (classTree.getSimpleName().contentEquals("")) {
+        if (TypesUtils.isAnonymous(TreeUtils.typeOf(classTree))) {
             // Don't check extends clause on anonymous classes.
             return;
         }
