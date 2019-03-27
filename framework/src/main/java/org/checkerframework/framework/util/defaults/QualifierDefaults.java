@@ -378,9 +378,9 @@ public class QualifierDefaults {
     private Element nearestEnclosingExceptLocal(Tree tree) {
         TreePath path = atypeFactory.getPath(tree);
         if (path == null) {
-            Element method = atypeFactory.getEnclosingMethod(tree);
-            if (method != null) {
-                return method;
+            Element element = atypeFactory.getEnclosingElementForArtificialTree(tree);
+            if (element != null) {
+                return element;
             } else {
                 return TreeUtils.elementFromTree(tree);
             }
@@ -452,6 +452,10 @@ public class QualifierDefaults {
 
             case IDENTIFIER:
                 elt = TreeUtils.elementFromUse((IdentifierTree) tree);
+                if (ElementUtils.isTypeDeclaration(elt)) {
+                    // If the Idenitifer is a type, then use the scope of the tree.
+                    elt = nearestEnclosingExceptLocal(tree);
+                }
                 break;
 
             case METHOD_INVOCATION:
