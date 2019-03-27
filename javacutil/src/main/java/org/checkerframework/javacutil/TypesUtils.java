@@ -120,7 +120,7 @@ public final class TypesUtils {
     /**
      * Return true if this is an immutable type in the JDK.
      *
-     * <p>This does not use immutabliity annotations and always returns false for user-defined
+     * <p>This does not use immutability annotations and always returns false for user-defined
      * classes.
      */
     public static boolean isImmutableTypeInJdk(TypeMirror type) {
