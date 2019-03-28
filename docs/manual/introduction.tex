@@ -504,12 +504,24 @@ annotated version of the library.
 The annotated libraries appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
-(If the library you are interested in does not appear there, you can
-contribute by annotating it, which will help you and all other Checker
-Framework users; see \chapterpageref{annotating-libraries}.)
-The annotated library has \emph{identical} bytecodes and behavior to the
-upstream, unannotated version; only the annotations are different, so the
-only difference is with respect to pluggable type-checking of clients.
+The annotated library has \emph{identical} behavior to the upstream,
+unannotated version; the source code is identical other than the
+annotations are different, so the only difference is with respect to
+pluggable type-checking of clients.
+
+(Some of the annotated libraries are
+% This list appears here to make it searchable/discoverable.
+bcel,
+commons-csv,
+commons-io,
+guava,
+and
+java-getopt.
+If the library you are interested in does not appear
+\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{in
+  the Central Repository}, you can contribute by annotating it, which will
+help you and all other Checker Framework users; see
+\chapterpageref{annotating-libraries}.)
 
 To use an annotated library:
 
