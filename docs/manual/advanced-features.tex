@@ -322,7 +322,7 @@ try-with-resources construct, variables in \<for> statements, and \<catch>
 arguments (known as exception parameters in the Java Language Specification).
 Exception parameters need to have the top type because
 exceptions of arbitrary qualified types can be thrown and the Checker Framework
-does not provide runtime checks.
+does not provide run-time checks.
 
 \item
 Cast and instanceof types
@@ -552,6 +552,93 @@ misbehave at run time.
 % the \refqualclass{framework/qual}{DefaultInUncheckedCodeFor}
 % and \refqualclass{framework/qual}{DefaultQualifierInHierarchyInUncheckedCode}
 % annotations for type system designers.
+
+
+\newpage
+
+\sectionAndLabel{Annotations on classes and constructors}{annotations-on-classes-and-constructors}
+
+\subsectionAndLabel{Annotations on class declarations}{annotations-on-class-declarations}
+
+% TODO: use a more realistic example.
+
+Writing an annotation on a class declaration makes that annotation implicit
+for all uses of the class (see Section~\ref{effective-qualifier}).
+That is, the annotation is an upper bound for all uses of the type.
+
+Consider the type hierarchy \code{@A :> @B :> @C} and the following
+declaration:
+
+\begin{Verbatim}
+@B class MyClass { ... }
+\end{Verbatim}
+
+\noindent
+Every unannotated use of \<MyClass> is \<@B MyClass>, and every use of
+\<MyClass> must be a subtype of \<@B> --- that is, \<@A MyClass> is not a
+valid type, but \<@C MyClass> is valid.
+
+
+\subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
+
+An annotation on the ``return type'' of a constructor declaration indicates
+what the constructor creates.  For example,
+
+\begin{Verbatim}
+@B class MyClass {
+  @C MyClass() {}
+}
+\end{Verbatim}
+
+\noindent
+means that invoking that constructor creates a \<@C MyClass>.
+
+The Checker Framework cannot verify that the constructor really creates
+such an object, because the Checker Framework does not know the
+type-system-specific semantics of the \<@C> annotation.
+Therefore, if the constructor result type is different than the top annotation in the
+hierarchy, the Checker Framework will issue a warning.
+The programmer should check the annotation manually, then
+suppress the warning.
+
+
+\subsubsectionAndLabel{Defaults}{constructor-declaration-defaults}
+
+If a constructor declaration is unannotated, it defaults to the same type as that of
+its enclosing class (rather than the default qualifier in the hierarchy).
+For example, the Tainting Checker (Chapter~\ref{tainting-checker}) has \code{@Tainted}
+as its default qualifier. Consider the following class:
+
+\begin{Verbatim}
+  @Untainted class MyClass {
+    MyClass() {}
+  }
+\end{Verbatim}
+
+\noindent
+The constructor declaration is equivalent to \<@Untainted MyClass() \ttlcb\ttrcb>.
+
+The Checker Framework produces the same error messages for
+explicitly-written and defaulted annotations.
+
+
+\subsectionAndLabel{Annotations on constructor invocations}{annotations-on-constructor-invocations}
+
+The type of a method call expression \<x.myMethod(y, z)> is determined by
+the return type of the declaration of \<myMethod>.  There is no way to
+write an annotation on the call to change its type.  However, it is
+possible to write a cast:  \<(@Anno SomeType) x.myMethod(y, z)>.  The Checker
+Framework will issue a warning that it cannot verify that the downcast is
+correct.  The programmer should manually determine that the annotation is
+correct and then suppress the warning.
+
+A constructor invocation \<new MyClass()> is also a call, so its semantics
+are similar.  The type of the expression is determined by the annotation on
+the result type of the constructor declaration.  It is possible to write a cast
+\<(@Anno MyClass) new MyClass()>.  The syntax \<new @Anno MyClass()> is shorthand
+for the cast.  For either syntax, the Checker Framework will issue a
+warning that it cannot verify that the cast is correct.  The programmer may
+suppress the warning if the code is correct.
 
 
 \sectionAndLabel{Automatic type refinement (flow-sensitive type qualifier inference)}{type-refinement}
@@ -1471,7 +1558,7 @@ class @Marsupial-Animal {
 
 
 % LocalWords:  MyClass qual PolymorphicQualifier DefaultQualifier subpackages
-% LocalWords:  actuals toArray CollectionToArrayHeuristics nn
+% LocalWords:  actuals toArray CollectionToArrayHeuristics nn RegexBottom
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
@@ -1479,13 +1566,16 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 %  LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 %  LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-%  LocalWords:  computeValue AsuggestPureMethods Instanceof
+%  LocalWords:  computeValue AsuggestPureMethods Instanceof arg myInt
 %  LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit instanceof m2
 %  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
-%  LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier
+%  LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
 %  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
 %  LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
-%%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled
+%%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
 %%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 %%  LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
-%%  LocalWords:  AuseDefaultsForUncheckedCode
+%%  LocalWords:  AuseDefaultsForUncheckedCode DefaultFor TypeUseLocation
+% LocalWords:  AuseDefaultsForUncheckedcode EnsuresKeyFor EnsuresKeyForIf
+% LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
+% LocalWords:  fieldB myMethod SomeType
