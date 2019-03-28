@@ -700,29 +700,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue a warning if the result type of the constructor is a subtype of the declaring class. If
-     * it is a supertype of the class, then a type.invalid.conflicting.annos error will be issued by
-     * {@link #isValidUse(AnnotatedDeclaredType, AnnotatedDeclaredType, Tree)}.
+     * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
+     * class, then a type.invalid.conflicting.annos error will also be issued by {@link
+     * #isValidUse(AnnotatedDeclaredType, AnnotatedDeclaredType, Tree)}.
      *
      * @param constructorType AnnotatedExecutableType for the constructor
      * @param constructorElement element that declares the constructor
      */
     protected void checkConstructorResult(
             AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         Set<AnnotationMirror> constructorAnnotations =
                 constructorType.getReturnType().getAnnotations();
-        Set<AnnotationMirror> classAnnotations =
-                atypeFactory
-                        .getAnnotatedType(constructorElement.getEnclosingElement())
-                        .getAnnotations();
-        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-        for (AnnotationMirror classAnno : classAnnotations) {
+        Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+
+        for (AnnotationMirror top : tops) {
             AnnotationMirror constructorAnno =
-                    qualifierHierarchy.findAnnotationInSameHierarchy(
-                            constructorAnnotations, classAnno);
-            if (!qualifierHierarchy.isSubtype(classAnno, constructorAnno)) {
+                    qualifierHierarchy.findAnnotationInHierarchy(constructorAnnotations, top);
+            if (!qualifierHierarchy.isSubtype(top, constructorAnno)) {
                 checker.report(
-                        Result.warning("inconsistent.constructor.type", constructorAnno, classAnno),
+                        Result.warning("inconsistent.constructor.type", constructorAnno),
                         constructorElement);
             }
         }

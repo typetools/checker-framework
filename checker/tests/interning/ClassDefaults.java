@@ -7,7 +7,7 @@ import org.checkerframework.checker.interning.qual.Interned;
  * A previously existing Unqualified annotation wasn't correctly removed.
  */
 class ClassDefaults {
-    // :: error: (super.invocation.invalid)
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @Interned class Test {}
 
     public static interface Visitor<T> {}

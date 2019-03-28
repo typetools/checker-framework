@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -34,6 +35,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
@@ -274,6 +276,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
 
         super.processClassTree(node);
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // Enums are always interned.
+        if (constructorElement.getEnclosingElement().getKind() != ElementKind.ENUM) {
+            super.checkConstructorResult(constructorType, constructorElement);
+        }
     }
 
     // **********************************************************************
