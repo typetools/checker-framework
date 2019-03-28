@@ -227,7 +227,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             fieldValues = newFieldValues;
 
             // update method values
-            methodValues.clear();
+            methodValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
 
             arrayValues.clear();
         }

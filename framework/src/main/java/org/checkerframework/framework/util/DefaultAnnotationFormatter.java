@@ -22,9 +22,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
      * @return true if anno's declaration was qualified by InvisibleQualifier
      */
     public static boolean isInvisibleQualified(AnnotationMirror anno) {
-        return ((TypeElement) anno.getAnnotationType().asElement())
-                        .getAnnotation(InvisibleQualifier.class)
-                != null;
+        TypeElement annoElement = (TypeElement) anno.getAnnotationType().asElement();
+        return annoElement.getAnnotation(InvisibleQualifier.class) != null;
     }
 
     /**
