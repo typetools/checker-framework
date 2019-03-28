@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
+    protected final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
 
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

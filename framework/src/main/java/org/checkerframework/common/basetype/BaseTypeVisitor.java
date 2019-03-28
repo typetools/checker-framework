@@ -1283,7 +1283,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 constructorTypeMirror,
                                 superCall,
                                 superTypeMirror),
-                        enclosingMethod);
+                        superCall);
             }
         }
     }
