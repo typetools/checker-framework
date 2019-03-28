@@ -171,24 +171,24 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)
-                    && AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+            if (AnnotationUtils.areSameByName(subAnno, REGEX)
+                    && AnnotationUtils.areSameByName(superAnno, REGEX)) {
                 int rhsValue = getRegexValue(subAnno);
                 int lhsValue = getRegexValue(superAnno);
                 return lhsValue <= rhsValue;
             }
             // TODO: subtyping between PartialRegex?
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+            if (AnnotationUtils.areSameByName(superAnno, REGEX)) {
                 superAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)) {
+            if (AnnotationUtils.areSameByName(subAnno, REGEX)) {
                 subAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, PARTIALREGEX)) {
+            if (AnnotationUtils.areSameByName(superAnno, PARTIALREGEX)) {
                 superAnno = PARTIALREGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, PARTIALREGEX)) {
+            if (AnnotationUtils.areSameByName(subAnno, PARTIALREGEX)) {
                 subAnno = PARTIALREGEX;
             }
             return super.isSubtype(subAnno, superAnno);
@@ -244,12 +244,12 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(
                 new ImplicitsTreeAnnotator(this),
                 new RegexTreeAnnotator(this),
-                new RegexPropagationAnnotator(this));
+                new RegexPropagationTreeAnnotator(this));
     }
 
-    private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {
+    private static class RegexPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
-        public RegexPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+        public RegexPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 

@@ -107,8 +107,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       passed as argument in the object creation call.
      * </ul>
      *
-     * <p>
-     *
      * @param objectCreationNode the new Object() node
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the constructor's parameters' types
@@ -130,7 +128,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(constructorElt);
-        AMethod method = clazz.methods.vivify(methodName);
+        AMethod method = clazz.methods.getVivify(methodName);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -151,8 +149,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       on the overridden method.
      * </ul>
      *
-     * <p>
-     *
      * @param methodTree the tree of the method that contains the parameter
      * @param methodElt the element of the method
      * @param overriddenMethod the AnnotatedExecutableType of the overridden method
@@ -170,14 +166,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.vivify(methodName);
+        AMethod method = clazz.methods.getVivify(methodName);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
-            AField param = method.parameters.vivify(i);
+            AField param = method.parameters.getVivify(i);
             helper.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -197,8 +193,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       type will be the LUB between the previous type and the type of the respective value
      *       passed as argument in the method call.
      * </ul>
-     *
-     * <p>
      *
      * @param methodInvNode the node representing a method invocation
      * @param receiverTree the Tree of the class that contains the method being invoked
@@ -242,7 +236,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClass clazz = helper.getAClass(className, jaifPath);
 
         String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.vivify(methodName);
+        AMethod method = clazz.methods.getVivify(methodName);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -270,7 +264,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-            AField param = method.parameters.vivify(i);
+            AField param = method.parameters.getVivify(i);
             helper.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -288,8 +282,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       type will be the LUB between the previous type and the type of the respective value
      *       passed as argument in the method call.
      * </ul>
-     *
-     * <p>
      *
      * @param lhs the node representing the parameter
      * @param rhs the node being assigned to the parameter
@@ -317,7 +309,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodTree);
-        AMethod method = clazz.methods.vivify(methodName);
+        AMethod method = clazz.methods.getVivify(methodName);
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -335,7 +327,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-                AField param = method.parameters.vivify(i);
+                AField param = method.parameters.getVivify(i);
                 helper.updateAnnotationSetInScene(
                         param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
                 break;
@@ -357,8 +349,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *       overridden method.
      * </ul>
      *
-     * <p>
-     *
      * @param methodTree the tree of the method that contains the receiver
      * @param methodElt the element of the method
      * @param overriddenMethod the overridden method
@@ -376,7 +366,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.vivify(methodName);
+        AMethod method = clazz.methods.getVivify(methodName);
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
         if (argADT != null) {
@@ -397,8 +387,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * <p>If the Scene contains no entry for the field lhs, the entry will be created and its type
      * will be the type of rhs. If the Scene previously contained an entry/type for lhs, its new
      * type will be the LUB between the previous type and the type of rhs.
-     *
-     * <p>
      *
      * @param lhs the field whose type will be refined
      * @param rhs the expression being assigned to the field
@@ -441,7 +429,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
 
-        AField field = clazz.fields.vivify(lhs.getFieldName());
+        AField field = clazz.fields.getVivify(lhs.getFieldName());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         helper.updateAnnotationSetInScene(
@@ -457,8 +445,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * method in the Scene. If the Scene previously contained an annotated return type for the
      * method methodTree, its new type will be the LUB between the previous type and the type of the
      * value passed to the return expression.
-     *
-     * <p>
      *
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
@@ -482,7 +468,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
 
-        AMethod method = clazz.methods.vivify(JVMNames.getJVMMethodName(methodTree));
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodName(methodTree));
         // Method return type
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
         // Type of the expression returned

@@ -74,7 +74,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -545,10 +545,18 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a string containing the number of qualifiers and canonical names of each qualifier
      */
     protected final String getSortedQualifierNames() {
+        Set<Class<? extends Annotation>> stq = getSupportedTypeQualifiers();
+        if (stq.isEmpty()) {
+            return "No qualifiers examined";
+        }
+        if (stq.size() == 1) {
+            return "1 qualifier examined: " + stq.iterator().next().getCanonicalName();
+        }
+
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
         List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
-        sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
+        sortedSupportedQuals.addAll(stq);
         Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
 
         // display the number of qualifiers as well as the names of each
@@ -557,19 +565,15 @@ public abstract class GenericAnnotatedTypeFactory<
         sb.append(sortedSupportedQuals.size());
         sb.append(" qualifiers examined");
 
-        if (sortedSupportedQuals.size() > 0) {
-            sb.append(": ");
-            // for each qualifier, add its canonical name, a comma and a space
-            // to the string.
-            for (Class<? extends Annotation> qual : sortedSupportedQuals) {
-                sb.append(qual.getCanonicalName());
-                sb.append(", ");
-            }
-            // remove last comma and space
-            return sb.substring(0, sb.length() - 2);
-        } else {
-            return sb.toString();
+        sb.append(": ");
+        // for each qualifier, add its canonical name, a comma and a space
+        // to the string.
+        for (Class<? extends Annotation> qual : sortedSupportedQuals) {
+            sb.append(qual.getCanonicalName());
+            sb.append(", ");
         }
+        // remove last comma and space
+        return sb.substring(0, sb.length() - 2);
     }
 
     /**
@@ -844,10 +848,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * compilation unit.
      */
     protected enum ScanState {
+        /** Dataflow analysis in progress. */
         IN_PROGRESS,
+        /** Dataflow analysis finished. */
         FINISHED
-    };
+    }
 
+    /** Map from ClassTree to their dataflow analysis state. */
     protected final Map<ClassTree, ScanState> scannedClasses;
 
     /**
@@ -975,7 +982,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
-     * @return the {@link Node}s for a given {@link Tree}.
+     * @return the {@link Node}s for a given {@link Tree}
      */
     public Set<Node> getNodesForTree(Tree tree) {
         return flowResult.getNodesForTree(tree);
@@ -1395,13 +1402,41 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        ParameterizedMethodType mType = super.constructorFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType mType = super.constructorFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
         poly.annotate(tree, method);
+
+        // If the newClassTree "tree" is explicitly annotated with a polymorphic annotation,
+        // do not replace that. This ensures consistent behaviour with constructor invocations that
+        // are cast to the polymorphic type i.e "(@Poly X) new X();" is the same as
+        // "new @Poly X();"
+        // TODO: Replace getExplicitAnnotationsOnNewClassTree() with getExplicitAnnotations()
+        // when issue 2324 is fixed.
+        // See https://github.com/typetools/checker-framework/issues/2324.
+        Set<? extends AnnotationMirror> explicitAnnotations =
+                getExplicitAnnotationsOnNewClassTree(
+                        tree, getAnnotatedType(tree.getIdentifier()).getAnnotations());
+        Set<? extends AnnotationMirror> topAnnotations = qualHierarchy.getTopAnnotations();
+        for (AnnotationMirror top : topAnnotations) {
+            AnnotationMirror polyAnnotation = qualHierarchy.getPolymorphicAnnotation(top);
+            if (AnnotationUtils.containsSameByName(explicitAnnotations, polyAnnotation)) {
+                if (!qualHierarchy.isSubtype(
+                        method.returnType.getAnnotationInHierarchy(top), polyAnnotation)) {
+                    checker.report(
+                            Result.warning(
+                                    "cast.unsafe.constructor.invocation",
+                                    method.returnType.getAnnotationInHierarchy(top),
+                                    polyAnnotation),
+                            tree);
+                }
+                method.returnType.replaceAnnotation(polyAnnotation);
+            }
+        }
+
         return mType;
     }
 
@@ -1531,9 +1566,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
-        ParameterizedMethodType mType = super.methodFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedExecutableType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }

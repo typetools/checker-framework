@@ -33,7 +33,7 @@ public class FloatLiteralNode extends ValueLiteralNode {
     @Override
     public boolean equals(Object obj) {
         // test that obj is a FloatLiteralNode
-        if (obj == null || !(obj instanceof FloatLiteralNode)) {
+        if (!(obj instanceof FloatLiteralNode)) {
             return false;
         }
         // super method compares values

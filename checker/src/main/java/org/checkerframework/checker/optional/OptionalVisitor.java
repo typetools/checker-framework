@@ -42,36 +42,33 @@ public class OptionalVisitor
     private final TypeMirror collectionType;
 
     /** The element for java.util.Optional.get(). */
-    private final ExecutableElement get;
+    private final ExecutableElement optionalGet;
     /** The element for java.util.Optional.isPresent(). */
-    private final ExecutableElement isPresent;
+    private final ExecutableElement optionalIsPresent;
     /** The element for java.util.Optional.of(). */
-    private final ExecutableElement of;
+    private final ExecutableElement optionalOf;
     /** The element for java.util.Optional.ofNullable(). */
-    private final ExecutableElement ofNullable;
+    private final ExecutableElement optionalOfNullable;
     /** The element for java.util.Optional.orElse(). */
-    private final ExecutableElement orElse;
+    private final ExecutableElement optionalOrElse;
     /** The element for java.util.Optional.orElseGet(). */
-    private final ExecutableElement orElseGet;
+    private final ExecutableElement optionalOrElseGet;
     /** The element for java.util.Optional.orElseThrow(). */
-    private final ExecutableElement orElseThrow;
+    private final ExecutableElement optionalOrElseThrow;
 
+    /** Create an OptionalVisitor. */
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
         collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        this.get = TreeUtils.getMethod(java.util.Optional.class.getName(), "get", 0, env);
-        this.isPresent =
-                TreeUtils.getMethod(java.util.Optional.class.getName(), "isPresent", 0, env);
-        this.of = TreeUtils.getMethod(java.util.Optional.class.getName(), "of", 1, env);
-        this.ofNullable =
-                TreeUtils.getMethod(java.util.Optional.class.getName(), "ofNullable", 1, env);
-        this.orElse = TreeUtils.getMethod(java.util.Optional.class.getName(), "orElse", 1, env);
-        this.orElseGet =
-                TreeUtils.getMethod(java.util.Optional.class.getName(), "orElseGet", 1, env);
-        this.orElseThrow =
-                TreeUtils.getMethod(java.util.Optional.class.getName(), "orElseThrow", 1, env);
+        optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);
+        optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
+        optionalOf = TreeUtils.getMethod("java.util.Optional", "of", 1, env);
+        optionalOfNullable = TreeUtils.getMethod("java.util.Optional", "ofNullable", 1, env);
+        optionalOrElse = TreeUtils.getMethod("java.util.Optional", "orElse", 1, env);
+        optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
+        optionalOrElseThrow = TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
     }
 
     @Override
@@ -82,32 +79,32 @@ public class OptionalVisitor
     /** @return true iff expression is a call to java.util.Optional.get */
     private boolean isCallToGet(ExpressionTree expression) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        return TreeUtils.isMethodInvocation(expression, this.get, env);
+        return TreeUtils.isMethodInvocation(expression, optionalGet, env);
     }
 
     /** @return true iff expression is a call to java.util.Optional.isPresent */
     private boolean isCallToIsPresent(ExpressionTree expression) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        return TreeUtils.isMethodInvocation(expression, this.isPresent, env);
+        return TreeUtils.isMethodInvocation(expression, optionalIsPresent, env);
     }
 
     /** @return true iff expression is a call to Optional creation: of, ofNullable. */
     private boolean isOptionalCreation(MethodInvocationTree methInvok) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        return TreeUtils.isMethodInvocation(methInvok, this.of, env)
-                || TreeUtils.isMethodInvocation(methInvok, this.ofNullable, env);
+        return TreeUtils.isMethodInvocation(methInvok, optionalOf, env)
+                || TreeUtils.isMethodInvocation(methInvok, optionalOfNullable, env);
     }
 
     /**
      * @return true iff expression is a call to Optional elimination: get, orElse, orElseGet,
-     *     orElseThrow.
+     *     orElseThrow
      */
     private boolean isOptionalElimation(MethodInvocationTree methInvok) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        return TreeUtils.isMethodInvocation(methInvok, this.get, env)
-                || TreeUtils.isMethodInvocation(methInvok, this.orElse, env)
-                || TreeUtils.isMethodInvocation(methInvok, this.orElseGet, env)
-                || TreeUtils.isMethodInvocation(methInvok, this.orElseThrow, env);
+        return TreeUtils.isMethodInvocation(methInvok, optionalGet, env)
+                || TreeUtils.isMethodInvocation(methInvok, optionalOrElse, env)
+                || TreeUtils.isMethodInvocation(methInvok, optionalOrElseGet, env)
+                || TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrow, env);
     }
 
     @Override
@@ -282,7 +279,7 @@ public class OptionalVisitor
 
     /**
      * Handles part of Rule #6, and also Rule #7: Don't permit {@code Collection<Optional<...>>} or
-     * {@code Optional<Collection<...>>}..
+     * {@code Optional<Collection<...>>}.
      */
     private final class OptionalTypeValidator extends BaseTypeValidator {
 

@@ -26,7 +26,7 @@ public abstract class QualifierHierarchy {
      */
     public boolean isValid() {
         // For most QH the simplest check is that there are qualifiers.
-        return getTypeQualifiers().size() > 0;
+        return !getTypeQualifiers().isEmpty();
     }
 
     // **********************************************************************
@@ -61,7 +61,8 @@ public abstract class QualifierHierarchy {
 
     /**
      * @param start any qualifier from the type hierarchy
-     * @return the polymorphic qualifier for that hierarchy
+     * @return the polymorphic qualifier for that hierarchy or {@code null} if there is no
+     *     polymorphic qualifier in that hierarchy
      */
     public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
 

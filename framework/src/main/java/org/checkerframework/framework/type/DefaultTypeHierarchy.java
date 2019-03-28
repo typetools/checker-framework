@@ -1101,8 +1101,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             resultAtd.addAnnotations(asSuperType.getAnnotations());
 
             final AnnotatedDeclaredType asSuperAdt = (AnnotatedDeclaredType) asSuperType;
-            if (resultAtd.getTypeArguments().size() > 0
-                    && asSuperAdt.getTypeArguments().size() > 0) {
+            if (!resultAtd.getTypeArguments().isEmpty()
+                    && !asSuperAdt.getTypeArguments().isEmpty()) {
                 final AnnotatedTypeMirror sourceTypeArg = asSuperAdt.getTypeArguments().get(0);
                 final AnnotatedTypeMirror resultTypeArg = resultAtd.getTypeArguments().get(0);
                 resultTypeArg.clearAnnotations();

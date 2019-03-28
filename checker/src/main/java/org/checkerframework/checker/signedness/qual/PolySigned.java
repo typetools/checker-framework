@@ -17,4 +17,4 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 @PolymorphicQualifier(UnknownSignedness.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface PolySignedness {}
+public @interface PolySigned {}

@@ -150,10 +150,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    // despite the above the comment at the beginning of the "array as arguments" section, a type
-    // variable cannot
-    // actually have an array type as its upper bound (e.g. <T extends Integer[]> is not allowed).
-    // so the only cases in which we visitArray_Typevar would be cases in which either:
+    // Despite the above the comment at the beginning of the "array as arguments" section, a type
+    // variable cannot actually have an array type as its upper bound (e.g. <T extends Integer[]> is
+    // not allowed).
+    // So the only cases in which we visitArray_Typevar would be cases in which either:
     //   1) Typevar is a type parameter for which we are inferring an argument, in which case the
     //      combination is already irreducible and we would not pass it to this class.
     //   2) Typevar is an outer scope type variable, in which case it could NOT reference any of the
@@ -243,7 +243,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         // extends Serializable & Iterable<T>>
         for (final AnnotatedTypeMirror intersectionBound : supertype.directSuperTypes()) {
             if (intersectionBound instanceof AnnotatedDeclaredType
-                    && ((AnnotatedDeclaredType) intersectionBound).getTypeArguments().size() > 0) {
+                    && !((AnnotatedDeclaredType) intersectionBound).getTypeArguments().isEmpty()) {
                 addConstraint(subtype, supertype, constraints);
             }
         }

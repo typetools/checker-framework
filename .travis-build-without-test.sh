@@ -20,10 +20,14 @@ fi
 
 export SHELLOPTS
 
-SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+SLUGOWNER=${TRAVIS_PULL_REQUEST_SLUG%/*}
+if [[ "$SLUGOWNER" == "" ]]; then
+  SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+fi
 if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
+echo SLUGOWNER=$SLUGOWNER
 
 
 ## Build annotation-tools (Annotation File Utilities)
@@ -68,12 +72,12 @@ fi
 # Two options: rebuild the JDK or download a prebuilt JDK.
 if [[ "${BUILDJDK}" == "buildjdk" ]]; then
   echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
-   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s
+  ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew assemble --console=plain --warning-mode=all -s
+  ./gradlew assemble --console=plain --warning-mode=all -s --no-daemon
 fi
 
 echo Exiting `pwd`/.travis-build-without-test.sh

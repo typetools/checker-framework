@@ -74,8 +74,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitBinary(BinaryTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror res = f.type(node);
-        // TODO: why do we need to clear the type?
-        res.clearAnnotations();
         return res;
     }
 
@@ -167,7 +165,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitMethodInvocation(
             MethodInvocationTree node, AnnotatedTypeFactory f) {
 
-        AnnotatedExecutableType ex = f.methodFromUse(node).methodType;
+        AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
         return ex.getReturnType().asUse();
     }
 
@@ -260,7 +258,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // However, it also applies defaulting, so we might apply too many qualifiers.
         // Therefore, ensure to only add the qualifiers that are explicitly on
         // the constructor, but then take the possibly substituted qualifier.
-        AnnotatedExecutableType ex = f.constructorFromUse(node).methodType;
+        AnnotatedExecutableType ex = f.constructorFromUse(node).executableType;
         AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
 
         return type;

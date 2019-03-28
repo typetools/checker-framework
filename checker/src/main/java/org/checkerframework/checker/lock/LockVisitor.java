@@ -52,7 +52,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -150,7 +150,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     /**
      * Issues an error if a method (explicitly or implicitly) annotated with @MayReleaseLocks has a
      * formal parameter or receiver (explicitly or implicitly) annotated with @GuardSatisfied. Also
-     * issues an error if a synchronized method has a @LockingFree, @SideEffectFree or @Pure
+     * issues an error if a synchronized method has a @LockingFree, @SideEffectFree, or @Pure
      * annotation.
      *
      * @param node the MethodTree of the method definition to visit
@@ -584,7 +584,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             // final.
             ExpressionTree recvTree = getReceiverTree(node);
 
-            ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(node, methodElement, recvTree);
+            ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(methodElement, recvTree);
 
             // Handle acquiring of explicit locks. Verify that the lock expression is effectively
             // final.
@@ -631,11 +631,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         // Check that matching @GuardSatisfied(index) on a method's formal receiver/parameters
-        // matches
-        // those in corresponding locations on the method call site.
+        // matches those in corresponding locations on the method call site.
 
-        ParameterizedMethodType mType = atypeFactory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mType.methodType;
+        ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mType.executableType;
 
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
@@ -767,14 +766,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     /**
      * Issues an error if the receiver of an unlock() call is not effectively final.
      *
-     * @param node the MethodInvocationTree for any method call
-     * @param methodElement the ExecutableElement for the method call referred to by {@code node}
-     * @param lockExpression the receiver tree of {@code node}. Can be null.
+     * @param methodElement the ExecutableElement for a method call to unlock()
+     * @param lockExpression the receiver tree for the method call to unlock(). Can be null.
      */
     private void ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(
-            MethodInvocationTree node,
-            ExecutableElement methodElement,
-            ExpressionTree lockExpression) {
+            ExecutableElement methodElement, ExpressionTree lockExpression) {
         if (lockExpression == null) {
             // Implicit this, or class name receivers, are null. But they are also final. So nothing
             // to be checked for them.

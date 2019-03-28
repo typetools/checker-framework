@@ -138,8 +138,9 @@ public class ConstraintMapBuilder {
 
                 // This is the case where we have a relationship between two different targets (Ti
                 // <?> Tj and i != j)
-                if (!TypeAnnotationUtils.unannotatedType(typeT.getUnderlyingType())
-                        .equals(TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
+                if (!typeFactory.types.isSameType(
+                        TypeAnnotationUtils.unannotatedType(typeT.getUnderlyingType()),
+                        TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
                     addToTargetRelationship(
                             (TypeVariable)
                                     TypeAnnotationUtils.unannotatedType(typeT.getUnderlyingType()),

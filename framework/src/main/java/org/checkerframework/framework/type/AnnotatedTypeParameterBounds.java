@@ -1,5 +1,8 @@
 package org.checkerframework.framework.type;
 
+import java.util.Objects;
+
+/** Represents upper and lower bounds, each an AnnotatedTypeMirror. */
 public class AnnotatedTypeParameterBounds {
     private final AnnotatedTypeMirror upper;
     private final AnnotatedTypeMirror lower;
@@ -22,9 +25,19 @@ public class AnnotatedTypeParameterBounds {
         return "[extends " + upper + " super " + lower + "]";
     }
 
+    /**
+     * Return a possibly-verbose string representation of this.
+     *
+     * @param verbose if true, returned representation is verbose
+     * @return a possibly-verbose string representation of this
+     */
+    public String toString(boolean verbose) {
+        return "[extends " + upper.toString(verbose) + " super " + lower.toString(verbose) + "]";
+    }
+
     @Override
     public int hashCode() {
-        return 17 * upper.hashCode() + 37 * lower.hashCode();
+        return Objects.hash(upper, lower);
     }
 
     @Override

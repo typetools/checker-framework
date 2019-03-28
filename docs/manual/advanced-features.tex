@@ -245,18 +245,8 @@ class MyClass {
 }
 \end{Verbatim}
 
-If you wish to write multiple
-\refqualclass{framework/qual}{DefaultQualifier} annotations at a single location,
-use
-\refqualclass{framework/qual}{DefaultQualifiers} instead.  For example:
-
-\begin{Verbatim}
-@DefaultQualifiers({
-  @DefaultQualifier(NonNull.class),
-  @DefaultQualifier(Tainted.class)
-})
-\end{Verbatim}
-
+You may write multiple
+\refqualclass{framework/qual}{DefaultQualifier} annotations at a single location.
 
 If \code{@DefaultQualifier}[\code{s}] is placed on a package (via the
 \<package-info.java> file), then it applies to the given package \emph{and}
@@ -281,20 +271,8 @@ from taking effect), or exclude class declarations from defaulting.
 
 
 When a programmer omits an \<extends> clause at a declaration of a type
-parameter, the default still applies to the implicit upper bound.  For
-example, consider these two declarations:
-
-\begin{Verbatim}
-  class C<T> { ... }
-  class C<T extends Object> { ... }  // identical to previous line
-\end{Verbatim}
-
-\noindent
-The two declarations are treated identically by Java, and the default
-qualifier applies to the \<Object> upper bound whether it is implicit or
-explicit.  (The \<@NonNull> default annotation applies only to the upper bound
-in the \<extends> clause, not to the lower bound in the inexpressible
-implicit \<super void> clause.)
+parameter, the implicit upper bound is defaulted to the top qualifier; see
+Section~\ref{climb-to-top}.
 
 
 \subsectionAndLabel{Defaulting rules and CLIMB-to-top}{climb-to-top}
@@ -307,7 +285,7 @@ writes an unqualified type such as \<Date>, the Nullness Checker interprets it a
 \<@NonNull Date>.
 
 The type system applies that default qualifier to most but
-not all types.  In particular, unless otherwise stated, every type system
+not all type uses.  In particular, unless otherwise stated, every type system
 uses the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is the default for
 the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
@@ -323,8 +301,7 @@ hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
 
 The CLIMB-to-top rule is used only for unannotated source code that is
 being processed by a checker.  For unannotated libraries (code read by the
-compiler in \<.class> or \<.jar> form), the checker uses conservative
-defaults (Section~\ref{defaults-classfile}).
+compiler in \<.class> or \<.jar> form), see Section~\ref{defaults-classfile}.
 
 The rest of this section explains the rationale and implementation of
 CLIMB-to-top.
@@ -392,9 +369,9 @@ Here is how the Nullness Checker overrides part of the CLIMB-to-top rule:
 \begin{Verbatim}
 @DefaultQualifierInHierarchy
 @DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
-public @interface NonNull { }
+public @interface NonNull {}
 
-public @interface Nullable { }
+public @interface Nullable {}
 \end{Verbatim}
 
 \noindent
@@ -480,7 +457,7 @@ Also note that the \code{MyList} class declaration could have been more succinct
 written as: \code{class MyList<T extends @Nullable Object>} where the lower bound
 is implicitly the bottom annotation: \code {@NonNull}.
 
-\subsectionAndLabel{Default qualifiers for \<.class> files (conservative library defaults)}{defaults-classfile}
+\subsectionAndLabel{Default qualifiers for \<.class> files (library defaults)}{defaults-classfile}
 
 (\emph{Note:} Currently, the conservative library defaults presented in this section
 are off by default and can be turned on by supplying the \<-AuseDefaultsForUncheckedcode=bytecode>
@@ -1351,7 +1328,7 @@ Chapter~\ref{typestate-checker}.
 A Java subtype can have more fields than its supertype.  For example:
 
 \begin{Verbatim}
-class Animal { }
+class Animal {}
 class Mammal extends Animal { ... }
 class Marsupial extends Mammal {
   int pouchSize;  // pouch capacity, in cubic centimeters
@@ -1378,8 +1355,8 @@ class Animal {
   int pouchSize;  // pouch capacity, in cubic centimeters
   ...
 }
-@interface Mammal { }
-@interface Marsupial { }
+@interface Mammal {}
+@interface Marsupial {}
 
 @Marsupial Animal joey = ...;
 ... joey.pouchSize ...    // OK
@@ -1420,8 +1397,8 @@ class @Marsupial-Animal {
 % \refqualclass{framework/qual}{Dependent}:
 %
 % \begin{Verbatim}
-% @interface Mammal { }
-% @interface Marsupial { }
+% @interface Mammal {}
+% @interface Marsupial {}
 % class Animal {
 %   // pouch capacity, in cubic centimeters
 %   // (non-null if this animal is a marsupial)
@@ -1494,7 +1471,7 @@ class @Marsupial-Animal {
 
 
 % LocalWords:  MyClass qual PolymorphicQualifier DefaultQualifier subpackages
-% LocalWords:  DefaultQualifiers actuals toArray CollectionToArrayHeuristics nn
+% LocalWords:  actuals toArray CollectionToArrayHeuristics nn
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf

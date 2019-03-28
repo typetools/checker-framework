@@ -346,7 +346,7 @@ public class TypesIntoElements {
             for (AnnotationMirror am : type.getAnnotations()) {
                 // TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME
                 // FROM THE ELEMENT OF THE CLASS WHICH PREVIOUSLY WAS WRITTEN OUT BY
-                // TYPESINTOELEMENT
+                // TYPESINTOELEMENT.
                 //                if (am instanceof Attribute.TypeCompound) {
                 //                    // If it is a TypeCompound it was already present in source
                 // (right?),

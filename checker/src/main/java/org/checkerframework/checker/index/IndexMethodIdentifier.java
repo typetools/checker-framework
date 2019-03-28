@@ -41,28 +41,20 @@ public class IndexMethodIdentifier {
 
         stringLength = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
 
-        mathMinMethods = TreeUtils.getMethodList("java.lang.Math", "min", 2, processingEnv);
-        mathMaxMethods = TreeUtils.getMethodList("java.lang.Math", "max", 2, processingEnv);
+        mathMinMethods = TreeUtils.getMethods("java.lang.Math", "min", 2, processingEnv);
+        mathMaxMethods = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
     }
 
+    /** Returns true if the argument is an invocation of Math.min. */
     public boolean isMathMin(Tree methodTree) {
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        return isInvocationOfOne(methodTree, processingEnv, mathMinMethods);
+        return TreeUtils.isMethodInvocation(methodTree, mathMinMethods, processingEnv);
     }
 
+    /** Returns true if the argument is an invocation of Math.max. */
     public boolean isMathMax(Tree methodTree) {
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        return isInvocationOfOne(methodTree, processingEnv, mathMaxMethods);
-    }
-
-    private static boolean isInvocationOfOne(
-            Tree methodTree, ProcessingEnvironment processingEnv, List<ExecutableElement> methods) {
-        for (ExecutableElement minMethod : methods) {
-            if (TreeUtils.isMethodInvocation(methodTree, minMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
+        return TreeUtils.isMethodInvocation(methodTree, mathMaxMethods, processingEnv);
     }
 
     public boolean isMathRandom(Tree tree, ProcessingEnvironment processingEnv) {
@@ -89,11 +81,15 @@ public class IndexMethodIdentifier {
     }
 
     /**
-     * @return whether or not {@code tree} is an invocation of a method that returns the length of
-     *     "this"
+     * Returns true if {@code tree} evaluates to the length of "this". This might be a call to
+     * String,length, or a method annotated with @LengthOf.
+     *
+     * @return true if {@code tree} evaluates to the length of "this"
      */
     public boolean isLengthOfMethodInvocation(ExecutableElement ele) {
         if (stringLength.equals(ele)) {
+            // TODO: Why not just annotate String.length with @LengthOf and thus eliminate the
+            // special case in this method's implementation?
             return true;
         }
 

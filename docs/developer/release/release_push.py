@@ -11,6 +11,7 @@ Copyright (c) 2013-2016 University of Washington. All rights reserved.
 # See README-release-process.html for more information
 
 import os
+from os.path import expanduser
 from release_vars  import *
 from release_utils import *
 from sanity_checks import *
@@ -197,12 +198,6 @@ def push_interm_to_release_repos():
     push_changes_prompt_if_fail(INTERM_ANNO_REPO)
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
 
-def continue_or_exit(msg):
-    "Prompts the user whether to continue executing the script."
-    continue_script = prompt_w_default(msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$")
-    if continue_script == "no" or continue_script == "No":
-        raise Exception("User elected NOT to continue at prompt: " + msg)
-
 def validate_args(argv):
     """Validate the command-line arguments to ensure that they meet the
     criteria issued in print_usage."""
@@ -240,6 +235,10 @@ def main(argv):
     validate_args(argv)
     auto = read_command_line_option(argv, "--auto")
     test_mode = not read_command_line_option(argv, "release")
+
+    m2_settings = expanduser("~") + "/.m2/settings.xml"
+    if not os.path.exists(m2_settings):
+        raise Exception("File does not exist: " + m2_settings)
 
     if test_mode:
         msg = ("You have chosen test_mode.\n" +
@@ -338,12 +337,13 @@ def main(argv):
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
             " * Browse to https://oss.sonatype.org/#stagingRepositories\n" +
             " * Log in using your Sonatype credentials\n" +
-            " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
+            " * In the search box at upper right, type \"checker\"\n" +
+            " * In the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
             " * Click the Refresh button near the top of the page until the bottom pane has:\n" +
             "   \"Activity   Last operation completed successfully\".\n" +
-            " * Copy the URL of the closed artifacts for use in the next step\n"
+            " * Copy the URL of the closed artifacts (in the bottom pane) for use in the next step\n"
             "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
         )
 
@@ -374,6 +374,14 @@ def main(argv):
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
+    print
+    print "*****"
+    print "***** WARNING"
+    print "*****"
+    print "***** Temporarily skip this if /bin/java is Java 11 and CF doesn't support Java 11."
+    print "*****"
+    print "***** WARNING"
+    print "*****"
     if not test_mode:
         if auto or prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
@@ -471,7 +479,6 @@ def main(argv):
 
         print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
-                         "Note that this text may have changed since the last time a release was performed.\n" +
                          get_announcement_email(new_checker_version))
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)

@@ -17,17 +17,17 @@ import java.lang.annotation.Target;
  * <p>Example:
  *
  * <pre> @SubtypeOf( { Nullable.class } )
- * public @interface NonNull { }
+ * public @interface NonNull {}
  * </pre>
  *
  * <p>For the top qualifier in the qualifier hierarchy (i.e., the qualifier that is a supertype of
  * all other qualifiers in the given hierarchy), use an empty set of values:
  *
- * <pre><code> @SubtypeOf( { } )
- * public @interface Nullable { }
+ * <pre><code> @SubtypeOf( {} )
+ * public @interface Nullable {}
  *
  * &#64;SubtypeOf( {} )
- * public @interface MaybeAliased { }
+ * public @interface MaybeAliased {}
  * </code></pre>
  *
  * <p>Together, all the @SubtypeOf meta-annotations fully describe the type qualifier hierarchy.
