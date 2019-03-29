@@ -396,10 +396,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Performs pre-processing on annotations written by users, replacing illegal annotations by
      * legal ones.
      */
-    protected class ValueTypeAnnotator extends TypeAnnotator {
+    private class ValueTypeAnnotator extends TypeAnnotator {
 
-        /** Changed to protected for future checker extensions */
-        protected ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+        private ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
