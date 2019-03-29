@@ -1250,6 +1250,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (TreeUtils.isSuperCall(node)) {
             checkSuperConstructorCall(node);
+        } else if (TreeUtils.isThisCall(node)) {
+            checkThisConstructorCall(node);
         }
 
         // Do not call super, as that would observe the arguments without
@@ -1260,9 +1262,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
+     * supertype of the return type of "this()" invocation within that constructor.
+     */
+    protected void checkThisConstructorCall(MethodInvocationTree thisCall) {
+        checkThisOrSuperConstructorCall(thisCall, "this.invocation.invalid");
+    }
+
+    /**
+     * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "super()" invocation within that constructor.
      */
     protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
+        checkThisOrSuperConstructorCall(superCall, "super.invocation.invalid");
+    }
+
+    /**
+     * Checks that the following rule is satisfied: The type on a constructor declaration must be a
+     * supertype of the return type of "this()" or "super()" invocation within that constructor.
+     */
+    private void checkThisOrSuperConstructorCall(
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
         TreePath path = atypeFactory.getPath(superCall);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
         AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(superCall);
@@ -1278,11 +1297,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     .getQualifierHierarchy()
                     .isSubtype(superTypeMirror, constructorTypeMirror)) {
                 checker.report(
-                        Result.failure(
-                                "super.invocation.invalid",
-                                constructorTypeMirror,
-                                superCall,
-                                superTypeMirror),
+                        Result.failure(errorKey, constructorTypeMirror, superCall, superTypeMirror),
                         superCall);
             }
         }
