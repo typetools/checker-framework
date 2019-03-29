@@ -367,6 +367,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         validateType(classTree, classType);
 
+        Tree ext = classTree.getExtendsClause();
+        if (ext != null) {
+            validateTypeOf(ext);
+        }
+
+        List<? extends Tree> impls = classTree.getImplementsClause();
+        if (impls != null) {
+            for (Tree im : impls) {
+                validateTypeOf(im);
+            }
+        }
+
         checkExtendsImplements(classTree);
 
         super.visitClass(classTree, null);
@@ -383,18 +395,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (TypesUtils.isAnonymous(TreeUtils.typeOf(classTree))) {
             // Don't check extends clause on anonymous classes.
             return;
-        }
-
-        Tree ext = classTree.getExtendsClause();
-        if (ext != null) {
-            validateTypeOf(ext);
-        }
-
-        List<? extends Tree> impls = classTree.getImplementsClause();
-        if (impls != null) {
-            for (Tree im : impls) {
-                validateTypeOf(im);
-            }
         }
 
         AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(classTree);
