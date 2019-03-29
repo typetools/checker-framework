@@ -17,7 +17,7 @@ public @Interned class InternedClass {
     }
 
     // Private constructor
-    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+    // :: error: (super.invocation.invalid)
     private InternedClass(int i) {
         value = i;
     }
@@ -29,7 +29,7 @@ public @Interned class InternedClass {
     }
 
     // Factory method
-    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+    // :: error: (super.invocation.invalid)
     private InternedClass(InternedClass ic) {
         value = ic.value;
     }
@@ -98,7 +98,6 @@ public @Interned class InternedClass {
 
     public @Interned class Subclass extends InternedClass {
         // Private constructor
-        // :: warning: (inconsistent.constructor.type)
         private Subclass(int i) {
             super(i);
         }

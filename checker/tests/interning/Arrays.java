@@ -33,7 +33,7 @@ public class Arrays {
         @Interned String @Interned [][] multi2 = new @Interned String @Interned [2][];
     }
 
-    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+    // :: error: (super.invocation.invalid)
     public final @Interned class InternedClass {}
 
     private static InternedClass[] returnToArray() {
