@@ -125,6 +125,29 @@ class Postcondition {
         f2 = p1;
     }
 
+    @EnsuresQualifier(expression = "f1", qualifier = Odd.class)
+    @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+    void oddValueF1_repeated1(@Value String p1) {
+        f1 = null;
+        f2 = p1;
+    }
+
+    @EnsuresQualifiers({
+        @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
+    })
+    @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+    void oddValueF1_repeated2(@Value String p1) {
+        f1 = null;
+        f2 = p1;
+    }
+
+    @EnsuresQualifier(expression = "f1", qualifier = Odd.class)
+    @EnsuresQualifiers({@EnsuresQualifier(expression = "f2", qualifier = Value.class)})
+    void oddValueF1_repeated3(@Value String p1) {
+        f1 = null;
+        f2 = p1;
+    }
+
     @EnsuresQualifiers({
         @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
         @EnsuresQualifier(expression = "f2", qualifier = Value.class)

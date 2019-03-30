@@ -107,7 +107,8 @@ public class WholeProgramInferenceScenesHelper {
                 AScene scene = scenes.get(jaifPath).clone();
                 removeIgnoredAnnosFromScene(scene);
                 new File(jaifPath).delete();
-                if (!scene.prune()) {
+                scene.prune();
+                if (!scene.isEmpty()) {
                     // Only write non-empty scenes into .jaif files.
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
@@ -164,7 +165,7 @@ public class WholeProgramInferenceScenesHelper {
     protected AClass getAClass(String className, String jaifPath) {
         // Possibly reads .jaif file to obtain a Scene.
         AScene scene = getScene(jaifPath);
-        return scene.classes.vivify(className);
+        return scene.classes.getVivify(className);
     }
 
     /**
@@ -537,7 +538,7 @@ public class WholeProgramInferenceScenesHelper {
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
                     atf,
-                    typeToUpdate.innerTypes.vivify(
+                    typeToUpdate.innerTypes.getVivify(
                             new InnerTypeLocation(
                                     TypeAnnotationPosition.getTypePathFromBinary(
                                             Collections.nCopies(2 * idx, 0)))),

@@ -244,12 +244,12 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(
                 new ImplicitsTreeAnnotator(this),
                 new RegexTreeAnnotator(this),
-                new RegexPropagationAnnotator(this));
+                new RegexPropagationTreeAnnotator(this));
     }
 
-    private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {
+    private static class RegexPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
-        public RegexPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+        public RegexPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 

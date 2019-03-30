@@ -3,6 +3,7 @@ package org.checkerframework.framework.qual;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -29,7 +30,6 @@ import java.lang.annotation.Target;
  * org.checkerframework.checker.nullness.qual.EnsuresNonNullIf} and {@code
  * org.checkerframework.checker.lock.qual.EnsuresLockHeldIf}.
  *
- * @see EnsuresQualifiersIf
  * @see EnsuresQualifier
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
@@ -37,6 +37,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @InheritedAnnotation
+@Repeatable(EnsuresQualifiersIf.class)
 public @interface EnsuresQualifierIf {
     /**
      * The Java expressions for which the qualifier holds if the method terminates with return value
