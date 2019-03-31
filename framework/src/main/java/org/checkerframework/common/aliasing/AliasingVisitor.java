@@ -240,6 +240,27 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         return super.visitNewArray(node, p);
     }
 
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // @Unique is verified, so don't check this.
+        if (!constructorType.getReturnType().hasAnnotation(atypeFactory.UNIQUE)) {
+            super.checkConstructorResult(constructorType, constructorElement);
+        }
+    }
+
+    @Override
+    protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
+        if (isInUniqueConstructor()) {
+            // Check if a call to super() might create an alias: that
+            // happens when the parent's respective constructor is not @Unique.
+            AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(superCall);
+            if (!superResult.hasAnnotation(Unique.class)) {
+                checker.report(Result.failure("unique.leaked"), superCall);
+            }
+        }
+    }
+
     /**
      * Returns true if {@code exp} has type {@code @Unique} and is not a method invocation nor a new
      * class expression.
