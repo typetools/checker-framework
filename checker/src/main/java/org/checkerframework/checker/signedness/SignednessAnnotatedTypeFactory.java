@@ -173,6 +173,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+            super.visitCompoundAssignment(tree, type);
             annotateBoolean(type);
             return null;
         }
