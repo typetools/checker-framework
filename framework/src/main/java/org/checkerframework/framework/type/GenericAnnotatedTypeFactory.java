@@ -1706,9 +1706,4 @@ public abstract class GenericAnnotatedTypeFactory<
     public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
         return cfgVisualizer;
     }
-
-    /** Return whether this factory should use flow-sensitive type refinement. */
-    protected boolean getUseFlow() {
-        return useFlow;
-    }
 }
