@@ -3,14 +3,18 @@ import org.gradle.internal.jvm.Jvm
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
     id "de.undercouch.download" version "3.4.3"
     id 'java'
     // TODO: Migrate to newer version: https://github.com/tbroyer/gradle-errorprone-plugin#migration-from-versions-00x
     id "net.ltgt.errorprone-base" version "0.0.13"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '3.0.0' apply false
+    id 'org.ajoberstar.grgit' version '3.1.1' apply false
+
+    // To update version numbers of dependencies in this file, run: ./gradlew useLatestVersions
+    id 'se.patrikerdes.use-latest-versions' version '0.2.9'
+    id 'com.github.ben-manes.versions' version '0.21.0'
 }
 apply plugin: "de.undercouch.download"
 
@@ -101,7 +105,7 @@ allprojects {
                 options.memberLevel = javadocMemberLevel
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
-                options.tagletPath(project(':framework-test').sourceSets.taglet.output as File[])
+                options.tagletPath(project(':framework-test').sourceSets.taglet.output.classesDirs.getFiles() as File[])
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
@@ -141,7 +145,7 @@ task version() {
 }
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
- * "check${shortName}".
+ * "check${shortName}", for example "checkPurity" or "checkNullness".
  * @param projectName name of the project
  * @param checker full qualified name of the checker to run
  * @param shortName shorter version of the checker to use to name the task.
@@ -216,9 +220,9 @@ task htmlValidate(type: Exec, group: 'Format') {
 // `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
 //   This is what is published to checkerframework.org.
 // `gradle javadoc` builds the Javadoc for each sub-project in <subproject>/build/docs/javadoc/ .
-//   It's needed to create the Javadoc jars that we release in Maven Central. In a subproject,
-//   ./gradlew javadoc` (or `./gradlew :checker:javadoc` in the top-level directory) makes javadoc
-//   for only one subproject.
+//   It's needed to create the Javadoc jars that we release in Maven Central.
+// To make javadoc for only one subproject, run `./gradlew javadoc`
+//   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
@@ -237,6 +241,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     }
 }
 
+// See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
 configurations {
@@ -389,7 +394,7 @@ subprojects {
     }
 
     shadowJar {
-        // Relocate packages that might conflict with users classpath.
+        // Relocate packages that might conflict with user's classpath.
         doFirst {
             if (release) {
                 // Only relocate JavaParser during a release:

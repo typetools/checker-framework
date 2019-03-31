@@ -1,7 +1,6 @@
 // Annotated versions in
-// checker/tests/nullness/TypeVarPrimitive.java and
-// checker/tests/interning/TypeVarPrimitives.java
-@SuppressWarnings("signedness") // Signedness Checker does not use local type refinement
+// checker/tests/nullness/TypeVarPrimitivesNullness.java and
+// checker/tests/interning/TypeVarPrimitivesInterning.java
 public class TypeVarPrimitives {
     <T extends Long> void method(T tLong) {
         long l = tLong;

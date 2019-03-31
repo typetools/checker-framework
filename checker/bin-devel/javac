@@ -29,8 +29,7 @@ stubparserDir="${cfDir}"/../stubparser
 classes="build/classes/java/main"
 resources="build/resources/main"
 
-# Put afu jar files last, as they might contain out-of-date CF files.
-buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar
+buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar:`(cd ${cfDir} && ./gradlew -q :checker:printPlumeUtilJarPath)`
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
