@@ -28,7 +28,7 @@ public class SignednessManualExample {
         int z = u3 % u4; // ERROR: result is -1, which is incorrect for (2^32 - 1) % 5 = 2
     }
 
-    void allLocalVariables() {
+    void useLocalVariables() {
 
         int s1 = -2;
         int s2 = -1;

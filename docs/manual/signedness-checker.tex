@@ -189,17 +189,18 @@ included in \code{checker-qual.jar}, so you may want to copy the methods to your
 \sectionAndLabel{Local type refinement}{signedness-refinement}
 
 Local type refinment/inference (Section~\ref{type-refinement}) may be
-surprising for the Signedness type system.  Ordinarily, an unsigned value
-may not participate in a division, as shown in
+surprising for the Signedness type system.  Ordinarily, an expression with
+unsigned type may not participate in a division, as shown in
 Sections~\ref{signedness-checker-prohibited-operations}
-and~\ref{signedness-checker-rationale}.  However, if an \<@Unsigned>
-variable is assigned to a constant, then the variable can be treated as
-either signed or unsigned as needed.  For example, it can participate in
-division.  Note that the result of the division is signed, so you cannot
-accidentally assign the division result to an \<@Unsigned> variable.
+and~\ref{signedness-checker-rationale}.  However, if a constant is assigned
+to a variable that was declared with \<@Unsigned> type, then---just like
+the constant---the variable may be treated as either signed or unsigned.
+For example, it can participate in division.  Since the result of the
+division is signed, you cannot accidentally assign the division result to
+an \<@Unsigned> variable.
 
 \begin{Verbatim}
-    void myMethod() {
+    void useLocalVariables() {
 
         int s1 = -2;
         int s2 = -1;
