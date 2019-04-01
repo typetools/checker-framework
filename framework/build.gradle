@@ -88,7 +88,7 @@ task testWPIValidate(type: Test) {
     }
 }
 
-task wholeProgramInferenceTests(type: GradleBuild, dependsOn: 'shadowJar', group: 'Verification') {
+task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using .jaif files'
     dependsOn(compileTestJava)
     dependsOn(testWPI)
