@@ -581,7 +581,7 @@ subprojects {
             if (project.name.is('framework') || project.name.is('checker')) {
                 tasks += ['checkCompilerMessages', 'jtregTests']
             }
-            if (projects.name.is('framework')) {
+            if (project.name.is('framework')) {
                 tasks += ['wholeProgramInferenceTests', 'loaderTests']
             }
 
