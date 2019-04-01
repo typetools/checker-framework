@@ -3473,7 +3473,7 @@ public class ObjectInputStream
                 return list[index];
             }
 
-            public int size() {
+            public @NonNegative int size() {
                 return size;
             }
         }
