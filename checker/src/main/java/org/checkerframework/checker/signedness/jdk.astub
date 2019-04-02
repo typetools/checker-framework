@@ -3274,8 +3274,6 @@ class RandomAccessFile {
     public final void readFully(@PolySigned byte[] b) throws IOException;
     public final @Unsigned int readUnsignedByte() throws IOException;
     public final @Unsigned int readUnsignedShort() throws IOException;
-
-
 }
 
 package java.net;
