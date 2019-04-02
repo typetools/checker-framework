@@ -344,7 +344,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the tree with the assignment context for the treePath leaf node. (Does not handle
+     * Returns the tree with the assignment context for the treePath leaf node. (Handle
      * pseudo-assignment of an argument to a parameter or a receiver expression to a receiver.)
      *
      * <p>The assignment context for the {@code treePath} is the leaf of its parent, if the parent
@@ -398,22 +398,18 @@ public final class TreeUtils {
             case RETURN:
             case VARIABLE:
                 return parent;
-                //            case MEMBER_SELECT:
-                //                // Also check case when treepath's leaf tree is used as methohd
-                // invocation's actual
-                //                // receiver
-                //                // If so, return that method invocation tree too as the assignment
-                // context tree
-                //                // rather than
-                //                // null as we did before
-                //                TreePath grandParentPath = parentPath.getParentPath();
-                //                if (grandParentPath != null
-                //                        && grandParentPath.getLeaf() instanceof
-                // MethodInvocationTree) {
-                //                    return grandParentPath.getLeaf();
-                //                } else {
-                //                    return null;
-                //                }
+            case MEMBER_SELECT:
+                // Also check case when treepath's leaf tree is used as methohd
+                // invocation's actual receiver
+                // If so, return that method invocation tree too as the assignment
+                // context tree rather than null as we did before
+                TreePath grandParentPath = parentPath.getParentPath();
+                if (grandParentPath != null
+                        && grandParentPath.getLeaf() instanceof MethodInvocationTree) {
+                    return grandParentPath.getLeaf();
+                } else {
+                    return null;
+                }
 
             default:
                 // 11 Tree.Kinds are CompoundAssignmentTrees,
