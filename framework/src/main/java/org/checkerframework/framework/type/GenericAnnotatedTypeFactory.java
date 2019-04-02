@@ -1707,7 +1707,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return cfgVisualizer;
     }
 
-    /** Return whether this factory should use flow-sensitive type refinement. */
+    /** Return whether this factory is currently using flow-sensitive type refinement. */
     protected boolean getUseFlow() {
         return useFlow;
     }
