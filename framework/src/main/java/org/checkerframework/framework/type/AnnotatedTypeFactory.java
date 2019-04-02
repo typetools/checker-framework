@@ -265,12 +265,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         /**
          * Create an Alias with the given components.
          *
+         * @param aliasName the alias name; only used for debugging
          * @param canonical the canonical annotation
          * @param copyElements whether elements should be copied over when translating to the
          *     canonical annotation
          * @param ignorableElements elements that should not be copied over
          */
         Alias(
+                String aliasName,
                 AnnotationMirror canonical,
                 boolean copyElements,
                 String canonicalName,
@@ -279,17 +281,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.copyElements = copyElements;
             this.canonicalName = canonicalName;
             this.ignorableElements = ignorableElements;
-            checkRep();
+            checkRep(aliasName);
         }
 
-        /** Throw an exception if this object is malformed. */
-        void checkRep() {
-            if (!(copyElements
-                    ? (canonical == null && canonicalName != null && ignorableElements != null)
-                    : (canonical != null && canonicalName == null && ignorableElements == null))) {
-                throw new BugInCF(
-                        "Bad Alias: %s %s %s %s",
-                        canonical, copyElements, canonicalName, ignorableElements);
+        /**
+         * Throw an exception if this object is malformed.
+         *
+         * @param aliasName the alias name; only used for diagnostic messages
+         */
+        void checkRep(String aliasName) {
+            if (copyElements) {
+                if (!(canonical == null && canonicalName != null && ignorableElements != null)) {
+                    throw new BugInCF(
+                            "Bad Alias for %s: [canonical=%s] copyElements=%s canonicalName=%s ignorableElements=%s",
+                            aliasName, canonical, copyElements, canonicalName, ignorableElements);
+                }
+            } else {
+                if (!(canonical != null && canonicalName == null && ignorableElements == null)) {
+                    throw new BugInCF(
+                            "Bad Alias for %s: canonical=%s copyElements=%s [canonicalName=%s ignorableElements=%s]",
+                            aliasName, canonical, copyElements, canonicalName, ignorableElements);
+                }
             }
         }
     }
@@ -2555,7 +2567,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the canonical annotation
      */
     protected void addAliasedAnnotation(String aliasName, AnnotationMirror type) {
-        aliases.put(aliasName, new Alias(type, false, null, null));
+        aliases.put(aliasName, new Alias(aliasName, type, false, null, null));
     }
 
     /**
@@ -2621,7 +2633,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         aliases.put(
                 aliasName,
-                new Alias(null, copyElements, canonicalName.getCanonicalName(), ignorableElements));
+                new Alias(
+                        aliasName,
+                        null,
+                        copyElements,
+                        canonicalName.getCanonicalName(),
+                        ignorableElements));
     }
 
     /**
