@@ -102,7 +102,8 @@ public class InitializationVisitor<
     }
 
     @Override
-    protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
+    protected void checkThisOrSuperConstructorCall(
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
         // Nothing to check
     }
 

@@ -250,7 +250,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
 
     @Override
-    protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
+    protected void checkThisOrSuperConstructorCall(
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
         if (isInUniqueConstructor()) {
             // Check if a call to super() might create an alias: that
             // happens when the parent's respective constructor is not @Unique.
