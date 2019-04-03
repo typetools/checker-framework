@@ -227,12 +227,24 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
     dependsOn(':framework-test:tagletClasses')
-    destinationDir = file("${rootDir}/docs/api")
+    if (project.hasProperty("saveJavadoc")) {
+        destinationDir = file("${rootDir}/docs/tmpapi")
+    } else {
+        destinationDir = file("${rootDir}/docs/api")
+    }
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
     doLast {
+        if (project.hasProperty("saveJavadoc")) {
+            copy {
+                from destinationDir
+                into "${rootDir}/docs/api"
+            }
+            destinationDir.deleteDir()
+        }
+
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
             rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
@@ -253,7 +265,7 @@ dependencies {
 }
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
-    destinationDir = file("${rootDir}/docs/api")
+    destinationDir = file("${rootDir}/docs/tmpapi")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
@@ -267,7 +279,7 @@ task requireJavadoc(type: Javadoc, group: "Documentation") {
 }
 task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
     description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
-    destinationDir = file("${rootDir}/docs/api")
+    destinationDir = file("${rootDir}/docs/tmpapi")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
