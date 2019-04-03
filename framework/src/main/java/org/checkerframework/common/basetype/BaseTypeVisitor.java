@@ -1263,6 +1263,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "this()" invocation within that constructor.
+     *
+     * <p>Subclass can override this method to change the behavior for just "this" constructor
+     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
+     * the behavior for "this" and "super" constructor calls.
      */
     protected void checkThisConstructorCall(MethodInvocationTree thisCall) {
         checkThisOrSuperConstructorCall(thisCall, "this.invocation.invalid");
@@ -1271,6 +1275,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "super()" invocation within that constructor.
+     *
+     * <p>Subclass can override this method to change the behavior for just "super" constructor
+     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
+     * the behavior for "this" and "super" constructor calls.
      */
     protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
         checkThisOrSuperConstructorCall(superCall, "super.invocation.invalid");
@@ -1280,7 +1288,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "this()" or "super()" invocation within that constructor.
      */
-    private void checkThisOrSuperConstructorCall(
+    protected void checkThisOrSuperConstructorCall(
             MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
         TreePath path = atypeFactory.getPath(superCall);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
@@ -2666,9 +2674,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param invocation
      * @param constructor
      * @param newClassTree
-     * @return
      */
-    protected boolean checkConstructorInvocation(
+    protected void checkConstructorInvocation(
             AnnotatedDeclaredType invocation,
             AnnotatedExecutableType constructor,
             NewClassTree newClassTree) {
@@ -2676,7 +2683,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<AnnotationMirror> explicitAnnos =
                 atypeFactory.fromNewClass(newClassTree).getAnnotations();
         if (explicitAnnos.isEmpty()) {
-            return true;
+            return;
         }
         Set<AnnotationMirror> resultAnnos = constructor.getReturnType().getAnnotations();
         for (AnnotationMirror explicit : explicitAnnos) {
@@ -2695,18 +2702,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 explicit,
                                 resultAnno),
                         newClassTree);
-                return false;
+                return;
             } else if (!atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit)) {
                 // Issue a warning if the annotations on the constructor invocation is a subtype of
                 // the constructor result type. This is equivalent to down-casting.
                 checker.report(
                         Result.warning("cast.unsafe.constructor.invocation", resultAnno, explicit),
                         newClassTree);
-                return false;
+                return;
             }
         }
 
-        return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
     }
