@@ -283,7 +283,9 @@ task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
-    src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
+    // TODO: ci.adaptopenjdk is currently down, use a local copy. (4/4/2019)
+//    src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
+    src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
     overwrite true
     dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
     doLast {
