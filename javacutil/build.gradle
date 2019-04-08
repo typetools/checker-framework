@@ -8,5 +8,5 @@ dependencies {
     implementation 'org.plumelib:plume-util:1.0.6'
 
     implementation configurations.javacJar
-    implementationOnly project(':checker-qual')
+    compileOnly project(':checker-qual')
 }
