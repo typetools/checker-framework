@@ -37,7 +37,6 @@ class Basics {
     }
 
     public void DoubleTest() {
-        // :: warning: (cast.unsafe.constructor.invocation)
         Double a = new Double(0.0);
         if (true) {
             a = 2.0;
@@ -60,7 +59,6 @@ class Basics {
     }
 
     public void FloatTest() {
-        // :: warning: (cast.unsafe.constructor.invocation)
         Float a = new Float(0.0f);
         if (true) {
             a = 2.0f;
@@ -87,7 +85,6 @@ class Basics {
         Integer a;
 
         /* IntVal + IntVal */
-        // :: warning: (cast.unsafe.constructor.invocation)
         a = new Integer(0);
         if (true) {
             a = 2;
@@ -108,7 +105,6 @@ class Basics {
         @IntRange(from = 3, to = 30) Integer test5 = a;
 
         /* IntRange + IntVal */
-        // :: warning: (cast.unsafe.constructor.invocation)
         a = new Integer(0);
         if (true) {
             a = x;
@@ -116,7 +112,6 @@ class Basics {
         @IntRange(from = 0, to = 4) Integer test7 = a;
 
         /* IntRange (Wider than 10) + IntVal */
-        // :: warning: (cast.unsafe.constructor.invocation)
         a = new Integer(0);
         if (true) {
             a = y;

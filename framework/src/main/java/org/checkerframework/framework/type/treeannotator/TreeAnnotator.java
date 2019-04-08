@@ -2,12 +2,17 @@ package org.checkerframework.framework.type.treeannotator;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * {@link TreeAnnotator} is an abstract SimpleTreeVisitor to be used with {@link ListTreeAnnotator}.
+ *
+ * <p>This class does not visit component parts of the tree. By default, the visit methods all call
+ * {@link #defaultAction(Tree, Object)}, which does nothing unless overriden. Therefore, subclass do
+ * not need to call super unless they override {@link #defaultAction(Tree, Object)}.
  *
  * @see ListTreeAnnotator
  * @see PropagationTreeAnnotator

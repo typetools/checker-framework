@@ -60,6 +60,9 @@ checkCompilerMessages {
 }
 
 task testWPI(type: Test) {
+    doFirst {
+        delete("tests/whole-program-inference/annotated")
+    }
     outputs.upToDateWhen { false }
     include '**/WholeProgramInferenceTest.class'
     testLogging {
@@ -88,12 +91,10 @@ task testWPIValidate(type: Test) {
 task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using .jaif files'
     dependsOn(compileTestJava)
+    dependsOn(testWPI)
     outputs.upToDateWhen { false }
 
     doLast {
-        delete("tests/whole-program-inference/annotated")
-        testWPI.execute()
-
         // Copying all test files to another directory, removing all expected errors that should not
         // occur after inserting inferred annotations from .jaif files.
         copy {
@@ -127,11 +128,8 @@ task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
                 args += [javaFile.toString()]
             }
         }
-
-
-        testWPIValidate.execute()
-        delete("tests/whole-program-inference/annotated")
     }
+    finalizedBy(testWPIValidate)
 }
 
 task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
@@ -153,4 +151,8 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
             args = ['-C', "tests/annotationclassloader/", "all"]
         }
     }
+}
+
+clean {
+    delete("tests/whole-program-inference/annotated")
 }

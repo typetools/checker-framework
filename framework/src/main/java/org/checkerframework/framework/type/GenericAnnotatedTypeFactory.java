@@ -74,7 +74,6 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -1409,34 +1408,6 @@ public abstract class GenericAnnotatedTypeFactory<
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
         poly.annotate(tree, method);
-
-        // If the newClassTree "tree" is explicitly annotated with a polymorphic annotation,
-        // do not replace that. This ensures consistent behaviour with constructor invocations that
-        // are cast to the polymorphic type i.e "(@Poly X) new X();" is the same as
-        // "new @Poly X();"
-        // TODO: Replace getExplicitAnnotationsOnNewClassTree() with getExplicitAnnotations()
-        // when issue 2324 is fixed.
-        // See https://github.com/typetools/checker-framework/issues/2324.
-        Set<? extends AnnotationMirror> explicitAnnotations =
-                getExplicitAnnotationsOnNewClassTree(
-                        tree, getAnnotatedType(tree.getIdentifier()).getAnnotations());
-        Set<? extends AnnotationMirror> topAnnotations = qualHierarchy.getTopAnnotations();
-        for (AnnotationMirror top : topAnnotations) {
-            AnnotationMirror polyAnnotation = qualHierarchy.getPolymorphicAnnotation(top);
-            if (AnnotationUtils.containsSameByName(explicitAnnotations, polyAnnotation)) {
-                if (!qualHierarchy.isSubtype(
-                        method.returnType.getAnnotationInHierarchy(top), polyAnnotation)) {
-                    checker.report(
-                            Result.warning(
-                                    "cast.unsafe.constructor.invocation",
-                                    method.returnType.getAnnotationInHierarchy(top),
-                                    polyAnnotation),
-                            tree);
-                }
-                method.returnType.replaceAnnotation(polyAnnotation);
-            }
-        }
-
         return mType;
     }
 

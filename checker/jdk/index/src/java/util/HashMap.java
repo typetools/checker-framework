@@ -887,7 +887,7 @@ public class HashMap<K,V>
         public Iterator<K> iterator() {
             return newKeyIterator();
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {
@@ -923,7 +923,7 @@ public class HashMap<K,V>
         public Iterator<V> iterator() {
             return newValueIterator();
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {
@@ -973,7 +973,7 @@ public class HashMap<K,V>
         public boolean remove(Object o) {
             return removeMapping(o) != null;
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public void clear() {
