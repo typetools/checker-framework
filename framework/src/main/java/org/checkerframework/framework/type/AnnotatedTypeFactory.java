@@ -99,6 +99,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -2296,6 +2297,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (ctx != null) {
                     AnnotatedTypeMirror ctxtype = ctx.second;
                     fromNewClassContextHelper(type, ctxtype);
+                } else {
+                    TreePath p = getPath(newClassTree);
+                    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+                    if (ctxtype != null) {
+                        fromNewClassContextHelper(type, ctxtype);
+                    } else {
+                        // give up trying and set to raw.
+                        type.setWasRaw();
+                    }
                 }
             }
             AnnotatedDeclaredType fromTypeTree =

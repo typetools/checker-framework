@@ -108,17 +108,6 @@ public class InitializationVisitor<
     }
 
     @Override
-    protected void checkConstructorResult(
-            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
-        // Nothing to check
-    }
-
-    @Override
-    protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
-        // Nothing to check
-    }
-
-    @Override
     protected void commonAssignmentCheck(
             Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         // field write of the form x.f = y
