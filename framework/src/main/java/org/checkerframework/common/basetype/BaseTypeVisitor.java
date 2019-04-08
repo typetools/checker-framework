@@ -367,6 +367,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         validateType(classTree, classType);
 
+        Tree ext = classTree.getExtendsClause();
+        if (ext != null) {
+            validateTypeOf(ext);
+        }
+
+        List<? extends Tree> impls = classTree.getImplementsClause();
+        if (impls != null) {
+            for (Tree im : impls) {
+                validateTypeOf(im);
+            }
+        }
+
         checkExtendsImplements(classTree);
 
         super.visitClass(classTree, null);
@@ -383,18 +395,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (TypesUtils.isAnonymous(TreeUtils.typeOf(classTree))) {
             // Don't check extends clause on anonymous classes.
             return;
-        }
-
-        Tree ext = classTree.getExtendsClause();
-        if (ext != null) {
-            validateTypeOf(ext);
-        }
-
-        List<? extends Tree> impls = classTree.getImplementsClause();
-        if (impls != null) {
-            for (Tree im : impls) {
-                validateTypeOf(im);
-            }
         }
 
         AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(classTree);
@@ -700,29 +700,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue a warning if the result type of the constructor is a subtype of the declaring class. If
-     * it is a supertype of the class, then a type.invalid.conflicting.annos error will be issued by
-     * {@link #isValidUse(AnnotatedDeclaredType, AnnotatedDeclaredType, Tree)}.
+     * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
+     * class, then a type.invalid.conflicting.annos error will also be issued by {@link
+     * #isValidUse(AnnotatedDeclaredType, AnnotatedDeclaredType, Tree)}.
      *
      * @param constructorType AnnotatedExecutableType for the constructor
      * @param constructorElement element that declares the constructor
      */
     protected void checkConstructorResult(
             AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         Set<AnnotationMirror> constructorAnnotations =
                 constructorType.getReturnType().getAnnotations();
-        Set<AnnotationMirror> classAnnotations =
-                atypeFactory
-                        .getAnnotatedType(constructorElement.getEnclosingElement())
-                        .getAnnotations();
-        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-        for (AnnotationMirror classAnno : classAnnotations) {
+        Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+
+        for (AnnotationMirror top : tops) {
             AnnotationMirror constructorAnno =
-                    qualifierHierarchy.findAnnotationInSameHierarchy(
-                            constructorAnnotations, classAnno);
-            if (!qualifierHierarchy.isSubtype(classAnno, constructorAnno)) {
+                    qualifierHierarchy.findAnnotationInHierarchy(constructorAnnotations, top);
+            if (!qualifierHierarchy.isSubtype(top, constructorAnno)) {
                 checker.report(
-                        Result.warning("inconsistent.constructor.type", constructorAnno, classAnno),
+                        Result.warning("inconsistent.constructor.type", constructorAnno),
                         constructorElement);
             }
         }
@@ -1253,6 +1250,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (TreeUtils.isSuperCall(node)) {
             checkSuperConstructorCall(node);
+        } else if (TreeUtils.isThisCall(node)) {
+            checkThisConstructorCall(node);
         }
 
         // Do not call super, as that would observe the arguments without
@@ -1263,9 +1262,34 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
+     * supertype of the return type of "this()" invocation within that constructor.
+     *
+     * <p>Subclass can override this method to change the behavior for just "this" constructor
+     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
+     * the behavior for "this" and "super" constructor calls.
+     */
+    protected void checkThisConstructorCall(MethodInvocationTree thisCall) {
+        checkThisOrSuperConstructorCall(thisCall, "this.invocation.invalid");
+    }
+
+    /**
+     * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "super()" invocation within that constructor.
+     *
+     * <p>Subclass can override this method to change the behavior for just "super" constructor
+     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
+     * the behavior for "this" and "super" constructor calls.
      */
     protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
+        checkThisOrSuperConstructorCall(superCall, "super.invocation.invalid");
+    }
+
+    /**
+     * Checks that the following rule is satisfied: The type on a constructor declaration must be a
+     * supertype of the return type of "this()" or "super()" invocation within that constructor.
+     */
+    protected void checkThisOrSuperConstructorCall(
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
         TreePath path = atypeFactory.getPath(superCall);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
         AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(superCall);
@@ -1281,12 +1305,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     .getQualifierHierarchy()
                     .isSubtype(superTypeMirror, constructorTypeMirror)) {
                 checker.report(
-                        Result.failure(
-                                "super.invocation.invalid",
-                                constructorTypeMirror,
-                                superCall,
-                                superTypeMirror),
-                        enclosingMethod);
+                        Result.failure(errorKey, constructorTypeMirror, superCall, superTypeMirror),
+                        superCall);
             }
         }
     }
@@ -2654,9 +2674,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param invocation
      * @param constructor
      * @param newClassTree
-     * @return
      */
-    protected boolean checkConstructorInvocation(
+    protected void checkConstructorInvocation(
             AnnotatedDeclaredType invocation,
             AnnotatedExecutableType constructor,
             NewClassTree newClassTree) {
@@ -2664,7 +2683,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<AnnotationMirror> explicitAnnos =
                 atypeFactory.fromNewClass(newClassTree).getAnnotations();
         if (explicitAnnos.isEmpty()) {
-            return true;
+            return;
         }
         Set<AnnotationMirror> resultAnnos = constructor.getReturnType().getAnnotations();
         for (AnnotationMirror explicit : explicitAnnos) {
@@ -2683,18 +2702,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 explicit,
                                 resultAnno),
                         newClassTree);
-                return false;
+                return;
             } else if (!atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit)) {
                 // Issue a warning if the annotations on the constructor invocation is a subtype of
                 // the constructor result type. This is equivalent to down-casting.
                 checker.report(
                         Result.warning("cast.unsafe.constructor.invocation", resultAnno, explicit),
                         newClassTree);
-                return false;
+                return;
             }
         }
 
-        return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
     }

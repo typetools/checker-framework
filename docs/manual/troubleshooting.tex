@@ -246,6 +246,16 @@ implementation cannot handle.  For instance, if the directory name contains
 FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
+\end{itemize}
+
+
+\subsectionAndLabel{Unexpected warnings not related to type-checking}{common-problems-non-typechecking}
+
+This section gives solutions for some warning messages that are not related
+to type errors in your code.
+
+\begin{itemize}
+
 \item
 If you get an error like the following
 
@@ -255,15 +265,19 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 \noindent
-\begin{sloppypar}
-then you have probably written something like \<@Nullable java.util.List>.
+  then you have probably written something like one of the following:
+\begin{description}
+\item[\<@Nullable java.util.List>]
 The correct Java syntax to write an annotation on a fully-qualified type
 name is to put the annotation on the simple name part, as in
 \<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
-just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
+just write \<@Nullable List>.
+\item[\<@Nullable Map.Entry>]  You must write \<Outer.@Nullable
 StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
-\end{sloppypar}
+Since a static nested class does not depend on its outer class, the
+annotation on the outer class would have no effect and is forbidden.
+\end{description}
 
 Java 8 requires that a type qualifier be written directly on the type that
 it qualifies, rather than on a scoping mechanism that assists in resolving
@@ -275,7 +289,7 @@ writing a member nested class (also known as an inner class), it is
 possible to write annotations on both the outer and the inner class:  \<@A1
 Outer. @A2 Inner>.  Therefore, when writing a static nested class, the
 annotations should go on the same place:  \<Outer. @A3 StaticNested> (rather
-than \<@ConfusingAnnotation Outer. Nested> where
+than \<@ConfusingAnnotation Outer.\ Nested> where
 \<@ConfusingAnnotation> applies to \<Outer> if \<Nested> is a member class
 and applies to \<Nested> if \<Nested> is a static class).  It's not legal
 to write an annotation on the outer class of a static nested class, because

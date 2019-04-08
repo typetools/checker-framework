@@ -25,10 +25,13 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/** Annotated type factory for the Aliasing Checker. */
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
+    /** Aliasing annotations. */
+    protected final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
 
+    /** Create the type factory. */
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         MAYBE_ALIASED = AnnotationBuilder.fromClass(elements, MaybeAliased.class);

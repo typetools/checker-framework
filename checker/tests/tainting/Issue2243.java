@@ -12,7 +12,7 @@ class ExtendsSubTypingExplicit2243 extends @Untainted X2243 {}
 class X2243 {}
 
 @Untainted class Y2243 {
-    // :: error: (super.invocation.invalid)
+    // :: warning: (inconsistent.constructor.type) :: error: (super.invocation.invalid)
     @Untainted Y2243() {}
 }
 

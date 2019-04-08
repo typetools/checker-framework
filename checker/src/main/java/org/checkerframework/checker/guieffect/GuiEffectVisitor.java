@@ -235,6 +235,12 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // Skip this check
     }
 
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // Skip this check.
+    }
+
     // Check that the invoked effect is <= permitted effect (effStack.peek())
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
