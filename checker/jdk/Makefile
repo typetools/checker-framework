@@ -67,10 +67,10 @@ annotated/%.class:
 	mkdir -p annotated
 # Extract exactly one file from $(CTSYM)
 # Ignore errors for now; the annotated JDK doesn't have the same inner classes as the real JDK.
-	-cd annotated; unzip $(CTSYM) '8/$*.sig' > /dev/null
-	-cp -R annotated/8/* annotated
-	-mv annotated/$*.sig annotated/$*.class
-	-rm -rf annotated/8
+	-cd annotated; unzip $(CTSYM) 'META-INF/sym/rt.jar/$*.class' > /dev/null
+	-cp -R annotated/META-INF/sym/rt.jar/* annotated/
+	rm -rf annotated/META-INF
+
 
 
 # Helper targets to invoke subdir make files
