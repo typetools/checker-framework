@@ -26,10 +26,10 @@ JAVACJDKJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/cfmake/javac-jdk.jar
 CHECKERQUALJAR := $(PROJECTDIR)/../../../checker/dist/checker-qual.jar
 
 # build directories
-DATAFLOWBUILD := $(PROJECTDIR)/../../../dataflow/build/classes/main
-JAVACUTILBUILD := $(PROJECTDIR)/../../../javacutil/build/classes/main
-FRAMEWORKBUILD := $(PROJECTDIR)/../../build/classes/main
-CHECKERQUALBUILD := $(PROJECTDIR)/../../../checker-qual/build/classes/main
+DATAFLOWBUILD := $(PROJECTDIR)/../../../dataflow/build/classes/java/main
+JAVACUTILBUILD := $(PROJECTDIR)/../../../javacutil/build/classes/java/main
+FRAMEWORKBUILD := $(PROJECTDIR)/../../build/classes/java/main:$(PROJECTDIR)/../../build/resources/main/
+CHECKERQUALBUILD := $(PROJECTDIR)/../../../checker-qual/build/classes/java/main
 
 
 all: load-from-dir-test load-from-jar-test

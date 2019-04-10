@@ -462,9 +462,23 @@ public class FlowExpressions {
         }
 
         /**
+         * Returns true if and only if the value this expression stands for cannot be changed (with
+         * respect to ==) by a method call. This is the case for local variables, the self reference
+         * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
+         * true.
+         *
+         * @see #isUnmodifiableByOtherCode
+         */
+        public abstract boolean isUnassignableByOtherCode();
+
+        /**
          * Returns true if and only if the value this expression stands for cannot be changed by a
-         * method call. This is the case for local variables, the self reference as well as final
-         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * method call, including changes to any of its fields.
+         *
+         * <p>Approximately, this returns true if the expression is {@link
+         * #isUnassignableByOtherCode} and its type is immutable.
+         *
+         * @see #isUnassignableByOtherCode
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
@@ -577,8 +591,14 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return isFinal() && getReceiver().isUnassignableByOtherCode();
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
-            return isFinal() && getReceiver().isUnmodifiableByOtherCode();
+            return isUnassignableByOtherCode()
+                    && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
         }
     }
 
@@ -613,8 +633,13 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutableTypeInJdk(type);
         }
 
         @Override
@@ -665,6 +690,11 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return true;
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
             return true;
         }
@@ -703,6 +733,11 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             return getClass().equals(clazz);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
         }
 
         @Override
@@ -780,8 +815,13 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
         }
     }
 
@@ -802,6 +842,11 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             return getClass().equals(clazz);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return true;
         }
 
         @Override
@@ -851,7 +896,7 @@ public class FlowExpressions {
         }
     }
 
-    /** A method call. */
+    /** A call to a @Deterministic method. */
     public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
@@ -904,8 +949,16 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            // There is no need to check that the method is deterministic, because a MethodCall is
+            // only created for deterministic methods.
+            return receiver.isUnmodifiableByOtherCode()
+                    && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
-            return false;
+            return isUnassignableByOtherCode();
         }
 
         @Override
@@ -998,7 +1051,7 @@ public class FlowExpressions {
         }
     }
 
-    /** A deterministic method call. */
+    /** An array access. */
     public static class ArrayAccess extends Receiver {
 
         protected final Receiver receiver;
@@ -1027,6 +1080,11 @@ public class FlowExpressions {
 
         public Receiver getIndex() {
             return index;
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
         }
 
         @Override
@@ -1118,6 +1176,11 @@ public class FlowExpressions {
                     return true;
                 }
             }
+            return false;
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
             return false;
         }
 
