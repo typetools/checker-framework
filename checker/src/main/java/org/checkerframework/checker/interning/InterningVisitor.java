@@ -18,8 +18,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -34,8 +36,11 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -274,6 +279,41 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
 
         super.processClassTree(node);
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        if (constructorElement.getEnclosingElement().getKind() == ElementKind.ENUM) {
+            // Enums constructor are only called once per enum constant.
+            return;
+        }
+        // TODO: For now allow @Interned on constructor results
+        // The Interning Checker needs to be adapted to the framework changes properly.
+        // I've starting working on this here:
+        // https://github.com/smillst/checker-framework/tree/interning
+        Set<AnnotationMirror> constructorAnnotations =
+                constructorType.getReturnType().getAnnotations();
+        Set<AnnotationMirror> classAnnotations =
+                atypeFactory
+                        .getAnnotatedType(constructorElement.getEnclosingElement())
+                        .getAnnotations();
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+        for (AnnotationMirror classAnno : classAnnotations) {
+            for (AnnotationMirror constructorAnno : constructorAnnotations) {
+                if (qualifierHierarchy.leastUpperBound(classAnno, constructorAnno) != null) {
+                    if (qualifierHierarchy.isSubtype(constructorAnno, classAnno)) {
+                        if (!AnnotationUtils.areSameByName(constructorAnno, classAnno)) {
+                            checker.report(
+                                    Result.warning(
+                                            "inconsistent.constructor.type", constructorAnno),
+                                    constructorElement);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     // **********************************************************************

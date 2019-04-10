@@ -66,6 +66,8 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
         } catch (Result result) {
             return result.path;
         }
+        // If a path wasn't found, cache null so the whole compilation unit isn't searched again.
+        foundPaths.put(target, null);
         return null;
     }
 

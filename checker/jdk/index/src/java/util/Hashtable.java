@@ -628,7 +628,7 @@ public class Hashtable<K,V>
         public Iterator<K> iterator() {
             return getIterator(KEYS);
         }
-        public int size() {
+        public @NonNegative int size() {
             return count;
         }
         public boolean contains(Object o) {
@@ -714,7 +714,7 @@ public class Hashtable<K,V>
             return false;
         }
 
-        public int size() {
+        public @NonNegative int size() {
             return count;
         }
 
@@ -749,7 +749,7 @@ public class Hashtable<K,V>
         public Iterator<V> iterator() {
             return getIterator(VALUES);
         }
-        public int size() {
+        public @NonNegative int size() {
             return count;
         }
         public boolean contains(Object o) {

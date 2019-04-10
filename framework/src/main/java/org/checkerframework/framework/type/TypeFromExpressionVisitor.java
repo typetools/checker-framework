@@ -231,9 +231,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
      *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()}), or
      *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass
      *       {}}), or
-     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public
-     *       MyClass() {}}), or
-     *   <li>no annotation for this hierarchy.
+     *   <li>an explicit or implicit annotation on the declaration of the constructor ({@code @HERE
+     *       public MyClass() {}}).
      * </ul>
      *
      * @param node NewClassTree
@@ -244,7 +243,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitNewClass(NewClassTree node, AnnotatedTypeFactory f) {
         // constructorFromUse return type has implicits
         // so use fromNewClass which does diamond inference and only
-        // contains explicit annotations and those inherited from the class declaration
+        // contains explicit annotations.
         AnnotatedDeclaredType type = f.fromNewClass(node);
 
         // Enum constructors lead to trouble.
@@ -254,12 +253,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         // Add annotations that are on the constructor declaration.
-        // constructorFromUse gives us resolution of polymorphic qualifiers.
-        // However, it also applies defaulting, so we might apply too many qualifiers.
-        // Therefore, ensure to only add the qualifiers that are explicitly on
-        // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).executableType;
-        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
+        type.addMissingAnnotations(ex.getReturnType().getAnnotations());
 
         return type;
     }
