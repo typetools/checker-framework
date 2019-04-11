@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -18,6 +20,7 @@ import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 
 /**
  * Implements 3 refinement rules:
@@ -57,9 +60,23 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            lessThanExpressions.add(leftRec.toString());
+            if (isParsable(leftRec)) {
+                lessThanExpressions.add(leftRec.toString());
+            }
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
+        }
+    }
+
+    /**
+     * Return true if {@code receiver}'s toString can be parsed by {@link FlowExpressionParseUtil}.
+     */
+    private boolean isParsable(Receiver receiver) {
+        if (receiver instanceof ValueLiteral) {
+            return receiver.getType().getKind() != TypeKind.DOUBLE
+                    && receiver.getType().getKind() != TypeKind.FLOAT;
+        } else {
+            return true;
         }
     }
 
@@ -87,7 +104,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            lessThanExpressions.add(leftRec.toString() + " + 1");
+            if (isParsable(leftRec)) {
+                lessThanExpressions.add(leftRec.toString() + " + 1");
+            }
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
         }
@@ -109,7 +128,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 if (expressions == null) {
                     expressions = new ArrayList<>();
                 }
-                expressions.add(leftRec.toString());
+                if (isParsable(leftRec)) {
+                    expressions.add(leftRec.toString());
+                }
                 AnnotationMirror refine = factory.createLessThanQualifier(expressions);
                 CFValue value = analysis.createSingleAnnotationValue(refine, n.getType());
                 CFStore info = in.getRegularStore();
