@@ -226,6 +226,8 @@ public class SameLenTransfer extends CFTransfer {
             CFValue firstValue,
             CFValue secondValue,
             boolean notEqualTo) {
+        // If result is a Regular transfer, then the elseStore is a copy of the then store, that is
+        // created when getElseStore is called.  So do that before refining any values.
         CFStore elseStore = result.getElseStore();
         CFStore thenStore = result.getThenStore();
         CFStore equalStore = notEqualTo ? elseStore : thenStore;
