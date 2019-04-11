@@ -420,7 +420,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             try {
                 // If multiple contracts, then this will throw an exception which is catched at Line
-                // 432
+                // 433
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
@@ -505,7 +505,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             try {
                 // If multiple contracts, then this will throw an exception which is catched at Line
-                // 519
+                // 521
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(
                                 anno, "expression", String.class, false);
