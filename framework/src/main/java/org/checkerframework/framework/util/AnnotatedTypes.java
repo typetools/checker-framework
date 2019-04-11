@@ -1225,6 +1225,9 @@ public class AnnotatedTypes {
 
         for (AnnotationMirror cta : constructor.getReturnType().getAnnotations()) {
             AnnotationMirror ctatop = atypeFactory.getQualifierHierarchy().getTopAnnotation(cta);
+            if (returnType.isAnnotatedInHierarchy(cta)) {
+                continue;
+            }
             if (atypeFactory.isSupportedQualifier(cta) && !returnType.isAnnotatedInHierarchy(cta)) {
                 for (AnnotationMirror fromDecl : decret) {
                     if (atypeFactory.isSupportedQualifier(fromDecl)

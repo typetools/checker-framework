@@ -452,6 +452,10 @@ public class QualifierDefaults {
 
             case IDENTIFIER:
                 elt = TreeUtils.elementFromUse((IdentifierTree) tree);
+                if (ElementUtils.isTypeDeclaration(elt)) {
+                    // If the Idenitifer is a type, then use the scope of the tree.
+                    elt = nearestEnclosingExceptLocal(tree);
+                }
                 break;
 
             case METHOD_INVOCATION:
@@ -944,6 +948,21 @@ public class QualifierDefaults {
                         {
                             if (scope != null
                                     && scope.getKind() == ElementKind.METHOD
+                                    && t.getKind() == TypeKind.EXECUTABLE
+                                    && t == type) {
+                                final AnnotatedTypeMirror returnType =
+                                        ((AnnotatedExecutableType) t).getReturnType();
+                                if (shouldBeAnnotated(returnType, false)) {
+                                    addAnnotation(returnType, qual);
+                                }
+                            }
+                            break;
+                        }
+
+                    case CONSTRUCTOR_RESULT:
+                        {
+                            if (scope != null
+                                    && scope.getKind() == ElementKind.CONSTRUCTOR
                                     && t.getKind() == TypeKind.EXECUTABLE
                                     && t == type) {
                                 final AnnotatedTypeMirror returnType =

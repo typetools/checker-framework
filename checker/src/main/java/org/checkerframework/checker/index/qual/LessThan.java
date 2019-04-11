@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>Subtyping:
  *
  * <ul>
- *   <li>{@code @LessThan({"a", "b"}) &lt;: @LessThan({"a"})}
+ *   <li>{@code @LessThan({"a", "b"}) <: @LessThan({"a"})}
  *   <li>{@code @LessThan({"a", "b"})} is not related to {@code @LessThan({"a", "c"})}.
  * </ul>
  */
