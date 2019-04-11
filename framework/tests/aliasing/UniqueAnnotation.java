@@ -3,12 +3,10 @@ import org.checkerframework.common.aliasing.qual.*;
 class UniqueAnnoTest {
 
     // @Unique constructor
-    // :: warning: (inconsistent.constructor.type)
     public @Unique UniqueAnnoTest() {}
 
     // @Unique constructor leaking the "this" reference.
     // Each unique.leaked error is a leak.
-    // :: warning: (inconsistent.constructor.type)
     public @Unique UniqueAnnoTest(int i) {
         notLeaked(this);
         leakedToResult(this);
