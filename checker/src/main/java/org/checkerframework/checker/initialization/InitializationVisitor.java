@@ -56,21 +56,8 @@ public class InitializationVisitor<
                 Store extends InitializationStore<Value, Store>>
         extends BaseTypeVisitor<Factory> {
 
+    /** The formatter for annotations. */
     protected final AnnotationFormatter annoFormatter;
-
-    // Error message keys
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
-            "initialization.invalid.cast";
-    private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
-            "initialization.fields.uninitialized";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
-            "initialization.invalid.field.type";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
-            "initialization.invalid.constructor.return.type";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
-            "initialization.invalid.field.write.unknown";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
-            "initialization.invalid.field.write.initialized";
 
     public InitializationVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -130,9 +117,9 @@ public class InitializationVisitor<
                                 || atypeFactory.isFbcBottom(yType))) {
                     @CompilerMessageKey String err;
                     if (atypeFactory.isCommitted(xType)) {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
+                        err = "initialization.invalid.field.write.initialized";
                     } else {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
+                        err = "initialization.invalid.field.write.unknown";
                     }
                     checker.report(Result.failure(err, varTree), varTree);
                     return; // prevent issuing another errow about subtyping
@@ -155,7 +142,8 @@ public class InitializationVisitor<
                         continue; // unclassified is allowed
                     }
                     if (AnnotationUtils.areSameByClass(a, c)) {
-                        checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
+                        checker.report(
+                                Result.failure("initialization.invalid.field.type", node), node);
                         break;
                     }
                 }
@@ -257,7 +245,7 @@ public class InitializationVisitor<
         if (!isSubtype) {
             checker.report(
                     Result.failure(
-                            COMMITMENT_INVALID_CAST,
+                            "initialization.invalid.cast",
                             annoFormatter.formatAnnotationMirror(exprAnno),
                             annoFormatter.formatAnnotationMirror(castAnno)),
                     node);
@@ -317,7 +305,8 @@ public class InitializationVisitor<
                 for (AnnotationMirror a : returnTypeAnnotations) {
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(
-                                Result.failure(COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node),
+                                Result.failure(
+                                        "initialization.invalid.constructor.return.type", node),
                                 node);
                         break;
                     }
@@ -393,7 +382,7 @@ public class InitializationVisitor<
         while (itor.hasNext()) {
             VariableTree f = itor.next();
             Element e = TreeUtils.elementFromTree(f);
-            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
+            if (checker.shouldSuppressWarnings(e, "initialization.fields.uninitialized")) {
                 itor.remove();
             }
         }
@@ -409,7 +398,7 @@ public class InitializationVisitor<
                 fieldsString.append(f.getName());
             }
             checker.report(
-                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString), blockNode);
+                    Result.failure("initialization.fields.uninitialized", fieldsString), blockNode);
         }
     }
 }
