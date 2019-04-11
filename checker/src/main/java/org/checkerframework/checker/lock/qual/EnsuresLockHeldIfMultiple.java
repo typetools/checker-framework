@@ -25,7 +25,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 public @interface EnsuresLockHeldIfMultiple {
     /**
-     * Constitutes the java expressions whose values are held after the method returns the given result.
+     * Constitutes the java expressions whose values are held after the method returns the given
+     * result.
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
