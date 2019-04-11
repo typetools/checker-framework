@@ -25,7 +25,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresLockHeldMultiple {
     /**
-     * Constitutes the java expressions whose values are held after the method terminates successfully.
+     * Constitutes the java expressions whose values are held after the method terminates
+     * successfully.
      *
      * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
