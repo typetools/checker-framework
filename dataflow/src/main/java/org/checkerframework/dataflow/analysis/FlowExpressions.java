@@ -8,6 +8,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -706,8 +707,20 @@ public class FlowExpressions {
     }
 
     public static class Unknown extends Receiver {
+        final Tree tree;
+
         public Unknown(TypeMirror type) {
             super(type);
+            this.tree = null;
+        }
+
+        public Unknown(Tree tree) {
+            super(TreeUtils.typeOf(tree));
+            this.tree = tree;
+        }
+
+        public Tree getTree() {
+            return tree;
         }
 
         @Override

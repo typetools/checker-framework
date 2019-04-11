@@ -1416,10 +1416,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(e.getResult(), tree);
                 return;
             }
+            //            if (expr.containsUnknown()) {
+            //                checker.report(Result.failure("flowexpr.parse.error", ), tree);
+            //                return;
+            //            }
 
             CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
-            CFAbstractValue<?> value = store.getValue(expr);
-
+            CFAbstractValue<?> value = null;
+            value = store.getValue(expr);
             AnnotationMirror inferredAnno = null;
             if (value != null) {
                 QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
