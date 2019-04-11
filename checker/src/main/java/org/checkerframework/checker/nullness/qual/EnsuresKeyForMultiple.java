@@ -24,7 +24,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresKeyForMultiple {
     /**
-     * Constitutes the Java expressions that are keys in the given maps on successful method termination.
+     * Constitutes the Java expressions that are keys in the given maps on successful method
+     * termination.
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
