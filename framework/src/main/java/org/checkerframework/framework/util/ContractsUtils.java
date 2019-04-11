@@ -419,6 +419,7 @@ public class ContractsUtils {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
             try {
+                // If multiple contracts, then this will throw an exception which is catched at Line 432
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
@@ -428,19 +429,19 @@ public class ContractsUtils {
                 for (String expr : expressions) {
                     result.add(new Postcondition(expr, postcondAnno, anno));
                 }
-            } catch (Exception e) {
+            } catch (ClassCastException e) {
                 List<AnnotationMirror> annotations =
                         AnnotationUtils.getElementValueArray(
                                 anno, "value", AnnotationMirror.class, false);
                 for (AnnotationMirror a : annotations) {
-                    List<String> expressionss =
+                    List<String> expressions =
                             AnnotationUtils.getElementValueArray(a, "value", String.class, false);
                     AnnotationMirror postcondAnno =
                             getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
                     if (postcondAnno == null) {
                         continue;
                     }
-                    for (String expr : expressionss) {
+                    for (String expr : expressions) {
                         result.add(new Postcondition(expr, postcondAnno, a));
                     }
                 }
@@ -502,6 +503,7 @@ public class ContractsUtils {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
             try {
+                // If multiple contracts, then this will throw an exception which is catched at Line 519
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(
                                 anno, "expression", String.class, false);
@@ -514,12 +516,12 @@ public class ContractsUtils {
                 for (String expr : expressions) {
                     result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 List<AnnotationMirror> annotations =
                         AnnotationUtils.getElementValueArray(
                                 anno, "value", AnnotationMirror.class, false);
                 for (AnnotationMirror a : annotations) {
-                    List<String> expressionss =
+                    List<String> expressions =
                             AnnotationUtils.getElementValueArray(
                                     a, "expression", String.class, false);
                     AnnotationMirror postcondAnno =
@@ -529,7 +531,7 @@ public class ContractsUtils {
                     }
                     boolean annoResult =
                             AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
-                    for (String expr : expressionss) {
+                    for (String expr : expressions) {
                         result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
                     }
                 }
