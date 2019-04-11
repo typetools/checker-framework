@@ -24,7 +24,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 public @interface EnsuresKeyForIfMultiple {
     /**
-     * Constitutes the Java expressions that are keys in the given maps after the method returns the given result.
+     * Constitutes the Java expressions that are keys in the given maps after the method returns the
+     * given result.
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
