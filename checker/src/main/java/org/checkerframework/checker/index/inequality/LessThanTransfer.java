@@ -60,7 +60,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (isDoubleOrFloatLiteral(leftRec)) {
+            if (!isDoubleOrFloatLiteral(leftRec)) {
                 lessThanExpressions.add(leftRec.toString());
             }
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -92,7 +92,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (isDoubleOrFloatLiteral(leftRec)) {
+            if (!isDoubleOrFloatLiteral(leftRec)) {
                 lessThanExpressions.add(leftRec.toString() + " + 1");
             }
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -116,7 +116,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 if (expressions == null) {
                     expressions = new ArrayList<>();
                 }
-                if (isDoubleOrFloatLiteral(leftRec)) {
+                if (!isDoubleOrFloatLiteral(leftRec)) {
                     expressions.add(leftRec.toString());
                 }
                 AnnotationMirror refine = factory.createLessThanQualifier(expressions);
@@ -147,10 +147,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
      */
     private boolean isDoubleOrFloatLiteral(Receiver receiver) {
         if (receiver instanceof ValueLiteral) {
-            return receiver.getType().getKind() != TypeKind.DOUBLE
-                    && receiver.getType().getKind() != TypeKind.FLOAT;
+            return receiver.getType().getKind() == TypeKind.DOUBLE
+                    || receiver.getType().getKind() == TypeKind.FLOAT;
         } else {
-            return true;
+            return false;
         }
     }
 }
