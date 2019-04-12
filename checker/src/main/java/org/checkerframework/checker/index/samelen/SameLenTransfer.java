@@ -226,7 +226,11 @@ public class SameLenTransfer extends CFTransfer {
             CFValue firstValue,
             CFValue secondValue,
             boolean notEqualTo) {
-        CFStore equalStore = notEqualTo ? result.getElseStore() : result.getThenStore();
+        // If result is a Regular transfer, then the elseStore is a copy of the then store, that is
+        // created when getElseStore is called.  So do that before refining any values.
+        CFStore elseStore = result.getElseStore();
+        CFStore thenStore = result.getThenStore();
+        CFStore equalStore = notEqualTo ? elseStore : thenStore;
 
         Node firstLengthReceiver = getLengthNodeReceiver(firstNode);
         Node secondLengthReceiver = getLengthNodeReceiver(secondNode);
@@ -240,7 +244,6 @@ public class SameLenTransfer extends CFTransfer {
             refineEq(firstNode, secondNode, equalStore);
         }
 
-        return new ConditionalTransferResult<>(
-                result.getResultValue(), result.getThenStore(), result.getElseStore());
+        return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
     }
 }
