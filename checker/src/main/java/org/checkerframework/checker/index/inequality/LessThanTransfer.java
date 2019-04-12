@@ -60,23 +60,11 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (isParsable(leftRec)) {
+            if (isDoubleOrFloatLiteral(leftRec)) {
                 lessThanExpressions.add(leftRec.toString());
             }
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             store.insertValue(rightRec, factory.createLessThanQualifier(lessThanExpressions));
-        }
-    }
-
-    /**
-     * Return true if {@code receiver}'s toString can be parsed by {@link FlowExpressionParseUtil}.
-     */
-    private boolean isParsable(Receiver receiver) {
-        if (receiver instanceof ValueLiteral) {
-            return receiver.getType().getKind() != TypeKind.DOUBLE
-                    && receiver.getType().getKind() != TypeKind.FLOAT;
-        } else {
-            return true;
         }
     }
 
@@ -104,7 +92,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 // right is already bottom, nothing to refine.
                 return;
             }
-            if (isParsable(leftRec)) {
+            if (isDoubleOrFloatLiteral(leftRec)) {
                 lessThanExpressions.add(leftRec.toString() + " + 1");
             }
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -128,7 +116,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 if (expressions == null) {
                     expressions = new ArrayList<>();
                 }
-                if (isParsable(leftRec)) {
+                if (isDoubleOrFloatLiteral(leftRec)) {
                     expressions.add(leftRec.toString());
                 }
                 AnnotationMirror refine = factory.createLessThanQualifier(expressions);
@@ -150,6 +138,19 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                     factory.getQualifierHierarchy().findAnnotationInHierarchy(s, factory.UNKNOWN));
         } else {
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Return true if {@code receiver} is a double or float literal, which can't be parsed by {@link
+     * FlowExpressionParseUtil}.
+     */
+    private boolean isDoubleOrFloatLiteral(Receiver receiver) {
+        if (receiver instanceof ValueLiteral) {
+            return receiver.getType().getKind() != TypeKind.DOUBLE
+                    && receiver.getType().getKind() != TypeKind.FLOAT;
+        } else {
+            return true;
         }
     }
 }
