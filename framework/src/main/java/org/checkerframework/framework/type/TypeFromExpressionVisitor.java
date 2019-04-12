@@ -81,7 +81,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitCompoundAssignment(
             CompoundAssignmentTree node, AnnotatedTypeFactory f) {
         // The annotated type of the compound assignment depends on the checker, so let a checker
-        // specific TreeAnnotator or the PropagationTreeAnnotator add annotations.  See visitBinary
+        // specific TreeAnnotator or the PropagationTreeAnnotator add annotations later.  See
+        // visitBinary
         // above.
         AnnotatedTypeMirror res = f.type(node);
         return res;
